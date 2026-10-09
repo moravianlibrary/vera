@@ -127,12 +127,9 @@ describe("listRuns", () => {
     expect(index.schedules).toBeNull();
   });
 
-  it("says when nothing has run for the caller yet", async () => {
+  it("refuses the tasks view to staff", async () => {
     signInAs("staff");
-    const index = await listRuns({});
-
-    expect(index.visibleCount).toBe(0);
-    expect(index.finished).toEqual([]);
+    expect(await refusalOf(listRuns({}))).toMatchObject({ status: 403 });
   });
 
   it("filters the finished runs, and a state leaves out the running ones", async () => {

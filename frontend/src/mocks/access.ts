@@ -181,6 +181,8 @@ export function createRole(session: Session, draft: RoleDraft): Outcome<Role> {
     description: draft.description,
     isShipped: false,
     grants: draft.grants,
+    proposalBatchLimit: draft.proposalBatchLimit,
+    proposalDailyLimit: draft.proposalDailyLimit,
   };
   database.roles = [...database.roles, role];
   return { value: role };
@@ -202,7 +204,14 @@ export function saveRole(session: Session, roleId: string, draft: RoleDraft): Ou
     return { refusal: nameTaken(name) };
   }
 
-  const role: Role = { ...stored, name, description: draft.description, grants: draft.grants };
+  const role: Role = {
+    ...stored,
+    name,
+    description: draft.description,
+    grants: draft.grants,
+    proposalBatchLimit: draft.proposalBatchLimit,
+    proposalDailyLimit: draft.proposalDailyLimit,
+  };
   const roles = database.roles.map((candidate) => (candidate.id === roleId ? role : candidate));
   if (!keepsManager(roles, database.userAccess)) {
     return { refusal: lastManager };

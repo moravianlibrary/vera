@@ -107,10 +107,10 @@ describe("listValidations", () => {
     ).toBe(true);
   });
 
-  it("is refused to whoever reviews nothing", async () => {
+  it("lets a digitization curator review the categories in their custody", async () => {
     signInAs("digitization");
 
-    expect(await statusOf(listValidations({}))).toBe(403);
+    expect(await statusOf(listValidations({}))).toBeNull();
   });
 });
 

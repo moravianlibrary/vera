@@ -69,6 +69,8 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
     name: role === null ? "" : isCopy ? `${role.name}-copy` : role.name,
     description: role?.description ?? "",
     grants: role?.grants ?? [],
+    proposalBatchLimit: role === null ? 10 : role.proposalBatchLimit,
+    proposalDailyLimit: role === null ? 300 : role.proposalDailyLimit,
   };
   const save = useActionMutation({
     call: (draft: RoleDraft) =>
@@ -80,6 +82,18 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
   const invalidReasonOf = ([draft]: readonly RoleDraft[]): string | null => {
     if (draft === undefined || draft.name.trim() === "") {
       return "A role needs a name.";
+    }
+    if (
+      draft.proposalBatchLimit !== null &&
+      (!Number.isInteger(draft.proposalBatchLimit) || draft.proposalBatchLimit < 0)
+    ) {
+      return "The per-submission limit must be a whole number of at least zero.";
+    }
+    if (
+      draft.proposalDailyLimit !== null &&
+      (!Number.isInteger(draft.proposalDailyLimit) || draft.proposalDailyLimit < 0)
+    ) {
+      return "The daily proposal limit must be a whole number of at least zero.";
     }
 
     const name = roleNameOf(draft.name);
@@ -106,13 +120,38 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
 
     const change = grantChangeOf(role.grants, draft.grants);
     const reached = roleChangeReachOf(index.users, index.roles, role.id, draft.grants);
-    if (change.added.length + change.removed.length === 0 || reached.length === 0) {
+    const grantsChanged = change.added.length + change.removed.length > 0;
+    const batchLimitChanged = draft.proposalBatchLimit !== role.proposalBatchLimit;
+    const dailyLimitChanged = draft.proposalDailyLimit !== role.proposalDailyLimit;
+    const holders = holdersOf(index.users, role.id);
+    if ((!grantsChanged && !batchLimitChanged && !dailyLimitChanged) || holders.length === 0) {
       return null;
     }
 
     return {
       submitLabel: "Save role",
-      body: <RoleReach change={change} reached={reached} />,
+      body: (
+        <>
+          {grantsChanged && reached.length > 0 && <RoleReach change={change} reached={reached} />}
+          {batchLimitChanged && (
+            <p className="text-sm">
+              The per-submission proposal limit changes for{" "}
+              {plural(holders.length, "person", "people")}
+              {draft.proposalBatchLimit === null
+                ? " to unlimited."
+                : ` to ${draft.proposalBatchLimit} items.`}
+            </p>
+          )}
+          {dailyLimitChanged && (
+            <p className="text-sm">
+              The daily proposal limit changes for {plural(holders.length, "person", "people")}
+              {draft.proposalDailyLimit === null
+                ? " to unlimited."
+                : ` to ${draft.proposalDailyLimit} items.`}
+            </p>
+          )}
+        </>
+      ),
     };
   };
 
@@ -123,7 +162,7 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       title={
         role === null ? "New role" : isCopy ? `Duplicate ${role.name}` : `Edit role ${role.name}`
       }
-      description="A role's name and the scope it grants each permission at"
+      description="A role's permissions and proposal limits"
       width="wide"
       entries={[stored]}
       renderEntries={([draft], onChange) =>
@@ -218,6 +257,63 @@ function RoleFields({
           />
         </div>
       </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,12rem)_1fr] sm:items-end">
+        <div className="grid gap-1.5">
+          <Label htmlFor={`${id}-batch-limit`}>Items per submission</Label>
+          <Input
+            id={`${id}-batch-limit`}
+            type="number"
+            min={0}
+            step={1}
+            disabled={draft.proposalBatchLimit === null}
+            value={draft.proposalBatchLimit ?? ""}
+            onChange={(event) =>
+              onChange({ ...draft, proposalBatchLimit: Number(event.target.value) })
+            }
+          />
+        </div>
+        <label htmlFor={`${id}-batch-unlimited`} className="flex items-center gap-2 pb-2 text-sm">
+          <Checkbox
+            id={`${id}-batch-unlimited`}
+            checked={draft.proposalBatchLimit === null}
+            onCheckedChange={(checked) =>
+              onChange({ ...draft, proposalBatchLimit: checked === true ? null : 10 })
+            }
+          />
+          No per-submission limit
+        </label>
+      </div>
+      <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,12rem)_1fr] sm:items-end">
+        <div className="grid gap-1.5">
+          <Label htmlFor={`${id}-proposal-limit`}>Proposals per day</Label>
+          <Input
+            id={`${id}-proposal-limit`}
+            type="number"
+            min={0}
+            step={1}
+            disabled={draft.proposalDailyLimit === null}
+            value={draft.proposalDailyLimit ?? ""}
+            onChange={(event) =>
+              onChange({ ...draft, proposalDailyLimit: Number(event.target.value) })
+            }
+          />
+        </div>
+        <label htmlFor={`${id}-unlimited`} className="flex items-center gap-2 pb-2 text-sm">
+          <Checkbox
+            id={`${id}-unlimited`}
+            checked={draft.proposalDailyLimit === null}
+            onCheckedChange={(checked) =>
+              onChange({ ...draft, proposalDailyLimit: checked === true ? null : 300 })
+            }
+          />
+          No daily limit
+        </label>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        The daily limit counts accepted items across submissions in the library's calendar day.
+        Among roles granting request.create, the highest limit applies for each setting; a role with
+        no limit makes that setting unlimited.
+      </p>
       <p className="mt-1 text-xs text-muted-foreground">
         Pick the scope each permission reaches. <i>own</i> is the holder's own records, with no
         scope to choose; <i>managed</i> is a project they manage.

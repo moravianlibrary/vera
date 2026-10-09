@@ -63,19 +63,21 @@ describe("effectivePermissionsOf", () => {
 
 describe("includedRolesOf", () => {
   it("names only the nearest roles a role holds all of", () => {
-    expect(includedRolesOf(roles, roleOf("staff")).map(({ id }) => id)).toEqual(["reader"]);
-    expect(includedRolesOf(roles, roleOf("curator")).map(({ id }) => id)).toEqual(["staff"]);
-    expect(includedRolesOf(roles, roleOf("admin")).map(({ id }) => id)).toEqual([
-      "curator",
-      "dig-curator",
+    expect(includedRolesOf(roles, roleOf("staff")).map(({ id }) => id)).toEqual([]);
+    expect(includedRolesOf(roles, roleOf("reader")).map(({ id }) => id)).toEqual([]);
+    expect(includedRolesOf(roles, roleOf("curator")).map(({ id }) => id)).toEqual([
+      "reader",
+      "staff",
     ]);
+    expect(includedRolesOf(roles, roleOf("dig-curator")).map(({ id }) => id)).toEqual(["curator"]);
+    expect(includedRolesOf(roles, roleOf("admin")).map(({ id }) => id)).toEqual(["dig-curator"]);
   });
 });
 
 describe("proposalReachOf", () => {
   it("decides with request.decide, sees with request.read, and nothing with neither", () => {
     expect(proposalReachOf(roles, ["curator"])).toBe("decides");
-    expect(proposalReachOf(roles, ["staff"])).toBe("sees");
+    expect(proposalReachOf(roles, ["staff"])).toBeNull();
     expect(proposalReachOf(roles, ["reader"])).toBeNull();
   });
 });

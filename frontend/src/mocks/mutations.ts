@@ -9,7 +9,7 @@ import { database } from "@/mocks/database";
 
 // Answered as RFC 9457 Problem Details (problem.ts): the message is its detail, and the code, when
 // a refusal has one of its own, lets the frontend word it.
-export type Refusal = { status: 403 | 404 | 409 | 422; message: string; code?: string };
+export type Refusal = { status: 403 | 404 | 409 | 422 | 429; message: string; code?: string };
 export type Outcome<Value> = { value: Value } | { refusal: Refusal };
 
 export function writeLog(entry: Omit<StatusLogEntry, "id">): void {

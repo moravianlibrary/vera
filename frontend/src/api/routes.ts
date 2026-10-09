@@ -39,6 +39,8 @@ export const apiRoutes = {
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
   proposals: "/proposals",
+  // Remaining rate limit count for the current user (checked before submit).
+  proposalRateLimit: "/proposals/rate-limit",
   proposalReview: "/proposal-review",
   proposalCustodies: "/proposal-custodies",
   validations: "/validations",

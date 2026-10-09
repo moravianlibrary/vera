@@ -2,18 +2,28 @@
 // do, and what a submit makes of it, for a requester and a curator.
 
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import type { ProposalDraft, ProposalItem } from "@/api/proposals";
-import { checkProposalItems, submitProposal } from "@/api/proposals";
+import {
+  checkProposalItems,
+  getProposalSettings,
+  getRateLimitStatus,
+  submitProposal,
+} from "@/api/proposals";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
+import { resolveSession } from "@/mocks/session";
 
 const server = setupServer();
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  vi.useRealTimers();
+});
 afterAll(() => server.close());
 
 function signInAs(profile: MockUserProfile): void {
@@ -86,6 +96,96 @@ describe("checkProposalItems", () => {
 });
 
 describe("submitProposal", () => {
+  it("uses the same batch limit but different daily totals for reader and staff", async () => {
+    signInAs("reader");
+    expect((await getProposalSettings()).maxAtOnce).toBe(10);
+    expect((await getRateLimitStatus()).perDay).toBe(100);
+
+    signInAs("staff");
+    expect((await getProposalSettings()).maxAtOnce).toBe(10);
+    expect((await getRateLimitStatus()).perDay).toBe(300);
+  });
+
+  it("counts accepted items until midnight in the library's calendar day", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2030-06-25T21:59:00Z")); // 23:59 in Prague
+    signInAs("reader");
+
+    const before = await getRateLimitStatus();
+    const report = await submitProposal(
+      draftOf([catalogItem("NKC01-002345678", "roč. 12"), catalogItem("MZK09-999999999")]),
+    );
+    expect(report.proposed + report.joined).toBe(1);
+    expect((await getRateLimitStatus()).perDay).toBe((before.perDay ?? 0) - 1);
+
+    vi.setSystemTime(new Date("2030-06-25T22:01:00Z")); // 00:01 next day in Prague
+    expect((await getRateLimitStatus()).perDay).toBe(before.perDay);
+  });
+
+  it("returns an unlimited daily status for a decider", async () => {
+    signInAs("curator");
+    expect((await getRateLimitStatus()).perDay).toBeNull();
+    expect((await getProposalSettings()).maxAtOnce).toBeNull();
+  });
+
+  it("applies a role's finite limits even when it grants request.decide", async () => {
+    const heldRoleIds = resolveSession("curator").roleIds;
+    const heldRoles = database.roles.filter((role) => heldRoleIds.includes(role.id));
+    const previousLimits = heldRoles.map((role) => ({
+      batch: role.proposalBatchLimit,
+      day: role.proposalDailyLimit,
+    }));
+    for (const role of heldRoles) {
+      role.proposalBatchLimit = 1;
+      role.proposalDailyLimit = 0;
+    }
+    signInAs("curator");
+
+    try {
+      expect((await getProposalSettings()).maxAtOnce).toBe(1);
+      expect(
+        await statusOf(
+          submitProposal(
+            draftOf([catalogItem("NKC01-002345678", "roč. 13"), catalogItem("MZK09-999999999")]),
+          ),
+        ),
+      ).toBe(422);
+      expect((await getRateLimitStatus()).perDay).toBe(0);
+      expect(
+        await statusOf(submitProposal(draftOf([catalogItem("NKC01-002345678", "roč. 13")]))),
+      ).toBe(429);
+    } finally {
+      heldRoles.forEach((role, index) => {
+        role.proposalBatchLimit = previousLimits[index]?.batch ?? null;
+        role.proposalDailyLimit = previousLimits[index]?.day ?? null;
+      });
+    }
+  });
+
+  it("refuses an accepted item after today's quota and allows it tomorrow", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2031-07-01T12:00:00Z"));
+    signInAs("reader");
+    const reader = database.roles.find((role) => role.id === "reader");
+    if (reader === undefined) throw new Error("Missing reader role");
+    const previousLimit = reader.proposalDailyLimit;
+    reader.proposalDailyLimit = 1;
+
+    try {
+      await submitProposal(draftOf([catalogItem("MZK01-001277001", "1940")]));
+      expect((await getRateLimitStatus()).perDay).toBe(0);
+
+      const next = draftOf([catalogItem("MZK01-001520331", "roč. 1")]);
+      expect(await statusOf(submitProposal(next))).toBe(429);
+
+      vi.setSystemTime(new Date("2031-07-01T22:01:00Z")); // next day in Prague
+      expect((await getRateLimitStatus()).perDay).toBe(1);
+      expect(await statusOf(submitProposal(next))).toBeNull();
+    } finally {
+      reader.proposalDailyLimit = previousLimit;
+    }
+  });
+
   it("proposes the new, joins the rest, skips the unknown, and makes one batch", async () => {
     signInAs("reader");
 

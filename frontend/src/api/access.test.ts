@@ -107,7 +107,15 @@ describe("roles", () => {
     signInAs("staff");
 
     expect(
-      await refusalOf(createRole({ name: "maps", description: "", grants: [] })),
+      await refusalOf(
+        createRole({
+          name: "maps",
+          description: "",
+          grants: [],
+          proposalBatchLimit: 10,
+          proposalDailyLimit: 300,
+        }),
+      ),
     ).toMatchObject({ status: 403 });
   });
 
@@ -119,6 +127,8 @@ describe("roles", () => {
         createRole({
           name: "maps-curator",
           description: "",
+          proposalBatchLimit: 10,
+          proposalDailyLimit: 300,
           grants: [{ permission: "restriction.overrule", scope: "custody" }],
         }),
       ),
@@ -128,6 +138,8 @@ describe("roles", () => {
         createRole({
           name: "maps-curator",
           description: "",
+          proposalBatchLimit: 10,
+          proposalDailyLimit: 300,
           grants: [{ permission: "watch", scope: "any" }],
         }),
       ),
@@ -139,12 +151,27 @@ describe("roles", () => {
     const role = await createRole({
       name: "Maps Curator",
       description: "Maps only.",
+      proposalBatchLimit: 10,
+      proposalDailyLimit: 300,
       grants: [{ permission: "iteration.read", scope: "custody" }],
     });
 
     expect(role).toMatchObject({ id: "maps-curator", name: "maps-curator", isShipped: false });
+    const unlimited = await saveRole({
+      roleId: role.id,
+      draft: { ...role, proposalBatchLimit: null, proposalDailyLimit: null },
+    });
+    expect(unlimited).toMatchObject({ proposalBatchLimit: null, proposalDailyLimit: null });
     expect(
-      await refusalOf(createRole({ name: "maps curator", description: "", grants: [] })),
+      await refusalOf(
+        createRole({
+          name: "maps curator",
+          description: "",
+          grants: [],
+          proposalBatchLimit: 10,
+          proposalDailyLimit: 300,
+        }),
+      ),
     ).toMatchObject({ status: 409, code: "access.name_taken" });
   });
 

@@ -9,6 +9,8 @@ import type { AccessGroup, Identity, MappedRole, Role } from "@/domain/access";
 const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   {
     id: "reader",
+    proposalBatchLimit: 10,
+    proposalDailyLimit: 100,
     description: "Proposes and follows their own requests. Holds only self-scoped grants.",
     grants: [
       {
@@ -31,7 +33,9 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   },
   {
     id: "staff",
-    description: "Library staff: read every record, fix descriptions.",
+    proposalBatchLimit: 10,
+    proposalDailyLimit: 300,
+    description: "Library staff: the reader grants with a higher daily proposal limit.",
     grants: [
       {
         permission: "request.create",
@@ -49,46 +53,12 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         permission: "watch",
         scope: null,
       },
-      {
-        permission: "task.read_own",
-        scope: null,
-      },
-      {
-        permission: "project.create",
-        scope: "any",
-      },
-      {
-        permission: "project.read",
-        scope: "project",
-      },
-      {
-        permission: "project.edit",
-        scope: "managed",
-      },
-      {
-        permission: "project.manage_members",
-        scope: "managed",
-      },
-      {
-        permission: "project.delete",
-        scope: "managed",
-      },
-      {
-        permission: "iteration.read",
-        scope: "any",
-      },
-      {
-        permission: "request.read",
-        scope: "any",
-      },
-      {
-        permission: "category.read",
-        scope: "any",
-      },
     ],
   },
   {
     id: "curator",
+    proposalBatchLimit: null,
+    proposalDailyLimit: null,
     description:
       "Decides proposals in their proposal custody; validates, classifies and publishes inside their category custody; decides projects.",
     grants: [
@@ -200,6 +170,8 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   },
   {
     id: "dig-curator",
+    proposalBatchLimit: null,
+    proposalDailyLimit: null,
     description: "Plans the work: lists, intentions, projects.",
     grants: [
       {
@@ -260,6 +232,17 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       },
       { permission: "mix.read", scope: "any" },
       { permission: "mix.edit", scope: "any" },
+      { permission: "request.decide", scope: "custody" },
+      { permission: "validation.approve", scope: "custody" },
+      { permission: "validation.deny", scope: "custody" },
+      { permission: "validation.revoke", scope: "custody" },
+      { permission: "iteration.recheck", scope: "custody" },
+      { permission: "iteration.classify", scope: "custody" },
+      { permission: "iteration.publish", scope: "custody" },
+      { permission: "addition.read", scope: "custody" },
+      { permission: "category.edit", scope: "custody" },
+      { permission: "category.grant_custody", scope: "custody" },
+      { permission: "project.decide", scope: "any" },
       {
         permission: "project.read",
         scope: "any",
@@ -292,6 +275,8 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   },
   {
     id: "admin",
+    proposalBatchLimit: null,
+    proposalDailyLimit: null,
     description: "Everything, at any scope.",
     grants: [
       {

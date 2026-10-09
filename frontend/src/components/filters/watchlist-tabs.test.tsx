@@ -36,7 +36,7 @@ function Providers({ children }: { children: ReactNode }) {
 
 describe("WatchlistTabs", () => {
   it("tracks the full live filter and offers Current search only when no saved tab matches", async () => {
-    server.use(...createHandlers("staff"));
+    server.use(...createHandlers("curator"));
     const onOpen = vi.fn();
     const props = {
       view: "projects" as const,
@@ -104,7 +104,7 @@ describe("WatchlistTabs", () => {
   });
 
   it("saves Current search as a new personal watchlist", async () => {
-    server.use(...createHandlers("staff"));
+    server.use(...createHandlers("curator"));
     const onOpen = vi.fn();
     render(
       <WatchlistTabs

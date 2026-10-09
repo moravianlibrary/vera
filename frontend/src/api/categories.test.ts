@@ -64,10 +64,12 @@ describe("getCategoryIndex", () => {
     signInAs("reader");
 
     expect(await statusOf(getCategoryIndex())).toBe(403);
+    signInAs("staff");
+    expect(await statusOf(getCategoryIndex())).toBe(403);
   });
 
   it("gives the tree and custody without a mix to someone who cannot read intentions", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const index = await getCategoryIndex();
 

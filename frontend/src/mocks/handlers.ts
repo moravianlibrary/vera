@@ -92,15 +92,6 @@ import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import {
-  archiveMixRecord,
-  createMixRecord,
-  getMixRecord,
-  listMixRecords,
-  makeMixPrimary,
-  saveMixRecordSet,
-  snapshotMixRecord,
-} from "@/mocks/mix-catalog";
-import {
   accessIndex,
   canReadAccess,
   createCustody,
@@ -186,6 +177,15 @@ import {
   saveList,
 } from "@/mocks/lists";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
+import {
+  archiveMixRecord,
+  createMixRecord,
+  getMixRecord,
+  listMixRecords,
+  makeMixPrimary,
+  saveMixRecordSet,
+  snapshotMixRecord,
+} from "@/mocks/mix-catalog";
 import { detachIntention, findIntentionMix, saveMixSet } from "@/mocks/mixes";
 import type { Outcome } from "@/mocks/mutations";
 import { instanceSummaries } from "@/mocks/plugin-instances";
@@ -228,11 +228,14 @@ import {
   queryProposals,
 } from "@/mocks/proposal-review";
 import {
+  canSubmitRateLimited,
   checkItem,
+  getRateLimitStatus,
   proposableProjectsOf,
   proposalLimitOf,
-  proposalSettings,
+  proposalSettingsOf,
   submitProposal,
+  submittableProposalItemCount,
 } from "@/mocks/proposals";
 import {
   canReadSchedules,
@@ -1052,7 +1055,14 @@ export function createHandlers(profile: MockUserProfile) {
     iterationAction("recheck", recheckSchema, recheckIteration),
     iterationAction("cancel", cancellationRequestSchema, cancelIteration),
 
-    http.get(route(apiRoutes.proposalSettings), () => HttpResponse.json(proposalSettings)),
+    http.get(route(apiRoutes.proposalSettings), () =>
+      HttpResponse.json(proposalSettingsOf(currentSession())),
+    ),
+
+    http.get(route(apiRoutes.proposalRateLimit), () => {
+      const session = currentSession();
+      return HttpResponse.json(getRateLimitStatus(session));
+    }),
 
     http.post(route(apiRoutes.proposalLookup), async ({ request }) => {
       const session = currentSession();
@@ -1081,10 +1091,18 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 403, message: "You may not propose this" });
       }
 
-      if (draft.data.items.length > proposalLimitOf(session)) {
+      const batchLimit = proposalLimitOf(session);
+      if (batchLimit !== null && draft.data.items.length > batchLimit) {
         return problemResponse({
           status: 422,
-          message: `At most ${proposalLimitOf(session)} items at once`,
+          message: `At most ${batchLimit} items at once`,
+        });
+      }
+
+      if (!canSubmitRateLimited(session, submittableProposalItemCount(session, draft.data))) {
+        return problemResponse({
+          status: 429,
+          message: "Today's proposal limit has been reached",
         });
       }
 

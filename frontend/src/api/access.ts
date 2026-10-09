@@ -55,6 +55,8 @@ export const roleDraftSchema = z.object({
   name: nameField,
   description: z.string().trim(),
   grants: z.array(grantSchema),
+  proposalBatchLimit: z.number().int().nonnegative().nullable(),
+  proposalDailyLimit: z.number().int().nonnegative().nullable(),
 });
 export type RoleDraft = z.infer<typeof roleDraftSchema>;
 

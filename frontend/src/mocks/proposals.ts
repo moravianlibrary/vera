@@ -10,6 +10,7 @@ import type {
   ProposalItem,
   ProposalReport,
   ProposalSettings,
+  RateLimitStatus,
 } from "@/api/proposals";
 import type { DocumentRecord } from "@/domain/documents";
 import { currentIterationOf, recordStatusOf } from "@/domain/documents";
@@ -22,7 +23,6 @@ import type {
   Request,
   Session,
 } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
 import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
@@ -30,13 +30,82 @@ import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
 
-export const proposalSettings: ProposalSettings = { maxAtOnce: 10, canDetectTypes: true };
+// The mock library's calendar day is Prague time. Both proposal limits belong to roles.
+const canDetectTypes = true;
 
-// The most one proposal may hold for the caller: unlimited for a curator adding a shelf.
-export function proposalLimitOf(session: Session): number {
-  return hasPermission(session, "request.decide")
-    ? Number.POSITIVE_INFINITY
-    : proposalSettings.maxAtOnce;
+// Track submission timestamps per user for rate limiting.
+// Keyed by user ID, each entry is an array of ISO timestamps.
+const submissionLog: Record<string, string[]> = {};
+
+function roleProposalLimitOf(
+  session: Session,
+  field: "proposalBatchLimit" | "proposalDailyLimit",
+): number | null {
+  const limits = database.roles
+    .filter(
+      (role) =>
+        session.roleIds.includes(role.id) &&
+        role.grants.some((grant) => grant.permission === "request.create"),
+    )
+    .map((role) => role[field]);
+  if (limits.includes(null)) return null;
+  return Math.max(0, ...limits.filter((limit): limit is number => limit !== null));
+}
+
+export function proposalSettingsOf(session: Session): ProposalSettings {
+  return { maxAtOnce: proposalLimitOf(session), canDetectTypes };
+}
+
+export function proposalLimitOf(session: Session): number | null {
+  return roleProposalLimitOf(session, "proposalBatchLimit");
+}
+
+function dailyLimitOf(session: Session): number | null {
+  return roleProposalLimitOf(session, "proposalDailyLimit");
+}
+
+const libraryDayFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Prague",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function libraryDayOf(moment: Date): string {
+  return libraryDayFormatter.format(moment);
+}
+
+// Count accepted items submitted on the library's current calendar day.
+function submissionCountToday(session: Session, now: Date): number {
+  const logs = submissionLog[session.user.id] ?? [];
+  const today = libraryDayOf(now);
+  return logs.filter((ts) => libraryDayOf(new Date(ts)) === today).length;
+}
+
+// The remaining rate limit count for the current user (what they can still submit).
+export function getRateLimitStatus(session: Session): RateLimitStatus {
+  const limit = dailyLimitOf(session);
+  return {
+    perDay: limit === null ? null : Math.max(0, limit - submissionCountToday(session, new Date())),
+  };
+}
+
+// Check if the user can submit `count` more items today.
+export function canSubmitRateLimited(session: Session, count: number): boolean {
+  const limit = dailyLimitOf(session);
+  return limit === null || submissionCountToday(session, new Date()) + count <= limit;
+}
+
+// Record a submission for rate limiting tracking.
+function recordSubmission(session: Session, itemCount: number): void {
+  const now = new Date().toISOString();
+  if (!submissionLog[session.user.id]) {
+    submissionLog[session.user.id] = [];
+  }
+  // Record one timestamp per item (so we track volume, not just submission count).
+  for (let i = 0; i < itemCount; i++) {
+    submissionLog[session.user.id].push(now);
+  }
 }
 
 // The projects the caller may propose into: a member's, and not Rejected (projects.md §4).
@@ -92,6 +161,15 @@ export function checkItem(session: Session, item: ProposalItem): ProposalCheck {
   }
 
   return { kind: "inVera", ...found, documentId: document.id, status: statusFor(session, held) };
+}
+
+// The quota counts requests actually made, including joining an existing document.
+// Items that the submit report will skip do not consume it.
+export function submittableProposalItemCount(session: Session, draft: ProposalDraft): number {
+  return draft.items.filter((item) => {
+    const kind = checkItem(session, item).kind;
+    return kind === "new" || kind === "inVera";
+  }).length;
 }
 
 // The catalog's answer: a record, and the unit when the record has several.
@@ -237,6 +315,12 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
       approveOnCheck: draft.approval === null ? null : { actorId: session.user.id, at: now },
       isAfterProjectApproval: project?.state === "Approved",
     });
+  }
+
+  // Record submissions for rate limiting (after all items are processed).
+  const acceptedCount = accepted.length;
+  if (acceptedCount > 0) {
+    recordSubmission(session, acceptedCount);
   }
 
   return {

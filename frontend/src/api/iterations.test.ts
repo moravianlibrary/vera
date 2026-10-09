@@ -77,7 +77,7 @@ describe("reclassifying", () => {
 
     expect(
       await statusOf(reclassifyIteration("IT27", { categoryId: "c21", priority: "Low" })),
-    ).toBe(403);
+    ).toBe(404);
   });
 });
 

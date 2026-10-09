@@ -632,6 +632,21 @@ export function RoleRecord({
         </Part>
       </Columns>
       <Part
+        title="Proposal submission limit"
+        aside={role.proposalBatchLimit === null ? "Unlimited" : `${role.proposalBatchLimit} items`}
+      >
+        <Fine>Maximum items in one submission for a holder of this role.</Fine>
+      </Part>
+      <Part
+        title="Proposal daily limit"
+        aside={role.proposalDailyLimit === null ? "Unlimited" : `${role.proposalDailyLimit} items`}
+      >
+        <Fine>
+          Accepted items per library calendar day. Among roles granting request.create, the highest
+          limit applies, or unlimited if one has no limit.
+        </Fine>
+      </Part>
+      <Part
         title="Grants"
         aside={
           <>

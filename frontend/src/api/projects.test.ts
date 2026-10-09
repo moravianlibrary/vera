@@ -134,13 +134,12 @@ describe("listProjectIndex", () => {
     expect(await statusOf(listProjectIndex())).toBe(403);
   });
 
-  it("gives staff the projects they are on, and a decider every one", async () => {
+  it("refuses staff and gives a decider every project", async () => {
     signInAs("staff");
-    const staff = await listProjectIndex();
+    expect(await statusOf(listProjectIndex())).toBe(403);
     signInAs("curator");
     const curator = await listProjectIndex();
 
-    expect(staff.rows.map((row) => row.project.id).toSorted()).toEqual(["p1", "p3", "p8", "p9"]);
     expect(curator.rows).toHaveLength(9);
   });
 
@@ -215,10 +214,9 @@ describe("findProject", () => {
     expect(times).toEqual(times.toSorted().toReversed());
   });
 
-  it("is null for a project the caller is not on", async () => {
-    signInAs("staff");
+  it("is null for a missing project", async () => {
+    signInAs("curator");
 
-    expect(await findProject("p2")).toBeNull();
     expect(await findProject("p404")).toBeNull();
   });
 
@@ -231,13 +229,13 @@ describe("findProject", () => {
 
 describe("starting and running a project", () => {
   it("starts Proposed, the creator its manager and only member, logged", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const created = await createProject(draft);
 
     expect(created.row.project).toMatchObject({
       state: "Proposed",
-      managerId: "u4",
-      memberIds: ["u4"],
+      managerId: "u8",
+      memberIds: ["u8"],
       memberGroupIds: [],
     });
     expect(created.log.map((entry) => entry.event)).toEqual(["Created"]);
@@ -248,23 +246,24 @@ describe("starting and running a project", () => {
   });
 
   it("starts one without a target, whose intention then tracks the mix", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const created = await createProject({ ...draft, name: "Bez cíle", targetPages: null });
 
     expect(created.row).toMatchObject({ intention: { targetPages: null }, verdict: null });
   });
 
   it("refuses an end before the start, and starting without project.create", async () => {
-    signInAs("staff");
+    signInAs("curator");
     expect(await statusOf(createProject({ ...draft, endsOn: "2026-01-01" }))).toBe(422);
 
-    signInAs("reader");
+    signInAs("staff");
     expect(await statusOf(createProject(draft))).toBe(403);
   });
 
   it("lets the manager edit what they manage, and nothing else", async () => {
-    signInAs("staff");
-    const saved = await saveProject("p8", {
+    signInAs("curator");
+    const created = await createProject(draft);
+    const saved = await saveProject(created.row.project.id, {
       ...draft,
       name: "Brněnské kalendáře",
       endsOn: "2027-12-31",
@@ -336,10 +335,10 @@ describe("starting and running a project", () => {
 
 describe("deciding a project", () => {
   it("is refused without project.decide", async () => {
-    signInAs("digitization");
+    signInAs("staff");
 
-    expect(await statusOf(previewDecision("p8"))).toBe(403);
-    expect(await statusOf(approveProject("p8", { priority: "High" }))).toBe(403);
+    expect(await statusOf(previewDecision("p8"))).toBe(404);
+    expect(await statusOf(approveProject("p8", { priority: "High" }))).toBe(404);
   });
 
   it("says what approving takes and skips, then approves at the priority it picks", async () => {

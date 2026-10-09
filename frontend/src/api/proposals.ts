@@ -11,14 +11,19 @@ import { batchSchema, prioritySchema } from "@/domain/entities";
 import { identifierTypeSchema } from "@/domain/proposals";
 
 export const proposalSettingsSchema = z.object({
-  // How many items one proposal may hold for anybody without `request.decide`
-  // (`propose.max_at_once`).
-  maxAtOnce: z.number().int().positive(),
+  // Effective role limit for the current user; null means unlimited.
+  maxAtOnce: z.number().int().nonnegative().nullable(),
   // Whether an identifier detector plugin reads each pasted line's type; without one the
   // person picks the type and every line is read as it.
   canDetectTypes: z.boolean(),
 });
 export type ProposalSettings = z.infer<typeof proposalSettingsSchema>;
+
+// What the server returns about rate limits for the current user.
+export const rateLimitStatusSchema = z.object({
+  perDay: z.number().int().nonnegative().nullable(),
+});
+export type RateLimitStatus = z.infer<typeof rateLimitStatusSchema>;
 
 const unit = z.string().min(1).nullable();
 
@@ -96,4 +101,9 @@ export async function checkProposalItems(items: ProposalItem[]): Promise<Proposa
 
 export async function submitProposal(draft: ProposalDraft): Promise<ProposalReport> {
   return postJson(apiRoutes.proposals, draft, proposalReportSchema);
+}
+
+// The remaining rate limit count for the current user, checked before submit.
+export async function getRateLimitStatus(): Promise<RateLimitStatus> {
+  return getJson(apiRoutes.proposalRateLimit, rateLimitStatusSchema);
 }

@@ -1,5 +1,5 @@
 // The Documents resource end to end: typed API calls against the mock server over HTTP, as the
-// views will make them, for a requester and for staff.
+// views will make them, for a requester and for a curator.
 
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -27,6 +27,18 @@ function signInAs(profile: MockUserProfile): void {
 }
 
 describe("listDocuments as a reader", () => {
+  it("gives staff the same public reach", async () => {
+    signInAs("staff");
+    const page = await listDocuments({});
+
+    expect(page.audience).toBe("public");
+    expect(
+      page.items.every((record) =>
+        record.requests.every((request) => request.requesterId === "u4"),
+      ),
+    ).toBe(true);
+  });
+
   it("returns only the documents they asked for, in the public vocabulary", async () => {
     signInAs("reader");
 
@@ -56,9 +68,9 @@ describe("listDocuments as a reader", () => {
   });
 });
 
-describe("listDocuments as staff", () => {
+describe("listDocuments as curator", () => {
   it("filters on the stored dimensions, not the displayed status", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const all = await listDocuments({});
     const forbidden = all.facets.forbidden.find((entry) => entry.value === "Yes");
 
@@ -71,7 +83,7 @@ describe("listDocuments as staff", () => {
   });
 
   it("gives a document with no iteration no progress", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const page = await listDocuments({ decisions: ["Pending"], progress: [...progressValues] });
     const pendingOnly = await listDocuments({ decisions: ["Pending"] });
@@ -81,7 +93,7 @@ describe("listDocuments as staff", () => {
   });
 
   it("matches an iteration ID whole, not as a prefix", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const page = await listDocuments({ search: "IT1" });
 
@@ -91,7 +103,7 @@ describe("listDocuments as staff", () => {
 
 describe("listDocuments facets", () => {
   it("matches any value within a field and every field together", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const page = await listDocuments({ priorities: ["Urgent", "High"], existingCopies: ["None"] });
 
@@ -108,7 +120,7 @@ describe("listDocuments facets", () => {
   });
 
   it("counts a field over the other filters, not over itself", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const all = await listDocuments({});
     const urgent = all.facets.priorities.find((entry) => entry.value === "Urgent");
 
@@ -120,7 +132,7 @@ describe("listDocuments facets", () => {
   });
 
   it("counts a category over its whole subtree", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const all = await listDocuments({});
     const [root] = all.facets.categoryIds.toSorted((first, second) => second.count - first.count);
 
@@ -156,7 +168,7 @@ describe("listDocuments facets", () => {
 
 describe("listDocuments ranges", () => {
   it("keeps the documents whose page count in use falls in the range, ends included", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const all = await listDocuments({}, { limit: maximumDocumentSliceSize });
 
     const page = await listDocuments(
@@ -175,7 +187,7 @@ describe("listDocuments ranges", () => {
   });
 
   it("keeps the documents a current asker asked for within the days", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const asked = { from: "2026-06-20", to: "2026-06-25" };
 
     const page = await listDocuments({ asked }, { limit: maximumDocumentSliceSize });
@@ -200,7 +212,7 @@ describe("listDocuments ranges", () => {
 
 describe("listDocuments slices", () => {
   it("walks every row once, in the order of a single slice", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const whole = await listDocuments({}, { cursor: null, limit: maximumDocumentSliceSize });
 
     const walked: string[] = [];
@@ -216,7 +228,7 @@ describe("listDocuments slices", () => {
   });
 
   it("ends with no next cursor", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const page = await listDocuments({}, { cursor: null, limit: maximumDocumentSliceSize });
 
@@ -239,7 +251,7 @@ describe("listDocuments grouping", () => {
   };
 
   it("keeps each group together across slices, its header counting the whole group", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const slices = await sliceWalk("project");
 
@@ -288,7 +300,7 @@ describe("listDocuments grouping", () => {
     }
   });
 
-  it("does not group by batch without addition.read", async () => {
+  it("does not group a staff member's public list by batch", async () => {
     signInAs("staff");
 
     const page = await listDocuments({}, { grouping: "batch" });
@@ -334,14 +346,11 @@ describe("findDocument", () => {
     expect(events).not.toContain("Ingest failed");
   });
 
-  it("withholds how an ingest failed from staff who may not read additions", async () => {
+  it("keeps another person's ingest failure outside staff's reach", async () => {
     signInAs("staff");
 
     const detail = await findDocument("D7");
-    const failure = detail?.log.find((entry) => entry.event === "Ingest failed");
-
-    expect(failure).toBeDefined();
-    expect(failure?.detail).toBeNull();
+    expect(detail).toBeNull();
   });
 });
 

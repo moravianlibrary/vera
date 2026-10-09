@@ -72,7 +72,7 @@ describe("listWatchlists", () => {
     }
   });
   it("counts the shared Projects tabs over each reader's reach", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const proposed = (await listWatchlists("projects")).find(
       (watchlist) => watchlist.name === "Proposed",
     );
@@ -121,7 +121,7 @@ describe("listWatchlists", () => {
     expect(await listWatchlists("lists")).toEqual([]);
   });
   it("lists the shared ones first, then the caller's own", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     const watchlists = await listWatchlists("documents");
 
@@ -131,8 +131,8 @@ describe("listWatchlists", () => {
     expect(shared.indexOf(false)).toBeGreaterThan(shared.lastIndexOf(true));
   });
 
-  it("lets staff change only their own", async () => {
-    signInAs("staff");
+  it("lets a curator change only their own", async () => {
+    signInAs("curator");
 
     const watchlists = await listWatchlists("documents");
 
@@ -161,7 +161,7 @@ describe("listWatchlists", () => {
 
 describe("changing a shared watchlist", () => {
   it("is refused without the permission", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const [shared] = (await listWatchlists("documents")).filter(isShared);
     if (shared === undefined) {
       throw new Error("No shared watchlist in the fixtures");
@@ -190,7 +190,7 @@ describe("changing a shared watchlist", () => {
       filter: { cancelled: "Yes" },
     });
 
-    signInAs("staff");
+    signInAs("curator");
     const seen = await listWatchlists("documents");
 
     expect(seen.some((watchlist) => watchlist.id === created.id)).toBe(true);
@@ -217,7 +217,7 @@ describe("saving a filter twice", () => {
   });
 
   it("is refused when a shared watchlist holds the filter", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     expect(
       await statusOf(
@@ -247,7 +247,7 @@ describe("saving a filter twice", () => {
   });
 
   it("is refused when a change would make it the same as another", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const [own] = (await listWatchlists("documents")).filter((watchlist) => !isShared(watchlist));
     if (own === undefined) {
       throw new Error("No personal watchlist in the fixtures");
@@ -259,7 +259,7 @@ describe("saving a filter twice", () => {
 
 describe("sharing a personal watchlist", () => {
   it("is refused without the permission", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const [own] = (await listWatchlists("documents")).filter((watchlist) => !isShared(watchlist));
     if (own === undefined) {
       throw new Error("No personal watchlist in the fixtures");
@@ -279,7 +279,7 @@ describe("sharing a personal watchlist", () => {
 
     const shared = await updateWatchlist(created.id, { audience: { kind: "everyone" } });
 
-    signInAs("staff");
+    signInAs("curator");
     const seen = await listWatchlists("documents");
 
     expect(shared.audience).toEqual({ kind: "everyone" });

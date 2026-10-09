@@ -12,8 +12,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, FileUp, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useId, useRef, useState } from "react";
-import type { ProposalCheck, ProposalDraft, ProposalReport } from "@/api/proposals";
-import { checkProposalItems, getProposalSettings, submitProposal } from "@/api/proposals";
+import type {
+  ProposalCheck,
+  ProposalDraft,
+  ProposalReport,
+  RateLimitStatus,
+} from "@/api/proposals";
+import {
+  checkProposalItems,
+  getProposalSettings,
+  getRateLimitStatus,
+  submitProposal,
+} from "@/api/proposals";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
 import { StepIndicator } from "@/components/dialogs/step-indicator";
 import { StatusBadge, ToneBadge } from "@/components/status-badge";
@@ -140,10 +150,15 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
   const { data: settings } = useQuery({
     queryKey: ["proposals", "settings"],
     queryFn: getProposalSettings,
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: 60_000,
   });
-  const canDecide = hasPermission(session, "request.decide");
-  const limit = canDecide ? Number.POSITIVE_INFINITY : (settings?.maxAtOnce ?? 0);
+  const { data: rateLimit } = useQuery<RateLimitStatus>({
+    queryKey: ["proposals", "rate-limit"],
+    queryFn: getRateLimitStatus,
+    staleTime: 60_000,
+    refetchInterval: 60_000, // Refresh when the library's calendar day changes.
+  });
+  const limit = settings === undefined ? 0 : (settings.maxAtOnce ?? Number.POSITIVE_INFINITY);
 
   const submit = useMutation({
     mutationFn: submitProposal,
@@ -155,6 +170,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
       // What waits for a decision now includes these.
       void queryClient.invalidateQueries({ queryKey: [...proposalsQueryKey, "list"] });
       void queryClient.invalidateQueries({ queryKey: [...referenceQueryKey, "batches"] });
+      void queryClient.invalidateQueries({ queryKey: ["proposals", "rate-limit"] });
     },
   });
 
@@ -248,6 +264,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           items={items}
           limit={limit}
           canDetectTypes={settings?.canDetectTypes ?? false}
+          rateLimit={rateLimit}
           notice={notice}
           onAdd={add}
           onChange={change}
@@ -262,6 +279,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           session={session}
           isSubmitting={submit.isPending}
           isFailed={submit.isError}
+          rateLimit={rateLimit}
           onBack={() => setStep("Items")}
           onSubmit={(details) => {
             const accepted = items.flatMap(({ type, value, check, reason, source }) =>
@@ -301,6 +319,7 @@ interface ItemsStepProps {
   items: DraftItem[];
   limit: number;
   canDetectTypes: boolean;
+  rateLimit: RateLimitStatus | undefined;
   notice: string | null;
   onAdd: (lines: ProposalLine[], source: string) => void;
   onChange: (key: string, patch: Partial<DraftItem>) => void;
@@ -313,6 +332,7 @@ function ItemsStep({
   items,
   limit,
   canDetectTypes,
+  rateLimit,
   notice,
   onAdd,
   onChange,
@@ -332,6 +352,8 @@ function ItemsStep({
       : hasSubmittable
         ? null
         : "Nothing to submit yet";
+
+  const dailyRemaining = rateLimit?.perDay ?? null;
 
   return (
     <>
@@ -356,6 +378,18 @@ function ItemsStep({
         {notice !== null && (
           <StatusNote tone="amber" title="Not everything was added" className="mt-3">
             {notice}
+          </StatusNote>
+        )}
+
+        {dailyRemaining === 0 && (
+          <StatusNote tone="red" title="Daily proposal limit reached" className="mt-3">
+            No more proposals today.
+          </StatusNote>
+        )}
+
+        {dailyRemaining !== null && dailyRemaining > 0 && dailyRemaining <= 10 && (
+          <StatusNote tone="amber" title="Approaching daily limit" className="mt-3">
+            {dailyRemaining} left today.
           </StatusNote>
         )}
 
@@ -751,6 +785,7 @@ interface DetailsStepProps {
   session: Session;
   isSubmitting: boolean;
   isFailed: boolean;
+  rateLimit: RateLimitStatus | undefined;
   onBack: () => void;
   onSubmit: (details: Details) => void;
 }
@@ -760,6 +795,7 @@ function DetailsStep({
   session,
   isSubmitting,
   isFailed,
+  rateLimit,
   onBack,
   onSubmit,
 }: DetailsStepProps) {
@@ -880,6 +916,13 @@ function DetailsStep({
         <p className="text-xs text-muted-foreground">
           {newCount} to propose · {joinCount} to join{skipCount > 0 && ` · ${skipCount} skipped`}
         </p>
+
+        {rateLimit?.perDay !== null && rateLimit?.perDay !== undefined && (
+          <p className="text-xs text-muted-foreground">
+            Daily proposal limit · {rateLimit.perDay} left today
+          </p>
+        )}
+
         {isFailed && (
           <p className="text-xs text-destructive">
             The proposal could not be submitted. Try again.

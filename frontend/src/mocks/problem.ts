@@ -10,6 +10,7 @@ const problemsOf = {
   404: { code: "not_found", title: "Not found" },
   409: { code: "conflict", title: "Conflict" },
   422: { code: "invalid", title: "Not accepted" },
+  429: { code: "rate_limited", title: "Too many requests" },
 } as const satisfies Record<Refusal["status"], { code: string; title: string }>;
 
 interface FieldError {

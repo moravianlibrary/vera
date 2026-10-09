@@ -22,6 +22,10 @@ export const roleSchema = z.object({
   // Came with VERA; editable all the same (decided 2026-09-26).
   isShipped: z.boolean(),
   grants: z.array(grantSchema),
+  // Items per submission; null means unlimited.
+  proposalBatchLimit: z.number().int().nonnegative().nullable(),
+  // Per-user accepted proposals per library calendar day; null means unlimited.
+  proposalDailyLimit: z.number().int().nonnegative().nullable(),
 });
 export type Role = z.infer<typeof roleSchema>;
 
@@ -224,9 +228,10 @@ export function managersOf<User extends RoleHolder>(
 }
 
 // A role includes another when it holds every grant of it at least as wide. Only the nearest are
-// named: admin includes curator and dig-curator, not also staff and reader under them.
+// named: admin includes dig-curator, which includes curator, rather than repeating
+// staff and reader below them.
 export function includedRolesOf(roles: readonly Role[], role: Role): Role[] {
-  const covers = (wider: Role, narrower: Role) =>
+  const coversOrEquals = (wider: Role, narrower: Role) =>
     wider.id !== narrower.id &&
     narrower.grants.length > 0 &&
     narrower.grants.every((grant) =>
@@ -236,6 +241,8 @@ export function includedRolesOf(roles: readonly Role[], role: Role): Role[] {
           (held.scope === grant.scope || rankOf(held.scope) > rankOf(grant.scope)),
       ),
     );
+  const covers = (wider: Role, narrower: Role) =>
+    coversOrEquals(wider, narrower) && !coversOrEquals(narrower, wider);
   const included = roles.filter((other) => covers(role, other));
   return included.filter(
     (other) => !included.some((between) => between.id !== other.id && covers(between, other)),
