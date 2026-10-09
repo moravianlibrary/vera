@@ -32,6 +32,8 @@ export interface GroupLevel<Row> {
   emptyText?: (key: string) => ReactNode;
   // A click on the header opens the group's own record, by its key.
   isOpenable?: boolean;
+  // A view may give each hierarchy level its own visual surface.
+  rowClassName?: string;
 }
 
 export interface DataTableProps<Row> {
@@ -190,6 +192,7 @@ export function DataTable<Row>({
                   "rounded-md px-2 py-1.5 text-xs",
                   headerShades[group.depth] ?? headerShades[1],
                   level.isOpenable === true && "cursor-pointer",
+                  level.rowClassName,
                   group.key === focusedId && "ring-1 ring-ring",
                 )}
                 onClick={
@@ -265,6 +268,7 @@ export function DataTable<Row>({
                 "scroll-mt-4 border-t",
                 headerShades[group.depth] ?? headerShades[1],
                 isOpenable && "cursor-pointer hover:bg-muted",
+                level?.rowClassName,
                 group.key === focusedId && "bg-tone-blue",
               )}
               onClick={isOpenable ? (event) => openFrom(group.key, event.target) : undefined}

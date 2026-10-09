@@ -79,7 +79,12 @@ export const pluginsView: ViewDefinition<PluginQuery> = {
   isSameQuery: (first, second) =>
     toPluginSearchParams(first).toString() === toPluginSearchParams(second).toString(),
   fields: [
-    { key: "kinds", label: "Type", field: vocabulary(pluginKinds, pluginKindLabels) },
+    {
+      key: "kinds",
+      label: "Type",
+      field: vocabulary(pluginKinds, pluginKindLabels),
+      isQuick: true,
+    },
     {
       key: "states",
       label: "State",

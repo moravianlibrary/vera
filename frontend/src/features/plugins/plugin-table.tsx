@@ -146,6 +146,9 @@ export function instanceColumns({
         implementation !== undefined && implementation.versions[0]?.version !== instance.version;
       return (
         <div className={indent}>
+          <div className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
+            Instance
+          </div>
           <div className="font-medium">{instance.name}</div>
           {(isNarrow || isBehind) && (
             <div className="text-xs text-muted-foreground">
@@ -226,10 +229,15 @@ export function useInstanceGroups({
       keyOf: (instance) => instance.kind,
       keysWithin: () => pluginKinds.filter((kind) => implementationsOf(kind).length > 0),
       isCollapsible: true,
+      rowClassName:
+        "border-l-4 border-l-primary bg-primary/10 py-3 hover:bg-primary/15 [&_td]:py-3",
       header: (key, rows) => {
         const kind = kindOf(key);
         return kind === undefined ? null : (
           <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span className="text-[0.625rem] font-semibold tracking-wider text-primary uppercase">
+              Type
+            </span>
             <KindBadge kind={kind} />
             <span className="text-xs text-muted-foreground">
               {tier === "phone" ? "" : `${pluginKindJobs[kind]} · `}
@@ -246,6 +254,7 @@ export function useInstanceGroups({
         implementationsOf(kind ?? "").map((implementation) => implementation.id),
       isCollapsible: false,
       isOpenable: true,
+      rowClassName: "border-l-4 border-l-border bg-secondary py-3 hover:bg-muted/70 [&_td]:py-3",
       emptyText: () =>
         isFiltered
           ? "No instance in this state."
@@ -258,7 +267,7 @@ export function useInstanceGroups({
             isPhone={tier === "phone"}
             action={
               onNewInstance === undefined || tier === "phone" ? undefined : (
-                <Button size="sm" variant="outline" onClick={() => onNewInstance(implementation)}>
+                <Button size="sm" onClick={() => onNewInstance(implementation)}>
                   New instance…
                 </Button>
               )
@@ -283,6 +292,9 @@ function ImplementationHeader({
   return (
     <div className={cn("flex items-start gap-3", isPhone ? "pl-1" : "pl-5")}>
       <div className="min-w-0 flex-1">
+        <div className="mb-0.5 text-[0.625rem] font-semibold tracking-wider text-foreground uppercase">
+          Plugin
+        </div>
         <div className={cn("flex flex-wrap items-baseline gap-x-2", !isPhone && "mb-1")}>
           <span className="font-semibold">{implementation.name}</span>
           <span className="font-mono text-xs text-muted-foreground">v{newest?.version}</span>
