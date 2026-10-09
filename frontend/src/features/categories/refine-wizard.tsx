@@ -156,8 +156,8 @@ export function RefineWizard({
             </span>
           </DetailRow>
           {impact?.shares.map((share) => (
-            <DetailRow key={share.owner.id}>
-              {share.owner.name}
+            <DetailRow key={share.mix.id}>
+              {share.mix.name}
               {share.trackerCount > 0 && (
                 <Muted> · and {plural(share.trackerCount, "intention")} tracking it</Muted>
               )}

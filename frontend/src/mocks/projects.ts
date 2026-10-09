@@ -50,7 +50,12 @@ import { plural } from "@/lib/plural";
 import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@/lib/value-range";
 import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
-import { countingData, nextId, overallIntention } from "@/mocks/intentions";
+import {
+  countingData,
+  nextId,
+  overallIntention,
+  preserveIntentionArchive,
+} from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { writeLog } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
@@ -467,7 +472,8 @@ export function createProject(session: Session, draft: ProjectDraft): Outcome<Pr
       ),
       description: "",
       scopeCategoryId: null,
-      tracksMixOf: overall.id,
+      tracksMixOf: null,
+      distributionId: null,
       isOverall: false,
       templateId: null,
       archived: null,
@@ -743,7 +749,7 @@ export function rejectProject(
   replaceProject(rejected);
   // Its intention stays, archived, so what it counted can still be read (intentions.md §3.4).
   const intention = intentionOf(project);
-  replaceIntention({
+  preserveIntentionArchive({
     ...intention,
     archived: intention.archived ?? { actor: { kind: "user", userId: session.user.id }, at: now },
   });

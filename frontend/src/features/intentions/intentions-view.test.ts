@@ -48,6 +48,9 @@ const row = (value: Intention, overrides: Partial<IntentionRow> = {}): Intention
   project: null,
   scope: null,
   mix: {
+    id: "d1",
+    name: "House mix",
+    revision: 4,
     owner: { id: "overall", name: "House mix", isOverall: true },
     isOwn: false,
     trackerCount: 0,
@@ -75,6 +78,9 @@ const rows = [
   row(intention("watch", { targetPages: null }), { outOfBandCount: 2 }),
   row(intention("house", { targetPages: null, isOverall: true, tracksMixOf: null }), {
     mix: {
+      id: "d1",
+      name: "House mix",
+      revision: 4,
       owner: { id: "house", name: "House mix", isOverall: true },
       isOwn: true,
       trackerCount: 3,
@@ -97,9 +103,13 @@ describe("columnSectionsOf", () => {
     expect(targets.archived.map((value) => value.intention.id)).toEqual(["gone"]);
   });
 
-  it("heads Tracking with Overall", () => {
+  it("shows every intention in Output, with Overall first", () => {
     expect(columnSectionsOf(rows, "track").running.map((value) => value.intention.id)).toEqual([
       "house",
+      "late",
+      "open-far",
+      "open-near",
+      "soon",
       "watch",
     ]);
   });
@@ -111,7 +121,13 @@ describe("tileOf", () => {
       tileOf(columnSectionsOf(rows, column), column).map((part) => `${part.count} ${part.label}`);
 
     expect(parts("target")).toEqual(["4 running", "1 upcoming", "1 on pace", "1 behind pace"]);
-    expect(parts("track")).toEqual(["2 running", "1 out of band"]);
+    expect(parts("track")).toEqual([
+      "6 running",
+      "1 upcoming",
+      "1 behind pace",
+      "1 on pace",
+      "1 out of band",
+    ]);
   });
 });
 
@@ -125,12 +141,10 @@ describe("verdictBadgeOf", () => {
 });
 
 describe("mixLabelOf", () => {
-  it("names the mix by its scope, its owner, or as its own", () => {
-    expect(mixLabelOf(rows[0])).toBe("House mix's mix");
-    expect(mixLabelOf(rows[8])).toBe("house");
-    expect(mixLabelOf(row(intention("x"), { scope: { id: "c2", path: ["Periodicals"] } }))).toBe(
-      "Mix within Periodicals",
-    );
+  it("names the selected reusable mix", () => {
+    expect(mixLabelOf(rows[0])).toBe("House mix");
+    expect(mixLabelOf(rows[8])).toBe("House mix");
+    expect(mixLabelOf(row(intention("x"), { mix: null }))).toBe("No mix");
   });
 });
 

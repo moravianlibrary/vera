@@ -22,13 +22,12 @@ import { MixSetCard } from "@/components/mix-set-card";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { categoryPathOf, isInSubtree, isOutsideScope } from "@/domain/categories";
-import type { Category, Intention, Project, Session } from "@/domain/entities";
-import { scopeOfIntention } from "@/domain/intentions";
+import type { Category } from "@/domain/entities";
 import { can } from "@/domain/permissions";
 import { DetachDialog, ProportionsDialog } from "@/features/intentions/mix-dialogs";
 import { intentionMixHrefOf } from "@/features/intentions/mix-view";
 import { useIntentionMixQuery } from "@/features/intentions/use-intentions-query";
-import { useCategoriesQuery, useProjectsQuery } from "@/hooks/use-reference-query";
+import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
 import { formatPercent } from "@/lib/format-number";
@@ -36,12 +35,6 @@ import { plural } from "@/lib/plural";
 
 // The mix is edited on its owner: `intention.edit_overall` for Overall's, else `intention.edit`
 // on it (§2.5).
-function canEditMixOf(session: Session, owner: Intention, projects: readonly Project[]) {
-  return owner.isOverall
-    ? can(session, "intention.edit_overall")
-    : can(session, "intention.edit", scopeOfIntention(owner, projects));
-}
-
 interface Notice {
   title: string;
   text: string;
@@ -51,8 +44,7 @@ export function IntentionMixPage() {
   const { intentionId = null } = useParams();
   const [params, setParams] = useSearchParams();
   const { data: detail } = useIntentionMixQuery(intentionId);
-  const { data: categories } = useCategoriesQuery();
-  const { data: projects = [] } = useProjectsQuery();
+  const { data: liveCategories } = useCategoriesQuery();
   const { data: session } = useSessionQuery();
   const [isRootOpen, setIsRootOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -77,11 +69,12 @@ export function IntentionMixPage() {
     );
   }
 
-  if (detail === undefined || categories === undefined || session === undefined) {
+  if (detail === undefined || liveCategories === undefined || session === undefined) {
     return <PageHeader title="Mix" breadcrumb={backToIndex} />;
   }
 
   const { mix, trackers } = detail;
+  const categories = detail.archivedCategories ?? liveCategories;
   const { intention, owner } = mix;
   const isTracker = intention.id !== owner.id;
   const asked = params.get("c");
@@ -91,33 +84,41 @@ export function IntentionMixPage() {
     setNotice(null);
     setParams(id === null ? {} : { c: id });
   };
-  const canEditOwner = canEditMixOf(session, owner, projects);
-  const canEditIntention = can(session, "intention.edit", scopeOfIntention(intention, projects));
+  const canEditOwner = false;
+  const canEditIntention = false;
   const scope = categories.find((category) => category.id === intention.scopeCategoryId);
-  const headerActions: ViewAction[] = isTracker
-    ? [
-        ...(canEditOwner
-          ? [
-              {
-                id: "owner",
-                label: `Edit ${owner.name}'s mix`,
-                href: intentionMixHrefOf(owner.id, categoryId),
-                isInMenu,
-              },
-            ]
-          : []),
-        ...(canEditIntention
-          ? [
-              {
-                id: "detach",
-                label: `Detach ${intention.name}`,
-                onSelect: () => setDialog("detach"),
-                isInMenu,
-              },
-            ]
-          : []),
-      ]
-    : [];
+  const headerActions: ViewAction[] = [
+    {
+      id: "shared-mix",
+      label: can(session, "mix.edit") ? "Edit shared mix" : "View shared mix",
+      href: `/mixes/${intention.distributionId}`,
+      isInMenu,
+    },
+    ...(isTracker
+      ? [
+          ...(canEditOwner
+            ? [
+                {
+                  id: "owner",
+                  label: `Edit ${owner.name}'s mix`,
+                  href: intentionMixHrefOf(owner.id, categoryId),
+                  isInMenu,
+                },
+              ]
+            : []),
+          ...(canEditIntention
+            ? [
+                {
+                  id: "detach",
+                  label: `Detach ${intention.name}`,
+                  onSelect: () => setDialog("detach"),
+                  isInMenu,
+                },
+              ]
+            : []),
+        ]
+      : []),
+  ];
   const name =
     categoryId === null
       ? "All categories"
@@ -174,9 +175,7 @@ export function IntentionMixPage() {
           categories={categories}
           detail={detail}
           parentId={categoryId}
-          canKeepOldFor={(tracker) =>
-            can(session, "intention.edit", scopeOfIntention(tracker, projects))
-          }
+          canKeepOldFor={() => can(session, "intention.edit")}
           onSaved={(saved, keptCount) =>
             setNotice({
               title: "Saved",

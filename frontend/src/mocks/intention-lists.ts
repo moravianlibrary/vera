@@ -20,7 +20,6 @@ import {
   countsTowardsOf,
   isInIntentionScope,
   listMixOf,
-  mixOwnerOf,
   mixReadingOf,
 } from "@/domain/intentions";
 import { isInPool } from "@/domain/lists";
@@ -79,7 +78,14 @@ export function listMixFor(
   targetPages: number | null,
   allocation: Readonly<Record<string, number>> | null,
 ): ListMix {
-  const distribution = distributionOf(mixOwnerOf(intention, database.intentions));
+  if (intention.distributionId === null)
+    return {
+      intention: { id: intention.id, name: intention.name },
+      scope: categoryName(intention.scopeCategoryId),
+      isAllocation: false,
+      rows: [],
+    };
+  const distribution = distributionOf(intention);
   return {
     intention: { id: intention.id, name: intention.name },
     scope: categoryName(intention.scopeCategoryId),
@@ -97,9 +103,27 @@ export function listMixFor(
 // Read against what it was generated with, with the allocation it accepted; else Overall.
 export function savedListMixOf(list: DigitizationList): ListMix {
   const generatedWith = generatedWithOf(list);
+  const basedOn = generatedWith ?? overallIntention();
+  const captured = list.generated;
+  const selected =
+    captured === null || captured === undefined
+      ? basedOn
+      : {
+          ...basedOn,
+          distributionId: captured.mixId === undefined ? basedOn.distributionId : captured.mixId,
+          mixRevision:
+            captured.mixRevision !== null &&
+            database.distributions.some(
+              (mix) =>
+                mix.id === (captured.mixId ?? basedOn.distributionId) &&
+                mix.revisions.some((version) => version.revision === captured.mixRevision),
+            )
+              ? captured.mixRevision
+              : null,
+        };
   return listMixFor(
     countingMembersOf(list.id),
-    generatedWith ?? overallIntention(),
+    selected,
     list.targetPages,
     generatedWith === null ? null : (list.generated?.allocation ?? null),
   );
@@ -201,10 +225,13 @@ export function previewCorrection(
   if (intention === undefined) {
     return { refusal: { status: 404, message: "No intention to correct towards" } };
   }
+  if (intention.distributionId === null) {
+    return { refusal: { status: 422, message: "This intention has no mix to correct towards" } };
+  }
 
   const data = countingData();
   const counted = countIntention(intention, data);
-  const distribution = distributionOf(mixOwnerOf(intention, database.intentions));
+  const distribution = distributionOf(intention);
   const reading = mixReadingOf(intention, distribution, counted, data);
   const pool = database.iterations.filter(
     (iteration) => isInPool(iteration) && isInIntentionScope(intention, iteration, data.categories),

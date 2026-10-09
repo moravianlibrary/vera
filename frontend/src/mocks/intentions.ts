@@ -1,6 +1,6 @@
-// What the server does for Intentions (intentions.md): keep intentions to the caller's reach,
-// count each one by the rules of `domain/intentions.ts` against the lists and iterations as they
-// are now, and resolve whose mix each reads. `intention.read@project` reaches an intention a
+// What the server does for Intentions: keep intentions to the caller's reach, count each one by
+// `domain/intentions.ts`, read its optional mix, and preserve its displayed result at Archive.
+// `intention.read@project` reaches an intention a
 // project the caller is on funds; every other intention only `any` reaches (permissions.md §3).
 // The acts keep the mix rules of §2: an intention tracks only one that owns its mix, so no chain
 // is ever stored; an owner others track switches to tracking only by moving them with it; a copy
@@ -26,7 +26,7 @@ import type {
   MixChoice,
   MixRowView,
 } from "@/api/intentions";
-import { categoryPathOf } from "@/domain/categories";
+import { categoryPathOf, isInSubtree, leafCategoriesOf } from "@/domain/categories";
 import { effectivePageCount } from "@/domain/documents";
 import type {
   Distribution,
@@ -56,6 +56,7 @@ import { can } from "@/domain/permissions";
 import { daysUntil } from "@/domain/projects";
 import { dayOf } from "@/lib/value-range";
 import { database } from "@/mocks/database";
+import { mixTreeOf } from "@/mocks/mixes";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
 
@@ -98,7 +99,9 @@ export function countingData(): CountingData {
 }
 
 // The mix the intention reads, which is its owner's.
-export function distributionOf(intention: Pick<Intention, "distributionId">): Distribution {
+export function distributionOf(
+  intention: Pick<Intention, "distributionId"> & { mixRevision?: number | null },
+): Distribution {
   const distribution = database.distributions.find(
     (candidate) => candidate.id === intention.distributionId,
   );
@@ -106,7 +109,18 @@ export function distributionOf(intention: Pick<Intention, "distributionId">): Di
     throw new Error(`No mix ${intention.distributionId}`);
   }
 
-  return distribution;
+  if (intention.mixRevision === undefined || intention.mixRevision === null) {
+    return distribution;
+  }
+
+  const revision = distribution.revisions.find(
+    (candidate) => candidate.revision === intention.mixRevision,
+  );
+  if (revision === undefined) {
+    throw new Error(`No revision ${intention.mixRevision} of mix ${distribution.id}`);
+  }
+
+  return { ...distribution, shares: revision.shares, revision: revision.revision };
 }
 
 export function overallIntention(): Intention {
@@ -118,9 +132,14 @@ export function overallIntention(): Intention {
   return overall;
 }
 
-function mixOf(intention: Intention): IntentionMix {
+function mixOf(intention: Intention): IntentionMix | null {
+  if (intention.distributionId === null) return null;
   const owner = mixOwnerOf(intention, database.intentions);
+  const distribution = distributionOf(intention);
   return {
+    id: distribution.id,
+    name: distribution.name,
+    revision: distribution.revision,
     owner: { id: owner.id, name: owner.name, isOverall: owner.isOverall },
     isOwn: owner === intention,
     trackerCount: trackersOf(intention, database.intentions).length,
@@ -154,11 +173,12 @@ function listsOf(planned: readonly Iteration[]): IntentionList[] {
   });
 }
 
-function rowOf(intention: Intention): IntentionRow {
+function liveRowOf(intention: Intention): IntentionRow {
   const data = countingData();
   const counted = countIntention(intention, data);
-  const distribution = distributionOf(mixOwnerOf(intention, database.intentions));
-  const reading = mixReadingOf(intention, distribution, counted, data);
+  const distribution = intention.distributionId === null ? null : distributionOf(intention);
+  const reading =
+    distribution === null ? null : mixReadingOf(intention, distribution, counted, data);
   const target = {
     intention,
     plannedPages: counted.plannedPages,
@@ -172,17 +192,53 @@ function rowOf(intention: Intention): IntentionRow {
     funding.kind === "project"
       ? database.projects.find((candidate) => candidate.id === funding.projectId)
       : undefined;
-  const mixRows: MixRowView[] = reading.rows.map((row) => ({
-    ...row,
-    name: categoryName(row.categoryId),
-  }));
+  const outputRows = mixCategoriesOf(database.categories, intention.scopeCategoryId);
+  const sumPages = (items: readonly Iteration[], categoryId: string) =>
+    items
+      .filter((item) => isInSubtree(database.categories, item.categoryId, categoryId))
+      .reduce((sum, item) => sum + (pagesOf(item) ?? 0), 0);
+  const mixRows: MixRowView[] =
+    reading === null
+      ? outputRows.map((category) => ({
+          categoryId: category.id,
+          name: category.name,
+          intended: null,
+          planned:
+            counted.plannedPages === 0
+              ? null
+              : (100 * sumPages(counted.planned, category.id)) / counted.plannedPages,
+          output:
+            counted.outputPages === 0
+              ? null
+              : (100 * sumPages(counted.output, category.id)) / counted.outputPages,
+          outputPages: sumPages(counted.output, category.id),
+          drift: null,
+          flag: null,
+        }))
+      : reading.rows.map((row) => ({ ...row, name: categoryName(row.categoryId) }));
   const fill: FillRowView[] =
     intention.targetPages === null
       ? []
-      : fillOf(intention, distribution, counted, data).map((row) => ({
-          ...row,
-          path: pathWithin(scopeCategoryId, row.categoryId),
-        }));
+      : distribution === null
+        ? leafCategoriesOf(database.categories)
+            .filter(
+              (leaf) =>
+                intention.scopeCategoryId === null ||
+                isInSubtree(database.categories, leaf.id, intention.scopeCategoryId),
+            )
+            .map((leaf) => ({
+              categoryId: leaf.id,
+              path: pathWithin(scopeCategoryId, leaf.id),
+              share: null,
+              targetPages: null,
+              plannedPages: sumPages(counted.planned, leaf.id),
+              deliveredPages: sumPages(counted.delivered, leaf.id),
+              isShort: false,
+            }))
+        : fillOf(intention, distribution, counted, data).map((row) => ({
+            ...row,
+            path: pathWithin(scopeCategoryId, row.categoryId),
+          }));
   return {
     intention,
     state,
@@ -206,11 +262,38 @@ function rowOf(intention: Intention): IntentionRow {
         : { id: scopeCategoryId, path: pathWithin(null, scopeCategoryId) },
     mix: mixOf(intention),
     mixRows,
-    unallocated: reading.unallocated,
-    outOfBandCount: reading.outOfBandCount,
+    unallocated: reading?.unallocated ?? 0,
+    outOfBandCount: reading?.outOfBandCount ?? 0,
     fill,
     lists: listsOf(counted.planned),
   };
+}
+
+function rowOf(intention: Intention): IntentionRow {
+  if (intention.archived === null) return liveRowOf(intention);
+  const preserved = database.archivedIntentionRows[intention.id];
+  if (preserved !== undefined) return preserved;
+  // Seeded archives get a capture on first read. Subsequent work cannot change that capture.
+  const captured = structuredClone(liveRowOf(intention));
+  database.archivedIntentionRows[intention.id] = captured;
+  if (intention.distributionId !== null)
+    database.archivedIntentionMixes[intention.id] = structuredClone(mixTreeOf(intention));
+  database.archivedIntentionCategories[intention.id] = structuredClone(database.categories);
+  return captured;
+}
+
+export function preserveIntentionArchive(intention: Intention): IntentionRow {
+  const pinned = {
+    ...intention,
+    mixRevision: intention.distributionId === null ? null : distributionOf(intention).revision,
+  };
+  replaceIntention(pinned);
+  const captured = structuredClone(liveRowOf(pinned));
+  database.archivedIntentionRows[pinned.id] = captured;
+  if (pinned.distributionId !== null)
+    database.archivedIntentionMixes[pinned.id] = structuredClone(mixTreeOf(pinned));
+  database.archivedIntentionCategories[pinned.id] = structuredClone(database.categories);
+  return captured;
 }
 
 function templateRowOf(template: IntentionTemplate): IntentionTemplateRow {
@@ -267,8 +350,19 @@ export function replaceIntention(intention: Intention): void {
 
 // The mix a choice would read, without storing anything.
 function mixChosen(intention: Intention | null, choice: MixChoice): Distribution | null {
+  if (choice.kind === "none") return null;
+  if (choice.kind === "primary")
+    return database.distributions.find((mix) => mix.isPrimary && mix.archivedAt === null) ?? null;
+  if (choice.kind === "use") {
+    const selected = database.distributions.find((mix) => mix.id === choice.mixId);
+    return selected === undefined
+      ? null
+      : distributionOf({ distributionId: selected.id, mixRevision: choice.revision });
+  }
   if (choice.kind === "keep") {
-    return intention === null ? null : distributionOf(mixOwnerOf(intention, database.intentions));
+    return intention?.distributionId === null || intention === null
+      ? null
+      : distributionOf(intention);
   }
 
   const owner = ownerFor(choice.kind === "track" ? choice.ownerId : choice.fromId);
@@ -300,7 +394,7 @@ export function previewIntention(
     countingData(),
   );
   const before =
-    intention === null ? null : distributionOf(mixOwnerOf(intention, database.intentions));
+    intention === null || intention.distributionId === null ? null : distributionOf(intention);
   const after = mixChosen(intention, request.mix);
   const shareOf = (distribution: Distribution | null, categoryId: string) =>
     distribution === null
@@ -357,7 +451,9 @@ function nameRefusal(name: string, intentionId: string | null): Refusal | null {
 // An intention another can track: one that owns its mix (§2, no chains).
 function ownerFor(ownerId: string): Intention | null {
   const owner = database.intentions.find((candidate) => candidate.id === ownerId);
-  return owner === undefined || owner.tracksMixOf !== null ? null : owner;
+  return owner === undefined || owner.tracksMixOf !== null || owner.distributionId === null
+    ? null
+    : owner;
 }
 
 const chainRefusal: Refusal = {
@@ -372,14 +468,21 @@ export function nextId(prefix: string, ids: readonly string[]): string {
 }
 
 export function copyMixOf(owner: Intention, ownerId: string): Distribution {
+  const source = distributionOf(owner);
   const copy: Distribution = {
     id: nextId(
       "d",
       database.distributions.map((distribution) => distribution.id),
     ),
     ownerId,
-    shares: { ...distributionOf(owner).shares },
+    name: `${owner.name} copy`,
+    isPrimary: false,
+    archivedAt: null,
+    shares: { ...source.shares },
     revision: 1,
+    revisions: [
+      { revision: 1, shares: { ...source.shares }, at: new Date().toISOString(), label: null },
+    ],
   };
   database.distributions.push(copy);
   return copy;
@@ -392,8 +495,30 @@ function applyMix(
   intention: Intention,
   draft: IntentionDraft,
   isNew: boolean,
-): Outcome<Pick<Intention, "tracksMixOf" | "distributionId">> {
+): Outcome<Pick<Intention, "tracksMixOf" | "distributionId" | "mixRevision">> {
   const { mix } = draft;
+  if (mix.kind === "none") {
+    return { value: { tracksMixOf: null, distributionId: null, mixRevision: null } };
+  }
+  if (mix.kind === "primary") {
+    const selected = database.distributions.find(
+      (candidate) => candidate.isPrimary && candidate.archivedAt === null,
+    );
+    return selected === undefined
+      ? { refusal: { status: 409, message: "No active Primary mix" } }
+      : { value: { tracksMixOf: null, distributionId: selected.id, mixRevision: null } };
+  }
+  if (mix.kind === "use") {
+    const selected = database.distributions.find((candidate) => candidate.id === mix.mixId);
+    if (selected === undefined || selected.archivedAt !== null)
+      return { refusal: { status: 422, message: "Choose an active mix" } };
+    if (
+      mix.revision !== null &&
+      !selected.revisions.some((candidate) => candidate.revision === mix.revision)
+    )
+      return { refusal: { status: 422, message: "Choose a saved revision" } };
+    return { value: { tracksMixOf: null, distributionId: mix.mixId, mixRevision: mix.revision } };
+  }
   if (mix.kind === "keep") {
     return !isNew && intention.tracksMixOf === null
       ? { value: { tracksMixOf: null, distributionId: intention.distributionId } }
@@ -452,7 +577,7 @@ function applyMix(
 
 const overallShapeRefusal: Refusal = {
   status: 422,
-  message: "The Overall intention counts everything, with no target or end, and owns its mix",
+  message: "Overall counts everything, with no target or end",
 };
 
 export function createIntention(session: Session, draft: IntentionDraft): Outcome<IntentionRow> {
@@ -498,6 +623,14 @@ export function saveIntention(
   }
 
   const intention = found.value;
+  if (intention.archived !== null) {
+    return {
+      refusal: {
+        status: 409,
+        message: "An archived intention is preserved; copy it to make changes",
+      },
+    };
+  }
   if (draft.countsFrom !== intention.countsFrom) {
     return {
       refusal: {
@@ -521,8 +654,7 @@ export function saveIntention(
     draft.funding.kind === "any" &&
     draft.scopeCategoryId === null &&
     draft.targetPages === null &&
-    draft.endsOn === null &&
-    draft.mix.kind === "keep";
+    draft.endsOn === null;
   if (intention.isOverall && !isOverallKept) {
     return { refusal: overallShapeRefusal };
   }
@@ -573,8 +705,7 @@ export function archiveIntention(session: Session, intentionId: string): Outcome
       at: new Date().toISOString(),
     },
   };
-  replaceIntention(archived);
-  return { value: rowOf(archived) };
+  return { value: preserveIntentionArchive(archived) };
 }
 
 export function unarchiveIntention(session: Session, intentionId: string): Outcome<IntentionRow> {
@@ -587,9 +718,9 @@ export function unarchiveIntention(session: Session, intentionId: string): Outco
     return { refusal: projectRefusal };
   }
 
-  const unarchived: Intention = { ...found.value, archived: null };
-  replaceIntention(unarchived);
-  return { value: rowOf(unarchived) };
+  return {
+    refusal: { status: 409, message: "An archive is preserved; create a copy for new work" },
+  };
 }
 
 // One others track stays: ownership of a mix never moves on its own (concepts.md *Mix*, decided
@@ -601,6 +732,9 @@ function deletableFor(session: Session, intentionId: string): Outcome<Intention>
   }
 
   const intention = found.value;
+  if (intention.archived !== null) {
+    return { refusal: { status: 409, message: "An archived intention is preserved" } };
+  }
   if (intention.isOverall) {
     return { refusal: overallRefusal };
   }
@@ -662,7 +796,42 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
   }
 
   const scope = { ...draft, countsFrom: today(), endsOn: null };
-  return ownerFor(draft.tracksMixOf) === null ? chainRefusal : scopeRefusal(session, scope);
+  if (draft.mix?.kind === "use") {
+    const chosen = draft.mix;
+    const selected = database.distributions.find(
+      (mix) => mix.id === chosen.mixId && mix.archivedAt === null,
+    );
+    if (
+      selected === undefined ||
+      (chosen.revision !== null &&
+        !selected.revisions.some((version) => version.revision === chosen.revision))
+    )
+      return { status: 422, message: "Choose an active mix and saved revision" };
+  } else if (draft.mix === undefined && ownerFor(draft.tracksMixOf) === null) return chainRefusal;
+  else if (draft.mix?.kind === "track" || draft.mix?.kind === "copy" || draft.mix?.kind === "keep")
+    return { status: 422, message: "Choose no mix, Primary, or a shared mix" };
+  return scopeRefusal(session, scope);
+}
+
+function templateMixOf(
+  draft: IntentionTemplateDraft,
+): Pick<IntentionTemplate, "tracksMixOf" | "distributionId" | "mixRevision"> {
+  if (draft.mix?.kind === "none")
+    return { tracksMixOf: null, distributionId: null, mixRevision: null };
+  if (draft.mix?.kind === "primary")
+    return {
+      tracksMixOf: null,
+      distributionId:
+        database.distributions.find((mix) => mix.isPrimary && mix.archivedAt === null)?.id ?? null,
+      mixRevision: null,
+    };
+  if (draft.mix?.kind === "use")
+    return { tracksMixOf: null, distributionId: draft.mix.mixId, mixRevision: draft.mix.revision };
+  return {
+    tracksMixOf: draft.tracksMixOf,
+    distributionId: distributionOf(ownerFor(draft.tracksMixOf) ?? overallIntention()).id,
+    mixRevision: null,
+  };
 }
 
 // Its first occurrence is made when the next period starts.
@@ -677,11 +846,11 @@ export function createIntentionTemplate(
 
   const template: IntentionTemplate = {
     ...draft,
+    ...templateMixOf(draft),
     id: nextId(
       "t",
       database.intentionTemplates.map((candidate) => candidate.id),
     ),
-    distributionId: distributionOf(ownerFor(draft.tracksMixOf) ?? overallIntention()).id,
     since: today(),
     nextOn: nextPeriodStartOf(draft.every, today()),
     createdBy: session.user.id,
@@ -709,7 +878,7 @@ export function saveIntentionTemplate(
   const saved: IntentionTemplate = {
     ...template,
     ...draft,
-    distributionId: distributionOf(ownerFor(draft.tracksMixOf) ?? overallIntention()).id,
+    ...templateMixOf(draft),
     nextOn:
       draft.every === template.every ? template.nextOn : nextPeriodStartOf(draft.every, today()),
   };

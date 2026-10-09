@@ -63,6 +63,7 @@ export const navigationEntries: readonly NavigationEntry[] = [
     label: "Intentions",
     requires: ["intention.read"],
   },
+  { id: "mixes", path: "/mixes", rail: "Mx", label: "Mixes", requires: ["mix.read"] },
   {
     id: "tasks",
     path: "/tasks",

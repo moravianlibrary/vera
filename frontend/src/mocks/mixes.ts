@@ -35,21 +35,26 @@ import { mockToday } from "@/mocks/today";
 // What a set the scope does not use reads as: nothing to flag.
 const noSet = { unallocated: 0, noShareIds: [] };
 
-export function mixTreeOf(intention: Intention): MixTree {
+export function mixTreeOf(intention: Intention, includeOutput = true): MixTree {
   const { categories, intentions } = database;
   const owner = mixOwnerOf(intention, intentions);
-  const { shares } = distributionOf(owner);
+  const selectedMix = distributionOf(intention);
+  const { shares } = selectedMix;
   const scope = intention.scopeCategoryId;
   const isInScope = (categoryId: string) =>
     scope === null || isInSubtree(categories, categoryId, scope);
   const isBelowScope = (categoryId: string) => isInScope(categoryId) && categoryId !== scope;
   const data = countingData();
-  const { output, outputPages } = countIntention(intention, data);
+  const counted = includeOutput ? countIntention(intention, data) : null;
+  const output = counted?.output ?? [];
+  const outputPages = counted?.outputPages ?? 0;
   const outputUnder = (categoryId: string) =>
     output
       .filter((iteration) => isInSubtree(categories, iteration.categoryId, categoryId))
       .reduce((sum, iteration) => sum + (data.pagesOf(iteration) ?? 0), 0);
   return {
+    mixId: selectedMix.id,
+    mixName: selectedMix.name,
     intention,
     owner,
     outputPages,
@@ -74,9 +79,16 @@ function detailOf(session: Session, intention: Intention): IntentionMixDetail {
   const owner = mixOwnerOf(intention, database.intentions);
   const today = dayOf(mockToday);
   return {
-    mix: mixTreeOf(intention),
-    revision: distributionOf(owner).revision,
-    trackers: trackersOf(owner, database.intentions)
+    mix:
+      intention.archived === null
+        ? mixTreeOf(intention)
+        : (database.archivedIntentionMixes[intention.id] ?? mixTreeOf(intention)),
+    archivedCategories:
+      intention.archived === null
+        ? null
+        : (database.archivedIntentionCategories[intention.id] ?? database.categories),
+    revision: distributionOf(intention).revision,
+    trackers: (intention.archived === null ? trackersOf(owner, database.intentions) : [])
       .filter((tracker) => isVisible(session, tracker))
       .map((tracker) => ({
         intention: tracker,
@@ -89,7 +101,9 @@ const notFound: Refusal = { status: 404, message: "Intention not found" };
 
 export function findIntentionMix(session: Session, intentionId: string): IntentionMixDetail | null {
   const intention = database.intentions.find((candidate) => candidate.id === intentionId);
-  return intention === undefined || !isVisible(session, intention)
+  return intention === undefined ||
+    intention.distributionId === null ||
+    !isVisible(session, intention)
     ? null
     : detailOf(session, intention);
 }
@@ -154,11 +168,14 @@ export function saveMixSet(
     };
   }
 
-  if (!canEdit(session, owner)) {
+  if (!can(session, "mix.edit") || !canEdit(session, owner)) {
     return { refusal: { status: 403, message: "You may not change this mix" } };
   }
 
   const distribution = distributionOf(owner);
+  if (owner.archived !== null || distribution.archivedAt !== null) {
+    return { refusal: { status: 409, message: "This mix or intention is archived" } };
+  }
   if (draft.revision !== distribution.revision) {
     return {
       refusal: {
@@ -201,7 +218,20 @@ export function saveMixSet(
 
   database.distributions = database.distributions.map((candidate) =>
     candidate.id === distribution.id
-      ? { ...candidate, shares, revision: candidate.revision + 1 }
+      ? {
+          ...candidate,
+          shares,
+          revision: candidate.revision + 1,
+          revisions: [
+            ...candidate.revisions,
+            {
+              revision: candidate.revision + 1,
+              shares: { ...shares },
+              at: new Date().toISOString(),
+              label: null,
+            },
+          ],
+        }
       : candidate,
   );
   return { value: detailOf(session, owner) };

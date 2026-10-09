@@ -27,6 +27,9 @@ const namedSchema = z.object({ id: z.string(), name: z.string() });
 
 // Whose mix it reads (§2): its own, or the owner it tracks, never one further.
 export const intentionMixSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  revision: z.number().int().positive(),
   owner: namedSchema.extend({ isOverall: z.boolean() }),
   isOwn: z.boolean(),
   // Those tracking this intention's own mix; 0 for a tracker.
@@ -96,7 +99,7 @@ export const intentionRowSchema = z.object({
   project: namedSchema.nullable(),
   // The scope node's path from the root.
   scope: z.object({ id: z.string(), path: z.array(z.string()) }).nullable(),
-  mix: intentionMixSchema,
+  mix: intentionMixSchema.nullable(),
   mixRows: z.array(mixRowSchema),
   unallocated: percent,
   outOfBandCount: count,
@@ -128,6 +131,13 @@ const name = z.string().trim().min(1, "An intention needs a name");
 // The one mix field (§2.1, §2.2): keep its own, track an intention that owns one, or own a copy
 // of one as it is now. An owner others track switches to tracking only by moving them with it.
 export const mixChoiceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("none") }),
+  z.object({ kind: z.literal("primary") }),
+  z.object({
+    kind: z.literal("use"),
+    mixId: z.string(),
+    revision: z.number().int().positive().nullable(),
+  }),
   z.object({ kind: z.literal("keep") }),
   z.object({ kind: z.literal("track"), ownerId: z.string(), isMovingTrackers: z.boolean() }),
   z.object({ kind: z.literal("copy"), fromId: z.string() }),
@@ -225,6 +235,7 @@ export const intentionTemplateDraftSchema = z.object({
   scopeCategoryId: z.string().nullable(),
   // Each occurrence tracks it; only an intention that owns its mix.
   tracksMixOf: z.string(),
+  mix: mixChoiceSchema.optional(),
   targetPages: z.number().int().positive().nullable(),
   isArchivingPrevious: z.boolean(),
 });

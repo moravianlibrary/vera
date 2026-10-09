@@ -168,7 +168,7 @@ export type RefineDraft = z.infer<typeof refineDraftSchema>;
 
 // A mix that gives the category a share: one intention's own, which its trackers follow.
 export const mixShareSchema = z.object({
-  owner: namedSchema,
+  mix: namedSchema,
   share: z.number().min(0).max(100),
   trackerCount: count,
 });

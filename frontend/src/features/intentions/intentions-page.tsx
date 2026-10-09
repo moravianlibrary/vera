@@ -1,7 +1,5 @@
-// The Intentions page (docs/demos/shared/page-intentions.js; STATUS "Intentions"; component-
-// interfaces.md §1.4): what VERA is trying to digitize, as two columns of cards, Targets and
-// Tracking, each running → upcoming with Ended and Archived folded below. The repeats head the
-// Targets column. Where only one column fits, a Targets / Tracking switch picks it (`?col=track`);
+// The Intentions page: Targets, Output (all intentions), and Repeats tabs. Each intention tab
+// runs running → upcoming with Ended and Archived folded below. `?col=track` opens Output;
 // `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat. *New intention* and
 // *Edit* need `intention.edit`, *New repeat* and a repeat's *Edit* `intention.repeat`; what was
 // done is said above the columns, and the card it was done to is marked. Whoever builds lists,
@@ -15,7 +13,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@/api/intentions";
-import { archiveIntention, unarchiveIntention } from "@/api/intentions";
+import { archiveIntention } from "@/api/intentions";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import type { CardSection } from "@/components/card-sections";
@@ -61,7 +59,6 @@ import { useListGeneratorsQuery } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { useTier } from "@/hooks/use-tier";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
@@ -102,10 +99,6 @@ export function IntentionsPage() {
     call: archiveIntention,
     invalidates: intentionInvalidations,
   });
-  const unarchive = useActionMutation({
-    call: unarchiveIntention,
-    invalidates: intentionInvalidations,
-  });
 
   const focus = (intentionId: string | null, said: Note) => {
     setNote(said);
@@ -116,8 +109,7 @@ export function IntentionsPage() {
     can(session, "intention.edit", scopeOfIntention(row.intention, projects));
   const toggleArchived = async (row: IntentionRow) => {
     const { intention } = row;
-    const isArchiving = intention.archived === null;
-    const result = await (isArchiving ? archive : unarchive).run(intention.id);
+    const result = await archive.run(intention.id);
     if (!result.isDone) {
       setNote({
         tone: "red",
@@ -127,16 +119,11 @@ export function IntentionsPage() {
       return;
     }
 
-    focus(
-      intention.id,
-      isArchiving
-        ? {
-            tone: "green",
-            title: `Archived ${intention.name}.`,
-            text: "Only off the page — its counts are unchanged.",
-          }
-        : { tone: "green", title: `Unarchived ${intention.name}.`, text: "Back on the page." },
-    );
+    focus(intention.id, {
+      tone: "green",
+      title: `Archived ${intention.name}.`,
+      text: "Its definition and displayed results are preserved.",
+    });
   };
   const generateActionOf = (row: IntentionRow): ViewAction | null => {
     const { intention } = row;
@@ -164,7 +151,7 @@ export function IntentionsPage() {
       label:
         catchUp > 0
           ? `Generate catch-up — ${formatCount(catchUp)} pp`
-          : isTracking
+          : isTracking && row.mix !== null
             ? "Generate against this mix"
             : "Generate a list",
       href: generationHrefOf({
@@ -184,25 +171,29 @@ export function IntentionsPage() {
         !intention.isOverall &&
         intention.projectId === null &&
         (row.state === "Ended" || isMet || intention.targetPages === null);
-      const edits: ViewAction[] = canEdit(row)
-        ? [
-            {
-              id: "edit",
-              label: "Edit",
-              onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
-            },
-            ...(isArchivable
-              ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
-              : []),
-          ]
-        : [];
+      const edits: ViewAction[] =
+        canEdit(row) && intention.archived === null
+          ? [
+              {
+                id: "edit",
+                label: "Edit",
+                onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
+              },
+              ...(isArchivable
+                ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
+                : []),
+            ]
+          : [];
       return [...(generate === null ? [] : [generate]), ...edits];
     },
     foldActionOf: (row) =>
-      canEdit(row) && !row.intention.isOverall && row.intention.projectId === null
+      canEdit(row) &&
+      row.intention.archived === null &&
+      !row.intention.isOverall &&
+      row.intention.projectId === null
         ? {
             id: "archive",
-            label: row.intention.archived === null ? "Archive" : "Unarchive",
+            label: "Archive",
             onSelect: () => void toggleArchived(row),
           }
         : null,
@@ -211,20 +202,12 @@ export function IntentionsPage() {
         ? (row) => setDialog({ kind: "template", row })
         : null,
     mixLinkOf: (row) => {
-      if (session === undefined) {
+      if (session === undefined || row.mix === null) {
         return null;
       }
 
-      // The mix is edited on its owner (intentions.md §2.5); anyone else only reads it there. A
-      // tracker's Mix shows its owner's, with the way to it.
-      const owner = index?.rows.find(
-        (candidate) => candidate.intention.id === row.mix.owner.id,
-      )?.intention;
-      const canEditMix = row.mix.owner.isOverall
-        ? can(session, "intention.edit_overall")
-        : owner !== undefined && can(session, "intention.edit", scopeOfIntention(owner, projects));
       return {
-        label: canEditMix ? "Edit mix" : "Proportions",
+        label: "View output comparison",
         href: intentionMixHrefOf(row.intention.id, row.intention.scopeCategoryId),
       };
     },
@@ -354,7 +337,7 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
     edited !== null &&
     !edited.intention.isOverall &&
     edited.intention.projectId === null &&
-    edited.mix.trackerCount === 0 &&
+    (edited.mix?.trackerCount ?? 0) === 0 &&
     !isTrackedByRepeat(edited);
   return (
     <IntentionFormDialog
@@ -400,54 +383,81 @@ interface IntentionBoardProps {
 }
 
 function IntentionBoard({ index, acts, params, setParams }: IntentionBoardProps) {
-  const tier = useTier();
   const urlState = intentionsUrlStateOf(params, index.rows);
-  const isOneColumn = tier === "phone" || tier === "small";
-  const shown = isOneColumn ? [urlState.column] : intentionColumns;
+  const view = params.get("view") === "repeats" || params.has("t") ? "repeats" : urlState.column;
+  const switchView = (selected: string) => {
+    const next = new URLSearchParams(params);
+    next.delete("i");
+    next.delete("t");
+    if (selected === "target") {
+      next.delete("col");
+      next.delete("view");
+    } else if (selected === "track") {
+      next.set("col", "track");
+      next.delete("view");
+    } else {
+      next.set("view", "repeats");
+      next.delete("col");
+    }
+    setParams(next);
+  };
 
   return (
     <div className="grid gap-6">
-      {isOneColumn && (
-        <Tabs
-          value={urlState.column}
-          onValueChange={(value) =>
-            setParams(value === "track" ? { col: "track" } : {}, { replace: true })
-          }
-        >
-          <TabsList>
-            {intentionColumns.map((column) => (
-              <TabsTrigger key={column} value={column}>
-                {columnTitles[column]}
-                <span className="ml-1 tabular-nums opacity-70">
-                  {
-                    index.rows.filter(
-                      (row) =>
-                        columnOf(row.intention) === column && row.intention.archived === null,
-                    ).length
-                  }
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+      <Tabs value={view} onValueChange={switchView}>
+        <TabsList>
+          {intentionColumns.map((column) => (
+            <TabsTrigger key={column} value={column}>
+              {columnTitles[column]}
+              <span className="ml-1 tabular-nums opacity-70">
+                {
+                  index.rows.filter(
+                    (row) =>
+                      (column === "track" || columnOf(row.intention) === column) &&
+                      row.intention.archived === null,
+                  ).length
+                }
+              </span>
+            </TabsTrigger>
+          ))}
+          <TabsTrigger value="repeats">
+            Repeats <span className="ml-1 tabular-nums opacity-70">{index.templates.length}</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      {view === "repeats" ? (
+        <div className="grid max-w-4xl gap-3">
+          {index.templates.map((row) => (
+            <RepeatLine
+              key={row.template.id}
+              row={row}
+              isFocused={row.template.id === urlState.focusedTemplateId}
+              onEdit={acts.editTemplate}
+            />
+          ))}
+          {index.templates.length === 0 && (
+            <p className="text-sm text-muted-foreground">No repeats yet.</p>
+          )}
+        </div>
+      ) : (
+        <div className="grid max-w-6xl items-start gap-6">
+          {[view].map((column) => (
+            <IntentionColumnView
+              key={column}
+              column={column}
+              rows={index.rows}
+              templates={[]}
+              focusedId={urlState.focusedId}
+              focusedTemplateId={urlState.focusedTemplateId}
+              acts={acts}
+            />
+          ))}
+        </div>
       )}
-      <div className={cn("grid items-start gap-6", !isOneColumn && "grid-cols-2")}>
-        {shown.map((column) => (
-          <IntentionColumnView
-            key={column}
-            column={column}
-            rows={index.rows}
-            templates={column === "target" ? index.templates : []}
-            focusedId={urlState.focusedId}
-            focusedTemplateId={urlState.focusedTemplateId}
-            acts={acts}
-          />
-        ))}
-      </div>
       <p className="rounded-md border border-dashed bg-card px-3 py-2 text-xs leading-relaxed text-muted-foreground">
         <b className="text-foreground">Nothing is attached to an intention.</b> An item counts
         towards every intention whose funding and category it matches, when its list starts inside
-        the window — so one page can count towards a grant, a regional target and the house mix at
+        the window — so one page can count towards a grant, a regional target and Overall output at
         once. Those figures overlap and are never added.
         <br />
         <b className="text-foreground">Planned and delivered are plan completion</b>: what was put

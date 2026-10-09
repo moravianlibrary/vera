@@ -15,6 +15,7 @@ export const apiRoutes = {
   // Intentions, the page: every intention the caller sees with what it counts.
   intentionIndex: "/intentions/overview",
   intentions: "/intentions",
+  mixes: "/mixes",
   // What a draft would count and the mix it would read, before it is saved.
   intentionPreview: "/intentions/preview",
   intentionTemplates: "/intention-templates",
@@ -88,6 +89,10 @@ export function projectRoute(projectId: string): string {
 
 export function intentionRoute(intentionId: string): string {
   return `${apiRoutes.intentions}/${encodeURIComponent(intentionId)}`;
+}
+
+export function mixRoute(mixId: string): string {
+  return `${apiRoutes.mixes}/${encodeURIComponent(mixId)}`;
 }
 
 export function digitizationListRoute(listId: string): string {

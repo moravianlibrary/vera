@@ -28,8 +28,7 @@ import {
   scopeOfCategory,
   unheldCategoriesOf,
 } from "@/domain/categories";
-import type { Category, Distribution, Iteration, Session } from "@/domain/entities";
-import { trackersOf } from "@/domain/intentions";
+import type { Category, Iteration, Session } from "@/domain/entities";
 import { isInPool, isScanned } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
@@ -96,19 +95,17 @@ function nodeOf(categoryId: string): CategoryNode {
 
 export function queryCategoryIndex(session: Session, mixId?: string): CategoryIndex {
   const { categories, iterations } = database;
+  const selectedMix =
+    database.distributions.find((mix) => mix.id === mixId && mix.archivedAt === null) ??
+    database.distributions.find((mix) => mix.isPrimary);
   const selected =
-    mixId === undefined
+    selectedMix === undefined
       ? overallIntention()
-      : (database.intentions.find(
-          (intention) =>
-            intention.id === mixId &&
-            intention.tracksMixOf === null &&
-            isVisible(session, intention),
-        ) ?? overallIntention());
+      : { ...overallIntention(), distributionId: selectedMix.id, mixRevision: null };
   return {
     totals: totalsOf(iterations),
     nodes: categories.map((category) => nodeOf(category.id)),
-    mix: can(session, "intention.read") ? mixTreeOf(selected) : null,
+    mix: can(session, "mix.read") ? mixTreeOf(selected, false) : null,
     unheldIds: unheldCategoriesOf(categories, holders()).map((category) => category.id),
   };
 }
@@ -172,12 +169,25 @@ function nameRefusal(parentId: string | null, name: string, exceptId: string | n
 // the old set is refused rather than writing it back (intentions.md §1.1).
 function dropShares(categoryId: string): void {
   database.distributions = database.distributions.map((distribution) => {
-    if (distribution.shares[categoryId] === undefined) {
+    if (distribution.archivedAt !== null || distribution.shares[categoryId] === undefined) {
       return distribution;
     }
 
     const { [categoryId]: _dropped, ...shares } = distribution.shares;
-    return { ...distribution, shares, revision: distribution.revision + 1 };
+    return {
+      ...distribution,
+      shares,
+      revision: distribution.revision + 1,
+      revisions: [
+        ...distribution.revisions,
+        {
+          revision: distribution.revision + 1,
+          shares: { ...shares },
+          at: new Date().toISOString(),
+          label: null,
+        },
+      ],
+    };
   });
 }
 
@@ -247,11 +257,6 @@ export function saveCategory(
   return { value: saved };
 }
 
-// Who a mix is: an intention's own, or a repeat's that its intentions copy.
-function ownerOf(distribution: Distribution) {
-  return database.intentions.find((intention) => intention.id === distribution.ownerId) ?? null;
-}
-
 const scopedTo = (categoryId: string) => [
   ...database.intentions.filter((intention) => intention.scopeCategoryId === categoryId),
   ...database.intentionTemplates.filter((template) => template.scopeCategoryId === categoryId),
@@ -268,14 +273,15 @@ export function categoryImpact(session: Session, categoryId: string): Outcome<Ca
     (distribution) => distribution.shares[categoryId] !== undefined,
   );
   const shares = withShare.flatMap((distribution): MixShare[] => {
-    const owner = ownerOf(distribution);
-    return owner === null || !isVisible(session, owner)
+    return !can(session, "mix.read")
       ? []
       : [
           {
-            owner: { id: owner.id, name: owner.name },
+            mix: { id: distribution.id, name: distribution.name },
             share: distribution.shares[categoryId] ?? 0,
-            trackerCount: trackersOf(owner, database.intentions).length,
+            trackerCount: database.intentions.filter(
+              (intention) => intention.distributionId === distribution.id,
+            ).length,
           },
         ];
   });
@@ -434,12 +440,21 @@ export function refineCategory(
   };
   database.categories = [...database.categories, child];
   database.distributions = database.distributions.map((distribution) =>
-    distribution.shares[categoryId] === undefined
+    distribution.archivedAt !== null || distribution.shares[categoryId] === undefined
       ? distribution
       : {
           ...distribution,
           shares: { ...distribution.shares, [child.id]: 100 },
           revision: distribution.revision + 1,
+          revisions: [
+            ...distribution.revisions,
+            {
+              revision: distribution.revision + 1,
+              shares: { ...distribution.shares, [child.id]: 100 },
+              at: new Date().toISOString(),
+              label: null,
+            },
+          ],
         },
   );
 

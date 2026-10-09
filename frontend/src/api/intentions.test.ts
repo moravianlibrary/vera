@@ -79,7 +79,7 @@ describe("listIntentionIndex", () => {
     expect(index.rows.some((row) => row.intention.id === "i14")).toBe(false);
     expect(index.rows.filter((row) => row.intention.archived !== null)).toHaveLength(3);
     expect(index.templates.map((row) => [row.template.id, row.tracks?.name])).toEqual([
-      ["t1", "House mix"],
+      ["t1", "Overall output"],
     ]);
   });
 
@@ -117,16 +117,25 @@ describe("listIntentionIndex", () => {
     signInAs("digitization");
     const index = await listIntentionIndex();
 
-    expect(rowOf(index, "i4").mix).toEqual({
-      owner: { id: "i4", name: "House mix", isOverall: true },
+    expect(rowOf(index, "i4").mix).toMatchObject({
+      owner: { id: "i4", name: "Overall output", isOverall: true },
       isOwn: true,
-      trackerCount: 15,
+      trackerCount: 6,
     });
-    expect(rowOf(index, "i8").mix.trackerCount).toBe(2);
+    expect(rowOf(index, "i8").mix?.trackerCount).toBe(2);
     expect(rowOf(index, "i1").mix).toMatchObject({
       owner: { name: "Periodicals push — watch" },
       isOwn: false,
     });
+  });
+
+  it("shows a project's output and target without assigning a mix", async () => {
+    signInAs("digitization");
+    const project = rowOf(await listIntentionIndex(), "i2");
+    expect(project.intention.distributionId).toBeNull();
+    expect(project.mix).toBeNull();
+    expect(project.mixRows.every((row) => row.intended === null && row.drift === null)).toBe(true);
+    expect(project.fill.every((row) => row.share === null && row.targetPages === null)).toBe(true);
   });
 
   it("reads a scoped mix within its scope, with what is unallocated", async () => {
@@ -178,7 +187,7 @@ describe("creating and editing an intention", () => {
 
     expect(tracking.mix).toMatchObject({ owner: { id: "i4" }, isOwn: false });
     expect(tracking.intention.distributionId).toBe("d1");
-    expect(copied.mix).toEqual({
+    expect(copied.mix).toMatchObject({
       owner: { id: copied.intention.id, name: "Periodicals autumn", isOverall: false },
       isOwn: true,
       trackerCount: 0,
@@ -192,7 +201,7 @@ describe("creating and editing an intention", () => {
   it("refuses a taken name, a tracker as the mix, and someone without intention.edit", async () => {
     signInAs("digitization");
 
-    expect(await statusOf(createIntention(draft("house MIX")))).toBe(422);
+    expect(await statusOf(createIntention(draft("overall OUTPUT")))).toBe(422);
     expect(
       await statusOf(
         createIntention(
@@ -239,28 +248,28 @@ describe("creating and editing an intention", () => {
       mix: { kind: "track", ownerId: "i4", isMovingTrackers },
     });
 
-    expect(rowOf(await listIntentionIndex(), ownerId).mix.trackerCount).toBe(1);
+    expect(rowOf(await listIntentionIndex(), ownerId).mix?.trackerCount).toBe(1);
     expect(await statusOf(saveIntention(ownerId, toOverall(false)))).toBe(409);
 
     const moved = await saveIntention(ownerId, toOverall(true));
     const index = await listIntentionIndex();
 
-    expect(moved.mix.owner.id).toBe("i4");
+    expect(moved.mix?.owner.id).toBe("i4");
     expect(rowOf(index, tracker.intention.id).intention.tracksMixOf).toBe("i4");
-    expect(rowOf(index, tracker.intention.id).mix.owner.name).toBe("House mix");
+    expect(rowOf(index, tracker.intention.id).mix?.owner.name).toBe("Overall output");
   });
 
   it("detaches a tracker onto a copy, leaving the owner's other trackers as they were", async () => {
     signInAs("digitization");
-    const before = rowOf(await listIntentionIndex(), "i8").mix.trackerCount;
+    const before = rowOf(await listIntentionIndex(), "i8").mix?.trackerCount ?? 0;
     const ndk = rowOf(await listIntentionIndex(), "i1").intention;
     const detached = await saveIntention("i1", {
       ...ndk,
       mix: { kind: "copy", fromId: "i8" },
     });
 
-    expect(detached.mix.isOwn).toBe(true);
-    expect(rowOf(await listIntentionIndex(), "i8").mix.trackerCount).toBe(before - 1);
+    expect(detached.mix?.isOwn).toBe(true);
+    expect(rowOf(await listIntentionIndex(), "i8").mix?.trackerCount).toBe(before - 1);
   });
 
   it("counts a draft before it is saved, as the saved intention would", async () => {
@@ -331,7 +340,7 @@ describe("archiving and deleting an intention", () => {
 
     expect(archived.intention.archived?.actor).toEqual({ kind: "user", userId: "u2" });
     expect(archived.plannedPages).toBe(created.plannedPages);
-    expect((await unarchiveIntention(created.intention.id)).intention.archived).toBeNull();
+    expect(await statusOf(unarchiveIntention(created.intention.id))).toBe(409);
     expect(await statusOf(archiveIntention("i4"))).toBe(409);
   });
 
@@ -410,7 +419,7 @@ describe("repeats", () => {
 
     expect(created).toMatchObject({
       template: { since: "2026-06-25", nextOn: "2026-07-01", createdBy: "u3" },
-      tracks: { id: "i4", name: "House mix" },
+      tracks: { id: "i4", name: "Overall output" },
     });
     expect(saved.template.nextOn).toBe("2026-06-29");
   });

@@ -43,6 +43,7 @@ import {
   parsePoolSearchParams,
 } from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
+import { mixDraftSchema, mixSetChangeSchema, mixSnapshotDraftSchema } from "@/api/mix-catalog";
 import { mixSetDraftSchema } from "@/api/mixes";
 import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
 import {
@@ -90,6 +91,15 @@ import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import {
+  archiveMixRecord,
+  createMixRecord,
+  getMixRecord,
+  listMixRecords,
+  makeMixPrimary,
+  saveMixRecordSet,
+  snapshotMixRecord,
+} from "@/mocks/mix-catalog";
 import {
   accessIndex,
   canReadAccess,
@@ -628,6 +638,34 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(queryIntentionIndex(session));
     }),
+    http.get(route(apiRoutes.mixes), () => outcomeResponse(listMixRecords(currentSession()))),
+    http.get(route(`${apiRoutes.mixes}/:mixId`), ({ params }) =>
+      outcomeResponse(getMixRecord(currentSession(), String(params.mixId))),
+    ),
+    http.post(route(apiRoutes.mixes), async ({ request }) => {
+      const parsed = mixDraftSchema.safeParse(await request.json());
+      return parsed.success
+        ? outcomeResponse(createMixRecord(currentSession(), parsed.data))
+        : invalidResponse(parsed.error);
+    }),
+    http.put(route(`${apiRoutes.mixes}/:mixId/sets`), async ({ params, request }) => {
+      const parsed = mixSetChangeSchema.safeParse(await request.json());
+      return parsed.success
+        ? outcomeResponse(saveMixRecordSet(currentSession(), String(params.mixId), parsed.data))
+        : invalidResponse(parsed.error);
+    }),
+    http.post(route(`${apiRoutes.mixes}/:mixId/snapshots`), async ({ params, request }) => {
+      const parsed = mixSnapshotDraftSchema.safeParse(await request.json());
+      return parsed.success
+        ? outcomeResponse(snapshotMixRecord(currentSession(), String(params.mixId), parsed.data))
+        : invalidResponse(parsed.error);
+    }),
+    http.post(route(`${apiRoutes.mixes}/:mixId/primary`), ({ params }) =>
+      outcomeResponse(makeMixPrimary(currentSession(), String(params.mixId))),
+    ),
+    http.post(route(`${apiRoutes.mixes}/:mixId/archive`), ({ params }) =>
+      outcomeResponse(archiveMixRecord(currentSession(), String(params.mixId))),
+    ),
 
     http.post(route(apiRoutes.intentionPreview), async ({ request }) => {
       const preview = intentionPreviewRequestSchema.safeParse(await request.json());

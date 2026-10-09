@@ -10,6 +10,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import { listMixes } from "@/api/mix-catalog";
 import { useId, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Link } from "react-router";
@@ -176,11 +177,17 @@ function ScopeSelect({
 // ---------------------------------------------------------------- the mix field
 
 const ownersOf = (rows: readonly IntentionRow[]) =>
-  rows.filter((row) => row.intention.tracksMixOf === null).map((row) => row.intention);
+  rows
+    .filter((row) => row.intention.tracksMixOf === null && row.mix !== null)
+    .map((row) => row.intention);
 
 // "keep", "track:i4" or "copy:i8", as the select holds it.
 function mixChoiceOf(value: string, isMovingTrackers: boolean): MixChoice {
   const [kind, intentionId = ""] = value.split(":");
+  if (kind === "none") return { kind: "none" };
+  if (kind === "primary") return { kind: "primary" };
+  if (kind === "use")
+    return { kind: "use", mixId: intentionId, revision: Number(value.split(":")[2]) || null };
   if (kind === "track") {
     return { kind: "track", ownerId: intentionId, isMovingTrackers };
   }
@@ -194,6 +201,7 @@ function MixSelect({
   rows,
   intentionId,
   isOwner,
+  sharedOnly = false,
   onChange,
 }: {
   id: string;
@@ -201,8 +209,10 @@ function MixSelect({
   rows: readonly IntentionRow[];
   intentionId: string | null;
   isOwner: boolean;
+  sharedOnly?: boolean;
   onChange: (value: string) => void;
 }) {
+  const { data: mixes = [] } = useQuery({ queryKey: ["mixes"], queryFn: listMixes });
   const others = ownersOf(rows).filter((owner) => owner.id !== intentionId);
   return (
     <Select value={value} onValueChange={onChange}>
@@ -210,18 +220,44 @@ function MixSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {isOwner && <SelectItem value="keep">Own mix — keep it</SelectItem>}
-        {others.map((owner) => (
-          <SelectItem key={`track:${owner.id}`} value={`track:${owner.id}`}>
-            Track {owner.name}
-            {owner.isOverall && " (Overall)"}
-          </SelectItem>
-        ))}
-        {others.map((owner) => (
-          <SelectItem key={`copy:${owner.id}`} value={`copy:${owner.id}`}>
-            Own mix, copied from {owner.name}
-          </SelectItem>
-        ))}
+        <SelectItem value="none">No mix — count output only</SelectItem>
+        <SelectItem value="primary">Use Primary mix</SelectItem>
+        {mixes
+          .filter((mix) => mix.archivedAt === null)
+          .map((mix) => (
+            <SelectItem key={`use:${mix.id}`} value={`use:${mix.id}`}>
+              Follow latest: {mix.name}
+              {mix.isPrimary ? " (Primary)" : ""}
+            </SelectItem>
+          ))}
+        {mixes
+          .filter((mix) => mix.archivedAt === null)
+          .flatMap((mix) =>
+            mix.revisions
+              .filter((revision) => revision.label !== null)
+              .map((revision) => (
+                <SelectItem
+                  key={`use:${mix.id}:${revision.revision}`}
+                  value={`use:${mix.id}:${revision.revision}`}
+                >
+                  Use snapshot: {revision.label} · {mix.name}
+                </SelectItem>
+              )),
+          )}
+        {!sharedOnly && isOwner && <SelectItem value="keep">Own mix — keep it</SelectItem>}
+        {!sharedOnly &&
+          others.map((owner) => (
+            <SelectItem key={`track:${owner.id}`} value={`track:${owner.id}`}>
+              Track {owner.name}
+              {owner.isOverall && " (Overall)"}
+            </SelectItem>
+          ))}
+        {!sharedOnly &&
+          others.map((owner) => (
+            <SelectItem key={`copy:${owner.id}`} value={`copy:${owner.id}`}>
+              Own mix, copied from {owner.name}
+            </SelectItem>
+          ))}
       </SelectContent>
     </Select>
   );
@@ -272,15 +308,14 @@ const draftOf = (values: IntentionForm): IntentionDraft => ({
   mix: mixChoiceOf(values.mix, values.isMovingTrackers),
 });
 
-function defaultsOf(source: IntentionSource, rows: readonly IntentionRow[]): IntentionForm {
-  const overall = rows.find((row) => row.intention.isOverall)?.intention;
+function defaultsOf(source: IntentionSource): IntentionForm {
   if (source.kind === "new") {
     return {
       name: "",
       description: "",
       funding: fundingAny,
       scope: allCategories,
-      mix: overall === undefined ? "keep" : `track:${overall.id}`,
+      mix: "primary",
       isMovingTrackers: false,
       isTracked: false,
       targetPages: "",
@@ -292,7 +327,14 @@ function defaultsOf(source: IntentionSource, rows: readonly IntentionRow[]): Int
   const { intention, mix } = source.row;
   const isCopy = source.kind === "copy";
   // A new one from an old one reads the same mix: the owner it tracks, or a copy of its own.
-  const mixValue = !mix.isOwn ? `track:${mix.owner.id}` : isCopy ? `copy:${intention.id}` : "keep";
+  const mixValue =
+    mix === null
+      ? "none"
+      : isCopy
+        ? `use:${intention.distributionId}${intention.mixRevision ? `:${intention.mixRevision}` : ""}`
+        : intention.distributionId !== null
+          ? `use:${intention.distributionId}${intention.mixRevision ? `:${intention.mixRevision}` : ""}`
+          : "none";
   return {
     name: isCopy ? `${intention.name} (copy)` : intention.name,
     description: intention.description,
@@ -300,7 +342,7 @@ function defaultsOf(source: IntentionSource, rows: readonly IntentionRow[]): Int
     scope: intention.scopeCategoryId ?? allCategories,
     mix: mixValue,
     isMovingTrackers: false,
-    isTracked: !isCopy && mix.trackerCount > 0,
+    isTracked: !isCopy && (mix?.trackerCount ?? 0) > 0,
     targetPages: intention.targetPages === null ? "" : String(intention.targetPages),
     countsFrom: isCopy ? "" : intention.countsFrom,
     endsOn: intention.endsOn ?? "",
@@ -355,7 +397,7 @@ export function IntentionFormDialog({
       title={title}
       description="What it counts, the mix it reads, its target and its window."
       schema={intentionFormSchema}
-      defaultValues={defaultsOf(source, rows)}
+      defaultValues={defaultsOf(source)}
       submitLabel={edited === null ? "Create intention" : "Save"}
       secondary={
         onDelete === undefined
@@ -400,14 +442,27 @@ export function IntentionFormDialog({
               >
                 change them there
               </Link>
-              . Its categories and mix are its own.
+              . Its category scope and optional mix can be changed here.
             </p>
           )}
           <Field id={`${id}-description`} label="Description" hint="optional">
             <Textarea id={`${id}-description`} rows={2} {...form.register("description")} />
           </Field>
           {edited !== null && isOverall ? (
-            <OverallNote row={edited} session={session} />
+            <div className="space-y-3">
+              <OverallNote row={edited} />
+              <Field id={`${id}-mix`} label="Compare output with mix">
+                <MixSelect
+                  id={`${id}-mix`}
+                  value={form.watch("mix")}
+                  rows={rows}
+                  intentionId={edited.intention.id}
+                  isOwner={false}
+                  sharedOnly
+                  onChange={(value) => form.setValue("mix", value, { shouldDirty: true })}
+                />
+              </Field>
+            </div>
           ) : (
             <IntentionFields
               id={id}
@@ -425,16 +480,12 @@ export function IntentionFormDialog({
   );
 }
 
-function OverallNote({ row, session }: { row: IntentionRow; session: Session }) {
+function OverallNote({ row }: { row: IntentionRow }) {
   return (
     <p className="text-xs text-muted-foreground">
-      The Overall intention always counts everything from{" "}
-      {formatCalendarDay(row.intention.countsFrom)}, has no target and no end. It always owns its
-      mix
-      {row.mix.trackerCount > 0 && `, which ${plural(row.mix.trackerCount, "other")} track`} —{" "}
-      {can(session, "intention.edit_overall")
-        ? "its percentages are changed on its Mix."
-        : "only an admin changes its percentages."}
+      Overall counts everything from {formatCalendarDay(row.intention.countsFrom)}, with no target
+      or end. Choosing a different mix changes this output comparison; it does not change which mix
+      is Primary. Edit percentages in Mixes.
     </p>
   );
 }
@@ -482,7 +533,7 @@ function IntentionFields({
               value={values.mix}
               rows={rows}
               intentionId={intention.id}
-              isOwner={edited.mix.isOwn}
+              isOwner={edited.mix?.isOwn === true}
               onChange={(value) => form.setValue("mix", value, touched)}
             />
           </Field>
@@ -539,7 +590,7 @@ function IntentionFields({
             value={values.mix}
             rows={rows}
             intentionId={edited?.intention.id ?? null}
-            isOwner={edited?.mix.isOwn === true}
+            isOwner={edited?.mix?.isOwn === true}
             onChange={(value) => form.setValue("mix", value, touched)}
           />
         </Field>
@@ -646,7 +697,7 @@ function MixNote({
   if (choice.kind === "copy") {
     return (
       <p className="text-xs text-muted-foreground">
-        {edited !== null && !edited.mix.isOwn
+        {edited !== null && edited.mix?.isOwn === false
           ? "Detaching: it gets a copy of the mix as it is now. Nothing changes for anyone else."
           : "A copy of the mix as it is now, edited on its own in Categories."}
       </p>
@@ -837,7 +888,7 @@ const templateFormSchema = z.object({
   every: repeatEverySchema,
   funding: z.string(),
   scope: z.string(),
-  tracksMixOf: z.string().min(1, "Pick the mix its occurrences track"),
+  mix: z.string(),
   targetPages: z.string().regex(pagesText, "A target is a number of pages, or none"),
   isArchivingPrevious: z.boolean(),
 });
@@ -848,7 +899,8 @@ const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
   every: values.every,
   funding: fundingOf(values.funding),
   scopeCategoryId: values.scope === allCategories ? null : values.scope,
-  tracksMixOf: values.tracksMixOf,
+  tracksMixOf: "",
+  mix: mixChoiceOf(values.mix, false),
   targetPages: pagesOf(values.targetPages),
   isArchivingPrevious: values.isArchivingPrevious,
 });
@@ -872,7 +924,6 @@ export function TemplateFormDialog({
 }: TemplateFormDialogProps) {
   const id = useId();
   const template = row?.template ?? null;
-  const overall = rows.find((candidate) => candidate.intention.isOverall)?.intention;
   const madeCount =
     template === null
       ? 0
@@ -898,7 +949,12 @@ export function TemplateFormDialog({
         every: template?.every ?? "month",
         funding: template === null ? fundingAny : fundingValueOf(template.funding),
         scope: template?.scopeCategoryId ?? allCategories,
-        tracksMixOf: template?.tracksMixOf ?? overall?.id ?? "",
+        mix:
+          template === null
+            ? "primary"
+            : template.distributionId === null
+              ? "none"
+              : `use:${template.distributionId}${template.mixRevision ? `:${template.mixRevision}` : ""}`,
         targetPages:
           template === null || template.targetPages === null ? "" : String(template.targetPages),
         isArchivingPrevious: template?.isArchivingPrevious ?? true,
@@ -965,23 +1021,16 @@ export function TemplateFormDialog({
                 />
               </Field>
             </div>
-            <Field id={`${id}-mix`} label="Mix" hint="each occurrence tracks it">
-              <Select
-                value={values.tracksMixOf}
-                onValueChange={(value) => form.setValue("tracksMixOf", value, touched)}
-              >
-                <SelectTrigger id={`${id}-mix`} className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ownersOf(rows).map((owner) => (
-                    <SelectItem key={owner.id} value={owner.id}>
-                      Track {owner.name}
-                      {owner.isOverall && " (Overall)"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field id={`${id}-mix`} label="Mix" hint="each occurrence keeps this selection">
+              <MixSelect
+                id={`${id}-mix`}
+                value={values.mix}
+                rows={rows}
+                intentionId={null}
+                isOwner={false}
+                sharedOnly
+                onChange={(value) => form.setValue("mix", value, touched)}
+              />
             </Field>
             <label htmlFor={`${id}-archive`} className="flex items-start gap-2 text-sm">
               <Checkbox

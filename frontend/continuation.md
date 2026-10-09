@@ -1,5 +1,19 @@
 # Frontend continuation guide
 
+**Intentions/mixes handoff (2026-10-08):**
+`docs/design/shared/entities/intentions-mixes-redesign.md` now records the
+implemented core and remaining proposals. Independent `/mixes` records have
+names, Primary, immutable revisions, snapshots, editable copies, and archive.
+Intentions have optional mix selection; project intentions start with no mix,
+and generation for them uses priority then request age. Intention Archive
+captures its displayed result, mix revision/tree, and category labels in mock
+memory. Overall output is separate from Primary. `/intentions` uses Targets,
+Output, and Repeats tabs; Categories picks a mix by ID. The older descriptions
+below of mix ownership, Categories' intention picker, project mixes, and
+Unarchive describe the previous model. Open follow-up: project filtering on a
+mix, archive correction/restore, saved filters for the new tabs and Mixes,
+and scheduled creation of repeat occurrences. No `.v2` demos were edited.
+
 **Completion handoff (2026-10-08):** follow
 [completion-plan.md](completion-plan.md) for steps 11–12, then the verified
 earlier functional gaps. It resolves stale guidance below and requires finished

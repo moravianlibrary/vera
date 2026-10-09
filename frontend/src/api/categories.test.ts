@@ -117,14 +117,14 @@ describe("getCategoryIndex", () => {
     expect(mixNodeOf(index, "c21").ofWhole).toBeCloseTo(13.5);
   });
 
-  it("measures actual on the intention's own output", async () => {
+  it("shows a mix definition without inventing actual output", async () => {
     signInAs("digitization");
 
     const index = await getCategoryIndex();
     const tops = ["c1", "c2", "c3", "c4"].map((id) => mixNodeOf(index, id).actual ?? 0);
 
-    expect(index.mix?.outputPages).toBeGreaterThan(0);
-    expect(tops.reduce((sum, actual) => sum + actual, 0)).toBeCloseTo(100);
+    expect(index.mix?.outputPages).toBe(0);
+    expect(tops.reduce((sum, actual) => sum + actual, 0)).toBe(0);
   });
 });
 
@@ -179,9 +179,9 @@ describe("changing the tree", () => {
     signInAs("curator");
     const curator = await getCategoryImpact("c22");
 
-    expect(admin.shares.map((share) => [share.owner.name, share.share])).toEqual([
+    expect(admin.shares.map((share) => [share.mix.name, share.share])).toEqual([
       ["House mix", 50],
-      ["Periodicals push — watch", 35],
+      ["Periodicals push", 35],
     ]);
     expect(admin).toMatchObject({ documentCount: 6, otherMixCount: 0 });
     expect(curator).toMatchObject({ shares: [], otherMixCount: 2 });

@@ -39,5 +39,9 @@ export function treeValueOf(
 
 // "the house mix", "Periodicals push — watch's mix".
 export function mixNameOf(mix: Pick<MixTree, "owner">): string {
-  return mix.owner.isOverall ? "the house mix" : `${mix.owner.name}'s mix`;
+  return "mixName" in mix && typeof mix.mixName === "string"
+    ? mix.mixName
+    : mix.owner.isOverall
+      ? "the house mix"
+      : `${mix.owner.name}'s mix`;
 }

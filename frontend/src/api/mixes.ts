@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { findJson, postJson, putJson } from "@/api/http";
 import { intentionRoute } from "@/api/routes";
-import { intentionSchema } from "@/domain/entities";
+import { categorySchema, intentionSchema } from "@/domain/entities";
 import { intentionStates } from "@/domain/intentions";
 
 const pages = z.number().int().nonnegative();
@@ -33,6 +33,8 @@ export type MixNode = z.infer<typeof mixNodeSchema>;
 
 // The mix one intention reads, which is its owner's for a tracker; the top-level set on the root.
 export const mixTreeSchema = siblingSetSchema.extend({
+  mixId: z.string().optional(),
+  mixName: z.string().optional(),
   intention: intentionSchema,
   owner: intentionSchema,
   outputPages: pages,
@@ -50,6 +52,7 @@ export type MixTracker = z.infer<typeof mixTrackerSchema>;
 
 export const intentionMixSchema = z.object({
   mix: mixTreeSchema,
+  archivedCategories: z.array(categorySchema).nullable().optional(),
   // The owner's mix as read; a write against an older one is refused.
   revision: z.number().int().positive(),
   trackers: z.array(mixTrackerSchema),

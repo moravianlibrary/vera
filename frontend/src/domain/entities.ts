@@ -101,15 +101,26 @@ export type Project = z.infer<typeof projectSchema>;
 
 // ---------------------------------------------------------------- intentions
 
-// The stored mix: percentages over the category tree (intentions.md §1). It belongs to the one
-// intention that owns it; every other intention reading it tracks that owner (§2). Revisioned
-// so that provenance can name the percentages a list was generated against.
+// Independent mix, including immutable revisions and optional labels on preserved snapshots.
+export const mixRevisionSchema = z.object({
+  revision: z.number().int().positive(),
+  shares: z.record(z.string(), z.number().min(0).max(100)),
+  at: timestamp,
+  label: z.string().nullable(),
+});
+export type MixRevision = z.infer<typeof mixRevisionSchema>;
+
 export const distributionSchema = z.object({
   id,
-  ownerId: id,
+  // Legacy intention owner; independent mixes have no owning intention.
+  ownerId: id.nullable(),
+  name: z.string().min(1),
+  isPrimary: z.boolean(),
+  archivedAt: timestamp.nullable(),
   // Percent by category ID; a category without an entry has no share.
   shares: z.record(z.string(), z.number().min(0).max(100)),
   revision: z.number().int().positive(),
+  revisions: z.array(mixRevisionSchema),
 });
 export type Distribution = z.infer<typeof distributionSchema>;
 
@@ -138,7 +149,9 @@ export const intentionSchema = z.object({
   // The intention whose mix this one reads; null when it owns its mix. Never one that tracks.
   tracksMixOf: id.nullable(),
   // The mix in use: its own, or the tracked owner's.
-  distributionId: id,
+  distributionId: id.nullable(),
+  // Null or absent follows the latest revision; a number pins an immutable one.
+  mixRevision: z.number().int().positive().nullable().optional(),
   targetPages: z.number().int().positive().nullable(),
   countsFrom: calendarDate,
   // The last day counted; null for open-ended.
@@ -164,7 +177,8 @@ export const intentionTemplateSchema = z.object({
   funding: intentionFundingSchema,
   scopeCategoryId: id.nullable(),
   tracksMixOf: id.nullable(),
-  distributionId: id,
+  distributionId: id.nullable(),
+  mixRevision: z.number().int().positive().nullable().optional(),
   targetPages: z.number().int().positive().nullable(),
   // Archiving the previous occurrence only hides it.
   isArchivingPrevious: z.boolean(),
@@ -177,8 +191,9 @@ export type IntentionTemplate = z.infer<typeof intentionTemplateSchema>;
 // What a list was generated with: provenance, never what it counts towards (intentions.md §5).
 export const listGenerationSchema = z.object({
   intentionId: id,
+  mixId: id.nullable().optional(),
   // The revision of the mix it read, since a shared mix changes after (§5).
-  mixRevision: z.number().int().positive(),
+  mixRevision: z.number().int().positive().nullable(),
   pages: z.number().int().nonnegative(),
   // A correcting run's pages per category, accepted before generating; none when the mix decided.
   allocation: z.record(z.string(), z.number().int().nonnegative()).nullable(),

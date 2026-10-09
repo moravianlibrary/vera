@@ -40,14 +40,14 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
-  it("reads a selected intention's mix for Categories", async () => {
+  it("reads a selected independent mix for Categories", async () => {
     signInAs("admin");
     const overall = await getCategoryIndex();
-    const selected = await getCategoryIndex("i8");
+    const selected = await getCategoryIndex("d2");
 
     expect(overall.mix?.owner.id).toBe("i4");
-    expect(selected.mix?.owner.id).toBe("i8");
-    expect(selected.mix?.intention.scopeCategoryId).toBe("c2");
+    expect(selected.mix?.mixId).toBe("d2");
+    expect(selected.mix?.intention.scopeCategoryId).toBeNull();
   });
   it("counts Categories tabs by matching categories rather than their ancestor rows", async () => {
     signInAs("admin");

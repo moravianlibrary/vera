@@ -14,6 +14,7 @@ import { DocumentsPage } from "@/features/documents/documents-page";
 import { HooksPage } from "@/features/hooks/hooks-page";
 import { IntentionsPage } from "@/features/intentions/intentions-page";
 import { IntentionMixPage } from "@/features/intentions/mix-page";
+import { MixesPage } from "@/features/intentions/mixes-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { PluginsPage } from "@/features/plugins/plugins-page";
@@ -53,6 +54,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <CategoriesPage />;
     case "intentions":
       return <IntentionsPage />;
+    case "mixes":
+      return <MixesPage />;
     case "tasks":
       return <TasksPage />;
     case "schedules":
@@ -138,6 +141,14 @@ const router = createBrowserRouter([
         element: (
           <Gate entryId="intentions">
             <IntentionMixPage />
+          </Gate>
+        ),
+      },
+      {
+        path: "mixes/:mixId",
+        element: (
+          <Gate entryId="mixes">
+            <MixesPage />
           </Gate>
         ),
       },

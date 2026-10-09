@@ -2,7 +2,9 @@
 // plus whatever the session writes. Reloading the page resets it.
 
 import { env } from "@/config/env";
-import type { Watchlist } from "@/domain/entities";
+import type { IntentionRow } from "@/api/intentions";
+import type { MixTree } from "@/api/mixes";
+import type { Category, Watchlist } from "@/domain/entities";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
@@ -46,6 +48,10 @@ export const database = {
   categoryMembers: { ...categoryMembers },
   projects: [...projects],
   intentions: [...intentions],
+  // The displayed result at Archive time, independent of later work and category changes.
+  archivedIntentionRows: {} as Record<string, IntentionRow>,
+  archivedIntentionMixes: {} as Record<string, MixTree>,
+  archivedIntentionCategories: {} as Record<string, Category[]>,
   distributions: [...distributions],
   intentionTemplates: [...intentionTemplates],
   lists: [...lists],

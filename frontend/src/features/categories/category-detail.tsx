@@ -38,7 +38,6 @@ import {
   DeleteCategoryDialog,
 } from "@/features/categories/category-dialogs";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import { intentionMixHrefOf } from "@/features/intentions/mix-view";
 import { formatCount, formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
@@ -155,6 +154,7 @@ export function CategoryPane({
       <div className="mt-4 grid gap-4">
         {mix !== null && isInsideMix && !isLeaf && (
           <MixSetCard
+            showActual={false}
             categories={categories}
             mix={mix}
             categoryId={categoryId}
@@ -164,7 +164,7 @@ export function CategoryPane({
             }
             action={
               <Button asChild size="sm" variant="outline">
-                <Link to={intentionMixHrefOf(mix.owner.id, categoryId)}>Open mix</Link>
+                <Link to={`/mixes/${mix.mixId ?? ""}`}>Open mix</Link>
               </Button>
             }
           />

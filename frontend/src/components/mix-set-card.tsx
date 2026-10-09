@@ -16,6 +16,7 @@ import { formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
 interface MixSetCardProps {
+  showActual?: boolean;
   categories: readonly Category[];
   mix: MixTree;
   // The parent; null is the top level.
@@ -29,6 +30,7 @@ interface MixSetCardProps {
 }
 
 export function MixSetCard({
+  showActual = true,
   categories,
   mix,
   categoryId,
@@ -61,7 +63,7 @@ export function MixSetCard({
               <span className="hidden @md:inline">Of the whole</span>
               <span className="@md:hidden">Whole</span>
             </th>
-            <th className="text-right font-semibold">Actual</th>
+            {showActual && <th className="text-right font-semibold">Actual</th>}
             {documentCountOf !== undefined && (
               <th className="hidden text-right font-semibold @sm:table-cell">Docs</th>
             )}
@@ -103,10 +105,12 @@ export function MixSetCard({
                 <td className="text-right tabular-nums">
                   {ofWhole === null ? "—" : formatPercent(ofWhole)}
                 </td>
-                <td className="text-right whitespace-nowrap tabular-nums">
-                  {actual === null ? <Muted>—</Muted> : formatPercent(actual)}
-                  <DriftMarker intended={ofWhole} actual={actual} />
-                </td>
+                {showActual && (
+                  <td className="text-right whitespace-nowrap tabular-nums">
+                    {actual === null ? <Muted>—</Muted> : formatPercent(actual)}
+                    <DriftMarker intended={ofWhole} actual={actual} />
+                  </td>
+                )}
                 {documentCountOf !== undefined && (
                   <td className="hidden text-right tabular-nums @sm:table-cell">
                     {documentCountOf(child.id)}
@@ -129,12 +133,14 @@ export function MixSetCard({
           others up.
         </StatusNote>
       )}
-      <FinePrint>
-        <i>Actual</i> is its share of {mix.intention.name}&apos;s output, beside what the mix says
-        it should be.
-        {otherTrackerCount > 0 &&
-          ` ${plural(otherTrackerCount, "other intention tracks", "other intentions track")} this mix and change${otherTrackerCount === 1 ? "s" : ""} with it.`}
-      </FinePrint>
+      {showActual && (
+        <FinePrint>
+          <i>Actual</i> is its share of {mix.intention.name}&apos;s output, beside what the mix says
+          it should be.
+          {otherTrackerCount > 0 &&
+            ` ${plural(otherTrackerCount, "other intention tracks", "other intentions track")} this mix and change${otherTrackerCount === 1 ? "s" : ""} with it.`}
+        </FinePrint>
+      )}
     </DetailCard>
   );
 }

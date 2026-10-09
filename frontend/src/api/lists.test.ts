@@ -481,6 +481,18 @@ describe("shaping a draft by an intention", () => {
     expect(draft.provenance).toMatchObject({ intentionId: "i8", mixRevision: 2, allocation: null });
   });
 
+  it("generates for a project's no-mix intention without category allocation", async () => {
+    signInAs("digitization");
+    const draft = await generateDraft({ ...shaped, intentionId: "i2" });
+    expect(draft.provenance).toMatchObject({
+      intentionId: "i2",
+      mixRevision: null,
+      allocation: null,
+    });
+    expect(draft.spreadCount).toBe(0);
+    expect(draft.shortfalls).toEqual([]);
+  });
+
   it("fills a correcting run's allocation and leaves the rest short, never re-spread", async () => {
     signInAs("digitization");
     const draft = await generateDraft({ ...shaped, allocation: { c21: 300, c22: 0 } });

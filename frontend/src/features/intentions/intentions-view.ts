@@ -1,6 +1,5 @@
-// How the Intentions page arranges what the server counted (docs/demos/shared/page-intentions.js;
-// STATUS "Intentions"): two columns of cards, Targets (a page target) and Tracking (only the
-// mix), derived, never stored. Each runs running → upcoming, with Ended and Archived folded below;
+// How the Intentions page arranges what the server counted: Targets (a page target) and Output
+// (all intentions), derived, never stored. Each runs running → upcoming, with Ended and Archived folded below;
 // running targets with an end come first by their end, then open-ended ones by how far along
 // they are; Overall heads Tracking. A column's tile counts intentions, never pages, since pages
 // of different intentions overlap. `?i=` opens and marks one card, `?t=` one repeat, and `?col=`
@@ -21,7 +20,7 @@ export type IntentionColumn = (typeof intentionColumns)[number];
 
 export const columnTitles = {
   target: "Targets",
-  track: "Tracking",
+  track: "Output",
 } as const satisfies Record<IntentionColumn, string>;
 
 export const columnOf = (intention: Pick<Intention, "targetPages">): IntentionColumn =>
@@ -60,10 +59,10 @@ export function intentionsUrlStateOf(
     focusedTemplateId: params.get("t"),
     // A focused card shows its own column.
     column:
-      focused !== undefined
-        ? columnOf(focused.intention)
-        : params.get("col") === "track"
-          ? "track"
+      params.get("col") === "track"
+        ? "track"
+        : focused !== undefined
+          ? columnOf(focused.intention)
           : "target",
   };
 }
@@ -84,7 +83,8 @@ export function columnSectionsOf(
   rows: readonly IntentionRow[],
   column: IntentionColumn,
 ): ColumnSections {
-  const inColumn = rows.filter((row) => columnOf(row.intention) === column);
+  const inColumn =
+    column === "track" ? rows : rows.filter((row) => columnOf(row.intention) === column);
   const live = inColumn.filter((row) => row.intention.archived === null);
   const running = live.filter((row) => row.state === "Running");
   const dated = running
@@ -230,25 +230,15 @@ export function timeLabelOf(row: IntentionRow): string {
 
 // What the strip under a card calls the mix it reads.
 export function mixLabelOf(row: IntentionRow): string {
-  if (row.scope !== null) {
-    return `Mix within ${row.scope.path.at(-1)}`;
-  }
-
-  if (!row.mix.isOwn) {
-    return `${row.mix.owner.name}'s mix`;
-  }
-
-  return row.intention.isOverall ? row.intention.name : "Own mix";
+  if (row.mix === null) return "No mix";
+  return row.mix.name;
 }
 
 export function mixSourceOf(row: IntentionRow): string {
-  if (!row.mix.isOwn) {
-    return `tracks ${row.mix.owner.name}`;
-  }
-
-  return row.mix.trackerCount > 0
-    ? `own · tracked by ${row.mix.trackerCount}`
-    : "own · used only here";
+  if (row.mix === null) return "no mix selected";
+  return row.intention.mixRevision == null
+    ? "follows latest"
+    : `revision ${row.intention.mixRevision} snapshot`;
 }
 
 // What a tracking card's mix is measured on.

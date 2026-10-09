@@ -258,6 +258,8 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         permission: "intention.edit",
         scope: "any",
       },
+      { permission: "mix.read", scope: "any" },
+      { permission: "mix.edit", scope: "any" },
       {
         permission: "project.read",
         scope: "any",
@@ -400,6 +402,9 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         permission: "intention.edit_overall",
         scope: "any",
       },
+      { permission: "mix.read", scope: "any" },
+      { permission: "mix.edit", scope: "any" },
+      { permission: "mix.manage", scope: "any" },
       {
         permission: "intention.repeat",
         scope: "any",

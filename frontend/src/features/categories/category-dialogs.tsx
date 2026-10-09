@@ -432,7 +432,7 @@ export function DeleteCategoryDialog({
           { text: "It holds no documents, so nothing moves." },
           ...impact.shares.map(
             (share): Consequence => ({
-              text: `${share.owner.name}: its ${share.share}% becomes unallocated in ${parentName}'s set${
+              text: `${share.mix.name}: its ${share.share}% becomes unallocated in ${parentName}'s set${
                 share.trackerCount > 0
                   ? `, for ${plural(share.trackerCount, "intention")} tracking it too`
                   : ""

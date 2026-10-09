@@ -1,17 +1,20 @@
 // The intentions, their mixes and the one repeat, from docs/demos/shared/vera-data.js (i1–i11,
-// d1–d2, t1); edit by hand from here on. House mix is the Overall intention and owns the
-// Standard mix; Periodicals push owns the second, which NDK Periodika and Regional catch-up
-// track (intentions.md §2). Every project has one intention of its own, holding the target the
+// d1–d2, t1); edit by hand from here on. Overall output selects the House mix; Periodicals push
+// is another reusable mix. The legacy owner/track fields remain for old links. Every project
+// has one intention of its own without a mix, holding the target the
 // demo gave the project (§3.4, decided 2026-10-07); VISK 7 backlog became VISK 7 / 2026's. The
 // demo's "today" is 2026-06-25.
 
 import type { Distribution, Intention, IntentionTemplate } from "@/domain/entities";
 import { projects } from "@/mocks/fixtures/projects";
 
-export const distributions: readonly Distribution[] = [
+const initialDistributions: readonly Distribution[] = [
   {
     id: "d1",
     ownerId: "i4",
+    name: "House mix",
+    isPrimary: true,
+    archivedAt: null,
     shares: {
       c1: 35,
       c2: 45,
@@ -26,10 +29,14 @@ export const distributions: readonly Distribution[] = [
       c32: 40,
     },
     revision: 4,
+    revisions: [],
   },
   {
     id: "d2",
     ownerId: "i8",
+    name: "Periodicals push",
+    isPrimary: false,
+    archivedAt: null,
     // Maps deliberately excluded; Specialist has no share, so 10% of Periodicals is unallocated.
     shares: {
       c1: 20,
@@ -44,8 +51,21 @@ export const distributions: readonly Distribution[] = [
       c32: 50,
     },
     revision: 2,
+    revisions: [],
   },
 ];
+
+export const distributions: readonly Distribution[] = initialDistributions.map((mix) => ({
+  ...mix,
+  revisions: [
+    {
+      revision: mix.revision,
+      shares: { ...mix.shares },
+      at: "2026-06-25T10:40:00Z",
+      label: null,
+    },
+  ],
+}));
 
 const everything = { kind: "any" } as const;
 
@@ -67,8 +87,8 @@ export const intentions: readonly Intention[] = [
   {
     ...intentionBase,
     id: "i4",
-    name: "House mix",
-    description: "What everything MZK digitizes ought to look like.",
+    name: "Overall output",
+    description: "All digitized work from the reporting baseline.",
     tracksMixOf: null,
     countsFrom: "2019-01-01",
     isOverall: true,
@@ -199,6 +219,8 @@ function projectIntention(
     name: project.name,
     funding: { kind: "project", projectId },
     projectId,
+    tracksMixOf: null,
+    distributionId: null,
     targetPages,
     countsFrom: project.startsOn,
     endsOn: project.endsOn,

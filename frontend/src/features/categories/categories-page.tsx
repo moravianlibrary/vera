@@ -10,9 +10,11 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { listMixes } from "@/api/mix-catalog";
 import { useSearchParams } from "react-router";
 import { CategoryTree } from "@/components/category-tree";
-import { countTreeValues, mixTreeValues } from "@/components/category-tree-values";
+import { countTreeValues } from "@/components/category-tree-values";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -37,7 +39,6 @@ import { Breadcrumb, CategoryPane } from "@/features/categories/category-detail"
 import type { CategoryNotice } from "@/features/categories/category-dialogs";
 import { RefineWizard } from "@/features/categories/refine-wizard";
 import { useCategoryIndexQuery } from "@/features/categories/use-categories-query";
-import { useIntentionIndexQuery } from "@/features/intentions/use-intentions-query";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
@@ -49,8 +50,10 @@ export function CategoriesPage() {
   const { data: session } = useSessionQuery();
   const { data: categories } = useCategoriesQuery();
   const { data: index } = useCategoryIndexQuery(view.query.mixId);
-  const { data: intentions } = useIntentionIndexQuery({
-    isEnabled: session !== undefined && can(session, "intention.read"),
+  const { data: mixes = [] } = useQuery({
+    queryKey: ["mixes"],
+    queryFn: listMixes,
+    enabled: session !== undefined && can(session, "mix.read"),
   });
   const [isRootOpen, setIsRootOpen] = useState(false);
   const [notice, setNotice] = useState<CategoryNotice | null>(null);
@@ -62,7 +65,6 @@ export function CategoriesPage() {
   const matches = matchingCategoryIds(categories, index, view.query);
   const visibleIds = visibleCategoryIds(categories, matches);
   const facets = categoryFacets(categories, index, view.query);
-  const mixOptions = intentions?.rows.filter((row) => row.intention.tracksMixOf === null) ?? [];
   const setCategoryParams = (id: string | null, replace = false) => {
     const next = new URLSearchParams(params);
     next.delete("c");
@@ -107,27 +109,25 @@ export function CategoriesPage() {
       <PageHeader
         title="Categories"
         control={
-          index.mix !== null && intentions !== undefined ? (
+          index.mix !== null ? (
             <div className="flex items-center gap-2">
               <Label htmlFor="categories-mix" className="shrink-0 text-xs text-muted-foreground">
-                Mix of
+                Mix
               </Label>
               <Select
-                value={index.mix.owner.isOverall ? "overall" : index.mix.owner.id}
-                onValueChange={(value) =>
-                  view.setQuery({ ...view.query, mixId: value === "overall" ? undefined : value })
-                }
+                value={view.query.mixId ?? mixes.find((mix) => mix.isPrimary)?.id ?? ""}
+                onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
               >
                 <SelectTrigger id="categories-mix" className="h-8 w-full min-w-0 md:w-60">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="overall">Overall</SelectItem>
-                  {mixOptions
-                    .filter((row) => !row.intention.isOverall)
-                    .map((row) => (
-                      <SelectItem key={row.intention.id} value={row.intention.id}>
-                        {row.intention.name}
+                  {mixes
+                    .filter((mix) => mix.archivedAt === null)
+                    .map((mix) => (
+                      <SelectItem key={mix.id} value={mix.id}>
+                        {mix.name}
+                        {mix.isPrimary ? " (Primary)" : ""}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -170,7 +170,7 @@ export function CategoriesPage() {
             matchingIds={matches}
             counts={index}
             mix={index.mix}
-            offered={index.mix === null ? countTreeValues : [...mixTreeValues, ...countTreeValues]}
+            offered={index.mix === null ? countTreeValues : ["share", "whole", ...countTreeValues]}
             selectedId={categoryId}
             onSelect={select}
           />

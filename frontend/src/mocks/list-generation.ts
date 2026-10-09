@@ -18,7 +18,7 @@ import type {
 } from "@/api/lists";
 import { categoryLineageOf, leafCategoriesOf } from "@/domain/categories";
 import type { Category, Session } from "@/domain/entities";
-import { isInIntentionScope, mixNodesOf, mixOwnerOf, shareWithinOf } from "@/domain/intentions";
+import { isInIntentionScope, mixNodesOf, shareWithinOf } from "@/domain/intentions";
 import { isInPool } from "@/domain/lists";
 import { hasPermission } from "@/domain/permissions";
 import { formatShortCalendarDay } from "@/lib/format-date";
@@ -116,12 +116,49 @@ export function generateDraft(
     .filter((item) => isInIntentionScope(shapedBy, item.iteration, categories))
     .filter((item) => item.pages !== null)
     .toSorted(byPriorityThenAge);
+  if (shapedBy.distributionId === null) {
+    if (allocation !== null)
+      return { refusal: { status: 422, message: "A correcting allocation needs a mix" } };
+    const picked: { item: ListItem; reason: string }[] = [];
+    let total = fixed.reduce((sum, item) => sum + (item.pages ?? 0), 0);
+    for (const item of available) {
+      if (total >= pages || total + (item.pages ?? 0) > pages * (1 + tolerance) + pageSlack)
+        continue;
+      if (categoryIds.length > 0 && !categoryIds.includes(topCategoryOf(item.iteration.categoryId)))
+        continue;
+      picked.push({
+        item,
+        reason: `${item.iteration.priority} priority · asked ${formatShortCalendarDay(item.askedAt.slice(0, 10))}`,
+      });
+      total += item.pages ?? 0;
+    }
+    return {
+      value: {
+        generator,
+        shapedBy: { intentionId: shapedBy.id, name: shapedBy.name },
+        picks: picked,
+        requestedPages: pages,
+        totalPages: total,
+        spreadCount: 0,
+        shortfalls: [],
+        provenance: {
+          intentionId: shapedBy.id,
+          mixId: null,
+          mixRevision: null,
+          pages,
+          allocation: null,
+          generator: `${generator.plugin} ${generator.version}`,
+          at: new Date().toISOString(),
+        },
+      },
+    };
+  }
   const isUnder = (categoryId: string, ancestorId: string) =>
     categoryLineageOf(categories, categoryId).includes(ancestorId);
   const leaves = leafCategoriesOf(categories).filter(
     (leaf) => scope === null || isUnder(leaf.id, scope),
   );
-  const distribution = distributionOf(mixOwnerOf(shapedBy, database.intentions));
+  const distribution = distributionOf(shapedBy);
   const shareOf = (categoryId: string) =>
     shareWithinOf(categories, distribution, scope, categoryId);
   // Its share of the pages, or its node's allocated pages split by the shares below the node.
@@ -245,6 +282,7 @@ export function generateDraft(
       shortfalls,
       provenance: {
         intentionId: shapedBy.id,
+        mixId: distribution.id,
         mixRevision: distribution.revision,
         pages,
         allocation,

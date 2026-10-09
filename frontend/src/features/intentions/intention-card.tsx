@@ -256,7 +256,7 @@ function fillColumns(row: IntentionRow): ColumnDefinition<FillRowView>[] {
     isNumeric: true,
     cell,
   });
-  return [
+  const columns: ColumnDefinition<FillRowView>[] = [
     {
       key: "category",
       header: row.scope === null ? "Category" : `Within ${row.scope.path.at(-1)}`,
@@ -283,6 +283,9 @@ function fillColumns(row: IntentionRow): ColumnDefinition<FillRowView>[] {
     )),
     pagesColumn("delivered", "Delivered", (fill) => formatCount(fill.deliveredPages)),
   ];
+  return row.mix === null
+    ? columns.filter((column) => ["category", "planned", "delivered"].includes(column.key))
+    : columns;
 }
 
 // ---------------------------------------------------------------- tracking the mix
@@ -312,7 +315,7 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           </>
         )}
       </p>
-      {row.outputPages > 0 && (
+      {row.outputPages > 0 && row.mix !== null && (
         <div className="grid gap-1.5">
           <MixBars
             categories={row.mixRows.map((mixRow) => ({
@@ -339,7 +342,8 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           )}
         </p>
       ) : (
-        row.outputPages > 0 && (
+        row.outputPages > 0 &&
+        row.mix !== null && (
           <p className="text-[0.8125rem] text-tone-green-foreground">
             Every category within {bandText} points.
           </p>
@@ -350,20 +354,23 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           {Math.round(row.unallocated)}% of the mix is unallocated
         </p>
       )}
-      <Expansion label="Per category" isOpen={isOpen}>
+      <Expansion label={row.mix === null ? "Output by category" : "Per category"} isOpen={isOpen}>
         <DataTable
           rows={row.mixRows}
           rowId={(mixRow) => mixRow.categoryId}
           columns={{ notebook: driftColumns(row) }}
           emptyText="One category, all of it."
         />
-        <Fine>
-          Intended is the mix{row.scope === null ? "" : ` within ${row.scope.path.at(-1)}`}; planned
-          is over the {formatCount(row.plannedPages)} pp on lists starting in its window; output is
-          over the {formatCount(row.outputPages)} pp digitized in it, whenever they were planned.
-          Drift is output minus intended, in points; {bandText} is display tolerance, not a change
-          to the mix.
-        </Fine>
+        {row.mix !== null && (
+          <Fine>
+            Intended is the mix{row.scope === null ? "" : ` within ${row.scope.path.at(-1)}`}
+            {"; "}
+            planned is over the {formatCount(row.plannedPages)} pp on lists starting in its window;
+            output is over the {formatCount(row.outputPages)} pp digitized in it, whenever they were
+            planned. Drift is output minus intended, in points; {bandText} is display tolerance, not
+            a change to the mix.
+          </Fine>
+        )}
         <NotCounted row={row} />
       </Expansion>
     </>
@@ -412,7 +419,7 @@ function driftColumns(row: IntentionRow): ColumnDefinition<MixRowView>[] {
     header: string,
     cell: (mixRow: MixRowView) => ReactNode,
   ): ColumnDefinition<MixRowView> => ({ key, header, track: "max-content", isNumeric: true, cell });
-  return [
+  const columns: ColumnDefinition<MixRowView>[] = [
     {
       key: "category",
       header: row.scope === null ? "Category" : `Within ${row.scope.path.at(-1)}`,
@@ -453,6 +460,9 @@ function driftColumns(row: IntentionRow): ColumnDefinition<MixRowView>[] {
         ),
     },
   ];
+  return row.mix === null
+    ? columns.filter((column) => ["category", "planned", "output"].includes(column.key))
+    : columns;
 }
 
 // ---------------------------------------------------------------- the mix it reads
@@ -471,7 +481,7 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
   const hidden = row.mixRows.length - shown.length;
   return (
     <div className="grid gap-1.5">
-      {isBarShown && row.mixRows.length > 0 && (
+      {isBarShown && row.mix !== null && row.mixRows.length > 0 && (
         <MixBar
           shares={row.mixRows.map((mixRow) => ({
             id: mixRow.categoryId,
@@ -485,12 +495,20 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
         <span className="font-medium">{mixLabelOf(row)}</span>
         <span className="text-muted-foreground">
           {row.mixRows.length === 0
-            ? "— one category, all of it"
+            ? row.mix === null
+              ? "— output only"
+              : "— one category, all of it"
             : shown.map((mixRow, index) => (
                 <span key={mixRow.categoryId}>
                   {index > 0 && " · "}
                   {mixRow.name}{" "}
-                  {mixRow.intended === null ? (
+                  {row.mix === null ? (
+                    mixRow.output === null ? (
+                      "—"
+                    ) : (
+                      Math.round(mixRow.output)
+                    )
+                  ) : mixRow.intended === null ? (
                     <span className="text-tone-amber-foreground">—</span>
                   ) : (
                     Math.round(mixRow.intended)
@@ -512,6 +530,15 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
               {" · "}
               <Link to={mixLink.href} className="text-foreground hover:underline">
                 {mixLink.label}
+              </Link>
+            </>
+          )}
+          {row.mix !== null && (
+            <>
+              {" "}
+              ·{" "}
+              <Link to={`/mixes/${row.mix.id}`} className="text-foreground hover:underline">
+                View shared mix
               </Link>
             </>
           )}
