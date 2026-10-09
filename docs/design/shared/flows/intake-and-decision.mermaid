@@ -12,8 +12,8 @@ flowchart TB
 
   subgraph BAT[One batch per submission]
     WAYS["Filled by: type · catalog search · paste ·<br/>file · barcode · photo"]:::sys
-    LIM{"Holds request.decide?"}
-    OVER["Over propose.max_at_once:<br/>reported, not dropped"]:::sys
+    LIM{"Within the role's per-submission limit?"}
+    OVER["Over the role's per-submission limit:<br/>reported, not dropped"]:::sys
   end
 
   subgraph CAT[Each item: catalog check]
@@ -65,7 +65,7 @@ flowchart TB
   HRV -->|I10 I11 I12| CC
   WAYS -->|I2| LIM
   LIM -->|no| OVER --> CC
-  LIM -->|yes| CC
+  LIM -->|yes, or unlimited| CC
   CC -->|I3| NF
   CC -->|I4| VOL
   CC -->|I5| LNK --> CC

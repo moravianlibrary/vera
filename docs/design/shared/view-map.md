@@ -167,11 +167,12 @@ and *Mine* as a filter.
   **auto-detect** of each line's identifier type needs an identifier detector;
   without one the user picks the type and every line is read as it. Typed
   entry, catalog search and a file with columns need nothing
-- **at most N at once** for anybody without `request.decide` — a deployment
-  setting, `propose.max_at_once`, 10 unless changed. A curator adding a shelf
-  is doing their job; anybody else adding 400 is a queue somebody else must
-  empty. The dialog shows the limit beside the count, and what does not fit is
-  reported rather than silently dropped
+- **at most N at once** according to the person's roles. Reader and staff
+  roles set 10 by default; curator, dig-curator and admin explicitly set
+  `null` (unlimited). A person with several roles gets the highest limit, or
+  unlimited if any role sets `null`. The dialog shows the effective limit
+  beside the count, and what does not fit is reported rather than silently
+  dropped. `request.decide` itself does not change the limit
 - **ingest failures** are the status *Could not be added*, with **group by
   batch** — the batch is the unit an admin retries. Retry and the raw source
   payload sit in the detail pane and on the batch header, **absent** for
@@ -364,8 +365,8 @@ administration — you go to them to *set something up*, not to move work along:
 pages, only the ones this map has least to say about.
 
 **Documents comes first because everybody has it.** For a reader it *is* the
-application — what they asked for, and what happened to it. For staff it is the
-reference job, looking something up. For everyone else it is where a record is
+application — what they asked for, and what happened to it. Staff has the same
+reach, with a higher daily proposal limit. For everyone else it is where a record is
 opened to be acted on outside a queue. It is also the clearest case for why no
 nav entry carries a count: the only number it could show most people is *how
 many documents exist*, which is not a claim that anything is waiting for you

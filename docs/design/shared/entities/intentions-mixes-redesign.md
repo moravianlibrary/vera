@@ -13,13 +13,21 @@ below distinguishes those from shipped behavior.
   `/mixes` and `/mixes/:id` provide the direct management view. Existing
   intention-owner fields and endpoints remain for compatibility with older
   links and data; new selections use mix IDs directly.
+- Categories links its selected mix beside the picker for editing or viewing.
+  The Mixes pages keep their direct URLs; the separate sidebar row appears only
+  when an account can read mixes but cannot open Categories.
 - Intentions may select no mix, follow an active mix's latest revision, or pin a
   named snapshot. New ordinary intentions offer Primary by default. Project
   intentions start without a mix; no-mix generation uses eligible work in
   priority and request-age order, with no category allocation.
-- Overall output remains on its selected mix when Primary changes. Intentions
-  appear under Targets, Output, and Repeats tabs on `/intentions`; Output
-  includes targets as well as no-target intentions. Categories selects a mix
+- Overall output remains on its selected mix when Primary changes. `/intentions`
+  now presents one board, with Repeats first and intentions grouped into
+  Running, Upcoming, Ended, and Archived. The Type filter makes Targets
+  (with a page target), Output (without one), and Repeats mutually exclusive;
+  output comparison is still available on target cards. Its search and Type
+  filter, together with state, pace/attention, repeat frequency, mix,
+  project (including Any project and No project), counting dates and target/time percentages, can be saved as watchlists,
+  with three seeded shared examples. Categories selects a mix
   directly and shows its definition without implying actual output.
 - Archive captures an intention's displayed row, mix tree, category labels,
   and exact mix revision. Archived views are read-only. Existing active
@@ -33,8 +41,7 @@ below distinguishes those from shipped behavior.
   document drill-downs are outside the captured intention result.
 
 **Still open:** the proposed project filter on a mix, a correction/restore
-workflow for archives, and saved watchlists plus full filter bars for the new
-Targets, Output, Repeats, and Mixes surfaces. These were not settled by the
+workflow for archives, and saved watchlists plus full filter bars for Mixes. These were not settled by the
 discussion in this note. The mock does not create repeat occurrences on a
 calendar tick; repeat templates now carry the optional mix selection for a
 future scheduler.
@@ -228,8 +235,8 @@ restore workflow remains open.
 
 ## 7. Information architecture candidate
 
-The following layout was recommended during brainstorming but has **not yet
-been selected** as the final navigation:
+The following layout was considered during brainstorming. The Intentions
+destinations were superseded by the merged board described above:
 
 | View | Contents | Candidate route |
 |---|---|---|

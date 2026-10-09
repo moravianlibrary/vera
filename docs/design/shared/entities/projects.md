@@ -98,7 +98,7 @@ stateDiagram-v2
 | Act | Permission | Shipped roles |
 |---|---|---|
 | see a project | `project.read@project` · `@any`, or `project.decide` | members (via their role) · dig-curator · curator · admin |
-| start one | `project.create` | staff and up; a reader cannot. Starting is its own grant, not implied by proposing |
+| start one | `project.create` | curator, dig-curator, admin, or a custom role with the grant. Starting is its own grant, not implied by proposing |
 | edit details, description, dates, and its intention's target | `project.edit@managed` · `@any` | the manager · dig-curator · admin |
 | add or remove members, hand over the manager role | `project.manage_members@managed` · `@any` | the manager · dig-curator · admin |
 | propose documents into it | `request.create` + membership | members, while Proposed or Approved |

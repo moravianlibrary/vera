@@ -7,8 +7,8 @@ none of them should not exist.
 
 Grouped by actor. The actors are the five shipped roles of [[permissions]] §4,
 which are bundles rather than a ladder — each group assumes the grants of the
-groups it builds on (staff ⊇ reader; curator and dig-curator ⊇ staff; admin
-holds everything). The permission column is what the use case requires, so a
+groups it builds on (reader and staff have the same grants; dig-curator covers
+curator; admin holds everything). The permission column is what the use case requires, so a
 page offering it can check it.
 
 A word on the nouns. A **request** is one ask; *proposal* and *addition* are
@@ -26,19 +26,19 @@ made ([[status-model]] §2.8). An **iteration** is one attempt to digitize a
 |---|---|---|---|
 | R1 | See my proposals and my documents **as one thing** | `request.read_own` | one row per document, whatever stage it reached — the user does not care whether it is a proposal, an addition or a document ([[view-map]] §2.1) |
 | R2 | Propose a document | `request.create` | down to the volume or issue, not just the catalog record ([[document-identity]]); starts from the **catalog** — any catalog with an adapter; one that cannot be searched from VERA is opened in a new tab and its record link pasted back — the record found gives the identifier, and VERA then checks whether it already has it, so R5 is found before it is asked |
-| R2b | Propose **many at once** | `request.create` | one list, filled any way — typed, catalog search, pasted, file, barcode (**continuous**: a scanner types and presses Enter, so a shelf is scanned with no clicks), photo (camera scanning, photo, and auto-detect in a pasted list only with their *Input* plugin); each item checked as it lands. **Every submission is one batch**, a batch of one included; the batch carries the reason. Without `request.decide`, at most `propose.max_at_once` per submission ([[view-map]] §2.1) |
+| R2b | Propose **many at once** | `request.create` | one list, filled any way — typed, catalog search, pasted, file, barcode (**continuous**: a scanner types and presses Enter, so a shelf is scanned with no clicks), photo (camera scanning, photo, and auto-detect in a pasted list only with their *Input* plugin); each item checked as it lands. **Every submission is one batch**, a batch of one included; the batch carries the reason. The role's per-submission limit applies ([[view-map]] §2.1) |
 | R3 | Withdraw my proposal | `request.withdraw_own` | the wrong volume has to be takeable back — `Withdrawn`, **only while it is undecided** ([[status-model]] §2) |
 | R4 | See **why** | `request.read_own` | the public reason text of *Declined*, *Cancelled*, *Could not be digitized* ([[view-rules]] §4.3) |
 | R5 | Propose something already asked for, in progress or done | `request.create` | not a *duplicate* error: I am attached to the live work and see its status ([[status-model]] §2.7); if it is already digitized, my request carries the existing copy and a curator decides whether to scan again |
 | R6 | Open the published result | `request.read_own` | the outbound link on `Published` |
 | R7 | Save a filter as a Watchlist | `watch` | [[navigation]] §5 |
-| R8 | Propose into my project | `request.create` + project membership | while the project is *Proposed* the ask is covered by the project's decision; after it is *Approved* the ask is flagged *after the project's approval* and decided on its own; a *Rejected* project takes none. The project shows on my request, in Projects and in Documents |
+| R8 | Propose into my project | `request.create` + project membership | while the project is *Proposed* the ask is covered by the project's decision; after it is *Approved* the ask is flagged *after the project's approval* and decided on its own; a *Rejected* project takes none. The project shows on my request; opening Projects also requires `project.read` or `project.decide` |
 
 ## 2. Library staff — staff
 
 | # | Use case | Permission | Notes |
 |---|---|---|---|
-| S1 | Look up anybody's requests and documents | `request.read@any` · `iteration.read@any` | the reference job — no decisions |
+| S1 | Propose and follow their own requests | reader grants | the staff role grants the same actions as reader, with a higher daily proposal limit |
 
 ## 3. Curator — within custody
 
@@ -51,7 +51,7 @@ of the item ([[permissions]] §3).
 |---|---|---|---|
 | C1 | Review proposals — approve or deny | `request.decide` | the proposals my proposal custodies match; approving **sets category and priority**, the only place a human classifies an item; one decision covers **every asker** of that document; bulk approve yes — **skipping rescans** — bulk deny no, a denial carries a reason ([[view-map]] §2.2) |
 | C2 | Add documents directly, skipping review | `request.create` · `request.decide` | the propose form with **approve now** — an intent applied after the checks, never to an item with an existing copy ([[status-model]] §2.8) |
-| C3 | Resolve validation defects — fix, accept, or deny | `validation.approve` · `validation.deny` · S2 · S3 | *fix* is the staff edits; *accept* takes the outstanding defects **one by one or all at once**. Defects include **missing data** and **no catalog record** |
+| C3 | Resolve validation defects — fix, accept, or deny | `validation.approve` · `validation.deny` | *accept* takes the outstanding defects **one by one or all at once**. Defects include **missing data** and **no catalog record** |
 | C4 | Revoke a validation approval | `validation.revoke` | |
 | C5 | **Approve a rescan** | `request.decide` | approving a request that carries an **existing copy** — *Kramerius: Published*, or VERA's own earlier scan. One item at a time; no shortcut makes it ([[status-model]] §2) |
 | C6 | Reclassify after approval | `iteration.classify` | category and priority, from Documents or Validations; a new category outside my custody hands the item over |

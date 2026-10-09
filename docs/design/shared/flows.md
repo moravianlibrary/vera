@@ -122,9 +122,9 @@ flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
   A(["Propose: type · search · paste · file<br/>barcode · photo"]) --> B[Each item checked as it lands]:::sys
-  B --> L{Holds request.decide?}
-  L -->|yes| S
-  L -->|no: at most propose.max_at_once| O[Items over the limit:<br/>reported, not dropped]:::sys
+  B --> L{"Within the role's per-submission limit?"}
+  L -->|yes, or unlimited| S
+  L -->|no| O[Items over the limit:<br/>reported, not dropped]:::sys
   O --> S(["Submit"])
   S --> R["Report: N proposed · N joined · N skipped"]:::sys
   R --> E["One batch · each new item Pending<br/>reader: Waiting for review"]:::st

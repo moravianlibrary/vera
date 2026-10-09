@@ -163,8 +163,9 @@ shipped roles in §4 actually use.
 > **Proposing many at once is `request.create`, once per item** — a batch is
 > a way of submitting, not a power, and readers may do it: a researcher with a
 > bibliography is the ordinary case. What differs is a **limit, not a grant**:
-> without `request.decide`, a submission holds at most `propose.max_at_once`
-> items (a deployment setting, 10 by default) — see [[view-map]] §2.1.
+> each role sets the maximum items in one submission, with `null` for unlimited.
+> Reader and staff roles set 10 by default. `request.decide` does not change
+> either proposal limit — see [[view-map]] §2.1.
 
 > **`request.decide@custody` resolves through proposal custody** (decided
 > 2026-09-26). A proposal has no category until it is approved, so category
@@ -316,9 +317,9 @@ distinguishing them from a role somebody adds next year.
 | Role | Holds |
 |------|-------|
 | **reader** | `request.create` · `request.read_own` · `request.withdraw_own` · `watch` — four of the self-scoped grants, and nothing else |
-| **staff** | reader + `task.read_own` · `project.create` · `project.edit@managed` · `project.manage_members@managed` · `project.delete@managed` · `iteration.read@any` · `request.read@any` · `category.read@any` |
-| **curator** | staff + everything else `@custody`: `request.decide` (proposal custody) · `validation.*` · `iteration.recheck` · `iteration.classify` · `iteration.cancel` · `iteration.resume` · `iteration.publish` · `addition.read` · `category.edit` · `category.grant_custody` · `project.decide@any` |
-| **dig-curator** | staff + `list.*@any` · `intention.read@any` · `intention.edit@any` · `project.*@any` · `iteration.cancel@any` · `iteration.resume@any` |
+| **staff** | same grants as reader; a higher daily proposal limit |
+| **curator** | reader/staff grants + project create/read/manage, document/request read, category read, task read own, and custody actions: `request.decide` (proposal custody) · `validation.*` · `iteration.recheck` · `iteration.classify` · `iteration.cancel` · `iteration.resume` · `iteration.publish` · `addition.read` · `category.edit` · `category.grant_custody` · `project.decide@any` |
+| **dig-curator** | curator + `list.*@any` · `intention.read@any` · `intention.edit@any` · `project.*@any` · `iteration.cancel@any` · `iteration.resume@any` |
 | **admin** | everything at `any`, including `restriction.overrule` and `access.manage` |
 
 **`reader` holds only self-scoped grants**, nothing that touches another
@@ -420,8 +421,9 @@ discoverable afterwards.
 - ~~**Which permission approves or rejects a project**~~ — **answered**
   (2026-10-01): `project.decide@any`, held by curator and admin.
 - ~~**The project manager's scope**~~ — **answered** (2026-10-01): a new
-  scope, `managed`; staff hold `project.edit@managed` and
-  `project.manage_members@managed` ([[projects]] §3).
+  scope, `managed`; the curator role holds `project.edit@managed` and
+  `project.manage_members@managed` ([[projects]] §3). The staff role has no
+  project grants.
 - ~~**Overall's mix**~~ — **answered** (2026-10-01): `intention.edit_overall`,
   admin only.
 - **Does `iteration.cancel@custody` cover an iteration already on a list?** The
