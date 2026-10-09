@@ -5,7 +5,11 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { AppShell } from "@/components/layout/app-shell";
-import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
+import {
+  canOpenNavigationEntry,
+  navigationEntries,
+  visibleNavigation,
+} from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AccessPage } from "@/features/access/access-page";
@@ -99,8 +103,7 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
     return null;
   }
 
-  const isVisible = visibleNavigation(session).some((entry) => entry.id === entryId);
-  return isVisible ? children : <Navigate to="/" replace />;
+  return canOpenNavigationEntry(session, entryId) ? children : <Navigate to="/" replace />;
 }
 
 const router = createBrowserRouter([

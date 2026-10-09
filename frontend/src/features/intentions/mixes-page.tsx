@@ -1,9 +1,10 @@
 // Independent, reusable mix definitions. A mix has percentages and revisions, but no output of
 // its own; output comparisons remain on an intention and its reporting window.
 
-import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import type { MixRecord } from "@/api/mix-catalog";
 import {
   archiveMix,
   createMix,
@@ -13,11 +14,12 @@ import {
   saveMixSetById,
   snapshotMix,
 } from "@/api/mix-catalog";
-import type { MixRecord } from "@/api/mix-catalog";
+import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
-import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { allMixesValue, MixPicker } from "@/components/mix-picker";
+import { Tree } from "@/components/tree";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,10 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { categoryPathOf, searchedCategoriesOf } from "@/domain/categories";
 import { can } from "@/domain/permissions";
+import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { useActionMutation } from "@/hooks/use-action-mutation";
 
 const mixQueryKey = ["mixes"] as const;
 type Editor = "new" | "copy" | "snapshot" | "archive" | "set" | null;
@@ -51,7 +54,9 @@ export function MixesPage() {
   const current = selected ?? mixes.find((mix) => mix.id === mixId) ?? null;
   const [search, setSearch] = useState("");
   const [state, setState] = useState("active");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<ReadonlySet<string>>(new Set());
   const [editor, setEditor] = useState<Editor>(null);
   const [name, setName] = useState("");
   const [label, setLabel] = useState("");
@@ -83,7 +88,42 @@ export function MixesPage() {
   );
   const mayEdit = session !== undefined && can(session, "mix.edit");
   const mayManage = session !== undefined && can(session, "mix.manage");
+  const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
+  const categoryId =
+    selectedCategory === undefined ||
+    categories.some((category) => category.parentId === selectedCategory.id)
+      ? (selectedCategoryId ?? null)
+      : selectedCategory.parentId;
   const children = categories.filter((category) => category.parentId === categoryId);
+  const branchIds = categories
+    .filter((category) => categories.some((child) => child.parentId === category.id))
+    .map((category) => category.id);
+  const visibleCategoryIds = searchedCategoriesOf(categories, categorySearch);
+  const visibleChildrenOf = (parentId: string | null) =>
+    categories.filter(
+      (category) =>
+        category.parentId === parentId &&
+        (visibleCategoryIds === null || visibleCategoryIds.has(category.id)),
+    );
+  const expandedCategoryIds = new Set(
+    visibleCategoryIds === null
+      ? branchIds.filter((id) => !collapsedCategoryIds.has(id))
+      : branchIds,
+  );
+  const unallocatedOf = (mix: MixRecord, parentId: string | null) =>
+    Math.max(
+      0,
+      100 -
+        categories
+          .filter((category) => category.parentId === parentId)
+          .reduce((sum, category) => sum + (mix.shares[category.id] ?? 0), 0),
+    );
+  const wholeShareOf = (mix: MixRecord, categoryId: string) => {
+    const path = categoryPathOf(categories, categoryId);
+    return path.some((category) => mix.shares[category.id] === undefined)
+      ? null
+      : path.reduce((share, category) => (share * mix.shares[category.id]) / 100, 100);
+  };
   const complete = (mix: MixRecord) => {
     const parentIds = [null, ...categories.map((category) => category.id)];
     return parentIds.every((parentId) => {
@@ -121,6 +161,25 @@ export function MixesPage() {
     <>
       <PageHeader
         title={current === null ? "Mixes" : current.name}
+        back={{
+          label: "Back to Categories",
+          href:
+            current === null || current.archivedAt !== null
+              ? "/categories"
+              : `/categories?mix=${encodeURIComponent(current.id)}`,
+        }}
+        control={
+          <MixPicker
+            id="managed-mix"
+            mixes={mixes}
+            value={mixId ?? allMixesValue}
+            includeAll
+            includeArchived
+            onValueChange={(value) =>
+              navigate(value === allMixesValue ? "/mixes" : `/mixes/${encodeURIComponent(value)}`)
+            }
+          />
+        }
         breadcrumb={
           current === null
             ? undefined
@@ -302,18 +361,75 @@ export function MixesPage() {
               </DetailCard>
             </div>
             <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  size="sm"
-                  variant={categoryId === null ? "default" : "outline"}
-                  onClick={() => setCategoryId(null)}
-                >
-                  Top level
-                </Button>
-                {categoryId !== null && (
-                  <span className="text-sm text-muted-foreground">
-                    {categories.find((category) => category.id === categoryId)?.name}
-                  </span>
+              <div className="overflow-hidden rounded-lg border bg-card">
+                <div className="border-b px-4 py-3">
+                  <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                    Category proportions
+                  </h2>
+                  <Input
+                    type="search"
+                    aria-label="Search mix categories"
+                    placeholder="Search categories…"
+                    value={categorySearch}
+                    onChange={(event) => setCategorySearch(event.target.value)}
+                    className="mt-3"
+                  />
+                  <div className="mt-2 flex justify-end gap-3 pr-4 text-xs text-muted-foreground">
+                    <span className="w-14 text-right">In parent</span>
+                    <span className="w-14 text-right">Overall</span>
+                  </div>
+                </div>
+                <Tree
+                  ariaLabel="Mix category proportions"
+                  roots={visibleChildrenOf(null)}
+                  childrenOf={(category) => visibleChildrenOf(category.id)}
+                  nodeId={(category) => category.id}
+                  label={(category) => category.name}
+                  value={(category) => {
+                    const share = current.shares[category.id];
+                    const whole = wholeShareOf(current, category.id);
+                    return (
+                      <span className="flex gap-3">
+                        <span className="w-14 text-right">
+                          {share === undefined ? "—" : `${share}%`}
+                        </span>
+                        <span className="w-14 text-right text-muted-foreground">
+                          {whole === null ? "—" : `${Number(whole.toFixed(2))}%`}
+                        </span>
+                      </span>
+                    );
+                  }}
+                  warning={(category) => {
+                    const unallocated = unallocatedOf(current, category.id);
+                    return categories.some((child) => child.parentId === category.id) &&
+                      unallocated > 0
+                      ? `${unallocated}% unallocated within ${category.name}`
+                      : null;
+                  }}
+                  selectedId={selectedCategoryId}
+                  onSelect={setSelectedCategoryId}
+                  expandedIds={expandedCategoryIds}
+                  onExpandedChange={(expanded) =>
+                    setCollapsedCategoryIds(
+                      new Set(branchIds.filter((branchId) => !expanded.has(branchId))),
+                    )
+                  }
+                  virtualRoot={{
+                    label: "All categories",
+                    value: (
+                      <span className="flex gap-3">
+                        <span className="w-14 text-right">100%</span>
+                        <span className="w-14 text-right text-muted-foreground">100%</span>
+                      </span>
+                    ),
+                    warning:
+                      unallocatedOf(current, null) > 0
+                        ? `${unallocatedOf(current, null)}% unallocated at top level`
+                        : null,
+                  }}
+                />
+                {visibleCategoryIds?.size === 0 && (
+                  <p className="px-4 py-5 text-sm text-muted-foreground">No categories match.</p>
                 )}
               </div>
               <DetailCard
@@ -330,39 +446,14 @@ export function MixesPage() {
                   ) : undefined
                 }
               >
-                {children.length === 0 ? (
-                  <p className="text-muted-foreground">This category has no children.</p>
-                ) : (
-                  children.map((child) => (
-                    <DetailRow
-                      key={child.id}
-                      aside={
-                        current.shares[child.id] === undefined
-                          ? "No share"
-                          : `${current.shares[child.id]}%`
-                      }
-                    >
-                      <button
-                        className="text-primary hover:underline"
-                        type="button"
-                        onClick={() => setCategoryId(child.id)}
-                      >
-                        {child.name}
-                      </button>
-                    </DetailRow>
-                  ))
-                )}
-                {children.length > 0 && (
-                  <FinePrint>
-                    Unallocated:{" "}
-                    {Math.max(
-                      0,
-                      100 -
-                        children.reduce((sum, child) => sum + (current.shares[child.id] ?? 0), 0),
-                    )}
-                    %
-                  </FinePrint>
-                )}
+                <p>
+                  {children.length} {children.length === 1 ? "category" : "categories"} ·{" "}
+                  {unallocatedOf(current, categoryId)}% unallocated
+                </p>
+                <FinePrint>
+                  Select a branch to edit its children, or a leaf to edit its siblings. Each edit
+                  creates a new revision.
+                </FinePrint>
               </DetailCard>
             </div>
           </div>

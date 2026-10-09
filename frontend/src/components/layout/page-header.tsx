@@ -5,11 +5,13 @@
 // picks what the whole view reads sits before the actions, and on a phone wraps to a line of its
 // own.
 
+import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { NavigationButton } from "@/components/layout/navigation-button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -18,6 +20,7 @@ interface PageHeaderProps {
   actions?: readonly ViewAction[];
   // On a record's own page, the way back to its index, and a word on where the record stands.
   breadcrumb?: { label: string; href: string; detail?: string };
+  back?: { label: string; href: string };
   control?: ReactNode;
   className?: string;
 }
@@ -26,6 +29,7 @@ export function PageHeader({
   title,
   actions = [],
   breadcrumb,
+  back,
   control,
   className,
 }: PageHeaderProps) {
@@ -38,6 +42,13 @@ export function PageHeader({
       )}
     >
       <NavigationButton />
+      {back !== undefined && (
+        <Button asChild size="icon" variant="outline" className="size-8 shrink-0">
+          <Link to={back.href} aria-label={back.label} title={back.label}>
+            <ChevronLeft />
+          </Link>
+        </Button>
+      )}
       {breadcrumb === undefined ? (
         <h1 className="min-w-0 flex-1 truncate text-lg leading-7 font-semibold">{title}</h1>
       ) : (

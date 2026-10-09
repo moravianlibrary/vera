@@ -49,6 +49,7 @@ import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
 const backToIndex = { label: "Projects", href: "/projects" };
+const backToProjects = { label: "Back to Projects", href: "/projects" };
 
 export function ProjectPage() {
   const { projectId = null } = useParams();
@@ -58,13 +59,13 @@ export function ProjectPage() {
   const { data: session } = useSessionQuery();
 
   if (detail === undefined || session === undefined) {
-    return <PageHeader title="Project" breadcrumb={backToIndex} />;
+    return <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />;
   }
 
   if (detail === null) {
     return (
       <>
-        <PageHeader title="Project" breadcrumb={backToIndex} />
+        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
         <PageContent>
           <StatusNote tone="slate" title="You are not on that project">
             It is gone, or only its members and whoever decides projects see it.
@@ -117,6 +118,7 @@ function ProjectRecord({
         title: project.name,
         actions: pageActions,
         breadcrumb: { ...backToIndex, detail: `${standing} · ${periodTextOf(project)}` },
+        back: backToProjects,
       }}
       note={
         <StatusNote tone={note.tone} title={note.title}>

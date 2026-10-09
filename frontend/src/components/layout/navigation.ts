@@ -84,9 +84,20 @@ export interface VisibleNavigationEntry extends NavigationEntry {
 }
 
 export function visibleNavigation(session: Session): VisibleNavigationEntry[] {
-  return navigationEntries
-    .filter((entry) => hasAnyPermission(session, entry.requires))
-    .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }));
+  const hasCategories = hasAnyPermission(session, ["category.read"]);
+  return (
+    navigationEntries
+      .filter((entry) => hasAnyPermission(session, entry.requires))
+      // Mix management is reached from the Categories mix picker when that page is available.
+      .filter((entry) => entry.id !== "mixes" || !hasCategories)
+      .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }))
+  );
+}
+
+// A nested page may stay addressable even when it has no separate sidebar row.
+export function canOpenNavigationEntry(session: Session, entryId: string): boolean {
+  const entry = navigationEntries.find((candidate) => candidate.id === entryId);
+  return entry !== undefined && hasAnyPermission(session, entry.requires);
 }
 
 function labelFor(entry: NavigationEntry, session: Session): string {

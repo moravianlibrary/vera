@@ -1,32 +1,26 @@
 // The Categories page (docs/demos/shared/page-categories.js; STATUS "Categories"; concepts.md
 // *Category*): the tree on the left and one category on the right, *All categories* when none is
 // picked. It is about the tree, what each line of work holds and who holds custody of it; a
-// category has no share of its own, so the selected intention's mix is read-only here and links to
-// where it is edited (intentions.md §2.4). Someone who cannot read intentions gets the tree, its numbers and custody, without
+// category has no share of its own, so the selected mix is read-only here and links to its
+// management view. Someone who cannot read mixes gets the tree, its numbers and custody, without
 // a mix. The selection is `?c=` and pushes a history entry. On a phone the pane is a sheet, which
 // *All categories* opens too. Watchlists and the shared filter bar narrow the tree while keeping
 // ancestor paths; they leave the selected pane and the tree's Show preference intact. A change
 // to the tree leaves a note in the pane it opens; Refine replaces it (`&refine=1`).
 // TODO(rrandiak): labels move to i18n.
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import { listMixes } from "@/api/mix-catalog";
-import { useSearchParams } from "react-router";
 import { CategoryTree } from "@/components/category-tree";
 import { countTreeValues } from "@/components/category-tree-values";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { MixPicker } from "@/components/mix-picker";
+import { Button } from "@/components/ui/button";
 import { scopeOfCategory } from "@/domain/categories";
 import { categoryFacets, matchingCategoryIds, visibleCategoryIds } from "@/domain/category-filters";
 import { can } from "@/domain/permissions";
@@ -103,6 +97,7 @@ export function CategoriesPage() {
     categoryId === null
       ? "All categories"
       : (categories.find((category) => category.id === categoryId)?.name ?? "Category");
+  const selectedMixId = view.query.mixId ?? mixes.find((mix) => mix.isPrimary)?.id;
 
   return (
     <>
@@ -111,27 +106,25 @@ export function CategoriesPage() {
         control={
           index.mix !== null ? (
             <div className="flex items-center gap-2">
-              <Label htmlFor="categories-mix" className="shrink-0 text-xs text-muted-foreground">
-                Mix
-              </Label>
-              <Select
-                value={view.query.mixId ?? mixes.find((mix) => mix.isPrimary)?.id ?? ""}
+              <MixPicker
+                id="categories-mix"
+                mixes={mixes}
+                value={selectedMixId ?? ""}
                 onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
-              >
-                <SelectTrigger id="categories-mix" className="h-8 w-full min-w-0 md:w-60">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {mixes
-                    .filter((mix) => mix.archivedAt === null)
-                    .map((mix) => (
-                      <SelectItem key={mix.id} value={mix.id}>
-                        {mix.name}
-                        {mix.isPrimary ? " (Primary)" : ""}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              />
+              {can(session, "mix.read") && (
+                <Button asChild size="sm" variant="outline" className="shrink-0">
+                  <Link
+                    to={
+                      selectedMixId === undefined
+                        ? "/mixes"
+                        : `/mixes/${encodeURIComponent(selectedMixId)}`
+                    }
+                  >
+                    {can(session, "mix.edit") ? "Manage mixes" : "View mixes"}
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : undefined
         }

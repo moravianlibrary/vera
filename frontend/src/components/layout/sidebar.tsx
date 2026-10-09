@@ -7,7 +7,7 @@
 // TODO(rrandiak): the Watchlists row (§5) and the user menu (§7).
 
 import { ChevronsRight, UserRound } from "lucide-react";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { RunningTasksPanel } from "@/components/layout/running-tasks-panel";
 import { Logo } from "@/components/logo";
@@ -34,6 +34,7 @@ export function Sidebar({
   onNavigate,
   className,
 }: SidebarProps) {
+  const location = useLocation();
   const entries = session === undefined ? [] : visibleNavigation(session);
   const isShowingLabels = isExpanded || isPeeking;
   const labelClassName = cn("truncate", !isShowingLabels && "sr-only");
@@ -86,7 +87,7 @@ export function Sidebar({
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
-                isActive
+                isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               )
