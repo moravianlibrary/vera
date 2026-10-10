@@ -465,7 +465,7 @@ function CustodyCard({ category, node, session, onGrant }: CustodyCardProps): Re
         action={
           visibleNavigation(session).some((entry) => entry.id === "access") ? (
             <Button asChild size="sm" variant="outline">
-              <Link to="/access">Users &amp; Groups</Link>
+              <Link to="/access">Users management</Link>
             </Button>
           ) : undefined
         }

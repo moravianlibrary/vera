@@ -92,7 +92,7 @@ describe("custodyMembersOf", () => {
 });
 
 describe("projectsOf", () => {
-  it("says manager, member or via which group", () => {
+  it("keeps every manager, direct member, and group route", () => {
     const projects = [
       { id: "p1", name: "One", managerId: "u2", memberIds: ["u2", "u1"], memberGroupIds: [] },
       { id: "p2", name: "Two", managerId: "u2", memberIds: [], memberGroupIds: ["g1"] },
@@ -100,6 +100,7 @@ describe("projectsOf", () => {
 
     expect(projectsOf("u2", groups, projects).map(({ via }) => via)).toEqual([
       "manager",
+      "member",
       "manager",
     ]);
     expect(projectsOf("u1", groups, projects)).toEqual([

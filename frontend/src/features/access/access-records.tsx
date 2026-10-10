@@ -1,19 +1,15 @@
-// The record under Users & Groups' columns (view-catalog.md *Users & Groups*; docs/demos/shared/
-// page-access.js `detailUser`, `detailRole`, `detailGroup`, `detailCust`). Everything comes with
+// Access records in Users management's detail pane. Everything comes with
 // its provenance (permissions.md §6): a user's roles and how each is held, how they sign in, their
 // groups, the custody and projects they hold directly or via which group, and every permission
 // with the roles it comes from; a role's holders, the Identity mappings that give it and its
 // grants; what joining a group gives, never a role; a custody's members, what each can do with
 // its proposals, and the rule that places proposals in it. Category custody is shown here and
-// changed on Categories; mappings and Custody rules on Plugins. A shared watchlist's record gives
-// its view, its filter, its audience and whom it reaches; the user, role and group records each
-// say which shared watchlists reach them (filtering.md §4.5). A named record selects it.
+// changed on Categories; mappings and Custody rules on Plugins.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import type { AccessIndex, SharedWatchlist } from "@/api/access";
-import { viewLabels } from "@/components/filters/share-watchlist-dialog";
+import type { AccessIndex } from "@/api/access";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import type {
@@ -42,7 +38,6 @@ import { catalogOrderOf, permissionCatalog, permissionGroups } from "@/domain/pe
 import type { AccessSelection, AccessSelectionKind } from "@/features/access/access-view";
 import {
   confersText,
-  filterSummaryOf,
   permissionLines,
   scopeLabelOf,
   viaText,
@@ -445,13 +440,6 @@ export function UserRecord({
           <Part title="Projects">
             <ProjectRows user={user} index={index} names={names} />
           </Part>
-          <WatchlistsPart
-            title="Shared watchlists they see"
-            watchlists={index.sharedWatchlists.filter((watchlist) =>
-              watchlist.reachedUserIds.includes(user.id),
-            )}
-            onSelect={onSelect}
-          />
         </div>
       </Columns>
       <Part
@@ -624,11 +612,6 @@ export function RoleRecord({
             </Link>
             .
           </Fine>
-          <WatchlistsPart
-            title="Watchlists shared with this role"
-            watchlists={sharedWith(index, "roleIds", role.id)}
-            onSelect={onSelect}
-          />
         </Part>
       </Columns>
       <Part
@@ -738,11 +721,6 @@ export function GroupRecord({
               </Row>
             ))}
           </Part>
-          <WatchlistsPart
-            title="Watchlists shared with this group"
-            watchlists={sharedWith(index, "groupIds", group.id)}
-            onSelect={onSelect}
-          />
         </div>
       </Columns>
     </RecordFrame>
@@ -761,6 +739,9 @@ export function CustodyRecordView({
   custody,
 }: RecordProps & { custody: CustodyRecord }) {
   const members = custodyMembersOf(custody, index.groups);
+  const placedProposals = index.proposals.filter((proposal) =>
+    proposal.custodyIds.includes(custody.id),
+  );
   return (
     <RecordFrame
       title={custody.name}
@@ -864,116 +845,28 @@ export function CustodyRecordView({
           ))}
         </Part>
       </Columns>
-    </RecordFrame>
-  );
-}
-
-// ---------------------------------------------------------------- shared watchlists
-
-function sharedWith(index: AccessIndex, field: "roleIds" | "groupIds", recordId: string) {
-  return index.sharedWatchlists.filter(
-    (watchlist) =>
-      watchlist.audience.kind === "some" && watchlist.audience[field].includes(recordId),
-  );
-}
-
-function WatchlistsPart({
-  title,
-  watchlists,
-  onSelect,
-}: {
-  title: string;
-  watchlists: readonly SharedWatchlist[];
-  onSelect: (selection: AccessSelection) => void;
-}) {
-  return (
-    <Part title={title}>
-      {watchlists.length === 0 && <None />}
-      {watchlists.map((watchlist) => (
-        <Row key={watchlist.id} aside={<Muted>{viewLabels[watchlist.view]}</Muted>}>
-          <RecordLink kind="watchlists" id={watchlist.id} onSelect={onSelect}>
-            {watchlist.name}
-          </RecordLink>
-        </Row>
-      ))}
-    </Part>
-  );
-}
-
-export function SharedWatchlistRecord({
-  names,
-  onSelect,
-  actions,
-  watchlist,
-}: RecordProps & { watchlist: SharedWatchlist }) {
-  const { audience } = watchlist;
-  const viewLabel = viewLabels[watchlist.view];
-  return (
-    <RecordFrame
-      title={watchlist.name}
-      badge={
-        <ToneBadge tone="blue" className="px-1.5 py-0 text-[0.625rem]">
-          shared
-        </ToneBadge>
-      }
-      sub={
-        <>
-          A watchlist on {viewLabel}, saved by {names.user(watchlist.ownerId)}
-        </>
-      }
-      actions={actions}
-    >
-      <Columns>
-        <div>
-          <Part title="Filter">
-            <p className="text-[0.8125rem]">{filterSummaryOf(watchlist)}</p>
-          </Part>
-          <Part title="Audience">
-            {audience.kind === "everyone" && (
-              <p className="text-[0.8125rem]">Everyone who opens {viewLabel}.</p>
-            )}
-            {audience.kind === "some" && (
-              <>
-                {audience.groupIds.map((groupId) => (
-                  <Row key={groupId} aside={<Muted>group</Muted>}>
-                    <RecordLink kind="groups" id={groupId} onSelect={onSelect}>
-                      {names.group(groupId)}
-                    </RecordLink>
-                  </Row>
-                ))}
-                {audience.roleIds.map((roleId) => (
-                  <Row key={roleId} aside={<Muted>role, by hand or mapped</Muted>}>
-                    <RecordLink kind="roles" id={roleId} onSelect={onSelect}>
-                      {names.role(roleId)}
-                    </RecordLink>
-                  </Row>
-                ))}
-              </>
-            )}
-            <Fine>
-              Seen, the badge, the order and hiding it are each person's own. Only those who manage
-              shared watchlists change it.
-            </Fine>
-          </Part>
-        </div>
-        <Part title="Reaches" aside={plural(watchlist.reachedUserIds.length, "person", "people")}>
-          {watchlist.reachedUserIds.length === 0 && <None text="Nobody." />}
-          {watchlist.reachedUserIds.map((userId) => (
-            <Row key={userId}>
-              <RecordLink kind="users" id={userId} onSelect={onSelect}>
-                {names.user(userId)}
-              </RecordLink>
-            </Row>
-          ))}
-          {watchlist.outOfViewUserIds.length > 0 && (
-            <Fine>
-              {plural(watchlist.outOfViewUserIds.length, "more person is", "more people are")} in
-              the audience but cannot open {viewLabel}, so they do not see it:{" "}
-              {watchlist.outOfViewUserIds.map(names.user).join(", ")}.
-            </Fine>
-          )}
-        </Part>
-      </Columns>
+      <Part title="Current plugin output · open proposals" aside={String(custody.openCount)}>
+        {placedProposals.length === 0 && (
+          <None text="No open proposals currently placed in this set." />
+        )}
+        {placedProposals.slice(0, 8).map((proposal) => (
+          <Row key={proposal.id} aside={<Muted>placed by custody rule</Muted>}>
+            <Link
+              to={`/review/proposals?id=${encodeURIComponent(proposal.id)}`}
+              className={linkClass}
+            >
+              {proposal.title}
+            </Link>
+          </Row>
+        ))}
+        {placedProposals.length > 8 && (
+          <Fine>Showing 8 of {placedProposals.length} open proposals.</Fine>
+        )}
+        <Fine>
+          Placement is calculated from Custody plugin output. Change the rule on Plugins; manage
+          this set's members here.
+        </Fine>
+      </Part>
     </RecordFrame>
   );
 }

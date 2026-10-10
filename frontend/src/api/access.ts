@@ -22,11 +22,18 @@ import {
   projectMembershipSchema,
   roleSchema,
 } from "@/domain/access";
-import { watchlistSchema } from "@/domain/entities";
+import { categorySchema, watchlistSchema } from "@/domain/entities";
 import { grantSchema } from "@/domain/permissions";
 
-// A shared watchlist as Users & Groups lists it: who saved it, and whom its audience reaches,
-// apart from those in it who cannot open its view (filtering.md §4.5).
+export const accessProposalSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  custodyIds: z.array(z.string()),
+});
+export type AccessProposal = z.infer<typeof accessProposalSchema>;
+
+// Shared watchlists are managed in Preferences; kept in the response while the old editor
+// endpoints are migrated away from this resource.
 export const sharedWatchlistSchema = watchlistSchema.extend({
   ownerId: z.string(),
   reachedUserIds: z.array(z.string()),
@@ -44,6 +51,8 @@ export const accessIndexSchema = z.object({
   custodies: z.array(custodyRecordSchema),
   identityInstances: z.array(identityInstanceSchema),
   categoryMemberships: z.array(categoryMembershipSchema),
+  categories: z.array(categorySchema),
+  proposals: z.array(accessProposalSchema),
   projects: z.array(projectMembershipSchema),
   sharedWatchlists: z.array(sharedWatchlistSchema),
 });

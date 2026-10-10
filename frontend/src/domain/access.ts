@@ -335,19 +335,15 @@ export function projectsOf(
   projects: readonly ProjectMembership[],
 ): ProjectPlace[] {
   const groupIds = groups.filter((group) => group.memberIds.includes(userId)).map(({ id }) => id);
-  return projects.flatMap((project): ProjectPlace[] => {
-    if (project.managerId === userId) {
-      return [{ projectId: project.id, via: "manager" }];
-    }
-
-    if (project.memberIds.includes(userId)) {
-      return [{ projectId: project.id, via: "member" }];
-    }
-
-    return project.memberGroupIds
+  return projects.flatMap((project): ProjectPlace[] => [
+    ...(project.managerId === userId ? [{ projectId: project.id, via: "manager" as const }] : []),
+    ...(project.memberIds.includes(userId)
+      ? [{ projectId: project.id, via: "member" as const }]
+      : []),
+    ...project.memberGroupIds
       .filter((groupId) => groupIds.includes(groupId))
-      .map((groupId) => ({ projectId: project.id, via: { groupId } }));
-  });
+      .map((groupId) => ({ projectId: project.id, via: { groupId } })),
+  ]);
 }
 
 // ---------------------------------------------------------------- changing a role

@@ -107,9 +107,13 @@ function reachableRows(session: Session): ProposalRow[] {
 // The custodies the Custody rules place each open proposal in now, one entry per document since
 // one decision covers every asker (proposal-custody.md §5, Users & Groups).
 export function openProposalPlacements(): string[][] {
+  return openProposalRows().map((row) => row.custodyIds);
+}
+
+export function openProposalRows(): ProposalRow[] {
   return database.documents.flatMap((document) => {
     const row = rowOf(document);
-    return row === null || row.decision !== "Pending" ? [] : [row.custodyIds];
+    return row === null || row.decision !== "Pending" ? [] : [row];
   });
 }
 

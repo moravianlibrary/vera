@@ -109,7 +109,7 @@ zod v4.
 | Words for numbers and days | `formatCount` and `formatPercent` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
 | Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
 | A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record, a note row under a row (`noteOf`), cards on a phone (`cardOf`), nested grouping (`groupBy`: a level collapses, names its own groups so an empty one shows, opens its header as a record; Plugins); no row actions or paging yet |
-| Records in linked columns | `LinkedColumns` (`components/linked-columns.tsx`): columns of sections, one kind each, the selected record's links lit, tagged and drawn in the gutters, the record underneath; a tab per section on a phone; Users & Groups |
+| Access relationships | `features/access/access-relationships.tsx`: a read-only, single-root neighborhood from a selected user, role, group, custody set, proposal or category; the access page uses `MasterDetail` for its four management views |
 | A table whose row opens in a drawer | `TableWithDrawer` (`components/table-with-drawer.tsx`): `above`, the table, `below`, a 28rem drawer (full width on a phone) from the URL that does not hold the page; Tasks |
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
 | A run's progress, and runs over time | `RunProgress` (`components/visualizations/run-progress.tsx`, `card` or `sidebar`), `Timeline` (`components/visualizations/timeline.tsx`: a lane a schedule, dots, bands, hatched when paused); a run's state, `RunStateBadge` (`components/run-state-badge.tsx`); the words for triggers and durations in `features/tasks/task-words.ts` |
@@ -132,7 +132,7 @@ facets, order and grouping. `mutations.ts` holds `Outcome`/`Refusal`,
 grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 `mocks/today.ts`, and its moment `mockNow()`, 10:40, standing still under tests and moving on in
 the browser) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categories.ts`,
-`batches.ts`, `users.ts`, `tasks.ts` (runs and schedules), `plugins.ts` (implementations with their versions, and every instance with its configuration and VERA's settings: the identity providers, the custody rule, generators, classifiers, message and delivery channels; written by Plugins; names via `usePluginInstancesQuery`), `access.ts` (roles, how each person holds them by hand or mapped, groups and direct custody, copied into the database, where Users & Groups and Categories write them; `useGroupsQuery` lists groups, `useRolesQuery` roles by name); the entity schemas are in
+`batches.ts`, `users.ts`, `tasks.ts` (runs and schedules), `plugins.ts` (implementations with their versions, and every instance with its configuration and VERA's settings: the identity providers, the custody rule, generators, classifiers, message and delivery channels; written by Plugins; names via `usePluginInstancesQuery`), `access.ts` (roles, how each person holds them by hand or mapped, groups and direct custody, copied into the database, where Users management and Categories write them; `useGroupsQuery` lists groups, `useRolesQuery` roles by name); the entity schemas are in
 `domain/entities.ts`. Every API module has tests over HTTP through MSW
 (`src/api/*.test.ts`).
 
@@ -158,7 +158,7 @@ editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
 open in place; an editor with a server preview, and a hand-off to the Lists editor by URL), and
-`features/access/` (Users & Groups: linked columns, records with provenance, set editors and pickers; the model for a page that reads one index and filters it in place), `features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step), and `features/tasks/` (Tasks and Schedules: a table with a drawer, polling while something runs, a timeline, acts on a row; the model for anything read against the server's clock), and `features/plugins/` (a grouped table with two drawers, filtered in place; an editor built from what the record declares; an upload read by the server before it is installed). The sidebar's foot has the Running tasks panel (`components/layout/running-tasks-panel.tsx`). A filtered resource answers its facets with `facetCountsOf` (`api/facets.ts`). Routes in `src/app.tsx`,
+`features/access/` (Users management: four tabbed, searchable master-detail tables, records with provenance, set editors and pickers), `features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step), and `features/tasks/` (Tasks and Schedules: a table with a drawer, polling while something runs, a timeline, acts on a row; the model for anything read against the server's clock), and `features/plugins/` (a grouped table with two drawers, filtered in place; an editor built from what the record declares; an upload read by the server before it is installed). The sidebar's foot has the Running tasks panel (`components/layout/running-tasks-panel.tsx`). A filtered resource answers its facets with `facetCountsOf` (`api/facets.ts`). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---
@@ -252,14 +252,14 @@ reads its row in `entities/permissions.md` §3.
   (triggers).
 - Parts: `TableWithDrawer` §1.6, `DataTable` §2.4; the timeline is new.
 
-### 9. Users & Groups — page `access`
-- STATUS "Users & Groups" (~671); the *Shared watchlists have an audience*
-  decision (~139) and the *No `group_roles`* and *Guest is a role* ones (~179).
-- `view-catalog.md` *Users & Groups* (current there, the rest is behind);
-  `entities/permissions.md` §1, §4; `entities/identity.md`;
-  `entities/proposal-custody.md` §1.
-- Parts: `LinkedColumns` §1.7, `SetEditorDialog` (from step 7),
-  `PickerDialog` §6.6.
+### 9. Users management — page `access`
+- Four views at `/access`: Users, Roles, Groups, and Custodies. Searchable,
+  scroll-loading tables open provenance details in a docked pane (phone sheet). Custodies manages named
+  proposal custody sets and inspects category custody. Open proposals in a set are plugin output.
+- Read `entities/users-management-redesign.md`, `entities/permissions.md` §1,
+  §4, `entities/identity.md`, and `entities/proposal-custody.md` §1.
+- Parts: `FilterBar`, `DataTable`, `MasterDetail`, existing access editors.
+  Shared watchlists live in Preferences rather than this page.
 
 ### 10. Plugins — page `plugins`
 - STATUS "Plugins" (~729).

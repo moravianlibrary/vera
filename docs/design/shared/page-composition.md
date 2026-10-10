@@ -246,25 +246,23 @@ what changed the data.
 
 ---
 
-## 6. Users & Groups · Plugins · Hooks
+## 6. Users management · Plugins · Hooks
 
-### Users & Groups — `/access`
+### Users management — `/access`
 
 | Surface | Route | Notes |
 |---------|-------|-------|
-| users | `/access` | the default index |
-| groups | `/access/groups` | members, categories and projects it grants |
-| roles | `/access/roles` | the grant table |
-| user detail | `/access/users/:id` | **effective roles with provenance**, effective custody resolved |
-| group detail | `/access/groups/:id` | members, and **what membership confers** |
+| users | `/access` | default searchable table with scroll loading; `?u=` opens its detail pane |
+| roles | `/access?view=roles` | grants and holders; `?r=` opens detail |
+| groups | `/access?view=groups` | members and bundled resource access; `?g=` opens detail |
+| custodies | `/access?view=custodies` | proposal custody sets and categories; `?c=` opens a named set |
 | role editor | — | modal: permission × scope grid ([[permissions]] §2) |
 | custody grants | — | editor, modal — also reachable from *Categories* |
 
-Both detail surfaces **resolve rather than list**. The user detail answers *what
-can this person actually do and reach*, which is a union over direct grants,
-group-inherited roles ([[permissions]] §1) and the category tree — and it shows
-each one's origin. The group detail answers the same question from the other
-end, so the consequence of adding somebody is visible while adding them.
+Details show each source of access. Roles are held by hand or mapped from
+Identity; groups never give roles. Proposal and category custody inherit
+through group membership, and category custody also inherits from ancestors.
+The focused Explore relationships view is available from a selected record.
 
 The **role editor** is the one screen where the model is visible as a model: a
 grid of permissions against the four scopes, with impossible cells disabled by
@@ -312,7 +310,7 @@ surface in the application.
 | Digitization Lists | 3 | 2 | |
 | Tasks | 2 | 2 | |
 | Schedules | 1 | 1 | |
-| Users & Groups | 7 | 5 | |
+| Users management | 4 views | master-detail pane | no watchlists |
 | Plugins | 4 | 3 | ⚠️ plugin contract |
 | Hooks | 4 | 4 | |
 

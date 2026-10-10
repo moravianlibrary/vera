@@ -7,10 +7,16 @@ import { useEffect, useEffectEvent, useRef } from "react";
 // How far below the visible rows the next slice is asked for, so scrolling rarely waits.
 const loadAheadMargin = "800px";
 
-export function useLoadMore(hasMore: boolean, isLoadingMore: boolean, onLoadMore: () => void) {
+export function useLoadMore(
+  hasMore: boolean,
+  isLoadingMore: boolean,
+  onLoadMore: () => void,
+  rearmKey?: string | number,
+) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadMore = useEffectEvent(onLoadMore);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: rearm after an appended slice even if the sentinel never left the viewport.
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (sentinel === null || !hasMore || isLoadingMore) {
@@ -29,7 +35,7 @@ export function useLoadMore(hasMore: boolean, isLoadingMore: boolean, onLoadMore
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, rearmKey]);
 
   return sentinelRef;
 }

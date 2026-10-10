@@ -24,7 +24,7 @@ Every page filters, and each one does it a little differently:
 | Validations | review needed | *Show* | Defect, Category (work) · Priority, Project, Since (labels) | — | yes |
 | Digitization Lists | planned and running | *Show* | Intention, Created by, Runs (labels) | — | yes |
 | Tasks | finished runs | — | State, Trigger, Plugin, Started by (work) | — | yes |
-| Users & Groups | everything | — | Show: People, Agents, No role yet | — | no |
+| Users management | users | Show: People, Agents, No role yet | Role, Group, Project, Proposal custody set, Category custody; Custodies: member source and Custody plugin | — | no |
 | Plugins | everything | — | Type, State | — | no |
 | Hooks | everything | — | Sends by, State | — | no |
 | Categories | the tree | *Show* (what each row carries, not a filter) | — | — | no |
@@ -260,13 +260,8 @@ audience in place. It shows how many people the audience reaches. A shared tab
 the person may not change still shows that its filter changed, and offers only
 *Discard*; **+** keeps the change as their own.
 
-**Shared watchlists are listed in Users & Groups** too ([[view-catalog]]):
-- **The list:** a record kind of their own, beside groups and proposal
-  custodies. The record gives the view, the filter, the audience and how many
-  it reaches.
-- **The other records:** the group, role and user records each have a
-  *Watchlists* card: shared with this group, shared with this role, and what
-  this person sees.
+**Shared watchlists are managed in Preferences → Watchlists**. Users management
+does not list shared watchlists or show watchlist cards on access records.
 
 **A filter is saved once among one's own.** Two watchlists on one view are the
 same when their filters select the same records, whatever their names. The
@@ -348,7 +343,7 @@ beyond equality, or a field reached through another record.
 | Intentions | **Kind** (target, tracking) · State · Funding · Scope · *Tracks* |
 | Tasks | **State** · Trigger · Plugin · Started by · *Started* |
 | Schedules | Plugin · Paused |
-| Users & Groups | **Show** (people, agents, no role yet) · Role · Group · Proposal custody · Signs in with |
+| Users management | Users: **Show** (people, agents, no role yet) · Role · Group · Project · Proposal custody set · Category custody. Custodies: Custodians · Custody plugin |
 | Plugins | Type · State · *Has warnings* |
 | Hooks | Event · Sends by · State |
 | Categories | none — the tree is the record; *Show* there picks what each row displays, not which rows |

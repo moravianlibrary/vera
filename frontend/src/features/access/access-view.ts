@@ -1,9 +1,7 @@
-// Users & Groups' state in its URL (docs/demos/shared/page-access.js; view-catalog.md): the
-// search and *Show* (people, agents, or those with no role yet) narrow the columns, and one of
-// `?u=`, `?r=`, `?g=`, `?c=` or `?w=` (a shared watchlist) names the selected record. Opened
-// bare, the first user is selected. The page holds every record already, so the filter is
-// applied here, not by the server. It keeps no watchlist tabs of its own: people and roles are
-// looked up, not watched.
+// Users management's URL filter vocabulary. The page uses four entity views and keeps
+// search and filters in the URL. The older selection and linked-column helpers remain below
+// for compatibility while other access editors migrate; the page itself opens without a
+// selected record and does not display shared watchlists.
 // TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@/api/access";
@@ -27,18 +25,38 @@ export const userShowLabels = {
 export interface AccessQuery {
   readonly search?: string;
   readonly show?: readonly UserShow[];
+  readonly roleIds?: readonly string[];
+  readonly groupIds?: readonly string[];
+  readonly projectIds?: readonly string[];
+  readonly custodyIds?: readonly string[];
+  readonly pluginIds?: readonly string[];
+  readonly categoryIds?: readonly string[];
+  readonly sources?: readonly ("direct" | "group" | "none")[];
 }
 
 const searchParam = "q";
 const showParam = "show";
 
 function parseAccessSearchParams(params: URLSearchParams): AccessQuery {
+  const list = (name: string) => {
+    const values = (params.get(name) ?? "").split(",").filter(Boolean);
+    return values.length === 0 ? undefined : [...new Set(values)];
+  };
   const show = (params.get(showParam) ?? "")
     .split(",")
     .filter((value): value is UserShow => (userShows as readonly string[]).includes(value));
   return {
     search: params.get(searchParam)?.trim() || undefined,
     show: show.length === 0 ? undefined : [...new Set(show)],
+    roleIds: list("role"),
+    groupIds: list("group"),
+    projectIds: list("project"),
+    custodyIds: list("custody"),
+    pluginIds: list("plugin"),
+    categoryIds: list("categoryCustody"),
+    sources: list("source")?.filter((value): value is "direct" | "group" | "none" =>
+      ["direct", "group", "none"].includes(value),
+    ),
   };
 }
 
@@ -51,6 +69,19 @@ function toAccessSearchParams(query: AccessQuery): URLSearchParams {
 
   if (query.show !== undefined && query.show.length > 0) {
     params.set(showParam, query.show.toSorted().join(","));
+  }
+
+  for (const [key, name] of [
+    ["roleIds", "role"],
+    ["groupIds", "group"],
+    ["projectIds", "project"],
+    ["custodyIds", "custody"],
+    ["pluginIds", "plugin"],
+    ["categoryIds", "categoryCustody"],
+    ["sources", "source"],
+  ] as const) {
+    const values = query[key];
+    if (values !== undefined && values.length > 0) params.set(name, values.toSorted().join(","));
   }
 
   return params;

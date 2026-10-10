@@ -31,7 +31,7 @@ import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
-import { openProposalPlacements } from "@/mocks/proposal-review";
+import { openProposalPlacements, openProposalRows } from "@/mocks/proposal-review";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
 import { audienceReachOf } from "@/mocks/watchlists";
@@ -73,6 +73,12 @@ export function accessIndex(): AccessIndex {
     categoryMemberships: Object.entries(database.categoryMembers).map(([categoryId, userIds]) => ({
       categoryId,
       userIds: [...userIds],
+    })),
+    categories: database.categories,
+    proposals: openProposalRows().map((row) => ({
+      id: row.record.document.id,
+      title: row.record.document.title,
+      custodyIds: row.custodyIds,
     })),
     projects: database.projects.map(({ id, name, managerId, memberIds, memberGroupIds }) => ({
       id,

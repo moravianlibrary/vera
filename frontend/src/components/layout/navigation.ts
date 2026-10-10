@@ -74,7 +74,13 @@ export const navigationEntries: readonly NavigationEntry[] = [
     requires: ["task.read_own", "task.read"],
   },
   { id: "schedules", path: "/schedules", rail: "Sc", label: "Schedules", requires: ["task.read"] },
-  { id: "access", path: "/access", rail: "UG", label: "Users & Groups", requires: ["access.read"] },
+  {
+    id: "access",
+    path: "/access",
+    rail: "UM",
+    label: "Users management",
+    requires: ["access.read"],
+  },
   { id: "plugins", path: "/plugins", rail: "Pl", label: "Plugins", requires: ["plugin.read"] },
   { id: "hooks", path: "/hooks", rail: "Ho", label: "Hooks", requires: ["hook.read"] },
 ];

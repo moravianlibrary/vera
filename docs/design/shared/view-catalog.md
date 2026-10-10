@@ -365,61 +365,35 @@ What runs by itself, and when: a timeline (24 h / 7 days / month), then every
 schedule — plugin schedules, and intention repeats listed read-only. The only
 place a schedule is edited. Needs `task.read`; editing needs `task.schedule`.
 
-### Users & Groups · `/access` · **UG** · `admin`
+### Users management · `/access` · **UM** · `admin`
 
-Users, groups, roles, category custody and proposal custody — separate things
-([[relationships]] §1), which is why the page exists at all.
+Four peer views use the same tab styling as watchlists, but have no saved
+watchlists of their own: **Users · Roles · Groups · Custodies**. Each has a
+searchable master table that loads more rows on scroll, and a persistent detail pane. On a phone, the
+selected detail opens in a full-screen sheet. The URL keeps the view, filters,
+and record; old `?u=`, `?r=`, `?g=`, and `?c=` links still open details.
 
-**One view, three linked columns, the user in the middle** — Roles · Users ·
-Groups and proposal custodies — with the selected record underneath
-(layout decided 2026-09-26, redrawn 2026-10-01 once groups stopped giving
-roles). Selecting anything lights up what it is connected to and draws the
-links. The left side answers *what may this person do*: each role is held
-**by hand** or **mapped** by an Identity instance from a claim (a dashed
-line). The right side answers *what are they responsible for*: their groups
-and the proposal custodies they are in, directly or via a group.
+**Users** is the default table, showing roles, groups, and a compact resource
+access summary. Detail shows identity, every role source (by hand or mapped),
+groups, proposal custody sets, category branches, project membership, and
+effective permissions. A person with no role says *No access yet*.
 
-| Column | Shows, when selected |
-|-------|-------|
-| **Roles** | who holds it and how (by hand, or mapped by which Identity instance from which claim), the mappings that give it, and its (permission, scope) grants |
-| **Users** | roles **and how**; how they sign in (each linked identity: instance, external id, last login); groups; category custody, proposal custody and projects, directly or via which group; every permission with the role it comes from. A user with no role says *No access yet*, and the header counts them |
-| **Groups** | members, the categories, proposal custodies and projects it holds, and *adding somebody here gives them …* — never a role |
-| **Proposal custodies** | members, direct or via a group, each with what they can do (*decides*, *sees only*, *no role reaches it*); the Custody rules that name it; open proposals. The fallback is marked and cannot be deleted |
-| **Shared watchlists** | the view, the filter, the audience (everyone, or groups and roles) and how many people it reaches; *Share…*, *Rename…*, *Edit filter*, *Delete…* under `watchlist.manage_shared` ([[filtering]] §4.5). Added 2026-10-06; they sit in the third column, beside groups and custodies |
+**Roles** shows grants and holders; its detail retains the permission/scope
+editor, grant impact, mapped sources, and deletion guard. **Groups** shows
+members and the access bundle they carry: proposal custody, category custody,
+and projects. Groups never grant roles.
 
-**Users come from Identity plugins** ([[identity]]): somebody with an
-institutional account appears the first time they log in. The page creates
-only **local accounts**, and links a second identity to an existing user.
-Agents are created with their plugin.
+**Custodies** has **Proposal sets | Categories**. Proposal sets are the managed
+entities: their members and groups, the Custody plugins that can name them,
+and the open proposals currently placed in each as read-only output. Plugin
+rules decide placement on Plugins; there is no individual proposal custody
+editor here. Category detail separates assignments here from those
+inherited from ancestors; category custody is edited on Categories. Project
+membership is inspected here but edited on Projects.
 
-A user is a **person or an agent**, nothing else — an agent is a plugin acting
-as a user and carries a badge. **Roles are editable**, shipped ones included:
-the editor sets a scope per permission and says who a change reaches before it
-is saved, and refuses to leave nobody able to manage access.
-
-**Everything is shown with its provenance** ([[permissions]] §6). *"Jana:
-curator"* is not enough; *"curator — mapped from the IdP group
-mzk-curators"* is. *"Custody of Periodicals — via Periodicals Curators"* says
-the same for responsibility.
-
-**Proposal custody is edited here** (`access.manage`): the custodies, their
-names and members, and the *fallback* custody's members. Which proposals are
-in each is a Custody rule's answer, edited on Plugins.
-
-**Roles, groups and users each carry a *Watchlists* card**: shared with this
-role, shared with this group, and what this person sees. Selecting a role or
-a group lights up the shared watchlists it reaches, like any other link.
-
-The **Groups** index shows what membership confers, so the consequence of adding
-somebody is visible while adding them rather than discoverable later.
-
-**Custody is shown here and edited only in *Categories*** (decided 2026-09-26),
-from the branch. A user's and a group's custody appear read-only, linking to the
-node.
-
-**Not here:** the permission *check* itself. This page edits grants; whether a
-particular button appears is decided in the view that owns the button
-([[permissions]] §7).
+Every detail has a read-only, rooted *Explore relationships* mode. Shared
+watchlists are managed in Preferences, not on this page. See
+[[users-management-redesign]] for the full UI contract.
 
 ### Plugins · `/plugins` · **Pl** · `admin`
 

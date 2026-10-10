@@ -1,25 +1,21 @@
-// Users & Groups (view-catalog.md *Users & Groups*; docs/demos/shared/page-access.js): one view,
-// three linked columns with the user in the middle, Roles · Users · Groups and proposal
-// custodies, since these are separate things and the page exists to show how they meet. The
-// left answers what a person may do, the right what they are responsible for. Selecting any
-// record lights up what it is connected to, draws the links, and opens it underneath. The search
-// and *Show* narrow the columns. A phone switches between the columns with tabs.
-// TODO(rrandiak): labels move to i18n.
-
-import type { ReactNode } from "react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { AccessIndex } from "@/api/access";
 import { ActionBar } from "@/components/actions/action-bar";
+import { DataTable } from "@/components/data-table";
 import { FilterBar } from "@/components/filters/filter-bar";
-import { viewLabels } from "@/components/filters/share-watchlist-dialog";
-import { PageContent, PageHeader } from "@/components/layout/page-header";
-import type { LinkedItem, LinkedSection } from "@/components/linked-columns";
-import { LinkedColumns } from "@/components/linked-columns";
+import { MasterDetail } from "@/components/layout/master-detail";
+import { PageHeader } from "@/components/layout/page-header";
+import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
-import { ToneBadge } from "@/components/status-badge";
-import { custodyMembersOf, heldRoleIdsOf, holdersOf } from "@/domain/access";
-import type { WatchlistAudience } from "@/domain/entities";
+import { Button } from "@/components/ui/button";
+import {
+  categoryCustodyOf,
+  heldRoleIdsOf,
+  holdersOf,
+  projectsOf,
+  proposalCustodyOf,
+} from "@/domain/access";
 import { hasPermission } from "@/domain/permissions";
 import type { AccessDialog } from "@/features/access/access-acts";
 import {
@@ -28,360 +24,732 @@ import {
   recordActionsFor,
 } from "@/features/access/access-acts";
 import type { AccessNotice } from "@/features/access/access-dialogs";
-import { linksOf } from "@/features/access/access-links";
-import type { AccessNames } from "@/features/access/access-records";
+import { CategoryAccessDetail } from "@/features/access/access-management-detail";
 import {
   AgentBadge,
   CustodyRecordView,
   GroupRecord,
   namesOf,
   RoleRecord,
-  SharedWatchlistRecord,
   UserRecord,
 } from "@/features/access/access-records";
-import type {
-  AccessQuery,
-  AccessSelection,
-  AccessSelectionKind,
-} from "@/features/access/access-view";
+import { AccessRelationships } from "@/features/access/access-relationships";
+import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";
+import type { AccessQuery, AccessSelection } from "@/features/access/access-view";
 import {
   accessView,
-  filteredIndex,
-  selectionOf,
   selectionParams,
-  showFacetsOf,
+  userShowLabels,
+  userShows,
 } from "@/features/access/access-view";
 import { useAccessQuery } from "@/features/access/use-access-query";
-import { useReferenceLabels } from "@/hooks/use-reference-labels";
+import { useLoadMore } from "@/hooks/use-load-more";
+import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { plural } from "@/lib/plural";
+import { cn } from "@/lib/utils";
+import type { ListFieldDefinition } from "@/lib/view-definition";
+import { vocabulary } from "@/lib/view-definition";
+
+type View = "users" | "roles" | "groups" | "custodies";
+type CustodyType = "proposals" | "categories";
+type Selected = AccessSelection | { kind: "categories"; id: string };
+type Row = {
+  id: string;
+  title: string;
+  secondary: string;
+  third: string;
+  groups?: string;
+  placement?: string;
+  access: string;
+  kind: Selected["kind"];
+};
+const views: View[] = ["users", "roles", "groups", "custodies"];
+const loadSize = 25;
+
+function selectionFrom(params: URLSearchParams): Selected | null {
+  for (const [kind, key] of Object.entries({
+    users: "u",
+    roles: "r",
+    groups: "g",
+    custodies: "c",
+    categories: "category",
+  })) {
+    const id = params.get(key);
+    if (id) return { kind: kind as Selected["kind"], id };
+  }
+  return null;
+}
+
+function viewOf(params: URLSearchParams, selected: Selected | null): View {
+  if (selected?.kind === "roles") return "roles";
+  if (selected?.kind === "groups") return "groups";
+  if (["custodies", "categories"].includes(selected?.kind ?? "")) return "custodies";
+  if (selected?.kind === "users") return "users";
+  const explicit = params.get("view");
+  if (views.includes(explicit as View)) return explicit as View;
+  return "users";
+}
+
+function rowsOf(
+  index: AccessIndex,
+  view: View,
+  type: CustodyType,
+  pluginNames: (id: string) => string,
+): Row[] {
+  if (view === "users")
+    return index.users.map((user) => ({
+      id: user.id,
+      kind: "users",
+      title: user.name,
+      secondary: user.email || user.entry || "—",
+      third:
+        heldRoleIdsOf(user)
+          .map((id) => index.roles.find((role) => role.id === id)?.name ?? id)
+          .join(", ") || "—",
+      groups:
+        user.groupIds
+          .map((id) => index.groups.find((group) => group.id === id)?.name ?? id)
+          .join(", ") || "—",
+      access: [
+        `${new Set(projectsOf(user.id, index.groups, index.projects).map((entry) => entry.projectId)).size} projects`,
+        `${new Set(proposalCustodyOf(user.id, index.groups, index.custodies).map((entry) => entry.custodyId)).size} proposal sets`,
+        `${new Set(categoryCustodyOf(user.id, index.groups, index.categoryMemberships).map((entry) => entry.categoryId)).size} categories`,
+      ].join(" · "),
+    }));
+  if (view === "roles")
+    return index.roles.map((role) => ({
+      id: role.id,
+      kind: "roles",
+      title: role.name,
+      secondary: role.description,
+      third: `${role.grants.length} grants`,
+      access: `${holdersOf(index.users, role.id).length} holders${role.isShipped ? " · Shipped" : ""}`,
+    }));
+  if (view === "groups")
+    return index.groups.map((group) => ({
+      id: group.id,
+      kind: "groups",
+      title: group.name,
+      secondary: group.description,
+      third: `${group.memberIds.length} members`,
+      access: `${index.custodies.filter((custody) => custody.groupIds.includes(group.id)).length} proposal sets · ${group.categoryIds.length} categories · ${index.projects.filter((project) => project.memberGroupIds.includes(group.id)).length} projects`,
+    }));
+  if (type === "proposals")
+    return index.custodies.map((custody) => ({
+      id: custody.id,
+      kind: "custodies",
+      title: custody.name,
+      secondary: custody.description,
+      third: `${custody.memberIds.length} direct · ${custody.groupIds.length} groups`,
+      placement: custody.isFallback
+        ? "Fallback"
+        : custody.placedByIds.map(pluginNames).join(", ") || "No rule names it",
+      access: `${custody.openCount} open proposals${custody.isFallback ? " · Fallback" : ""}`,
+    }));
+  return index.categories.map((category) => ({
+    id: category.id,
+    kind: "categories",
+    title: categoryPath(index, category.id),
+    secondary: "",
+    third: `${categorySourcesOf(index, category.id).filter((source) => source.viaGroupId === null).length} direct · ${new Set(categorySourcesOf(index, category.id).flatMap((source) => source.viaGroupId ?? [])).size} groups`,
+    access: `${uniquePeople(categorySourcesOf(index, category.id)).length} people`,
+  }));
+}
+
+function matches(row: Row, query: AccessQuery, index: AccessIndex): boolean {
+  const search = query.search?.trim().toLowerCase();
+  if (
+    search &&
+    ![row.title, row.secondary, row.third, row.placement ?? "", row.access, row.id].some((part) =>
+      part.toLowerCase().includes(search),
+    )
+  )
+    return false;
+  if (row.kind === "users") {
+    const user = index.users.find((candidate) => candidate.id === row.id);
+    if (!user) return false;
+    const shows = [user.kind, ...(heldRoleIdsOf(user).length === 0 ? ["none"] : [])];
+    if (query.show?.length && !query.show.some((value) => shows.includes(value))) return false;
+    if (query.roleIds?.length && !query.roleIds.some((id) => heldRoleIdsOf(user).includes(id)))
+      return false;
+    if (query.groupIds?.length && !query.groupIds.some((id) => user.groupIds.includes(id)))
+      return false;
+    if (
+      query.projectIds?.length &&
+      !query.projectIds.some((id) =>
+        projectsOf(user.id, index.groups, index.projects).some((entry) => entry.projectId === id),
+      )
+    )
+      return false;
+    if (
+      query.custodyIds?.length &&
+      !query.custodyIds.some((id) =>
+        proposalCustodyOf(user.id, index.groups, index.custodies).some(
+          (entry) => entry.custodyId === id,
+        ),
+      )
+    )
+      return false;
+    if (
+      query.categoryIds?.length &&
+      !query.categoryIds.some((id) =>
+        categorySourcesOf(index, id).some((source) => source.userId === user.id),
+      )
+    )
+      return false;
+  }
+  if (row.kind === "custodies" || row.kind === "categories") {
+    const custody = index.custodies.find((item) => item.id === row.id);
+    const sources =
+      row.kind === "custodies"
+        ? custody === undefined
+          ? []
+          : [
+              ...custody.memberIds.map((userId) => ({ userId, viaGroupId: null })),
+              ...index.groups
+                .filter((group) => custody.groupIds.includes(group.id))
+                .flatMap((group) =>
+                  group.memberIds.map((userId) => ({ userId, viaGroupId: group.id })),
+                ),
+            ]
+        : categorySourcesOf(index, row.id);
+    if (
+      query.sources?.length &&
+      !query.sources.some((source) =>
+        source === "none"
+          ? sources.length === 0
+          : sources.some((item) =>
+              source === "direct" ? item.viaGroupId === null : item.viaGroupId !== null,
+            ),
+      )
+    )
+      return false;
+    if (
+      row.kind === "custodies" &&
+      query.pluginIds?.length &&
+      !query.pluginIds.some((id) => custody?.placedByIds.includes(id))
+    )
+      return false;
+  }
+  return true;
+}
+
+function fieldsFor(
+  index: AccessIndex,
+  view: View,
+  type: CustodyType,
+  pluginInstances: readonly { id: string; name: string }[],
+) {
+  const field = (
+    key: ListFieldDefinition<AccessQuery>["key"],
+    label: string,
+    records: readonly { id: string; name: string }[],
+  ): ListFieldDefinition<AccessQuery> => ({
+    key,
+    label,
+    field: vocabulary(
+      records.map((record) => record.id),
+      Object.fromEntries(records.map((record) => [record.id, record.name])),
+    ),
+  });
+  if (view === "users")
+    return [
+      {
+        key: "show" as const,
+        label: "Show",
+        field: vocabulary(userShows, userShowLabels),
+        isQuick: true,
+      },
+      field("roleIds", "Role", index.roles),
+      field("groupIds", "Group", index.groups),
+      field("projectIds", "Project", index.projects),
+      field("custodyIds", "Proposal custody", index.custodies),
+      field("categoryIds", "Category custody", index.categories),
+    ];
+  if (view === "custodies")
+    return [
+      {
+        key: "sources" as const,
+        label: "Custodians",
+        field: vocabulary(["direct", "group", "none"], {
+          direct: "Direct",
+          group: "Via group",
+          none: "None",
+        }),
+        isQuick: true,
+      },
+      ...(type === "proposals" ? [field("pluginIds", "Custody plugin", pluginInstances)] : []),
+    ];
+  return [];
+}
 
 export function AccessPage() {
   const [params, setParams] = useSearchParams();
   const { data: index } = useAccessQuery();
   const { data: session } = useSessionQuery();
+  const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const [dialog, setDialog] = useState<AccessDialog | null>(null);
   const [notice, setNotice] = useState<AccessNotice | null>(null);
-  const selection = index === undefined ? null : selectionOf(params, index);
-  const may = {
-    canManageAccess: session !== undefined && hasPermission(session, "access.manage"),
-    canManageShared: session !== undefined && hasPermission(session, "watchlist.manage_shared"),
-  };
-  const recordActions =
-    index === undefined || selection === null
-      ? []
-      : recordActionsFor(index, selection, setDialog, may);
-  const labels = useReferenceLabels(["categories", "pluginInstances"]);
+  const [exploring, setExploring] = useState(false);
+  const [savedFilters, setSavedFilters] = useState<Record<string, string>>({});
+  const [loaded, setLoaded] = useState({ key: "", count: loadSize });
+  const selected = selectionFrom(params);
+  const view = viewOf(params, selected);
+  const type: CustodyType =
+    params.get("type") === "categories" || selected?.kind === "categories"
+      ? "categories"
+      : "proposals";
   const query = accessView.parseSearchParams(params);
-
-  // The filter is replaced and the selection kept, as in every view.
+  const listKey = `${view}:${type}:${accessView.toSearchParams(query).toString()}`;
+  const loadedCount = loaded.key === listKey ? loaded.count : loadSize;
+  const names =
+    index &&
+    namesOf(index, {
+      categoryOf: (id) => categoryPath(index, id),
+      instanceOf: (id) => pluginInstances.find((item) => item.id === id)?.name ?? id,
+    });
+  const pluginName = (id: string) => pluginInstances.find((item) => item.id === id)?.name ?? id;
+  const allRows = index ? rowsOf(index, view, type, pluginName) : [];
+  const visible = index ? allRows.filter((row) => matches(row, query, index)) : [];
+  const shown = visible.slice(0, loadedCount);
+  const sentinelRef = useLoadMore(
+    shown.length < visible.length,
+    false,
+    () => setLoaded({ key: listKey, count: loadedCount + loadSize }),
+    `${listKey}:${shown.length}`,
+  );
+  const selectedRow =
+    selected && index
+      ? allRows.find((row) => row.id === selected.id && row.kind === selected.kind)
+      : undefined;
+  const canManage = session ? hasPermission(session, "access.manage") : false;
   const setQuery = (next: AccessQuery) => {
-    const nextParams = accessView.toSearchParams(next);
-    for (const name of Object.values(selectionParams)) {
-      const value = params.get(name);
-      if (value !== null) {
-        nextParams.set(name, value);
-      }
-    }
-
-    setParams(nextParams, { replace: true });
+    const changed = new URLSearchParams(params);
+    for (const key of [
+      "q",
+      "show",
+      "role",
+      "group",
+      "project",
+      "custody",
+      "plugin",
+      "categoryCustody",
+      "source",
+    ])
+      changed.delete(key);
+    accessView.toSearchParams(next).forEach((value, key) => {
+      changed.set(key, value);
+    });
+    changed.delete("page");
+    setParams(changed, { replace: true });
   };
-
-  const select = ({ kind, id }: AccessSelection) => {
-    const next = new URLSearchParams(params);
-    for (const name of Object.values(selectionParams)) {
-      next.delete(name);
+  const open = (choice: Selected | null) => {
+    const targetView =
+      choice?.kind === "roles"
+        ? "roles"
+        : choice?.kind === "groups"
+          ? "groups"
+          : choice?.kind === "custodies" || choice?.kind === "categories"
+            ? "custodies"
+            : "users";
+    const targetType = choice?.kind === "categories" ? "categories" : "proposals";
+    const targetKey = `${targetView}:${targetType}`;
+    const currentKey = `${view}:${type}`;
+    if (choice && targetView !== view) {
+      setSavedFilters((old) => ({
+        ...old,
+        [currentKey]: accessView.toSearchParams(query).toString(),
+      }));
     }
-
-    next.set(selectionParams[kind], id);
+    const next =
+      choice && targetView !== view
+        ? new URLSearchParams(savedFilters[targetKey] ?? "")
+        : new URLSearchParams(params);
+    next.delete("page");
+    for (const key of Object.values({
+      ...selectionParams,
+      categories: "category",
+    }))
+      next.delete(key);
+    if (choice) {
+      const key = ({ ...selectionParams, categories: "category" } as Record<string, string>)[
+        choice.kind
+      ];
+      next.set(key, choice.id);
+      next.set(
+        "view",
+        choice.kind === "users"
+          ? "users"
+          : choice.kind === "roles"
+            ? "roles"
+            : choice.kind === "groups"
+              ? "groups"
+              : "custodies",
+      );
+      if (choice.kind === "custodies") next.set("type", "proposals");
+      if (choice.kind === "categories") next.set("type", "categories");
+      next.delete("sets");
+    }
+    setExploring(false);
     setParams(next, { replace: true });
   };
-
-  const names =
-    index === undefined
-      ? null
-      : namesOf(index, { categoryOf: labels.categories, instanceOf: labels.pluginInstances });
-
+  const changeView = (nextView: View, nextType: CustodyType = type) => {
+    const currentKey = `${view}:${type}`;
+    const nextKey = `${nextView}:${nextType}`;
+    setSavedFilters((old) => ({
+      ...old,
+      [currentKey]: accessView.toSearchParams(query).toString(),
+    }));
+    const next = new URLSearchParams(savedFilters[nextKey] ?? "");
+    next.delete("page");
+    if (nextView !== "users") next.set("view", nextView);
+    if (nextView === "custodies") next.set("type", nextType);
+    setExploring(false);
+    setParams(next);
+  };
+  const fields = index
+    ? fieldsFor(
+        index,
+        view,
+        type,
+        pluginInstances.filter((instance) =>
+          index.custodies.some((custody) => custody.placedByIds.includes(instance.id)),
+        ),
+      )
+    : [];
+  const facets = index
+    ? Object.fromEntries(
+        fields.map(({ key, field }) => [
+          key,
+          field.kind === "vocabulary"
+            ? field.values.map((value) => ({
+                value,
+                count: allRows.filter((row) => matches(row, { ...query, [key]: [value] }, index))
+                  .length,
+              }))
+            : [],
+        ]),
+      )
+    : {};
+  const selectedUser =
+    selected?.kind === "users" ? index?.users.find((user) => user.id === selected.id) : undefined;
+  const selectedRole =
+    selected?.kind === "roles" ? index?.roles.find((role) => role.id === selected.id) : undefined;
+  const selectedGroup =
+    selected?.kind === "groups"
+      ? index?.groups.find((group) => group.id === selected.id)
+      : undefined;
+  const selectedCustody =
+    selected?.kind === "custodies"
+      ? index?.custodies.find((custody) => custody.id === selected.id)
+      : undefined;
+  const columns: ColumnDefinition<Row>[] = [
+    {
+      key: "name",
+      header:
+        view === "users"
+          ? "USER"
+          : view === "roles"
+            ? "ROLE"
+            : view === "groups"
+              ? "GROUP"
+              : type === "proposals"
+                ? "PROPOSAL CUSTODY SET"
+                : "CATEGORY",
+      track: "minmax(14rem,2fr)",
+      cell: (row) => (
+        <div>
+          <span className="font-medium">{row.title}</span>
+          {row.kind === "users" &&
+            index?.users.find((user) => user.id === row.id)?.kind === "agent" && (
+              <>
+                {" "}
+                <AgentBadge />
+              </>
+            )}
+          <p className="text-xs text-muted-foreground">{row.secondary}</p>
+        </div>
+      ),
+    },
+    {
+      key: "third",
+      header:
+        view === "users"
+          ? "ROLES"
+          : view === "roles"
+            ? "GRANTS"
+            : view === "groups"
+              ? "MEMBERS"
+              : "MEMBERSHIP",
+      track: "minmax(8rem,1fr)",
+      cell: (row) => row.third,
+    },
+    ...(view === "users"
+      ? [
+          {
+            key: "groups",
+            header: "GROUPS",
+            track: "minmax(8rem,1fr)",
+            cell: (row: Row) => row.groups ?? "—",
+          },
+        ]
+      : []),
+    ...(view === "custodies" && type === "proposals"
+      ? [
+          {
+            key: "placement",
+            header: "CUSTODY PLUGINS",
+            track: "minmax(9rem,1fr)",
+            cell: (row: Row) => row.placement ?? "—",
+          },
+        ]
+      : []),
+    {
+      key: "access",
+      header: view === "users" ? "RESOURCE ACCESS" : "ACCESS",
+      track: "minmax(11rem,1fr)",
+      cell: (row) => row.access,
+    },
+  ];
+  const detailActions =
+    selectedRow && selected && selected.kind !== "categories" && index
+      ? recordActionsFor(index, selected as AccessSelection, setDialog, {
+          canManageAccess: canManage,
+          canManageShared: false,
+        })
+      : [];
+  const detail =
+    selectedRow && selected && index && names ? (
+      exploring ? (
+        <div>
+          <Button variant="outline" size="sm" onClick={() => setExploring(false)}>
+            Back to details
+          </Button>
+          <h2 className="mt-4 text-base font-semibold">{selectedRow?.title ?? selected.id}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Immediate relationships</p>
+          {selected.kind !== "watchlists" && (
+            <div className="mt-4">
+              <AccessRelationships
+                index={index}
+                names={names}
+                selected={{ kind: selected.kind, id: selected.id }}
+                onSelect={open}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="mb-3 flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setExploring(true)}>
+              Explore relationships
+            </Button>
+            <ActionBar actions={detailActions} cap={1} menuLabel="More" />
+          </div>
+          {selectedUser && (
+            <UserRecord index={index} names={names} onSelect={open} user={selectedUser} />
+          )}
+          {selectedRole && (
+            <RoleRecord index={index} names={names} onSelect={open} role={selectedRole} />
+          )}
+          {selectedGroup && (
+            <GroupRecord index={index} names={names} onSelect={open} group={selectedGroup} />
+          )}
+          {selectedCustody && (
+            <CustodyRecordView
+              index={index}
+              names={names}
+              onSelect={open}
+              custody={selectedCustody}
+            />
+          )}
+          {selected.kind === "categories" && (
+            <CategoryAccessDetail
+              index={index}
+              names={names}
+              onSelect={open}
+              categoryId={selected.id}
+            />
+          )}
+        </>
+      )
+    ) : (
+      <p className="text-sm text-muted-foreground">This record is no longer available.</p>
+    );
+  if (!session) return null;
   return (
     <>
-      <PageHeader
-        title="Users & Groups"
-        actions={may.canManageAccess ? headerActionsFor(setDialog) : []}
-      />
+      <PageHeader title="Users management" actions={canManage ? headerActionsFor(setDialog) : []} />
+      <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
+        <nav
+          aria-label="Users management views"
+          className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
+        >
+          {views.map((item) => (
+            <button
+              key={item}
+              type="button"
+              aria-current={view === item ? "page" : undefined}
+              className={cn(
+                "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                view === item
+                  ? "border-primary font-medium text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+              onClick={() => changeView(item)}
+            >
+              {item[0].toUpperCase() + item.slice(1)}
+            </button>
+          ))}
+        </nav>
+      </div>
+      {view === "custodies" && (
+        <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
+          <nav
+            aria-label="Custody resources"
+            className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
+          >
+            {(
+              [
+                ["Proposal sets", "proposals"],
+                ["Categories", "categories"],
+              ] as const
+            ).map(([label, nextType]) => (
+              <button
+                key={label}
+                type="button"
+                aria-current={type === nextType ? "page" : undefined}
+                className={cn(
+                  "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                  type === nextType
+                    ? "border-primary font-medium text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => changeView("custodies", nextType)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
       <FilterBar
-        fields={accessView.fields}
+        key={`${view}:${type}`}
+        fields={fields}
         query={query}
-        facets={index === undefined ? undefined : showFacetsOf(index, query)}
+        facets={facets}
         onQueryChange={setQuery}
-        searchLabel="Search users, roles, groups and custodies"
-        searchPlaceholder="Search people, roles, groups, custodies…"
+        searchLabel={`Search ${view}`}
+        searchPlaceholder={`Search ${view}…`}
       />
-      <PageContent>
-        {index !== undefined && (
-          <AccessColumns
-            index={index}
-            shown={filteredIndex(index, query)}
-            names={names}
-            selection={selection}
-            onSelect={select}
-            onShowWithoutRole={() => setQuery({ ...query, show: ["none"] })}
-            notice={
-              notice === null ? undefined : (
-                <NoticeLine
-                  tone="green"
-                  title={notice.title}
-                  onDismiss={() => setNotice(null)}
-                  className="mb-3"
-                >
-                  {notice.text}
-                </NoticeLine>
-              )
-            }
-            recordActions={
-              recordActions.length === 0 ? undefined : <ActionBar actions={recordActions} />
-            }
-          />
-        )}
-      </PageContent>
-      {dialog !== null && index !== undefined && names !== null && (
+      <MasterDetail
+        key={listKey}
+        master={
+          <>
+            {notice && (
+              <NoticeLine
+                tone="green"
+                title={notice.title}
+                onDismiss={() => setNotice(null)}
+                className="mx-4 mt-4 sm:mx-6"
+              >
+                {notice.text}
+              </NoticeLine>
+            )}
+            {!index ? (
+              <p className="px-4 py-5 text-sm text-muted-foreground">Loading users management…</p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between border-b px-4 py-2 text-xs text-muted-foreground sm:px-6">
+                  <span>
+                    {visible.length}{" "}
+                    {view === "users"
+                      ? "users"
+                      : view === "roles"
+                        ? "roles"
+                        : view === "groups"
+                          ? "groups"
+                          : type === "proposals"
+                            ? "proposal custody sets"
+                            : "categories"}
+                  </span>
+                  <span>{shown.length} shown</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <DataTable
+                    rows={shown}
+                    rowId={(row) => row.id}
+                    columns={{
+                      phone: columns,
+                      small: [columns[0], ...columns.slice(-1)].filter(
+                        (column): column is ColumnDefinition<Row> => column !== undefined,
+                      ),
+                      notebook: columns,
+                      large: columns,
+                    }}
+                    onOpen={(id) => {
+                      const row = shown.find((item) => item.id === id);
+                      if (row) open({ kind: row.kind, id });
+                    }}
+                    emptyText="No records match this search."
+                    focusedId={selected?.id}
+                    cardOf={(row) => (
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        onClick={() => open({ kind: row.kind, id: row.id })}
+                      >
+                        <b>{row.title}</b>
+                        <p className="text-xs text-muted-foreground">{row.secondary}</p>
+                        <p className="mt-1 text-xs">
+                          {row.third} · {row.groups ? `${row.groups} · ` : ""}
+                          {row.access}
+                        </p>
+                      </button>
+                    )}
+                    flush
+                  />
+                </div>
+                <div ref={sentinelRef} className="h-px" aria-hidden="true" />
+                {shown.length < visible.length && (
+                  <p className="px-4 py-3 text-center text-xs text-muted-foreground">
+                    Loading more…
+                  </p>
+                )}
+              </>
+            )}
+          </>
+        }
+        detail={
+          selected ? (
+            detail
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Select a {view === "custodies" ? "resource" : view.slice(0, -1)} to inspect its access
+              and relationships.
+            </p>
+          )
+        }
+        detailTitle={selectedRow?.title ?? "Record unavailable"}
+        detailDescription={selectedRow?.secondary}
+        detailOpen={selected !== null}
+        onDetailOpenChange={(isOpen) => {
+          if (!isOpen) open(null);
+        }}
+      />
+      {dialog && index && names && (
         <AccessDialogView
           dialog={dialog}
           index={index}
           names={names}
           onClose={() => setDialog(null)}
-          onDone={(next, selected) => {
-            setNotice(next);
+          onDone={(nextNotice, nextSelection) => {
+            setNotice(nextNotice);
             setDialog(null);
-            if (selected !== undefined) {
-              select(selected);
-            }
-
-            // The record, with what was done said above it, comes into view.
-            requestAnimationFrame(() =>
-              document.getElementById(recordAnchor)?.scrollIntoView({ block: "start" }),
-            );
+            if (nextSelection) open(nextSelection);
           }}
         />
       )}
     </>
   );
-}
-
-interface AccessColumnsProps {
-  index: AccessIndex;
-  // What the search and Show leave in the columns; the record reads the whole index.
-  shown: AccessIndex;
-  names: AccessNames | null;
-  selection: AccessSelection | null;
-  onSelect: (selection: AccessSelection) => void;
-  onShowWithoutRole: () => void;
-  // What was just done, said above the record.
-  notice?: ReactNode;
-  // What may be done to the selected record; absent without access.manage.
-  recordActions?: ReactNode;
-}
-
-function AccessColumns({
-  index,
-  shown,
-  names,
-  selection,
-  onSelect,
-  onShowWithoutRole,
-  notice,
-  recordActions,
-}: AccessColumnsProps) {
-  if (selection === null || names === null) {
-    return <p className="text-sm text-muted-foreground">Nobody here yet.</p>;
-  }
-
-  const { tags, lines } = linksOf(index, selection);
-  const sections = sectionsOf(index, shown, names);
-  const recordProps = { index, names, onSelect, actions: recordActions };
-  const record = (() => {
-    switch (selection.kind) {
-      case "users": {
-        const user = index.users.find((candidate) => candidate.id === selection.id);
-        return user === undefined ? null : <UserRecord {...recordProps} user={user} />;
-      }
-      case "roles": {
-        const role = index.roles.find((candidate) => candidate.id === selection.id);
-        return role === undefined ? null : <RoleRecord {...recordProps} role={role} />;
-      }
-      case "groups": {
-        const group = index.groups.find((candidate) => candidate.id === selection.id);
-        return group === undefined ? null : <GroupRecord {...recordProps} group={group} />;
-      }
-      case "custodies": {
-        const custody = index.custodies.find((candidate) => candidate.id === selection.id);
-        return custody === undefined ? null : (
-          <CustodyRecordView {...recordProps} custody={custody} />
-        );
-      }
-      case "watchlists": {
-        const watchlist = index.sharedWatchlists.find((candidate) => candidate.id === selection.id);
-        return watchlist === undefined ? null : (
-          <SharedWatchlistRecord {...recordProps} watchlist={watchlist} />
-        );
-      }
-    }
-  })();
-
-  return (
-    <>
-      <Counts index={index} onShowWithoutRole={onShowWithoutRole} />
-      <LinkedColumns
-        columns={[
-          [sections.roles],
-          [sections.users],
-          [sections.groups, sections.custodies, sections.watchlists],
-        ]}
-        tabOrder={["users", "roles", "groups", "custodies", "watchlists"]}
-        selected={selection}
-        tags={tags}
-        lines={lines}
-        onSelect={onSelect}
-        record={
-          <div id={recordAnchor} className="scroll-mt-4">
-            {notice}
-            {record}
-          </div>
-        }
-      />
-    </>
-  );
-}
-
-const recordAnchor = "access-record";
-
-// "10 people · 2 agents · 5 roles · 3 groups · 4 custodies · 1 with no role yet".
-function Counts({
-  index,
-  onShowWithoutRole,
-}: {
-  index: AccessIndex;
-  onShowWithoutRole: () => void;
-  // What was just done, said above the record.
-  notice?: ReactNode;
-  // What may be done to the selected record; absent without access.manage.
-  recordActions?: ReactNode;
-}) {
-  const agentCount = index.users.filter((user) => user.kind === "agent").length;
-  const withoutRoleCount = index.users.filter((user) => heldRoleIdsOf(user).length === 0).length;
-  return (
-    <p className="mb-4 text-xs text-muted-foreground">
-      {plural(index.users.length - agentCount, "person", "people")} · {plural(agentCount, "agent")}{" "}
-      · {plural(index.roles.length, "role")} · {plural(index.groups.length, "group")} ·{" "}
-      {plural(index.custodies.length, "custody", "custodies")}
-      {withoutRoleCount > 0 && (
-        <>
-          {" · "}
-          <button
-            type="button"
-            className="text-tone-amber-foreground underline underline-offset-2"
-            onClick={onShowWithoutRole}
-          >
-            {withoutRoleCount} with no role yet
-          </button>
-        </>
-      )}
-    </p>
-  );
-}
-
-const smallBadge = "px-1.5 py-0 text-[0.625rem]";
-
-function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) {
-  const roles: LinkedSection<AccessSelectionKind> = {
-    kind: "roles",
-    title: "Roles",
-    tabTitle: "Roles",
-    emptyText: "No role matches.",
-    items: shown.roles.map(
-      (role): LinkedItem => ({
-        id: role.id,
-        title: role.name,
-        badge: role.isShipped ? undefined : (
-          <ToneBadge tone="blue" className={smallBadge}>
-            custom
-          </ToneBadge>
-        ),
-        sub: `${plural(role.grants.length, "grant")} · ${plural(holdersOf(index.users, role.id).length, "person", "people")}`,
-      }),
-    ),
-  };
-  const users: LinkedSection<AccessSelectionKind> = {
-    kind: "users",
-    title: "Users",
-    tabTitle: "Users",
-    emptyText: "Nobody matches.",
-    items: shown.users.map((user): LinkedItem => {
-      const roleIds = heldRoleIdsOf(user);
-      return {
-        id: user.id,
-        title: user.name,
-        badge: user.kind === "agent" ? <AgentBadge /> : undefined,
-        sub:
-          roleIds.length === 0 ? (
-            <span className="text-tone-amber-foreground">no role yet: sees nothing</span>
-          ) : (
-            roleIds.map(names.role).join(", ")
-          ),
-      };
-    }),
-  };
-  const groups: LinkedSection<AccessSelectionKind> = {
-    kind: "groups",
-    title: "Groups",
-    tabTitle: "Groups",
-    emptyText: "No group matches.",
-    items: shown.groups.map((group) => ({
-      id: group.id,
-      title: group.name,
-      sub: plural(group.memberIds.length, "member"),
-    })),
-  };
-  const custodies: LinkedSection<AccessSelectionKind> = {
-    kind: "custodies",
-    title: "Proposal custodies",
-    tabTitle: "Custodies",
-    emptyText: "No custody matches.",
-    items: shown.custodies.map((custody) => ({
-      id: custody.id,
-      title: custody.name,
-      badge: custody.isFallback ? (
-        <ToneBadge tone="amber" className={smallBadge}>
-          fallback
-        </ToneBadge>
-      ) : undefined,
-      sub: `${plural(custody.openCount, "open proposal")} · ${plural(custodyMembersOf(custody, index.groups).length, "person", "people")}`,
-    })),
-  };
-  const watchlists: LinkedSection<AccessSelectionKind> = {
-    kind: "watchlists",
-    title: "Shared watchlists",
-    tabTitle: "Watchlists",
-    emptyText: "No shared watchlist matches.",
-    items: shown.sharedWatchlists.map((watchlist) => ({
-      id: watchlist.id,
-      title: watchlist.name,
-      sub: `${viewLabels[watchlist.view]} · ${audienceText(watchlist.audience)} · ${plural(watchlist.reachedUserIds.length, "person", "people")}`,
-    })),
-  };
-  return { roles, users, groups, custodies, watchlists };
-}
-
-function audienceText(audience: WatchlistAudience): string {
-  switch (audience.kind) {
-    case "personal":
-      return "personal";
-    case "everyone":
-      return "everyone";
-    case "some":
-      return plural(
-        audience.groupIds.length + audience.roleIds.length,
-        "group or role",
-        "groups and roles",
-      );
-  }
 }
