@@ -58,16 +58,18 @@ function BatchHeader({ group, users, onBulkApprove }: BatchHeaderProps) {
     <GroupHeader
       title={
         <>
-          <b className="font-mono font-bold">{batch.id}</b>{" "}
-          <span className="text-muted-foreground">
-            {batchViaLabels[batch.via]} · {batch.name}
+          <b className="font-semibold">
+            Batch <span className="font-mono">{batch.id}</span>
+          </b>{" "}
+          <span className="font-normal text-foreground">
+            · {batch.name} · {formatDay(batch.submittedAt)}
           </span>
         </>
       }
       meta={
         <>
-          <UserName user={submitter} fallback={batch.submittedBy} /> ·{" "}
-          {formatDay(batch.submittedAt)} · {group.askCount} asked
+          <UserName user={submitter} fallback={batch.submittedBy} /> · via{" "}
+          {batchViaLabels[batch.via]} · {group.askCount} asked
           {group.elsewhereCount > 0 && (
             <>
               {" · "}
@@ -115,7 +117,9 @@ function UserName({ user, fallback }: { user: User | undefined; fallback: string
       {user?.kind === "agent" && (
         <>
           {" "}
-          <ToneBadge tone="purple">agent</ToneBadge>
+          <ToneBadge tone="purple" className="border-foreground/20">
+            agent
+          </ToneBadge>
         </>
       )}
     </>

@@ -5,9 +5,9 @@
 import type { ReactNode } from "react";
 
 export interface GroupHeaderProps {
-  // "B-2026-014 · Catalogue import".
+  // "Batch B-2026-014 · Catalogue import".
   title: ReactNode;
-  // "by Jana, 3 Sep · via file".
+  // "25 Jun · Jana · 12 documents".
   meta?: ReactNode;
   // "Approve 9…", "Retry failed"; absent where the caller may not.
   action?: ReactNode;
@@ -17,7 +17,7 @@ export interface GroupHeaderProps {
 
 export function GroupHeader({ title, meta, action, footnote }: GroupHeaderProps) {
   return (
-    <div className="border-t-2 border-b border-l-4 border-t-foreground/30 border-l-foreground/50 bg-muted px-4 py-3 text-xs @2xl:col-span-full">
+    <div className="border-t-2 border-b border-t-foreground/25 border-b-foreground/10 bg-group-band px-4 py-3 text-xs @2xl:col-span-full">
       <div className="text-sm leading-snug font-semibold">{title}</div>
       {meta !== undefined && <div className="mt-1 text-muted-foreground">{meta}</div>}
 

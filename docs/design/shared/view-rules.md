@@ -201,6 +201,27 @@ Decided 2026-10-06. What the display decides, and what the room decides.
 - **Gestures on the phone** are [[navigation]] §3.1: swipe between entries on
   a page and between records on an open record, and Back closes.
 
+### 1.6 Grouped lists and tables
+
+Group bands show hierarchy, not status. Use the named surface tokens in the
+frontend theme; keep table column headers on the theme's `muted` surface and
+keep teal for the selected record.
+
+| Level | Color token | Where it appears |
+|---|---|---|
+| One group level, or an outer group | `group-band` (soft olive) | Documents, Proposals, Documents Validations, Hooks; Plugins type rows |
+| A group nested inside another | `group-band-nested` (bright olive) | Plugins implementation rows |
+
+The outer group is darker than its nested group in both light and dark themes.
+Group bands have no structural left border; an opened record or Plugin group
+keeps the teal selection edge. If a table needs a third group level,
+distinguish it with spacing or borders rather than another paler olive. Plugin
+instance rows retain the normal table surface.
+
+Colored badges inside a group band keep their existing fill and text colors.
+A thin neutral border separates them from the olive surface; badges on record
+rows keep their usual styling.
+
 ---
 
 ## 2. Overview filtering vs advanced filtering

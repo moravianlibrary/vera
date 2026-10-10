@@ -71,8 +71,10 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
     <GroupHeader
       title={
         <>
-          <b className="font-mono font-bold">{batch.id}</b>{" "}
-          <span className="text-muted-foreground">{batch.name}</span>
+          <b className="font-semibold">
+            Batch <span className="font-mono">{batch.id}</span>
+          </b>{" "}
+          <span className="font-normal text-foreground">· {batch.name}</span>
         </>
       }
       meta={
@@ -195,7 +197,7 @@ function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
           <b className="font-bold">{project.name}</b>{" "}
           <Badge
             className={cn(
-              "ml-1 border-transparent px-1.5 py-0 text-[0.625rem]",
+              "ml-1 border-foreground/20 px-1.5 py-0 text-[0.625rem]",
               projectStateTones[project.state],
             )}
           >

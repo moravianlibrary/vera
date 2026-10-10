@@ -83,12 +83,9 @@ export function groupsOf<Row>(
   });
 }
 
-// Neutral bands describe hierarchy; teal marks the row open in the drawer.
-const headerShades = ["bg-muted", "bg-muted/50"] as const;
-const headerBorders = [
-  "border-t-2 border-t-foreground/30 border-l-4 border-l-foreground/50",
-  "border-t border-t-border border-l-4 border-l-border",
-] as const;
+// Outer groups use soft olive; nested groups are brighter. Teal marks the open row.
+const headerShades = ["bg-group-band", "bg-group-band-nested"] as const;
+const headerBorders = ["border-t-2 border-t-foreground/30", "border-t border-t-border"] as const;
 
 export function DataTable<Row>({
   rows,
@@ -198,7 +195,7 @@ export function DataTable<Row>({
                   headerBorders[group.depth] ?? headerBorders[1],
                   level.isOpenable === true && "cursor-pointer",
                   level.rowClassName,
-                  group.key === focusedId && "border-l-primary ring-1 ring-primary/50",
+                  group.key === focusedId && "border-l-4 border-l-primary ring-1 ring-primary/50",
                 )}
                 onClick={
                   level.isOpenable === true
@@ -273,9 +270,10 @@ export function DataTable<Row>({
                 "scroll-mt-4",
                 headerShades[group.depth] ?? headerShades[1],
                 headerBorders[group.depth] ?? headerBorders[1],
-                isOpenable && "cursor-pointer hover:bg-muted/80",
+                isOpenable && "cursor-pointer hover:bg-group-band-nested/80",
                 level?.rowClassName,
-                group.key === focusedId && "border-l-primary ring-1 ring-inset ring-primary/50",
+                group.key === focusedId &&
+                  "border-l-4 border-l-primary ring-1 ring-inset ring-primary/50",
               )}
               onClick={isOpenable ? (event) => openFrom(group.key, event.target) : undefined}
             >

@@ -33,9 +33,9 @@ import { cn } from "@/lib/utils";
 
 const smallBadge = "px-1.5 py-0 text-[0.625rem]";
 
-export function KindBadge({ kind }: { kind: PluginKind }) {
+export function KindBadge({ kind, className }: { kind: PluginKind; className?: string }) {
   return (
-    <ToneBadge tone={pluginKindTones[kind]} className={smallBadge}>
+    <ToneBadge tone={pluginKindTones[kind]} className={cn(smallBadge, className)}>
       {pluginKindLabels[kind]}
     </ToneBadge>
   );
@@ -237,7 +237,7 @@ export function useInstanceGroups({
             <span className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
               Type
             </span>
-            <KindBadge kind={kind} />
+            <KindBadge kind={kind} className="border-foreground/20" />
             <span className="text-xs text-muted-foreground">
               {tier === "phone" ? "" : `${pluginKindJobs[kind]} · `}
               {plural(implementationsOf(kind).length, "implementation")} ·{" "}
