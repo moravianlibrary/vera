@@ -21,7 +21,7 @@ import { Timeline } from "@/components/visualizations/timeline";
 import { hasPermission } from "@/domain/permissions";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import type { NameOf, ShownNotice } from "@/features/tasks/run-parts";
-import { NoticeLine, SectionTitle, Sub } from "@/features/tasks/run-parts";
+import { NoticeLine, Sub } from "@/features/tasks/run-parts";
 import {
   DeleteScheduleDialog,
   PauseScheduleDialog,
@@ -146,23 +146,25 @@ export function SchedulesPage() {
             : []
         }
       />
-      <PageContent className="@container">
+      <PageContent className="@container !p-0">
         {notice !== null && (
-          <NoticeLine
-            notice={notice}
-            onOpenRun={(runId) => navigate(`/tasks?run=${encodeURIComponent(runId)}`)}
-            onDismiss={() => setNotice(null)}
-          />
+          <div className="px-4 pt-4 sm:px-6">
+            <NoticeLine
+              notice={notice}
+              onOpenRun={(runId) => navigate(`/tasks?run=${encodeURIComponent(runId)}`)}
+              onDismiss={() => setNotice(null)}
+            />
+          </div>
         )}
         {index !== undefined && (
           <>
-            <TimelineCard
+            <ScheduleTimeline
               index={index}
               range={range}
               onRangeChange={(next) => setParam(rangeParam, next === "day" ? null : next)}
             />
-            <SectionTitle title="Schedules" count={index.schedules.length} />
             <DataTable
+              flush
               rows={index.schedules}
               rowId={(schedule) => schedule.id}
               columns={scheduleColumns({ asOf: index.asOf, acts })}
@@ -175,7 +177,7 @@ export function SchedulesPage() {
                 <ScheduleCard schedule={schedule} asOf={index.asOf} nameOf={nameOf} acts={acts} />
               )}
             />
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+            <p className="px-4 py-3 text-xs leading-relaxed text-muted-foreground sm:px-6">
               A schedule is set here and only here; a plugin instance shows its schedules and links
               back. Inputs and list generators have none: they run when somebody uses them.
               Intention repeats are listed so everything that happens by itself is in one place;
@@ -436,7 +438,7 @@ function ScheduleCard({
   );
 }
 
-function TimelineCard({
+function ScheduleTimeline({
   index,
   range,
   onRangeChange,
@@ -457,7 +459,7 @@ function TimelineCard({
   }));
 
   return (
-    <section className="rounded-lg border bg-card px-4 py-3.5">
+    <section className="px-4 py-5 sm:px-6">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{rangeTitles[range]}</h2>
         <fieldset className="flex rounded-md border p-0.5">
