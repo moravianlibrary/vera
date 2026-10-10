@@ -98,7 +98,7 @@ export function PluginsPage() {
         searchLabel="Search plugins and instances"
         searchPlaceholder="Search plugins and instances…"
       />
-      <PageContent className="@container">
+      <PageContent className="@container !p-0">
         {index !== undefined && (
           <PluginTable
             index={index}
@@ -288,11 +288,18 @@ function PluginTable({
       drawer={drawer.body}
       above={
         <>
-          {selection === null && noticeLine}
-          <Counts index={index} />
+          {selection === null && noticeLine !== null && (
+            <div className="px-4 pt-4 sm:px-6">{noticeLine}</div>
+          )}
+          {isFiltered && shown.instances.length > 0 && (
+            <p className="px-4 py-3 text-xs text-muted-foreground sm:px-6">
+              {plural(shown.instances.length, "matching instance")}
+            </p>
+          )}
         </>
       }
       table={{
+        flush: true,
         rows: shown.instances,
         rowId: (instance) => instance.id,
         columns: instanceColumns({
@@ -386,18 +393,4 @@ function instancesOf(
   implementation: PluginImplementation,
 ): PluginInstanceDetail[] {
   return index.instances.filter((instance) => instance.implementationId === implementation.id);
-}
-
-// "13 types · 30 implementations · 31 instances · 1 disabled".
-function Counts({ index }: { index: PluginIndex }) {
-  const kindCount = new Set(index.implementations.map((implementation) => implementation.kind))
-    .size;
-  const disabledCount = index.instances.filter((instance) => !instance.isEnabled).length;
-  return (
-    <p className="mb-3 text-xs text-muted-foreground">
-      {plural(kindCount, "type")} · {plural(index.implementations.length, "implementation")} ·{" "}
-      {plural(index.instances.length, "instance")}
-      {disabledCount > 0 && ` · ${disabledCount} disabled`}
-    </p>
-  );
 }

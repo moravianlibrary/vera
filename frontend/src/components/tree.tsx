@@ -191,9 +191,9 @@ export function Tree<Node>({
             onFocus={() => setFocusKey(row.key)}
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
-              "flex min-h-9 cursor-pointer items-center gap-1.5 border-b border-l-3 border-l-transparent pr-4 outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+              "flex min-h-9 cursor-pointer items-center gap-1.5 border-b border-l-3 border-l-transparent pr-4 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
               isRoot && "bg-muted/50",
-              isSelected && "border-l-foreground bg-muted",
+              isSelected && "border-l-primary bg-primary/8 hover:bg-primary/12",
             )}
             style={{ paddingLeft: `${0.5 + row.depth * 1.125}rem` }}
           >

@@ -50,6 +50,8 @@ export interface DataTableProps<Row> {
   cardOf?: (row: Row) => ReactNode;
   groupBy?: readonly GroupLevel<Row>[];
   stickyHeader?: boolean;
+  // The table meets the page edges instead of sitting in a padded card.
+  flush?: boolean;
 }
 
 interface Group<Row> {
@@ -98,6 +100,7 @@ export function DataTable<Row>({
   cardOf,
   groupBy = [],
   stickyHeader = false,
+  flush = false,
 }: DataTableProps<Row>) {
   const tier = useTier();
   const shown = valueForTier(columns, tier);
@@ -106,7 +109,11 @@ export function DataTable<Row>({
   const isGrouped = groupBy.length > 0;
 
   if (isGrouped ? groups.length === 0 : rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+    return (
+      <p className={cn("text-sm text-muted-foreground", flush && "px-4 py-5 sm:px-6")}>
+        {emptyText}
+      </p>
+    );
   }
 
   // A click on a link or a button inside a row is that control's, not the row's.
@@ -299,7 +306,12 @@ export function DataTable<Row>({
     });
 
   return (
-    <div className={cn("rounded-lg border", stickyHeader ? "overflow-visible" : "overflow-hidden")}>
+    <div
+      className={cn(
+        flush ? "border-y" : "rounded-lg border",
+        stickyHeader ? "overflow-visible" : "overflow-hidden",
+      )}
+    >
       <table className="w-full border-collapse text-[0.8125rem]">
         <thead className={stickyHeader ? "sticky top-0 z-10" : undefined}>
           <tr className="bg-muted">
