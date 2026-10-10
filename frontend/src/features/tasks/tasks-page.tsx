@@ -1,5 +1,5 @@
-// Tasks: watchlists and filters above an upcoming-run strip, running cards, then a sticky Finished
-// section with its own scrolling table and retention note. A run opens in the drawer (`?run=`).
+// Tasks: watchlists and filters above an upcoming-run strip, running cards, then a Finished
+// section whose heading and table header stick in the single page scroller. A run opens in the drawer (`?run=`).
 // `task.read` sees everyone's runs and next scheduled work; with `task.read_own` alone the page
 // is *My Tasks*, the person's own runs.
 // TODO(rrandiak): labels move to i18n.
@@ -49,6 +49,8 @@ export function TasksPage() {
   const [notice, setNotice] = useState<ShownNotice | null>(null);
   const [cancelling, setCancelling] = useState<Run | null>(null);
   const [isRetentionOpen, setIsRetentionOpen] = useState(false);
+  const runningRef = useRef<HTMLDivElement>(null);
+  const [isRunningOffscreen, setIsRunningOffscreen] = useState(false);
   const [visibleFinished, setVisibleFinished] = useState({ key: "", count: 40 });
   const filterKey = JSON.stringify(view.filter);
   const visibleFinishedCount = visibleFinished.key === filterKey ? visibleFinished.count : 40;
@@ -121,7 +123,26 @@ export function TasksPage() {
       {index !== undefined &&
         index.schedules !== null &&
         canOpenNavigationEntry(session, "schedules") && <NextRunsStrip index={index} />}
-      <PageContent className="@container flex flex-col !pb-0">
+      <PageContent
+        className="@container !pt-0 !pb-0"
+        onScroll={(event) => {
+          const scroller = event.currentTarget;
+          const running = runningRef.current;
+          setIsRunningOffscreen(
+            running !== null &&
+              running.getBoundingClientRect().bottom <= scroller.getBoundingClientRect().top,
+          );
+          if (
+            scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 200 &&
+            visibleFinishedCount < (index?.finished.length ?? 0)
+          ) {
+            setVisibleFinished({
+              key: filterKey,
+              count: Math.min(visibleFinishedCount + 40, index?.finished.length ?? 0),
+            });
+          }
+        }}
+      >
         {index === undefined ? null : (
           <TableWithDrawer
             openId={openRunId}
@@ -159,9 +180,11 @@ export function TasksPage() {
                 openRunId={openRunId}
                 onOpen={select}
                 onCancel={(run) => setCancelling(run)}
+                runningRef={runningRef}
               />
             }
             table={{
+              flush: true,
               rows: index.finished.slice(0, visibleFinishedCount),
               rowId: (run) => run.id,
               columns: runColumns({ asOf: index.asOf, nameOf, onOpen: select }),
@@ -174,25 +197,32 @@ export function TasksPage() {
               cardOf: (run) => (
                 <RunCard run={run} asOf={index.asOf} nameOf={nameOf} onOpen={select} />
               ),
+              stickyHeaderClassName: "top-10",
             }}
             tableSection={{
-              header: <SectionTitle title="Finished" count={index.finished.length} />,
-              className: "sticky top-0 flex h-full min-h-0 shrink-0 flex-col bg-background pb-4",
-              bodyClassName: "min-h-0 flex-1 overflow-y-auto",
-              onBodyScroll: (element) => {
-                if (
-                  element.scrollTop + element.clientHeight >= element.scrollHeight - 200 &&
-                  visibleFinishedCount < index.finished.length
-                ) {
-                  setVisibleFinished({
-                    key: filterKey,
-                    count: Math.min(visibleFinishedCount + 40, index.finished.length),
-                  });
-                }
-              },
+              header: (
+                <div className="sticky top-0 z-20 flex h-10 items-center justify-between border-y bg-background">
+                  <h2 className="text-[0.6875rem] font-semibold tracking-wider text-muted-foreground uppercase">
+                    Finished{" "}
+                    <span className="font-normal normal-case">· {index.finished.length}</span>
+                  </h2>
+                  {index.running.length > 0 && isRunningOffscreen && (
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-primary hover:underline"
+                      onClick={() =>
+                        runningRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }
+                    >
+                      Show running ↑
+                    </button>
+                  )}
+                </div>
+              ),
+              className: index.running.length > 0 ? "pt-4" : "",
             }}
             below={
-              <p className="mt-3 shrink-0 text-xs leading-relaxed text-muted-foreground">
+              <p className="sticky bottom-0 z-20 border-t bg-background py-2.5 text-xs leading-relaxed text-muted-foreground">
                 Runs are kept for <b className="font-semibold">{daysText(index.retention.days)}</b>,
                 failed and cancelled ones for{" "}
                 <b className="font-semibold">{daysText(index.retention.failedDays)}</b>. Nobody
@@ -250,6 +280,7 @@ interface RunsAboveProps {
   openRunId: string | null;
   onOpen: (runId: string) => void;
   onCancel: (run: Run) => void;
+  runningRef: React.Ref<HTMLDivElement>;
 }
 
 // What sits above the finished table: a notice and the running runs.
@@ -262,6 +293,7 @@ function RunsAbove({
   openRunId,
   onOpen,
   onCancel,
+  runningRef,
 }: RunsAboveProps) {
   return (
     <>
@@ -274,7 +306,7 @@ function RunsAbove({
           here while they run, and after.
         </p>
       ) : index.running.length > 0 ? (
-        <>
+        <div ref={runningRef} className="scroll-mt-4">
           <SectionTitle title="Running" count={index.running.length} />
           <div className="grid gap-2.5 @4xl:grid-cols-2">
             {index.running.map((run) => (
@@ -289,7 +321,7 @@ function RunsAbove({
               />
             ))}
           </div>
-        </>
+        </div>
       ) : null}
     </>
   );

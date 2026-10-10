@@ -6,7 +6,7 @@
 // own.
 
 import { ChevronLeft } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ReactNode, UIEventHandler } from "react";
 import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -75,12 +75,16 @@ export function PageHeader({
 interface PageContentProps {
   children: ReactNode;
   className?: string;
+  onScroll?: UIEventHandler<HTMLDivElement>;
 }
 
 // The scrolling body of a view that is not split into master and detail.
-export function PageContent({ children, className }: PageContentProps) {
+export function PageContent({ children, className, onScroll }: PageContentProps) {
   return (
-    <div className={cn("min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6", className)}>
+    <div
+      className={cn("min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6", className)}
+      onScroll={onScroll}
+    >
       {children}
     </div>
   );

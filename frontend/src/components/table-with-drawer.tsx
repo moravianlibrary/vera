@@ -25,8 +25,6 @@ interface TableWithDrawerProps<Row> {
   tableSection?: {
     header: ReactNode;
     className: string;
-    bodyClassName: string;
-    onBodyScroll?: (element: HTMLDivElement) => void;
   };
 }
 
@@ -55,12 +53,7 @@ export function TableWithDrawer<Row>({
       ) : (
         <section className={tableSection.className}>
           {tableSection.header}
-          <div
-            className={tableSection.bodyClassName}
-            onScroll={(event) => tableSection.onBodyScroll?.(event.currentTarget)}
-          >
-            <DataTable {...table} focusedId={openId} stickyHeader />
-          </div>
+          <DataTable {...table} focusedId={openId} stickyHeader />
           {below}
         </section>
       )}

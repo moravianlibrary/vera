@@ -173,6 +173,46 @@ const settled = {
   rerunOf: null,
 };
 
+const historicalSources = [
+  { scheduleId: "s1", instanceId: "pi1", what: "MZK Aleph — catalog resync" },
+  { scheduleId: "s2", instanceId: "pi4", what: "Kramerius — registry refresh" },
+  { scheduleId: "s3", instanceId: "pi5", what: "RDCZ — registry refresh" },
+  { scheduleId: "s4", instanceId: "pi9", what: "Catalog validity — nightly sweep" },
+] as const;
+
+// Enough retained history to exercise long scrolling and incremental rendering on Tasks.
+const historicalRuns: readonly StoredRun[] = Array.from({ length: 80 }, (_, index) => {
+  const source = historicalSources[
+    index % historicalSources.length
+  ] as (typeof historicalSources)[number];
+  const startedAt = june(24 - Math.floor(index / 2), index % 2 === 0 ? 9 : 15, 0);
+  const skipped = index > 14 && index % 19 === 0;
+  const failed = index > 14 && index % 23 === 0;
+  const state = skipped ? "Skipped" : failed ? "Failed" : "Done";
+  const doneCount = state === "Done" ? 120 + (index % 5) * 24 : 0;
+  return {
+    ...settled,
+    id: `T-${9700 - index}`,
+    what: source.what,
+    instanceId: source.instanceId,
+    coreName: null,
+    trigger: onSchedule(source.scheduleId),
+    startedBy: null,
+    startedAt,
+    itemCount: state === "Done" ? doneCount : state === "Skipped" ? 0 : 240,
+    ending: {
+      state,
+      finishedAt: new Date(startedAt.getTime() + (state === "Skipped" ? 0 : 3 * 60_000)),
+      doneCount,
+    },
+    errors: [],
+    changes:
+      state === "Done" ? [{ label: `${doneCount} records refreshed`, path: "/documents" }] : [],
+    failure: state === "Failed" ? "The source did not answer after three attempts." : null,
+    note: state === "Skipped" ? "The previous run was still going." : null,
+  };
+});
+
 export const runs: readonly StoredRun[] = [
   {
     ...notEnded,
@@ -378,6 +418,7 @@ export const runs: readonly StoredRun[] = [
       { label: "Archived May 2026", path: "/intentions?i=i10" },
     ],
   },
+  ...historicalRuns,
 ];
 
 // Runs 90 days, failed and cancelled ones a year (STATUS "Tasks").

@@ -50,6 +50,7 @@ export interface DataTableProps<Row> {
   cardOf?: (row: Row) => ReactNode;
   groupBy?: readonly GroupLevel<Row>[];
   stickyHeader?: boolean;
+  stickyHeaderClassName?: string;
   // The table meets the page edges instead of sitting in a padded card.
   flush?: boolean;
 }
@@ -100,6 +101,7 @@ export function DataTable<Row>({
   cardOf,
   groupBy = [],
   stickyHeader = false,
+  stickyHeaderClassName,
   flush = false,
 }: DataTableProps<Row>) {
   const tier = useTier();
@@ -313,7 +315,9 @@ export function DataTable<Row>({
       )}
     >
       <table className="w-full border-collapse text-[0.8125rem]">
-        <thead className={stickyHeader ? "sticky top-0 z-10" : undefined}>
+        <thead
+          className={stickyHeader ? cn("sticky top-0 z-10", stickyHeaderClassName) : undefined}
+        >
           <tr className="bg-muted">
             {shown.map((column) => (
               <th
