@@ -17,8 +17,8 @@ continue to work. The page answers three questions:
    assignment?
 3. Who can reach a proposal or category, and why?
 
-This page has **no watchlist tabs or shared-watchlist records**. Shared watchlist creation, audience,
-and management belong to Preferences → Watchlists. A role or group may still be used as a watchlist
+This page has **no watchlist tabs or system-watchlist records**. System watchlist creation, audience,
+and management belong to `/watchlists`. A role or group may still be used as a watchlist
 audience there; that relationship does not appear in Users management.
 
 The primary UI is searchable entity tables with inspectable details. The existing many-to-many
@@ -175,7 +175,7 @@ losing selection or filters.
 2. Add Roles and Groups tables/detail panes, moving their existing editors into the new entry points.
 3. Add proposal-set management, current placement output, and category links.
 4. Add rooted relationship exploration, responsive layouts, scroll loading, and deep-link
-   checks. Remove shared-watchlist records from this page; leave their management in Preferences.
+   checks. Remove watchlist records from this page; manage system watchlists on `/watchlists`.
 5. Update navigation, `view-catalog.md`, `page-composition.md`, `filtering.md`, `frontend/brief.md`,
    and tests to describe the shipped UI rather than the former linked-columns design.
 

@@ -89,7 +89,7 @@ overview: collapsed, one chart; detail: transient, public texts only; actions:
 | | Instead |
 |---|---|
 | approve, decline, deny anything | Proposals / Validation — §2 |
-| advanced filtering | nowhere for this actor: a reader has no watchlists to build |
+| advanced filtering | on views where the reader can use it; their saved filters appear under My watchlists ([[watchlists-and-notifications]]) |
 | internal reason text | public wording only, always ([[view-rules]] §4.3) |
 | priority, project, category | a curation concern; the requester does not set or see it |
 | other people's requests | that is *Documents* |
@@ -391,8 +391,8 @@ editor here. Category detail separates assignments here from those
 inherited from ancestors; category custody is edited on Categories. Project
 membership is inspected here but edited on Projects.
 
-Every detail has a read-only, rooted *Explore relationships* mode. Shared
-watchlists are managed in Preferences, not on this page. See
+Every detail has a read-only, rooted *Explore relationships* mode. System
+watchlists are managed on `/watchlists`, not on this page. See
 [[users-management-redesign]] for the full UI contract.
 
 ### Plugins · `/plugins` · **Pl** · `admin`
@@ -439,7 +439,9 @@ that gave up** (retry / discard) and those **waiting to send**.
 - **Retries are per hook** (attempts, fixed or growing wait). After the last
   one the delivery waits on its hook until retried or discarded.
 - Derived conditions (behind pace, out of band) are not events; a watchlist is
-  the tool for those.
+  the tool for those. Per-person watchlist entry notifications are managed on
+  Watchlists and delivered separately from Hook emails
+  ([[watchlists-and-notifications]]).
 
 ---
 

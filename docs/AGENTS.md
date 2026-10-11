@@ -14,6 +14,7 @@ they may become obsolete as the product evolves.
 - **`design/shared/navigation.md`** — sidebar construction rules
 - **`design/shared/page-composition.md`** — page composition conventions
 - **`design/shared/filtering.md`** — filter rules
+- **`design/shared/entities/watchlists-and-notifications.md`** — Watchlists page, system watchlists, badges, delivery, and Hook preferences
 - **`design/shared/flows.md`** — flow reference (D1, D2, PJ1, etc.)
 - **`design/shared/entities/`** — entity definitions
   - `permissions.md` — role-based permissions, grants, scopes, the 5 shipped roles

@@ -8,7 +8,7 @@ decides how a person gets to them.
 
 ## 1. The entries
 
-Twelve, in one order — `docs/demos/rework.md` § Client views, with the
+Core entries, in one order — `docs/demos/rework.md` § Client views, with the
 document pages re-cut around the document (§1.1). **One flat list: no groups,
 no dividers, and no names for runs of entries** (§2):
 
@@ -26,10 +26,11 @@ no dividers, and no names for runs of entries** (§2):
 | 9 | **Users & Groups** | `UG` | `/access` | — entity |
 | 10 | **Plugins** | `Pl` | `/plugins` | — entity |
 | 11 | **Hooks** | `Ho` | `/hooks` | — entity |
+| 12 | **Watchlists** | `WL` | `/watchlists` | — saved views; last for every actor who can use watchlists |
 
 Above them: the **logo**, which navigates Home, and the **expand / collapse
-button**. Below them, after a rule: **Watchlists** (§5), then **Running tasks**
-(§6), then the **user menu** (§7).
+button**. Below them, after a rule: **Running tasks** (§6), then the **user
+menu** (§7). Watchlists is a navbar entry (§5), not a foot popover.
 
 ### 1.1 The document pages, re-cut around the document
 
@@ -77,12 +78,12 @@ the pipeline, and that answers the question §1.3 used to leave open.
 
 Three entries begin with `D` — *Documents*, *Documents Validations*,
 *Digitization Lists* — so first-two-letters does not work. **Initials of the
-multi-word names do**, and all twelve come out unique without renaming
+multi-word names do**, and the entries come out unique without renaming
 anything:
 
 | Single word | Multi-word |
 |---|---|
-| `Do` Documents · `Pr` Proposals · `Ca` Categories · `In` Intentions · `Ta` Tasks · `Sc` Schedules · `Pl` Plugins · `Ho` Hooks · `Pj` Projects | `DV` Documents Validations · `DL` Digitization Lists · `UG` Users & Groups |
+| `Do` Documents · `Pr` Proposals · `Ca` Categories · `In` Intentions · `Ta` Tasks · `Sc` Schedules · `Pl` Plugins · `Ho` Hooks · `Pj` Projects · `WL` Watchlists | `DV` Documents Validations · `DL` Digitization Lists · `UG` Users & Groups |
 
 *My Documents* keeps `Do`: it is the same entry under a narrower label, and a
 rail that changed its letters with the label would make one entry look like
@@ -110,7 +111,7 @@ downwards, the same way as the sidebar.
 
 ## 2. One flat list, and no counts on it
 
-The twelve render as **one list in one order**, with no group headers.
+The entries render as **one list in one order**, with no group headers.
 
 > **There are no groups at all** — not in the sidebar, not on Home, not as a
 > way of talking about the entries. An earlier draft put the entries under
@@ -121,10 +122,11 @@ The twelve render as **one list in one order**, with no group headers.
 > phone's swipe order (§3.1), the resolution of `/` (§8) — it picks by
 > **position in the list and by what the actor holds**, never by a group.
 
-**No per-entry count**, either. A bare number beside a nav entry does not say
+**No per-entry count**, except on Watchlists. A bare number beside most nav entries does not say
 what it counts: *3* next to *Documents Validations* could be three documents,
 three defects or three anything. Counts need a surface that names them, and
-that surface is **Watchlists** (§5), where every row is labelled. A view's own
+that surface is **Watchlists** (§5), where every row is labelled. Its navbar
+badge counts watchlists with unseen entries. A view's own
 volume belongs in its page header — *"4 of 11 in custody"* — where there is
 room to say what the numbers are.
 
@@ -227,24 +229,22 @@ What keeps them apart:
 of this section asked for icon **and** letters; that was not asked for and is
 withdrawn. The letters are what disambiguates *Documents* from *Documents
 Validations* (`Do` / `DV`), which no icon pair would do as reliably. The foot
-of the bar — Watchlists, the user menu — keeps its icons, because those rows
-are not entries and have no letters.
+of the bar — running tasks and the user menu — keeps its icons. Watchlists is
+an entry, with `WL` on the rail.
 
-**No entry carries a count, so none survives into the rail** — §2. The two
-numbers the sidebar does show are Watchlists' total (§5) and the running-task
-count (§6), and both become a dot on their icon when collapsed. Neither is an
-entry.
+**Watchlists is the one entry with a count** (§5). It and the running-task
+count (§6) become dots on the collapsed rail.
 
 **Nothing moves under the pointer.** The collapsed task dot is shorter than
 the expanded panel, so the rail reserves the panel's height; otherwise
-expanding pushes Watchlists up just as the cursor reaches it.
+expanding must not move the user menu just as the cursor reaches it.
 
 ### 4.2 Hover-expand
 
 Hovering the collapsed rail expands it; navigating collapses it again — and
 it **stays** collapsed on the next page until the pointer has left the bar
 once, since the cursor is usually still over the rail when the page loads.
-While a popover from the foot (Watchlists, user menu) is open, the bar stays
+While the user-menu popover is open, the bar stays
 expanded, so the panel's anchor does not slide away as the pointer travels
 into it.
 
@@ -294,35 +294,18 @@ into it.
 
 ## 5. Watchlists
 
-A watchlist is a **saved filter inside a view** — a *lens* in [[view-map]] §1,
-addressable, owned by the user.
+A watchlist is a saved filter inside a source view. **Watchlists** is one
+navbar page, last in each person's visible navigation, with **My watchlists**
+and **System watchlists**. The page links each saved filter to its source view.
+People with `watchlist.manage_shared` maintain all system watchlists there;
+others see only system watchlists whose audience and source view they may
+access. See [[watchlists-and-notifications]].
 
-**It is one sidebar row that opens a popover**, not a list of rows in the
-sidebar. This is the part of the sidebar whose length the *user* controls, so
-it is the one part that must not be allowed to grow the sidebar: ten watchlists
-would push Hooks off the bottom. A popover has its own scroll and its own
-ceiling.
-
-The row carries a **total** — the one number in the sidebar, and the only one
-that can be read without ambiguity, because the panel behind it itemises
-exactly what it adds up. Collapsed to the rail, the total becomes a dot on the
-icon.
-
-Inside the panel:
-
-- **Grouped by view**, and each row names its view. *Awaiting my review* and
-  *Awaiting review* are different things in different views, and a bare name
-  makes them indistinguishable.
-- **Each row carries its own count** — which is what makes the total legible.
-- Authored only where advanced filtering exists, `large` and `notebook`
-  ([[view-rules]] §2 rule 3). Consumed at every tier.
-- It ends with **Manage watchlists**, which opens Preferences → Watchlists
-  (§7, [[filtering]] §4.3).
-
-> **Counts are opt-in per watchlist.** A count on a saved lens means running
-> that query on every page load, and a watchlist is an *arbitrary* advanced
-> predicate. Offering counts on all of them by default is how the sidebar
-> becomes the slowest thing in the application.
+The navbar badge is the **number of watchlists with unseen entries** for this
+person, excluding hidden watchlists and those whose badge they disabled. Each
+watchlist tab shows its own count of new matching records. Opening the page
+does not clear those counts; opening a watchlist does. Collapsed to the rail,
+the navbar count becomes a dot.
 
 ---
 
@@ -367,8 +350,9 @@ and whatever else accumulates. Not a group, not a route.
   entry list.
 - **Preferences is a page**, `/preferences`, though not a sidebar entry
   (decided 2026-10-06). Its sections:
-  - **Watchlists:** the page [[filtering]] §4.3 describes. `/watchlists`
-    leads here.
+  - **Notifications:** user-addressed Hook mail choices and the global
+    optional-notification override. Watchlist delivery is managed on the
+    Watchlists page ([[watchlists-and-notifications]]).
   - **Display:** the sidebar per tier (§4.3), the tab each view opens on
     (the last one used, or a fixed one; [[filtering]] §4.2), list density
     and date format, and later the language.
@@ -582,7 +566,7 @@ Spending it is how Home becomes a dashboard, so each of these is refused by name
 |---|---|
 | charts of anything | a view's overview strip, where clicking one filters ([[view-rules]] §2) |
 | a global search box | the view being searched — search is scoped to one entity (§3 rule 5) |
-| the Watchlists panel | the sidebar row it already has (§5); a second copy is a second thing to disagree |
+| the Watchlists page | its navbar entry (§5); a second copy is a second thing to disagree |
 | the running-tasks panel | the sidebar panel it already has (§6), even at `small` and `phone` where that panel sits behind a tap |
 | *recently viewed* | nowhere — it reorders itself, which §8.3 forbids |
 | an activity feed | the [[status-log]] on the record it happened to |

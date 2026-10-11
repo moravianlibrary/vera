@@ -389,20 +389,20 @@ root stays `any`.
    as properties in [[view-rules]] §4.4. The list is assembled per entry:
    grants compose, so somebody may hold *My Documents* and *Projects* and
    nothing else, and see those two entries ([[navigation]] §2 rule 2).
-2. ~~Entries carry a count~~ — **dropped**. A bare number beside a nav
-   entry does not say what it counts. Counts live on Watchlists, where the
-   panel itemises them, and a view's own volume lives in its page header
-   ([[navigation]] §2).
+2. Most entries carry no count. **Watchlists** is the exception: its badge
+   counts this person's watchlists with unseen entries. Each watchlist tab
+   names its own new-record count. A view's own volume stays in its page
+   header ([[navigation]] §2, [[watchlists-and-notifications]]).
 3. An entity page is reachable from any record that references it. The sidebar
    is how you get there without a record in hand, not the only way.
 4. A view is never reachable from two entries. If a view seems to belong in
    two, it is two views.
 
-The entries themselves — all twelve, their order, their rail abbreviations
+The entries themselves, their order, their rail abbreviations
 and what the sidebar becomes at each tier — are [[navigation]]. Rules 1 and 2
 above are restated there, because the shell is where they are enforced.
 
-What each of the twelve **contains**, and what it deliberately does not, is
+What each entry **contains**, and what it deliberately does not, is
 [[view-catalog]].
 
 ---

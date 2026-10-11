@@ -1,6 +1,6 @@
 # Filtering and watchlists
 
-One way to filter, on every list page, and watchlists that say on the sidebar
+One way to filter, on every list page, and watchlists that say in the navbar
 entry when something new arrived. Drafted 2026-10-02 for review, from the
 user's direction: *unite the ways filtering works, simple where it can be,
 advanced where it must; put the watchlist badge on the entry it watches; give
@@ -146,7 +146,7 @@ and are not saved in a watchlist.
 ## 4. Watchlists
 
 A watchlist is **a saved filter on one view**: the view, its predicates, a
-name, and who sees it: its owner alone, or an audience it is shared with
+name, and who sees it: its creator alone, or a system-defined audience
 (§4.5).
 The view shows its watchlists as tabs above the bar, and **+** at the end of
 them saves exactly the chips shown, quick fields included. It can be saved at any tier, since saving is naming
@@ -159,86 +159,50 @@ rule 3).
 |---|---|
 | **items** | what matches now |
 | **new** | items that **entered** it since **this person** last opened it. Leaving does not count: a proposal decided and gone from *Awaiting my review* is not news |
-| **seen** | **per person** (decided 2026-10-06): set when they open the watchlist, or the view with exactly its filter. A shared watchlist has one *seen* for each person who sees it |
+| **seen** | **per person**: set when they open that watchlist. A system watchlist has one *seen* for each eligible person |
 
-*New* is computed from status-log events, not by re-running every query on
-every page load. An event about a record re-evaluates that record against the
-watchlists on its view; it is what made counts too costly to have by
-default, and it is why they no longer need to be opt-in.
+*New* is computed from membership entry events, not by re-running every query
+on every page load. A reliable change queue re-evaluates affected records
+against relevant watchlists; relative time filters are checked at their time
+boundaries. See [[watchlists-and-notifications]].
 
-### 4.2 The badge is on the entry it watches
+### 4.2 New item badges
 
-**The sidebar entry of a view carries a badge when its watchlists have new
-items**: the number of distinct new items across that view's watchlists.
+The Watchlists navbar entry counts **watchlists with unseen entries**, not
+records or definition changes. Each watchlist tab shows its own number of new
+matching records. Hidden watchlists and those with badge disabled do not
+contribute to the navbar count. Opening the Watchlists page does not mark a
+watchlist seen; opening that watchlist does. Sending its email does not mark
+it seen either. See [[watchlists-and-notifications]].
 
-```
-  Do   Documents
-  Pr   Proposals              4
-  DV   Documents Validations  1
-```
-
-This reverses [[navigation]] §2 for this one number, and the reason that rule
-gave is answered: the number does not count the view's volume; it counts what
-**changed** in lenses the person drew themselves. Hovering says what it is:
-*4 new in your watchlists — Periodicals 3, More than one asker 1*.
-Collapsed to the rail it is a dot. A watchlist set to *no badge* (§4.3) is
-not counted.
-
-**Opening the entry does not clear it**; opening the watchlist does. The
-entry opens on the tab the person last left the view on, *All* or a
+A source view still opens on the tab the person last left there, *All* or a
 watchlist, remembered per person and per view (decided 2026-10-05). In
 Preferences → Display they can fix a view's opening tab instead
-([[navigation]] §7). It is kept with the person's settings, in the browser
-until that store exists. *All* is the view with no filter.
-A link that names a filter or a record opens what it names.
+([[navigation]] §7). *All* is the view with no filter. A link that names a
+filter or a record opens what it names.
 
-### 4.3 The Watchlists row and Preferences
+### 4.3 The Watchlists page
 
-The **Watchlists** row in the sidebar foot stays. Its popover lists the
-watchlists grouped by view, each with *new* and *items*, and ends with
-**Manage watchlists**. That opens the **Watchlists section of Preferences**
-(decided 2026-10-06; [[navigation]] §7), which replaces the separate page
-drawn here first. `/watchlists` leads to it.
-
-```
-/preferences/watchlists        not a sidebar entry — from the user menu or the Watchlists row
-
-View          Watchlist                    Filter                              Items  New  Badge
-Proposals     Periodicals                  Material type: Periodical            10    3    on
-              More than one asker          Askers > 1                            1    1    on
-Validations   Page counts                  Defect: PageCount                     2    —    on
-Documents     High priority, not listed    Priority: Urgent, High · Ready        3    —    off
-                                                    [Open] [Rename] [Edit filter] [Delete]
-```
-
-- **Every watchlist the person owns**, grouped by view in sidebar order,
-  draggable within a view (the order the popover uses).
-- **Shared with me**: the shared watchlists the person sees, read-only, each
-  with *Hide* (it leaves their tabs and popover; *Show* brings it back) and
-  its own Badge switch. Hiding and the badge are the person's, not the
-  watchlist's.
-- **Badge** on or off per watchlist: a lens kept for reference should not ping.
-- **Edit filter** opens the view on the watchlist's tab. A change to the filter
-  is saved, or discarded, on that tab; **+** only ever saves a new one.
-- **A watchlist on a view the person can no longer open** is listed greyed
-  under *No longer reachable*, with *Delete*: losing a role must not delete
-  someone's lenses, and getting it back brings them back.
-- Not a sidebar entry: the twelve stay as they are ([[navigation]] §1). If it
-  should become one, that is a decision to take on its own.
+**Watchlists** is one navbar page at `/watchlists`, last in the visible list.
+It has **My watchlists** and **System watchlists**. A manager sees all system
+watchlists and can maintain them; other people see only system watchlists whose
+audience and source view they may access. The page lists saved filters and
+links each one to its source view. Per-person badge, visibility and delivery
+controls live there. This replaces the sidebar-foot popover and Preferences →
+Watchlists design from 2026-10-06. See [[watchlists-and-notifications]].
 
 ### 4.4 What a watchlist is not
 
-- **Not a notification.** Mail or chat on a watchlist change would be a hook
-  on a derived condition, which [[view-catalog]] *Hooks* rules out. The badge
-  is the notification.
+- **Not a Hook.** A person may enable email or chat for records entering a
+  watchlist ([[watchlists-and-notifications]]). Its delivery does not create
+  an admin Hook or mix mail with Hook mail.
 - **Not a role's view.** A watchlist shared with a group or a role is a lens
   its audience can open, not a queue assigned to them (§4.5). Nobody is
   responsible for emptying it.
 
-### 4.5 Personal and shared
+### 4.5 Personal and system
 
-Decided 2026-10-05; the audience decided 2026-10-06. A watchlist is
-**personal** or **shared**, and a shared one has an **audience**:
+A watchlist is **personal** or **system**. System watchlists have an audience:
 
 | Audience | Who sees it |
 |---|---|
@@ -249,19 +213,21 @@ Decided 2026-10-05; the audience decided 2026-10-06. A watchlist is
 Every audience stops at who may open the view, and at the vocabulary it was
 drawn for: staff, since a requester's *My Documents* is their own asks.
 
-| | personal | shared |
+| | personal | system |
 |---|---|---|
-| changed and shared by | its owner, under `watch` | holders of `watchlist.manage_shared` only ([[permissions]] §3). A group's members get no right to share with their own group |
-| on the tabs | after the shared ones | first, marked with a people icon, *Shared* on hover |
+| maintained by | its owner, under `watch` | holders of `watchlist.manage_shared` only ([[permissions]] §3) |
+| on the tabs | after the system ones | first, marked as *System* |
 
-**+** asks for a name, and with `watchlist.manage_shared` also who sees it.
-**Share…** on a tab's menu (replacing *Share with everyone*) changes the
-audience in place. It shows how many people the audience reaches. A shared tab
-the person may not change still shows that its filter changed, and offers only
-*Discard*; **+** keeps the change as their own.
+**Save to my watchlists** asks for a name. A manager may instead **Publish as
+system watchlist** and set an audience. Publishing from a personal watchlist
+creates a separate copy, leaving the personal one intact. A system tab the
+person may not change offers only *Discard* for an edited filter; they may
+save that filter as their own personal watchlist.
 
-**Shared watchlists are managed in Preferences → Watchlists**. Users management
-does not list shared watchlists or show watchlist cards on access records.
+**System watchlists are managed on `/watchlists`**. Publishing a personal
+watchlist creates a separate system copy. Users management does not list
+watchlists or show watchlist cards on access records. See
+[[watchlists-and-notifications]].
 
 **A filter is saved once among one's own.** Two watchlists on one view are the
 same when their filters select the same records, whatever their names. The
@@ -270,15 +236,15 @@ watchlist the person already sees: their own and the shared ones that reach
 them. **+** and *Save changes* are disabled, with the name of the watchlist
 that already holds the filter.
 
-**Sharing warns instead of refusing.** A shared watchlist whose audience
+**Publishing warns instead of refusing.** A system watchlist whose audience
 reaches somebody who already keeps the same filter as their own is allowed
-(decided 2026-10-06). *Share…* says how many of them there are before saving
+(decided 2026-10-06). *Publish* says how many of them there are before saving
 ("2 of the 14 already keep this filter"), and they see both until they delete
 their own. Refusing would let one person's private lens block a lens meant for
 a whole group, and the sharer cannot see it to resolve it.
 
-**Shared watchlists badge like personal ones.** *Seen* is kept per person
-(§4.1), so a shared watchlist counts new items for each person who sees it,
+**System watchlists badge like personal ones.** *Seen* is kept per person
+(§4.1), so a system watchlist counts new items for each person who sees it,
 unless they hid it or switched its badge off.
 
 ---
@@ -287,8 +253,9 @@ unless they hid it or switched its badge off.
 
 ```
 watchlist
-  id, owner_id → user who saved it
-  audience          'personal' | 'everyone' | 'some' — who sees it (§4.5)
+  id, created_by → user who saved or published it
+  kind              'personal' | 'system'
+  audience          for system: 'everyone' | 'some' — who sees it (§4.5)
   view              'proposals', 'validation', … — a sidebar entry id
   name
   filter            jsonb — the predicates, as in the URL (§2)
@@ -302,8 +269,8 @@ watchlist_viewer     — one per person and watchlist they see
   watchlist_id, user_id
   seen_at           timestamptz
   badge             bool    default true
-  hidden            bool    default false   — shared ones only
-  position          int     within its view, in their popover
+  hidden            bool    default false
+  position          int     within its view, in their tabs
   UNIQUE (watchlist_id, user_id)
 
 watchlist_entry      — what makes "new" cheap
@@ -315,12 +282,11 @@ watchlist_entry      — what makes "new" cheap
 `new = entries with entered_at > watchlist_viewer.seen_at` for that person.
 An entry is added when a record starts matching and removed when it stops.
 
-**An audience column, not a nullable owner.** A shared watchlist still has
-somebody who saved it, which the record keeps; making `owner_id` null would
-lose that and make "nobody" mean "everybody".
+**Creation history is retained on system watchlists.** Publishing creates a
+separate system watchlist, rather than changing a personal one in place.
 
 **What belongs to the person moved to `watchlist_viewer`.** *Seen*, the
-badge, the order and *hidden* are each person's, which is what lets a shared
+badge, the order and *hidden* are each person's, which is what lets a system
 watchlist badge (§4.5). A viewer row is created when the person first sees the
 watchlist, and it lapses with the audience: leaving a group removes the
 watchlist from their tabs and keeps the row, so coming back brings their
@@ -364,16 +330,12 @@ quick *Status*, in the public vocabulary, now several values at once.
 
 ## 7. To decide
 
-1. **The badge counts new items**, distinct across the view's watchlists.
-   The alternative is a dot with no number, or the number of watchlists
-   that changed.
-2. **New means entered since last opened.** Should a status change of an
-   item already in the watchlist count too (*Ready → Published* inside
-   *High priority, not scheduled*)?
-3. **Opening the view does not clear the badge**; only opening the
-   watchlist does.
-4. ~~**The Watchlists page is not a sidebar entry.**~~ Decided 2026-10-06:
-   it is the Watchlists section of Preferences ([[navigation]] §7).
+1. Decided 2026-10-10: the navbar badge counts watchlists with unseen entries;
+   each watchlist tab counts its own new records.
+2. Decided 2026-10-10: *new* means entered since last opened. Changes while
+   an item keeps matching do not count.
+3. Opening the page does not clear badges; opening the watchlist does.
+4. Decided 2026-10-10: Watchlists is one navbar page at `/watchlists`.
 5. **Projects and Intentions gain filters**, though they are cards today.
 
 ## Related
@@ -381,3 +343,5 @@ quick *Status*, in the public vocabulary, now several values at once.
 - [[view-rules]]: §2 replaced, §3 search kept
 - [[navigation]]: §2 and §5, revised by §4 here
 - [[status-log]]: the events that move watchlist entries
+- [[watchlists-and-notifications]]: current Watchlists page, system watchlists,
+  badges and external delivery decisions
