@@ -3,6 +3,8 @@
 
 export const apiRoutes = {
   session: "/session",
+  sessionLogout: "/session/logout",
+  sessionAccount: "/session/account",
   userSettings: "/session/settings",
   users: "/users",
   categories: "/categories",
@@ -107,6 +109,10 @@ export function digitizationListMemberRoute(listId: string, iterationId: string)
 
 export function watchlistRoute(watchlistId: string): string {
   return `${apiRoutes.watchlists}/${encodeURIComponent(watchlistId)}`;
+}
+
+export function watchlistViewerRoute(watchlistId: string): string {
+  return `${watchlistRoute(watchlistId)}/viewer`;
 }
 
 export function proposalReviewRoute(documentId: string): string {

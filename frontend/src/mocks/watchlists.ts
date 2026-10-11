@@ -36,10 +36,11 @@ import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
-import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
 import { sessionOf } from "@/mocks/session";
+import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canReview, queryValidations } from "@/mocks/validations";
+import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 
 export function visibleWatchlists(
   session: Session,
@@ -49,11 +50,13 @@ export function visibleWatchlists(
     .filter((watchlist) => isVisible(session, watchlist))
     .filter((watchlist) => view === null || watchlist.view === view)
     .toSorted((first, second) => Number(isShared(second)) - Number(isShared(first)))
-    .map((watchlist) => ({
+    .map((watchlist) => ({ watchlist, viewer: viewerOf(session.user.id, watchlist) }))
+    .toSorted((first, second) => first.viewer.position - second.viewer.position)
+    .map(({ watchlist, viewer }) => ({
       ...publicWatchlistOf(watchlist),
       itemCount: itemCountOf(session, watchlist),
       isEditable: canChange(session, watchlist.audience),
-      viewer: viewerOf(session.user.id, watchlist),
+      viewer,
     }));
 }
 
@@ -196,7 +199,7 @@ export interface StoredWatchlistViewer extends WatchlistViewer {
 
 // Made the first time the person sees the watchlist, and kept when the audience lapses, so
 // coming back brings their settings back.
-function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistViewer {
+export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistViewer {
   const stored = database.watchlistViewers.find(
     (viewer) => viewer.watchlistId === watchlist.id && viewer.userId === userId,
   );
@@ -212,6 +215,7 @@ function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistViewer {
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
   };
   database.watchlistViewers.push({ ...viewer, watchlistId: watchlist.id, userId });
+  storeWatchlistViewers(database.watchlistViewers);
   return viewer;
 }
 

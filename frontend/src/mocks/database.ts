@@ -1,9 +1,9 @@
 // The mock server's in-memory state: the fixtures, repeated `VITE_MOCK_DOCUMENT_COPIES` times,
 // plus whatever the session writes. Reloading the page resets it.
 
-import { env } from "@/config/env";
 import type { IntentionRow } from "@/api/intentions";
 import type { MixTree } from "@/api/mixes";
+import { env } from "@/config/env";
 import type { Category, Watchlist } from "@/domain/entities";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
@@ -23,6 +23,7 @@ import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import type { StoredUpload } from "@/mocks/plugins";
 import { withCopies } from "@/mocks/volume";
+import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 
 // The owner is who saved it; for a shared watchlist that says nothing about who sees it.
@@ -63,7 +64,7 @@ export const database = {
   statusLog: [...records.statusLog],
   watchlists: [...watchlists],
   // Each person's own row for a watchlist they see: seen, badge, hidden, place.
-  watchlistViewers: [] as StoredWatchlistViewer[],
+  watchlistViewers: readWatchlistViewers() as StoredWatchlistViewer[],
   // Written by Plugins: instances made, edited, switched off and deleted; versions uploaded.
   pluginImplementations: [...pluginImplementations],
   pluginInstances: [...pluginInstances],

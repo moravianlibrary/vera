@@ -4,6 +4,7 @@ import type { AccessIndex } from "@/api/access";
 import { ActionBar } from "@/components/actions/action-bar";
 import { DataTable } from "@/components/data-table";
 import { FilterBar } from "@/components/filters/filter-bar";
+import { TabButton, TabStrip } from "@/components/filters/tab-strip";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
@@ -46,7 +47,6 @@ import { useAccessQuery } from "@/features/access/use-access-query";
 import { useLoadMore } from "@/hooks/use-load-more";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { cn } from "@/lib/utils";
 import type { ListFieldDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
@@ -580,58 +580,30 @@ export function AccessPage() {
   return (
     <>
       <PageHeader title="Users management" actions={canManage ? headerActionsFor(setDialog) : []} />
-      <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
-        <nav
-          aria-label="Users management views"
-          className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
-        >
-          {views.map((item) => (
-            <button
-              key={item}
-              type="button"
-              aria-current={view === item ? "page" : undefined}
-              className={cn(
-                "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                view === item
-                  ? "border-primary font-medium text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
-              )}
-              onClick={() => changeView(item)}
-            >
-              {item[0].toUpperCase() + item.slice(1)}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <TabStrip label="Users management views">
+        {views.map((item) => (
+          <TabButton key={item} selected={view === item} onClick={() => changeView(item)}>
+            {item[0].toUpperCase() + item.slice(1)}
+          </TabButton>
+        ))}
+      </TabStrip>
       {view === "custodies" && (
-        <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
-          <nav
-            aria-label="Custody resources"
-            className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
-          >
-            {(
-              [
-                ["Proposal sets", "proposals"],
-                ["Categories", "categories"],
-              ] as const
-            ).map(([label, nextType]) => (
-              <button
-                key={label}
-                type="button"
-                aria-current={type === nextType ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                  type === nextType
-                    ? "border-primary font-medium text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-                onClick={() => changeView("custodies", nextType)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
+        <TabStrip label="Custody resources">
+          {(
+            [
+              ["Proposal sets", "proposals"],
+              ["Categories", "categories"],
+            ] as const
+          ).map(([label, nextType]) => (
+            <TabButton
+              key={label}
+              selected={type === nextType}
+              onClick={() => changeView("custodies", nextType)}
+            >
+              {label}
+            </TabButton>
+          ))}
+        </TabStrip>
       )}
       <FilterBar
         key={`${view}:${type}`}

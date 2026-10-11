@@ -4,14 +4,36 @@
 // and has no toggle. The rail's hover-expand (§4.2) is the shell's: it passes `isPeeking` while
 // the rail is open over the content, and the toggle still answers for the remembered choice.
 // After a rule at the foot comes what is running, while anything is (§6).
-// TODO(rrandiak): the Watchlists row (§5) and the user menu (§7).
+// User options live in a dropdown at the foot; labels move to i18n.
 
-import { ChevronsRight, UserRound } from "lucide-react";
-import { NavLink, useLocation } from "react-router";
+import {
+  ChevronsRight,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings2,
+  ShieldCheck,
+  Sun,
+  UserRound,
+} from "lucide-react";
+import { useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router";
+import { logout } from "@/api/session";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { RunningTasksPanel } from "@/components/layout/running-tasks-panel";
 import { Logo } from "@/components/logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Session } from "@/domain/entities";
+import { useAppearance } from "@/hooks/use-appearance";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +45,8 @@ interface SidebarProps {
   // Absent in the sheet, which is always expanded.
   onToggle?: () => void;
   onNavigate?: () => void;
+  onMenuNavigate?: () => void;
+  onUserMenuOpenChange?: (open: boolean) => void;
   className?: string;
 }
 
@@ -32,9 +56,15 @@ export function Sidebar({
   isPeeking = false,
   onToggle,
   onNavigate,
+  onMenuNavigate,
+  onUserMenuOpenChange,
   className,
 }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { appearance, setAppearance } = useAppearance();
+  const [menuError, setMenuError] = useState("");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const entries = session === undefined ? [] : visibleNavigation(session);
   const isShowingLabels = isExpanded || isPeeking;
   const labelClassName = cn("truncate", !isShowingLabels && "sr-only");
@@ -107,19 +137,100 @@ export function Sidebar({
           isShowingLabels={isShowingLabels}
           onNavigate={onNavigate}
         />
-        <div className="flex items-center gap-2.5 px-1.5" title={session?.user.name}>
-          <span className="grid size-7 shrink-0 place-items-center">
-            <UserRound className="size-4" />
-          </span>
-          <span className={cn("min-w-0 text-sm", !isShowingLabels && "sr-only")}>
-            <b className="block truncate font-medium text-sidebar-accent-foreground">
-              {session?.user.name ?? "Loading user…"}
-            </b>
-            <span className="block truncate text-xs">
-              {session?.roleIds.join(", ") || "no role"}
-            </span>
-          </span>
-        </div>
+        <DropdownMenu onOpenChange={onUserMenuOpenChange}>
+          <DropdownMenuTrigger asChild disabled={session === undefined || isLoggingOut}>
+            <button
+              type="button"
+              aria-label="User menu"
+              title={session?.user.name}
+              className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-1 text-left hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-sidebar-ring"
+            >
+              <span className="grid size-7 shrink-0 place-items-center">
+                <UserRound className="size-4" />
+              </span>
+              <span
+                className={cn(
+                  "min-w-0 truncate text-sm font-medium text-sidebar-accent-foreground",
+                  !isShowingLabels && "sr-only",
+                )}
+              >
+                {session?.user.name ?? "Loading user…"}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="end" className="w-64">
+            <DropdownMenuLabel className="space-y-1.5 px-2 py-2 font-normal">
+              <strong className="block truncate text-sm font-semibold">{session?.user.name}</strong>
+              {session?.user.email && (
+                <span className="block truncate text-xs text-muted-foreground">
+                  {session.user.email}
+                </span>
+              )}
+              <span className="block text-xs text-muted-foreground">
+                Roles: {session?.roleIds.join(", ") || "none"}
+              </span>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                navigate("/preferences/account");
+                onMenuNavigate?.();
+              }}
+            >
+              <ShieldCheck /> Account &amp; access
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                navigate("/preferences/watchlists");
+                onMenuNavigate?.();
+              }}
+            >
+              <Settings2 /> Preferences
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={appearance}
+              onValueChange={(value) => {
+                setMenuError("");
+                void setAppearance(value as typeof appearance).catch(() =>
+                  setMenuError("Could not save appearance."),
+                );
+              }}
+            >
+              <DropdownMenuRadioItem value="system">
+                <Monitor /> System
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="light">
+                <Sun /> Light
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">
+                <Moon /> Dark
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            {menuError && (
+              <p role="alert" className="px-2 py-1 text-xs text-destructive">
+                {menuError}
+              </p>
+            )}
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={async () => {
+                setIsLoggingOut(true);
+                try {
+                  await logout();
+                  window.location.assign("/");
+                } catch {
+                  setMenuError("Could not sign out. Try again.");
+                  setIsLoggingOut(false);
+                }
+              }}
+            >
+              <LogOut /> Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

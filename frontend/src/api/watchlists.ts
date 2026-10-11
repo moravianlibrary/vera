@@ -13,7 +13,7 @@ import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { isSameListQuery, parseListSearchParams } from "@/api/lists";
 import { isSameProjectQuery, parseProjectSearchParams } from "@/api/projects";
 import { isSameProposalQuery, parseProposalSearchParams } from "@/api/proposal-review";
-import { apiRoutes, watchlistRoute } from "@/api/routes";
+import { apiRoutes, watchlistRoute, watchlistViewerRoute } from "@/api/routes";
 import { isSameRunQuery, parseRunSearchParams } from "@/api/tasks";
 import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
@@ -50,6 +50,14 @@ export const watchlistViewerSchema = z.object({
   position: z.number().int().nonnegative(),
 });
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;
+export const watchlistViewerChangeSchema = watchlistViewerSchema
+  .pick({
+    hasBadge: true,
+    isHidden: true,
+    position: true,
+  })
+  .partial();
+export type WatchlistViewerChange = z.infer<typeof watchlistViewerChangeSchema>;
 
 export const watchlistSummarySchema = watchlistSchema.extend({
   itemCount: z.number().int().nonnegative(),
@@ -152,4 +160,11 @@ export async function getWatchlistReach(request: WatchlistReachRequest): Promise
 
 export async function deleteWatchlist(watchlistId: string): Promise<void> {
   return deleteResource(watchlistRoute(watchlistId));
+}
+
+export async function updateWatchlistViewer(
+  watchlistId: string,
+  change: WatchlistViewerChange,
+): Promise<WatchlistViewer> {
+  return patchJson(watchlistViewerRoute(watchlistId), change, watchlistViewerSchema);
 }

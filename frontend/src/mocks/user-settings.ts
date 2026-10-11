@@ -40,6 +40,14 @@ export function changeUserSettings(userId: string, change: UserSettingsChange): 
     ...current,
     ...change,
     lastOpenedWatchlists: { ...current.lastOpenedWatchlists, ...change.lastOpenedWatchlists },
+    ...(change.fixedOpeningWatchlists === undefined
+      ? {}
+      : {
+          fixedOpeningWatchlists: {
+            ...current.fixedOpeningWatchlists,
+            ...change.fixedOpeningWatchlists,
+          },
+        }),
   };
   settingsByUser.set(userId, changed);
   store();

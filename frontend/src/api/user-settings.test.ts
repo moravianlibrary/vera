@@ -61,4 +61,23 @@ describe("user settings", () => {
     expect(refused).toBeInstanceOf(ApiError);
     expect((refused as ApiError).status).toBe(422);
   });
+
+  it("keeps display choices and fixed opening tabs without clearing other settings", async () => {
+    signInAs("reader");
+    await updateUserSettings({ lastOpenedWatchlists: { documents: "W-reader-documents" } });
+    const settings = await updateUserSettings({
+      appearance: "dark",
+      density: "compact",
+      dateFormat: "iso",
+      fixedOpeningWatchlists: { documents: null },
+    });
+    expect(settings).toMatchObject({
+      lastOpenedWatchlists: { documents: "W-reader-documents" },
+      appearance: "dark",
+      density: "compact",
+      dateFormat: "iso",
+      fixedOpeningWatchlists: { documents: null },
+    });
+    expect(await getUserSettings()).toEqual(settings);
+  });
 });

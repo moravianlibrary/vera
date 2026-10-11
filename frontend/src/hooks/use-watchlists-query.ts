@@ -2,12 +2,13 @@
 // watchlist query, since the counts are the server's to recompute.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WatchlistChange } from "@/api/watchlists";
+import type { WatchlistChange, WatchlistViewerChange } from "@/api/watchlists";
 import {
   createWatchlist,
   deleteWatchlist,
   listWatchlists,
   updateWatchlist,
+  updateWatchlistViewer,
 } from "@/api/watchlists";
 import type { WatchlistView } from "@/domain/entities";
 
@@ -41,5 +42,10 @@ export function useWatchlistMutations() {
       onSuccess,
     }),
     remove: useMutation({ mutationFn: deleteWatchlist, onSuccess }),
+    updateViewer: useMutation({
+      mutationFn: ({ watchlistId, change }: { watchlistId: string; change: WatchlistViewerChange }) =>
+        updateWatchlistViewer(watchlistId, change),
+      onSuccess,
+    }),
   };
 }

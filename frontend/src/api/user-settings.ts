@@ -13,6 +13,11 @@ export const userSettingsSchema = z.object({
   lastOpenedWatchlists: z.partialRecord(watchlistViewSchema, z.string().nullable()),
   // Absent until picked once.
   categoryTreeValue: z.enum(categoryTreeValues).optional(),
+  appearance: z.enum(["system", "light", "dark"]).optional(),
+  dateFormat: z.enum(["local", "iso"]).optional(),
+  density: z.enum(["comfortable", "compact"]).optional(),
+  // A missing entry follows the most recently opened tab. Null fixes the view to All.
+  fixedOpeningWatchlists: z.partialRecord(watchlistViewSchema, z.string().nullable()).optional(),
 });
 export type UserSettings = z.infer<typeof userSettingsSchema>;
 

@@ -12,6 +12,7 @@ import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
 import { isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
+import { TabButton, TabStrip } from "@/components/filters/tab-strip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +58,6 @@ import {
   useWatchlistsQuery,
   watchlistsQueryKey,
 } from "@/hooks/use-watchlists-query";
-import { cn } from "@/lib/utils";
 
 type Filter = Watchlist["filter"];
 
@@ -160,50 +160,44 @@ export function WatchlistTabs({
   };
 
   return (
-    <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
-      <nav
-        ref={navRef}
-        aria-label="Watchlists"
-        className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
-      >
-        <Tab id="all" isOpen={open === undefined && !isFiltered} onClick={() => onOpen(null)}>
-          All
-        </Tab>
+    <TabStrip label="Watchlists" navRef={navRef}>
+      <Tab id="all" isOpen={open === undefined && !isFiltered} onClick={() => onOpen(null)}>
+        All
+      </Tab>
 
-        {watchlists.map((watchlist) => (
-          <WatchlistTab
-            key={watchlist.id}
-            watchlist={watchlist}
-            isOpen={watchlist.id === open?.id}
-            canShare={canShare}
-            onOpen={() => onOpen(watchlist)}
-            onDeleted={() => {
-              if (watchlist.id === open?.id || watchlist.id === openedId) {
-                onDetach();
-              }
-            }}
-          />
-        ))}
+      {watchlists.map((watchlist) => (
+        <WatchlistTab
+          key={watchlist.id}
+          watchlist={watchlist}
+          isOpen={watchlist.id === open?.id}
+          canShare={canShare}
+          onOpen={() => onOpen(watchlist)}
+          onDeleted={() => {
+            if (watchlist.id === open?.id || watchlist.id === openedId) {
+              onDetach();
+            }
+          }}
+        />
+      ))}
 
-        {isFiltered && open === undefined && (
-          <CurrentSearchPopover
-            canShare={canShare}
-            editable={editable}
-            preferredUpdateId={preferredUpdateId}
-            isSaving={create.isPending}
-            saveError={create.error}
-            isUpdating={update.isPending}
-            updateError={update.error}
-            onOpen={() => {
-              create.reset();
-              update.reset();
-            }}
-            onSave={saveAsNew}
-            onUpdate={updateExisting}
-          />
-        )}
-      </nav>
-    </div>
+      {isFiltered && open === undefined && (
+        <CurrentSearchPopover
+          canShare={canShare}
+          editable={editable}
+          preferredUpdateId={preferredUpdateId}
+          isSaving={create.isPending}
+          saveError={create.error}
+          isUpdating={update.isPending}
+          updateError={update.error}
+          onOpen={() => {
+            create.reset();
+            update.reset();
+          }}
+          onSave={saveAsNew}
+          onUpdate={updateExisting}
+        />
+      )}
+    </TabStrip>
   );
 }
 
@@ -218,20 +212,9 @@ interface TabProps {
 
 function Tab({ id, isOpen, onClick, children }: TabProps) {
   return (
-    <button
-      type="button"
-      data-watchlist-tab={id}
-      onClick={onClick}
-      aria-current={isOpen ? "page" : undefined}
-      className={cn(
-        "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        isOpen
-          ? "border-primary font-medium text-foreground"
-          : "border-transparent text-muted-foreground hover:text-foreground",
-      )}
-    >
+    <TabButton data-watchlist-tab={id} onClick={onClick} selected={isOpen}>
       {children}
-    </button>
+    </TabButton>
   );
 }
 

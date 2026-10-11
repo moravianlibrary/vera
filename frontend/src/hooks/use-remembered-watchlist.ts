@@ -15,7 +15,12 @@ export function useRememberedWatchlist(view: WatchlistView) {
     // False until the settings have answered, or failed to.
     isSettled: !isPending,
     // The watchlist to reopen, null for "All", undefined when there is nothing to go on.
-    rememberedId: settings?.lastOpenedWatchlists[view],
+    rememberedId:
+      settings?.fixedOpeningWatchlists &&
+      view in settings.fixedOpeningWatchlists &&
+      settings.fixedOpeningWatchlists[view] !== "__last__"
+        ? settings.fixedOpeningWatchlists[view]
+        : settings?.lastOpenedWatchlists[view],
     remember: (watchlistId: string | null) =>
       mutate({ lastOpenedWatchlists: { [view]: watchlistId } }),
   };

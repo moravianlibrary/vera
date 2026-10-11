@@ -22,6 +22,7 @@ import { MixesPage } from "@/features/intentions/mixes-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { PluginsPage } from "@/features/plugins/plugins-page";
+import { PreferencesPage } from "@/features/preferences/preferences-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
@@ -112,6 +113,9 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <Landing /> },
+      { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
+      { path: "preferences/:section", element: <PreferencesPage /> },
+      { path: "watchlists", element: <Navigate to="/preferences/watchlists" replace /> },
       ...navigationEntries.map((entry) => ({
         path: entry.path.slice(1),
         element: (

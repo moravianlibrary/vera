@@ -3,13 +3,14 @@
 // monitor and on a notebook, so a tier never inherits the other's choice. Without a stored
 // choice, large is expanded and notebook collapsed.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTier } from "@/hooks/use-tier";
 
 type SidebarTier = "large" | "notebook";
 
 const expandedValue = "1";
 const collapsedValue = "0";
+const changedEvent = "vera:sidebar-preference";
 
 function storageKeyOf(tier: SidebarTier): string {
   return `vera.sidebar.${tier}`;
@@ -39,6 +40,19 @@ export function useSidebarPreference() {
     large: readStoredPreference("large"),
     notebook: readStoredPreference("notebook"),
   }));
+  useEffect(() => {
+    const refresh = () =>
+      setPreferences({
+        large: readStoredPreference("large"),
+        notebook: readStoredPreference("notebook"),
+      });
+    window.addEventListener(changedEvent, refresh);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener(changedEvent, refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
 
   const isExpanded = preferences[tier] ?? tier === "large";
 
@@ -46,7 +60,14 @@ export function useSidebarPreference() {
     const next = !isExpanded;
     storePreference(tier, next);
     setPreferences((current) => ({ ...current, [tier]: next }));
+    window.dispatchEvent(new Event(changedEvent));
   };
 
-  return { isExpanded, toggle };
+  const setForTier = (target: SidebarTier, expanded: boolean) => {
+    storePreference(target, expanded);
+    setPreferences((current) => ({ ...current, [target]: expanded }));
+    window.dispatchEvent(new Event(changedEvent));
+  };
+
+  return { isExpanded, toggle, setForTier, preferences };
 }

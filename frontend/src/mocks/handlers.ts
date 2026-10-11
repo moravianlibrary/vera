@@ -84,6 +84,7 @@ import {
   watchlistChangeSchema,
   watchlistDraftSchema,
   watchlistReachRequestSchema,
+  watchlistViewerChangeSchema,
   watchlistViewParam,
 } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
@@ -247,7 +248,7 @@ import {
   runScheduleNow,
   saveSchedule,
 } from "@/mocks/schedules";
-import { resolveSession } from "@/mocks/session";
+import { accessUserOf, resolveSession } from "@/mocks/session";
 import {
   cancelRun,
   canReadRuns,
@@ -267,11 +268,13 @@ import {
   queryValidations,
   revokeAcceptance,
 } from "@/mocks/validations";
+import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import {
   canChange,
   findDuplicateWatchlist,
   findVisibleWatchlist,
   publicWatchlistOf,
+  viewerOf,
   visibleWatchlists,
   watchlistReachOf,
 } from "@/mocks/watchlists";
@@ -280,6 +283,7 @@ const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
 export function createHandlers(profile: MockUserProfile) {
   const currentSession = (): Session => resolveSession(profile);
+  const signedOutKey = `vera.mock.signed-out.${profile}`;
 
   // An act on one record: its body parsed by the action's own schema, the outcome as a status.
   const recordAction = <Body, Value extends JsonBodyType>(
@@ -339,7 +343,19 @@ export function createHandlers(profile: MockUserProfile) {
     });
 
   return [
-    http.get(route(apiRoutes.session), () => HttpResponse.json(currentSession())),
+    http.get(route(apiRoutes.session), () =>
+      window.sessionStorage.getItem(signedOutKey) === "1"
+        ? new HttpResponse(null, { status: 401 })
+        : HttpResponse.json(currentSession()),
+    ),
+    http.delete(route(apiRoutes.sessionLogout), () => {
+      window.sessionStorage.setItem(signedOutKey, "1");
+      return new HttpResponse(null, { status: 204 });
+    }),
+
+    http.get(route(apiRoutes.sessionAccount), () =>
+      HttpResponse.json(accessUserOf(currentSession().user)),
+    ),
 
     http.get(route(apiRoutes.userSettings), () =>
       HttpResponse.json(userSettingsOf(currentSession().user.id)),
@@ -1344,6 +1360,33 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(publicWatchlistOf(changed));
     }),
 
+    http.patch(
+      route(`${apiRoutes.watchlists}/:watchlistId/viewer`),
+      async ({ params, request }) => {
+        const session = currentSession();
+        const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
+        if (watchlist === null) {
+          return problemResponse({ status: 404, message: "Watchlist not found" });
+        }
+        const change = watchlistViewerChangeSchema.safeParse(await request.json());
+        if (!change.success) {
+          return invalidResponse(change.error);
+        }
+        const viewer = database.watchlistViewers.find(
+          (row) => row.userId === session.user.id && row.watchlistId === watchlist.id,
+        );
+        const current = viewer ?? viewerOf(session.user.id, watchlist);
+        const changed = { ...current, ...change.data };
+        const row = database.watchlistViewers.find(
+          (candidate) =>
+            candidate.userId === session.user.id && candidate.watchlistId === watchlist.id,
+        );
+        if (row !== undefined) Object.assign(row, change.data);
+        storeWatchlistViewers(database.watchlistViewers);
+        return HttpResponse.json(changed);
+      },
+    ),
+
     http.delete(route(`${apiRoutes.watchlists}/:watchlistId`), ({ params }) => {
       const session = currentSession();
       const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
@@ -1356,6 +1399,10 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       database.watchlists.splice(database.watchlists.indexOf(watchlist), 1);
+      database.watchlistViewers = database.watchlistViewers.filter(
+        (viewer) => viewer.watchlistId !== watchlist.id,
+      );
+      storeWatchlistViewers(database.watchlistViewers);
       return new HttpResponse(null, { status: 204 });
     }),
   ];

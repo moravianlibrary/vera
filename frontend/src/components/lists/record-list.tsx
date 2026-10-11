@@ -126,6 +126,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
 
                 <button
                   type="button"
+                  data-slot="record-list-row"
                   onClick={() => onSelect(id)}
                   aria-current={isSelected || undefined}
                   className={cn(

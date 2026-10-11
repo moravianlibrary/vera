@@ -15,6 +15,7 @@ import {
   getWatchlistReach,
   listWatchlists,
   updateWatchlist,
+  updateWatchlistViewer,
 } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { matchingCategoryIds } from "@/domain/category-filters";
@@ -46,6 +47,37 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("keeps each person's badge, visibility and order on shared watchlists", async () => {
+    signInAs("admin");
+    const [first, second] = (await listWatchlists("documents")).filter(isShared);
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    if (!first || !second) return;
+    await updateWatchlistViewer(first.id, {
+      hasBadge: false,
+      isHidden: true,
+      position: second.viewer.position,
+    });
+    await updateWatchlistViewer(second.id, { position: first.viewer.position });
+    const mine = await listWatchlists("documents");
+    expect(mine.find((item) => item.id === first.id)?.viewer).toMatchObject({
+      hasBadge: false,
+      isHidden: true,
+    });
+    expect(mine.findIndex((item) => item.id === second.id)).toBeLessThan(
+      mine.findIndex((item) => item.id === first.id),
+    );
+    signInAs("curator");
+    const others = await listWatchlists("documents");
+    expect(others.find((item) => item.id === first.id)?.viewer.hasBadge).toBe(true);
+    signInAs("admin");
+    await updateWatchlistViewer(first.id, {
+      hasBadge: true,
+      isHidden: false,
+      position: first.viewer.position,
+    });
+    await updateWatchlistViewer(second.id, { position: second.viewer.position });
+  });
   it("reads a selected independent mix for Categories", async () => {
     signInAs("admin");
     const overall = await getCategoryIndex();
