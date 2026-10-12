@@ -83,6 +83,8 @@ import {
 import {
   watchlistChangeSchema,
   watchlistDraftSchema,
+  isSameWatchlistFilter,
+  watchlistModeParam,
   watchlistReachRequestSchema,
   watchlistViewerChangeSchema,
   watchlistViewParam,
@@ -271,6 +273,7 @@ import {
 import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import {
   canChange,
+  findChangeableWatchlist,
   findDuplicateWatchlist,
   findVisibleWatchlist,
   publicWatchlistOf,
@@ -1274,11 +1277,14 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.get(route(apiRoutes.watchlists), ({ request }) => {
-      const view = watchlistViewSchema.safeParse(
-        new URL(request.url).searchParams.get(watchlistViewParam),
-      );
+      const params = new URL(request.url).searchParams;
+      const view = watchlistViewSchema.safeParse(params.get(watchlistViewParam));
+      const mode = params.get(watchlistModeParam) === "manage-system" ? "manage-system" : "visible";
+      if (mode === "manage-system" && !hasPermission(currentSession(), "watchlist.manage_shared")) {
+        return forbidden();
+      }
       return HttpResponse.json(
-        visibleWatchlists(currentSession(), view.success ? view.data : null),
+        visibleWatchlists(currentSession(), view.success ? view.data : null, mode),
       );
     }),
 
@@ -1294,7 +1300,14 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       const duplicate = findDuplicateWatchlist(session, { ...draft.data, id: null });
-      if (duplicate !== null) {
+      if (
+        duplicate !== null &&
+        !(
+          draft.data.audience.kind !== "personal" &&
+          duplicate.audience.kind === "personal" &&
+          duplicate.ownerId === session.user.id
+        )
+      ) {
         return alreadySaved(duplicate);
       }
 
@@ -1326,7 +1339,9 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.patch(route(`${apiRoutes.watchlists}/:watchlistId`), async ({ params, request }) => {
       const session = currentSession();
-      const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
+      const watchlist =
+        findChangeableWatchlist(session, String(params.watchlistId)) ??
+        findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
         return problemResponse({ status: 404, message: "Watchlist not found" });
       }
@@ -1345,12 +1360,24 @@ export function createHandlers(profile: MockUserProfile) {
         return forbidden();
       }
 
-      // A shared watchlist taken back as personal becomes the caller's own.
-      const ownerId =
-        audience.kind === "personal" && watchlist.audience.kind !== "personal"
-          ? session.user.id
-          : watchlist.ownerId;
-      const changed = { ...watchlist, ...change.data, ownerId };
+      if (audience.kind === "personal" && watchlist.audience.kind !== "personal") {
+        return problemResponse({
+          status: 409,
+          message: "System watchlists cannot become personal",
+        });
+      }
+      if (audience.kind !== "personal" && watchlist.audience.kind === "personal") {
+        return problemResponse({ status: 409, message: "Publish a system copy instead" });
+      }
+      const changed = {
+        ...watchlist,
+        ...change.data,
+        filterVersion:
+          change.data.filter === undefined ||
+          isSameWatchlistFilter(watchlist.view, watchlist.filter, change.data.filter)
+            ? (watchlist.filterVersion ?? 1)
+            : (watchlist.filterVersion ?? 1) + 1,
+      };
       const duplicate = findDuplicateWatchlist(session, changed);
       if (duplicate !== null) {
         return alreadySaved(duplicate);
@@ -1387,9 +1414,29 @@ export function createHandlers(profile: MockUserProfile) {
       },
     ),
 
-    http.delete(route(`${apiRoutes.watchlists}/:watchlistId`), ({ params }) => {
+    http.post(route(`${apiRoutes.watchlists}/:watchlistId/seen`), ({ params }) => {
       const session = currentSession();
       const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
+      if (watchlist === null) {
+        return problemResponse({ status: 404, message: "Watchlist not found" });
+      }
+      // Materialize the current entries before advancing this person's seen cursor.
+      visibleWatchlists(session, watchlist.view);
+      const viewer = database.watchlistViewers.find(
+        (row) => row.userId === session.user.id && row.watchlistId === watchlist.id,
+      );
+      if (viewer === undefined)
+        return problemResponse({ status: 404, message: "Viewer not found" });
+      viewer.seenAt = new Date().toISOString();
+      storeWatchlistViewers(database.watchlistViewers);
+      return HttpResponse.json(viewerOf(session.user.id, watchlist));
+    }),
+
+    http.delete(route(`${apiRoutes.watchlists}/:watchlistId`), ({ params }) => {
+      const session = currentSession();
+      const watchlist =
+        findChangeableWatchlist(session, String(params.watchlistId)) ??
+        findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
         return problemResponse({ status: 404, message: "Watchlist not found" });
       }

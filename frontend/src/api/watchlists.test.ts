@@ -14,6 +14,7 @@ import {
   deleteWatchlist,
   getWatchlistReach,
   listWatchlists,
+  markWatchlistSeen,
   updateWatchlist,
   updateWatchlistViewer,
 } from "@/api/watchlists";
@@ -26,6 +27,7 @@ import {
 } from "@/features/intentions/intentions-board-view";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
+import { database } from "@/mocks/database";
 
 const server = setupServer();
 
@@ -47,6 +49,34 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("counts entries since opening without treating existing matches as new", async () => {
+    signInAs("admin");
+    const watchlist = await createWatchlist({
+      name: "Entry test",
+      view: "documents",
+      audience: { kind: "personal" },
+      filter: { q: "entry-test-unique" },
+    });
+    const original = database.documents[0];
+    expect(original).toBeDefined();
+    if (original === undefined) return;
+    try {
+      expect(
+        (await listWatchlists("documents")).find((row) => row.id === watchlist.id)?.newCount,
+      ).toBe(0);
+      database.documents[0] = { ...original, title: `${original.title} entry-test-unique` };
+      expect(
+        (await listWatchlists("documents")).find((row) => row.id === watchlist.id)?.newCount,
+      ).toBe(1);
+      await markWatchlistSeen(watchlist.id);
+      expect(
+        (await listWatchlists("documents")).find((row) => row.id === watchlist.id)?.newCount,
+      ).toBe(0);
+    } finally {
+      database.documents[0] = original;
+      await deleteWatchlist(watchlist.id);
+    }
+  });
   it("keeps each person's badge, visibility and order on shared watchlists", async () => {
     signInAs("admin");
     const [first, second] = (await listWatchlists("documents")).filter(isShared);
@@ -263,19 +293,21 @@ describe("saving a filter twice", () => {
     ).toBe(409);
   });
 
-  it("is refused as shared while the caller keeps it as their own", async () => {
+  it("publishes a system copy while the caller keeps their personal watchlist", async () => {
     signInAs("admin");
-
+    const published = await createWatchlist({
+      name: "Review needed for all",
+      view: "documents",
+      audience: { kind: "everyone" },
+      filter: { validation: "Needed" },
+    });
     expect(
-      await statusOf(
-        createWatchlist({
-          name: "Review needed for all",
-          view: "documents",
-          audience: { kind: "everyone" },
-          filter: { validation: "Needed" },
-        }),
+      (await listWatchlists("documents")).some(
+        (row) => row.name === "Review needed" && !isShared(row),
       ),
-    ).toBe(409);
+    ).toBe(true);
+    expect(published.audience.kind).toBe("everyone");
+    await deleteWatchlist(published.id);
   });
 
   it("is refused when a change would make it the same as another", async () => {
@@ -289,7 +321,7 @@ describe("saving a filter twice", () => {
   });
 });
 
-describe("sharing a personal watchlist", () => {
+describe("publishing a personal watchlist", () => {
   it("is refused without the permission", async () => {
     signInAs("curator");
     const [own] = (await listWatchlists("documents")).filter((watchlist) => !isShared(watchlist));
@@ -300,7 +332,7 @@ describe("sharing a personal watchlist", () => {
     expect(await statusOf(updateWatchlist(own.id, { audience: { kind: "everyone" } }))).toBe(403);
   });
 
-  it("makes it the one everybody sees, in place of the caller's own", async () => {
+  it("keeps the personal copy when a system copy is published", async () => {
     signInAs("admin");
     const created = await createWatchlist({
       name: "Cancelled",
@@ -309,15 +341,27 @@ describe("sharing a personal watchlist", () => {
       filter: { cancelled: "Yes" },
     });
 
-    const shared = await updateWatchlist(created.id, { audience: { kind: "everyone" } });
+    expect(await statusOf(updateWatchlist(created.id, { audience: { kind: "everyone" } }))).toBe(
+      409,
+    );
+    const shared = await createWatchlist({
+      name: created.name,
+      view: created.view,
+      filter: created.filter,
+      audience: { kind: "everyone" },
+    });
 
     signInAs("curator");
     const seen = await listWatchlists("documents");
 
     expect(shared.audience).toEqual({ kind: "everyone" });
-    expect(seen.some((watchlist) => watchlist.id === created.id)).toBe(true);
+    expect(seen.some((watchlist) => watchlist.id === shared.id)).toBe(true);
 
     signInAs("admin");
+    expect(
+      (await listWatchlists("documents")).some((watchlist) => watchlist.id === created.id),
+    ).toBe(true);
+    await deleteWatchlist(shared.id);
     await deleteWatchlist(created.id);
   });
 });

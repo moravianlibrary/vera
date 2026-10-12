@@ -39,18 +39,6 @@ function open(section: string) {
 }
 
 describe("Preferences", () => {
-  it("groups saved searches by destination and opens their filtered view", async () => {
-    open("watchlists");
-    const links = await screen.findAllByRole("link", { name: "Awaiting a decision" });
-    const link = links.find((candidate) =>
-      candidate.getAttribute("href")?.startsWith("/documents?"),
-    );
-    expect(link).toBeDefined();
-    expect(link).toHaveAttribute("href", expect.stringContaining("/documents?"));
-    expect(link).toHaveAttribute("href", expect.stringContaining("decision=Pending"));
-    expect(screen.getByRole("heading", { name: "Documents" })).toBeInTheDocument();
-  });
-
   it("shows the signed-in person's account details", async () => {
     open("account");
     expect(await screen.findByText("Sign-in identities")).toBeInTheDocument();

@@ -1,26 +1,11 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Share2, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, Navigate, useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import { getAccount } from "@/api/session";
-import type { WatchlistSummary } from "@/api/watchlists";
 import { listWatchlists } from "@/api/watchlists";
-import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { TabLink, TabStrip } from "@/components/filters/tab-strip";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -29,36 +14,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
-import { isShared, watchlistViewSchema } from "@/domain/entities";
+import type { WatchlistView } from "@/domain/entities";
+import { watchlistViewSchema } from "@/domain/entities";
 import type { Grant, Permission } from "@/domain/permissions";
-import { hasPermission, permissionCatalog, permissionGroups } from "@/domain/permissions";
-import { useActionMutation } from "@/hooks/use-action-mutation";
+import { permissionCatalog, permissionGroups } from "@/domain/permissions";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
-import { useWatchlistMutations, watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
-const sections = ["watchlists", "display", "account"] as const;
+const sections = ["display", "account"] as const;
 type Section = (typeof sections)[number];
 
 function viewLabel(view: WatchlistView): string {
   return navigationEntries.find((entry) => entry.id === view)?.label ?? view;
 }
 
-function watchlistHref(watchlist: WatchlistSummary): string {
-  const path = navigationEntries.find((entry) => entry.id === watchlist.view)?.path ?? "/";
-  const params = new URLSearchParams(watchlist.filter);
-  params.set("watchlist", watchlist.id);
-  return `${path}?${params}`;
-}
-
 export function PreferencesPage() {
   const { section } = useParams();
-  if (section === undefined) return <Navigate to="/preferences/watchlists" replace />;
-  if (!sections.includes(section as Section))
-    return <Navigate to="/preferences/watchlists" replace />;
+  if (section === undefined) return <Navigate to="/preferences/display" replace />;
+  if (!sections.includes(section as Section)) return <Navigate to="/preferences/display" replace />;
 
   return (
     <>
@@ -77,281 +53,11 @@ export function PreferencesPage() {
       </TabStrip>
       <PageContent className="bg-muted/20">
         <div className="mx-auto max-w-4xl">
-          {section === "watchlists" && <WatchlistsPreferences />}
           {section === "display" && <DisplayPreferences />}
           {section === "account" && <AccountPreferences />}
         </div>
       </PageContent>
     </>
-  );
-}
-
-function WatchlistsPreferences() {
-  const { data: session } = useSessionQuery();
-  const canShare = session !== undefined && hasPermission(session, "watchlist.manage_shared");
-  const queryClient = useQueryClient();
-  const {
-    data: watchlists = [],
-    isPending,
-    isError,
-  } = useQuery({ queryKey: watchlistsQueryKey, queryFn: () => listWatchlists() });
-  const { update, remove, updateViewer } = useWatchlistMutations();
-  const [editing, setEditing] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [sharing, setSharing] = useState<WatchlistSummary | null>(null);
-  const [deleting, setDeleting] = useState<WatchlistSummary | null>(null);
-  const [error, setError] = useState("");
-  const share = useActionMutation({
-    call: ({ watchlistId, audience }: { watchlistId: string; audience: WatchlistAudience }) =>
-      update.mutateAsync({ watchlistId, change: { audience } }),
-    invalidates: [watchlistsQueryKey],
-  });
-  const busy = update.isPending || remove.isPending || updateViewer.isPending;
-  const groups = watchlistViewSchema.options
-    .map((view) => ({
-      view,
-      entries: watchlists
-        .filter((item) => item.view === view)
-        .toSorted((a, b) => a.viewer.position - b.viewer.position),
-    }))
-    .filter((group) => group.entries.length > 0);
-
-  const changeViewer = async (
-    watchlist: WatchlistSummary,
-    change: { hasBadge?: boolean; isHidden?: boolean; position?: number },
-  ) => {
-    setError("");
-    try {
-      await updateViewer.mutateAsync({ watchlistId: watchlist.id, change });
-    } catch {
-      setError("Could not save the watchlist preference.");
-    }
-  };
-  const move = async (items: WatchlistSummary[], index: number, offset: number) => {
-    const other = items[index + offset];
-    const current = items[index];
-    if (!other || !current) return;
-    setError("");
-    try {
-      await updateViewer.mutateAsync({
-        watchlistId: current.id,
-        change: { position: other.viewer.position },
-      });
-      await updateViewer.mutateAsync({
-        watchlistId: other.id,
-        change: { position: current.viewer.position },
-      });
-      await queryClient.invalidateQueries({ queryKey: watchlistsQueryKey });
-    } catch {
-      setError("Could not reorder watchlists.");
-    }
-  };
-
-  return (
-    <section>
-      <h2 className="text-lg font-semibold">Watchlists</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Manage saved searches, their order, and shared visibility.
-      </p>
-      {error && (
-        <p role="alert" className="mt-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
-      {isPending && <p className="mt-5 text-sm text-muted-foreground">Loading watchlists…</p>}
-      {isError && (
-        <p role="alert" className="mt-5 text-sm text-destructive">
-          Could not load watchlists.
-        </p>
-      )}
-      {!isPending && !isError && groups.length === 0 && (
-        <p className="mt-5 text-sm text-muted-foreground">
-          No saved searches yet. Save one from a view’s filter bar.
-        </p>
-      )}
-      <div className="mt-5 space-y-6">
-        {groups.map(({ view, entries }) => (
-          <div key={view} className="overflow-hidden rounded-lg border bg-background">
-            <h3 className="border-b bg-muted px-4 py-2 text-sm font-semibold">{viewLabel(view)}</h3>
-            <ul className="divide-y">
-              {entries.map((watchlist, index) => (
-                <li key={watchlist.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-                  <div className="min-w-48 flex-1">
-                    {editing === watchlist.id ? (
-                      <form
-                        onSubmit={async (event) => {
-                          event.preventDefault();
-                          setError("");
-                          try {
-                            await update.mutateAsync({
-                              watchlistId: watchlist.id,
-                              change: { name: name.trim() },
-                            });
-                            setEditing(null);
-                          } catch {
-                            setError("Could not rename watchlist.");
-                          }
-                        }}
-                        className="flex gap-2"
-                      >
-                        <Input
-                          aria-label="Watchlist name"
-                          value={name}
-                          onChange={(event) => setName(event.target.value)}
-                          maxLength={100}
-                          required
-                        />
-                        <Button type="submit" size="sm" disabled={busy || !name.trim()}>
-                          Save
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setEditing(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </form>
-                    ) : (
-                      <>
-                        <Link to={watchlistHref(watchlist)} className="font-medium hover:underline">
-                          {watchlist.name}
-                        </Link>
-                        <p className="text-xs text-muted-foreground">
-                          {isShared(watchlist) ? "Shared" : "Personal"} · {watchlist.itemCount}{" "}
-                          items{watchlist.viewer.isHidden ? " · Hidden" : ""}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label={`Move ${watchlist.name} up`}
-                      title="Move up"
-                      disabled={busy || index === 0}
-                      onClick={() => move(entries, index, -1)}
-                    >
-                      <ArrowUp />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label={`Move ${watchlist.name} down`}
-                      title="Move down"
-                      disabled={busy || index === entries.length - 1}
-                      onClick={() => move(entries, index, 1)}
-                    >
-                      <ArrowDown />
-                    </Button>
-                    {isShared(watchlist) && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`${watchlist.viewer.isHidden ? "Show" : "Hide"} ${watchlist.name}`}
-                        title={watchlist.viewer.isHidden ? "Show in tabs" : "Hide from tabs"}
-                        disabled={busy}
-                        onClick={() =>
-                          changeViewer(watchlist, { isHidden: !watchlist.viewer.isHidden })
-                        }
-                      >
-                        {watchlist.viewer.isHidden ? <Eye /> : <EyeOff />}
-                      </Button>
-                    )}
-                    {watchlist.isEditable && canShare && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Share ${watchlist.name}`}
-                        title="Share or change audience"
-                        disabled={busy}
-                        onClick={() => setSharing(watchlist)}
-                      >
-                        <Share2 />
-                      </Button>
-                    )}
-                    {watchlist.isEditable && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Rename ${watchlist.name}`}
-                        title="Rename"
-                        disabled={busy}
-                        onClick={() => {
-                          setEditing(watchlist.id);
-                          setName(watchlist.name);
-                        }}
-                      >
-                        <Pencil />
-                      </Button>
-                    )}
-                    {watchlist.isEditable && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Delete ${watchlist.name}`}
-                        title="Delete"
-                        disabled={busy}
-                        onClick={() => setDeleting(watchlist)}
-                      >
-                        <Trash2 />
-                      </Button>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      {sharing && (
-        <ShareWatchlistDialog
-          key={sharing.id}
-          isOpen
-          onClose={() => setSharing(null)}
-          watchlist={sharing}
-          onSave={(audience) => share.run({ watchlistId: sharing.id, audience })}
-        />
-      )}
-      <AlertDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{deleting?.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The saved filter will be removed
-              {deleting && isShared(deleting) ? " for everyone who sees it" : ""}. The records it
-              matched stay in place.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={remove.isPending}
-              onClick={async (event) => {
-                event.preventDefault();
-                if (!deleting) return;
-                setError("");
-                try {
-                  await remove.mutateAsync(deleting.id);
-                  setDeleting(null);
-                } catch {
-                  setError("Could not delete watchlist.");
-                }
-              }}
-            >
-              Delete watchlist
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </section>
   );
 }
 

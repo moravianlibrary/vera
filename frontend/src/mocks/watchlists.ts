@@ -41,13 +41,19 @@ import { sessionOf } from "@/mocks/session";
 import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canReview, queryValidations } from "@/mocks/validations";
 import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
+import { storeWatchlistBaselines, storeWatchlistEntries } from "@/mocks/watchlist-entries";
 
 export function visibleWatchlists(
   session: Session,
   view: WatchlistView | null,
+  mode: "visible" | "manage-system" = "visible",
 ): WatchlistSummary[] {
   return database.watchlists
-    .filter((watchlist) => isVisible(session, watchlist))
+    .filter((watchlist) =>
+      mode === "manage-system"
+        ? hasPermission(session, "watchlist.manage_shared") && isShared(watchlist)
+        : isVisible(session, watchlist),
+    )
     .filter((watchlist) => view === null || watchlist.view === view)
     .toSorted((first, second) => Number(isShared(second)) - Number(isShared(first)))
     .map((watchlist) => ({ watchlist, viewer: viewerOf(session.user.id, watchlist) }))
@@ -55,6 +61,16 @@ export function visibleWatchlists(
     .map(({ watchlist, viewer }) => ({
       ...publicWatchlistOf(watchlist),
       itemCount: itemCountOf(session, watchlist),
+      newCount:
+        mode === "visible" || isVisible(session, watchlist)
+          ? newCountOf(session, watchlist, viewer.seenAt)
+          : 0,
+      createdBy: watchlist.ownerId,
+      subscriberCount: database.watchlistViewers.filter(
+        (candidate) =>
+          candidate.watchlistId === watchlist.id && (candidate.email || candidate.chat),
+      ).length,
+      filterVersion: watchlist.filterVersion ?? 1,
       isEditable: canChange(session, watchlist.audience),
       viewer,
     }));
@@ -67,6 +83,21 @@ export function findVisibleWatchlist(
   return (
     database.watchlists.find(
       (watchlist) => watchlist.id === watchlistId && isVisible(session, watchlist),
+    ) ?? null
+  );
+}
+
+export function findChangeableWatchlist(
+  session: Session,
+  watchlistId: string,
+): StoredWatchlist | null {
+  return (
+    database.watchlists.find(
+      (watchlist) =>
+        watchlist.id === watchlistId &&
+        (isShared(watchlist)
+          ? hasPermission(session, "watchlist.manage_shared")
+          : watchlist.ownerId === session.user.id),
     ) ?? null
   );
 }
@@ -213,6 +244,9 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
     hasBadge: true,
     isHidden: false,
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
+    email: false,
+    chat: false,
+    confirmedFilter: null,
   };
   database.watchlistViewers.push({ ...viewer, watchlistId: watchlist.id, userId });
   storeWatchlistViewers(database.watchlistViewers);
@@ -267,4 +301,102 @@ const counters = {
 
 function itemCountOf(session: Session, watchlist: Watchlist): number {
   return counters[watchlist.view](session, new URLSearchParams(watchlist.filter));
+}
+
+function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
+  const filter = new URLSearchParams(watchlist.filter);
+  const all = { cursor: null, limit: Number.MAX_SAFE_INTEGER };
+  switch (watchlist.view) {
+    case "documents":
+      return queryDocuments(session, parseDocumentSearchParams(filter), all).items.map(
+        (row) => row.document.id,
+      );
+    case "proposals":
+      return canDecide(session)
+        ? queryProposals(session, parseProposalSearchParams(filter), all).items.map(
+            (row) => row.record.document.id,
+          )
+        : [];
+    case "validations":
+      return canReview(session)
+        ? queryValidations(session, parseValidationSearchParams(filter), all).items.map(
+            (row) => row.iteration.id,
+          )
+        : [];
+    case "lists":
+      return canReadLists(session)
+        ? queryLists(session, parseListSearchParams(filter), all).items.map((row) => row.list.id)
+        : [];
+    case "projects":
+      return canReadProjects(session)
+        ? queryProjectIndex(session, parseProjectSearchParams(filter)).rows.map(
+            (row) => row.project.id,
+          )
+        : [];
+    case "categories":
+      return canReadCategories(session)
+        ? [
+            ...matchingCategoryIds(
+              database.categories,
+              queryCategoryIndex(session, parseCategorySearchParams(filter).mixId),
+              parseCategorySearchParams(filter),
+            ),
+          ]
+        : [];
+    case "intentions": {
+      if (!canReadIntentions(session)) return [];
+      const matching = matchingIntentions(
+        queryIntentionIndex(session),
+        parseIntentionsSearchParams(filter),
+      );
+      return [
+        ...matching.rows.map((row) => row.intention.id),
+        ...matching.templates.map((row) => row.template.id),
+      ];
+    }
+    case "tasks": {
+      if (!canReadRuns(session)) return [];
+      const matching = queryRuns(session, parseRunSearchParams(filter));
+      return [...matching.running, ...matching.finished].map((run) => run.id);
+    }
+  }
+}
+
+function newCountOf(session: Session, watchlist: StoredWatchlist, seenAt: string | null): number {
+  const key = `${session.user.id}:${watchlist.id}:${watchlist.filterVersion ?? 1}`;
+  const version = watchlist.filterVersion ?? 1;
+  const isBaseline = !database.watchlistBaselines.includes(key);
+  const current = new Set(matchingIdsOf(session, watchlist));
+  const before = database.watchlistEntries.filter(
+    (entry) =>
+      entry.userId === session.user.id &&
+      entry.watchlistId === watchlist.id &&
+      entry.filterVersion === version,
+  );
+  const retained = before.filter((entry) => current.has(entry.recordId));
+  const known = new Set(retained.map((entry) => entry.recordId));
+  const enteredAt = new Date().toISOString();
+  const added = [...current]
+    .filter((recordId) => !known.has(recordId))
+    .map((recordId) => ({
+      userId: session.user.id,
+      watchlistId: watchlist.id,
+      recordId,
+      enteredAt,
+      baseline: isBaseline,
+      filterVersion: version,
+    }));
+  if (isBaseline || retained.length !== before.length || added.length > 0) {
+    database.watchlistEntries = database.watchlistEntries
+      .filter((entry) => entry.userId !== session.user.id || entry.watchlistId !== watchlist.id)
+      .concat(retained, added);
+    storeWatchlistEntries(database.watchlistEntries);
+  }
+  if (isBaseline) {
+    database.watchlistBaselines.push(key);
+    storeWatchlistBaselines(database.watchlistBaselines);
+  }
+  return [...retained, ...added].filter(
+    (entry) => !entry.baseline && (seenAt === null || entry.enteredAt > seenAt),
+  ).length;
 }

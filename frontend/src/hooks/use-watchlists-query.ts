@@ -7,6 +7,7 @@ import {
   createWatchlist,
   deleteWatchlist,
   listWatchlists,
+  markWatchlistSeen,
   updateWatchlist,
   updateWatchlistViewer,
 } from "@/api/watchlists";
@@ -43,9 +44,15 @@ export function useWatchlistMutations() {
     }),
     remove: useMutation({ mutationFn: deleteWatchlist, onSuccess }),
     updateViewer: useMutation({
-      mutationFn: ({ watchlistId, change }: { watchlistId: string; change: WatchlistViewerChange }) =>
-        updateWatchlistViewer(watchlistId, change),
+      mutationFn: ({
+        watchlistId,
+        change,
+      }: {
+        watchlistId: string;
+        change: WatchlistViewerChange;
+      }) => updateWatchlistViewer(watchlistId, change),
       onSuccess,
     }),
+    markSeen: useMutation({ mutationFn: markWatchlistSeen, onSuccess }),
   };
 }

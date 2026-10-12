@@ -115,6 +115,10 @@ export function watchlistViewerRoute(watchlistId: string): string {
   return `${watchlistRoute(watchlistId)}/viewer`;
 }
 
+export function watchlistSeenRoute(watchlistId: string): string {
+  return `${watchlistRoute(watchlistId)}/seen`;
+}
+
 export function proposalReviewRoute(documentId: string): string {
   return `${apiRoutes.proposalReview}/${encodeURIComponent(documentId)}`;
 }

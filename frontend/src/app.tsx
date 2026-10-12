@@ -23,6 +23,7 @@ import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { PluginsPage } from "@/features/plugins/plugins-page";
 import { PreferencesPage } from "@/features/preferences/preferences-page";
+import { WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
@@ -71,6 +72,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <PluginsPage />;
     case "hooks":
       return <HooksPage />;
+    case "watchlists":
+      return <WatchlistsPage />;
     default:
       return <Placeholder title={label} />;
   }
@@ -113,9 +116,9 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
+      { path: "preferences", element: <Navigate to="/preferences/display" replace /> },
       { path: "preferences/:section", element: <PreferencesPage /> },
-      { path: "watchlists", element: <Navigate to="/preferences/watchlists" replace /> },
+      { path: "preferences/watchlists", element: <Navigate to="/watchlists" replace /> },
       ...navigationEntries.map((entry) => ({
         path: entry.path.slice(1),
         element: (

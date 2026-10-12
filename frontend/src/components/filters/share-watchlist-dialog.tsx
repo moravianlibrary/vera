@@ -18,11 +18,10 @@ import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useRolesQuery } from "@/hooks/use-reference-query";
 import { plural } from "@/lib/plural";
 
-const audienceKinds = ["personal", "everyone", "some"] as const;
+const audienceKinds = ["everyone", "some"] as const;
 type AudienceKind = (typeof audienceKinds)[number];
 
 const audienceLabels = {
-  personal: "Only me",
   everyone: "Everyone who opens the view",
   some: "Some groups and roles",
 } as const satisfies Record<AudienceKind, string>;
@@ -42,6 +41,7 @@ interface ShareWatchlistDialogProps {
   isOpen: boolean;
   onClose: () => void;
   watchlist: Watchlist;
+  mode?: "publish" | "audience";
   onSave: (audience: WatchlistAudience) => Promise<ActionResult<unknown>>;
 }
 
@@ -49,12 +49,15 @@ export function ShareWatchlistDialog({
   isOpen,
   onClose,
   watchlist,
+  mode = "audience",
   onSave,
 }: ShareWatchlistDialogProps) {
   const id = useId();
   const { data: groups = [] } = useGroupsQuery();
   const { data: roles = [] } = useRolesQuery();
-  const [audience, setAudience] = useState<WatchlistAudience>(watchlist.audience);
+  const [audience, setAudience] = useState<WatchlistAudience>(
+    watchlist.audience.kind === "personal" ? { kind: "everyone" } : watchlist.audience,
+  );
   const [isPending, setIsPending] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const picked: { groupIds: readonly string[]; roleIds: readonly string[] } =
@@ -90,7 +93,7 @@ export function ShareWatchlistDialog({
   };
 
   const close = () => {
-    setAudience(watchlist.audience);
+    setAudience(watchlist.audience.kind === "personal" ? { kind: "everyone" } : watchlist.audience);
     setRefusal(null);
     onClose();
   };
@@ -111,12 +114,16 @@ export function ShareWatchlistDialog({
     <DialogShell
       isOpen={isOpen}
       onClose={close}
-      title={`Share “${watchlist.name}”`}
-      description={`Who sees the watchlist ${watchlist.name}`}
+      title={`${mode === "publish" ? "Publish" : "Audience for"} “${watchlist.name}”`}
+      description={
+        mode === "publish"
+          ? "This creates a separate system watchlist. Your personal watchlist stays."
+          : `Who can see the system watchlist ${watchlist.name}`
+      }
       isDirty={JSON.stringify(audience) !== JSON.stringify(watchlist.audience)}
       refusal={refusal}
       primary={{
-        label: "Save",
+        label: mode === "publish" ? "Publish system watchlist" : "Save audience",
         isPending,
         isDisabled: isEmpty,
         onSelect: () => void save(),

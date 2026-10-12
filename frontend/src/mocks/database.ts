@@ -24,11 +24,13 @@ import { watchlists } from "@/mocks/fixtures/watchlists";
 import type { StoredUpload } from "@/mocks/plugins";
 import { withCopies } from "@/mocks/volume";
 import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
+import { readWatchlistBaselines, readWatchlistEntries } from "@/mocks/watchlist-entries";
 import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 
 // The owner is who saved it; for a shared watchlist that says nothing about who sees it.
 export interface StoredWatchlist extends Watchlist {
   readonly ownerId: string;
+  readonly filterVersion?: number;
 }
 
 const records = withCopies(
@@ -65,6 +67,8 @@ export const database = {
   watchlists: [...watchlists],
   // Each person's own row for a watchlist they see: seen, badge, hidden, place.
   watchlistViewers: readWatchlistViewers() as StoredWatchlistViewer[],
+  watchlistEntries: readWatchlistEntries(),
+  watchlistBaselines: readWatchlistBaselines(),
   // Written by Plugins: instances made, edited, switched off and deleted; versions uploaded.
   pluginImplementations: [...pluginImplementations],
   pluginInstances: [...pluginInstances],

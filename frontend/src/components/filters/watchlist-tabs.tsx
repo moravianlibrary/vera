@@ -2,8 +2,7 @@
 // Current search when the full current filter matches none of them. Changing search or any field
 // selects the matching saved tab, or Current search; that tab can save a new watchlist or replace
 // an editable one's filter. A bare view reopens the last saved tab. Grouping is not saved.
-// TODO(rrandiak): the sidebar's Watchlists row and the "new" badge (navigation.md §5,
-// filtering.md §4.2–4.3), now that "seen" is kept per person; labels move to i18n.
+// New-entry badges and per-person seen state follow watchlists-and-notifications.md.
 
 import { ChevronDown, CircleAlert, Users } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
@@ -89,11 +88,13 @@ export function WatchlistTabs({
 }: WatchlistTabsProps) {
   const navRef = useRef<HTMLElement>(null);
   const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
+  const { create, update, markSeen } = useWatchlistMutations();
   const watchlists = everyWatchlist.filter((watchlist) => !watchlist.viewer.isHidden);
   const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
   const onOpen = (watchlist: Watchlist | null) => {
     remember(watchlist?.id ?? null);
     openInView(watchlist);
+    if (watchlist !== null) markSeen.mutate(watchlist.id);
   };
 
   // Once the watchlists and the settings are known; one deleted since reopens on "All".
@@ -115,16 +116,27 @@ export function WatchlistTabs({
     }
   }, [isSuccess, isSettled, isBare]);
 
-  const { create, update } = useWatchlistMutations();
   const isSameFilter = (first: Filter, second: Filter) =>
     isSameWatchlistFilter(view, first, second);
   const isFiltered = Object.keys(filter).length > 0;
   const open = isFiltered
-    ? watchlists.find((watchlist) => isSameFilter(watchlist.filter, filter))
+    ? (watchlists.find(
+        (watchlist) => watchlist.id === openedId && isSameFilter(watchlist.filter, filter),
+      ) ?? watchlists.find((watchlist) => isSameFilter(watchlist.filter, filter)))
     : undefined;
   const editable = watchlists.filter((watchlist) => watchlist.isEditable);
   const preferredUpdateId = editable.find((watchlist) => watchlist.id === openedId)?.id ?? null;
   const activeId = open?.id ?? (isFiltered ? "current" : "all");
+  const openedWatchlistId = open?.id;
+  const openedNewCount = open?.newCount ?? 0;
+  const markSeenMutation = markSeen.mutate;
+
+  // A deep link or restored tab is also an opening, even though no tab was clicked.
+  useEffect(() => {
+    if (openedWatchlistId !== undefined && openedNewCount > 0) {
+      markSeenMutation(openedWatchlistId);
+    }
+  }, [openedWatchlistId, openedNewCount, markSeenMutation]);
 
   // Keep the active tab visible when a saved filter is opened from a URL or restored.
   useEffect(() => {
@@ -246,7 +258,18 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
       <Tab id={watchlist.id} isOpen={isOpen} onClick={onOpen}>
         {isShared(watchlist) && <SharedMark />}
         {watchlist.name}
-        <span className="text-xs text-muted-foreground tabular-nums">{watchlist.itemCount}</span>
+        <span className="text-xs text-muted-foreground tabular-nums" title="Current matches">
+          {watchlist.itemCount}
+        </span>
+        {watchlist.newCount > 0 && (
+          <span
+            className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-primary"
+            title={`${watchlist.newCount} new in ${watchlist.name}`}
+          >
+            +{watchlist.newCount}
+            <span className="sr-only"> new</span>
+          </span>
+        )}
       </Tab>
 
       {isOpen && isEditable && (

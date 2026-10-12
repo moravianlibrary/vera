@@ -83,6 +83,13 @@ export const navigationEntries: readonly NavigationEntry[] = [
   },
   { id: "plugins", path: "/plugins", rail: "Pl", label: "Plugins", requires: ["plugin.read"] },
   { id: "hooks", path: "/hooks", rail: "Ho", label: "Hooks", requires: ["hook.read"] },
+  {
+    id: "watchlists",
+    path: "/watchlists",
+    rail: "WL",
+    label: "Watchlists",
+    requires: ["watch", "watchlist.manage_shared"],
+  },
 ];
 
 export interface VisibleNavigationEntry extends NavigationEntry {

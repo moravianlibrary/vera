@@ -16,9 +16,11 @@ import {
   Sun,
   UserRound,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { logout } from "@/api/session";
+import { listWatchlists } from "@/api/watchlists";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { RunningTasksPanel } from "@/components/layout/running-tasks-panel";
 import { Logo } from "@/components/logo";
@@ -34,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Session } from "@/domain/entities";
 import { useAppearance } from "@/hooks/use-appearance";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +69,16 @@ export function Sidebar({
   const [menuError, setMenuError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const entries = session === undefined ? [] : visibleNavigation(session);
+  const { data: watchlists = [] } = useQuery({
+    queryKey: [...watchlistsQueryKey, "visible"],
+    queryFn: () => listWatchlists(),
+    enabled: entries.some((entry) => entry.id === "watchlists"),
+    refetchInterval: 60_000,
+  });
+  const changedWatchlists = watchlists.filter(
+    (watchlist) =>
+      watchlist.newCount > 0 && watchlist.viewer.hasBadge && !watchlist.viewer.isHidden,
+  ).length;
   const isShowingLabels = isExpanded || isPeeking;
   const labelClassName = cn("truncate", !isShowingLabels && "sr-only");
 
@@ -123,10 +136,22 @@ export function Sidebar({
               )
             }
           >
-            <span className="grid size-7 shrink-0 place-items-center text-[0.6875rem] font-bold">
+            <span className="relative grid size-7 shrink-0 place-items-center text-[0.6875rem] font-bold">
               {entry.rail}
+              {entry.id === "watchlists" && changedWatchlists > 0 && !isShowingLabels && (
+                <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />
+              )}
             </span>
             <span className={labelClassName}>{entry.visibleLabel}</span>
+            {entry.id === "watchlists" && changedWatchlists > 0 && isShowingLabels && (
+              <span
+                className="ml-auto rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-xs font-semibold tabular-nums"
+                title={`${changedWatchlists} watchlists with new items`}
+              >
+                {changedWatchlists}
+                <span className="sr-only"> watchlists with new items</span>
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -181,7 +206,7 @@ export function Sidebar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
-                navigate("/preferences/watchlists");
+                navigate("/preferences/display");
                 onMenuNavigate?.();
               }}
             >

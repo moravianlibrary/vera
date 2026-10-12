@@ -13,7 +13,7 @@ import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { isSameListQuery, parseListSearchParams } from "@/api/lists";
 import { isSameProjectQuery, parseProjectSearchParams } from "@/api/projects";
 import { isSameProposalQuery, parseProposalSearchParams } from "@/api/proposal-review";
-import { apiRoutes, watchlistRoute, watchlistViewerRoute } from "@/api/routes";
+import { apiRoutes, watchlistRoute, watchlistSeenRoute, watchlistViewerRoute } from "@/api/routes";
 import { isSameRunQuery, parseRunSearchParams } from "@/api/tasks";
 import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
@@ -48,6 +48,9 @@ export const watchlistViewerSchema = z.object({
   // Shared ones only: hidden from their tabs, kept in Preferences.
   isHidden: z.boolean(),
   position: z.number().int().nonnegative(),
+  email: z.boolean().default(false),
+  chat: z.boolean().default(false),
+  confirmedFilter: z.string().nullable().default(null),
 });
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;
 export const watchlistViewerChangeSchema = watchlistViewerSchema
@@ -55,18 +58,26 @@ export const watchlistViewerChangeSchema = watchlistViewerSchema
     hasBadge: true,
     isHidden: true,
     position: true,
+    email: true,
+    chat: true,
+    confirmedFilter: true,
   })
   .partial();
 export type WatchlistViewerChange = z.infer<typeof watchlistViewerChangeSchema>;
 
 export const watchlistSummarySchema = watchlistSchema.extend({
   itemCount: z.number().int().nonnegative(),
+  newCount: z.number().int().nonnegative(),
+  createdBy: z.string(),
+  subscriberCount: z.number().int().nonnegative(),
+  filterVersion: z.number().int().positive(),
   isEditable: z.boolean(),
   viewer: watchlistViewerSchema,
 });
 export type WatchlistSummary = z.infer<typeof watchlistSummarySchema>;
 
 export const watchlistViewParam = "view";
+export const watchlistModeParam = "mode";
 
 // Who an audience would reach for a watchlist, before it is saved: the people who would see it,
 // those in the audience who cannot open the view, and how many of the reached already keep the
@@ -134,11 +145,15 @@ export function isSameWatchlistFilter(view: WatchlistView, first: Filter, second
 }
 
 // Shared first, then the caller's own, each oldest first. Every view's when no view is named.
-export async function listWatchlists(view?: WatchlistView): Promise<WatchlistSummary[]> {
+export async function listWatchlists(
+  view?: WatchlistView,
+  mode: "visible" | "manage-system" = "visible",
+): Promise<WatchlistSummary[]> {
   const params = new URLSearchParams();
   if (view !== undefined) {
     params.set(watchlistViewParam, view);
   }
+  if (mode === "manage-system") params.set(watchlistModeParam, mode);
 
   return getJson(apiRoutes.watchlists, z.array(watchlistSummarySchema), params);
 }
@@ -167,4 +182,8 @@ export async function updateWatchlistViewer(
   change: WatchlistViewerChange,
 ): Promise<WatchlistViewer> {
   return patchJson(watchlistViewerRoute(watchlistId), change, watchlistViewerSchema);
+}
+
+export async function markWatchlistSeen(watchlistId: string): Promise<WatchlistViewer> {
+  return postJson(watchlistSeenRoute(watchlistId), {}, watchlistViewerSchema);
 }
