@@ -23,6 +23,7 @@ import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { PluginsPage } from "@/features/plugins/plugins-page";
 import { PreferencesPage } from "@/features/preferences/preferences-page";
+import { EmailNotificationsPage } from "@/features/preferences/email-notifications-page";
 import { WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
@@ -111,12 +112,13 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
 }
 
 const router = createBrowserRouter([
+  { path: "/email-notifications/:token", element: <EmailNotificationsPage /> },
   {
     path: "/",
     element: <AppShell />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "preferences", element: <Navigate to="/preferences/display" replace /> },
+      { path: "preferences", element: <Navigate to="/preferences/notifications" replace /> },
       { path: "preferences/:section", element: <PreferencesPage /> },
       { path: "preferences/watchlists", element: <Navigate to="/watchlists" replace /> },
       ...navigationEntries.map((entry) => ({

@@ -11,6 +11,7 @@ import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
@@ -24,6 +25,7 @@ const emptyHookDraft: HookDraft = {
   message: "",
   batch: null,
   retry: { attempts: 3, backoff: "exponential" },
+  recipientPreference: null,
 };
 
 interface HookEditorProps {
@@ -65,6 +67,7 @@ export function HookEditor({
   const channelId = form.watch("channelId");
   const channel = channels.find((item) => item.id === channelId);
   const batch = form.watch("batch");
+  const recipientPreference = form.watch("recipientPreference");
 
   useEffect(() => {
     if (!startWithTest || hook === null) return;
@@ -257,6 +260,53 @@ export function HookEditor({
             />
           </Field>
           <FieldError text={form.formState.errors.recipient?.message} />
+          {channel?.interface === "Email" && (
+            <fieldset className="grid gap-3 rounded-lg border p-4">
+              <legend className="px-1 text-sm font-medium">Recipient preference</legend>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={recipientPreference != null}
+                  onChange={(event) =>
+                    form.setValue(
+                      "recipientPreference",
+                      event.target.checked
+                        ? { label: form.getValues("name") || "Hook email", defaultEnabled: false }
+                        : null,
+                      { shouldDirty: true },
+                    )
+                  }
+                />
+                Recipient is a VERA user who can turn this email off
+              </label>
+              {recipientPreference != null && (
+                <>
+                  <Field id="hook-preference-label" label="Name in user preferences">
+                    <Input
+                      id="hook-preference-label"
+                      {...form.register("recipientPreference.label")}
+                    />
+                  </Field>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Switch
+                      aria-label="Enabled by default for recipients"
+                      checked={recipientPreference.defaultEnabled}
+                      onCheckedChange={(defaultEnabled) =>
+                        form.setValue("recipientPreference.defaultEnabled", defaultEnabled, {
+                          shouldDirty: true,
+                        })
+                      }
+                    />
+                    Enabled by default for recipients
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Existing choices follow this Hook when it is edited. New recipients use this
+                    explicit default.
+                  </p>
+                </>
+              )}
+            </fieldset>
+          )}
           <Field id="hook-message" label="Message">
             <Textarea id="hook-message" rows={3} {...form.register("message")} />
           </Field>

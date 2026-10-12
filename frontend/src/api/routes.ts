@@ -6,6 +6,8 @@ export const apiRoutes = {
   sessionLogout: "/session/logout",
   sessionAccount: "/session/account",
   userSettings: "/session/settings",
+  notificationHooks: "/session/notification-hooks",
+  notificationPreferences: "/notification-preferences",
   users: "/users",
   categories: "/categories",
   // Categories, the page: the tree with its numbers, custody and Overall's mix, read-only.
@@ -117,6 +119,10 @@ export function watchlistViewerRoute(watchlistId: string): string {
 
 export function watchlistSeenRoute(watchlistId: string): string {
   return `${watchlistRoute(watchlistId)}/seen`;
+}
+
+export function notificationPreferencePath(token: string): string {
+  return `${apiRoutes.notificationPreferences}/${encodeURIComponent(token)}`;
 }
 
 export function proposalReviewRoute(documentId: string): string {

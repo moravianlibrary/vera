@@ -64,6 +64,13 @@ export const hookDraftSchema = z.object({
   message: z.string().trim(),
   batch: hookBatchSchema.nullable(),
   retry: hookRetrySchema,
+  recipientPreference: z
+    .object({
+      label: z.string().trim().min(1),
+      defaultEnabled: z.boolean(),
+    })
+    .nullable()
+    .optional(),
 });
 export type HookDraft = z.infer<typeof hookDraftSchema>;
 export const hookPauseSchema = z.object({ reason: z.string().trim().min(1) });
@@ -74,7 +81,8 @@ export const hookDeliverySchema = z.object({
   subjects: z.array(z.string()),
   event: hookEventSchema,
   publicText: z.string(),
-  state: z.enum(["waiting", "gave_up", "sent", "discarded"]),
+  manageNotificationsUrl: z.string().nullable().optional(),
+  state: z.enum(["waiting", "gave_up", "sent", "discarded", "suppressed"]),
   firstAt: timestamp,
   lastAt: timestamp,
   sendAt: timestamp.nullable(),
@@ -99,6 +107,14 @@ export const hookSchema = hookDraftSchema.extend({
   pause: z.object({ by: id, at: timestamp, reason: z.string() }).nullable(),
 });
 export type Hook = z.infer<typeof hookSchema>;
+export const notificationHookSchema = z.object({
+  id,
+  label: z.string(),
+  event: hookEventSchema,
+  defaultEnabled: z.boolean(),
+  isActive: z.boolean(),
+});
+export type NotificationHook = z.infer<typeof notificationHookSchema>;
 export const hookIndexSchema = z.object({
   asOf: timestamp,
   retentionDays: count,
@@ -127,6 +143,8 @@ const hookPath = (hookId: string) => `${apiRoutes.hooks}/${encodeURIComponent(ho
 const hookAction = (hookId: string, action: string) => `${hookPath(hookId)}/${action}`;
 
 export const getHookIndex = (): Promise<HookIndex> => getJson(apiRoutes.hooks, hookIndexSchema);
+export const getNotificationHooks = (): Promise<NotificationHook[]> =>
+  getJson(apiRoutes.notificationHooks, z.array(notificationHookSchema));
 export const createHook = (draft: HookDraft): Promise<Hook> =>
   postJson(apiRoutes.hooks, draft, hookSchema);
 export const saveHook = (id: string, draft: HookDraft): Promise<Hook> =>

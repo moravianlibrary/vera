@@ -9,7 +9,7 @@ import type { FormEvent, ReactNode } from "react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
-import { isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
+import { createWatchlist, isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { TabButton, TabStrip } from "@/components/filters/tab-strip";
 import {
@@ -243,7 +243,15 @@ interface WatchlistTabProps {
 function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: WatchlistTabProps) {
   const [dialog, setDialog] = useState<"rename" | "share" | "delete" | null>(null);
   const share = useActionMutation({
-    call: (audience: WatchlistAudience) => updateWatchlist(watchlist.id, { audience }),
+    call: (audience: WatchlistAudience) =>
+      isShared(watchlist)
+        ? updateWatchlist(watchlist.id, { audience })
+        : createWatchlist({
+            name: watchlist.name,
+            view: watchlist.view,
+            filter: watchlist.filter,
+            audience,
+          }),
     invalidates: [watchlistsQueryKey],
     refusalTexts: { 403: "Only those who manage shared watchlists can share them." },
   });
@@ -286,7 +294,7 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
             </DropdownMenuItem>
             {isShareable && (
               <DropdownMenuItem className="text-xs" onSelect={() => setDialog("share")}>
-                Share…
+                {isShared(watchlist) ? "Change audience…" : "Publish as system watchlist…"}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
@@ -322,6 +330,7 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
           isOpen
           onClose={() => setDialog(null)}
           watchlist={watchlist}
+          mode={isShared(watchlist) ? "audience" : "publish"}
           onSave={share.run}
         />
       )}
@@ -515,6 +524,15 @@ function CurrentSearchPopover({
                 ))}
               </SelectContent>
             </Select>
+            {(() => {
+              const selected = editable.find((watchlist) => watchlist.id === targetId);
+              return selected !== undefined && isShared(selected) ? (
+                <p className="text-xs text-muted-foreground">
+                  {selected.subscriberCount} subscriber{selected.subscriberCount === 1 ? "" : "s"}{" "}
+                  will be notified and must confirm the changed filter before delivery resumes.
+                </p>
+              ) : null;
+            })()}
             {updateError !== null && (
               <p className="text-xs text-destructive">{refusalOf(updateError)}</p>
             )}

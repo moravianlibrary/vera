@@ -18,6 +18,13 @@ export const userSettingsSchema = z.object({
   density: z.enum(["comfortable", "compact"]).optional(),
   // A missing entry follows the most recently opened tab. Null fixes the view to All.
   fixedOpeningWatchlists: z.partialRecord(watchlistViewSchema, z.string().nullable()).optional(),
+  notifications: z
+    .object({
+      doNotSend: z.boolean(),
+      // Keyed by stable Hook ID. Missing follows that Hook's explicit default.
+      hooks: z.record(z.string(), z.boolean()),
+    })
+    .optional(),
 });
 export type UserSettings = z.infer<typeof userSettingsSchema>;
 

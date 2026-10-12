@@ -32,6 +32,7 @@ export const hooks: Hook[] = [
     message: "Your request for {title} was {decision}. {public_text}",
     batch: { waitMinutes: 15, maxMinutes: 60, by: "recipient" },
     retry: { attempts: 3, backoff: "fixed" },
+    recipientPreference: { label: "Request decisions", defaultEnabled: true },
     state: "active",
     createdBy: "u3",
     createdAt: at(15, 9, 0),

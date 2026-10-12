@@ -27,6 +27,7 @@ import { isShared, watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { useWatchlistMutations, watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 function viewLabel(view: WatchlistView): string {
@@ -75,6 +76,7 @@ function WatchlistDirectory({
   selectedId: string | null;
 }) {
   const { data: session } = useSessionQuery();
+  const { data: userSettings } = useUserSettingsQuery();
   const canShare = session !== undefined && hasPermission(session, "watchlist.manage_shared");
   const queryClient = useQueryClient();
   const {
@@ -165,6 +167,15 @@ function WatchlistDirectory({
             ? "Published filters and their audiences. Your own delivery choices are separate."
             : "Saved searches published for you by your team."}
       </p>
+      {userSettings?.notifications?.doNotSend && (
+        <p className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+          External notifications are paused by your{" "}
+          <Link to="/preferences/notifications" className="underline">
+            Do not send notifications
+          </Link>{" "}
+          preference. Watchlist badges still update.
+        </p>
+      )}
       {error && (
         <p role="alert" className="mt-3 text-sm text-destructive">
           {error}

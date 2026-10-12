@@ -48,6 +48,14 @@ export function changeUserSettings(userId: string, change: UserSettingsChange): 
             ...change.fixedOpeningWatchlists,
           },
         }),
+    ...(change.notifications === undefined
+      ? {}
+      : {
+          notifications: {
+            doNotSend: change.notifications.doNotSend ?? current.notifications?.doNotSend ?? false,
+            hooks: { ...current.notifications?.hooks, ...change.notifications.hooks },
+          },
+        }),
   };
   settingsByUser.set(userId, changed);
   store();

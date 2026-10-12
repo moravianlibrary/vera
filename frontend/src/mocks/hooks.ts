@@ -20,6 +20,8 @@ import { database } from "@/mocks/database";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { implementationOf, kindOf, liveInstances } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
+import { userSettingsOf } from "@/mocks/user-settings";
+import { issueNotificationToken } from "@/mocks/notification-tokens";
 
 const retentionDays = 30;
 const forbidden: Refusal = { status: 403, message: "You may not configure hooks" };
@@ -62,6 +64,13 @@ function channelRefusal(draft: HookDraft): Refusal | null {
   if (channel.interface === "Webhook" && !/^https:\/\//.test(draft.recipient)) {
     return { status: 422, code: "hook.recipient", message: "A webhook needs an HTTPS URL" };
   }
+  if (draft.recipientPreference != null && channel.interface !== "Email") {
+    return {
+      status: 422,
+      code: "hook.recipient_preference",
+      message: "User-controlled delivery needs an email channel",
+    };
+  }
 
   // TODO(rrandiak): define a typed condition builder for hook subscriptions.
   // The accepted demo supplies only these two phrases; an arbitrary phrase
@@ -100,6 +109,30 @@ function attemptDelivery(delivery: HookDelivery, now: Date): HookDelivery {
     return delivery;
   }
 
+  let recipientUserId: string | null = null;
+  if (hook.recipientPreference != null) {
+    const recipient = database.users.find(
+      (user) => user.email?.toLowerCase() === delivery.recipient.toLowerCase(),
+    );
+    if (recipient === undefined) {
+      return replaceDelivery({
+        ...delivery,
+        state: "gave_up",
+        sendAt: null,
+        lastError: "User-addressed Hook recipient is not a VERA user",
+      });
+    }
+    recipientUserId = recipient.id;
+    const settings = userSettingsOf(recipient.id).notifications;
+    if (
+      settings?.doNotSend ||
+      settings?.hooks[hook.id] === false ||
+      (settings?.hooks[hook.id] === undefined && !hook.recipientPreference.defaultEnabled)
+    ) {
+      return replaceDelivery({ ...delivery, state: "suppressed", sendAt: null, lastError: null });
+    }
+  }
+
   const failure = delivery.recipient.includes("ops.internal")
     ? "connect ETIMEDOUT ops.internal:443"
     : null;
@@ -111,6 +144,10 @@ function attemptDelivery(delivery: HookDelivery, now: Date): HookDelivery {
     state: failure === null ? "sent" : next === null ? "gave_up" : "waiting",
     sendAt: next?.toISOString() ?? null,
     lastError: failure,
+    manageNotificationsUrl:
+      failure === null && recipientUserId !== null
+        ? `/email-notifications/${issueNotificationToken(recipientUserId, hook.id)}`
+        : (delivery.manageNotificationsUrl ?? null),
   };
   const attempt: HookAttempt = {
     id: `HX-${crypto.randomUUID()}`,

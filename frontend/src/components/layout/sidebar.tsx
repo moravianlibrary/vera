@@ -206,7 +206,7 @@ export function Sidebar({
             </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
-                navigate("/preferences/display");
+                navigate("/preferences/notifications");
                 onMenuNavigate?.();
               }}
             >

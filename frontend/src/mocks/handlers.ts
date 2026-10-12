@@ -72,6 +72,7 @@ import {
 } from "@/api/schedules";
 import { parseRunSearchParams, retentionSchema } from "@/api/tasks";
 import { userSettingsChangeSchema } from "@/api/user-settings";
+import { notificationChoicesSchema } from "@/api/notification-preferences";
 import {
   acceptanceSchema,
   denialSchema,
@@ -272,7 +273,17 @@ import {
 } from "@/mocks/validations";
 import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import {
+  changePublicNotificationChoices,
+  publicNotificationChoices,
+} from "@/mocks/notification-tokens";
+import {
+  flushWatchlistChat,
+  flushWatchlistMail,
+  noteSystemWatchlistChange,
+} from "@/mocks/watchlist-delivery";
+import {
   canChange,
+  audienceReachOf,
   findChangeableWatchlist,
   findDuplicateWatchlist,
   findVisibleWatchlist,
@@ -362,6 +373,44 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.userSettings), () =>
       HttpResponse.json(userSettingsOf(currentSession().user.id)),
+    ),
+
+    http.get(route(apiRoutes.notificationHooks), () =>
+      HttpResponse.json(
+        database.hooks.flatMap((hook) =>
+          hook.recipientPreference == null
+            ? []
+            : [
+                {
+                  id: hook.id,
+                  label: hook.recipientPreference.label,
+                  event: hook.event,
+                  defaultEnabled: hook.recipientPreference.defaultEnabled,
+                  isActive: hook.state === "active",
+                },
+              ],
+        ),
+      ),
+    ),
+
+    http.get(route(`${apiRoutes.notificationPreferences}/:token`), ({ params }) => {
+      const choices = publicNotificationChoices(String(params.token));
+      return choices === null
+        ? problemResponse({ status: 404, message: "This notification link has expired" })
+        : HttpResponse.json(choices);
+    }),
+
+    http.patch(
+      route(`${apiRoutes.notificationPreferences}/:token`),
+      async ({ params, request }) => {
+        const body = (await request.json()) as { notifications?: unknown };
+        const parsed = notificationChoicesSchema.safeParse(body.notifications);
+        if (!parsed.success) return invalidResponse(parsed.error);
+        const choices = changePublicNotificationChoices(String(params.token), parsed.data);
+        return choices === null
+          ? problemResponse({ status: 404, message: "This notification link has expired" })
+          : HttpResponse.json(choices);
+      },
     ),
 
     http.patch(route(apiRoutes.userSettings), async ({ request }) => {
@@ -1283,9 +1332,10 @@ export function createHandlers(profile: MockUserProfile) {
       if (mode === "manage-system" && !hasPermission(currentSession(), "watchlist.manage_shared")) {
         return forbidden();
       }
-      return HttpResponse.json(
-        visibleWatchlists(currentSession(), view.success ? view.data : null, mode),
-      );
+      const rows = visibleWatchlists(currentSession(), view.success ? view.data : null, mode);
+      flushWatchlistMail();
+      flushWatchlistChat();
+      return HttpResponse.json(rows);
     }),
 
     http.post(route(apiRoutes.watchlists), async ({ request }) => {
@@ -1384,6 +1434,22 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       database.watchlists.splice(database.watchlists.indexOf(watchlist), 1, changed);
+      if (watchlist.audience.kind !== "personal") {
+        const oldReach = audienceReachOf(watchlist.audience, watchlist.view).reachedIds;
+        const newReach = new Set(audienceReachOf(changed.audience, changed.view).reachedIds);
+        noteSystemWatchlistChange(
+          watchlist.id,
+          "audience_removed",
+          oldReach.filter((id) => !newReach.has(id)),
+        );
+        if (changed.filterVersion !== (watchlist.filterVersion ?? 1)) {
+          noteSystemWatchlistChange(
+            watchlist.id,
+            "filter_changed",
+            oldReach.filter((id) => newReach.has(id)),
+          );
+        }
+      }
       return HttpResponse.json(publicWatchlistOf(changed));
     }),
 
@@ -1404,11 +1470,15 @@ export function createHandlers(profile: MockUserProfile) {
         );
         const current = viewer ?? viewerOf(session.user.id, watchlist);
         const changed = { ...current, ...change.data };
+        if (change.data.email === true && !current.email)
+          changed.emailSince = new Date().toISOString();
+        if (change.data.chat === true && !current.chat)
+          changed.chatSince = new Date().toISOString();
         const row = database.watchlistViewers.find(
           (candidate) =>
             candidate.userId === session.user.id && candidate.watchlistId === watchlist.id,
         );
-        if (row !== undefined) Object.assign(row, change.data);
+        if (row !== undefined) Object.assign(row, changed);
         storeWatchlistViewers(database.watchlistViewers);
         return HttpResponse.json(changed);
       },
@@ -1445,6 +1515,13 @@ export function createHandlers(profile: MockUserProfile) {
         return forbidden();
       }
 
+      if (watchlist.audience.kind !== "personal") {
+        noteSystemWatchlistChange(
+          watchlist.id,
+          "removed",
+          audienceReachOf(watchlist.audience, watchlist.view).reachedIds,
+        );
+      }
       database.watchlists.splice(database.watchlists.indexOf(watchlist), 1);
       database.watchlistViewers = database.watchlistViewers.filter(
         (viewer) => viewer.watchlistId !== watchlist.id,

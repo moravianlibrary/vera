@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Navigate, useParams } from "react-router";
+import { Navigate, useParams, useSearchParams } from "react-router";
+import { getNotificationHooks } from "@/api/hooks";
 import { getAccount } from "@/api/session";
 import { listWatchlists } from "@/api/watchlists";
 import { TabLink, TabStrip } from "@/components/filters/tab-strip";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -24,7 +26,7 @@ import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
-const sections = ["display", "account"] as const;
+const sections = ["notifications", "display", "account"] as const;
 type Section = (typeof sections)[number];
 
 function viewLabel(view: WatchlistView): string {
@@ -33,8 +35,9 @@ function viewLabel(view: WatchlistView): string {
 
 export function PreferencesPage() {
   const { section } = useParams();
-  if (section === undefined) return <Navigate to="/preferences/display" replace />;
-  if (!sections.includes(section as Section)) return <Navigate to="/preferences/display" replace />;
+  if (section === undefined) return <Navigate to="/preferences/notifications" replace />;
+  if (!sections.includes(section as Section))
+    return <Navigate to="/preferences/notifications" replace />;
 
   return (
     <>
@@ -53,11 +56,125 @@ export function PreferencesPage() {
       </TabStrip>
       <PageContent className="bg-muted/20">
         <div className="mx-auto max-w-4xl">
+          {section === "notifications" && <NotificationsPreferences />}
           {section === "display" && <DisplayPreferences />}
           {section === "account" && <AccountPreferences />}
         </div>
       </PageContent>
     </>
+  );
+}
+
+function NotificationsPreferences() {
+  const [params] = useSearchParams();
+  const focusedHook = params.get("hook");
+  const { data: settings } = useUserSettingsQuery();
+  const {
+    data: hooks = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["notification-hooks"],
+    queryFn: getNotificationHooks,
+  });
+  const update = useUserSettingsMutation();
+  const choices = settings?.notifications ?? { doNotSend: false, hooks: {} };
+  const [error, setError] = useState("");
+  const save = async (next: typeof choices) => {
+    setError("");
+    try {
+      await update.mutateAsync({ notifications: next });
+    } catch {
+      setError("Could not save notification choices.");
+    }
+  };
+
+  return (
+    <section className="space-y-5">
+      <div>
+        <h2 className="text-lg font-semibold">Notifications</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose which automatic Hook emails reach you. Watchlist delivery is set on each watchlist
+          in the Watchlists page.
+        </p>
+      </div>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <div className="flex items-center justify-between gap-4 rounded-lg border bg-background p-4">
+        <div>
+          <p className="font-medium">Do not send notifications</p>
+          <p className="text-xs text-muted-foreground">
+            Suppresses optional Hook and watchlist delivery, including future Hooks. Your individual
+            choices remain saved.
+          </p>
+        </div>
+        <Switch
+          aria-label="Do not send notifications"
+          checked={choices.doNotSend}
+          disabled={update.isPending}
+          onCheckedChange={(doNotSend) => void save({ ...choices, doNotSend })}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold">Hook emails</h3>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={update.isPending || hooks.length === 0}
+          onClick={() =>
+            void save({
+              ...choices,
+              hooks: {
+                ...choices.hooks,
+                ...Object.fromEntries(hooks.map((hook) => [hook.id, false])),
+              },
+            })
+          }
+        >
+          Turn off all current Hook emails
+        </Button>
+      </div>
+      {isPending && <p className="text-sm text-muted-foreground">Loading Hook emails…</p>}
+      {isError && (
+        <p role="alert" className="text-sm text-destructive">
+          Could not load Hook emails.
+        </p>
+      )}
+      {!isPending && !isError && hooks.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No user-addressed Hook emails are configured.
+        </p>
+      )}
+      <div className="divide-y rounded-lg border bg-background">
+        {hooks.map((hook) => (
+          <div
+            key={hook.id}
+            id={`hook-preference-${hook.id}`}
+            className={`flex items-center justify-between gap-4 px-4 py-3 ${focusedHook === hook.id ? "bg-accent/40" : ""}`}
+          >
+            <div>
+              <p className="font-medium">{hook.label}</p>
+              <p className="text-xs text-muted-foreground">
+                {hook.event}
+                {!hook.isActive && " · Hook paused"} ·{" "}
+                {hook.defaultEnabled ? "On by default" : "Off by default"}
+              </p>
+            </div>
+            <Switch
+              aria-label={`${hook.label} email`}
+              checked={choices.hooks[hook.id] ?? hook.defaultEnabled}
+              disabled={update.isPending}
+              onCheckedChange={(enabled) =>
+                void save({ ...choices, hooks: { ...choices.hooks, [hook.id]: enabled } })
+              }
+            />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

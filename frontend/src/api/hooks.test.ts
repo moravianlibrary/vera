@@ -19,6 +19,10 @@ import {
 } from "@/api/hooks";
 import { ApiError } from "@/api/http";
 import {
+  getPublicNotificationPreferences,
+  updatePublicNotificationPreferences,
+} from "@/api/notification-preferences";
+import {
   disablePluginInstance,
   enablePluginInstance,
   getPluginImpact,
@@ -28,6 +32,8 @@ import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { hookDeliveries } from "@/mocks/fixtures/hooks";
 import { createHandlers } from "@/mocks/handlers";
+import { issueNotificationToken } from "@/mocks/notification-tokens";
+import { changeUserSettings, userSettingsOf } from "@/mocks/user-settings";
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -151,5 +157,38 @@ describe("Hooks", () => {
       (await getHookIndex()).channels.find((channel) => channel.id === "pi17")?.isEnabled,
     ).toBe(false);
     await enablePluginInstance("pi17");
+  });
+
+  it("lets a recipient disable a Hook from a limited email link and suppresses delivery", async () => {
+    signInAs("admin");
+    const original = userSettingsOf("u5").notifications;
+    const token = issueNotificationToken("u5", "H-02");
+    const before = await getPublicNotificationPreferences(token);
+    expect(before.email).toBe("tomas.marek@muni.cz");
+    expect(before.hooks.map((hook) => hook.id)).toContain("H-02");
+    const fixture = hookDeliveries.find((row) => row.id === "HD-22");
+    expect(fixture).toBeDefined();
+    if (fixture === undefined) return;
+    const delivery = { ...fixture, id: "HD-PREF-TEST", state: "waiting" as const };
+    database.hookDeliveries.push(delivery);
+    try {
+      await updatePublicNotificationPreferences(token, {
+        doNotSend: false,
+        hooks: { ...before.notifications.hooks, "H-02": false },
+      });
+      const result = await sendHookNow("H-02");
+      expect(result.find((row) => row.id === delivery.id)?.state).toBe("suppressed");
+      expect(database.hookAttempts.some((attempt) => attempt.deliveryId === delivery.id)).toBe(
+        false,
+      );
+    } finally {
+      database.hookDeliveries.splice(
+        database.hookDeliveries.findIndex((row) => row.id === delivery.id),
+        1,
+      );
+      changeUserSettings("u5", {
+        notifications: original ?? { doNotSend: false, hooks: { "H-02": true } },
+      });
+    }
   });
 });

@@ -50,6 +50,8 @@ export const watchlistViewerSchema = z.object({
   position: z.number().int().nonnegative(),
   email: z.boolean().default(false),
   chat: z.boolean().default(false),
+  emailSince: z.iso.datetime().nullable().default(null),
+  chatSince: z.iso.datetime().nullable().default(null),
   confirmedFilter: z.string().nullable().default(null),
 });
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;

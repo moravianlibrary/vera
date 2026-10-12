@@ -28,6 +28,7 @@ import {
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
 import { database } from "@/mocks/database";
+import { flushWatchlistMail, watchlistMailOutbox } from "@/mocks/watchlist-delivery";
 
 const server = setupServer();
 
@@ -49,6 +50,52 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("batches new entries and drops entries opened before mail is sent", async () => {
+    signInAs("admin");
+    const watchlist = await createWatchlist({
+      name: "Mail entry test",
+      view: "documents",
+      audience: { kind: "personal" },
+      filter: { q: "mail-entry-unique" },
+    });
+    const original = database.documents[0];
+    const second = database.documents[1];
+    expect(original).toBeDefined();
+    expect(second).toBeDefined();
+    if (original === undefined || second === undefined) return;
+    try {
+      await listWatchlists("documents");
+      await updateWatchlistViewer(watchlist.id, { email: true });
+      database.documents[0] = { ...original, title: `${original.title} mail-entry-unique` };
+      await listWatchlists("documents");
+      const future = new Date(Date.now() + 16 * 60_000);
+      const sent = flushWatchlistMail(future);
+      expect(
+        sent
+          .filter((mail) => mail.userId === "u3")
+          .flatMap((mail) => mail.records)
+          .some((record) => record.watchlistIds.includes(watchlist.id)),
+      ).toBe(true);
+      expect(
+        flushWatchlistMail(new Date(future.getTime() + 60_000))
+          .flatMap((mail) => mail.records)
+          .some((record) => record.watchlistIds.includes(watchlist.id)),
+      ).toBe(false);
+      expect(watchlistMailOutbox.at(-1)?.manageUrl).toBe("/watchlists");
+      database.documents[1] = { ...second, title: `${second.title} mail-entry-unique` };
+      await listWatchlists("documents");
+      await markWatchlistSeen(watchlist.id);
+      expect(
+        flushWatchlistMail(new Date(future.getTime() + 32 * 60_000))
+          .flatMap((mail) => mail.records)
+          .some((record) => record.watchlistIds.includes(watchlist.id)),
+      ).toBe(false);
+    } finally {
+      database.documents[0] = original;
+      database.documents[1] = second;
+      await deleteWatchlist(watchlist.id);
+    }
+  });
   it("counts entries since opening without treating existing matches as new", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
