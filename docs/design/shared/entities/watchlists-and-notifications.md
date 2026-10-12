@@ -3,8 +3,11 @@
 Decided 2026-10-10. This specification replaces the older Watchlists row and
 Preferences → Watchlists designs in [[navigation]] §5 and [[filtering]] §4.3,
 and the older rule that watchlists cannot send notifications in [[filtering]]
-§4.4 and [[view-catalog]] Hooks. It describes intended behavior; the current
-frontend mocks do not yet implement membership events or mail delivery.
+§4.4 and [[view-catalog]] Hooks. The frontend implements the management and
+preference UI and simulates delivery in MSW. Its membership reconciliation,
+in-memory outboxes and browser timer are a demo approximation. A production
+server still needs durable entry events, access checks, batching, signed-link
+verification and actual email/chat transports as described below.
 
 ## Watchlists as saved views
 

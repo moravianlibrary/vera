@@ -1,5 +1,15 @@
 # Frontend continuation guide
 
+**Watchlists and notifications handoff (2026-10-12):** Follow
+`docs/design/shared/entities/watchlists-and-notifications.md`. The frontend
+has a `/watchlists` management page, per-person entry badges and delivery
+choices, Preferences → Notifications, and a limited email-link preference
+page. MSW simulates Hook suppression and watchlist email/chat outboxes.
+The real backend still needs durable membership events, a batching worker,
+actual transports, and server-side signed links. Do not treat the browser
+outboxes or timer as production delivery. The older Watchlists/Preferences
+directions lower in this file are superseded.
+
 **Intentions/mixes handoff (2026-10-08):**
 `docs/design/shared/entities/intentions-mixes-redesign.md` now records the
 implemented core and remaining proposals. Independent `/mixes` records have
@@ -577,7 +587,7 @@ Follow the newest user decisions first. For the current product model, read:
 
 `docs/demos/REVIEW-BRIEF.md` identifies which design docs and demo pages are current. `docs/demos/rework.md` contains useful rationale, but parts of its initial view list have since been superseded. In particular, Additions is now a status in Documents, and list generation is part of Digitization Lists.
 
-The user's latest watchlist direction is authoritative where docs differ: show notification badges on the relevant navigation destinations; let people save/edit a watchlist from its view and manage watchlists from user options. Do not restore the older design of a standalone Watchlists sidebar row/popover without a new decision. The user has also said the demo filters need rethinking; do not copy them as-is or assume every detail in the filtering draft is approved. A watchlist is a saved filter for one view. Grouping is presentation, not a filter, and must not be saved with it.
+The current Watchlists and notification design is `docs/design/shared/entities/watchlists-and-notifications.md`. It supersedes the older navigation badge and Preferences Watchlists directions below: `/watchlists` is a navbar page, and its badge counts watchlists with new entries. Source-view tabs show per-watchlist entry counts. The user has also said the demo filters need rethinking; do not copy them as-is or assume every detail in the filtering draft is approved. A watchlist is a saved filter for one view. Grouping is presentation, not a filter, and must not be saved with it.
 
 ## Product shape
 
