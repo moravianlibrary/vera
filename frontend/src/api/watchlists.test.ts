@@ -124,30 +124,29 @@ describe("listWatchlists", () => {
       await deleteWatchlist(watchlist.id);
     }
   });
-  it("keeps each person's tab visibility and order on system watchlists", async () => {
+  it("keeps each person's order on system watchlists", async () => {
     signInAs("admin");
     const [first, second] = (await listWatchlists("documents")).filter(isShared);
     expect(first).toBeDefined();
     expect(second).toBeDefined();
     if (!first || !second) return;
+    signInAs("curator");
+    const curatorPosition = (await listWatchlists("documents")).find((item) => item.id === first.id)
+      ?.viewer.position;
+    signInAs("admin");
     await updateWatchlistViewer(first.id, {
-      isHidden: true,
       position: second.viewer.position,
     });
     await updateWatchlistViewer(second.id, { position: first.viewer.position });
     const mine = await listWatchlists("documents");
-    expect(mine.find((item) => item.id === first.id)?.viewer).toMatchObject({
-      isHidden: true,
-    });
     expect(mine.findIndex((item) => item.id === second.id)).toBeLessThan(
       mine.findIndex((item) => item.id === first.id),
     );
     signInAs("curator");
     const others = await listWatchlists("documents");
-    expect(others.find((item) => item.id === first.id)?.viewer.isHidden).toBe(false);
+    expect(others.find((item) => item.id === first.id)?.viewer.position).toBe(curatorPosition);
     signInAs("admin");
     await updateWatchlistViewer(first.id, {
-      isHidden: false,
       position: first.viewer.position,
     });
     await updateWatchlistViewer(second.id, { position: second.viewer.position });
@@ -420,8 +419,8 @@ describe("an audience of some groups and roles", () => {
     expect(await namesFor("validations")).toContain("Page counts");
 
     signInAs("admin");
-    expect(await namesFor("proposals")).not.toContain("Periodicals");
-    expect(await namesFor("validations")).not.toContain("Page counts");
+    expect(await namesFor("proposals")).toContain("Periodicals");
+    expect(await namesFor("validations")).toContain("Page counts");
   });
 
   it("says first how many it reaches, who cannot open the view, and who keeps the filter", async () => {
@@ -434,7 +433,7 @@ describe("an audience of some groups and roles", () => {
         audience: { kind: "some", groupIds: ["g1", "g3"], roleIds: [] },
         watchlistId: null,
       }),
-    ).toEqual({ userCount: 2, outOfViewCount: 1, duplicateCount: 2 });
+    ).toEqual({ userCount: 3, outOfViewCount: 1, duplicateCount: 3 });
   });
 
   it("is refused empty", async () => {
@@ -456,6 +455,6 @@ describe("an audience of some groups and roles", () => {
     signInAs("staff");
     const [first] = await listWatchlists("documents");
 
-    expect(first?.viewer).toMatchObject({ seenAt: null, isHidden: false });
+    expect(first?.viewer).toMatchObject({ seenAt: null });
   });
 });

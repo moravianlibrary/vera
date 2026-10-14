@@ -20,31 +20,32 @@ that leaves and later re-enters is a new entry again.
 **Watchlists** is one page at `/watchlists`, last in the navbar after Hooks for
 people who can see Hooks, and after their last available entry otherwise. It
 replaces the planned Watchlists popover in the sidebar foot and Preferences →
-Watchlists. The page is available to anyone who can use watchlists. The same
-page has two sections:
-
-| Section | Reader | `watchlist.manage_shared` holder |
-|---|---|---|
-| My watchlists | Their personal saved filters | Their personal saved filters |
-| System watchlists | Those whose audience includes them and whose source view they may open | All system watchlists, including those outside their audience, with management actions |
+Watchlists. The page is available to anyone who can use watchlists. It has one
+table per source view, mixing personal and system watchlists in
+the person's chosen order. System watchlists carry a **System** badge
+and a Building2 mark in source tabs. Readers see their personal watchlists
+and eligible system watchlists. Managers see all system definitions
+alongside their personal watchlists.
 
 Rows show source view, name, filter summary, current matching item count and
 new item count. **Open** takes the person to that watchlist's tab in its source
 view. Personal and system watchlists may be saved from the source view's filter
 bar; filter editing happens there. The Watchlists page provides the overview,
-per-person tab visibility and notification controls. Managers can also edit
+per-person notification controls. Managers can also edit
 a system watchlist's audience or remove it there.
 
 Personal watchlists are created by their user. A person with
-`watchlist.manage_shared` may **Publish as system watchlist** from a current
-filter or a personal watchlist. Publishing a personal watchlist creates a
+`watchlist.manage_shared` may **Create system watchlist** from a current
+filter or a personal watchlist. Creating one from a personal watchlist makes a
 separate system copy; the personal one remains. System watchlists retain
 *created by* for history but are maintained by any holder of
 `watchlist.manage_shared`. Their audience is everyone or a union of selected
-groups and roles. Audience membership never grants access to the source view
-or records. Users without management permission cannot publish system
-watchlists. A system watchlist's per-person visibility and notification choices
-remain that person's own.
+groups and roles. Anyone with `watchlist.manage_shared` is always in every
+system watchlist's effective audience, even when the chosen groups and roles
+exclude them. They still need permission to open the source view and its
+records. Audience membership never grants access to the source view or
+records. Users without management permission cannot create system watchlists.
+A system watchlist's notification choices remain that person's own.
 
 ## New counts and seen state
 
@@ -54,8 +55,7 @@ Watchlists overview or merely receiving an email does not mark it seen.
 
 The **Watchlists navbar badge counts watchlists with unseen entries**, not
 records, events or definition edits. A watchlist with ten new records adds one
-to the navbar count. Every visible watchlist contributes, including one hidden
-from its source view's tabs. The badge cannot be disabled. The Watchlists page
+to the navbar count. Every visible watchlist contributes. The badge cannot be disabled. The Watchlists page
 shows each watchlist's new item count. Definition changes, such as a renamed
 filter, do not increase this badge.
 
@@ -121,7 +121,7 @@ delivery must be idempotent so retries do not duplicate emails. Relative date
 filters also need checks at their time boundaries; periodic reconciliation
 repairs missed events rather than serving as the main detection mechanism.
 
-A system filter edit increments its definition version and rebuilds membership
+A system watchlist's filter edit increments its definition version and rebuilds membership
 as a baseline. Existing matches in that version are not new entries. Per-person
 seen state and the pending-delivery cursor are separate; a mail send changes
 only delivery state. This extends [[filtering]] §5's conceptual

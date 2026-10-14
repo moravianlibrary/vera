@@ -4,7 +4,7 @@
 // an editable one's filter. A bare view reopens the last saved tab. Grouping is not saved.
 // New-entry badges and per-person seen state follow watchlists-and-notifications.md.
 
-import { ChevronDown, CircleAlert, Users } from "lucide-react";
+import { Building2, ChevronDown, CircleAlert } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
@@ -89,7 +89,7 @@ export function WatchlistTabs({
   const navRef = useRef<HTMLElement>(null);
   const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
   const { create, update, markSeen } = useWatchlistMutations();
-  const watchlists = everyWatchlist.filter((watchlist) => !watchlist.viewer.isHidden);
+  const watchlists = everyWatchlist;
   const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
   const onOpen = (watchlist: Watchlist | null) => {
     remember(watchlist?.id ?? null);
@@ -253,7 +253,7 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
             audience,
           }),
     invalidates: [watchlistsQueryKey],
-    refusalTexts: { 403: "Only those who manage shared watchlists can share them." },
+    refusalTexts: { 403: "Only watchlist managers can create system watchlists or change audiences." },
   });
   const { update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
@@ -264,7 +264,7 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
   return (
     <span className="inline-flex shrink-0 items-center">
       <Tab id={watchlist.id} isOpen={isOpen} onClick={onOpen}>
-        {isShared(watchlist) && <SharedMark />}
+        {isShared(watchlist) && <SystemMark />}
         {watchlist.name}
         <span className="text-xs text-muted-foreground tabular-nums" title="Current matches">
           {watchlist.itemCount}
@@ -294,7 +294,7 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
             </DropdownMenuItem>
             {isShareable && (
               <DropdownMenuItem className="text-xs" onSelect={() => setDialog("share")}>
-                {isShared(watchlist) ? "Change audience…" : "Publish as system watchlist…"}
+                {isShared(watchlist) ? "Change audience…" : "Create system watchlist…"}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
@@ -388,21 +388,21 @@ function refusalOf(error: Error): string {
   }
 
   if (error instanceof ApiError && error.status === forbiddenStatus) {
-    return "Only those who manage shared watchlists can change them.";
+    return "Only watchlist managers can change system watchlists.";
   }
 
   return "The watchlist could not be saved. Try again.";
 }
 
-function SharedMark() {
+function SystemMark() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span role="img" aria-label="Shared" className="inline-flex">
-          <Users className="size-3.5 text-muted-foreground" />
+        <span role="img" aria-label="System watchlist" className="inline-flex">
+          <Building2 className="size-3.5 text-muted-foreground" />
         </span>
       </TooltipTrigger>
-      <TooltipContent>Shared</TooltipContent>
+      <TooltipContent>System watchlist</TooltipContent>
     </Tooltip>
   );
 }

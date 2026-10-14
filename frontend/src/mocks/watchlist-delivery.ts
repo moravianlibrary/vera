@@ -113,7 +113,7 @@ export function flushWatchlistChat(now = new Date()): void {
         view: summary.view,
         recordId: entry.recordId,
         sentAt: now.toISOString(),
-        manageUrl: `/watchlists?section=${summary.audience.kind === "personal" ? "mine" : "system"}&watchlist=${encodeURIComponent(entry.watchlistId)}`,
+        manageUrl: `/watchlists?watchlist=${encodeURIComponent(entry.watchlistId)}`,
       });
       entry.chatDeliveredAt = now.toISOString();
       changed = true;

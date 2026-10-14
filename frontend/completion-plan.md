@@ -160,7 +160,7 @@ identity/account rules, and the existing settings/watchlist API tests first.
    Build the shared settings layout only if no suitable composition exists.
 2. Watchlists: group by destination in navigation order. Reuse existing operations
    for opening, rename, editing filters, deleting, reordering,
-   shared visibility and unreachable entries. Shared entries preserve ownership
+   unreachable entries. System entries preserve ownership
    and audience permissions. Provide keyboard-accessible reorder controls.
 3. Display: extend the existing server settings record for the documented sidebar
    preference per tier, last-used/fixed starting tab, density and date format.
@@ -176,7 +176,7 @@ identity/account rules, and the existing settings/watchlist API tests first.
    patching; invalidate/reset the appropriate cached session data on sign-out.
 
 Acceptance: persistence through reload, isolation between users, server refusals,
-shared/hidden/unreachable watchlists, accessible forms and final responsive CSS.
+system/unreachable watchlists, accessible forms and final responsive CSS.
 Document any genuinely unspecified account behavior instead of fabricating it.
 
 ## Session E — Phone gestures and original-plan closure (12.4)

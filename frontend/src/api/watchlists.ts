@@ -1,6 +1,6 @@
 // Watchlists: saved filters over one view (filtering.md §4, §5), the caller's own and the shared
 // ones whose audience reaches them. A listed watchlist carries how many records match it now,
-// whether the caller may change it, and the caller's own row for it (seen, badge, hidden, place),
+// whether the caller may change it, and the caller's own row for it (seen, place, delivery),
 // since those are each person's even on a shared one. Two watchlists on one view with the same
 // filter are the same watchlist, whatever their names or audiences, and the server keeps only one
 // of them among those a caller sees; sharing one that reaches somebody who keeps the same filter
@@ -44,8 +44,6 @@ export type WatchlistChange = z.infer<typeof watchlistChangeSchema>;
 // What is the person's own about a watchlist they see (filtering.md §5 `watchlist_viewer`).
 export const watchlistViewerSchema = z.object({
   seenAt: z.iso.datetime().nullable(),
-  // Shared ones only: hidden from source tabs, still counted in Watchlists.
-  isHidden: z.boolean(),
   position: z.number().int().nonnegative(),
   email: z.boolean().default(false),
   chat: z.boolean().default(false),
@@ -56,7 +54,6 @@ export const watchlistViewerSchema = z.object({
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;
 export const watchlistViewerChangeSchema = watchlistViewerSchema
   .pick({
-    isHidden: true,
     position: true,
     email: true,
     chat: true,

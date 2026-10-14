@@ -1417,7 +1417,7 @@ export function createHandlers(profile: MockUserProfile) {
         });
       }
       if (audience.kind !== "personal" && watchlist.audience.kind === "personal") {
-        return problemResponse({ status: 409, message: "Publish a system copy instead" });
+        return problemResponse({ status: 409, message: "Create a separate system copy instead" });
       }
       const changed = {
         ...watchlist,

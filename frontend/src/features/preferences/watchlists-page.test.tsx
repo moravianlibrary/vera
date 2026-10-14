@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -46,9 +46,18 @@ describe("Watchlists page", () => {
     expect(link).toHaveAttribute("href", expect.stringContaining("status=Available"));
   });
 
-  it("shows all system watchlists to a manager", async () => {
-    open("admin", "/watchlists?section=system");
-    expect(await screen.findByRole("heading", { name: "System watchlists" })).toBeInTheDocument();
-    expect(await screen.findAllByText("Periodicals")).not.toHaveLength(0);
+  it("groups personal and system watchlists in one table per view", async () => {
+    open("admin");
+    const periodicals = await screen.findByRole("link", { name: "Periodicals" });
+    expect(periodicals).toHaveAttribute("href", expect.stringContaining("/review/proposals?"));
+    expect(screen.getByRole("button", { name: "Audience for Periodicals" })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "System watchlists" })).not.toBeInTheDocument();
+    const documentsHeading = screen.getByRole("heading", { name: "Documents" });
+    const documentsTable = within(documentsHeading.parentElement as HTMLElement).getByRole("table");
+    expect(
+      within(documentsTable).getByRole("link", { name: "Urgent, no copy" }),
+    ).toBeInTheDocument();
+    expect(within(documentsTable).getByRole("link", { name: "Forbidden" })).toBeInTheDocument();
+    expect(within(documentsTable).getAllByText("System").length).toBeGreaterThan(0);
   });
 });

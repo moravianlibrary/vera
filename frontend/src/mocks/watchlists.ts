@@ -157,6 +157,11 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
 }
 
 function isInAudience(session: Session, audience: WatchlistAudience): boolean {
+  // Managers always belong to a system watchlist's effective audience. This does not
+  // grant the source-view or record permissions needed to open its matches.
+  if (audience.kind !== "personal" && hasPermission(session, "watchlist.manage_shared")) {
+    return true;
+  }
   switch (audience.kind) {
     case "personal":
       return false;
@@ -241,7 +246,6 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
 
   const viewer: WatchlistViewer = {
     seenAt: null,
-    isHidden: false,
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
     email: false,
     chat: false,

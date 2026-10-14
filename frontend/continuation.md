@@ -4,7 +4,11 @@
 `docs/design/shared/entities/watchlists-and-notifications.md`. The frontend
 has a `/watchlists` management page, per-person entry badges and delivery
 choices, Preferences → Notifications, and a limited email-link preference
-page. MSW simulates Hook suppression and watchlist email/chat outboxes.
+page. Watchlists appear in one table per source view; system watchlists
+carry a System badge and Building2 tab icon. Managers are always
+in the effective audience of system watchlists, subject to source-view
+permissions. Badges are universal, and tabs have no hide control. MSW simulates
+Hook suppression and watchlist email/chat outboxes.
 The real backend still needs durable membership events, a batching worker,
 actual transports, and server-side signed links. Do not treat the browser
 outboxes or timer as production delivery. The older Watchlists/Preferences
@@ -534,7 +538,7 @@ The foundation is in place:
   `SetEditorDialog`, delete), `access-dialogs.tsx` (the pickers on `PickerDialog`, local
   account, identity, groups, custodies) and `watchlist-dialogs.tsx`. Watchlists have an
   audience (personal, everyone, some groups and roles; `watchlistAudienceSchema`), a row per
-  person who sees one (`viewer`: seen, hidden, place) and `POST /watchlists/reach`;
+  person who sees one (`viewer`: seen, place) and `POST /watchlists/reach`;
   `ShareWatchlistDialog` (`src/components/filters/`) sets it from a tab and from Users & Groups.
 - Plugins (`src/features/plugins/`). `src/api/plugins.ts` serves `GET /plugins` (`plugin.read`:
   every implementation with its installed versions, newest first, each with its contract

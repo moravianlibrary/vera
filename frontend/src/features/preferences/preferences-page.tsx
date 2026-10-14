@@ -286,9 +286,7 @@ function DisplayPreferences() {
                 options={[
                   "last",
                   "all",
-                  ...watchlists
-                    .filter((item) => item.view === view && !item.viewer.isHidden)
-                    .map((item) => item.id),
+                  ...watchlists.filter((item) => item.view === view).map((item) => item.id),
                 ]}
                 labels={{
                   last: "Last used",

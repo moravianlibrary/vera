@@ -114,16 +114,16 @@ export function ShareWatchlistDialog({
     <DialogShell
       isOpen={isOpen}
       onClose={close}
-      title={`${mode === "publish" ? "Publish" : "Audience for"} “${watchlist.name}”`}
+      title={`${mode === "publish" ? "Create system watchlist from" : "Audience for"} “${watchlist.name}”`}
       description={
         mode === "publish"
-          ? "This creates a separate system watchlist. Your personal watchlist stays."
+          ? "This creates a separate system watchlist for the selected audience. Your personal watchlist stays."
           : `Who can see the system watchlist ${watchlist.name}`
       }
       isDirty={JSON.stringify(audience) !== JSON.stringify(watchlist.audience)}
       refusal={refusal}
       primary={{
-        label: mode === "publish" ? "Publish system watchlist" : "Save audience",
+        label: mode === "publish" ? "Create system watchlist" : "Save audience",
         isPending,
         isDisabled: isEmpty,
         onSelect: () => void save(),
@@ -204,6 +204,9 @@ export function ShareWatchlistDialog({
           viewLabel={viewLabels[watchlist.view]}
           reach={reach}
         />
+        <p className="text-xs text-muted-foreground">
+          Watchlist managers are always included if they can open this view.
+        </p>
       </div>
     </DialogShell>
   );
