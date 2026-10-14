@@ -241,7 +241,6 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
 
   const viewer: WatchlistViewer = {
     seenAt: null,
-    hasBadge: true,
     isHidden: false,
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
     email: false,

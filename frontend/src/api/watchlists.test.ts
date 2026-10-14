@@ -124,21 +124,19 @@ describe("listWatchlists", () => {
       await deleteWatchlist(watchlist.id);
     }
   });
-  it("keeps each person's badge, visibility and order on shared watchlists", async () => {
+  it("keeps each person's tab visibility and order on system watchlists", async () => {
     signInAs("admin");
     const [first, second] = (await listWatchlists("documents")).filter(isShared);
     expect(first).toBeDefined();
     expect(second).toBeDefined();
     if (!first || !second) return;
     await updateWatchlistViewer(first.id, {
-      hasBadge: false,
       isHidden: true,
       position: second.viewer.position,
     });
     await updateWatchlistViewer(second.id, { position: first.viewer.position });
     const mine = await listWatchlists("documents");
     expect(mine.find((item) => item.id === first.id)?.viewer).toMatchObject({
-      hasBadge: false,
       isHidden: true,
     });
     expect(mine.findIndex((item) => item.id === second.id)).toBeLessThan(
@@ -146,10 +144,9 @@ describe("listWatchlists", () => {
     );
     signInAs("curator");
     const others = await listWatchlists("documents");
-    expect(others.find((item) => item.id === first.id)?.viewer.hasBadge).toBe(true);
+    expect(others.find((item) => item.id === first.id)?.viewer.isHidden).toBe(false);
     signInAs("admin");
     await updateWatchlistViewer(first.id, {
-      hasBadge: true,
       isHidden: false,
       position: first.viewer.position,
     });
@@ -459,6 +456,6 @@ describe("an audience of some groups and roles", () => {
     signInAs("staff");
     const [first] = await listWatchlists("documents");
 
-    expect(first?.viewer).toMatchObject({ seenAt: null, hasBadge: true, isHidden: false });
+    expect(first?.viewer).toMatchObject({ seenAt: null, isHidden: false });
   });
 });

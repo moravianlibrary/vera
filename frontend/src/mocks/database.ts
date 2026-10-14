@@ -65,7 +65,7 @@ export const database = {
   requests: [...records.requests],
   statusLog: [...records.statusLog],
   watchlists: [...watchlists],
-  // Each person's own row for a watchlist they see: seen, badge, hidden, place.
+  // Each person's own row for a watchlist they see: seen, hidden, place and delivery.
   watchlistViewers: readWatchlistViewers() as StoredWatchlistViewer[],
   watchlistEntries: readWatchlistEntries(),
   watchlistBaselines: readWatchlistBaselines(),

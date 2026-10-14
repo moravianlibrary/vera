@@ -534,7 +534,7 @@ The foundation is in place:
   `SetEditorDialog`, delete), `access-dialogs.tsx` (the pickers on `PickerDialog`, local
   account, identity, groups, custodies) and `watchlist-dialogs.tsx`. Watchlists have an
   audience (personal, everyone, some groups and roles; `watchlistAudienceSchema`), a row per
-  person who sees one (`viewer`: seen, badge, hidden, place) and `POST /watchlists/reach`;
+  person who sees one (`viewer`: seen, hidden, place) and `POST /watchlists/reach`;
   `ShareWatchlistDialog` (`src/components/filters/`) sets it from a tab and from Users & Groups.
 - Plugins (`src/features/plugins/`). `src/api/plugins.ts` serves `GET /plugins` (`plugin.read`:
   every implementation with its installed versions, newest first, each with its contract

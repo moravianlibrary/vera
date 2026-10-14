@@ -75,10 +75,7 @@ export function Sidebar({
     enabled: entries.some((entry) => entry.id === "watchlists"),
     refetchInterval: 60_000,
   });
-  const changedWatchlists = watchlists.filter(
-    (watchlist) =>
-      watchlist.newCount > 0 && watchlist.viewer.hasBadge && !watchlist.viewer.isHidden,
-  ).length;
+  const changedWatchlists = watchlists.filter((watchlist) => watchlist.newCount > 0).length;
   const isShowingLabels = isExpanded || isPeeking;
   const labelClassName = cn("truncate", !isShowingLabels && "sr-only");
 

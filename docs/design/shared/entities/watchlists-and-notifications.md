@@ -32,7 +32,7 @@ Rows show source view, name, filter summary, current matching item count and
 new item count. **Open** takes the person to that watchlist's tab in its source
 view. Personal and system watchlists may be saved from the source view's filter
 bar; filter editing happens there. The Watchlists page provides the overview,
-per-person visibility, badge and notification controls. Managers can also edit
+per-person tab visibility and notification controls. Managers can also edit
 a system watchlist's audience or remove it there.
 
 Personal watchlists are created by their user. A person with
@@ -43,8 +43,8 @@ separate system copy; the personal one remains. System watchlists retain
 `watchlist.manage_shared`. Their audience is everyone or a union of selected
 groups and roles. Audience membership never grants access to the source view
 or records. Users without management permission cannot publish system
-watchlists. A system watchlist's per-person visibility, badge and notification
-choices remain that person's own.
+watchlists. A system watchlist's per-person visibility and notification choices
+remain that person's own.
 
 ## New counts and seen state
 
@@ -54,10 +54,10 @@ Watchlists overview or merely receiving an email does not mark it seen.
 
 The **Watchlists navbar badge counts watchlists with unseen entries**, not
 records, events or definition edits. A watchlist with ten new records adds one
-to the navbar count. A person's hidden watchlists and those for which they
-disabled the badge do not contribute. The page still shows the new item count
-for those watchlists. Definition changes, such as a renamed filter, do not
-increase this badge.
+to the navbar count. Every visible watchlist contributes, including one hidden
+from its source view's tabs. The badge cannot be disabled. The Watchlists page
+shows each watchlist's new item count. Definition changes, such as a renamed
+filter, do not increase this badge.
 
 Seen state is per person and per watchlist. Sending an email never clears it.
 If the person opens a watchlist before its queued email is sent, entries seen

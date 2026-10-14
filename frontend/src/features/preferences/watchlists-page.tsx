@@ -350,15 +350,6 @@ function WatchlistDirectory({
                     <div className="flex w-full flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-2 text-xs">
                       <span className="flex items-center gap-2">
                         <Switch
-                          aria-label={`${watchlist.name} badge`}
-                          checked={watchlist.viewer.hasBadge}
-                          disabled={busy}
-                          onCheckedChange={(hasBadge) => changeViewer(watchlist, { hasBadge })}
-                        />
-                        Badge
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Switch
                           aria-label={`${watchlist.name} email notifications`}
                           checked={watchlist.viewer.email}
                           disabled={busy}

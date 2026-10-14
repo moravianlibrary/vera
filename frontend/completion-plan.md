@@ -159,7 +159,7 @@ identity/account rules, and the existing settings/watchlist API tests first.
    Make its active section addressable. Redirect `/watchlists` to Watchlists.
    Build the shared settings layout only if no suitable composition exists.
 2. Watchlists: group by destination in navigation order. Reuse existing operations
-   for opening, rename, editing filters, deleting, badge preference, reordering,
+   for opening, rename, editing filters, deleting, reordering,
    shared visibility and unreachable entries. Shared entries preserve ownership
    and audience permissions. Provide keyboard-accessible reorder controls.
 3. Display: extend the existing server settings record for the documented sidebar
