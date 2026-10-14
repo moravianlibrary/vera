@@ -201,20 +201,20 @@ export function TasksPage() {
             }}
             tableSection={{
               header: (
-                <div className="sticky top-0 z-20 flex h-10 items-center justify-between border-y bg-background">
-                  <h2 className="text-[0.6875rem] font-semibold tracking-wider text-muted-foreground uppercase">
+                <div className="sticky top-0 z-20 grid h-10 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-y bg-background">
+                  <h2 className="min-w-0 truncate text-[0.6875rem] font-semibold tracking-wider text-muted-foreground uppercase">
                     Finished{" "}
                     <span className="font-normal normal-case">· {index.finished.length}</span>
                   </h2>
                   {index.running.length > 0 && isRunningOffscreen && (
                     <button
                       type="button"
-                      className="text-xs font-medium text-primary hover:underline"
+                      className="col-start-2 text-xs font-medium text-primary hover:underline"
                       onClick={() =>
                         runningRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
                       }
                     >
-                      Show running ↑
+                      Scroll to running ↑
                     </button>
                   )}
                 </div>
@@ -333,13 +333,22 @@ function NextRunsStrip({ index }: { index: RunIndex }) {
   useLayoutEffect(() => {
     const available = availableRef.current;
     if (available === null) return;
-    const measure = () =>
-      setVisibleCount(Math.max(1, Math.floor((available.clientWidth + 8) / 232)));
+    const measure = () => {
+      let usedWidth = 0;
+      let count = 0;
+      for (const chip of available.querySelectorAll<HTMLElement>("[data-next-run]")) {
+        const nextWidth = chip.getBoundingClientRect().width + (count > 0 ? 8 : 0);
+        if (count > 0 && usedWidth + nextWidth > available.clientWidth) break;
+        usedWidth += nextWidth;
+        count += 1;
+      }
+      setVisibleCount(Math.max(1, count));
+    };
     const observer = new ResizeObserver(measure);
     observer.observe(available);
     measure();
     return () => observer.disconnect();
-  }, []);
+  });
   if (index.schedules === null) return null;
   return (
     <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2 text-xs sm:px-6">
@@ -353,15 +362,20 @@ function NextRunsStrip({ index }: { index: RunIndex }) {
         {index.nextRuns.length === 0 ? (
           <span className="text-muted-foreground">None scheduled</span>
         ) : (
-          index.nextRuns.slice(0, visibleCount).map((run) => (
+          index.nextRuns.map((run, position) => (
             <Link
               key={`${run.path}:${run.at}`}
+              data-next-run
               to={run.path}
               title={`${run.name} · ${aheadText(run.at, index.asOf)}`}
-              className="w-56 max-w-full shrink-0 truncate rounded-md border bg-card px-2 py-1 hover:bg-muted"
+              aria-hidden={position >= visibleCount}
+              tabIndex={position >= visibleCount ? -1 : undefined}
+              className={`flex w-fit max-w-[min(20rem,100%)] shrink-0 items-center gap-1 rounded-md border bg-card px-2 py-1 hover:bg-muted ${position >= visibleCount ? "invisible" : ""}`}
             >
-              {run.name}{" "}
-              <span className="text-muted-foreground">· {aheadText(run.at, index.asOf)}</span>
+              <span className="min-w-0 truncate">{run.name}</span>
+              <span className="shrink-0 text-muted-foreground">
+                · {aheadText(run.at, index.asOf)}
+              </span>
             </Link>
           ))
         )}
