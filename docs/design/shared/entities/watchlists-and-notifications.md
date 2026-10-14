@@ -53,11 +53,12 @@ Each watchlist tab shows how many matching records entered since **this person
 last opened that watchlist**. Opening it clears that tab badge. Opening the
 Watchlists overview or merely receiving an email does not mark it seen.
 
-The **Watchlists navbar badge counts watchlists with unseen entries**, not
-records, events or definition edits. A watchlist with ten new records adds one
-to the navbar count. Every visible watchlist contributes. The badge cannot be disabled. The Watchlists page
-shows each watchlist's new item count. Definition changes, such as a renamed
-filter, do not increase this badge.
+Each source view's navbar badge counts its watchlists with unseen entries,
+not records, events or definition edits. A watchlist with ten new records adds
+one to its source view's count. The Watchlists management page has no navbar
+badge because it has no watchlist tabs of its own. These badges cannot be
+disabled. The Watchlists page shows each watchlist's new item count. Definition
+changes, such as a renamed filter, do not increase the badges.
 
 Seen state is per person and per watchlist. Sending an email never clears it.
 If the person opens a watchlist before its queued email is sent, entries seen

@@ -75,7 +75,12 @@ export function Sidebar({
     enabled: entries.some((entry) => entry.id === "watchlists"),
     refetchInterval: 60_000,
   });
-  const changedWatchlists = watchlists.filter((watchlist) => watchlist.newCount > 0).length;
+  const changedByView = new Map<string, number>();
+  for (const watchlist of watchlists) {
+    if (watchlist.newCount > 0) {
+      changedByView.set(watchlist.view, (changedByView.get(watchlist.view) ?? 0) + 1);
+    }
+  }
   const isShowingLabels = isExpanded || isPeeking;
   const labelClassName = cn("truncate", !isShowingLabels && "sr-only");
 
@@ -118,39 +123,42 @@ export function Sidebar({
       )}
 
       <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">
-        {entries.map((entry) => (
-          <NavLink
-            key={entry.id}
-            to={entry.path}
-            onClick={onNavigate}
-            title={entry.visibleLabel}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
-                isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              )
-            }
-          >
-            <span className="relative grid size-7 shrink-0 place-items-center text-[0.6875rem] font-bold">
-              {entry.rail}
-              {entry.id === "watchlists" && changedWatchlists > 0 && !isShowingLabels && (
-                <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />
-              )}
-            </span>
-            <span className={labelClassName}>{entry.visibleLabel}</span>
-            {entry.id === "watchlists" && changedWatchlists > 0 && isShowingLabels && (
-              <span
-                className="ml-auto rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-xs font-semibold tabular-nums"
-                title={`${changedWatchlists} watchlists with new items`}
-              >
-                {changedWatchlists}
-                <span className="sr-only"> watchlists with new items</span>
+        {entries.map((entry) => {
+          const badgeCount = changedByView.get(entry.id) ?? 0;
+          return (
+            <NavLink
+              key={entry.id}
+              to={entry.path}
+              onClick={onNavigate}
+              title={entry.visibleLabel}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
+                  isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                )
+              }
+            >
+              <span className="relative grid size-7 shrink-0 place-items-center text-[0.6875rem] font-bold">
+                {entry.rail}
+                {badgeCount > 0 && !isShowingLabels && (
+                  <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />
+                )}
               </span>
-            )}
-          </NavLink>
-        ))}
+              <span className={labelClassName}>{entry.visibleLabel}</span>
+              {badgeCount > 0 && isShowingLabels && (
+                <span
+                  className="ml-auto rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-xs font-semibold tabular-nums"
+                  title={`${badgeCount} watchlists with new items in ${entry.visibleLabel}`}
+                >
+                  {badgeCount}
+                  <span className="sr-only"> watchlists with new items</span>
+                </span>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div className="mx-2 mt-2 shrink-0 border-t border-sidebar-border pt-3">

@@ -7,7 +7,8 @@ choices, Preferences → Notifications, and a limited email-link preference
 page. Watchlists appear in one table per source view; system watchlists
 carry a System badge and Building2 tab icon. Managers are always
 in the effective audience of system watchlists, subject to source-view
-permissions. Badges are universal, and tabs have no hide control. MSW simulates
+permissions. New-entry navbar badges appear on source views, not the Watchlists
+management entry; tabs have no hide control. MSW simulates
 Hook suppression and watchlist email/chat outboxes.
 The real backend still needs durable membership events, a batching worker,
 actual transports, and server-side signed links. Do not treat the browser
@@ -591,7 +592,7 @@ Follow the newest user decisions first. For the current product model, read:
 
 `docs/demos/REVIEW-BRIEF.md` identifies which design docs and demo pages are current. `docs/demos/rework.md` contains useful rationale, but parts of its initial view list have since been superseded. In particular, Additions is now a status in Documents, and list generation is part of Digitization Lists.
 
-The current Watchlists and notification design is `docs/design/shared/entities/watchlists-and-notifications.md`. It supersedes the older navigation badge and Preferences Watchlists directions below: `/watchlists` is a navbar page, and its badge counts watchlists with new entries. Source-view tabs show per-watchlist entry counts. The user has also said the demo filters need rethinking; do not copy them as-is or assume every detail in the filtering draft is approved. A watchlist is a saved filter for one view. Grouping is presentation, not a filter, and must not be saved with it.
+The current Watchlists and notification design is `docs/design/shared/entities/watchlists-and-notifications.md`. It supersedes the older navigation badge and Preferences Watchlists directions below: `/watchlists` is a navbar page without a badge; source views show how many of their watchlists have new entries, and their tabs show per-watchlist entry counts. The user has also said the demo filters need rethinking; do not copy them as-is or assume every detail in the filtering draft is approved. A watchlist is a saved filter for one view. Grouping is presentation, not a filter, and must not be saved with it.
 
 ## Product shape
 
