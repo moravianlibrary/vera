@@ -78,7 +78,8 @@ export function Sidebar({
   const changedByView = new Map<string, number>();
   for (const watchlist of watchlists) {
     if (watchlist.newCount > 0) {
-      changedByView.set(watchlist.view, (changedByView.get(watchlist.view) ?? 0) + 1);
+      const navView = watchlist.view === "my-documents" ? "documents" : watchlist.view;
+      changedByView.set(navView, (changedByView.get(navView) ?? 0) + 1);
     }
   }
   const isShowingLabels = isExpanded || isPeeking;
@@ -134,7 +135,9 @@ export function Sidebar({
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
-                  isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
+                  isActive ||
+                    (entry.id === "documents" && location.pathname === "/my-documents") ||
+                    (entry.id === "categories" && location.pathname.startsWith("/mixes"))
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )

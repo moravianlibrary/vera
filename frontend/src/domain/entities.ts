@@ -466,6 +466,7 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 
 export const watchlistViewSchema = z.enum([
   "documents",
+  "my-documents",
   "proposals",
   "validations",
   "lists",

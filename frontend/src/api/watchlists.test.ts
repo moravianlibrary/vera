@@ -4,6 +4,7 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { getCategoryIndex, parseCategorySearchParams } from "@/api/categories";
+import { listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
@@ -50,6 +51,30 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("keeps staff and requester watchlists in separate views and counts own records", async () => {
+    signInAs("admin");
+    const staff = await listWatchlists("documents");
+    const mine = await listWatchlists("my-documents");
+    expect(staff.some((item) => item.name === "Waiting for review")).toBe(false);
+    expect(mine.some((item) => item.name === "Waiting for review")).toBe(true);
+    expect(mine.some((item) => item.name === "Awaiting a decision")).toBe(false);
+    const ownWaiting = await listDocuments(
+      { statuses: ["WaitingForReview"] },
+      { perspective: "my" },
+    );
+    expect(mine.find((item) => item.name === "Waiting for review")?.itemCount).toBe(
+      ownWaiting.total,
+    );
+
+    signInAs("reader");
+    const readerMine = await listWatchlists("my-documents");
+    expect(readerMine.some((item) => item.name === "Waiting for review" && isShared(item))).toBe(
+      true,
+    );
+    expect(readerMine.some((item) => item.name === "Ready to read" && !isShared(item))).toBe(true);
+    expect(await listWatchlists("documents")).toEqual([]);
+  });
+
   it("batches new entries and drops entries opened before mail is sent", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
@@ -254,17 +279,74 @@ describe("listWatchlists", () => {
     expect(watchlists.every((watchlist) => watchlist.isEditable)).toBe(true);
   });
 
-  it("shows a reader no shared watchlist", async () => {
+  it("shows a reader no staff watchlist", async () => {
     signInAs("reader");
 
     const watchlists = await listWatchlists("documents");
 
-    expect(watchlists.length).toBeGreaterThan(0);
-    expect(watchlists.every((watchlist) => !isShared(watchlist))).toBe(true);
+    expect(watchlists).toEqual([]);
   });
 });
 
 describe("changing a shared watchlist", () => {
+  it("lets a manager publish a requester watchlist but rejects the other view's fields", async () => {
+    signInAs("admin");
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "Wrong requester filter",
+          view: "my-documents",
+          audience: { kind: "everyone" },
+          filter: { decision: "Pending" },
+        }),
+      ),
+    ).toBe(422);
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "Wrong staff filter",
+          view: "documents",
+          audience: { kind: "everyone" },
+          filter: { status: "Available" },
+        }),
+      ),
+    ).toBe(422);
+
+    const created = await createWatchlist({
+      name: "Available to requesters",
+      view: "my-documents",
+      audience: { kind: "everyone" },
+      filter: { status: "Available" },
+    });
+    try {
+      signInAs("reader");
+      expect((await listWatchlists("my-documents")).some((item) => item.id === created.id)).toBe(
+        true,
+      );
+      expect((await listWatchlists("documents")).some((item) => item.id === created.id)).toBe(
+        false,
+      );
+    } finally {
+      signInAs("admin");
+      await deleteWatchlist(created.id);
+    }
+  });
+
+  it("requires access to the source perspective when creating a watchlist", async () => {
+    signInAs("reader");
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "Staff view",
+          view: "documents",
+          audience: { kind: "personal" },
+          filter: { decision: "Pending" },
+        }),
+      ),
+    ).toBe(403);
+    expect(await listWatchlists("documents")).toEqual([]);
+  });
+
   it("is refused without the permission", async () => {
     signInAs("curator");
     const [shared] = (await listWatchlists("documents")).filter(isShared);
@@ -307,7 +389,7 @@ describe("changing a shared watchlist", () => {
 
 describe("saving a filter twice", () => {
   it("is refused among the caller's own", async () => {
-    signInAs("staff");
+    signInAs("curator");
 
     expect(
       await statusOf(
@@ -452,7 +534,7 @@ describe("an audience of some groups and roles", () => {
   });
 
   it("keeps each person's own row for a watchlist they see", async () => {
-    signInAs("staff");
+    signInAs("curator");
     const [first] = await listWatchlists("documents");
 
     expect(first?.viewer).toMatchObject({ seenAt: null });

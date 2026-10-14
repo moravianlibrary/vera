@@ -8,8 +8,8 @@
 import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
 import type { StoredWatchlist } from "@/mocks/database";
 
-const staffIds = ["u1", "u2", "u3", "u4", "u8", "u9"] as const;
-const readerIds = ["u5", "u6", "u7"] as const;
+const staffIds = ["u1", "u2", "u3", "u8"] as const;
+const readerIds = ["u4", "u5", "u6", "u7", "u9"] as const;
 // Those who decide proposals.
 const deciderIds = ["u1", "u3", "u8"] as const;
 const sharedOwnerId = "u3";
@@ -60,6 +60,11 @@ const sharedLenses: readonly Lens[] = [
     filter: { attention: "Unallocated,NoShare" },
     view: "categories",
   },
+  {
+    name: "Waiting for review",
+    filter: { status: "WaitingForReview" },
+    view: "my-documents",
+  },
 ];
 
 const staffLenses = [
@@ -91,7 +96,7 @@ export const watchlists: readonly StoredWatchlist[] = [
   ),
   ...staffIds.flatMap((ownerId) => personalLensesFor(ownerId, staffLenses)),
   ...deciderIds.flatMap((ownerId) => personalLensesFor(ownerId, deciderLenses, "proposals")),
-  ...readerIds.flatMap((ownerId) => personalLensesFor(ownerId, readerLenses)),
+  ...readerIds.flatMap((ownerId) => personalLensesFor(ownerId, readerLenses, "my-documents")),
 ];
 
 function personalLensesFor(
@@ -101,6 +106,7 @@ function personalLensesFor(
 ): StoredWatchlist[] {
   return lenses.map((lens, index) => ({
     ...watchlistOf(lens),
+    view: lens.view ?? view,
     id: `W-${ownerId}-${view}-${index + 1}`,
     audience: { kind: "personal" },
     ownerId,

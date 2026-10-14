@@ -304,13 +304,22 @@ export type DocumentDetail = z.infer<typeof documentDetailSchema>;
 
 interface DocumentListOptions extends Partial<DocumentSlice> {
   readonly grouping?: DocumentGrouping | null;
+  readonly perspective?: "my";
 }
+
+export const documentPerspectiveParam = "perspective";
 
 export async function listDocuments(
   query: DocumentQuery,
-  { grouping = null, cursor = null, limit = documentSliceSize }: DocumentListOptions = {},
+  {
+    grouping = null,
+    cursor = null,
+    limit = documentSliceSize,
+    perspective,
+  }: DocumentListOptions = {},
 ): Promise<DocumentPage> {
   const params = toDocumentSearchParams(query);
+  if (perspective === "my") params.set(documentPerspectiveParam, "my");
   if (grouping !== null) {
     params.set(documentGroupingParam, grouping);
   }
@@ -324,6 +333,13 @@ export async function listDocuments(
 }
 
 // Null when the document does not exist or lies outside the caller's reach.
-export async function findDocument(documentId: string): Promise<DocumentDetail | null> {
-  return findJson(documentRoute(documentId), documentDetailSchema);
+export async function findDocument(
+  documentId: string,
+  perspective?: "my",
+): Promise<DocumentDetail | null> {
+  const path = documentRoute(documentId);
+  return findJson(
+    perspective === "my" ? `${path}?${documentPerspectiveParam}=my` : path,
+    documentDetailSchema,
+  );
 }

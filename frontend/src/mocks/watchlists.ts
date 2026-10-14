@@ -8,7 +8,7 @@
 // rather than refuses: its reach says how many of the reached already keep the same filter.
 
 import { parseCategorySearchParams } from "@/api/categories";
-import { parseDocumentSearchParams } from "@/api/documents";
+import { documentQueryParams, parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
 import { parseProjectSearchParams } from "@/api/projects";
 import { parseProposalSearchParams } from "@/api/proposal-review";
@@ -25,6 +25,7 @@ import { matchingCategoryIds } from "@/domain/category-filters";
 import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import { publicStatuses } from "@/domain/status";
 import {
   matchingIntentions,
   parseIntentionsSearchParams,
@@ -128,6 +129,26 @@ export function canChange(session: Session, audience: WatchlistAudience): boolea
   return hasPermission(session, "watchlist.manage_shared");
 }
 
+// The two Documents perspectives use different filter vocabularies. Reject a
+// filter that the target view would silently ignore.
+export function isValidWatchlistFilter(
+  view: WatchlistView,
+  filter: Record<string, string>,
+): boolean {
+  if (view === "documents") {
+    return Object.keys(filter).every((key) => key !== documentQueryParams.statuses);
+  }
+  if (view !== "my-documents") return true;
+  const allowed = new Set<string>([documentQueryParams.search, documentQueryParams.statuses]);
+  if (!Object.keys(filter).every((key) => allowed.has(key))) return false;
+  const statuses = filter[documentQueryParams.statuses];
+  return (
+    statuses === undefined ||
+    (statuses.length > 0 &&
+      statuses.split(",").every((status) => publicStatuses.some((valid) => valid === status)))
+  );
+}
+
 export function publicWatchlistOf({ ownerId: _ownerId, ...watchlist }: StoredWatchlist): Watchlist {
   return watchlist;
 }
@@ -135,10 +156,12 @@ export function publicWatchlistOf({ ownerId: _ownerId, ...watchlist }: StoredWat
 // ---------------------------------------------------------------- who it reaches
 
 // Whether the person may open the view at all, with the vocabulary a shared lens is drawn for.
-function canOpenView(session: Session, view: WatchlistView): boolean {
+export function canOpenView(session: Session, view: WatchlistView): boolean {
   switch (view) {
     case "documents":
       return audienceOf(session) === "staff";
+    case "my-documents":
+      return hasPermission(session, "request.read_own");
     case "proposals":
       return canDecide(session);
     case "validations":
@@ -176,6 +199,7 @@ function isInAudience(session: Session, audience: WatchlistAudience): boolean {
 }
 
 function isVisible(session: Session, watchlist: StoredWatchlist): boolean {
+  if (!canOpenView(session, watchlist.view)) return false;
   // Mix-based watchlists cannot be read without permission to see the selected mix.
   if (
     watchlist.view === "categories" &&
@@ -263,6 +287,16 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
 const counters = {
   documents: (session, filter) =>
     queryDocuments(session, parseDocumentSearchParams(filter), { cursor: null, limit: 1 }).total,
+  "my-documents": (session, filter) =>
+    hasPermission(session, "request.read_own")
+      ? queryDocuments(
+          session,
+          parseDocumentSearchParams(filter),
+          { cursor: null, limit: 1 },
+          null,
+          "public",
+        ).total
+      : 0,
   // Without `request.decide` the view does not exist for the caller, and nothing matches.
   proposals: (session, filter) =>
     canDecide(session)
@@ -316,6 +350,12 @@ function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
       return queryDocuments(session, parseDocumentSearchParams(filter), all).items.map(
         (row) => row.document.id,
       );
+    case "my-documents":
+      return hasPermission(session, "request.read_own")
+        ? queryDocuments(session, parseDocumentSearchParams(filter), all, null, "public").items.map(
+            (row) => row.document.id,
+          )
+        : [];
     case "proposals":
       return canDecide(session)
         ? queryProposals(session, parseProposalSearchParams(filter), all).items.map(

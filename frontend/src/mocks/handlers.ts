@@ -283,10 +283,12 @@ import {
 } from "@/mocks/watchlist-delivery";
 import {
   canChange,
+  canOpenView,
   audienceReachOf,
   findChangeableWatchlist,
   findDuplicateWatchlist,
   findVisibleWatchlist,
+  isValidWatchlistFilter,
   publicWatchlistOf,
   viewerOf,
   visibleWatchlists,
@@ -1099,17 +1101,28 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.documents), ({ request }) => {
       const params = new URL(request.url).searchParams;
+      const session = currentSession();
+      const isMy = params.get("perspective") === "my";
+      if (isMy && !hasPermission(session, "request.read_own")) return forbidden();
       const page = queryDocuments(
-        currentSession(),
+        session,
         parseDocumentSearchParams(params),
         parseDocumentSliceParams(params),
         parseDocumentGrouping(params),
+        isMy ? "public" : undefined,
       );
       return HttpResponse.json(page);
     }),
 
-    http.get(route(`${apiRoutes.documents}/:documentId`), ({ params }) => {
-      const detail = findDocumentDetail(currentSession(), String(params.documentId));
+    http.get(route(`${apiRoutes.documents}/:documentId`), ({ params, request }) => {
+      const session = currentSession();
+      const isMy = new URL(request.url).searchParams.get("perspective") === "my";
+      if (isMy && !hasPermission(session, "request.read_own")) return forbidden();
+      const detail = findDocumentDetail(
+        session,
+        String(params.documentId),
+        isMy ? "public" : undefined,
+      );
       if (detail === null) {
         return problemResponse({ status: 404, message: "Document not found" });
       }
@@ -1344,6 +1357,10 @@ export function createHandlers(profile: MockUserProfile) {
       if (!draft.success) {
         return invalidResponse(draft.error);
       }
+      if (!isValidWatchlistFilter(draft.data.view, draft.data.filter)) {
+        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
+      }
+      if (!canOpenView(session, draft.data.view)) return forbidden();
 
       if (!canChange(session, draft.data.audience)) {
         return forbidden();
@@ -1379,6 +1396,10 @@ export function createHandlers(profile: MockUserProfile) {
       if (!reach.success) {
         return invalidResponse(reach.error);
       }
+      if (!isValidWatchlistFilter(reach.data.view, reach.data.filter)) {
+        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
+      }
+      if (!canOpenView(currentSession(), reach.data.view)) return forbidden();
 
       return HttpResponse.json(watchlistReachOf(reach.data));
     }),
@@ -1403,6 +1424,12 @@ export function createHandlers(profile: MockUserProfile) {
       const change = watchlistChangeSchema.safeParse(await request.json());
       if (!change.success) {
         return invalidResponse(change.error);
+      }
+      if (
+        change.data.filter !== undefined &&
+        !isValidWatchlistFilter(watchlist.view, change.data.filter)
+      ) {
+        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
       }
 
       const audience = change.data.audience ?? watchlist.audience;

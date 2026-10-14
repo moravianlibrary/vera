@@ -40,11 +40,15 @@ import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { useWatchlistMutations, watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 function viewLabel(view: WatchlistView): string {
+  if (view === "my-documents") return "My Documents";
   return navigationEntries.find((entry) => entry.id === view)?.label ?? view;
 }
 
 function watchlistHref(watchlist: WatchlistSummary): string {
-  const path = navigationEntries.find((entry) => entry.id === watchlist.view)?.path ?? "/";
+  const path =
+    watchlist.view === "my-documents"
+      ? "/my-documents"
+      : (navigationEntries.find((entry) => entry.id === watchlist.view)?.path ?? "/");
   const params = new URLSearchParams(watchlist.filter);
   params.set("watchlist", watchlist.id);
   return `${path}?${params}`;

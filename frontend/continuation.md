@@ -1,5 +1,15 @@
 # Frontend continuation guide
 
+**Documents perspectives handoff (2026-10-14):** `/documents` is the staff
+view for `iteration.read`; `/my-documents` is the requester view for
+`request.read_own`. The sidebar keeps one Documents entry. People with both
+permissions switch in the page header. Each perspective has its own URL
+filters, watchlist tabs, counts, and Watchlists directory section. My Documents
+system watchlists use each recipient's own requests and public statuses, so a
+manager needs both view permissions plus `watchlist.manage_shared` to work in
+both views. See the Documents section of
+`docs/design/shared/entities/watchlists-and-notifications.md`.
+
 **Watchlists and notifications handoff (2026-10-12):** Follow
 `docs/design/shared/entities/watchlists-and-notifications.md`. The frontend
 has a `/watchlists` management page, per-person entry badges and delivery

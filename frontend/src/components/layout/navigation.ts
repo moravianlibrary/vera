@@ -103,12 +103,20 @@ export function visibleNavigation(session: Session): VisibleNavigationEntry[] {
       .filter((entry) => hasAnyPermission(session, entry.requires))
       // Mix management is reached from the Categories mix picker when that page is available.
       .filter((entry) => entry.id !== "mixes" || !hasCategories)
-      .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }))
+      .map((entry) => ({
+        ...entry,
+        path:
+          entry.id === "documents" && !hasPermission(session, "iteration.read")
+            ? "/my-documents"
+            : entry.path,
+        visibleLabel: labelFor(entry, session),
+      }))
   );
 }
 
 // A nested page may stay addressable even when it has no separate sidebar row.
 export function canOpenNavigationEntry(session: Session, entryId: string): boolean {
+  if (entryId === "my-documents") return hasPermission(session, "request.read_own");
   const entry = navigationEntries.find((candidate) => candidate.id === entryId);
   return entry !== undefined && hasAnyPermission(session, entry.requires);
 }

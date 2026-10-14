@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import type { WatchlistView } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import type { Grant, Permission } from "@/domain/permissions";
-import { permissionCatalog, permissionGroups } from "@/domain/permissions";
+import { hasPermission, permissionCatalog, permissionGroups } from "@/domain/permissions";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -30,6 +30,7 @@ const sections = ["notifications", "display", "account"] as const;
 type Section = (typeof sections)[number];
 
 function viewLabel(view: WatchlistView): string {
+  if (view === "my-documents") return "My Documents";
   return navigationEntries.find((entry) => entry.id === view)?.label ?? view;
 }
 
@@ -188,13 +189,16 @@ function DisplayPreferences() {
     queryFn: () => listWatchlists(),
   });
   const { data: session } = useSessionQuery();
-  const visibleViews = watchlistViewSchema.options.filter((view) =>
-    navigationEntries.some(
+  const visibleViews = watchlistViewSchema.options.filter((view) => {
+    if (session === undefined) return false;
+    if (view === "documents") return hasPermission(session, "iteration.read");
+    if (view === "my-documents") return hasPermission(session, "request.read_own");
+    return navigationEntries.some(
       (entry) =>
         entry.id === view &&
-        session?.grants.some((grant) => entry.requires.includes(grant.permission)),
-    ),
-  );
+        session.grants.some((grant) => entry.requires.includes(grant.permission)),
+    );
+  });
   const [error, setError] = useState("");
   const save = async (change: Parameters<typeof update.mutateAsync>[0]) => {
     setError("");

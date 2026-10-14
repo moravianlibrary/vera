@@ -8,15 +8,19 @@ import { usePagedList } from "@/hooks/use-paged-list";
 
 export const documentsQueryKey = ["documents"] as const;
 
-export function useDocumentsQuery(query: DocumentQuery, grouping: DocumentGrouping | null) {
-  return usePagedList([...documentsQueryKey, "list", query, grouping], (cursor) =>
-    listDocuments(query, { grouping, cursor }),
+export function useDocumentsQuery(
+  query: DocumentQuery,
+  grouping: DocumentGrouping | null,
+  perspective?: "my",
+) {
+  return usePagedList([...documentsQueryKey, "list", perspective, query, grouping], (cursor) =>
+    listDocuments(query, { grouping, cursor, perspective }),
   );
 }
 
-export function useDocumentQuery(documentId: string | null) {
+export function useDocumentQuery(documentId: string | null, perspective?: "my") {
   return useQuery({
-    queryKey: [...documentsQueryKey, "detail", documentId],
-    queryFn: documentId === null ? skipToken : () => findDocument(documentId),
+    queryKey: [...documentsQueryKey, "detail", perspective, documentId],
+    queryFn: documentId === null ? skipToken : () => findDocument(documentId, perspective),
   });
 }

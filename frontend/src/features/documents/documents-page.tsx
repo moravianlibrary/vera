@@ -7,30 +7,42 @@
 
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { Link, Navigate, useLocation } from "react-router";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
-import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { hasPermission } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentList } from "@/features/documents/document-list";
-import { documentsView } from "@/features/documents/documents-view";
+import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { useWatchlistsQuery } from "@/hooks/use-watchlists-query";
 
-export function DocumentsPage() {
-  const view = useViewUrlState(documentsView);
+export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) {
+  const isMy = perspective === "my";
+  const location = useLocation();
+  const view = useViewUrlState(isMy ? myDocumentsView : documentsView);
   const { query, selectedId, grouping, select } = view;
   const [isProposing, setIsProposing] = useState(false);
   const { data: session } = useSessionQuery();
-  const documents = useDocumentsQuery(query, grouping);
-  const { data: detail } = useDocumentQuery(selectedId);
+  const canSwitch =
+    session !== undefined &&
+    hasPermission(session, "request.read_own") &&
+    hasPermission(session, "iteration.read");
+  const canWatchBoth = session !== undefined && canSwitch && hasPermission(session, "watch");
+  const staffWatchlists = useWatchlistsQuery("documents", { isEnabled: canWatchBoth });
+  const myWatchlists = useWatchlistsQuery("my-documents", { isEnabled: canWatchBoth });
+  const documents = useDocumentsQuery(query, grouping, isMy ? "my" : undefined);
+  const { data: detail } = useDocumentQuery(selectedId, isMy ? "my" : undefined);
   const { summary } = documents;
 
   // Once per search, so a closed record stays closed.
@@ -55,17 +67,21 @@ export function DocumentsPage() {
   if (session === undefined) {
     return null;
   }
+  if (!isMy && !hasPermission(session, "iteration.read")) {
+    return <Navigate to={`/my-documents${location.search}`} replace />;
+  }
 
   const userId = session.user.id;
-  const isPublic = summary?.audience === "public";
+  const isPublic = isMy;
   // Batches need `addition.read`; a requester's list is never grouped.
   const groupings = isPublic
     ? []
     : documentsView.groupings.filter(
         (option) => option.value !== "batch" || hasPermission(session, "addition.read"),
       );
-  const title =
-    visibleNavigation(session).find((entry) => entry.id === "documents")?.visibleLabel ?? "";
+  const title = isMy ? "My Documents" : "Documents";
+  const changedStaff = staffWatchlists.data?.filter((item) => item.newCount > 0).length ?? 0;
+  const changedMine = myWatchlists.data?.filter((item) => item.newCount > 0).length ?? 0;
 
   const detailPane = (
     <Pane
@@ -82,6 +98,27 @@ export function DocumentsPage() {
     <>
       <PageHeader
         title={title}
+        control={
+          canSwitch ? (
+            <fieldset
+              className="inline-flex rounded-md border bg-muted/30 p-0.5"
+              aria-label="Document view"
+            >
+              <Button asChild size="sm" variant={isMy ? "ghost" : "secondary"}>
+                <Link to="/documents">
+                  Documents
+                  {changedStaff > 0 && <Badge variant="secondary">{changedStaff}</Badge>}
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant={isMy ? "secondary" : "ghost"}>
+                <Link to="/my-documents">
+                  My Documents
+                  {changedMine > 0 && <Badge variant="secondary">{changedMine}</Badge>}
+                </Link>
+              </Button>
+            </fieldset>
+          ) : undefined
+        }
         actions={
           canPropose
             ? [
@@ -99,7 +136,7 @@ export function DocumentsPage() {
 
       {hasPermission(session, "watch") && (
         <WatchlistTabs
-          view="documents"
+          view={isMy ? "my-documents" : "documents"}
           filter={view.filter}
           openedId={view.watchlistId}
           canShare={hasPermission(session, "watchlist.manage_shared")}

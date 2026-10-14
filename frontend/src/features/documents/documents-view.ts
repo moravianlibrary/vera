@@ -165,3 +165,18 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
   ],
   groupingParam: documentGroupingParam,
 };
+
+const requesterQuery = ({ search, statuses }: DocumentQuery): DocumentQuery => ({
+  search,
+  statuses,
+});
+
+export const myDocumentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
+  view: "my-documents",
+  toSearchParams: (query) => toDocumentSearchParams(requesterQuery(query)),
+  parseSearchParams: (params) => requesterQuery(parseDocumentSearchParams(params)),
+  isSameQuery: isSameDocumentQuery,
+  fields: documentsView.fields.filter((field) => field.audience === "public"),
+  groupings: [],
+  groupingParam: documentGroupingParam,
+};

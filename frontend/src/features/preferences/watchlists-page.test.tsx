@@ -42,7 +42,7 @@ describe("Watchlists page", () => {
   it("links a personal watchlist to its saved filter", async () => {
     open("reader");
     const link = await screen.findByRole("link", { name: "Ready to read" });
-    expect(link).toHaveAttribute("href", expect.stringContaining("/documents?"));
+    expect(link).toHaveAttribute("href", expect.stringContaining("/my-documents?"));
     expect(link).toHaveAttribute("href", expect.stringContaining("status=Available"));
   });
 

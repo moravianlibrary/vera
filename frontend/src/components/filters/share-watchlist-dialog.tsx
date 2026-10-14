@@ -28,6 +28,7 @@ const audienceLabels = {
 
 export const viewLabels = {
   documents: "Documents",
+  "my-documents": "My Documents",
   proposals: "Proposals",
   validations: "Documents Validations",
   lists: "Digitization Lists",

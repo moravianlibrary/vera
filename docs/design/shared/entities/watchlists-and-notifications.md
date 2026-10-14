@@ -47,6 +47,25 @@ records. Audience membership never grants access to the source view or
 records. Users without management permission cannot create system watchlists.
 A system watchlist's notification choices remain that person's own.
 
+### Documents and My Documents
+
+**Documents** and **My Documents** are separate source views for watchlists.
+Documents uses the staff vocabulary and requires `iteration.read`. My Documents
+uses the requester's own records and public status vocabulary and requires
+`request.read_own`. A person with both permissions opens Documents from the
+sidebar and can switch perspectives in the page header. A requester opens My
+Documents directly. The views keep independent filters and watchlist tabs;
+the same saved filter cannot silently change meaning with the viewer's role.
+The shared Documents sidebar badge totals changed watchlists from both
+perspectives; the switch shows the count for each perspective.
+
+A manager with both view permissions and `watchlist.manage_shared` can publish
+system watchlists for either audience. A My Documents system watchlist runs its
+filter separately against each recipient's own requests, including the
+manager's. Audience membership still cannot widen record access. Staff-only
+filter fields cannot be saved on My Documents, and public `status` cannot be
+saved on Documents. The Watchlists directory lists both views separately.
+
 ## New counts and seen state
 
 Each watchlist tab shows how many matching records entered since **this person

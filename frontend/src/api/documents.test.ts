@@ -15,6 +15,7 @@ import {
 import type { MockUserProfile } from "@/config/env";
 import { progressValues } from "@/domain/entities";
 import { createHandlers } from "@/mocks/handlers";
+import { database } from "@/mocks/database";
 
 const server = setupServer();
 
@@ -69,6 +70,30 @@ describe("listDocuments as a reader", () => {
 });
 
 describe("listDocuments as curator", () => {
+  it("shows a dual-permission user their own requests with public status in My Documents", async () => {
+    signInAs("curator");
+    const original = database.requests[0];
+    expect(original).toBeDefined();
+    if (!original) return;
+    database.requests[0] = { ...original, requesterId: "u8" };
+    try {
+      const staff = await listDocuments({});
+      const mine = await listDocuments({}, { perspective: "my" });
+
+      expect(staff.audience).toBe("staff");
+      expect(mine.audience).toBe("public");
+      expect(mine.total).toBeGreaterThan(0);
+      expect(mine.total).toBeLessThan(staff.total);
+      expect(
+        mine.items.every((record) => record.requests.every((ask) => ask.requesterId === "u8")),
+      ).toBe(true);
+      expect(mine.facets.statuses.length).toBeGreaterThan(0);
+      expect(mine.facets.decisions).toEqual([]);
+    } finally {
+      database.requests[0] = original;
+    }
+  });
+
   it("filters on the stored dimensions, not the displayed status", async () => {
     signInAs("curator");
     const all = await listDocuments({});

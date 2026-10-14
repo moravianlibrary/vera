@@ -99,6 +99,11 @@ const filterComparers = {
       parseDocumentSearchParams(new URLSearchParams(first)),
       parseDocumentSearchParams(new URLSearchParams(second)),
     ),
+  "my-documents": (first, second) =>
+    isSameDocumentQuery(
+      parseDocumentSearchParams(new URLSearchParams(first)),
+      parseDocumentSearchParams(new URLSearchParams(second)),
+    ),
   proposals: (first, second) =>
     isSameProposalQuery(
       parseProposalSearchParams(new URLSearchParams(first)),

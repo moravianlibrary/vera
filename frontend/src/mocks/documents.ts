@@ -51,8 +51,9 @@ export function queryDocuments(
   query: DocumentQuery,
   slice: Required<DocumentSlice> = { cursor: null, limit: documentSliceSize },
   grouping: DocumentGrouping | null = null,
+  requestedAudience?: Audience,
 ): DocumentPage {
-  const audience = audienceOf(session);
+  const audience = requestedAudience ?? audienceOf(session);
   const userId = session.user.id;
   const reachable = database.documents
     .map(recordOf)
@@ -85,8 +86,12 @@ export function queryDocuments(
   };
 }
 
-export function findDocumentDetail(session: Session, documentId: string): DocumentDetail | null {
-  const audience = audienceOf(session);
+export function findDocumentDetail(
+  session: Session,
+  documentId: string,
+  requestedAudience?: Audience,
+): DocumentDetail | null {
+  const audience = requestedAudience ?? audienceOf(session);
   const document = database.documents.find((candidate) => candidate.id === documentId);
   if (document === undefined) {
     return null;

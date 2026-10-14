@@ -17,3 +17,21 @@ describe("Mixes navigation", () => {
     expect(visibleNavigation(mixOnly).map((entry) => entry.id)).not.toContain("categories");
   });
 });
+
+describe("Documents perspectives", () => {
+  it("opens a requester's documents directly and offers both perspectives to a manager", () => {
+    const reader = resolveSession("reader");
+    const admin = resolveSession("admin");
+    expect(visibleNavigation(reader).find((entry) => entry.id === "documents")).toMatchObject({
+      path: "/my-documents",
+      visibleLabel: "My Documents",
+    });
+    expect(visibleNavigation(admin).find((entry) => entry.id === "documents")).toMatchObject({
+      path: "/documents",
+      visibleLabel: "Documents",
+    });
+    expect(canOpenNavigationEntry(reader, "my-documents")).toBe(true);
+    expect(canOpenNavigationEntry(admin, "my-documents")).toBe(true);
+    expect(canOpenNavigationEntry(resolveSession("no-access"), "my-documents")).toBe(false);
+  });
+});
