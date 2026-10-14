@@ -50,8 +50,10 @@ A system watchlist's notification choices remain that person's own.
 ## New counts and seen state
 
 Each watchlist tab shows how many matching records entered since **this person
-last opened that watchlist**. Opening it clears that tab badge. Opening the
+last opened that watchlist**. Opening it marks those entries seen. Opening the
 Watchlists overview or merely receiving an email does not mark it seen.
+The seen request is sent immediately; the opened tab keeps its previous +N
+briefly so the person can notice what changed before the badge disappears.
 
 Each source view's navbar badge counts its watchlists with unseen entries,
 not records, events or definition edits. A watchlist with ten new records adds

@@ -6,7 +6,7 @@
 
 import { Building2, ChevronDown, CircleAlert } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
-import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
 import { createWatchlist, isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
@@ -59,6 +59,7 @@ import {
 } from "@/hooks/use-watchlists-query";
 
 type Filter = Watchlist["filter"];
+const newBadgeHoldMs = 2_500;
 
 interface WatchlistTabsProps {
   view: WatchlistView;
@@ -90,11 +91,39 @@ export function WatchlistTabs({
   const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
   const { create, update, markSeen } = useWatchlistMutations();
   const watchlists = everyWatchlist;
+  const [heldNewCounts, setHeldNewCounts] = useState<Record<string, number>>({});
+  const badgeTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const holdNewCount = useCallback((watchlistId: string, count: number) => {
+    if (count === 0) return;
+    setHeldNewCounts((current) => ({ ...current, [watchlistId]: count }));
+    const oldTimer = badgeTimers.current.get(watchlistId);
+    if (oldTimer !== undefined) clearTimeout(oldTimer);
+    badgeTimers.current.set(
+      watchlistId,
+      setTimeout(() => {
+        setHeldNewCounts((current) => {
+          const next = { ...current };
+          delete next[watchlistId];
+          return next;
+        });
+        badgeTimers.current.delete(watchlistId);
+      }, newBadgeHoldMs),
+    );
+  }, []);
+  useEffect(() => {
+    const timers = badgeTimers.current;
+    return () => {
+      for (const timer of timers.values()) clearTimeout(timer);
+    };
+  }, []);
   const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
-  const onOpen = (watchlist: Watchlist | null) => {
+  const onOpen = (watchlist: Watchlist | null, newCount = 0) => {
     remember(watchlist?.id ?? null);
     openInView(watchlist);
-    if (watchlist !== null) markSeen.mutate(watchlist.id);
+    if (watchlist !== null) {
+      holdNewCount(watchlist.id, newCount);
+      markSeen.mutate(watchlist.id);
+    }
   };
 
   // Once the watchlists and the settings are known; one deleted since reopens on "All".
@@ -134,9 +163,10 @@ export function WatchlistTabs({
   // A deep link or restored tab is also an opening, even though no tab was clicked.
   useEffect(() => {
     if (openedWatchlistId !== undefined && openedNewCount > 0) {
+      holdNewCount(openedWatchlistId, openedNewCount);
       markSeenMutation(openedWatchlistId);
     }
-  }, [openedWatchlistId, openedNewCount, markSeenMutation]);
+  }, [openedWatchlistId, openedNewCount, holdNewCount, markSeenMutation]);
 
   // Keep the active tab visible when a saved filter is opened from a URL or restored.
   useEffect(() => {
@@ -181,9 +211,10 @@ export function WatchlistTabs({
         <WatchlistTab
           key={watchlist.id}
           watchlist={watchlist}
+          displayedNewCount={Math.max(watchlist.newCount, heldNewCounts[watchlist.id] ?? 0)}
           isOpen={watchlist.id === open?.id}
           canShare={canShare}
-          onOpen={() => onOpen(watchlist)}
+          onOpen={() => onOpen(watchlist, watchlist.newCount)}
           onDeleted={() => {
             if (watchlist.id === open?.id || watchlist.id === openedId) {
               onDetach();
@@ -232,6 +263,7 @@ function Tab({ id, isOpen, onClick, children }: TabProps) {
 
 interface WatchlistTabProps {
   watchlist: WatchlistSummary;
+  displayedNewCount: number;
   isOpen: boolean;
   canShare: boolean;
   // Opens the watchlist as saved.
@@ -240,7 +272,14 @@ interface WatchlistTabProps {
 }
 
 // Only the open tab shows its menu, so the row stays a row of names.
-function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: WatchlistTabProps) {
+function WatchlistTab({
+  watchlist,
+  displayedNewCount,
+  isOpen,
+  canShare,
+  onOpen,
+  onDeleted,
+}: WatchlistTabProps) {
   const [dialog, setDialog] = useState<"rename" | "share" | "delete" | null>(null);
   const share = useActionMutation({
     call: (audience: WatchlistAudience) =>
@@ -253,7 +292,9 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
             audience,
           }),
     invalidates: [watchlistsQueryKey],
-    refusalTexts: { 403: "Only watchlist managers can create system watchlists or change audiences." },
+    refusalTexts: {
+      403: "Only watchlist managers can create system watchlists or change audiences.",
+    },
   });
   const { update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
@@ -269,12 +310,12 @@ function WatchlistTab({ watchlist, isOpen, canShare, onOpen, onDeleted }: Watchl
         <span className="text-xs text-muted-foreground tabular-nums" title="Current matches">
           {watchlist.itemCount}
         </span>
-        {watchlist.newCount > 0 && (
+        {displayedNewCount > 0 && (
           <span
             className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-primary"
-            title={`${watchlist.newCount} new in ${watchlist.name}`}
+            title={`${displayedNewCount} new in ${watchlist.name}`}
           >
-            +{watchlist.newCount}
+            +{displayedNewCount}
             <span className="sr-only"> new</span>
           </span>
         )}

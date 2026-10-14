@@ -9,7 +9,9 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { listWatchlists } from "@/api/watchlists";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
+import { resolveSession } from "@/mocks/session";
 
 const server = setupServer();
 
@@ -134,5 +136,60 @@ describe("WatchlistTabs", () => {
     expect(
       (await listWatchlists("documents")).find((row) => row.name === "My archive")?.audience,
     ).toEqual({ kind: "personal" });
+  });
+
+  it("keeps a new-entry badge briefly after opening while marking entries seen immediately", async () => {
+    server.use(...createHandlers("admin"));
+    const running = (await listWatchlists("tasks")).find((row) => row.name === "Running");
+    if (!running) return;
+    const userId = resolveSession("admin").user.id;
+    const entry = database.watchlistEntries.find(
+      (row) => row.userId === userId && row.watchlistId === running.id,
+    );
+    const viewer = database.watchlistViewers.find(
+      (row) => row.userId === userId && row.watchlistId === running.id,
+    );
+    expect(entry).toBeDefined();
+    expect(viewer).toBeDefined();
+    if (!entry || !viewer) return;
+    const previousEntry = { ...entry };
+    const previousSeenAt = viewer.seenAt;
+    entry.baseline = false;
+    entry.enteredAt = new Date().toISOString();
+    viewer.seenAt = null;
+
+    try {
+      const newCount = (await listWatchlists("tasks")).find(
+        (row) => row.id === running.id,
+      )?.newCount;
+      expect(newCount).toBeGreaterThan(0);
+      render(
+        <WatchlistTabs
+          view="tasks"
+          filter={{}}
+          openedId={null}
+          canShare
+          onOpen={vi.fn()}
+          onDetach={vi.fn()}
+          isBare={false}
+        />,
+        { wrapper: Providers },
+      );
+
+      const tab = await screen.findByRole("button", { name: /Running/ });
+      fireEvent.click(tab);
+      await waitFor(async () => {
+        expect((await listWatchlists("tasks")).find((row) => row.id === running.id)?.newCount).toBe(
+          0,
+        );
+      });
+      expect(tab).toHaveTextContent(`+${newCount}`);
+      await waitFor(() => expect(tab).not.toHaveTextContent(`+${newCount}`), {
+        timeout: 3_500,
+      });
+    } finally {
+      Object.assign(entry, previousEntry);
+      viewer.seenAt = previousSeenAt;
+    }
   });
 });
