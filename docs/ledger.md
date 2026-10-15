@@ -21,15 +21,16 @@ Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
 [WATCH-mail-batch](reference/integrations/watchlists.md#watch-mail-batch),
 [WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
 
-Raised on 2026-10-16, not decided: a browser push notification as another watchlist channel,
-beside email and chat, saying which watchlist changed and which records entered it. Today a
-person is told only by email or chat, and the sidebar badge shows unseen entries. To settle:
-- whether browser push is a channel per watchlist, switched on like the others;
-- what one notification names: the watchlist and a count, or the records too, and how many before
-  it is cut short;
-- whether it is batched like watchlist mail, or sent as records enter;
-- how it follows *Do not send notifications*, and whether it needs the browser's permission
-  asked from Preferences.
+Raised on 2026-10-16. Decided on 2026-10-16:
+- browser push is a watchlist channel beside email and chat, switched on per watchlist, off until
+  the person switches it on;
+- a notification names the watchlist and the records that entered it, the first three by name
+  and the rest as *+N more*;
+- it is batched, in a window of seconds rather than watchlist mail's 15 minutes;
+- *Do not send notifications* silences it too; where the browser's permission is asked waits
+  until watchlist preferences move under Preferences.
+
+Still open: the length of the window.
 
 → decision, then frontend and engine.
 
