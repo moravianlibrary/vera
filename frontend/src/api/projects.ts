@@ -124,7 +124,7 @@ export type MemberGroup = Group;
 // project's; the target is entered on the project form and stored on it.
 export const projectIntentionSchema = z.object({
   id: z.string(),
-  // None: it tracks the mix.
+  // None: it only counts output.
   targetPages: pages.nullable(),
 });
 export type ProjectIntention = z.infer<typeof projectIntentionSchema>;
@@ -227,7 +227,7 @@ export const projectDraftSchema = z
     description: z.string().trim(),
     startsOn: calendarDate,
     endsOn: calendarDate,
-    // Its intention's target; none, and the intention only tracks the mix.
+    // Its intention's target; none, and the intention only counts output.
     targetPages: z.number().int().positive().nullable(),
   })
   .refine((draft) => draft.endsOn >= draft.startsOn, {

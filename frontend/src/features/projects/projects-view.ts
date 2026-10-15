@@ -259,7 +259,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "slate",
       title: `Running since ${formatCalendarDay(project.startsOn)}, with no target`,
-      body: `${daysLeft} ${formatCount(row.deliveredPages)} pages digitized so far; its intention tracks the mix.`,
+      body: `${daysLeft} ${formatCount(row.deliveredPages)} pages digitized so far; its intention only counts output.`,
     };
   }
 

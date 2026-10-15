@@ -511,7 +511,7 @@ function IntentionFields({
             onChange={(value) => form.setValue("mix", value, touched)}
           />
         </Field>
-        <Field id={`${id}-target`} label="Target pages" hint="none: it tracks the mix">
+        <Field id={`${id}-target`} label="Target pages" hint="none: it only counts output">
           <Input
             id={`${id}-target`}
             inputMode="numeric"
@@ -840,7 +840,7 @@ export function TemplateFormDialog({
                   </SelectContent>
                 </Select>
               </Field>
-              <Field id={`${id}-target`} label="Target pages" hint="none: it tracks the mix">
+              <Field id={`${id}-target`} label="Target pages" hint="none: it only counts output">
                 <Input
                   id={`${id}-target`}
                   inputMode="numeric"

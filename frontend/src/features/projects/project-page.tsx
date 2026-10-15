@@ -159,7 +159,7 @@ function ProjectRecord({
           />
           {row.intention.targetPages === null ? (
             <p className="mt-2 text-[0.8125rem]">
-              No target: its intention tracks the mix.{" "}
+              No target: its intention only counts output.{" "}
               <Muted>
                 {formatCount(row.plannedPages)} pp planned · {formatCount(row.deliveredPages)}{" "}
                 delivered

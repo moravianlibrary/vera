@@ -245,7 +245,7 @@ describe("starting and running a project", () => {
     expect(intentionRowOf(await listIntentionIndex(), created.row.intention.id)).toBeUndefined();
   });
 
-  it("starts one without a target, whose intention then tracks the mix", async () => {
+  it("starts one without a target, whose intention then only counts output", async () => {
     signInAs("curator");
     const created = await createProject({ ...draft, name: "Bez cíle", targetPages: null });
 

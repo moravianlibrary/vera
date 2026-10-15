@@ -174,7 +174,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
               form.formState.errors.startsOn?.message ?? form.formState.errors.endsOn?.message
             }
           />
-          <Field id={`${id}-target`} label="Target pages" hint="none: its intention tracks the mix">
+          <Field id={`${id}-target`} label="Target pages" hint="none: its intention only counts output">
             <Input
               id={`${id}-target`}
               inputMode="numeric"
