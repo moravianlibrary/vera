@@ -99,6 +99,22 @@ describe("checkProposalItems", () => {
     expect(checks.map((check) => check.kind)).toEqual(["new", "whichUnit"]);
   });
 
+  it("offers the records an identifier names when the catalog gives several (DOC-records)", async () => {
+    signInAs("reader");
+
+    const [check] = await checkProposalItems([
+      { type: "shelfMark", value: "ST3-0880", unit: null },
+    ]);
+
+    expect(check).toEqual({
+      kind: "whichRecord",
+      records: [
+        { catalogId: "MZK03-000112877", title: "Kniha o Brně" },
+        { catalogId: "MZK03-000778120", title: "Moravské kostely" },
+      ],
+    });
+  });
+
   it("speaks to a requester in the public vocabulary", async () => {
     signInAs("reader");
 

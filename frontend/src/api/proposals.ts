@@ -60,6 +60,12 @@ export const proposalCheckSchema = z.discriminatedUnion("kind", [
     title: z.string(),
     units: z.array(z.string()).min(1),
   }),
+  // An identifier the catalog gives for several records: nothing until one or more are picked,
+  // each its own item (DOC-records).
+  z.object({
+    kind: z.literal("whichRecord"),
+    records: z.array(z.object({ catalogId: z.string(), title: z.string() })).min(2),
+  }),
   // Skipped and reported, never guessed.
   z.object({ kind: z.literal("notInCatalog") }),
 ]);

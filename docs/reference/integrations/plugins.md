@@ -19,6 +19,7 @@ Several instances of one implementation may run side by side (one catalog adapte
 |---|---|
 | Identity | a way to log in |
 | Input | a way of entering items in the propose dialog |
+| Identifier | one identifier type: recognises, checks and normalises a value, and names the type |
 | Harvester | finds new documents and proposes them, as its agent |
 | Catalog adapter | reads catalog records: page counts, material type, units |
 | Property source | supplies a value the catalog lacks |
@@ -33,6 +34,9 @@ Several instances of one implementation may run side by side (one catalog adapte
 
 The kinds are listed, here and on Plugins, in the order a document meets them: login, asks
 arriving, facts, copies, gates, routing, planning, publishing, then communication.
+
+> **Open — [L21](../../ledger.md#l21-identifier-plugins).** The Identifier kind is decided but
+> not built ([DOC-identifiers](../model/documents.md#doc-identifiers)).
 
 > **Open — [L51](../../ledger.md#l51-order-of-plugin-kinds).** The Plugins page still uses the
 > older order.

@@ -130,12 +130,23 @@ interface Resolved {
   unit: string | null;
 }
 
-type Resolution = Resolved | { units: readonly string[]; record: CatalogRecord } | null;
+type Resolution =
+  | Resolved
+  | { units: readonly string[]; record: CatalogRecord }
+  | { records: readonly CatalogRecord[] }
+  | null;
 
 export function checkItem(session: Session, item: ProposalItem): ProposalCheck {
   const resolution = resolve(item);
   if (resolution === null) {
     return { kind: "notInCatalog" };
+  }
+
+  if ("records" in resolution) {
+    return {
+      kind: "whichRecord",
+      records: resolution.records.map(({ catalogId, title }) => ({ catalogId, title })),
+    };
   }
 
   const { record } = resolution;
@@ -181,9 +192,15 @@ export function submittableProposalItemCount(session: Session, draft: ProposalDr
 
 // The catalog's answer: a record, and the unit when the record has several.
 function resolve(item: ProposalItem): Resolution {
-  const record = catalogRecordOf(item);
-  if (record === null) {
+  const records = catalogRecordsOf(item);
+  const [record] = records;
+  if (record === undefined) {
     return null;
+  }
+
+  // DOC-records: the catalog's answer is several records; the person picks.
+  if (records.length > 1) {
+    return { records };
   }
 
   const barcodeUnit = item.type === "barcode" ? record.barcodes[item.value] : undefined;
@@ -215,11 +232,12 @@ function resolve(item: ProposalItem): Resolution {
   return { record, units: record.units };
 }
 
-function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
-  const records = knownCatalogRecords();
+// Every record the identifier names, once each: a record VERA holds is known twice, from the
+// fixtures and from its documents.
+function catalogRecordsOf(item: ProposalItem): CatalogRecord[] {
   const normalized = (value: string) => value.replaceAll("-", "").toLowerCase();
 
-  const record = records.find((candidate) => {
+  const matching = knownCatalogRecords().filter((candidate) => {
     switch (item.type) {
       case "catalogId":
         return candidate.catalogId === item.value.toUpperCase();
@@ -234,7 +252,10 @@ function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
         );
     }
   });
-  return record ?? null;
+  return matching.filter(
+    (record, index) =>
+      matching.findIndex((other) => other.catalogId === record.catalogId) === index,
+  );
 }
 
 // The record's shelf mark written as the value is, ignoring case; undefined when it has none.

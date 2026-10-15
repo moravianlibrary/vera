@@ -17,10 +17,19 @@ shelf mark names one when the catalog puts it on a single unit. A
 record with a single unit needs none. An ask that names no unit of a record with several is
 answered with the units to choose from.
 
+#### DOC-records
+
+When the catalog gives several records for an identifier, a shelf mark or any other, the ask is
+answered with the records to choose from. The person picks one or more, and each picked record
+is its own ask, checked as any other: its unit, whether VERA holds it, whether it is theirs.
+
 #### DOC-identifiers
 
-An item can be proposed by any of these identifiers. Each has a fixed format, checked before
-anything is looked up:
+An item can be proposed by any of these identifiers. Each type is an instance of an
+**Identifier** plugin ([PLG-kinds](../integrations/plugins.md#plg-kinds)), which recognises a
+value, checks it and normalises it before anything is looked up, and names the type in each
+language. VERA ships one predefined instance per type below, configured with MZK's formats; a
+library changes their configuration, or adds one, such as a recogniser of its shelf marks:
 
 | Type | Format |
 |---|---|
@@ -29,7 +38,7 @@ anything is looked up:
 | ISBN | `978` or `979` and ten to fourteen digits or hyphens |
 | ISSN | `1234-567X` |
 | Barcode | `MZK-2024-000001` |
-| Shelf mark | the library's own; no common format |
+| Shelf mark | the library's own; no common format, so no predefined recogniser |
 
 What an identifier resolves to is the catalog's answer, through its catalog adapter.
 
@@ -42,15 +51,15 @@ and resolving one is left to the library's plugins and their configuration.
 
 One VERA serves one library.
 
-> **Open — [L21](../../ledger.md#l21-identifier-formats-per-installation).** The catalog ID,
-> barcode and NBN formats are MZK's and fixed in the code. They are to come from the plugin
-> configuration of each installation.
+> **Open — [L21](../../ledger.md#l21-identifier-plugins).** The types and their formats are
+> MZK's and fixed in the code; the Identifier kind is not built.
 
 #### DOC-lines
 
 A pasted list has one item per line: identifier, unit and reason, separated by `;`, a tab, or a
 comma. A line starting with `#` is skipped. With a type chosen, every line is read as that
-type; without one, each line's type is detected from its format.
+type; without one, each line's type is the first Identifier instance, in their order, that
+recognises it. A type without a recogniser is read only when chosen.
 
 ## Properties
 

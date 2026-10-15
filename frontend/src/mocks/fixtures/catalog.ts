@@ -54,7 +54,8 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Monograph",
     units: null,
     identifiers: [],
-    shelfMarks: {},
+    // Bound with Moravské kostely: one shelf mark, two records.
+    shelfMarks: { "ST3-0880": null },
     barcodes: { "MZK-2801-000533": null },
   },
   {
@@ -72,7 +73,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Monograph",
     units: null,
     identifiers: ["978-80-7325-456-3"],
-    shelfMarks: { "ST3-0871": null },
+    shelfMarks: { "ST3-0871": null, "ST3-0880": null },
     barcodes: {},
   },
   {

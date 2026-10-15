@@ -185,15 +185,22 @@ scanning (a hardware scanner always; the camera through an Input plugin) and pho
 candidates to pick from. Each way shows only while its plugin is enabled, auto-detect included.
 → frontend, after the plugins step (Input instances), then engine.
 
+### L21: Identifier plugins
+
+Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers),
+[DOC-lines](reference/model/documents.md#doc-lines),
+[PLG-kinds](reference/integrations/plugins.md#plg-kinds).
+
+Decided on 2026-10-15: each identifier type is an instance of a new **Identifier** plugin kind,
+which recognises, checks and normalises a value and names the type in each language (*NBN*,
+*ČNB*). VERA ships predefined instances with MZK's formats; a library configures them or adds
+its own, such as a shelf-mark recogniser. This replaces moving the formats into each
+installation's configuration; tenancy stays out of scope. The code fixes the types and formats
+in `domain/proposals.ts` (`TODO(Tenancy)`), and the client checks them as typed: the server is to
+send each type's pattern and labels with the propose settings, and a type checked only by plugin
+code is checked with the catalog lookup. → frontend after [L58](#l58-ways-in), then engine.
+
 ## For the engine
-
-### L21: Identifier formats per installation
-
-Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
-
-Decided on 2026-10-15. Tenancy stays out of scope for the engine and the first backend: one VERA, one library. The
-catalog ID, barcode and NBN formats are MZK's and fixed in the code (`TODO(Tenancy)`); they move
-into the plugin configuration of each installation. → engine.
 
 ### L8: Placing again is a run
 
@@ -360,6 +367,10 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L59:** decided on 2026-10-15. When the catalog gives several records for an identifier, the
+  propose dialog lists them, none picked, and each one picked becomes its own item
+  ([DOC-records](reference/model/documents.md#doc-records)).
 
 - **L48:** the document's field is `shelfMark`, shown as *Shelf mark*, and a shelf mark is an
   identifier type to propose by, which the catalog adapter resolves; it names a unit when the

@@ -103,7 +103,7 @@ function outcomeOf(item: DraftItem): Outcome {
     return "skip";
   }
 
-  if (item.check === null || item.check.kind === "whichUnit") {
+  if (item.check === null || item.check.kind === "whichUnit" || item.check.kind === "whichRecord") {
     return "open";
   }
 
@@ -197,20 +197,20 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
     );
   };
 
-  // Adds what fits and is not on the list yet, and says what did not.
-  const add = (lines: ProposalLine[], source: string) => {
+  // What fits beside the kept items and is not among them yet, saying what did not.
+  const admit = (kept: DraftItem[], lines: ProposalLine[], source: string) => {
     const isSame = (first: { value: string; unit: string | null }, second: typeof first) =>
       first.value.toLowerCase() === second.value.toLowerCase() && first.unit === second.unit;
     let duplicates = 0;
     let overLimit = 0;
     const added: DraftItem[] = [];
     for (const line of lines) {
-      if ([...items, ...added].some((item) => isSame(item, line))) {
+      if ([...kept, ...added].some((item) => isSame(item, line))) {
         duplicates += 1;
         continue;
       }
 
-      if (items.length + added.length >= limit) {
+      if (kept.length + added.length >= limit) {
         overLimit += 1;
         continue;
       }
@@ -224,7 +224,6 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
       });
     }
 
-    setItems((current) => [...current, ...added]);
     setNotice(
       [
         overLimit > 0 &&
@@ -235,6 +234,32 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
         .join(" ") || null,
     );
     void check(added);
+    return added;
+  };
+
+  const add = (lines: ProposalLine[], source: string) => {
+    const added = admit(items, lines, source);
+    setItems((current) => [...current, ...added]);
+  };
+
+  // DOC-records: each record picked of an identifier's several is its own item, in its place.
+  const pickRecords = (key: string, catalogIds: string[]) => {
+    const picked = items.find((item) => item.key === key);
+    if (picked?.type == null) {
+      return;
+    }
+
+    const added = admit(
+      items.filter((item) => item.key !== key),
+      catalogIds.map((catalogId) => ({
+        type: "catalogId" as const,
+        value: catalogId,
+        unit: picked.unit,
+        reason: picked.reason,
+      })),
+      `${picked.source} · ${identifierLabels[picked.type]} ${picked.value}`,
+    );
+    setItems((current) => current.flatMap((item) => (item.key === key ? added : [item])));
   };
 
   const change = (key: string, patch: Partial<DraftItem>) => {
@@ -272,6 +297,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           notice={notice}
           onAdd={add}
           onChange={change}
+          onPickRecords={pickRecords}
           onRemove={remove}
           onCancel={onClose}
           onContinue={() => setStep("Details")}
@@ -320,6 +346,7 @@ interface ItemsStepProps {
   notice: string | null;
   onAdd: (lines: ProposalLine[], source: string) => void;
   onChange: (key: string, patch: Partial<DraftItem>) => void;
+  onPickRecords: (key: string, catalogIds: string[]) => void;
   onRemove: (key: string) => void;
   onCancel: () => void;
   onContinue: () => void;
@@ -333,6 +360,7 @@ function ItemsStep({
   notice,
   onAdd,
   onChange,
+  onPickRecords,
   onRemove,
   onCancel,
   onContinue,
@@ -415,6 +443,7 @@ function ItemsStep({
               item={item}
               number={index + 1}
               onChange={(patch) => onChange(item.key, patch)}
+              onPickRecords={(catalogIds) => onPickRecords(item.key, catalogIds)}
               onRemove={() => onRemove(item.key)}
             />
           ))}
@@ -620,12 +649,13 @@ interface ItemRowProps {
   item: DraftItem;
   number: number;
   onChange: (patch: Partial<DraftItem>) => void;
+  onPickRecords: (catalogIds: string[]) => void;
   onRemove: () => void;
 }
 
-function ItemRow({ item, number, onChange, onRemove }: ItemRowProps) {
+function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowProps) {
   const outcome = outcomeOf(item);
-  const title = item.check !== null && item.check.kind !== "notInCatalog" ? item.check.title : null;
+  const title = item.check !== null && "title" in item.check ? item.check.title : null;
 
   return (
     <li
@@ -644,7 +674,7 @@ function ItemRow({ item, number, onChange, onRemove }: ItemRowProps) {
         {title !== null && <b className="block font-semibold">{title}</b>}
       </span>
       <span className="col-start-2 flex flex-wrap items-center gap-1.5 text-xs sm:col-start-3">
-        <ItemOutcome item={item} onChange={onChange} />
+        <ItemOutcome item={item} onChange={onChange} onPickRecords={onPickRecords} />
       </span>
       <button
         type="button"
@@ -661,9 +691,11 @@ function ItemRow({ item, number, onChange, onRemove }: ItemRowProps) {
 function ItemOutcome({
   item,
   onChange,
+  onPickRecords,
 }: {
   item: DraftItem;
   onChange: (patch: Partial<DraftItem>) => void;
+  onPickRecords: (catalogIds: string[]) => void;
 }) {
   if (item.type === null) {
     return (
@@ -730,6 +762,8 @@ function ItemOutcome({
           </Select>
         </>
       );
+    case "whichRecord":
+      return <RecordPick records={check.records} onPick={onPickRecords} />;
     case "notInCatalog":
       return (
         <>
@@ -738,6 +772,53 @@ function ItemOutcome({
         </>
       );
   }
+}
+
+// DOC-records: the records an identifier names, none picked; each picked becomes its own item.
+function RecordPick({
+  records,
+  onPick,
+}: {
+  records: readonly { catalogId: string; title: string }[];
+  onPick: (catalogIds: string[]) => void;
+}) {
+  const fieldId = useId();
+  const [picked, setPicked] = useState<readonly string[]>([]);
+  return (
+    <span className="flex w-full flex-col gap-1.5">
+      <span className="flex items-center gap-1.5">
+        <ToneBadge tone="amber">Which records?</ToneBadge>
+        <Muted>{records.length} in the catalog</Muted>
+      </span>
+      {records.map(({ catalogId, title }) => (
+        <span key={catalogId} className="flex items-center gap-2">
+          <Checkbox
+            id={`${fieldId}-${catalogId}`}
+            checked={picked.includes(catalogId)}
+            onCheckedChange={(isChecked) =>
+              setPicked((current) =>
+                isChecked === true
+                  ? [...current, catalogId]
+                  : current.filter((each) => each !== catalogId),
+              )
+            }
+          />
+          <Label htmlFor={`${fieldId}-${catalogId}`} className="text-xs font-normal">
+            <span className="font-mono">{catalogId}</span> · {title}
+          </Label>
+        </span>
+      ))}
+      <Button
+        size="xs"
+        variant="outline"
+        className="self-start"
+        disabled={picked.length === 0}
+        onClick={() => onPick([...picked])}
+      >
+        Add {picked.length === 0 ? "the picked" : picked.length}
+      </Button>
+    </span>
+  );
 }
 
 // A value that is no identifier of the type it was read as gets the type that fits it.
