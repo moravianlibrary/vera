@@ -69,6 +69,38 @@ describe("listDocuments as a reader", () => {
   });
 });
 
+describe("listDocuments at iteration.read@project (VIEW-documents-audience)", () => {
+  // u9 holds project-user and is on p1 and p2 through group g2.
+  const ownProjects = new Set(["p1", "p2"]);
+  const touchesOwnProject = (record: Awaited<ReturnType<typeof listDocuments>>["items"][number]) =>
+    [...record.requests, ...record.iterations].some(
+      (source) => source.projectId !== null && ownProjects.has(source.projectId),
+    );
+
+  it("shows staff detail for the documents of their projects only", async () => {
+    signInAs("project-user");
+    const page = await listDocuments({}, { limit: maximumDocumentSliceSize });
+    signInAs("admin");
+    const everything = await listDocuments({}, { limit: maximumDocumentSliceSize });
+
+    expect(page.audience).toBe("staff");
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.total).toBeLessThan(everything.total);
+    expect(page.items.every(touchesOwnProject)).toBe(true);
+  });
+
+  it("does not open a document outside their projects", async () => {
+    signInAs("admin");
+    const everything = await listDocuments({}, { limit: maximumDocumentSliceSize });
+    const outside = everything.items.find((record) => !touchesOwnProject(record));
+    expect(outside).toBeDefined();
+    if (outside === undefined) return;
+
+    signInAs("project-user");
+    expect(await findDocument(outside.document.id)).toBeNull();
+  });
+});
+
 describe("listDocuments as curator", () => {
   it("shows a dual-permission user their own requests with public status in My Documents", async () => {
     signInAs("curator");

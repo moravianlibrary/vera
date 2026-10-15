@@ -5,7 +5,7 @@
 
 import type { AccessGroup, Identity, MappedRole, Role } from "@/domain/access";
 
-// The five shipped roles (permissions.md §4): bundles, not a ladder, each named by its id.
+// The six shipped roles (ROLE-shipped): bundles, not a ladder, each named by its id.
 const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   {
     id: "reader",
@@ -53,6 +53,28 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         permission: "watch",
         scope: null,
       },
+    ],
+  },
+  // ROLE-shipped: runs projects with the staff limits; reads the documents and intentions of the
+  // projects they are on (VIEW-documents-audience).
+  {
+    id: "project-user",
+    proposalBatchLimit: 10,
+    proposalDailyLimit: 300,
+    description:
+      "Starts projects and runs those they manage; sees the documents and intentions of the projects they are on.",
+    grants: [
+      { permission: "request.create", scope: null },
+      { permission: "request.read_own", scope: null },
+      { permission: "request.withdraw_own", scope: null },
+      { permission: "watch", scope: null },
+      { permission: "project.read", scope: "project" },
+      { permission: "project.create", scope: "any" },
+      { permission: "project.edit", scope: "managed" },
+      { permission: "project.manage_members", scope: "managed" },
+      { permission: "project.delete", scope: "managed" },
+      { permission: "iteration.read", scope: "project" },
+      { permission: "intention.read", scope: "project" },
     ],
   },
   {
@@ -576,7 +598,7 @@ export const userAccess: Readonly<Record<string, UserAccess>> = {
     [{ instanceId: keycloak, externalId: "knovotna", lastLoginAt: loginAt(6, 19) }],
   ),
   u9: person(
-    [],
+    ["project-user"],
     [mapped("staff", "group mzk-staff")],
     [{ instanceId: keycloak, externalId: "rsimek", lastLoginAt: loginAt(6, 21) }],
   ),

@@ -6,7 +6,7 @@ FRONTEND_LOG := .frontend.log
 
 # ─── One frontend per fake user ───
 # Each fake user gets its own port, by its place in this list: admin on 5201, curator on 5202…
-MOCK_USERS := admin curator digitization staff reader no-access
+MOCK_USERS := admin curator digitization staff reader no-access project-user
 ROLES ?= $(MOCK_USERS)
 ROLES_DIR := .dev-roles
 ROLES_BASE_PORT := 5200
@@ -28,11 +28,11 @@ frontend-install: ## Install frontend dependencies with Bun
 	cd frontend && bun install
 
 frontend-users: ## List available emulated users for the frontend
-	@printf '%s\n' 'Available fake users: admin, curator, digitization, staff, reader, no-access'
+	@printf '%s\n' 'Available fake users: admin, curator, digitization, staff, reader, no-access, project-user'
 
 frontend-user: ## Set the frontend fake user (make frontend-user MOCK_USER=reader)
 	@test -n "$(MOCK_USER)" || { echo "Usage: make frontend-user MOCK_USER=reader"; exit 1; }
-	@case "$(MOCK_USER)" in admin|curator|digitization|staff|reader|no-access) ;; *) echo "Unknown fake user: $(MOCK_USER). Run 'make frontend-users'."; exit 1 ;; esac
+	@case "$(MOCK_USER)" in admin|curator|digitization|staff|reader|no-access|project-user) ;; *) echo "Unknown fake user: $(MOCK_USER). Run 'make frontend-users'."; exit 1 ;; esac
 	cd frontend && bun -e 'const user = Bun.argv[1]; const file = Bun.file(".env.local"); let text = await file.exists() ? await file.text() : await Bun.file(".env.example").text(); if (/^VITE_MOCK_USER=/m.test(text)) text = text.replace(/^VITE_MOCK_USER=.*$$/m, "VITE_MOCK_USER=" + user); else text = text.trimEnd() + "\nVITE_MOCK_USER=" + user + "\n"; await Bun.write(".env.local", text); console.log("Frontend fake user set to " + user + ". Restart the dev server to apply it.");' "$(MOCK_USER)"
 
 dev-frontend: frontend-env ## Run the frontend development server

@@ -1,7 +1,7 @@
 # Roles
 
 A role is a named bundle of grants ([permissions](permissions.md)), with two proposal limits.
-VERA ships five roles. They are ordinary roles: editable, deletable, and nothing marks them
+VERA ships six roles. They are ordinary roles: editable, deletable, and nothing marks them
 apart from roles created later except that they came with the installation.
 
 ## The rules
@@ -64,19 +64,15 @@ still manage access.
 
 #### ROLE-shipped
 
-VERA installs `reader`, `staff`, `curator`, `dig-curator` and `admin` with the grants and
-limits below.
-
-> **Open — [L47](../../ledger.md#l47-the-project-user-role).** A sixth shipped role,
-> `project-user`, is decided: the reader's grants plus starting and running projects, with the
-> staff limits. It follows
-> [L2](../../ledger.md#l2-documents-follows-the-scope-of-iterationread).
+VERA installs `reader`, `staff`, `project-user`, `curator`, `dig-curator` and `admin` with the
+grants and limits below.
 
 <!-- generated:role-limits -->
 | Role | Description | Items per submission | Accepted items per day |
 |---|---|---|---|
 | `reader` | Proposes and follows their own requests. Holds only self-scoped grants. | 10 | 100 |
 | `staff` | Library staff: the reader grants with a higher daily proposal limit. | 10 | 300 |
+| `project-user` | Starts projects and runs those they manage; sees the documents and intentions of the projects they are on. | 10 | 300 |
 | `curator` | Decides proposals in their proposal custody; validates, classifies and publishes inside their category custody; decides projects. | unlimited | unlimited |
 | `dig-curator` | Plans the work: lists, intentions, projects. | unlimited | unlimited |
 | `admin` | Everything, at any scope. | unlimited | unlimited |
@@ -85,71 +81,74 @@ limits below.
 Grants, by scope; an empty cell is not granted.
 
 <!-- generated:role-grants -->
-| Permission | `reader` | `staff` | `curator` | `dig-curator` | `admin` |
-|---|---|---|---|---|---|
-| **Requests** | | | | | |
-| `request.create` | own | own | own | own | own |
-| `request.read_own` | own | own | own | own | own |
-| `request.withdraw_own` | own | own | own | own | own |
-| `request.read` |  |  | any | any | any |
-| `request.decide` |  |  | custody | custody | any |
-| `request.read_ingest` |  |  | custody | custody | any |
-| `request.retry` |  |  | custody | custody | any |
-| `request.read_payload` |  |  |  |  | any |
-| `project.read` |  |  | any | any | any |
-| `project.create` |  |  | any | any | any |
-| `project.edit` |  |  | managed | any | any |
-| `project.manage_members` |  |  | managed | any | any |
-| `project.delete` |  |  | managed | any | any |
-| `project.decide` |  |  | any | any | any |
-| **Iterations** | | | | | |
-| `iteration.read` |  |  | any | any | any |
-| `iteration.recheck` |  |  | custody | custody | any |
-| `iteration.classify` |  |  | custody | custody | any |
-| `validation.approve` |  |  | custody | custody | any |
-| `validation.deny` |  |  | custody | custody | any |
-| `validation.revoke` |  |  | custody | custody | any |
-| `restriction.overrule` |  |  |  |  | any |
-| `iteration.cancel` |  |  | custody | any | any |
-| `iteration.resume` |  |  | custody | any | any |
-| `iteration.publish` |  |  | custody | custody | any |
-| **Planning** | | | | | |
-| `list.read` |  |  |  | any | any |
-| `list.create` |  |  |  | any | any |
-| `list.edit` |  |  |  | any | any |
-| `list.delete` |  |  |  | any | any |
-| `intention.read` |  |  |  | any | any |
-| `intention.edit` |  |  |  | any | any |
-| `intention.repeat` |  |  |  |  | any |
-| `mix.read` |  |  |  | any | any |
-| `mix.edit` |  |  |  | any | any |
-| `mix.manage` |  |  |  |  | any |
-| **Categories** | | | | | |
-| `category.read` |  |  | any | any | any |
-| `category.edit` |  |  | custody | custody | any |
-| `category.grant_custody` |  |  | custody | custody | any |
-| **Watchlists** | | | | | |
-| `watch` | own | own | own | own | own |
-| `watchlist.manage_system` |  |  |  |  | any |
-| **Administration** | | | | | |
-| `task.read_own` |  |  | own | own | own |
-| `task.read` |  |  |  |  | any |
-| `task.cancel` |  |  |  |  | any |
-| `task.schedule` |  |  |  |  | any |
-| `plugin.read` |  |  |  |  | any |
-| `plugin.configure` |  |  |  |  | any |
-| `plugin.upload_code` |  |  |  |  | any |
-| `plugin.run` |  |  |  |  | any |
-| `hook.read` |  |  |  |  | any |
-| `hook.configure` |  |  |  |  | any |
-| `access.read` |  |  |  |  | any |
-| `access.manage` |  |  |  |  | any |
+| Permission | `reader` | `staff` | `project-user` | `curator` | `dig-curator` | `admin` |
+|---|---|---|---|---|---|---|
+| **Requests** | | | | | | |
+| `request.create` | own | own | own | own | own | own |
+| `request.read_own` | own | own | own | own | own | own |
+| `request.withdraw_own` | own | own | own | own | own | own |
+| `request.read` |  |  |  | any | any | any |
+| `request.decide` |  |  |  | custody | custody | any |
+| `request.read_ingest` |  |  |  | custody | custody | any |
+| `request.retry` |  |  |  | custody | custody | any |
+| `request.read_payload` |  |  |  |  |  | any |
+| `project.read` |  |  | project | any | any | any |
+| `project.create` |  |  | any | any | any | any |
+| `project.edit` |  |  | managed | managed | any | any |
+| `project.manage_members` |  |  | managed | managed | any | any |
+| `project.delete` |  |  | managed | managed | any | any |
+| `project.decide` |  |  |  | any | any | any |
+| **Iterations** | | | | | | |
+| `iteration.read` |  |  | project | any | any | any |
+| `iteration.recheck` |  |  |  | custody | custody | any |
+| `iteration.classify` |  |  |  | custody | custody | any |
+| `validation.approve` |  |  |  | custody | custody | any |
+| `validation.deny` |  |  |  | custody | custody | any |
+| `validation.revoke` |  |  |  | custody | custody | any |
+| `restriction.overrule` |  |  |  |  |  | any |
+| `iteration.cancel` |  |  |  | custody | any | any |
+| `iteration.resume` |  |  |  | custody | any | any |
+| `iteration.publish` |  |  |  | custody | custody | any |
+| **Planning** | | | | | | |
+| `list.read` |  |  |  |  | any | any |
+| `list.create` |  |  |  |  | any | any |
+| `list.edit` |  |  |  |  | any | any |
+| `list.delete` |  |  |  |  | any | any |
+| `intention.read` |  |  | project |  | any | any |
+| `intention.edit` |  |  |  |  | any | any |
+| `intention.repeat` |  |  |  |  |  | any |
+| `mix.read` |  |  |  |  | any | any |
+| `mix.edit` |  |  |  |  | any | any |
+| `mix.manage` |  |  |  |  |  | any |
+| **Categories** | | | | | | |
+| `category.read` |  |  |  | any | any | any |
+| `category.edit` |  |  |  | custody | custody | any |
+| `category.grant_custody` |  |  |  | custody | custody | any |
+| **Watchlists** | | | | | | |
+| `watch` | own | own | own | own | own | own |
+| `watchlist.manage_system` |  |  |  |  |  | any |
+| **Administration** | | | | | | |
+| `task.read_own` |  |  |  | own | own | own |
+| `task.read` |  |  |  |  |  | any |
+| `task.cancel` |  |  |  |  |  | any |
+| `task.schedule` |  |  |  |  |  | any |
+| `plugin.read` |  |  |  |  |  | any |
+| `plugin.configure` |  |  |  |  |  | any |
+| `plugin.upload_code` |  |  |  |  |  | any |
+| `plugin.run` |  |  |  |  |  | any |
+| `hook.read` |  |  |  |  |  | any |
+| `hook.configure` |  |  |  |  |  | any |
+| `access.read` |  |  |  |  |  | any |
+| `access.manage` |  |  |  |  |  | any |
 <!-- /generated:role-grants -->
 
 What each one is for:
 - **`reader`** — external users (researchers, patrons): propose and follow their own requests.
   Their only sidebar entry is *My Documents*.
 - **`staff`** — library staff: the same grants as `reader` with a higher daily limit.
+- **`project-user`** — runs projects, with the staff limits: the reader's grants, starting
+  projects and running those they manage, and the documents and intentions of the projects they
+  are on.
 - **`curator`** — decides proposals in their proposal custody; validates, classifies, cancels,
   publishes and retries failed additions in their category custody; decides projects, and runs
   those they manage.

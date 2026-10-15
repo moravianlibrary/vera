@@ -170,17 +170,6 @@ machine) and intentions scoped by a property:
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
 
-### L2: Documents follows the scope of iteration.read
-
-Rules: [SCOPE-custody-category](reference/access/scopes.md#scope-custody-category),
-[VIEW-documents-audience](reference/access/views.md#view-documents-audience).
-
-Decided on 2026-10-15. `iteration.read` accepts `custody`, `project` and `any`, but Documents
-gives the full staff view at any of them. Documents narrows to the grant's scope: at `custody`,
-the documents in the person's category custody; at `project`, those of the projects they are on;
-at `any`, every one. Their own asks stay visible in the public audience either way. It unblocks
-[L47](#l47-the-project-user-role). → frontend (the mock's Documents query and its counts).
-
 ### L41: Remove intention.edit_overall
 
 Rules: [LC-INT-overall](reference/lifecycles/intention.md#lc-int-overall),
@@ -204,21 +193,6 @@ custody* becomes *request custody*. A proposal stays the word for an undecided r
 is *Propose…* for a person without `request.decide`, and *Add…* for one who holds it.
 
 → docs (glossary, reference, user journeys), then frontend (routes, labels, code names).
-
-### L47: The project-user role
-
-Rules: [ROLE-shipped](reference/access/roles.md#role-shipped).
-
-Decided on 2026-10-15: a sixth shipped role, `project-user`, with the staff limits (10 per
-submission, 300 a day) and:
-- the reader's grants;
-- `project.read@project`, `project.create`;
-- `project.edit@managed`, `project.manage_members@managed`, `project.delete@managed`;
-- `intention.read@project`;
-- `iteration.read@project`, which shows the documents of their projects once
-  [L2](#l2-documents-follows-the-scope-of-iterationread) is built.
-
-→ frontend, after L2 (the fixture), then `make docs`.
 
 ### L48: Shelf mark
 
@@ -436,6 +410,12 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L2:** Documents narrows to the scope of `iteration.read`: category custody at `custody`, the
+  person's projects at `project`, everything at `any`
+  ([VIEW-documents-audience](reference/access/views.md#view-documents-audience)).
+- **L47:** the sixth shipped role, `project-user`, with the staff limits; the mock's `project-user`
+  profile is u9 ([ROLE-shipped](reference/access/roles.md#role-shipped)).
 
 - **L46:** a role must grant what its permissions need; the role editor ticks it, the server
   refuses a role without it (422 `role.requires`), and `project.decide` no longer reads by

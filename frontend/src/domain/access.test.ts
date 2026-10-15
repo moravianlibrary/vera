@@ -69,7 +69,14 @@ describe("includedRolesOf", () => {
       "reader",
       "staff",
     ]);
-    expect(includedRolesOf(roles, roleOf("dig-curator")).map(({ id }) => id)).toEqual(["curator"]);
+    expect(includedRolesOf(roles, roleOf("project-user")).map(({ id }) => id)).toEqual([
+      "reader",
+      "staff",
+    ]);
+    expect(includedRolesOf(roles, roleOf("dig-curator")).map(({ id }) => id)).toEqual([
+      "project-user",
+      "curator",
+    ]);
     expect(includedRolesOf(roles, roleOf("admin")).map(({ id }) => id)).toEqual(["dig-curator"]);
   });
 });

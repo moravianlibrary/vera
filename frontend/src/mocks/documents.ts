@@ -1,5 +1,5 @@
 // What the server does for the Documents resource: assemble one record per document, keep it
-// to the caller's reach, withhold what their grants do not cover, then search, filter, count,
+// to the caller's reach (the scope of `iteration.read` for staff), withhold what their grants do not cover, then search, filter, count,
 // sort and group. Kept apart from the handlers so it can be tested without HTTP.
 
 import type {
@@ -38,7 +38,9 @@ import type {
   Session,
   StatusLogEntry,
 } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
+import { scopeOfIteration } from "@/domain/iterations";
+import { can, hasPermission } from "@/domain/permissions";
+import { scopeOfProject } from "@/domain/projects";
 import { isRestricted, validationOf } from "@/domain/status";
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
@@ -57,7 +59,7 @@ export function queryDocuments(
   const userId = session.user.id;
   const reachable = database.documents
     .map(recordOf)
-    .filter((record) => isInReach(record, audience, userId))
+    .filter((record) => isInReach(session, record, audience))
     .map((record) => redact(record, session, audience));
 
   const fields = audienceFields[audience];
@@ -98,7 +100,7 @@ export function findDocumentDetail(
   }
 
   const record = recordOf(document);
-  if (!isInReach(record, audience, session.user.id)) {
+  if (!isInReach(session, record, audience)) {
     return null;
   }
 
@@ -125,12 +127,38 @@ export function recordOf(document: Document): DocumentRecord {
 }
 
 // A requester reaches only what they asked for; a document nobody asked for is not a record.
-function isInReach(record: DocumentRecord, audience: Audience, userId: string): boolean {
+function isInReach(session: Session, record: DocumentRecord, audience: Audience): boolean {
   if (audience === "staff") {
-    return record.requests.length > 0;
+    return record.requests.length > 0 && isInStaffReach(session, record);
   }
 
-  return requestsBy(record, userId).length > 0;
+  return requestsBy(record, session.user.id).length > 0;
+}
+
+// Staff reach follows the scope of `iteration.read` (VIEW-documents-audience): at `any` every
+// document; at `custody` one whose current iteration is in the holder's category custody
+// (SCOPE-custody-category); at `project` one asked for or funded through a project they are on
+// (SCOPE-project).
+function isInStaffReach(session: Session, record: DocumentRecord): boolean {
+  if (can(session, "iteration.read", { kind: "unscoped" })) {
+    return true;
+  }
+
+  const current = currentIterationOf(record);
+  if (
+    current !== null &&
+    can(session, "iteration.read", scopeOfIteration(database.categories, current.categoryId))
+  ) {
+    return true;
+  }
+
+  const projectIds = new Set(
+    [...record.requests, ...record.iterations].map((source) => source.projectId),
+  );
+  return database.projects.some(
+    (project) =>
+      projectIds.has(project.id) && can(session, "iteration.read", scopeOfProject(project)),
+  );
 }
 
 function redact(record: DocumentRecord, session: Session, audience: Audience): DocumentRecord {

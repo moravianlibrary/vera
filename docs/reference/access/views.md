@@ -46,22 +46,22 @@ The entries in sidebar order, and what each shipped role sees when it is the onl
 empty cell means the entry is absent.
 
 <!-- generated:sidebar -->
-| Entry | Path | Shown with any of | `reader` | `staff` | `curator` | `dig-curator` | `admin` |
-|---|---|---|---|---|---|---|---|
-| Documents | `/documents` | `request.read_own` · `iteration.read` | My Documents | My Documents | Documents | Documents | Documents |
-| Proposals | `/review/proposals` | `request.decide` |  |  | Proposals | Proposals | Proposals |
-| Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  | Documents Validations | Documents Validations | Documents Validations |
-| Digitization Lists | `/lists` | `list.read` |  |  |  | Digitization Lists | Digitization Lists |
-| Projects | `/projects` | `project.read` |  |  | Projects | Projects | Projects |
-| Categories | `/categories` | `category.read` |  |  | Categories | Categories | Categories |
-| Intentions | `/intentions` | `intention.read` |  |  |  | Intentions | Intentions |
-| Mixes | `/mixes` | `mix.read` |  |  |  |  |  |
-| Tasks | `/tasks` | `task.read_own` · `task.read` |  |  | My Tasks | My Tasks | Tasks |
-| Schedules | `/schedules` | `task.read` |  |  |  |  | Schedules |
-| Users management | `/access` | `access.read` |  |  |  |  | Users management |
-| Plugins | `/plugins` | `plugin.read` |  |  |  |  | Plugins |
-| Hooks | `/hooks` | `hook.read` |  |  |  |  | Hooks |
-| Watchlists | `/watchlists` | `watch` · `watchlist.manage_system` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
+| Entry | Path | Shown with any of | `reader` | `staff` | `project-user` | `curator` | `dig-curator` | `admin` |
+|---|---|---|---|---|---|---|---|---|
+| Documents | `/documents` | `request.read_own` · `iteration.read` | My Documents | My Documents | Documents | Documents | Documents | Documents |
+| Proposals | `/review/proposals` | `request.decide` |  |  |  | Proposals | Proposals | Proposals |
+| Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  |  | Documents Validations | Documents Validations | Documents Validations |
+| Digitization Lists | `/lists` | `list.read` |  |  |  |  | Digitization Lists | Digitization Lists |
+| Projects | `/projects` | `project.read` |  |  | Projects | Projects | Projects | Projects |
+| Categories | `/categories` | `category.read` |  |  |  | Categories | Categories | Categories |
+| Intentions | `/intentions` | `intention.read` |  |  | Intentions |  | Intentions | Intentions |
+| Mixes | `/mixes` | `mix.read` |  |  |  |  |  |  |
+| Tasks | `/tasks` | `task.read_own` · `task.read` |  |  |  | My Tasks | My Tasks | Tasks |
+| Schedules | `/schedules` | `task.read` |  |  |  |  |  | Schedules |
+| Users management | `/access` | `access.read` |  |  |  |  |  | Users management |
+| Plugins | `/plugins` | `plugin.read` |  |  |  |  |  | Plugins |
+| Hooks | `/hooks` | `hook.read` |  |  |  |  |  | Hooks |
+| Watchlists | `/watchlists` | `watch` · `watchlist.manage_system` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
 <!-- /generated:sidebar -->
 
 ## What a page shows, by what you hold
@@ -69,7 +69,11 @@ empty cell means the entry is absent.
 #### VIEW-documents-audience
 
 Documents has two audiences:
-- **staff**, with `iteration.read`: every document anyone asked for, with its full record;
+- **staff**, with `iteration.read`: the documents anyone asked for within the grant's scope,
+  with their full record. At `custody`, those whose current iteration is in the person's category
+  custody ([SCOPE-custody-category](scopes.md#scope-custody-category)); at `project`, those asked
+  for or funded through a project they are on ([SCOPE-project](scopes.md#scope-project)); at
+  `any`, every one. Their own asks outside it stay in *My Documents*;
 - **public**, with `request.read_own` only: what the person asked for themselves, their own
   asks, and the public half of every reason.
 
@@ -77,9 +81,6 @@ In the public audience, the history shows only the steps that move a request for
 (accepted, not accepted, not available, on hold, digitized, available to read). A person who did
 one is never named, and no reason detail is shown
 ([LOG-public](../model/log.md#log-public)).
-
-> **Open — [L2](../../ledger.md#l2-documents-follows-the-scope-of-iterationread).** The staff
-> audience shows every document at any scope of `iteration.read`; it is to narrow to the scope.
 
 #### VIEW-ingest-detail
 

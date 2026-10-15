@@ -17,6 +17,7 @@ const userIdsByProfile = {
   staff: "u4",
   reader: "u5",
   "no-access": "u10",
+  "project-user": "u9",
 } as const satisfies Record<MockUserProfile, string>;
 
 export function resolveSession(profile: MockUserProfile): Session {

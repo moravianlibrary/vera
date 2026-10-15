@@ -10,6 +10,7 @@ export const mockUserProfiles = [
   "staff",
   "reader",
   "no-access",
+  "project-user",
 ] as const;
 export type MockUserProfile = (typeof mockUserProfiles)[number];
 
