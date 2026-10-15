@@ -9,8 +9,8 @@ erDiagram
   USER }o--o{ ROLE : "holds (by hand or mapped)"
   USER }o--o{ CATEGORY : "custody"
   GROUP }o--o{ CATEGORY : "custody"
-  USER }o--o{ PROPOSAL_CUSTODY : "member of"
-  GROUP }o--o{ PROPOSAL_CUSTODY : "member of"
+  USER }o--o{ REQUEST_CUSTODY : "member of"
+  GROUP }o--o{ REQUEST_CUSTODY : "member of"
   USER }o--o{ PROJECT : "member of"
   GROUP }o--o{ PROJECT : "member of"
   PROJECT }o--|| USER : "managed by"
@@ -27,7 +27,7 @@ erDiagram
   USER ||--o{ REQUEST : "asks"
   BATCH |o--|{ REQUEST : "holds"
   PROJECT |o--o{ REQUEST : "proposed into"
-  REQUEST }o--o{ PROPOSAL_CUSTODY : "placed in"
+  REQUEST }o--o{ REQUEST_CUSTODY : "placed in"
   REQUEST ||--o| ITERATION : "originates"
   REQUEST }o--o| ITERATION : "follows"
   DOCUMENT ||--o{ ITERATION : "attempted as"
@@ -43,8 +43,8 @@ erDiagram
 | User | Role | M:N | the user, by hand or mapped ([ACCESS-role-ways](../access/people.md#access-role-ways)) |
 | User | Group | M:N | the group's members |
 | User, Group | Category | M:N | the category's custody holders |
-| User, Group | Proposal custody | M:N | the custody's members |
-| Request | Proposal custody | M:N | computed by the Custody plugins, never typed in |
+| User, Group | Request custody | M:N | the custody's members |
+| Request | Request custody | M:N | computed by the Custody plugins, never typed in |
 | User, Group | Project | M:N | the project's members |
 | Project | User (manager) | N:1 | the project; the creator until handed over |
 | User | Identity | 1:N | the identity, unique per instance and external id |

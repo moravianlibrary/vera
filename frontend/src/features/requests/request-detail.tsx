@@ -9,8 +9,8 @@
 import { Sparkles } from "lucide-react";
 import { useId, useState } from "react";
 import { ApiError } from "@/api/http";
-import type { Decline, ProposalDetail } from "@/api/proposal-review";
-import { declineProposal } from "@/api/proposal-review";
+import type { Decline, RequestDetail } from "@/api/requests";
+import { declineProposal } from "@/api/requests";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import {
@@ -36,8 +36,8 @@ import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
-import type { Category, Priority, Project, ProposalCustody, Session } from "@/domain/entities";
-import type { ClassifierSuggestion, ProposalRow } from "@/domain/proposal-review";
+import type { Category, Priority, Project, RequestCustody, Session } from "@/domain/entities";
+import type { ClassifierSuggestion, RequestRow } from "@/domain/requests";
 import {
   askerIdsOf,
   asksOf,
@@ -47,20 +47,19 @@ import {
   isBeingChecked,
   isRescan,
   projectIdsOf,
-} from "@/domain/proposal-review";
-import { ProposalStatusBadge } from "@/features/proposals/proposal-status";
+} from "@/domain/requests";
+import { RequestStatusBadge } from "@/features/requests/request-status";
 import {
   decisionInvalidations,
   useDecisionMutations,
-} from "@/features/proposals/use-proposals-query";
+} from "@/features/requests/use-requests-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { useCan } from "@/hooks/use-can";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useCategoriesQuery,
   useIsShownBatch,
   useProjectsQuery,
-  useProposalCustodiesQuery,
+  useRequestCustodiesQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
@@ -73,22 +72,21 @@ export interface DecisionOutcome {
   summary: string;
 }
 
-interface ProposalDetailPaneProps {
-  detail: ProposalDetail;
+interface RequestDetailPaneProps {
+  detail: RequestDetail;
   session: Session;
   onDecided: (outcome: DecisionOutcome) => void;
 }
 
-export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetailPaneProps) {
-  const { row, log } = detail;
+export function RequestDetailPane({ detail, session, onDecided }: RequestDetailPaneProps) {
+  const { row, log, canDecide } = detail;
   const { record } = row;
   const { document } = record;
   const { data: users = [] } = useUsersQuery();
   const { data: projects = [] } = useProjectsQuery();
-  const { data: custodies = [] } = useProposalCustodiesQuery();
+  const { data: custodies = [] } = useRequestCustodiesQuery();
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
-  const can = useCan();
   const { data: messageChannels = [] } = useMessageChannelsQuery();
   const [isMessaging, setIsMessaging] = useState(false);
 
@@ -120,14 +118,14 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
         />
         <ActionBar actions={headingActions} className="mb-4" />
       </div>
-      <ProposalNote row={row} nameOf={nameOf} />
-      <ProposalFacts row={row} />
+      <RequestNote row={row} nameOf={nameOf} />
+      <RequestFacts row={row} />
 
       <div className="mt-4 grid gap-4">
-        {row.decision === "Pending" &&
-          can("request.decide", { kind: "proposal", askerIds: askerIdsOf(row) }) && (
-            <DecideCard key={document.id} row={row} projects={projects} onDecided={onDecided} />
-          )}
+        {/* The server says whether `request.decide` reaches it, custody included (VIEW-requests). */}
+        {canDecide && (
+          <DecideCard key={document.id} row={row} projects={projects} onDecided={onDecided} />
+        )}
         <AskersCard record={record} users={users} />
         <PlacedCard row={row} projects={projects} custodies={custodies} />
         <CopiesCard record={record} nameOf={nameOf} />
@@ -151,7 +149,7 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
 // The project's priority, when the proposal came into an approved project after its approval
 // (projects.md §2.1); the decider may pick another.
 function prefilledPriorityOf(
-  row: ProposalRow,
+  row: RequestRow,
   projects: readonly Project[],
 ): { project: Project; priority: Priority } | null {
   if (!isAfterProjectApproval(row)) {
@@ -169,7 +167,7 @@ function prefilledPriorityOf(
 }
 
 interface DecideCardProps {
-  row: ProposalRow;
+  row: RequestRow;
   projects: readonly Project[];
   onDecided: (outcome: DecisionOutcome) => void;
 }
@@ -374,7 +372,7 @@ function SuggestionLine({ suggestion, categories, categoryId, onRestore }: Sugge
 // ---------------------------------------------------------------- the record
 
 // What stands out about the row: how it was decided, or a copy that makes approving a rescan.
-function ProposalNote({ row, nameOf }: { row: ProposalRow; nameOf: (userId: string) => string }) {
+function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string) => string }) {
   const first = firstAskOf(row);
   const [copy] = existingCopiesOf(asksOf(row));
 
@@ -419,7 +417,7 @@ function ProposalNote({ row, nameOf }: { row: ProposalRow; nameOf: (userId: stri
   );
 }
 
-function ProposalFacts({ row }: { row: ProposalRow }) {
+function RequestFacts({ row }: { row: RequestRow }) {
   const first = firstAskOf(row);
   const isShownBatch = useIsShownBatch();
   const elsewhere = batchIdsOf(row).filter(
@@ -433,7 +431,7 @@ function ProposalFacts({ row }: { row: ProposalRow }) {
   return (
     <StatTiles
       stats={[
-        { label: "Status", value: <ProposalStatusBadge row={row} />, isText: true },
+        { label: "Status", value: <RequestStatusBadge row={row} />, isText: true },
         { label: "Askers", value: askerIdsOf(row).length },
         {
           label: row.decision === "Pending" ? "Waiting since" : "First asked",
@@ -446,15 +444,15 @@ function ProposalFacts({ row }: { row: ProposalRow }) {
   );
 }
 
-// The proposal custodies the rules placed it in, and the project it was asked for.
+// The request custodies the rules placed it in, and the project it was asked for.
 function PlacedCard({
   row,
   projects,
   custodies,
 }: {
-  row: ProposalRow;
+  row: RequestRow;
   projects: readonly Project[];
-  custodies: readonly ProposalCustody[];
+  custodies: readonly RequestCustody[];
 }) {
   const placed = row.custodyIds.map(
     (custodyId) =>
@@ -472,7 +470,7 @@ function PlacedCard({
 
   return (
     <DetailCard title="Placed in">
-      <div className="text-xs text-muted-foreground">Proposal custody</div>
+      <div className="text-xs text-muted-foreground">Request custody</div>
       <div className="mt-1 flex flex-wrap gap-1.5">
         {placed.map((custody) => (
           <ToneBadge key={custody.id} tone={custody.isFallback ? "amber" : "slate"}>

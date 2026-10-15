@@ -5,7 +5,7 @@ import {
   heldRolesOf,
   holdersOf,
   projectsOf,
-  proposalCustodyOf,
+  requestCustodyOf,
 } from "@/domain/access";
 import type { AccessNames } from "@/features/access/access-records";
 import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";
@@ -61,8 +61,8 @@ export function AccessRelationships({
         })),
       );
       add(
-        "Proposal custody sets",
-        proposalCustodyOf(user.id, index.groups, index.custodies).map(({ custodyId, via }) => ({
+        "Request custody sets",
+        requestCustodyOf(user.id, index.groups, index.custodies).map(({ custodyId, via }) => ({
           kind: "custodies",
           id: custodyId,
           title: names.custody(custodyId),
@@ -123,7 +123,7 @@ export function AccessRelationships({
         })),
       );
       add(
-        "Proposal custody sets",
+        "Request custody sets",
         index.custodies
           .filter((item) => item.groupIds.includes(group.id))
           .map((item) => ({
@@ -183,7 +183,7 @@ export function AccessRelationships({
           .map((item) => ({
             kind: "custodies",
             id: item.id,
-            href: `/review/proposals?id=${encodeURIComponent(item.id)}`,
+            href: `/requests?id=${encodeURIComponent(item.id)}`,
             title: item.title,
             source: "placed by custody rule",
           })),

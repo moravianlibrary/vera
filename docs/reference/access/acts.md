@@ -25,7 +25,7 @@ answer also carries a code (`list.done`, `access.last_manager`).
 #### ACT-out-of-reach
 
 A record outside the person's reach is *not found* (404), not *forbidden*, so a refusal does not
-reveal what exists. The exception is a proposal outside the person's proposal custody: it is
+reveal what exists. The exception is a proposal outside the person's request custody: it is
 refused (403), since it exists and somebody else decides it.
 
 #### ACT-consequence-first
@@ -52,14 +52,14 @@ and an act on it is refused (409).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-propose` | *Propose…* | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
-| `ACT-propose-approved` | *Propose…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
+| `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
+| `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
 | `ACT-withdraw` | withdraw an ask | `request.withdraw_own` | the ask is still Pending | — |
 
 > **Open — [L14](../../ledger.md#l14-acts-not-built).** Withdrawing is not built. The permission
-> exists and Proposals shows withdrawn asks, but there is no act or endpoint for it.
+> exists and Requests shows withdrawn asks, but there is no act or endpoint for it.
 
-## Proposal review
+## Request review
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|

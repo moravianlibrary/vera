@@ -1,12 +1,12 @@
 // The projects the caller sees with their numbers, and one project with what it funded. A
-// project's acts change what Proposals and Documents show of its asks, and the reference list
+// project's acts change what Requests and Documents show of its asks, and the reference list
 // the propose form offers, so they refetch those too.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
 import type { ProjectQuery } from "@/api/projects";
 import { findProject, listProjectIndex } from "@/api/projects";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
+import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
@@ -29,7 +29,7 @@ export function useProjectQuery(projectId: string | null) {
 // What a project's act changes.
 export const projectInvalidations = [
   projectsQueryKey,
-  proposalsQueryKey,
+  requestsQueryKey,
   documentsQueryKey,
   referenceQueryKey,
   watchlistsQueryKey,

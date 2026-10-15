@@ -317,7 +317,7 @@ function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories"
             }
           >
             <Link
-              to={`/proposals?id=${encodeURIComponent(proposal.documentId)}`}
+              to={`/requests?id=${encodeURIComponent(proposal.documentId)}`}
               className="font-medium hover:underline"
             >
               {proposal.title}
@@ -334,7 +334,7 @@ function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories"
       {proposals.length > 0 && (
         <FinePrint>
           {project.state === "Approved"
-            ? "What is proposed after the approval is decided on its own in Proposals, with this project's priority pre-filled."
+            ? "What is proposed after the approval is decided on its own in Requests, with this project's priority pre-filled."
             : project.state === "Proposed"
               ? "Ordinary pending proposals: a curator may decide one before the project is decided."
               : "Rejected with the project, except where somebody else asked too."}

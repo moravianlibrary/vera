@@ -1,40 +1,40 @@
-// Proposals within the caller's proposal custody: the list a slice at a time, one proposal and
-// the decisions. A decision changes what Documents, Proposals and the watchlist counts show, so
+// Requests within the reach of the caller's `request.read`: the list a slice at a time, one proposal and
+// the decisions. A decision changes what Documents, Requests and the watchlist counts show, so
 // it refetches all three.
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Approval, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
-import { approveProposal, findProposal, listProposals } from "@/api/proposal-review";
+import type { Approval, RequestGrouping, RequestQuery } from "@/api/requests";
+import { approveProposal, findRequest, listRequests } from "@/api/requests";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
-export const proposalsQueryKey = ["proposals"] as const;
+export const requestsQueryKey = ["requests"] as const;
 
-export function useProposalsQuery(query: ProposalQuery, grouping: ProposalGrouping | null) {
-  return usePagedList([...proposalsQueryKey, "list", query, grouping], (cursor) =>
-    listProposals(query, { grouping, cursor }),
+export function useRequestsQuery(query: RequestQuery, grouping: RequestGrouping | null) {
+  return usePagedList([...requestsQueryKey, "list", query, grouping], (cursor) =>
+    listRequests(query, { grouping, cursor }),
   );
 }
 
 // Every open proposal a batch asked for, wherever its earliest ask was, a slice at a time: the
 // bulk approve lists them to be unticked, and the server takes the batch whole.
 export function useBatchProposalsQuery(batchId: string) {
-  const query: ProposalQuery = { batchIds: [batchId], decisions: ["Pending"] };
-  return usePagedList([...proposalsQueryKey, "batch", batchId], (cursor) =>
-    listProposals(query, { cursor }),
+  const query: RequestQuery = { batchIds: [batchId], decisions: ["Pending"] };
+  return usePagedList([...requestsQueryKey, "batch", batchId], (cursor) =>
+    listRequests(query, { cursor }),
   );
 }
 
-export function useProposalQuery(documentId: string | null) {
+export function useRequestQuery(documentId: string | null) {
   return useQuery({
-    queryKey: [...proposalsQueryKey, "detail", documentId],
-    queryFn: documentId === null ? skipToken : () => findProposal(documentId),
+    queryKey: [...requestsQueryKey, "detail", documentId],
+    queryFn: documentId === null ? skipToken : () => findRequest(documentId),
   });
 }
 
 // What a decision changes.
-export const decisionInvalidations = [proposalsQueryKey, documentsQueryKey, watchlistsQueryKey];
+export const decisionInvalidations = [requestsQueryKey, documentsQueryKey, watchlistsQueryKey];
 
 export function useDecisionMutations() {
   const queryClient = useQueryClient();

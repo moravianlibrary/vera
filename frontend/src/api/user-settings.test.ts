@@ -22,10 +22,10 @@ describe("user settings", () => {
   it("keeps the tab last opened per view, null for All", async () => {
     signInAs("curator");
 
-    await updateUserSettings({ lastOpenedWatchlists: { proposals: "W-shared-3" } });
+    await updateUserSettings({ lastOpenedWatchlists: { requests: "W-shared-3" } });
     const settings = await updateUserSettings({ lastOpenedWatchlists: { documents: null } });
 
-    expect(settings.lastOpenedWatchlists).toEqual({ proposals: "W-shared-3", documents: null });
+    expect(settings.lastOpenedWatchlists).toEqual({ requests: "W-shared-3", documents: null });
     expect(await getUserSettings()).toEqual(settings);
   });
 

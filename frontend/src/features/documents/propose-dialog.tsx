@@ -51,7 +51,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { isShownAsBatch } from "@/domain/documents";
 import type { Batch, Priority, Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
+import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
 import type { IdentifierType, ProposalLine } from "@/domain/proposals";
 import {
@@ -61,7 +61,7 @@ import {
   parseProposalLines,
 } from "@/domain/proposals";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
+import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
@@ -169,7 +169,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
       void queryClient.invalidateQueries({ queryKey: documentsQueryKey });
       void queryClient.invalidateQueries({ queryKey: watchlistsQueryKey });
       // What waits for a decision now includes these.
-      void queryClient.invalidateQueries({ queryKey: [...proposalsQueryKey, "list"] });
+      void queryClient.invalidateQueries({ queryKey: [...requestsQueryKey, "list"] });
       void queryClient.invalidateQueries({ queryKey: [...referenceQueryKey, "batches"] });
       void queryClient.invalidateQueries({ queryKey: ["proposals", "rate-limit"] });
     },
@@ -253,9 +253,9 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
   return (
     <>
       <DialogHeader className="gap-3">
-        <DialogTitle>Propose</DialogTitle>
+        <DialogTitle>{proposeActOf(session)}</DialogTitle>
         <DialogDescription className="sr-only">
-          Propose documents for digitization, one or several at once.
+          {proposeActOf(session)} documents for digitization, one or several at once.
         </DialogDescription>
         <StepIndicator steps={steps} currentIndex={steps.indexOf(step)} />
       </DialogHeader>
@@ -892,7 +892,7 @@ function DetailsStep({
               >
                 <b className="font-semibold">Approve now</b> — the {newCount} new skip review.{" "}
                 <span className="text-muted-foreground">
-                  Any with an existing copy waits in Proposals like any other.
+                  Any with an existing copy waits in Requests like any other.
                 </span>
               </Label>
             </div>

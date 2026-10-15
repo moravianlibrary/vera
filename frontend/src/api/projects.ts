@@ -173,7 +173,7 @@ export type ProjectIndex = z.infer<typeof projectIndexSchema>;
 
 // ---------------------------------------------------------------- detail
 
-// One row per document, as on Proposals: one decision covers every asker.
+// One row per document, as on Requests: one decision covers every asker.
 export const projectProposalSchema = z.object({
   documentId: z.string(),
   title: z.string(),

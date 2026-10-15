@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { hasPermission } from "@/domain/permissions";
+import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentList } from "@/features/documents/document-list";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
@@ -86,7 +86,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             ? [
                 {
                   id: "propose",
-                  label: "Propose",
+                  label: proposeActOf(session),
                   icon: Plus,
                   isPrimary: true,
                   onSelect: () => setIsProposing(true),

@@ -6,7 +6,7 @@
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { getAccessIndex, getCustodyImpact, getRoleImpact } from "@/api/access";
 import { categoriesQueryKey } from "@/features/categories/use-categories-query";
-import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
+import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey } from "@/hooks/use-reference-query";
 import { sessionQueryKey } from "@/hooks/use-session-query";
 
@@ -16,7 +16,7 @@ export const accessInvalidations = [
   accessQueryKey,
   sessionQueryKey,
   referenceQueryKey,
-  proposalsQueryKey,
+  requestsQueryKey,
   categoriesQueryKey,
 ] as const;
 

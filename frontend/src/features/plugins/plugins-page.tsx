@@ -46,7 +46,7 @@ import {
 import { pluginInvalidations, usePluginsQuery } from "@/features/plugins/use-plugins-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
-import { useProposalCustodiesQuery, useRolesQuery } from "@/hooks/use-reference-query";
+import { useRequestCustodiesQuery, useRolesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { plural } from "@/lib/plural";
 
@@ -161,7 +161,7 @@ function PluginTable({
 }: PluginTableProps) {
   const labels = useReferenceLabels(["users", "categories"]);
   const { data: roles = [] } = useRolesQuery();
-  const { data: custodies = [] } = useProposalCustodiesQuery();
+  const { data: custodies = [] } = useRequestCustodiesQuery();
   const shown = shownPluginsOf(index, query);
   const isFiltered = !pluginsView.isSameQuery(query, {});
   const groups = useInstanceGroups({

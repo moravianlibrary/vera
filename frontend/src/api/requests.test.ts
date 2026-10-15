@@ -1,4 +1,4 @@
-// Proposal Review end to end against the mock server over HTTP: whose proposals each decider
+// Requests end to end against the mock server over HTTP: whose proposals each decider
 // sees, one row and one decision per document, what a rescan, a decline and a bulk approve
 // need, and what is refused. Decisions change the mock's state, so each test decides its own
 // documents.
@@ -7,18 +7,18 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
-import type { ProposalQuery } from "@/api/proposal-review";
+import type { RequestQuery } from "@/api/requests";
 import {
   approveProposal,
   bulkApproveProposals,
   declineProposal,
-  findProposal,
-  isSameProposalQuery,
-  listProposals,
-  maximumProposalSliceSize,
-  parseProposalSearchParams,
-  toProposalSearchParams,
-} from "@/api/proposal-review";
+  findRequest,
+  isSameRequestQuery,
+  listRequests,
+  maximumRequestSliceSize,
+  parseRequestSearchParams,
+  toRequestSearchParams,
+} from "@/api/requests";
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { documents } from "@/mocks/fixtures/documents";
@@ -68,42 +68,42 @@ function harvest(batchId: string, size: number): void {
   }
 }
 
-async function documentIdsOf(query: ProposalQuery = {}): Promise<string[]> {
-  const page = await listProposals(query, { limit: 200 });
+async function documentIdsOf(query: RequestQuery = {}): Promise<string[]> {
+  const page = await listRequests(query, { limit: 200 });
   return page.items.map((row) => row.record.document.id);
 }
 
 describe("the query", () => {
   it("writes every decision it names, and none for any", () => {
-    expect(toProposalSearchParams({ decisions: ["Pending"] }).toString()).toBe("decision=Pending");
-    expect(parseProposalSearchParams(new URLSearchParams("")).decisions).toBeUndefined();
+    expect(toRequestSearchParams({ decisions: ["Pending"] }).toString()).toBe("decision=Pending");
+    expect(parseRequestSearchParams(new URLSearchParams("")).decisions).toBeUndefined();
     expect(
-      isSameProposalQuery(
+      isSameRequestQuery(
         { decisions: ["Withdrawn", "Denied"] },
         { decisions: ["Denied", "Withdrawn"] },
       ),
     ).toBe(true);
-    expect(isSameProposalQuery({}, { decisions: ["Pending"] })).toBe(false);
+    expect(isSameRequestQuery({}, { decisions: ["Pending"] })).toBe(false);
   });
 
   it("writes the days asked as a range with either end open, and drops a malformed one", () => {
-    expect(toProposalSearchParams({ asked: { from: "2026-06-01" } }).toString()).toBe(
+    expect(toRequestSearchParams({ asked: { from: "2026-06-01" } }).toString()).toBe(
       "asked=2026-06-01..",
     );
-    expect(parseProposalSearchParams(new URLSearchParams("asked=..2026-06-21")).asked).toEqual({
+    expect(parseRequestSearchParams(new URLSearchParams("asked=..2026-06-21")).asked).toEqual({
       to: "2026-06-21",
     });
-    expect(parseProposalSearchParams(new URLSearchParams("asked=2026-13-01..")).asked).toBe(
+    expect(parseRequestSearchParams(new URLSearchParams("asked=2026-13-01..")).asked).toBe(
       undefined,
     );
   });
 });
 
-describe("listProposals", () => {
+describe("listRequests", () => {
   it("shows an admin every open proposal, the fallback's included, one row per document", async () => {
     signInAs("admin");
 
-    const page = await listProposals({ decisions: ["Pending"] }, { limit: 200 });
+    const page = await listRequests({ decisions: ["Pending"] }, { limit: 200 });
     const ids = page.items.map((row) => row.record.document.id);
 
     expect(ids).toContain("D31");
@@ -114,15 +114,18 @@ describe("listProposals", () => {
     expect(page.items.every((row) => row.decision === "Pending")).toBe(true);
   });
 
-  it("shows a curator only the proposals in their proposal custody", async () => {
+  it("shows a curator every request through request.read, deciding only their custody's (VIEW-requests)", async () => {
     signInAs("curator");
 
-    const page = await listProposals({}, { limit: 200 });
+    const page = await listRequests({}, { limit: 200 });
+    const outside = await findRequest("D31");
+    const inside = page.items.find(
+      (row) => row.decision === "Pending" && row.custodyIds.includes("pc1"),
+    );
 
-    expect(page.items.length).toBeGreaterThan(0);
-    expect(page.items.every((row) => row.custodyIds.includes("pc1"))).toBe(true);
-    expect(page.items.map((row) => row.record.document.id)).not.toContain("D31");
-    expect(page.facets.custodyIds.map((facet) => facet.value)).not.toContain("pc0");
+    expect(page.items.map((row) => row.record.document.id)).toContain("D31");
+    expect(outside).toMatchObject({ canDecide: false });
+    expect(inside && (await findRequest(inside.record.document.id))?.canDecide).toBe(true);
   });
 
   it("shows every decision unfiltered, and only the open ones awaiting a decision", async () => {
@@ -137,7 +140,7 @@ describe("listProposals", () => {
   it("lists a row in the batch of its earliest ask, and says what a bulk approve would take", async () => {
     signInAs("admin");
 
-    const page = await listProposals({}, { grouping: "batch", limit: 200 });
+    const page = await listRequests({}, { grouping: "batch", limit: 200 });
     const shelf = page.groups.find(
       (group) => group.kind === "batch" && group.batch?.id === "B-0143",
     );
@@ -149,8 +152,8 @@ describe("listProposals", () => {
   it("opens each row on the first classifier's leaf, once the checks have answered", async () => {
     signInAs("admin");
 
-    const regional = await findProposal("D25");
-    const national = await findProposal("D20");
+    const regional = await findRequest("D25");
+    const national = await findRequest("D20");
 
     expect(regional?.row.suggestion).toEqual({
       categoryId: "c21",
@@ -161,14 +164,14 @@ describe("listProposals", () => {
       categoryId: "c22",
       classifier: { name: "Material type" },
     });
-    expect((await findProposal("D22"))?.row.suggestion).toBeNull(); // a monograph: no rule
-    expect((await findProposal("D21"))?.row.suggestion).toBeNull(); // still being checked
+    expect((await findRequest("D22"))?.row.suggestion).toBeNull(); // a monograph: no rule
+    expect((await findRequest("D21"))?.row.suggestion).toBeNull(); // still being checked
   });
 
   it("counts what a batch's classifiers suggested over what a bulk approve takes", async () => {
     signInAs("admin");
 
-    const page = await listProposals({}, { grouping: "batch", limit: 200 });
+    const page = await listRequests({}, { grouping: "batch", limit: 200 });
     const shelf = page.groups.find(
       (group) => group.kind === "batch" && group.batch?.id === "B-0143",
     );
@@ -190,10 +193,10 @@ describe("listProposals", () => {
     expect(before.toSorted()).toEqual(["D21", "D23", "D24"]);
   });
 
-  it("refuses those who may not decide", async () => {
+  it("refuses those without request.read (VIEW-requests)", async () => {
     signInAs("staff");
 
-    expect(await statusOf(listProposals({}))).toBe(403);
+    expect(await statusOf(listRequests({}))).toBe(403);
   });
 });
 
@@ -225,7 +228,7 @@ describe("deciding", () => {
     expect(result).toEqual({ documentId: "D20", decision: "Approved", askCount: 4 });
     expect(detail?.record.iterations).toHaveLength(1);
     expect(relations).toEqual(["Originates", "Tracks", "Tracks", "Tracks"]);
-    expect(await findProposal("D20")).toBeNull();
+    expect(await findRequest("D20")).toBeNull();
     expect(approvalEntryOf("D20")?.detail).toContain(
       "Material type suggested Periodicals / National",
     );
@@ -295,7 +298,7 @@ describe("deciding", () => {
 
   it("approves a batch of any size, beyond what one slice lists", async () => {
     signInAs("admin");
-    const harvestSize = maximumProposalSliceSize + 50;
+    const harvestSize = maximumRequestSliceSize + 50;
     harvest("B-HARVEST", harvestSize);
 
     const result = await bulkApproveProposals("B-HARVEST", {
@@ -318,7 +321,7 @@ describe("deciding", () => {
     ).toBe(404);
   });
 
-  it("refuses a curator a proposal outside their proposal custody", async () => {
+  it("refuses a curator a proposal outside their request custody", async () => {
     signInAs("curator");
 
     expect(
@@ -326,7 +329,7 @@ describe("deciding", () => {
         approveProposal("D31", { categoryId: "c4", priority: "Normal", rescanNote: null }),
       ),
     ).toBe(403);
-    expect(await findProposal("D31")).toBeNull();
+    expect((await findRequest("D31"))?.canDecide).toBe(false);
   });
 
   it("logs a suggestion the decider changed as overruled, and one a batch changed as overridden", async () => {

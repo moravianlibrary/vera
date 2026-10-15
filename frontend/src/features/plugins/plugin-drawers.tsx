@@ -54,7 +54,7 @@ export interface DrawerNames {
   userOf: (userId: string) => string;
   categoryOf: (categoryId: string) => string;
   roleOf: (roleId: string) => string;
-  // A proposal custody's id, by its name; undefined when there is none.
+  // A request custody's id, by its name; undefined when there is none.
   custodyIdOf: (name: string) => string | undefined;
 }
 

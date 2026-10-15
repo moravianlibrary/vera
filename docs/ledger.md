@@ -62,15 +62,6 @@ Decided on 2026-10-15: the order a document meets them (Identity, Input, Harvest
 adapter, Property source, Registry, Validation, Restriction, Custody, Classifier, List generator,
 Link, Publication detector, Message, Delivery channel), with no group headings. → frontend.
 
-### L1: request.read opens Requests
-
-Rules: [ACCESS-membership-not-capability](reference/access/custody.md#access-membership-not-capability),
-[VIEW-proposals](reference/access/views.md#view-proposals).
-
-Decided on 2026-10-15. `request.read` opens the Requests page read-only, for the requests in its reach;
-`request.decide` adds Approve and Decline. A custody member who advises without deciding reads
-the custody's requests. Today `request.read` is checked nowhere. → frontend.
-
 ### L6: Unlinking an identity
 
 Rules: [ACCESS-link-identity](reference/access/people.md#access-link-identity).
@@ -156,17 +147,6 @@ intention's own mix in place, which Overall no longer has. Which mix Overall use
 Built on 2026-10-15: the permission is gone from the catalog and the `admin` role, and Overall's
 mix is written under `intention.edit@any`. → frontend: remove the older path with
 [L28](#l28-remove-mix-tracking).
-
-### L44: Proposals becomes Requests
-
-Rules: [ENT-request](reference/model/entities.md#ent-request),
-[VIEW-proposals](reference/access/views.md#view-proposals).
-
-Decided on 2026-10-15: the page shows decided requests too, so it is *Requests*. *Proposal
-custody* becomes *request custody*. A proposal stays the word for an undecided request. The act
-is *Propose…* for a person without `request.decide`, and *Add…* for one who holds it.
-
-→ docs (glossary, reference, user journeys), then frontend (routes, labels, code names).
 
 ### L48: Shelf mark
 
@@ -389,6 +369,16 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-15
 
+- **L44:** Proposals is *Requests* at `/requests`, proposal custody is *request custody*
+  ([ACCESS-request-custody](reference/access/custody.md#access-request-custody)), and the code
+  follows (`features/requests`, `api/requests`, `RequestRow`, `RequestCustody`); a proposal stays
+  the word for an undecided request, so submitting keeps its names. The act is *Add…* for a
+  holder of `request.decide` and *Propose…* for anyone else
+  ([ACT-propose](reference/access/acts.md#proposing)).
+- **L1:** `request.read` opens Requests within its scope, read-only; the server says per proposal
+  whether `request.decide` reaches it, and a batch counts only what the caller may approve
+  ([VIEW-requests](reference/access/views.md#view-requests)).
+
 - **L54:** decided on 2026-10-15. An approved ask stops counting as the asker's own once its
   attempt is published or cancelled, so its asker can ask again; the ask is a new proposal
   ([LC-REQ-check](reference/lifecycles/request.md#lc-req-check)).
@@ -433,7 +423,7 @@ messages, and the generator follows them. → frontend.
   by `curator` and `dig-curator` at `custody`) and `request.read_payload`; the `project.*`
   permissions moved to Requests; *Lists and planning* became *Planning*
   ([the catalog](reference/access/permissions.md#the-catalog),
-  [ACT-retry-batch](reference/access/acts.md#proposal-review)).
+  [ACT-retry-batch](reference/access/acts.md#request-review)).
 - **L38:** the Documents Validations entry shows with any of `validation.approve`,
   `validation.deny` or `validation.revoke`
   ([VIEW-validations](reference/access/views.md#view-validations)).

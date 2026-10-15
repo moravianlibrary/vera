@@ -1,6 +1,6 @@
 # Decide the proposals in my custody
 
-**Who.** A curator: Kateřina Novotná, a member of the *Periodicals* proposal custody.
+**Who.** A curator: Kateřina Novotná, a member of the *Periodicals* request custody.
 
 **Goal.** "Clear today's proposals: approve what we should scan, decline what we shouldn't."
 
@@ -14,9 +14,9 @@ There are also open proposals in *Moravica*, which she is not a member of.
 
 ## Steps
 
-1. Kateřina opens *Proposals*.
+1. Kateřina opens *Requests*.
    → She sees the proposals in *Periodicals* and none from *Moravica*. Each row names its
-   custodies ([VIEW-proposals](../../reference/access/views.md#view-proposals)).
+   custodies ([VIEW-requests](../../reference/access/views.md#view-requests)).
 2. She opens the one asked by two people and approves it into a leaf category, *Periodicals →
    Regional*, at *Normal* priority. The form opened on the classifier's suggestion.
    → Both asks are approved, and one iteration exists, originated by the older ask
@@ -32,17 +32,17 @@ There are also open proposals in *Moravica*, which she is not a member of.
    ([ACT-reason-two-texts](../../reference/access/acts.md#act-reason-two-texts)).
 6. She groups by batch and approves the batch under one category, unticking one item.
    → All but the unticked one, any rescan and any unchecked one are approved; those left out are
-   counted ([ACT-approve-batch](../../reference/access/acts.md#proposal-review)).
+   counted ([ACT-approve-batch](../../reference/access/acts.md#request-review)).
 7. She opens a link to a *Moravica* proposal and tries to decide it.
-   → Refused: it is outside her proposal custody
+   → Refused: it is outside her request custody
    ([ACT-out-of-reach](../../reference/access/acts.md#act-out-of-reach)).
 
 ## Rules
 
-[ACCESS-proposal-custody](../../reference/access/custody.md#access-proposal-custody) ·
+[ACCESS-request-custody](../../reference/access/custody.md#access-request-custody) ·
 [ACCESS-one-decision](../../reference/access/custody.md#access-one-decision) ·
-[ACT-approve](../../reference/access/acts.md#proposal-review) ·
-[ACT-decline](../../reference/access/acts.md#proposal-review) ·
+[ACT-approve](../../reference/access/acts.md#request-review) ·
+[ACT-decline](../../reference/access/acts.md#request-review) ·
 [ACCESS-custody-ends](../../reference/access/custody.md#access-custody-ends)
 
 ## Not covered

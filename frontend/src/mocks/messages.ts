@@ -8,14 +8,14 @@ import type { MessageChannel, MessageHandOff, MessageSubject } from "@/api/messa
 import { navigationEntries } from "@/components/layout/navigation";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Session, User } from "@/domain/entities";
-import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/proposal-review";
+import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/requests";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
 import type { MessageImplementation } from "@/mocks/fixtures/message-channels";
 import { slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
-import { findReachableRow } from "@/mocks/proposal-review";
+import { findReachableRow } from "@/mocks/requests";
 import { holdersOfPermission } from "@/mocks/session";
 import { findReachableValidation } from "@/mocks/validations";
 
@@ -82,7 +82,7 @@ function resolveProposal(session: Session, documentId: string): ResolvedSubject 
   );
   return {
     label: `${document.title} · ${documentIdentifierOf(document)}`,
-    path: `${pathOf("proposals")}?id=${encodeURIComponent(document.id)}`,
+    path: `${pathOf("requests")}?id=${encodeURIComponent(document.id)}`,
     context: ["Proposed for digitization", plural(asksOf(row).length, "ask"), ...projectNames].join(
       " · ",
     ),

@@ -20,7 +20,7 @@ erDiagram
 
 A user is a person or an agent. An agent is a plugin that proposes like a person: it is created
 with its plugin, never logs in, has no identity, and holds the roles it was created with. Its
-proposals enter where it says (*Proposals*, through review, or *Additions*, approved already).
+proposals enter where it says (*Requests*, through review, or *Additions*, approved already).
 
 #### ACCESS-user-name
 
@@ -142,7 +142,7 @@ list of what someone can reach, and obvious in a list of reasons.
 
 A group is a named set of people. It carries responsibility, never capability:
 - category custody;
-- proposal custody;
+- request custody;
 - project membership.
 
 It gives no role ([ROLE-held-by-people](roles.md#role-held-by-people)).
@@ -152,13 +152,13 @@ as a side effect of joining a team.
 
 #### ACCESS-group-name
 
-Group, role and proposal custody names are each unique among their own kind.
+Group, role and request custody names are each unique among their own kind.
 
 ## Managing access
 
 #### ACCESS-read
 
-`access.read` shows Users & Groups: every user, role, group and proposal custody, and what links
+`access.read` shows Users & Groups: every user, role, group and request custody, and what links
 them. `access.manage` changes them, roles included.
 
 #### ACCESS-last-manager

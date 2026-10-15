@@ -9,7 +9,7 @@ import { skipToken, useQuery } from "@tanstack/react-query";
 import { getInstanceUpgrade, getPluginImpact, getPluginIndex } from "@/api/plugins";
 import { accessQueryKey } from "@/features/access/use-access-query";
 import { listsQueryKey } from "@/features/lists/use-lists-query";
-import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
+import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { schedulesQueryKey } from "@/features/tasks/use-tasks-query";
 import { messagesQueryKey } from "@/hooks/use-message-query";
 import { referenceQueryKey } from "@/hooks/use-reference-query";
@@ -24,7 +24,7 @@ export const pluginInvalidations = [
   tasksQueryKey,
   schedulesQueryKey,
   listsQueryKey,
-  proposalsQueryKey,
+  requestsQueryKey,
   messagesQueryKey,
   accessQueryKey,
 ] as const;

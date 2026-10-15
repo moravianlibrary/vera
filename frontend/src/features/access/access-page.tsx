@@ -15,7 +15,7 @@ import {
   heldRoleIdsOf,
   holdersOf,
   projectsOf,
-  proposalCustodyOf,
+  requestCustodyOf,
 } from "@/domain/access";
 import { hasPermission } from "@/domain/permissions";
 import type { AccessDialog } from "@/features/access/access-acts";
@@ -112,7 +112,7 @@ function rowsOf(
           .join(", ") || "—",
       access: [
         `${new Set(projectsOf(user.id, index.groups, index.projects).map((entry) => entry.projectId)).size} projects`,
-        `${new Set(proposalCustodyOf(user.id, index.groups, index.custodies).map((entry) => entry.custodyId)).size} proposal sets`,
+        `${new Set(requestCustodyOf(user.id, index.groups, index.custodies).map((entry) => entry.custodyId)).size} proposal sets`,
         `${new Set(categoryCustodyOf(user.id, index.groups, index.categoryMemberships).map((entry) => entry.categoryId)).size} categories`,
       ].join(" · "),
     }));
@@ -184,7 +184,7 @@ function matches(row: Row, query: AccessQuery, index: AccessIndex): boolean {
     if (
       query.custodyIds?.length &&
       !query.custodyIds.some((id) =>
-        proposalCustodyOf(user.id, index.groups, index.custodies).some(
+        requestCustodyOf(user.id, index.groups, index.custodies).some(
           (entry) => entry.custodyId === id,
         ),
       )
@@ -263,7 +263,7 @@ function fieldsFor(
       field("roleIds", "Role", index.roles),
       field("groupIds", "Group", index.groups),
       field("projectIds", "Project", index.projects),
-      field("custodyIds", "Proposal custody", index.custodies),
+      field("custodyIds", "Request custody", index.custodies),
       field("categoryIds", "Category custody", index.categories),
     ];
   if (view === "custodies")
@@ -642,7 +642,7 @@ export function AccessPage() {
                         : view === "groups"
                           ? "groups"
                           : type === "proposals"
-                            ? "proposal custody sets"
+                            ? "request custody sets"
                             : "categories"}
                   </span>
                   <span>{shown.length} shown</span>

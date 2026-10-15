@@ -95,6 +95,12 @@ export function canOpenMyDocuments(holder: GrantHolder): boolean {
   return hasPermission(holder, "request.read_mine");
 }
 
+// The act that raises requests: *Add…* for a holder of `request.decide`, who may approve at once,
+// and *Propose…* for anyone else (ACT-propose).
+export function proposeActOf(holder: GrantHolder): "Add" | "Propose" {
+  return hasPermission(holder, "request.decide") ? "Add" : "Propose";
+}
+
 // ---------------------------------------------------------------- scope against a record
 
 // What a pane's action is about, as far as a grant's scope can tell (permissions.md §2).
@@ -174,8 +180,8 @@ function isOwnedBy(record: ScopedRecord, userId: string): boolean {
 
 function isInCustody(holder: ScopeHolder, record: ScopedRecord): boolean {
   switch (record.kind) {
-    // Before approval custody is proposal custody, and the server lists a decider only the
-    // proposals in their proposal custodies (permissions.md §3, Requests).
+    // Before approval custody is request custody, and the server lists a decider only the
+    // proposals in their request custodies (permissions.md §3, Requests).
     case "proposal":
       return true;
     case "iteration":

@@ -69,7 +69,7 @@ these terms (in `develop/i18n.md`, part 5).
 | role | role | a bundle of grants | [ROLE-bundle](reference/access/roles.md#role-bundle) |
 | group | skupina | people who share responsibility | [ACCESS-group](reference/access/people.md#access-group) |
 | category custody | správa kategorie | who looks after a line of work | [ACCESS-category-custody](reference/access/custody.md#access-category-custody) |
-| proposal custody | správa návrhů | who decides a set of proposals | [ACCESS-proposal-custody](reference/access/custody.md#access-proposal-custody) |
+| request custody | správa žádostí | who decides a set of proposals | [ACCESS-request-custody](reference/access/custody.md#access-request-custody) |
 | fallback | záchytná správa | the custody for what no rule placed | [ACCESS-fallback](reference/access/custody.md#access-fallback) |
 | agent | agent | a plugin that proposes like a person | [ACCESS-user-kinds](reference/access/people.md#access-user-kinds) |
 | identity | identita | one way a person logs in | [ACCESS-identity-key](reference/access/people.md#access-identity-key) |

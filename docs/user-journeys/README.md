@@ -31,8 +31,8 @@ The dev servers (`make dev-roles`) sign in one fixture person each:
 |---|---|---|---|
 | `reader` | 5205 | Tomáš Marek (u5) | default role of eduID |
 | `staff` | 5204 | Eva Horáková (u4) | mapped from Keycloak group `mzk-staff` |
-| `curator` | 5202 | Kateřina Novotná (u8) | by hand; proposal custody Periodicals; category custody Maps directly and Periodicals via Periodicals Curators |
-| `dig-curator` | 5203 | Martin Svoboda (u2) | mapped from Keycloak group `mzk-digitization`; proposal custody Moravica via Digitization Office |
+| `curator` | 5202 | Kateřina Novotná (u8) | by hand; request custody Periodicals; category custody Maps directly and Periodicals via Periodicals Curators |
+| `dig-curator` | 5203 | Martin Svoboda (u2) | mapped from Keycloak group `mzk-digitization`; request custody Moravica via Digitization Office |
 | `admin` | 5201 | Petr Dvořák (u3) | by hand, and staff mapped from Keycloak |
 
 ## The journeys

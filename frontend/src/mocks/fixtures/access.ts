@@ -81,7 +81,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
     proposalBatchLimit: null,
     proposalDailyLimit: null,
     description:
-      "Decides proposals in their proposal custody; validates, classifies and publishes inside their category custody; decides projects.",
+      "Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects.",
     grants: [
       {
         permission: "request.create",

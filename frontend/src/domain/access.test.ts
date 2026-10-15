@@ -11,7 +11,7 @@ import {
   heldRolesOf,
   includedRolesOf,
   projectsOf,
-  proposalReachOf,
+  requestReachOf,
   roleChangeReachOf,
   roleNameOf,
 } from "@/domain/access";
@@ -78,11 +78,11 @@ describe("includedRolesOf", () => {
   });
 });
 
-describe("proposalReachOf", () => {
+describe("requestReachOf", () => {
   it("decides with request.decide, sees with request.read, and nothing with neither", () => {
-    expect(proposalReachOf(roles, ["curator"])).toBe("decides");
-    expect(proposalReachOf(roles, ["staff"])).toBeNull();
-    expect(proposalReachOf(roles, ["reader"])).toBeNull();
+    expect(requestReachOf(roles, ["curator"])).toBe("decides");
+    expect(requestReachOf(roles, ["staff"])).toBeNull();
+    expect(requestReachOf(roles, ["reader"])).toBeNull();
   });
 });
 

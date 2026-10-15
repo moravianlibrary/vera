@@ -1,12 +1,12 @@
-// The Proposals view (view-map.md §2, Proposal Review): one row per document awaiting a decision
-// within the caller's proposal custody, the proposal beside it. It opens on awaiting a decision;
+// The Requests view (VIEW-requests): one row per document asked for, within the reach of the
+// caller's `request.read`, its asks beside it; `request.decide` adds the decision acts. It opens on awaiting a decision;
 // its state lives in the URL like Documents': the filter, `?id=` naming the open document,
 // `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // TODO(rrandiak): labels move to i18n.
 
 import { Inbox } from "lucide-react";
 import { useState } from "react";
-import type { ProposalDetail, ProposalGroup } from "@/api/proposal-review";
+import type { RequestDetail, RequestGroup } from "@/api/requests";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -15,33 +15,33 @@ import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { hasPermission } from "@/domain/permissions";
-import { BulkApproveDialog } from "@/features/proposals/bulk-approve-dialog";
-import type { DecisionOutcome } from "@/features/proposals/proposal-detail";
-import { ProposalDetailPane } from "@/features/proposals/proposal-detail";
-import { ProposalList } from "@/features/proposals/proposal-list";
-import { proposalsView } from "@/features/proposals/proposals-view";
-import { useProposalQuery, useProposalsQuery } from "@/features/proposals/use-proposals-query";
+import { BulkApproveDialog } from "@/features/requests/bulk-approve-dialog";
+import type { DecisionOutcome } from "@/features/requests/request-detail";
+import { RequestDetailPane } from "@/features/requests/request-detail";
+import { RequestList } from "@/features/requests/request-list";
+import { requestsView } from "@/features/requests/requests-view";
+import { useRequestQuery, useRequestsQuery } from "@/features/requests/use-requests-query";
 import {
   useProjectsQuery,
-  useProposalCustodiesQuery,
+  useRequestCustodiesQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
-type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
+type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
-export function ProposalsPage() {
-  const view = useViewUrlState(proposalsView);
+export function RequestsPage() {
+  const view = useViewUrlState(requestsView);
   const { query, selectedId, grouping, select } = view;
   const [decided, setDecided] = useState<DecisionOutcome | null>(null);
   const [bulkGroup, setBulkGroup] = useState<BatchGroup | null>(null);
   const { data: session } = useSessionQuery();
-  const proposals = useProposalsQuery(query, grouping);
-  const { data: detail } = useProposalQuery(selectedId);
+  const proposals = useRequestsQuery(query, grouping);
+  const { data: detail } = useRequestQuery(selectedId);
   const { data: users = [] } = useUsersQuery();
   const { data: projects = [] } = useProjectsQuery();
-  const { data: custodies = [] } = useProposalCustodiesQuery();
+  const { data: custodies = [] } = useRequestCustodiesQuery();
   const { summary } = proposals;
 
   if (session === undefined) {
@@ -49,10 +49,10 @@ export function ProposalsPage() {
   }
 
   const title =
-    visibleNavigation(session).find((entry) => entry.id === "proposals")?.visibleLabel ?? "";
+    visibleNavigation(session).find((entry) => entry.id === "requests")?.visibleLabel ?? "";
 
   const documentsEntry = visibleNavigation(session).find((entry) => entry.id === "documents");
-  const paneState: PaneState<ProposalDetail> =
+  const paneState: PaneState<RequestDetail> =
     detail === null && decided?.documentId === selectedId
       ? {
           kind: "outcome",
@@ -70,14 +70,14 @@ export function ProposalsPage() {
                   },
           },
         }
-      : paneStateOf(selectedId, detail, "This proposal is no longer waiting here");
+      : paneStateOf(selectedId, detail, "This request is no longer within your reach");
   const detailPane = (
     <Pane
       state={paneState}
       emptyIcon={Inbox}
-      emptyText="Select a proposal"
+      emptyText="Select a request"
       render={(ready) => (
-        <ProposalDetailPane detail={ready} session={session} onDecided={setDecided} />
+        <RequestDetailPane detail={ready} session={session} onDecided={setDecided} />
       )}
     />
   );
@@ -88,7 +88,7 @@ export function ProposalsPage() {
 
       {hasPermission(session, "watch") && (
         <WatchlistTabs
-          view="proposals"
+          view="requests"
           filter={view.filter}
           openedId={view.watchlistId}
           canShare={hasPermission(session, "watchlist.manage_system")}
@@ -101,17 +101,17 @@ export function ProposalsPage() {
       <FilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
         key={view.filterReplacements}
-        fields={proposalsView.fields}
+        fields={requestsView.fields}
         query={query}
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
-        searchLabel="Search proposals"
+        searchLabel="Search requests"
         searchPlaceholder="Search — title, catalog ID, volume, who asked, batch"
       />
 
       <MasterDetail
         master={
-          <ProposalList
+          <RequestList
             items={proposals.items}
             groups={proposals.slices?.flatMap((slice) => slice.groups) ?? []}
             total={summary?.total}
@@ -121,13 +121,13 @@ export function ProposalsPage() {
             grouping={grouping}
             onGroupingChange={view.setGrouping}
             references={{ users, projects, custodies }}
-            onBulkApprove={setBulkGroup}
+            onBulkApprove={hasPermission(session, "request.decide") ? setBulkGroup : undefined}
             selectedId={selectedId}
             onSelect={select}
           />
         }
         detail={detailPane}
-        detailTitle={detail?.row.record.document.title ?? "Proposal"}
+        detailTitle={detail?.row.record.document.title ?? "Request"}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {

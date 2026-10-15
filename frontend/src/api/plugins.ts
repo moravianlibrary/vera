@@ -75,7 +75,7 @@ export type IdentitySettings = z.infer<typeof identitySettingsSchema>;
 
 export const instanceSettingsSchema = z.discriminatedUnion("kind", [
   identitySettingsSchema,
-  // The proposal custodies its rule can name; the rule itself is its configuration.
+  // The request custodies its rule can name; the rule itself is its configuration.
   z.object({ kind: z.literal("Custody"), custodyNames: z.array(z.string()) }),
   // Which the Message… dialog offers first.
   z.object({ kind: z.literal("Message"), order: z.number().int().positive() }),

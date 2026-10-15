@@ -10,10 +10,10 @@ import type { GrantScope, Permission } from "@/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
-import { tasksView } from "@/features/tasks/tasks-view";
 import { listsView } from "@/features/lists/lists-view";
 import { projectsView } from "@/features/projects/projects-view";
-import { proposalsView } from "@/features/proposals/proposals-view";
+import { requestsView } from "@/features/requests/requests-view";
+import { tasksView } from "@/features/tasks/tasks-view";
 import { validationsView } from "@/features/validations/validations-view";
 import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
 import { isRangeField } from "@/lib/view-definition";
@@ -23,7 +23,7 @@ export const permissionLines = {
   "request.read_mine": "My Documents: what I asked for, or my projects did, in public detail",
   "request.withdraw_own": "take back my own ask",
   "request.read": "other people's requests",
-  "request.decide": "approve or decline a proposal, rescans included; custody is proposal custody",
+  "request.decide": "approve or decline a proposal, rescans included; custody is request custody",
   "iteration.read": "other people's documents",
   "iteration.recheck": "read the record from the catalog again and rerun the checks",
   "iteration.classify": "category and priority, after approval",
@@ -128,8 +128,8 @@ export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filt
       return summaryIn(documentsView, params);
     case "my-documents":
       return summaryIn(myDocumentsView, params);
-    case "proposals":
-      return summaryIn(proposalsView, params);
+    case "requests":
+      return summaryIn(requestsView, params);
     case "validations":
       return summaryIn(validationsView, params);
     case "lists":

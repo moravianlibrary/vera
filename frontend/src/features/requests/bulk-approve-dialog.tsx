@@ -10,8 +10,8 @@
 
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { BulkApprovalResult, ProposalGroup } from "@/api/proposal-review";
-import { bulkApproveProposals } from "@/api/proposal-review";
+import type { BulkApprovalResult, RequestGroup } from "@/api/requests";
+import { bulkApproveProposals } from "@/api/requests";
 import {
   CategorySelect,
   categoryLabelOf,
@@ -24,19 +24,19 @@ import { StatusNote } from "@/components/status-note";
 import { Checkbox } from "@/components/ui/checkbox";
 import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
 import type { Category, Priority } from "@/domain/entities";
-import type { ProposalRow } from "@/domain/proposal-review";
-import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@/domain/proposal-review";
+import type { RequestRow } from "@/domain/requests";
+import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@/domain/requests";
 import {
   decisionInvalidations,
   useBatchProposalsQuery,
-} from "@/features/proposals/use-proposals-query";
+} from "@/features/requests/use-requests-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useLoadMore } from "@/hooks/use-load-more";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { plural } from "@/lib/plural";
 
-type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
+type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
 interface BulkApproveDialogProps {
   // The batch to approve; null closes the dialog.
@@ -224,7 +224,7 @@ interface SuggestionSummaryProps {
   categories: readonly Category[];
   categoryId: string | null;
   // Loaded, since only a loaded item can be unticked.
-  untickedRows: readonly ProposalRow[];
+  untickedRows: readonly RequestRow[];
 }
 
 // One category for the batch overrides every suggestion for another leaf, and the form says how
@@ -269,7 +269,7 @@ function SuggestionSummary({
   );
 }
 
-function LeftOutBadge({ row }: { row: ProposalRow }) {
+function LeftOutBadge({ row }: { row: RequestRow }) {
   const [copy] = existingCopiesOf(asksOf(row));
   if (isRescan(row) && copy !== undefined) {
     return <ToneBadge tone="purple">{copy.source} has it — a rescan</ToneBadge>;
@@ -290,7 +290,7 @@ function ItemList({ title, hint, children }: { title: string; hint: string; chil
   );
 }
 
-function Item({ row, children }: { row: ProposalRow; children: ReactNode }) {
+function Item({ row, children }: { row: RequestRow; children: ReactNode }) {
   const { data: categories = [] } = useCategoriesQuery();
   const askerCount = askerIdsOf(row).length;
   // The leaf alone, so the line fits a phone; the summary above names the whole path.

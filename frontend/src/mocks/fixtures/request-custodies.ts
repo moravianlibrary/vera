@@ -1,16 +1,16 @@
-// Proposal custodies and where the Custody plugins placed each open proposal, after
+// Request custodies and where the Custody plugins placed each open proposal, after
 // docs/demos/shared/vera-data.js (proposal-custody.md). Members come directly or through a
 // group. A placement is the plugins' last answer, by custody name; a proposal not listed here is
 // placed by `houseRuleOf`, the mock's stand-in for the jq rule.
 
-import type { Document, ProposalCustody, Request } from "@/domain/entities";
+import type { Document, Request, RequestCustody } from "@/domain/entities";
 
-export interface StoredProposalCustody extends ProposalCustody {
+export interface StoredRequestCustody extends RequestCustody {
   readonly memberIds: readonly string[];
   readonly groupIds: readonly string[];
 }
 
-export const proposalCustodies: readonly StoredProposalCustody[] = [
+export const requestCustodies: readonly StoredRequestCustody[] = [
   {
     id: "pc0",
     name: "Fallback",

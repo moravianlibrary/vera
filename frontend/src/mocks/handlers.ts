@@ -54,15 +54,15 @@ import {
   projectMembersSchema,
   projectRejectionSchema,
 } from "@/api/projects";
+import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
 import {
   approvalSchema,
   bulkApprovalSchema,
   declineSchema,
-  parseProposalGrouping,
-  parseProposalSearchParams,
-  parseProposalSliceParams,
-} from "@/api/proposal-review";
-import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
+  parseRequestGrouping,
+  parseRequestSearchParams,
+  parseRequestSliceParams,
+} from "@/api/requests";
 import type { IterationAction, VerdictAction } from "@/api/routes";
 import { apiRoutes } from "@/api/routes";
 import {
@@ -228,15 +228,6 @@ import {
   saveProjectMembers,
 } from "@/mocks/projects";
 import {
-  approveProposal,
-  bulkApproveProposals,
-  canDecide,
-  declineProposal,
-  findProposalDetail,
-  publicCustodyOf,
-  queryProposals,
-} from "@/mocks/proposal-review";
-import {
   canSubmitRateLimited,
   checkItem,
   getRateLimitStatus,
@@ -246,6 +237,16 @@ import {
   submitProposal,
   submittableProposalItemCount,
 } from "@/mocks/proposals";
+import {
+  approveProposal,
+  bulkApproveProposals,
+  canDecide,
+  canReadRequests,
+  declineProposal,
+  findRequestDetail,
+  publicCustodyOf,
+  queryRequests,
+} from "@/mocks/requests";
 import {
   canReadSchedules,
   createSchedule,
@@ -1201,33 +1202,33 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
     }),
 
-    http.get(route(apiRoutes.proposalCustodies), () => {
-      if (!canDecide(currentSession())) {
-        return mayNotDecide();
+    http.get(route(apiRoutes.requestCustodies), () => {
+      if (!canReadRequests(currentSession())) {
+        return mayNotReadRequests();
       }
 
-      return HttpResponse.json(database.proposalCustodies.map(publicCustodyOf));
+      return HttpResponse.json(database.requestCustodies.map(publicCustodyOf));
     }),
 
-    http.get(route(apiRoutes.proposalReview), ({ request }) => {
+    http.get(route(apiRoutes.requests), ({ request }) => {
       const session = currentSession();
-      if (!canDecide(session)) {
-        return mayNotDecide();
+      if (!canReadRequests(session)) {
+        return mayNotReadRequests();
       }
 
       const params = new URL(request.url).searchParams;
       return HttpResponse.json(
-        queryProposals(
+        queryRequests(
           session,
-          parseProposalSearchParams(params),
-          parseProposalSliceParams(params),
-          parseProposalGrouping(params),
+          parseRequestSearchParams(params),
+          parseRequestSliceParams(params),
+          parseRequestGrouping(params),
         ),
       );
     }),
 
     http.post(
-      route(`${apiRoutes.proposalReview}/batches/:batchId/approve`),
+      route(`${apiRoutes.requests}/batches/:batchId/approve`),
       async ({ params, request }) => {
         const session = currentSession();
         if (!canDecide(session)) {
@@ -1243,53 +1244,47 @@ export function createHandlers(profile: MockUserProfile) {
       },
     ),
 
-    http.get(route(`${apiRoutes.proposalReview}/:documentId`), ({ params }) => {
+    http.get(route(`${apiRoutes.requests}/:documentId`), ({ params }) => {
       const session = currentSession();
-      if (!canDecide(session)) {
-        return mayNotDecide();
+      if (!canReadRequests(session)) {
+        return mayNotReadRequests();
       }
 
-      const detail = findProposalDetail(session, String(params.documentId));
+      const detail = findRequestDetail(session, String(params.documentId));
       if (detail === null) {
-        return problemResponse({ status: 404, message: "Proposal not found" });
+        return problemResponse({ status: 404, message: "Request not found" });
       }
 
       return HttpResponse.json(detail);
     }),
 
-    http.post(
-      route(`${apiRoutes.proposalReview}/:documentId/approve`),
-      async ({ params, request }) => {
-        const session = currentSession();
-        if (!canDecide(session)) {
-          return mayNotDecide();
-        }
+    http.post(route(`${apiRoutes.requests}/:documentId/approve`), async ({ params, request }) => {
+      const session = currentSession();
+      if (!canDecide(session)) {
+        return mayNotDecide();
+      }
 
-        const approval = approvalSchema.safeParse(await request.json());
-        if (!approval.success) {
-          return invalidResponse(approval.error);
-        }
+      const approval = approvalSchema.safeParse(await request.json());
+      if (!approval.success) {
+        return invalidResponse(approval.error);
+      }
 
-        return outcomeResponse(approveProposal(session, String(params.documentId), approval.data));
-      },
-    ),
+      return outcomeResponse(approveProposal(session, String(params.documentId), approval.data));
+    }),
 
-    http.post(
-      route(`${apiRoutes.proposalReview}/:documentId/decline`),
-      async ({ params, request }) => {
-        const session = currentSession();
-        if (!canDecide(session)) {
-          return mayNotDecide();
-        }
+    http.post(route(`${apiRoutes.requests}/:documentId/decline`), async ({ params, request }) => {
+      const session = currentSession();
+      if (!canDecide(session)) {
+        return mayNotDecide();
+      }
 
-        const decline = declineSchema.safeParse(await request.json());
-        if (!decline.success) {
-          return invalidResponse(decline.error);
-        }
+      const decline = declineSchema.safeParse(await request.json());
+      if (!decline.success) {
+        return invalidResponse(decline.error);
+      }
 
-        return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
-      },
-    ),
+      return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
+    }),
 
     http.get(route(apiRoutes.validations), ({ request }) => {
       const session = currentSession();
@@ -1562,6 +1557,10 @@ export function createHandlers(profile: MockUserProfile) {
       return new HttpResponse(null, { status: 204 });
     }),
   ];
+}
+
+function mayNotReadRequests() {
+  return problemResponse({ status: 403, message: "You may not read requests" });
 }
 
 function mayNotDecide() {

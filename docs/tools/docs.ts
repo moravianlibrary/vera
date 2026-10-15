@@ -32,7 +32,7 @@ import { intentionsView } from "../../frontend/src/features/intentions/intention
 import { listsView } from "../../frontend/src/features/lists/lists-view.ts";
 import { pluginsView } from "../../frontend/src/features/plugins/plugins-view.ts";
 import { projectsView } from "../../frontend/src/features/projects/projects-view.ts";
-import { proposalsView } from "../../frontend/src/features/proposals/proposals-view.ts";
+import { requestsView } from "../../frontend/src/features/requests/requests-view.ts";
 import { tasksView } from "../../frontend/src/features/tasks/tasks-view.ts";
 import { validationsView } from "../../frontend/src/features/validations/validations-view.ts";
 import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
@@ -152,7 +152,7 @@ function sidebarTable(): string {
 const pageViews = [
   ["Documents", documentsView],
   ["My Documents", myDocumentsView],
-  ["Proposals", proposalsView],
+  ["Requests", requestsView],
   ["Documents Validations", validationsView],
   ["Digitization Lists", listsView],
   ["Projects", projectsView],

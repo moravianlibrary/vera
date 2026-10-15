@@ -56,13 +56,13 @@ export type Session = z.infer<typeof sessionSchema>;
 // Who sees and decides a proposal before it has a category (proposal-custody.md): a name with
 // members. Which proposals are in one is the Custody plugins' answer; what none placed is in the
 // one fallback.
-export const proposalCustodySchema = z.object({
+export const requestCustodySchema = z.object({
   id,
   name: z.string(),
   description: z.string(),
   isFallback: z.boolean(),
 });
-export type ProposalCustody = z.infer<typeof proposalCustodySchema>;
+export type RequestCustody = z.infer<typeof requestCustodySchema>;
 
 // ---------------------------------------------------------------- classification and funding
 
@@ -469,7 +469,7 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 export const watchlistViewSchema = z.enum([
   "documents",
   "my-documents",
-  "proposals",
+  "requests",
   "validations",
   "lists",
   "projects",

@@ -1,7 +1,6 @@
 // Reference data views resolve names through. It changes rarely, so it is fetched once per visit.
 
 import { useQuery } from "@tanstack/react-query";
-import { listProposalCustodies } from "@/api/proposal-review";
 import {
   listBatches,
   listCategories,
@@ -12,6 +11,7 @@ import {
   listRoles,
   listUsers,
 } from "@/api/reference";
+import { listRequestCustodies } from "@/api/requests";
 import { isShownAsBatch } from "@/domain/documents";
 
 export const referenceQueryKey = ["reference"] as const;
@@ -90,10 +90,10 @@ export function useIsShownBatch(): (batchId: string) => boolean {
   return (batchId) => batches.some((batch) => batch.id === batchId && isShownAsBatch(batch));
 }
 
-export function useProposalCustodiesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+export function useRequestCustodiesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
   return useQuery({
-    queryKey: [...referenceQueryKey, "proposalCustodies"],
-    queryFn: listProposalCustodies,
+    queryKey: [...referenceQueryKey, "requestCustodies"],
+    queryFn: listRequestCustodies,
     staleTime: Infinity,
     enabled: isEnabled,
   });

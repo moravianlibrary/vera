@@ -1,8 +1,8 @@
 // Users & Groups over HTTP (view-catalog.md *Users & Groups*; permissions.md §1, §4, §6;
 // identity.md; proposal-custody.md). The page reads one index, `access.read`, holding every
-// user, role, group and proposal custody with the relations between them, and works out the
+// user, role, group and request custody with the relations between them, and works out the
 // provenance from it (domain/access.ts). Everything written here is `access.manage`'s: roles and
-// their grants, the roles a person holds by hand, groups and their members, proposal custodies
+// their grants, the roles a person holds by hand, groups and their members, request custodies
 // and theirs, local accounts and linked identities. Mapped roles follow the provider and are
 // never written here; category custody is written on Categories, which rules place a proposal
 // on Plugins.
@@ -185,7 +185,7 @@ export const setGroupMembers = putOn<GroupMembers, AccessGroup>(
   accessGroupSchema,
 );
 
-// ---------------------------------------------------------------- proposal custodies
+// ---------------------------------------------------------------- request custodies
 
 export async function createCustody(draft: RecordDraft): Promise<CustodyRecord> {
   return postJson(apiRoutes.accessCustodies, draft, custodyRecordSchema);

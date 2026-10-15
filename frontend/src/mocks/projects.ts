@@ -294,7 +294,7 @@ export function queryProjectIndex(session: Session, query: ProjectQuery = {}): P
 
 // ---------------------------------------------------------------- detail
 
-function proposalRowsOf(projectId: string): ProjectProposal[] {
+function requestRowsOf(projectId: string): ProjectProposal[] {
   const asks = proposalsInto(projectId).toSorted((first, second) =>
     first.at.localeCompare(second.at),
   );
@@ -375,7 +375,7 @@ function detailOf(project: Project): ProjectDetail {
   const funded = fundedBy(project.id);
   return {
     row: rowOf(project),
-    proposals: proposalRowsOf(project.id),
+    proposals: requestRowsOf(project.id),
     lists: listsOf(funded),
     formerLists: formerListsOf(funded),
     funded: fundedItemsOf(funded),

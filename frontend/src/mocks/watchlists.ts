@@ -11,7 +11,7 @@ import { parseCategorySearchParams } from "@/api/categories";
 import { documentQueryParams, parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
 import { parseProjectSearchParams } from "@/api/projects";
-import { parseProposalSearchParams } from "@/api/proposal-review";
+import { parseRequestSearchParams } from "@/api/requests";
 import { parseRunSearchParams } from "@/api/tasks";
 import { parseValidationSearchParams } from "@/api/validations";
 import type {
@@ -37,12 +37,12 @@ import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
-import { canDecide, queryProposals } from "@/mocks/proposal-review";
+import { canReadRequests, queryRequests } from "@/mocks/requests";
 import { sessionOf } from "@/mocks/session";
 import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canReview, queryValidations } from "@/mocks/validations";
-import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import { storeWatchlistBaselines, storeWatchlistEntries } from "@/mocks/watchlist-entries";
+import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 
 export function visibleWatchlists(
   session: Session,
@@ -162,8 +162,8 @@ export function canOpenView(session: Session, view: WatchlistView): boolean {
       return audienceOf(session) === "staff";
     case "my-documents":
       return canOpenMyDocuments(session);
-    case "proposals":
-      return canDecide(session);
+    case "requests":
+      return canReadRequests(session);
     case "validations":
       return canReview(session);
     case "lists":
@@ -298,9 +298,9 @@ const counters = {
         ).total
       : 0,
   // Without `request.decide` the view does not exist for the caller, and nothing matches.
-  proposals: (session, filter) =>
-    canDecide(session)
-      ? queryProposals(session, parseProposalSearchParams(filter), { cursor: null, limit: 1 }).total
+  requests: (session, filter) =>
+    canReadRequests(session)
+      ? queryRequests(session, parseRequestSearchParams(filter), { cursor: null, limit: 1 }).total
       : 0,
   validations: (session, filter) =>
     canReview(session)
@@ -356,9 +356,9 @@ function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
             (row) => row.document.id,
           )
         : [];
-    case "proposals":
-      return canDecide(session)
-        ? queryProposals(session, parseProposalSearchParams(filter), all).items.map(
+    case "requests":
+      return canReadRequests(session)
+        ? queryRequests(session, parseRequestSearchParams(filter), all).items.map(
             (row) => row.record.document.id,
           )
         : [];

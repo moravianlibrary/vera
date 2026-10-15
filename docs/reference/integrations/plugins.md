@@ -25,7 +25,7 @@ Several instances of one implementation may run side by side (one catalog adapte
 | Registry | says whether a copy already exists somewhere |
 | Validation | checks a record is complete enough to digitize, and finds defects |
 | Restriction | forbids digitizing (copyright, embargo); only an administrator overrules it |
-| Custody | places proposals in proposal custodies |
+| Custody | places proposals in request custodies |
 | Classifier | suggests the category a proposal is approved into |
 | List generator | drafts a digitization list for an intention |
 | Message | where a message act hands a conversation to |
@@ -78,7 +78,7 @@ what the new version adds and retires.
 
 *Move to v…* is on the instance's drawer, so instances move one at a time.
 
-A Custody rule returns one of the proposal custodies on Users & Groups, picked in the rule
+A Custody rule returns one of the request custodies on Users & Groups, picked in the rule
 editor; it never names one by free text.
 
 > **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** Property tiers, a

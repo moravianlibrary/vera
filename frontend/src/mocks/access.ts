@@ -1,5 +1,5 @@
 // What the server does for Users & Groups (view-catalog.md; permissions.md §1, §4; identity.md;
-// proposal-custody.md §2, §7): with `access.read`, every user, role, group and proposal custody
+// proposal-custody.md §2, §7): with `access.read`, every user, role, group and request custody
 // and what links them; with `access.manage`, changing them. It refuses whatever would leave
 // nobody able to manage access, a grant at a scope its permission does not take, and a name or
 // an identity already taken. Mapped roles are the providers' and are never written here. Deleting
@@ -28,10 +28,10 @@ import { isShared } from "@/domain/entities";
 import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
-import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
+import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
-import { openProposalPlacements, openProposalRows } from "@/mocks/proposal-review";
+import { openProposalPlacements, openProposalRows } from "@/mocks/requests";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
 import { audienceReachOf } from "@/mocks/watchlists";
@@ -66,7 +66,7 @@ export function accessIndex(): AccessIndex {
     users: database.users.map(accessUserOf),
     roles: database.roles,
     groups: database.groups,
-    custodies: database.proposalCustodies
+    custodies: database.requestCustodies
       .toSorted((first, second) => Number(second.isFallback) - Number(first.isFallback))
       .map((custody) => custodyRecordOf(custody, openCounts)),
     identityInstances: identityInstances(),
@@ -95,7 +95,7 @@ export function accessIndex(): AccessIndex {
 }
 
 function custodyRecordOf(
-  custody: StoredProposalCustody,
+  custody: StoredRequestCustody,
   openCounts = openProposalCountsByCustody(),
 ): CustodyRecord {
   return {
@@ -544,7 +544,7 @@ export function setGroupMembers(
   return { value: group };
 }
 
-// ---------------------------------------------------------------- proposal custodies
+// ---------------------------------------------------------------- request custodies
 
 export function createCustody(session: Session, draft: RecordDraft): Outcome<CustodyRecord> {
   const refusal = guard(session);
@@ -552,21 +552,21 @@ export function createCustody(session: Session, draft: RecordDraft): Outcome<Cus
     return { refusal };
   }
 
-  if (database.proposalCustodies.some((custody) => custody.name === draft.name)) {
+  if (database.requestCustodies.some((custody) => custody.name === draft.name)) {
     return { refusal: nameTaken(draft.name) };
   }
 
-  const custody: StoredProposalCustody = {
+  const custody: StoredRequestCustody = {
     id: nextIdOf(
       "pc",
-      database.proposalCustodies.map(({ id }) => id),
+      database.requestCustodies.map(({ id }) => id),
     ),
     ...draft,
     isFallback: false,
     memberIds: [],
     groupIds: [],
   };
-  database.proposalCustodies = [...database.proposalCustodies, custody];
+  database.requestCustodies = [...database.requestCustodies, custody];
   return { value: custodyRecordOf(custody) };
 }
 
@@ -581,7 +581,7 @@ export function saveCustody(
     return { refusal };
   }
 
-  const stored = database.proposalCustodies.find((custody) => custody.id === custodyId);
+  const stored = database.requestCustodies.find((custody) => custody.id === custodyId);
   if (stored === undefined) {
     return { refusal: unknownRecord("custody") };
   }
@@ -593,7 +593,7 @@ export function saveCustody(
   }
 
   if (
-    database.proposalCustodies.some(
+    database.requestCustodies.some(
       (custody) => custody.id !== custodyId && custody.name === draft.name,
     )
   ) {
@@ -615,7 +615,7 @@ export function setCustodyMembers(
     return { refusal };
   }
 
-  const stored = database.proposalCustodies.find((custody) => custody.id === custodyId);
+  const stored = database.requestCustodies.find((custody) => custody.id === custodyId);
   if (stored === undefined) {
     return { refusal: unknownRecord("custody") };
   }
@@ -645,7 +645,7 @@ export function custodyImpact(session: Session, custodyId: string): Outcome<Cust
     return { refusal: mayNotManage };
   }
 
-  const custody = database.proposalCustodies.find((candidate) => candidate.id === custodyId);
+  const custody = database.requestCustodies.find((candidate) => candidate.id === custodyId);
   if (custody === undefined) {
     return { refusal: unknownRecord("custody") };
   }
@@ -666,7 +666,7 @@ export function deleteCustody(session: Session, custodyId: string): Outcome<null
     return { refusal };
   }
 
-  const stored = database.proposalCustodies.find((custody) => custody.id === custodyId);
+  const stored = database.requestCustodies.find((custody) => custody.id === custodyId);
   if (stored === undefined) {
     return { refusal: unknownRecord("custody") };
   }
@@ -677,14 +677,14 @@ export function deleteCustody(session: Session, custodyId: string): Outcome<null
     };
   }
 
-  database.proposalCustodies = database.proposalCustodies.filter(
+  database.requestCustodies = database.requestCustodies.filter(
     (custody) => custody.id !== custodyId,
   );
   return { value: null };
 }
 
-function replaceCustody(custody: StoredProposalCustody): void {
-  database.proposalCustodies = database.proposalCustodies.map((candidate) =>
+function replaceCustody(custody: StoredRequestCustody): void {
+  database.requestCustodies = database.requestCustodies.map((candidate) =>
     candidate.id === custody.id ? custody : candidate,
   );
 }

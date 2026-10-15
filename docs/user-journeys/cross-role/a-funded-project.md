@@ -23,7 +23,7 @@
 5. The project's intention appears on *Intentions*, counting what the project funds over its
    dates ([LC-PROJ-own-intention](../../reference/lifecycles/project.md#lc-proj-own-intention)).
 6. **Eva** proposes one more item after approval.
-   → It is reviewed on *Proposals*, marked as proposed after the project's approval.
+   → It is reviewed on *Requests*, marked as proposed after the project's approval.
 7. **Kateřina** removes Eva from the project.
    → Eva's proposals stay in the project
    ([LC-PROJ-members](../../reference/lifecycles/project.md#lc-proj-members)).

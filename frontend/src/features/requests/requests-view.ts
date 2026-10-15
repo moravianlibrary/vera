@@ -1,23 +1,23 @@
-// The Proposals view's declaration (component-interfaces.md §9.2): its filter in the URL, the
-// watchlist comparer, its fields (Decision and Proposal custody on the bar, the rest as chips,
+// The Requests view's declaration (component-interfaces.md §9.2): its filter in the URL, the
+// watchlist comparer, its fields (Decision and Request custody on the bar, the rest as chips,
 // and the advanced range Asked, filtering.md §6) and its groupings.
 // TODO(rrandiak): labels move to i18n.
 
 import { answers } from "@/api/documents";
-import type { AskerCount, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
+import type { AskerCount, RequestGrouping, RequestQuery } from "@/api/requests";
 import {
   askerCounts,
-  isSameProposalQuery,
-  parseProposalSearchParams,
-  proposalGroupingParam,
-  toProposalSearchParams,
-} from "@/api/proposal-review";
+  isSameRequestQuery,
+  parseRequestSearchParams,
+  requestGroupingParam,
+  toRequestSearchParams,
+} from "@/api/requests";
 import { answerLabels, existingCopyLabels } from "@/components/filters/value-labels";
 import { existingCopyStates } from "@/domain/documents";
 import type { DocumentType } from "@/domain/entities";
 import { documentTypeSchema } from "@/domain/entities";
-import type { ProposalDecision } from "@/domain/proposal-review";
-import { proposalDecisions } from "@/domain/proposal-review";
+import type { ProposalDecision } from "@/domain/requests";
+import { proposalDecisions } from "@/domain/requests";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
@@ -39,11 +39,11 @@ const askerCountLabels = {
   Several: "More than one",
 } as const satisfies Record<AskerCount, string>;
 
-export const proposalsView: ViewDefinition<ProposalQuery, ProposalGrouping> = {
-  view: "proposals",
-  toSearchParams: toProposalSearchParams,
-  parseSearchParams: parseProposalSearchParams,
-  isSameQuery: isSameProposalQuery,
+export const requestsView: ViewDefinition<RequestQuery, RequestGrouping> = {
+  view: "requests",
+  toSearchParams: toRequestSearchParams,
+  parseSearchParams: parseRequestSearchParams,
+  isSameQuery: isSameRequestQuery,
   fields: [
     {
       key: "decisions",
@@ -53,8 +53,8 @@ export const proposalsView: ViewDefinition<ProposalQuery, ProposalGrouping> = {
     },
     {
       key: "custodyIds",
-      label: "Proposal custody",
-      field: { kind: "reference", reference: "proposalCustodies" },
+      label: "Request custody",
+      field: { kind: "reference", reference: "requestCustodies" },
       isQuick: true,
     },
     {
@@ -82,5 +82,5 @@ export const proposalsView: ViewDefinition<ProposalQuery, ProposalGrouping> = {
     { value: "batch", label: "Group by batch" },
     { value: "requester", label: "Group by requester" },
   ],
-  groupingParam: proposalGroupingParam,
+  groupingParam: requestGroupingParam,
 };

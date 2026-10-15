@@ -47,7 +47,7 @@ import {
   kindOf,
   liveInstances,
 } from "@/mocks/plugin-instances";
-import { openProposalPlacements } from "@/mocks/proposal-review";
+import { openProposalPlacements } from "@/mocks/requests";
 import { instanceRunsOf, publicRunOf, startRun } from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 
@@ -449,7 +449,7 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
   );
   const names = instance.settings?.kind === "Custody" ? instance.settings.custodyNames : [];
   const custodyIds = new Set(
-    database.proposalCustodies
+    database.requestCustodies
       .filter((custody) => names.includes(custody.name))
       .map((custody) => custody.id),
   );

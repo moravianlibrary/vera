@@ -1,10 +1,10 @@
-// The header over a group of Proposals rows (page-proposals.js groupHead). A batch says how it
+// The header over a group of Requests rows (page-proposals.js groupHead). A batch says how it
 // came in, who sent it and when, how many of its asks are listed, and how many sit on rows
 // listed with an earlier ask; it carries the bulk approve, with what that leaves out. A
 // requester says how many documents they asked for first. On the shared GroupHeader frame.
 // TODO(rrandiak): labels move to i18n.
 
-import type { ProposalGroup } from "@/api/proposal-review";
+import type { RequestGroup } from "@/api/requests";
 import { GroupHeader } from "@/components/lists/group-header";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,8 @@ import type { Batch, User } from "@/domain/entities";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
-type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
-type RequesterGroup = Extract<ProposalGroup, { kind: "requester" }>;
+type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
+type RequesterGroup = Extract<RequestGroup, { kind: "requester" }>;
 
 export const batchViaLabels = {
   typed: "typed",
@@ -23,13 +23,13 @@ export const batchViaLabels = {
   harvest: "harvest",
 } as const satisfies Record<Batch["via"], string>;
 
-interface ProposalGroupHeaderProps {
-  group: ProposalGroup;
+interface RequestGroupHeaderProps {
+  group: RequestGroup;
   users: readonly User[];
   onBulkApprove?: (group: BatchGroup) => void;
 }
 
-export function ProposalGroupHeader({ group, users, onBulkApprove }: ProposalGroupHeaderProps) {
+export function RequestGroupHeader({ group, users, onBulkApprove }: RequestGroupHeaderProps) {
   return group.kind === "batch" ? (
     <BatchHeader group={group} users={users} onBulkApprove={onBulkApprove} />
   ) : (

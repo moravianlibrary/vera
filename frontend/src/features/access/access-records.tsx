@@ -30,8 +30,8 @@ import {
   includedRolesOf,
   mappingsOf,
   projectsOf,
-  proposalCustodyOf,
-  proposalReachOf,
+  requestCustodyOf,
+  requestReachOf,
 } from "@/domain/access";
 import type { GrantScope, Permission } from "@/domain/permissions";
 import { catalogOrderOf, permissionCatalog, permissionGroups } from "@/domain/permissions";
@@ -310,8 +310,8 @@ export function UserRecord({
 }: RecordProps & { user: AccessUser }) {
   const held = heldRolesOf(user);
   const permissions = effectivePermissionsOf(index.roles, heldRoleIdsOf(user));
-  const custodies = proposalCustodyOf(user.id, index.groups, index.custodies);
-  const reach = proposalReachOf(index.roles, heldRoleIdsOf(user));
+  const custodies = requestCustodyOf(user.id, index.groups, index.custodies);
+  const reach = requestReachOf(index.roles, heldRoleIdsOf(user));
   const firstIdentity = user.identities[0];
   const groupLink = (groupId: string) => (
     <RecordLink kind="groups" id={groupId} onSelect={onSelect}>
@@ -422,7 +422,7 @@ export function UserRecord({
             )}
             names={names}
           />
-          <Part title="Proposal custody">
+          <Part title="Request custody">
             {custodies.length === 0 && <None />}
             {custodies.map(({ custodyId, via: by }) => (
               <Row key={`${custodyId}:${by}`} aside={via(by, "member")}>
@@ -701,7 +701,7 @@ export function GroupRecord({
             held={group.categoryIds.map((categoryId) => ({ categoryId, key: categoryId }))}
             names={names}
           />
-          <Part title="Proposal custody">
+          <Part title="Request custody">
             {custodies.length === 0 && <None />}
             {custodies.map((custody) => (
               <Row key={custody.id} aside={<Muted>{custody.openCount} open</Muted>}>
@@ -727,7 +727,7 @@ export function GroupRecord({
   );
 }
 
-// ---------------------------------------------------------------- a proposal custody
+// ---------------------------------------------------------------- a request custody
 
 const reachLabels = { decides: "decides", sees: "sees only" } as const;
 
@@ -756,10 +756,7 @@ export function CustodyRecordView({
         <>
           {custody.description}
           {custody.description !== "" && " · "}
-          <Link
-            to={`/review/proposals?custody=${encodeURIComponent(custody.id)}`}
-            className={linkClass}
-          >
+          <Link to={`/requests?custody=${encodeURIComponent(custody.id)}`} className={linkClass}>
             {plural(custody.openCount, "open proposal")}
           </Link>
         </>
@@ -799,7 +796,7 @@ export function CustodyRecordView({
           {members.map(({ userId, via }) => {
             const user = index.users.find((candidate) => candidate.id === userId);
             const reach =
-              user === undefined ? null : proposalReachOf(index.roles, heldRoleIdsOf(user));
+              user === undefined ? null : requestReachOf(index.roles, heldRoleIdsOf(user));
             return (
               <Row
                 key={userId}
@@ -851,10 +848,7 @@ export function CustodyRecordView({
         )}
         {placedProposals.slice(0, 8).map((proposal) => (
           <Row key={proposal.id} aside={<Muted>placed by custody rule</Muted>}>
-            <Link
-              to={`/review/proposals?id=${encodeURIComponent(proposal.id)}`}
-              className={linkClass}
-            >
+            <Link to={`/requests?id=${encodeURIComponent(proposal.id)}`} className={linkClass}>
               {proposal.title}
             </Link>
           </Row>

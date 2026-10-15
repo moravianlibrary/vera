@@ -20,7 +20,7 @@ pass.
 1. **Tomáš** proposes the volume with a reason.
    → On *My Documents* it reads *Waiting for review*.
 2. The Custody rule places it in *Periodicals*.
-   → **Kateřina** sees it on *Proposals*
+   → **Kateřina** sees it on *Requests*
    ([ACCESS-custody-by-plugins](../../reference/access/custody.md#access-custody-by-plugins)).
 3. **Kateřina** approves it into *Periodicals → Regional* at *Normal* priority.
    → Tomáš reads *Being added*; an iteration is Enqueued

@@ -16,7 +16,7 @@ import {
   useCategoriesQuery,
   usePluginInstancesQuery,
   useProjectsQuery,
-  useProposalCustodiesQuery,
+  useRequestCustodiesQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -27,7 +27,7 @@ export const referenceKinds = [
   "mixes",
   "categories",
   "batches",
-  "proposalCustodies",
+  "requestCustodies",
   "defectPlugins",
   "pluginInstances",
 ] as const;
@@ -49,7 +49,7 @@ export function useReferenceLabels(
   });
   const { data: categories = [] } = useCategoriesQuery(isNeeded("categories"));
   const { data: batches = [] } = useBatchesQuery(isNeeded("batches"));
-  const { data: custodies = [] } = useProposalCustodiesQuery(isNeeded("proposalCustodies"));
+  const { data: custodies = [] } = useRequestCustodiesQuery(isNeeded("requestCustodies"));
   const { data: instances = [] } = usePluginInstancesQuery(isNeeded("pluginInstances"));
 
   const nameOf =
@@ -71,7 +71,7 @@ export function useReferenceLabels(
       const batch = batches.find((candidate) => candidate.id === id);
       return batch === undefined ? id : `${batch.id} · ${batch.name}`;
     },
-    proposalCustodies: nameOf(custodies),
+    requestCustodies: nameOf(custodies),
     // A plugin is named by itself in a defect.
     // TODO(rrandiak): the instance's name once the Plugins resource exists (plugins.md).
     defectPlugins: (id) => id,
@@ -96,7 +96,7 @@ export function useReferenceValues(
   });
   const { data: categories = [] } = useCategoriesQuery(isNeeded("categories"));
   const { data: batches = [] } = useBatchesQuery(isNeeded("batches"));
-  const { data: custodies = [] } = useProposalCustodiesQuery(isNeeded("proposalCustodies"));
+  const { data: custodies = [] } = useRequestCustodiesQuery(isNeeded("requestCustodies"));
   const { data: instances = [] } = usePluginInstancesQuery(isNeeded("pluginInstances"));
   const idsOf = (records: readonly { id: string }[]) => records.map((record) => record.id);
 
@@ -106,7 +106,7 @@ export function useReferenceValues(
     mixes: idsOf(mixes),
     categories: idsOf(categories),
     batches: idsOf(batches),
-    proposalCustodies: idsOf(custodies),
+    requestCustodies: idsOf(custodies),
     defectPlugins: [],
     pluginInstances: idsOf(instances),
   };

@@ -49,7 +49,7 @@ describe("Watchlists page", () => {
   it("groups personal and system watchlists in one table per view", async () => {
     open("admin");
     const periodicals = await screen.findByRole("link", { name: "Periodicals" });
-    expect(periodicals).toHaveAttribute("href", expect.stringContaining("/review/proposals?"));
+    expect(periodicals).toHaveAttribute("href", expect.stringContaining("/requests?"));
     expect(screen.getByRole("button", { name: "Audience for Periodicals" })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: "System watchlists" })).not.toBeInTheDocument();
     const documentsHeading = screen.getByRole("heading", { name: "Documents" });

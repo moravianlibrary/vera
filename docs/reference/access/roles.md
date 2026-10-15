@@ -74,7 +74,7 @@ grants and limits below.
 | `reader` | Proposes and follows their own requests. Holds only self-scoped grants. | 10 | 100 |
 | `staff` | Library staff: the reader grants with a higher daily proposal limit. | 10 | 300 |
 | `project-user` | Starts projects and runs those they manage; follows the documents and intentions of the projects they are on. | 10 | 300 |
-| `curator` | Decides proposals in their proposal custody; validates, classifies and publishes inside their category custody; decides projects. | unlimited | unlimited |
+| `curator` | Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects. | unlimited | unlimited |
 | `dig-curator` | Plans the work: lists, intentions, projects. | unlimited | unlimited |
 | `admin` | Everything, at any scope. | unlimited | unlimited |
 <!-- /generated:role-limits -->
@@ -150,7 +150,7 @@ What each one is for:
 - **`project-user`** — runs projects, with the staff limits: the reader's grants, starting
   projects and running those they manage, the intentions of the projects they are on, and their
   documents on *My Documents*, in public detail.
-- **`curator`** — decides proposals in their proposal custody; validates, classifies, cancels,
+- **`curator`** — decides proposals in their request custody; validates, classifies, cancels,
   publishes and retries failed additions in their category custody; decides projects, and runs
   those they manage.
 - **`dig-curator`** — plans the work: digitization lists, intentions, mixes and every project.

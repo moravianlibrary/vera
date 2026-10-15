@@ -1,6 +1,6 @@
-// The Proposal Review resource (view-map.md §2): one row per document awaiting a decision within
-// the caller's proposal custody, or everywhere with `request.decide@any`; one document's
-// proposal with its history; and the decisions on it. A decision covers every open ask of the
+// The Requests resource (VIEW-requests): one row per document asked for, within the reach of
+// the caller's `request.read`; one document's asks with their history; and the decisions on a
+// proposal, within the reach of `request.decide`. A decision covers every open ask of the
 // document (status-model.md §2.7). Approving sets the category and the priority; over an
 // existing copy it is a rescan and needs a note. A decline carries what every asker is told.
 
@@ -13,20 +13,20 @@ import {
   apiRoutes,
   proposalBulkApprovalRoute,
   proposalDecisionRoute,
-  proposalReviewRoute,
+  requestRoute,
 } from "@/api/routes";
 import type { ExistingCopyState } from "@/domain/documents";
 import { existingCopyStateSchema } from "@/domain/documents";
-import type { DocumentType, ProposalCustody } from "@/domain/entities";
+import type { DocumentType, RequestCustody } from "@/domain/entities";
 import {
   batchSchema,
   documentTypeSchema,
   prioritySchema,
-  proposalCustodySchema,
+  requestCustodySchema,
   statusLogEntrySchema,
 } from "@/domain/entities";
-import type { ProposalDecision } from "@/domain/proposal-review";
-import { proposalDecisionSchema, proposalRowSchema } from "@/domain/proposal-review";
+import type { ProposalDecision } from "@/domain/requests";
+import { proposalDecisionSchema, requestRowSchema } from "@/domain/requests";
 import type { DayRange } from "@/lib/value-range";
 import { formatDayRange, parseDayRange } from "@/lib/value-range";
 
@@ -38,7 +38,7 @@ export const askerCountSchema = z.enum(askerCounts);
 export type AskerCount = z.infer<typeof askerCountSchema>;
 
 // Each list matches any of its values; the fields together match all of them (filtering.md §2).
-export interface ProposalQuery {
+export interface RequestQuery {
   readonly search?: string;
   readonly decisions?: readonly ProposalDecision[];
   readonly custodyIds?: readonly string[];
@@ -55,11 +55,11 @@ export interface ProposalQuery {
 }
 
 // The fields that are lists of values, each counted as a facet.
-export type ProposalListField = Exclude<keyof ProposalQuery, "search" | ProposalRangeField>;
-export type ProposalRangeField = "asked";
+export type RequestListField = Exclude<keyof RequestQuery, "search" | RequestRangeField>;
+export type RequestRangeField = "asked";
 
 // Query-string names; the same names address the filter in the page URL.
-export const proposalQueryParams = {
+export const requestQueryParams = {
   search: "q",
   decisions: "decision",
   custodyIds: "custody",
@@ -71,11 +71,11 @@ export const proposalQueryParams = {
   askerCounts: "askers",
   afterProjectApproval: "after",
   asked: "asked",
-} as const satisfies Record<keyof ProposalQuery, string>;
+} as const satisfies Record<keyof RequestQuery, string>;
 
 const idValueSchema = z.string().min(1);
 
-const proposalFieldSchemas = {
+const requestFieldSchemas = {
   decisions: proposalDecisionSchema,
   custodyIds: idValueSchema,
   documentTypes: documentTypeSchema,
@@ -85,16 +85,16 @@ const proposalFieldSchemas = {
   batchIds: idValueSchema,
   askerCounts: askerCountSchema,
   afterProjectApproval: answerSchema,
-} as const satisfies Record<ProposalListField, z.ZodType<string>>;
+} as const satisfies Record<RequestListField, z.ZodType<string>>;
 
-const listFields = Object.keys(proposalFieldSchemas) as ProposalListField[];
+const listFields = Object.keys(requestFieldSchemas) as RequestListField[];
 const listSeparator = ",";
 
-export function toProposalSearchParams(query: ProposalQuery): URLSearchParams {
+export function toRequestSearchParams(query: RequestQuery): URLSearchParams {
   const params = new URLSearchParams();
   const search = query.search?.trim();
   if (search) {
-    params.set(proposalQueryParams.search, search);
+    params.set(requestQueryParams.search, search);
   }
 
   for (const field of listFields) {
@@ -103,41 +103,41 @@ export function toProposalSearchParams(query: ProposalQuery): URLSearchParams {
       continue;
     }
 
-    params.set(proposalQueryParams[field], values.toSorted().join(listSeparator));
+    params.set(requestQueryParams[field], values.toSorted().join(listSeparator));
   }
 
   const asked = formatDayRange(query.asked);
   if (asked !== null) {
-    params.set(proposalQueryParams.asked, asked);
+    params.set(requestQueryParams.asked, asked);
   }
 
   return params;
 }
 
 // Unknown or malformed values are dropped, so a stale link still opens the view.
-export function parseProposalSearchParams(params: URLSearchParams): ProposalQuery {
+export function parseRequestSearchParams(params: URLSearchParams): RequestQuery {
   const query: Record<string, unknown> = {
-    search: params.get(proposalQueryParams.search)?.trim() || undefined,
+    search: params.get(requestQueryParams.search)?.trim() || undefined,
   };
   for (const field of listFields) {
-    const raw = params.get(proposalQueryParams[field]) ?? "";
+    const raw = params.get(requestQueryParams[field]) ?? "";
     const values = raw.split(listSeparator).flatMap((value) => {
-      const parsed = proposalFieldSchemas[field].safeParse(value.trim());
+      const parsed = requestFieldSchemas[field].safeParse(value.trim());
       return parsed.success ? [parsed.data] : [];
     });
     query[field] = values.length === 0 ? undefined : [...new Set(values)];
   }
 
-  query.asked = parseDayRange(params.get(proposalQueryParams.asked));
+  query.asked = parseDayRange(params.get(requestQueryParams.asked));
 
   // Every value of each field was parsed by that field's own schema.
-  return query as ProposalQuery;
+  return query as RequestQuery;
 }
 
 // True when the two name the same filter, however their lists are ordered.
-export function isSameProposalQuery(first: ProposalQuery, second: ProposalQuery): boolean {
-  const canonical = (query: ProposalQuery) => {
-    const params = toProposalSearchParams(query);
+export function isSameRequestQuery(first: RequestQuery, second: RequestQuery): boolean {
+  const canonical = (query: RequestQuery) => {
+    const params = toRequestSearchParams(query);
     params.sort();
     return params.toString();
   };
@@ -149,24 +149,24 @@ export function isSameProposalQuery(first: ProposalQuery, second: ProposalQuery)
 
 // How the rows are arranged; not a filter, and never saved in a watchlist. A document asked for
 // in two batches, or by two people, is one row, listed with its earliest ask.
-export const proposalGroupings = ["batch", "requester"] as const;
-export const proposalGroupingSchema = z.enum(proposalGroupings);
-export type ProposalGrouping = z.infer<typeof proposalGroupingSchema>;
+export const requestGroupings = ["batch", "requester"] as const;
+export const requestGroupingSchema = z.enum(requestGroupings);
+export type RequestGrouping = z.infer<typeof requestGroupingSchema>;
 
-export const proposalGroupingParam = "group";
+export const requestGroupingParam = "group";
 
-export function parseProposalGrouping(params: URLSearchParams): ProposalGrouping | null {
-  const grouping = proposalGroupingSchema.safeParse(params.get(proposalGroupingParam));
+export function parseRequestGrouping(params: URLSearchParams): RequestGrouping | null {
+  const grouping = requestGroupingSchema.safeParse(params.get(requestGroupingParam));
   return grouping.success ? grouping.data : null;
 }
 
 // ---------------------------------------------------------------- slices
 
-export const proposalSliceParams = { cursor: "cursor", limit: "limit" } as const;
-export const proposalSliceSize = 50;
-export const maximumProposalSliceSize = 200;
+export const requestSliceParams = { cursor: "cursor", limit: "limit" } as const;
+export const requestSliceSize = 50;
+export const maximumRequestSliceSize = 200;
 
-export function parseProposalSliceParams(params: URLSearchParams): {
+export function parseRequestSliceParams(params: URLSearchParams): {
   cursor: string | null;
   limit: number;
 } {
@@ -174,11 +174,11 @@ export function parseProposalSliceParams(params: URLSearchParams): {
     .number()
     .int()
     .min(1)
-    .max(maximumProposalSliceSize)
-    .safeParse(params.get(proposalSliceParams.limit) ?? undefined);
+    .max(maximumRequestSliceSize)
+    .safeParse(params.get(requestSliceParams.limit) ?? undefined);
   return {
-    cursor: params.get(proposalSliceParams.cursor) || null,
-    limit: limit.success ? limit.data : proposalSliceSize,
+    cursor: params.get(requestSliceParams.cursor) || null,
+    limit: limit.success ? limit.data : requestSliceSize,
   };
 }
 
@@ -191,7 +191,7 @@ const groupCounts = {
   rowCount: z.number().int(),
 };
 
-export const proposalGroupSchema = z.discriminatedUnion("kind", [
+export const requestGroupSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("batch"),
     // Null gathers what was proposed on its own.
@@ -218,15 +218,15 @@ export const proposalGroupSchema = z.discriminatedUnion("kind", [
     ...groupCounts,
   }),
 ]);
-export type ProposalGroup = z.infer<typeof proposalGroupSchema>;
+export type RequestGroup = z.infer<typeof requestGroupSchema>;
 
-export const proposalPageSchema = z.object({
-  items: z.array(proposalRowSchema),
+export const requestPageSchema = z.object({
+  items: z.array(requestRowSchema),
   // Rows and asks matching the whole filter, across every slice.
   total: z.number().int(),
   askTotal: z.number().int(),
   nextCursor: z.string().nullable(),
-  groups: z.array(proposalGroupSchema),
+  groups: z.array(requestGroupSchema),
   // Each field's values with a match, counted over every other active filter.
   facets: z.object({
     decisions: facetCountsOf(proposalDecisionSchema),
@@ -238,16 +238,18 @@ export const proposalPageSchema = z.object({
     batchIds: facetCountsOf(z.string()),
     askerCounts: facetCountsOf(askerCountSchema),
     afterProjectApproval: facetCountsOf(answerSchema),
-  } satisfies Record<ProposalListField, z.ZodType>),
+  } satisfies Record<RequestListField, z.ZodType>),
 });
-export type ProposalPage = z.infer<typeof proposalPageSchema>;
+export type RequestPage = z.infer<typeof requestPageSchema>;
 
-export const proposalDetailSchema = z.object({
-  row: proposalRowSchema,
+export const requestDetailSchema = z.object({
+  row: requestRowSchema,
   // Newest first.
   log: z.array(statusLogEntrySchema),
+  // Whether the caller's `request.decide` reaches this proposal (VIEW-requests).
+  canDecide: z.boolean(),
 });
-export type ProposalDetail = z.infer<typeof proposalDetailSchema>;
+export type RequestDetail = z.infer<typeof requestDetailSchema>;
 
 // ---------------------------------------------------------------- decisions
 
@@ -294,32 +296,32 @@ export type BulkApprovalResult = z.infer<typeof bulkApprovalResultSchema>;
 
 // ---------------------------------------------------------------- calls
 
-interface ProposalListOptions {
-  readonly grouping?: ProposalGrouping | null;
+interface RequestListOptions {
+  readonly grouping?: RequestGrouping | null;
   readonly cursor?: string | null;
   readonly limit?: number;
 }
 
-export async function listProposals(
-  query: ProposalQuery,
-  { grouping = null, cursor = null, limit = proposalSliceSize }: ProposalListOptions = {},
-): Promise<ProposalPage> {
-  const params = toProposalSearchParams(query);
+export async function listRequests(
+  query: RequestQuery,
+  { grouping = null, cursor = null, limit = requestSliceSize }: RequestListOptions = {},
+): Promise<RequestPage> {
+  const params = toRequestSearchParams(query);
   if (grouping !== null) {
-    params.set(proposalGroupingParam, grouping);
+    params.set(requestGroupingParam, grouping);
   }
 
   if (cursor !== null) {
-    params.set(proposalSliceParams.cursor, cursor);
+    params.set(requestSliceParams.cursor, cursor);
   }
 
-  params.set(proposalSliceParams.limit, String(limit));
-  return getJson(apiRoutes.proposalReview, proposalPageSchema, params);
+  params.set(requestSliceParams.limit, String(limit));
+  return getJson(apiRoutes.requests, requestPageSchema, params);
 }
 
 // Null when the document has no proposal within the caller's reach.
-export async function findProposal(documentId: string): Promise<ProposalDetail | null> {
-  return findJson(proposalReviewRoute(documentId), proposalDetailSchema);
+export async function findRequest(documentId: string): Promise<RequestDetail | null> {
+  return findJson(requestRoute(documentId), requestDetailSchema);
 }
 
 export async function approveProposal(
@@ -343,6 +345,6 @@ export async function bulkApproveProposals(
   return postJson(proposalBulkApprovalRoute(batchId), approval, bulkApprovalResultSchema);
 }
 
-export async function listProposalCustodies(): Promise<ProposalCustody[]> {
-  return getJson(apiRoutes.proposalCustodies, z.array(proposalCustodySchema));
+export async function listRequestCustodies(): Promise<RequestCustody[]> {
+  return getJson(apiRoutes.requestCustodies, z.array(requestCustodySchema));
 }

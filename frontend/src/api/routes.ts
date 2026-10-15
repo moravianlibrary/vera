@@ -45,8 +45,8 @@ export const apiRoutes = {
   proposals: "/proposals",
   // Remaining rate limit count for the current user (checked before submit).
   proposalRateLimit: "/proposals/rate-limit",
-  proposalReview: "/proposal-review",
-  proposalCustodies: "/proposal-custodies",
+  requests: "/requests",
+  requestCustodies: "/request-custodies",
   validations: "/validations",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
@@ -64,7 +64,7 @@ export const apiRoutes = {
   schedules: "/schedules",
   hooks: "/hooks",
   hookPreview: "/hooks/preview",
-  // Users & Groups, the page: every user, role, group and proposal custody with what links them.
+  // Users & Groups, the page: every user, role, group and request custody with what links them.
   access: "/access",
   accessRoles: "/access/roles",
   accessUsers: "/access/users",
@@ -125,17 +125,17 @@ export function notificationPreferencePath(token: string): string {
   return `${apiRoutes.notificationPreferences}/${encodeURIComponent(token)}`;
 }
 
-export function proposalReviewRoute(documentId: string): string {
-  return `${apiRoutes.proposalReview}/${encodeURIComponent(documentId)}`;
+export function requestRoute(documentId: string): string {
+  return `${apiRoutes.requests}/${encodeURIComponent(documentId)}`;
 }
 
 export function proposalDecisionRoute(documentId: string, decision: "approve" | "decline"): string {
-  return `${proposalReviewRoute(documentId)}/${decision}`;
+  return `${requestRoute(documentId)}/${decision}`;
 }
 
 // Everything open a batch asked for, approved at once (status-model.md §2.8).
 export function proposalBulkApprovalRoute(batchId: string): string {
-  return `${apiRoutes.proposalReview}/batches/${encodeURIComponent(batchId)}/approve`;
+  return `${apiRoutes.requests}/batches/${encodeURIComponent(batchId)}/approve`;
 }
 
 // The verdicts on one iteration's defects, each its own permission (permissions.md §3).

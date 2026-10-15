@@ -22,12 +22,12 @@ import { MixesPage } from "@/features/intentions/mixes-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { PluginsPage } from "@/features/plugins/plugins-page";
-import { PreferencesPage } from "@/features/preferences/preferences-page";
 import { EmailNotificationsPage } from "@/features/preferences/email-notifications-page";
+import { PreferencesPage } from "@/features/preferences/preferences-page";
 import { WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
-import { ProposalsPage } from "@/features/proposals/proposals-page";
+import { RequestsPage } from "@/features/requests/requests-page";
 import { SchedulesPage } from "@/features/tasks/schedules-page";
 import { TasksPage } from "@/features/tasks/tasks-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
@@ -51,8 +51,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <DocumentsPage perspective="staff" />;
     case "my-documents":
       return <DocumentsPage perspective="my" />;
-    case "proposals":
-      return <ProposalsPage />;
+    case "requests":
+      return <RequestsPage />;
     case "validations":
       return <ValidationsPage />;
     case "lists":

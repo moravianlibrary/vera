@@ -100,7 +100,7 @@ Readers' and curators' acts come first, so the core journey works as early as po
    check, and the dev servers switched to live mode.
 2. **Access:** the session, login with fake identities, roles, groups, custodies, Users
    management.
-3. **Asking and deciding:** propose, check, custody placement, Proposals, approve and decline,
+3. **Asking and deciding:** propose, check, custody placement, Requests, approve and decline,
    My Documents.
 4. **Ingest and review:** the ingest job, validation and restriction fakes, Documents
    Validations, the iteration acts (including resume, overrule and withdraw, which are not built

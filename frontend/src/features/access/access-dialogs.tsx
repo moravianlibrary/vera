@@ -43,7 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@/domain/access";
-import { heldRoleIdsOf, proposalReachOf } from "@/domain/access";
+import { heldRoleIdsOf, requestReachOf } from "@/domain/access";
 import type { AccessNames } from "@/features/access/access-records";
 import { AgentBadge } from "@/features/access/access-records";
 import { confersText } from "@/features/access/access-words";
@@ -458,7 +458,7 @@ export function GroupEditorDialog({
           </Field>
           <p className="text-xs text-muted-foreground">
             {noRoleText} Once it exists: category custody on Categories, projects on Projects,
-            proposal custody from the custody here.
+            request custody from the custody here.
           </p>
         </>
       )}
@@ -524,7 +524,7 @@ function PersonOption({ user, names }: { user: AccessUser; names: AccessNames })
   );
 }
 
-// ---------------------------------------------------------------- a proposal custody
+// ---------------------------------------------------------------- a request custody
 
 export function CustodyEditorDialog({
   isOpen,
@@ -549,8 +549,8 @@ export function CustodyEditorDialog({
     <FormDialog<RecordDraft>
       isOpen={isOpen}
       onClose={onClose}
-      title={custody === null ? "New proposal custody" : `Edit ${custody.name}`}
-      description="A proposal custody's name and what it covers"
+      title={custody === null ? "New request custody" : `Edit ${custody.name}`}
+      description="A request custody's name and what it covers"
       schema={recordDraftSchema}
       defaultValues={{ name: custody?.name ?? "", description: custody?.description ?? "" }}
       submitLabel={custody === null ? "Create custody" : "Save"}
@@ -650,7 +650,7 @@ export function CustodyMembersDialog({
           );
         }
 
-        const reach = proposalReachOf(index.roles, heldRoleIdsOf(member.user));
+        const reach = requestReachOf(index.roles, heldRoleIdsOf(member.user));
         return (
           <span className="text-sm">
             <b className="font-medium">{member.user.name}</b>{" "}
@@ -735,7 +735,7 @@ export function DeleteCustodyDialog({
       isOpen={isOpen}
       onClose={onClose}
       title={`Delete ${custody.name}?`}
-      description={`What deleting the proposal custody ${custody.name} does to its proposals`}
+      description={`What deleting the request custody ${custody.name} does to its proposals`}
       consequences={consequences}
       confirmLabel="Delete custody"
       isDestructive

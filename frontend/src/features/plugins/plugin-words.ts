@@ -48,7 +48,7 @@ export const pluginKindJobs = {
   PropertySource: "supplies a value when the catalog has none",
   Validation: "checks a record is complete enough to digitize",
   Restriction: "forbids digitizing — copyright, embargo; only an admin overrules it",
-  Custody: "places proposals into proposal custodies",
+  Custody: "places proposals into request custodies",
   Input: "a way of entering items in the propose dialog",
   ListGenerator: "builds a digitization list for an intention",
   Identity: "a way to log in — the login page is built from these",

@@ -26,9 +26,9 @@ import {
   matchingIntentions,
   parseIntentionsSearchParams,
 } from "@/features/intentions/intentions-board-view";
+import { database } from "@/mocks/database";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
-import { database } from "@/mocks/database";
 import { flushWatchlistMail, watchlistMailOutbox } from "@/mocks/watchlist-delivery";
 
 const server = setupServer();
@@ -493,15 +493,15 @@ describe("publishing a personal watchlist", () => {
 
 describe("an audience of some groups and roles", () => {
   it("reaches the group's members and the role's holders who may open the view", async () => {
-    const namesFor = async (view: "proposals" | "validations") =>
+    const namesFor = async (view: "requests" | "validations") =>
       (await listWatchlists(view)).map((watchlist) => watchlist.name);
 
     signInAs("curator");
-    expect(await namesFor("proposals")).toContain("Periodicals");
+    expect(await namesFor("requests")).toContain("Periodicals");
     expect(await namesFor("validations")).toContain("Page counts");
 
     signInAs("admin");
-    expect(await namesFor("proposals")).toContain("Periodicals");
+    expect(await namesFor("requests")).toContain("Periodicals");
     expect(await namesFor("validations")).toContain("Page counts");
   });
 
@@ -510,7 +510,7 @@ describe("an audience of some groups and roles", () => {
 
     expect(
       await getWatchlistReach({
-        view: "proposals",
+        view: "requests",
         filter: { decision: "Pending", askers: "Several" },
         audience: { kind: "some", groupIds: ["g1", "g3"], roleIds: [] },
         watchlistId: null,

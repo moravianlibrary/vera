@@ -534,7 +534,7 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
           )}
           <p className="text-xs text-muted-foreground">
             Approved is final. Proposals made after it carry <i>after the project's approval</i> and
-            are decided on their own in Proposals, with this priority pre-filled.
+            are decided on their own in Requests, with this priority pre-filled.
           </p>
         </>
       )}

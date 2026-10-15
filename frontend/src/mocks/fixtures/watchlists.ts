@@ -1,4 +1,4 @@
-// Watchlists the emulated users start with, so the Documents, Proposals and Validations tabs have
+// Watchlists the emulated users start with, so the Documents, Requests and Validations tabs have
 // something to show. Validations seeds Page counts and Denied in review (docs/demos/STATUS.md), and
 // Review needed, the queue it opens on in the demo.
 // Written by hand; the demos keep none. Filters are in the URL form of each view. The shared
@@ -25,11 +25,11 @@ interface Lens {
 const sharedLenses: readonly Lens[] = [
   { name: "Awaiting a decision", filter: { decision: "Pending" } },
   { name: "Forbidden", filter: { forbidden: "Yes" } },
-  { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "proposals" },
+  { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "requests" },
   {
     name: "Periodicals",
     filter: { decision: "Pending", type: "Periodical" },
-    view: "proposals",
+    view: "requests",
     audience: { kind: "some", groupIds: ["g1"], roleIds: [] },
   },
   { name: "Review needed", filter: { review: "Needed" }, view: "validations" },
@@ -77,7 +77,7 @@ const deciderLenses = [
   {
     name: "More than one asker",
     filter: { decision: "Pending", askers: "Several" },
-    view: "proposals",
+    view: "requests",
   },
 ] as const satisfies readonly Lens[];
 
@@ -95,7 +95,7 @@ export const watchlists: readonly StoredWatchlist[] = [
     }),
   ),
   ...staffIds.flatMap((ownerId) => personalLensesFor(ownerId, staffLenses)),
-  ...deciderIds.flatMap((ownerId) => personalLensesFor(ownerId, deciderLenses, "proposals")),
+  ...deciderIds.flatMap((ownerId) => personalLensesFor(ownerId, deciderLenses, "requests")),
   ...readerIds.flatMap((ownerId) => personalLensesFor(ownerId, readerLenses, "my-documents")),
 ];
 

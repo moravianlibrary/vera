@@ -1,4 +1,4 @@
-// Proposal Review's read model (view-map.md §2): one row per document, never one per ask, since
+// Requests' read model (VIEW-requests): one row per document, never one per ask, since
 // a decision on one ask is a decision on all of them (status-model.md §2.7). A row holds the
 // document's asks that share its decision, oldest first: the open ones while any is open,
 // otherwise the declined or the withdrawn ones. Everything a row says about itself is derived
@@ -24,17 +24,17 @@ export const classifierSuggestionSchema = z.object({
 });
 export type ClassifierSuggestion = z.infer<typeof classifierSuggestionSchema>;
 
-export const proposalRowSchema = z.object({
+export const requestRowSchema = z.object({
   // The document, its earlier attempts and the asks of this row, oldest first.
   record: documentRecordSchema,
   decision: proposalDecisionSchema,
-  // The proposal custodies the Custody plugins placed its asks in; the fallback when none.
+  // The request custodies the Custody plugins placed its asks in; the fallback when none.
   custodyIds: z.array(z.string()),
   // For the oldest open ask, which originates the iteration; null when no classifier is
   // configured, none suggested, or the checks have not finished.
   suggestion: classifierSuggestionSchema.nullable(),
 });
-export type ProposalRow = z.infer<typeof proposalRowSchema>;
+export type RequestRow = z.infer<typeof requestRowSchema>;
 
 export function isProposalDecision(decision: Request["decision"]): decision is ProposalDecision {
   return proposalDecisionSchema.safeParse(decision).success;
@@ -46,40 +46,40 @@ export function rowDecisionOf(requests: readonly Request[]): ProposalDecision | 
   return proposalDecisions.find((decision) => decisions.has(decision)) ?? null;
 }
 
-export function asksOf(row: ProposalRow): Request[] {
+export function asksOf(row: RequestRow): Request[] {
   return row.record.requests;
 }
 
-export function firstAskOf(row: ProposalRow): Request | null {
+export function firstAskOf(row: RequestRow): Request | null {
   return row.record.requests[0] ?? null;
 }
 
-export function askerIdsOf(row: ProposalRow): string[] {
+export function askerIdsOf(row: RequestRow): string[] {
   return [...new Set(asksOf(row).map((request) => request.requesterId))];
 }
 
 // Approving over a copy is a rescan, decided one item at a time.
-export function isRescan(row: ProposalRow): boolean {
+export function isRescan(row: RequestRow): boolean {
   return existingCopiesOf(asksOf(row)).length > 0;
 }
 
 // The copy check has not answered for some ask, so nobody knows yet whether it is a rescan.
-export function isBeingChecked(row: ProposalRow): boolean {
+export function isBeingChecked(row: RequestRow): boolean {
   return row.decision === "Pending" && asksOf(row).some((request) => request.checkedAt === null);
 }
 
-export function isAfterProjectApproval(row: ProposalRow): boolean {
+export function isAfterProjectApproval(row: RequestRow): boolean {
   return asksOf(row).some(
     (request) => request.decision === "Pending" && request.isAfterProjectApproval,
   );
 }
 
 // What a bulk approve takes: open, no copy, and checked.
-export function isBulkApprovable(row: ProposalRow): boolean {
+export function isBulkApprovable(row: RequestRow): boolean {
   return row.decision === "Pending" && !isRescan(row) && !isBeingChecked(row);
 }
 
-export function projectIdsOf(row: ProposalRow): string[] {
+export function projectIdsOf(row: RequestRow): string[] {
   return [
     ...new Set(
       asksOf(row).flatMap((request) => (request.projectId === null ? [] : [request.projectId])),
@@ -87,12 +87,12 @@ export function projectIdsOf(row: ProposalRow): string[] {
   ];
 }
 
-export function batchIdsOf(row: ProposalRow): string[] {
+export function batchIdsOf(row: RequestRow): string[] {
   return [...new Set(asksOf(row).map((request) => request.batchId))];
 }
 
 // The distinct reasons the askers gave, in the order they asked.
-export function reasonsOf(row: ProposalRow): string[] {
+export function reasonsOf(row: RequestRow): string[] {
   return [
     ...new Set(asksOf(row).flatMap((request) => (request.reason === null ? [] : [request.reason]))),
   ];

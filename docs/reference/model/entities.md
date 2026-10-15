@@ -113,7 +113,7 @@ items get. It has no target, pace or mix of its own. Those belong to its own int
 
 #### ENT-access
 
-Users, roles, groups, identities and proposal custodies are defined in [people](../access/people.md)
+Users, roles, groups, identities and request custodies are defined in [people](../access/people.md)
 and [custody](../access/custody.md).
 
 ## The machinery

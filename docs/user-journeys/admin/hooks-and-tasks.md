@@ -21,7 +21,7 @@
    → It takes no new events ([HOOK-paused](../../reference/integrations/hooks.md#hook-paused)).
 4. On *Documents*, grouped by batch, he retries the failed additions.
    → They go back to ingest with their attempt counted
-   ([ACT-retry-batch](../../reference/access/acts.md#proposal-review)).
+   ([ACT-retry-batch](../../reference/access/acts.md#request-review)).
 5. On *Tasks* he finds the failed run and runs it again.
    → A new run, linked to the old ([ACT-run-again](../../reference/access/acts.md#tasks-and-schedules)).
 6. On *Schedules* he pauses the harvester's schedule with a reason, and later resumes it

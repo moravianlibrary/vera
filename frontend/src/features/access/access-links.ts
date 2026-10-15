@@ -13,7 +13,7 @@ import {
   heldRolesOf,
   holdersOf,
   isMappedOnly,
-  proposalCustodyOf,
+  requestCustodyOf,
 } from "@/domain/access";
 import type { AccessSelection } from "@/features/access/access-view";
 import { viaText, waysShortText } from "@/features/access/access-words";
@@ -64,7 +64,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
         line(["users", user.id], ["groups", groupId]);
       }
 
-      for (const { custodyId, via } of proposalCustodyOf(user.id, index.groups, index.custodies)) {
+      for (const { custodyId, via } of requestCustodyOf(user.id, index.groups, index.custodies)) {
         tag("custodies", custodyId, viaText(via, groupNameOf));
         line(["users", user.id], ["custodies", custodyId], via !== null);
       }

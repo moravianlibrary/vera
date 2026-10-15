@@ -30,11 +30,11 @@ It reaches no iteration, category or intention.
 At `custody`, an iteration or a category is reached when the holder has custody of that category
 or of any category above it.
 
-#### SCOPE-custody-proposal
+#### SCOPE-custody-request
 
-At `custody`, a proposal is reached when one of its proposal custodies has the holder as a
-member, directly or through a group. Before approval, custody always means proposal custody
-([ACCESS-proposal-custody](custody.md#access-proposal-custody)).
+At `custody`, a proposal is reached when one of its request custodies has the holder as a
+member, directly or through a group. Before approval, custody always means request custody
+([ACCESS-request-custody](custody.md#access-request-custody)).
 
 #### SCOPE-project
 

@@ -50,7 +50,7 @@ describe("prepareMessage", () => {
       "u6",
       "u7",
     ]);
-    expect(handOff.about.path).toBe("/review/proposals?id=D20");
+    expect(handOff.about.path).toBe("/requests?id=D20");
     expect(handOff.context).toContain("4 asks");
   });
 
@@ -62,7 +62,7 @@ describe("prepareMessage", () => {
 
     expect(email?.reachableIds).toHaveLength(4);
     expect(email?.href).toMatch(/^mailto:[^?]*eva\.horakova@mzk\.cz[^?]*\?subject=%5BVERA%5D/);
-    expect(email?.href).toContain(encodeURIComponent("/review/proposals?id=D20")); // the link back
+    expect(email?.href).toContain(encodeURIComponent("/requests?id=D20")); // the link back
     expect(slack?.reachableIds).toEqual(["u4"]); // only Eva signs in with MZK Keycloak
   });
 
@@ -76,7 +76,7 @@ describe("prepareMessage", () => {
   });
 
   it("finds nothing to message about outside the caller's reach", async () => {
-    signInAs("curator");
+    signInAs("staff");
 
     expect(await statusOf(prepareMessage({ kind: "proposal", id: "D31" }))).toBe(404);
   });

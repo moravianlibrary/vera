@@ -1,12 +1,12 @@
-// Users, roles, groups and proposal custody as the server keeps them, and what follows from them
+// Users, roles, groups and request custody as the server keeps them, and what follows from them
 // (permissions.md §1, §4, §6; identity.md §2, §4; proposal-custody.md §2). A role is held by
 // hand or mapped by an Identity instance from a claim, never through a group; a group gives
-// category custody, proposal custody and project membership. Every answer keeps its provenance,
+// category custody, request custody and project membership. Every answer keeps its provenance,
 // since "how they came to it" is part of the answer (permissions.md §6). The mock resolves
 // sessions with these, and Users & Groups shows them.
 
 import { z } from "zod";
-import { proposalCustodySchema, userSchema } from "@/domain/entities";
+import { requestCustodySchema, userSchema } from "@/domain/entities";
 import type { Grant, GrantScope, Permission } from "@/domain/permissions";
 import { catalogOrderOf, grantSchema } from "@/domain/permissions";
 
@@ -67,7 +67,7 @@ export const accessGroupSchema = z.object({
 });
 export type AccessGroup = z.infer<typeof accessGroupSchema>;
 
-export const custodyRecordSchema = proposalCustodySchema.extend({
+export const custodyRecordSchema = requestCustodySchema.extend({
   memberIds: z.array(id),
   groupIds: z.array(id),
   // Open proposals the Custody rules placed in it now, counted by document.
@@ -249,11 +249,11 @@ export function includedRolesOf(roles: readonly Role[], role: Role): Role[] {
   );
 }
 
-// What a proposal custody's member can do with its proposals, through their roles: decide, only
+// What a request custody's member can do with its proposals, through their roles: decide, only
 // see, or nothing at all, since membership is not capability (proposal-custody.md §2).
-export type ProposalReach = "decides" | "sees" | null;
+export type RequestReach = "decides" | "sees" | null;
 
-export function proposalReachOf(roles: readonly Role[], roleIds: readonly string[]): ProposalReach {
+export function requestReachOf(roles: readonly Role[], roleIds: readonly string[]): RequestReach {
   const grants = grantsOf(roles, roleIds);
   const reaches = (permission: Permission) =>
     grants.some(
@@ -289,7 +289,7 @@ export function categoryCustodyOf(
 
 type CustodyMembers = Pick<CustodyRecord, "id" | "memberIds" | "groupIds">;
 
-export function proposalCustodyOf(
+export function requestCustodyOf(
   userId: string,
   groups: readonly AccessGroup[],
   custodies: readonly CustodyMembers[],

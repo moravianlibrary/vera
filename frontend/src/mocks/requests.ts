@@ -1,5 +1,5 @@
-// What the server does for Proposal Review: gather each document's proposals into one row, keep
-// the rows to the caller's proposal custody, then search, filter, count, sort and group; and
+// What the server does for Requests: gather each document's asks into one row, keep the rows to
+// the reach of the caller's `request.read`, then search, filter, count, sort and group; and
 // decide. A decision covers every open ask of the document, writes the status log, and on
 // approval creates the one iteration the oldest ask originates (status-model.md §2.7).
 
@@ -11,27 +11,28 @@ import type {
   BulkApprovalResult,
   DecisionResult,
   Decline,
-  ProposalDetail,
-  ProposalGroup,
-  ProposalGrouping,
-  ProposalListField,
-  ProposalPage,
-  ProposalQuery,
-  ProposalRangeField,
-} from "@/api/proposal-review";
-import { proposalPageSchema, proposalSliceSize } from "@/api/proposal-review";
+  RequestDetail,
+  RequestGroup,
+  RequestGrouping,
+  RequestListField,
+  RequestPage,
+  RequestQuery,
+  RequestRangeField,
+} from "@/api/requests";
+import { requestPageSchema, requestSliceSize } from "@/api/requests";
 import { categoryPathOf } from "@/domain/categories";
 import { existingCopiesOf } from "@/domain/documents";
 import type {
   Document,
   Iteration,
-  ProposalCustody,
   Request,
+  RequestCustody,
   Session,
   StatusLogEntry,
 } from "@/domain/entities";
-import { scopesOf } from "@/domain/permissions";
-import type { ProposalRow } from "@/domain/proposal-review";
+import { isWithinScope, scopesOf } from "@/domain/permissions";
+import { scopeOfProject } from "@/domain/projects";
+import type { RequestRow } from "@/domain/requests";
 import {
   askerIdsOf,
   asksOf,
@@ -44,7 +45,7 @@ import {
   isRescan,
   projectIdsOf,
   rowDecisionOf,
-} from "@/domain/proposal-review";
+} from "@/domain/requests";
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
@@ -52,57 +53,84 @@ import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";
 import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
-import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
-import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/proposal-custodies";
+import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
+import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/request-custodies";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
 
+// Requests opens with `request.read`, and only `request.decide` decides; each reaches as far as
+// its own scope (VIEW-requests, ACCESS-membership-not-capability).
+export function canReadRequests(session: Session): boolean {
+  return scopesOf(session, "request.read").length > 0;
+}
+
 export function canDecide(session: Session): boolean {
   return scopesOf(session, "request.decide").length > 0;
 }
 
-// The custodies whose proposals the caller decides: every one at `any`, else those they are a
-// member of, directly or through a group.
-export function decidedCustodiesOf(session: Session): StoredProposalCustody[] {
-  const scopes = scopesOf(session, "request.decide");
-  if (scopes.includes("any")) {
-    return [...database.proposalCustodies];
-  }
+type RequestPermission = "request.read" | "request.decide";
 
-  if (!scopes.includes("custody")) {
-    return [];
-  }
+// At `custody` a row is reached through one of its request custodies; at `project`, through a
+// project one of its asks was made into (SCOPE-custody-request, SCOPE-project).
+function isInReachOf(session: Session, permission: RequestPermission, row: RequestRow): boolean {
+  return scopesOf(session, permission).some((scope) => {
+    switch (scope) {
+      case "any":
+        return true;
+      case "custody": {
+        const memberOf = memberCustodyIdsOf(session);
+        return row.custodyIds.some((custodyId) => memberOf.has(custodyId));
+      }
+      case "project":
+        return projectIdsOf(row).some((projectId) => {
+          const project = database.projects.find((candidate) => candidate.id === projectId);
+          return (
+            project !== undefined && isWithinScope(session, "project", scopeOfProject(project))
+          );
+        });
+      default:
+        return false;
+    }
+  });
+}
 
+// The custodies the caller is a member of, directly or through a group.
+function memberCustodyIdsOf(session: Session): Set<string> {
   const userId = session.user.id;
   const groupIds = database.groups
     .filter((group) => group.memberIds.includes(userId))
     .map(({ id }) => id);
-  return database.proposalCustodies.filter(
-    (custody) =>
-      custody.memberIds.includes(userId) ||
-      custody.groupIds.some((groupId) => groupIds.includes(groupId)),
+  return new Set(
+    database.requestCustodies
+      .filter(
+        (custody) =>
+          custody.memberIds.includes(userId) ||
+          custody.groupIds.some((groupId) => groupIds.includes(groupId)),
+      )
+      .map(({ id }) => id),
   );
+}
+
+export function isDecidableBy(session: Session, row: RequestRow): boolean {
+  return isInReachOf(session, "request.decide", row);
 }
 
 export function publicCustodyOf({
   memberIds: _memberIds,
   groupIds: _groupIds,
   ...custody
-}: StoredProposalCustody): ProposalCustody {
+}: StoredRequestCustody): RequestCustody {
   return custody;
 }
 
-function reachableRows(session: Session): ProposalRow[] {
-  const custodyIds = new Set(decidedCustodiesOf(session).map(({ id }) => id));
-  return database.documents
-    .flatMap((document) => {
-      const row = rowOf(document);
-      return row === null ? [] : [row];
-    })
-    .filter((row) => row.custodyIds.some((custodyId) => custodyIds.has(custodyId)));
+function reachableRows(session: Session): RequestRow[] {
+  return database.documents.flatMap((document) => {
+    const row = rowOf(document);
+    return row !== null && isInReachOf(session, "request.read", row) ? [row] : [];
+  });
 }
 
 // The custodies the Custody rules place each open proposal in now, one entry per document since
@@ -111,7 +139,7 @@ export function openProposalPlacements(): string[][] {
   return openProposalRows().map((row) => row.custodyIds);
 }
 
-export function openProposalRows(): ProposalRow[] {
+export function openProposalRows(): RequestRow[] {
   return database.documents.flatMap((document) => {
     const row = rowOf(document);
     return row === null || row.decision !== "Pending" ? [] : [row];
@@ -119,12 +147,12 @@ export function openProposalRows(): ProposalRow[] {
 }
 
 // The open or decided row of a document the caller decides; null outside their reach.
-export function findReachableRow(session: Session, documentId: string): ProposalRow | null {
+export function findReachableRow(session: Session, documentId: string): RequestRow | null {
   return reachableRows(session).find((row) => row.record.document.id === documentId) ?? null;
 }
 
 // The document's asks that share its liveliest proposal decision; null when it has none.
-function rowOf(document: Document): ProposalRow | null {
+function rowOf(document: Document): RequestRow | null {
   const proposals = database.requests.filter(
     (request) => request.documentId === document.id && isProposalDecision(request.decision),
   );
@@ -157,14 +185,14 @@ function custodiesOf(asks: readonly Request[], document: Document): string[] {
       (request) => custodyPlacements[baseIdOf(request.id)] ?? houseRuleOf(request, document),
     ),
   );
-  const placed = database.proposalCustodies.filter(
+  const placed = database.requestCustodies.filter(
     (custody) => !custody.isFallback && names.has(custody.name),
   );
   if (placed.length > 0) {
     return placed.map(({ id }) => id);
   }
 
-  return database.proposalCustodies.filter((custody) => custody.isFallback).map(({ id }) => id);
+  return database.requestCustodies.filter((custody) => custody.isFallback).map(({ id }) => id);
 }
 
 // Copies made for volume carry the fixture's ID with a `.n` suffix.
@@ -174,14 +202,14 @@ function baseIdOf(requestId: string): string {
 
 // ---------------------------------------------------------------- list
 
-type FilterField = "search" | ProposalListField | ProposalRangeField;
+type FilterField = "search" | RequestListField | RequestRangeField;
 
 interface Predicate {
   field: FilterField;
-  matches: (row: ProposalRow) => boolean;
+  matches: (row: RequestRow) => boolean;
 }
 
-type FieldValues = Record<ProposalListField, (row: ProposalRow) => readonly string[]>;
+type FieldValues = Record<RequestListField, (row: RequestRow) => readonly string[]>;
 
 const listFields = [
   "decisions",
@@ -193,7 +221,7 @@ const listFields = [
   "batchIds",
   "askerCounts",
   "afterProjectApproval",
-] as const satisfies readonly ProposalListField[];
+] as const satisfies readonly RequestListField[];
 
 const fieldValues: FieldValues = {
   decisions: (row) => [row.decision],
@@ -211,11 +239,11 @@ const fieldValues: FieldValues = {
 };
 
 // Only a batch shown as one can be filtered on (ENT-batch).
-function shownBatchIdsOf(row: ProposalRow): string[] {
+function shownBatchIdsOf(row: RequestRow): string[] {
   return batchIdsOf(row).flatMap((batchId) => shownBatchIdOf(batchId) ?? []);
 }
 
-function askerCountOf(row: ProposalRow): AskerCount {
+function askerCountOf(row: RequestRow): AskerCount {
   return askerIdsOf(row).length > 1 ? "Several" : "One";
 }
 
@@ -223,12 +251,12 @@ function answerOf(isTrue: boolean): Answer {
   return isTrue ? "Yes" : "No";
 }
 
-export function queryProposals(
+export function queryRequests(
   session: Session,
-  query: ProposalQuery,
-  slice: { cursor: string | null; limit: number } = { cursor: null, limit: proposalSliceSize },
-  grouping: ProposalGrouping | null = null,
-): ProposalPage {
+  query: RequestQuery,
+  slice: { cursor: string | null; limit: number } = { cursor: null, limit: requestSliceSize },
+  grouping: RequestGrouping | null = null,
+): RequestPage {
   const reachable = reachableRows(session);
   const predicates = predicatesOf(query);
   // A facet counts over every other filter, so picking a value never hides its siblings.
@@ -238,10 +266,12 @@ export function queryProposals(
     );
 
   const matching = matchingAllBut(null).toSorted(byDecisionThenAge);
-  const arrangement = arrangementOf(grouping, matching, reachable);
+  // A batch counts what the caller may approve of it: what their `request.decide` reaches.
+  const decidable = reachable.filter((row) => isDecidableBy(session, row));
+  const arrangement = arrangementOf(grouping, matching, decidable);
   const arranged = arrangement === null ? matching : arrangement.sorted(matching);
   const { items, nextCursor } = sliceOf(arranged, (row) => row.record.document.id, slice);
-  const countOf = (field: ProposalListField) =>
+  const countOf = (field: RequestListField) =>
     countValues(matchingAllBut(field).flatMap(fieldValues[field]));
 
   return {
@@ -251,22 +281,26 @@ export function queryProposals(
     nextCursor,
     groups: arrangement === null ? [] : arrangement.headersOf(items, matching),
     // Each list's values were produced by that field's own value function.
-    facets: proposalPageSchema.shape.facets.parse(
+    facets: requestPageSchema.shape.facets.parse(
       Object.fromEntries(listFields.map((field) => [field, countOf(field)])),
     ),
   };
 }
 
-export function findProposalDetail(session: Session, documentId: string): ProposalDetail | null {
+export function findRequestDetail(session: Session, documentId: string): RequestDetail | null {
   const row = findReachableRow(session, documentId);
   if (row === null) {
     return null;
   }
 
-  return { row, log: logOf(row) };
+  return {
+    row,
+    log: logOf(row),
+    canDecide: row.decision === "Pending" && isDecidableBy(session, row),
+  };
 }
 
-function predicatesOf(query: ProposalQuery): Predicate[] {
+function predicatesOf(query: RequestQuery): Predicate[] {
   const predicates: Predicate[] = [];
   const { search } = query;
   if (search !== undefined) {
@@ -302,7 +336,7 @@ function predicatesOf(query: ProposalQuery): Predicate[] {
 }
 
 // Title, identifiers, who asked and the batch; a request ID matches whole.
-function matchesSearch(row: ProposalRow, search: string): boolean {
+function matchesSearch(row: RequestRow, search: string): boolean {
   const needle = search.toLowerCase();
   const { document } = row.record;
   const askerNames = askerIdsOf(row).map(
@@ -321,7 +355,7 @@ function matchesSearch(row: ProposalRow, search: string): boolean {
 }
 
 // Open rows first, then the longest waiting, then by title.
-function byDecisionThenAge(first: ProposalRow, second: ProposalRow): number {
+function byDecisionThenAge(first: RequestRow, second: RequestRow): number {
   return (
     Number(first.decision !== "Pending") - Number(second.decision !== "Pending") ||
     (firstAskOf(first)?.at ?? "").localeCompare(firstAskOf(second)?.at ?? "") ||
@@ -332,12 +366,12 @@ function byDecisionThenAge(first: ProposalRow, second: ProposalRow): number {
 // ---------------------------------------------------------------- grouping
 
 function arrangementOf(
-  grouping: ProposalGrouping | null,
-  matching: readonly ProposalRow[],
-  reachable: readonly ProposalRow[],
-): Arrangement<ProposalRow, ProposalGroup> | null {
+  grouping: RequestGrouping | null,
+  matching: readonly RequestRow[],
+  decidable: readonly RequestRow[],
+): Arrangement<RequestRow, RequestGroup> | null {
   if (grouping === "batch") {
-    return batchArrangementOf(matching, reachable);
+    return batchArrangementOf(matching, decidable);
   }
 
   if (grouping === "requester") {
@@ -351,13 +385,13 @@ function arrangementOf(
 // wait, oldest first, and what was proposed on its own, a batch of one included, comes last
 // (ENT-batch).
 function batchArrangementOf(
-  matching: readonly ProposalRow[],
-  reachable: readonly ProposalRow[],
-): Arrangement<ProposalRow, ProposalGroup> {
-  const homeOf = (row: ProposalRow) => shownBatchIdOf(firstAskOf(row)?.batchId ?? null);
+  matching: readonly RequestRow[],
+  decidable: readonly RequestRow[],
+): Arrangement<RequestRow, RequestGroup> {
+  const homeOf = (row: RequestRow) => shownBatchIdOf(firstAskOf(row)?.batchId ?? null);
   const order = [...new Set(matching.flatMap((row) => homeOf(row) ?? []))];
   const openInBatch = (batchId: string) =>
-    reachable.filter((row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId));
+    decidable.filter((row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId));
 
   return groupedBy(homeOf, order, (batchId, total, rowCount) => {
     const batch = batchId === null ? null : servedBatchOf(batchId);
@@ -389,9 +423,9 @@ function batchArrangementOf(
 
 // A row is listed under whoever asked first; the busiest requesters come first.
 function requesterArrangementOf(
-  matching: readonly ProposalRow[],
-): Arrangement<ProposalRow, ProposalGroup> {
-  const homeOf = (row: ProposalRow) => firstAskOf(row)?.requesterId ?? null;
+  matching: readonly RequestRow[],
+): Arrangement<RequestRow, RequestGroup> {
+  const homeOf = (row: RequestRow) => firstAskOf(row)?.requesterId ?? null;
   const counts = countValues(matching.flatMap((row) => homeOf(row) ?? []));
   const nameOf = (userId: string) =>
     database.users.find((user) => user.id === userId)?.name ?? userId;
@@ -415,7 +449,7 @@ function requesterArrangementOf(
 // ---------------------------------------------------------------- history
 
 // The status log of the asks and of the attempts before them, newest first.
-function logOf(row: ProposalRow): StatusLogEntry[] {
+function logOf(row: RequestRow): StatusLogEntry[] {
   const subjects = new Set(
     [...row.record.requests, ...row.record.iterations].map((entry) => entry.id),
   );
@@ -430,15 +464,15 @@ function logOf(row: ProposalRow): StatusLogEntry[] {
 
 // Open rows outside the caller's custody are refused, not hidden: they exist, and somebody else
 // decides them.
-function openRowFor(session: Session, documentId: string): Outcome<ProposalRow> {
+function openRowFor(session: Session, documentId: string): Outcome<RequestRow> {
   const document = database.documents.find((candidate) => candidate.id === documentId);
   const row = document === undefined ? null : rowOf(document);
   if (row === null) {
     return { refusal: { status: 404, message: "No proposal for this document" } };
   }
 
-  if (findReachableRow(session, documentId) === null) {
-    return { refusal: { status: 403, message: "This proposal is outside your proposal custody" } };
+  if (!isDecidableBy(session, row)) {
+    return { refusal: { status: 403, message: "This proposal is outside your request custody" } };
   }
 
   if (row.decision !== "Pending") {
@@ -532,7 +566,10 @@ export function bulkApproveProposals(
   }
 
   const open = reachableRows(session).filter(
-    (row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId),
+    (row) =>
+      row.decision === "Pending" &&
+      batchIdsOf(row).includes(batchId) &&
+      isDecidableBy(session, row),
   );
   const excludedIds = new Set(bulk.excludedIds);
   const taken = open.filter(
@@ -562,7 +599,7 @@ type ApprovedBy = "item" | "batch";
 // other ask follows it (status-model.md §2.7).
 function approveRow(
   session: Session,
-  row: ProposalRow,
+  row: RequestRow,
   approval: Approval,
   decidedBy: ApprovedBy = "item",
 ): void {
@@ -630,11 +667,7 @@ function approveRow(
 
 // The suggestion, its instance and whether the decider kept it go on the approval's entry, so a
 // classifier that is usually overruled shows as one (plugins.md §4.13).
-function suggestionNote(
-  row: ProposalRow,
-  categoryId: string,
-  decidedBy: ApprovedBy,
-): string | null {
+function suggestionNote(row: RequestRow, categoryId: string, decidedBy: ApprovedBy): string | null {
   const { suggestion } = row;
   if (suggestion === null) {
     return null;
@@ -656,19 +689,19 @@ function joinEvent(event: string, askCount: number): string {
   return askCount > 1 ? `${event} — ${askCount} requests` : event;
 }
 
-function copiesLineOf(row: ProposalRow): string {
+function copiesLineOf(row: RequestRow): string {
   return existingCopiesOf(asksOf(row))
     .map((copy) => `${copy.source}: ${copy.state.toLowerCase()}`)
     .join(", ");
 }
 
 // The custodies it was in when decided go on the decision's entry (proposal-custody.md §6).
-function custodyNote(row: ProposalRow): string {
+function custodyNote(row: RequestRow): string {
   const names = row.custodyIds.map(
     (custodyId) =>
-      database.proposalCustodies.find((custody) => custody.id === custodyId)?.name ?? custodyId,
+      database.requestCustodies.find((custody) => custody.id === custodyId)?.name ?? custodyId,
   );
-  return `Proposal custody: ${names.join(", ")}`;
+  return `Request custody: ${names.join(", ")}`;
 }
 
 function joinSentences(sentences: readonly (string | null)[]): string {

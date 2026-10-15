@@ -35,11 +35,12 @@ export const navigationEntries: readonly NavigationEntry[] = [
     requires: ["iteration.read"],
   },
   {
-    id: "proposals",
-    path: "/review/proposals",
-    rail: "Pr",
-    label: "Proposals",
-    requires: ["request.decide"],
+    id: "requests",
+    path: "/requests",
+    rail: "Rq",
+    label: "Requests",
+    // Read-only without `request.decide` (VIEW-requests).
+    requires: ["request.read"],
   },
   {
     id: "validations",

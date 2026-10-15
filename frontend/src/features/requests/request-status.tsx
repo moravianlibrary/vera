@@ -5,19 +5,19 @@
 
 import type { Tone } from "@/components/status-badge";
 import { ToneBadge } from "@/components/status-badge";
-import type { ProposalRow } from "@/domain/proposal-review";
-import { isBeingChecked } from "@/domain/proposal-review";
+import type { RequestRow } from "@/domain/requests";
+import { isBeingChecked } from "@/domain/requests";
 
-const proposalStatuses = {
+const requestStatuses = {
   declined: { tone: "red", label: "Declined" },
   withdrawn: { tone: "slate", label: "Withdrawn" },
   beingChecked: { tone: "slate", label: "Being checked" },
   awaitingReview: { tone: "amber", label: "Awaiting a decision" },
 } as const satisfies Record<string, { tone: Tone; label: string }>;
 
-type ProposalStatus = keyof typeof proposalStatuses;
+type RequestStatus = keyof typeof requestStatuses;
 
-function proposalStatusOf(row: ProposalRow): ProposalStatus {
+function requestStatusOf(row: RequestRow): RequestStatus {
   if (row.decision === "Denied") {
     return "declined";
   }
@@ -33,7 +33,7 @@ function proposalStatusOf(row: ProposalRow): ProposalStatus {
   return "awaitingReview";
 }
 
-export function ProposalStatusBadge({ row }: { row: ProposalRow }) {
-  const { tone, label } = proposalStatuses[proposalStatusOf(row)];
+export function RequestStatusBadge({ row }: { row: RequestRow }) {
+  const { tone, label } = requestStatuses[requestStatusOf(row)];
   return <ToneBadge tone={tone}>{label}</ToneBadge>;
 }

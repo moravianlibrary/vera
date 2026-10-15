@@ -118,8 +118,8 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
             record.requests.some((request) => request.decision === "Pending") &&
             hasPermission(session, "request.decide") && (
               <Button asChild size="sm" variant="outline">
-                <Link to={`/review/proposals?id=${encodeURIComponent(document.id)}`}>
-                  Decide in Proposals
+                <Link to={`/requests?id=${encodeURIComponent(document.id)}`}>
+                  Decide in Requests
                   <ArrowRight />
                 </Link>
               </Button>

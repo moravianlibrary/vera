@@ -12,7 +12,7 @@ import { isSameDocumentQuery, parseDocumentSearchParams } from "@/api/documents"
 import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { isSameListQuery, parseListSearchParams } from "@/api/lists";
 import { isSameProjectQuery, parseProjectSearchParams } from "@/api/projects";
-import { isSameProposalQuery, parseProposalSearchParams } from "@/api/proposal-review";
+import { isSameRequestQuery, parseRequestSearchParams } from "@/api/requests";
 import { apiRoutes, watchlistRoute, watchlistSeenRoute, watchlistViewerRoute } from "@/api/routes";
 import { isSameRunQuery, parseRunSearchParams } from "@/api/tasks";
 import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
@@ -104,10 +104,10 @@ const filterComparers = {
       parseDocumentSearchParams(new URLSearchParams(first)),
       parseDocumentSearchParams(new URLSearchParams(second)),
     ),
-  proposals: (first, second) =>
-    isSameProposalQuery(
-      parseProposalSearchParams(new URLSearchParams(first)),
-      parseProposalSearchParams(new URLSearchParams(second)),
+  requests: (first, second) =>
+    isSameRequestQuery(
+      parseRequestSearchParams(new URLSearchParams(first)),
+      parseRequestSearchParams(new URLSearchParams(second)),
     ),
   validations: (first, second) =>
     isSameValidationQuery(

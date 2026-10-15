@@ -51,7 +51,7 @@ empty cell means the entry is absent.
 |---|---|---|---|---|---|---|---|---|
 | My Documents | `/my-documents` | `request.read_mine` | My Documents | My Documents | My Documents | My Documents | My Documents | My Documents |
 | Documents | `/documents` | `iteration.read` |  |  |  | Documents | Documents | Documents |
-| Proposals | `/review/proposals` | `request.decide` |  |  |  | Proposals | Proposals | Proposals |
+| Requests | `/requests` | `request.read` |  |  |  | Requests | Requests | Requests |
 | Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  |  | Documents Validations | Documents Validations | Documents Validations |
 | Digitization Lists | `/lists` | `list.read` |  |  |  |  | Digitization Lists | Digitization Lists |
 | Projects | `/projects` | `project.read` |  |  | Projects | Projects | Projects | Projects |
@@ -93,13 +93,15 @@ one is never named, and no reason detail is shown
 The ingest failure text and the *Batch* grouping on Documents need `request.read_ingest`. Without it,
 a failed addition shows only that it failed.
 
-#### VIEW-proposals
+#### VIEW-requests
 
-Proposals shows the proposals in the person's proposal custodies, or every proposal at
-`request.decide@any`, with the custodies each one is in.
+Requests opens with `request.read` and shows the requests in its reach, with the custodies each
+one is in: at `custody`, those in the person's request custodies; at `project`, those made into a
+project they are on; at `any`, every one. Proposals come first, then the declined and withdrawn;
+an approved request is on Documents.
 
-> **Open — [L1](../../ledger.md#l1-requestread-opens-requests).** `request.read` is to open the
-> page read-only, for the requests in its reach; `request.decide` adds the decision acts.
+Without `request.decide` the page is read-only. With it, Approve and Decline appear on the
+proposals within its own scope ([ACCESS-membership-not-capability](custody.md#access-membership-not-capability)).
 
 #### VIEW-validations
 

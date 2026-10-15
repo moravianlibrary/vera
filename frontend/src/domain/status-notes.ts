@@ -196,14 +196,14 @@ export function publicRecordNoteOf(record: DocumentRecord, userId: string): Stat
 
 // The view whose queue a record waits in (view-map.md §4), by navigation entry; null when it
 // waits on nobody.
-export const desks = ["documents", "proposals", "validations", "lists"] as const;
+export const desks = ["documents", "requests", "validations", "lists"] as const;
 export type Desk = (typeof desks)[number];
 
 export function deskOf(record: DocumentRecord): Desk | null {
   const current = currentIterationOf(record);
   if (current === null) {
     if (record.requests.some((request) => request.decision === "Pending")) {
-      return "proposals";
+      return "requests";
     }
 
     return record.requests.some((request) => request.decision === "Approved") ? "documents" : null;

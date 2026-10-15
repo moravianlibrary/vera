@@ -33,4 +33,4 @@
 
 [ACCESS-custody-by-plugins](../../reference/access/custody.md#access-custody-by-plugins) ·
 [ACCESS-custody-live](../../reference/access/custody.md#access-custody-live) ·
-[SCOPE-custody-proposal](../../reference/access/scopes.md#scope-custody-proposal)
+[SCOPE-custody-request](../../reference/access/scopes.md#scope-custody-request)

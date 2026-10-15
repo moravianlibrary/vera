@@ -363,7 +363,7 @@ export const runs: readonly StoredRun[] = [
     itemCount: 50,
     ending: { state: "Done", finishedAt: june(22, 6, 3, 51), doneCount: 50 },
     errors: [],
-    changes: [{ label: "2 proposals raised", path: "/review/proposals" }],
+    changes: [{ label: "2 proposals raised", path: "/requests" }],
   },
   {
     ...settled,
@@ -387,7 +387,7 @@ export const runs: readonly StoredRun[] = [
     what: "Ingest batch B-0138 — 1 item",
     instanceId: "pi1",
     coreName: null,
-    trigger: { kind: "approval", from: { label: "Proposals", path: "/review/proposals" } },
+    trigger: { kind: "approval", from: { label: "Requests", path: "/requests" } },
     startedBy: "u1",
     startedAt: june(14, 10, 31),
     itemCount: 1,

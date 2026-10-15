@@ -5,7 +5,7 @@
 
 import { leafCategoriesOf } from "@/domain/categories";
 import type { Document, Request } from "@/domain/entities";
-import type { ClassifierSuggestion } from "@/domain/proposal-review";
+import type { ClassifierSuggestion } from "@/domain/requests";
 import { database } from "@/mocks/database";
 import { materialLeaves, moravianPlaces } from "@/mocks/fixtures/classifiers";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";

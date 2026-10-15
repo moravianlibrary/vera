@@ -64,6 +64,6 @@ The detail of an ingest entry (the failure text) is withheld from anyone without
 #### LOG-where-read
 
 The log is read:
-- in a record's *History* on Documents, Proposals, Documents Validations and Digitization Lists;
+- in a record's *History* on Documents, Requests, Documents Validations and Digitization Lists;
 - on a project's page;
 - on a list's page.

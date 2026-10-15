@@ -96,7 +96,7 @@ are the groups the role editor shows.
 | `request.read_mine` | own · `project` | My Documents: what I asked for, or my projects did, in public detail |
 | `request.withdraw_own` | own | take back my own ask |
 | `request.read` | `custody` · `project` · `any` | other people's requests |
-| `request.decide` | `custody` · `any` | approve or decline a proposal, rescans included; custody is proposal custody |
+| `request.decide` | `custody` · `any` | approve or decline a proposal, rescans included; custody is request custody |
 | `request.read_ingest` | `custody` · `any` | ingest detail: batch, failure text |
 | `request.retry` | `custody` · `any` | ingest again |
 | `request.read_payload` | `any` | raw responses |

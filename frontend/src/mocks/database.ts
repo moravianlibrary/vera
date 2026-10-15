@@ -15,7 +15,7 @@ import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
 import { pluginImplementations, pluginInstances } from "@/mocks/fixtures/plugins";
 import { projects } from "@/mocks/fixtures/projects";
-import { proposalCustodies } from "@/mocks/fixtures/proposal-custodies";
+import { requestCustodies } from "@/mocks/fixtures/request-custodies";
 import { requests } from "@/mocks/fixtures/requests";
 import { statusLog } from "@/mocks/fixtures/status-log";
 import { retention, runs, schedules } from "@/mocks/fixtures/tasks";
@@ -23,8 +23,8 @@ import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import type { StoredUpload } from "@/mocks/plugins";
 import { withCopies } from "@/mocks/volume";
-import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import { readWatchlistBaselines, readWatchlistEntries } from "@/mocks/watchlist-entries";
+import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 
 // The owner is who saved it; for a shared watchlist that says nothing about who sees it.
@@ -59,7 +59,7 @@ export const database = {
   intentionTemplates: [...intentionTemplates],
   lists: [...lists],
   batches: [...batches],
-  proposalCustodies: [...proposalCustodies],
+  requestCustodies: [...requestCustodies],
   documents: [...records.documents],
   iterations: [...records.iterations],
   requests: [...records.requests],

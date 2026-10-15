@@ -7,12 +7,12 @@ membership say what they may do it to, through the `custody`, `project` and `man
 | | Answers | Held by | Reached through |
 |---|---|---|---|
 | **Category custody** | which approved work is mine | people, or groups | `@custody` on iterations, validations, categories, additions |
-| **Proposal custody** | which proposals I decide | people, or groups | `@custody` on proposals |
+| **Request custody** | which proposals I decide | people, or groups | `@custody` on proposals |
 | **Project membership** | which funded work I am on | the manager, members, member groups | `@project`, `@managed` |
 
 ```mermaid
 flowchart LR
-  P["Proposal"] -->|"Custody plugins name"| PC["Proposal custodies"]
+  P["Proposal"] -->|"Custody plugins name"| PC["Request custodies"]
   PC -->|"members decide<br/>request.decide@custody"| D{"Approved<br/>into a category"}
   D --> C["Category"]
   C -->|"custody of it or above"| W["Curators validate, classify,<br/>cancel, publish @custody"]
@@ -32,11 +32,11 @@ Custody is granted on Categories with `category.grant_custody`, which sets the p
 agents) and groups holding custody of one category. At `custody` this reaches only the granter's
 own subtree; at `any`, every category.
 
-## Proposal custody
+## Request custody
 
-#### ACCESS-proposal-custody
+#### ACCESS-request-custody
 
-A proposal custody is a named set of people and groups who look after proposals before
+A request custody is a named set of people and groups who look after proposals before
 approval. Its members are people (never agents) or groups.
 
 #### ACCESS-membership-not-capability
@@ -90,7 +90,7 @@ those rules are changed.
 
 #### ACCESS-custody-ends
 
-After approval proposal custody is over. The chosen category decides custody from then on, and
+After approval request custody is over. The chosen category decides custody from then on, and
 a decider may approve into any leaf, including one outside their own category custody.
 
 ## Project membership

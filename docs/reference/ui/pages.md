@@ -8,7 +8,7 @@ What each page is for, its shape, and what can narrow it. Who sees each page is 
 | Page | For | Shape |
 |---|---|---|
 | Documents, My Documents | every document, or the person's own asks | a list with a record pane |
-| Proposals | deciding proposals in the person's custody | a list with a record pane |
+| Requests | the requests in the person's reach, and deciding the proposals | a list with a record pane |
 | Documents Validations | ruling on defects and seeing what is forbidden | a list with a record pane |
 | Digitization Lists | the lists, and building one | a list with a record pane; the editor is its own page |
 | Projects | projects and how they stand | cards for proposed and active projects, tables for ended and rejected ones; each project has its own page |
@@ -50,7 +50,7 @@ The filter fields and groupings of each page, as the code declares them:
 |---|---|---|---|
 | Documents | `documents` | Status (on the bar) · Decision (on the bar) · Progress (on the bar) · Validation · Forbidden · Cancelled · Category · Project · Priority · Existing copy · Asked by · Pages (range) · Asked (range) | Group by batch · Group by project |
 | My Documents | `my-documents` | Status (on the bar) | — |
-| Proposals | `proposals` | Decision (on the bar) · Proposal custody (on the bar) · Material type · Project · Existing copy · Asked by · Batch · Askers · After the project's approval · Asked (range) | Group by batch · Group by requester |
+| Requests | `requests` | Decision (on the bar) · Request custody (on the bar) · Material type · Project · Existing copy · Asked by · Batch · Askers · After the project's approval · Asked (range) | Group by batch · Group by requester |
 | Documents Validations | `validations` | Review (on the bar) · Category (on the bar) · Forbidden · Defect · Priority · Project · Waiting since (range) | Group by category · Group by defect |
 | Digitization Lists | `lists` | State (on the bar) · Needs attention · Runs (range) | — |
 | Projects | `projects` | Decision (on the bar) · Period (on the bar) · Pace · Project dates (range) · Time elapsed (range) · Delivered (range) | — |

@@ -89,5 +89,5 @@ When a request is checked, VERA records every existing copy it finds:
 - VERA's own earlier iteration that was scanned.
 
 Approving over an existing copy is a **rescan**, which needs a note saying why
-([ACT-approve](../access/acts.md#proposal-review)). A copy found after approval is a warning,
+([ACT-approve](../access/acts.md#request-review)). A copy found after approval is a warning,
 not a rescan.

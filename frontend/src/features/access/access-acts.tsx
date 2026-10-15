@@ -68,7 +68,7 @@ export function headerActionsFor(open: Open): ViewAction[] {
     { id: "new-group", label: "New group", onSelect: () => open({ kind: "newGroup" }) },
     {
       id: "new-custody",
-      label: "New proposal custody set",
+      label: "New request custody set",
       onSelect: () => open({ kind: "newCustody" }),
     },
   ];

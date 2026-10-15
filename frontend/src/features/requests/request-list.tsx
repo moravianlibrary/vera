@@ -1,4 +1,4 @@
-// The Proposals list on RecordList (components/lists/record-list.tsx), one row per document
+// The Requests list on RecordList (components/lists/record-list.tsx), one row per document
 // (page-proposals.js rowOf). Under each row one line says why it is here: a copy that makes
 // approving a rescan, checks still running, the project, and the askers' reason verbatim, or how
 // many reasons there are when they differ, so that no one asker's reason stands for the rest.
@@ -6,14 +6,14 @@
 
 import type { ReactElement } from "react";
 import { Fragment } from "react";
-import type { ProposalGroup, ProposalGrouping } from "@/api/proposal-review";
+import type { RequestGroup, RequestGrouping } from "@/api/requests";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
-import type { ExistingCopy, Project, ProposalCustody, User } from "@/domain/entities";
-import type { ProposalRow } from "@/domain/proposal-review";
+import type { ExistingCopy, Project, RequestCustody, User } from "@/domain/entities";
+import type { RequestRow } from "@/domain/requests";
 import {
   askerIdsOf,
   asksOf,
@@ -24,38 +24,38 @@ import {
   isRescan,
   projectIdsOf,
   reasonsOf,
-} from "@/domain/proposal-review";
-import { ProposalGroupHeader } from "@/features/proposals/proposal-group-header";
-import { ProposalStatusBadge } from "@/features/proposals/proposal-status";
-import { proposalsView } from "@/features/proposals/proposals-view";
+} from "@/domain/requests";
+import { RequestGroupHeader } from "@/features/requests/request-group-header";
+import { RequestStatusBadge } from "@/features/requests/request-status";
+import { requestsView } from "@/features/requests/requests-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useIsShownBatch } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
-export interface ProposalReferences {
+export interface RequestReferences {
   users: readonly User[];
   projects: readonly Project[];
-  custodies: readonly ProposalCustody[];
+  custodies: readonly RequestCustody[];
 }
 
-interface ProposalListProps {
-  items: ProposalRow[] | undefined;
-  groups: readonly ProposalGroup[];
+interface RequestListProps {
+  items: RequestRow[] | undefined;
+  groups: readonly RequestGroup[];
   total: number | undefined;
   askTotal: number | undefined;
   isLoading: boolean;
   paging: PagedList;
-  grouping: ProposalGrouping | null;
-  onGroupingChange: (grouping: ProposalGrouping | null) => void;
-  references: ProposalReferences;
+  grouping: RequestGrouping | null;
+  onGroupingChange: (grouping: RequestGrouping | null) => void;
+  references: RequestReferences;
   // Absent where nothing may be approved in bulk.
-  onBulkApprove?: (group: Extract<ProposalGroup, { kind: "batch" }>) => void;
+  onBulkApprove?: (group: Extract<RequestGroup, { kind: "batch" }>) => void;
   selectedId: string | null;
   onSelect: (documentId: string) => void;
 }
 
-export function ProposalList({
+export function RequestList({
   items,
   groups,
   total,
@@ -68,10 +68,10 @@ export function ProposalList({
   onBulkApprove,
   selectedId,
   onSelect,
-}: ProposalListProps) {
+}: RequestListProps) {
   const count =
     total === undefined || askTotal === undefined
-      ? "Proposals"
+      ? "Requests"
       : `${plural(total, "document")} · ${plural(askTotal, "ask")}`;
 
   return (
@@ -90,7 +90,7 @@ export function ProposalList({
         title: (row) => row.record.document.title,
         meta: (row) => (
           <>
-            <ProposalStatusBadge row={row} />
+            <RequestStatusBadge row={row} />
             <span className="text-xs text-muted-foreground">
               {plural(askerIdsOf(row).length, "asker")}
             </span>
@@ -108,7 +108,7 @@ export function ProposalList({
       toolbar={{
         count,
         groupings: {
-          options: proposalsView.groupings,
+          options: requestsView.groupings,
           value: grouping,
           onChange: onGroupingChange,
         },
@@ -117,7 +117,7 @@ export function ProposalList({
         items: groups,
         keyOf: (group) => (group.kind === "batch" ? (group.batch?.id ?? null) : group.userId),
         header: (group) => (
-          <ProposalGroupHeader
+          <RequestGroupHeader
             group={group}
             users={references.users}
             onBulkApprove={onBulkApprove}
@@ -128,14 +128,14 @@ export function ProposalList({
       isLoading={isLoading}
       selectedId={selectedId}
       onSelect={onSelect}
-      loadingText="Loading proposals…"
+      loadingText="Loading requests…"
       emptyText="Nothing is waiting for a decision."
-      loadingMoreText="Loading more proposals…"
+      loadingMoreText="Loading more requests…"
     />
   );
 }
 
-function columnsOf(references: ProposalReferences): ColumnDefinition<ProposalRow>[] {
+function columnsOf(references: RequestReferences): ColumnDefinition<RequestRow>[] {
   return [
     {
       key: "document",
@@ -157,7 +157,7 @@ function columnsOf(references: ProposalReferences): ColumnDefinition<ProposalRow
       key: "status",
       header: "Status",
       track: "fit-content(9rem)",
-      cell: (row) => <ProposalStatusBadge row={row} />,
+      cell: (row) => <RequestStatusBadge row={row} />,
     },
     {
       key: "askers",
@@ -195,13 +195,13 @@ function columnsOf(references: ProposalReferences): ColumnDefinition<ProposalRow
   ];
 }
 
-function CopyCell({ row }: { row: ProposalRow }) {
+function CopyCell({ row }: { row: RequestRow }) {
   const [copy] = existingCopiesOf(asksOf(row));
   return copy === undefined ? <Muted>—</Muted> : <CopyBadge copy={copy} />;
 }
 
 // The custodies it was placed in; the fallback says so.
-export function custodyNamesOf(row: ProposalRow, custodies: readonly ProposalCustody[]): string {
+export function custodyNamesOf(row: RequestRow, custodies: readonly RequestCustody[]): string {
   return row.custodyIds
     .map((custodyId) => {
       const custody = custodies.find((candidate) => candidate.id === custodyId);
@@ -220,8 +220,8 @@ function CopyBadge({ copy }: { copy: ExistingCopy }) {
 }
 
 interface WhyLineProps {
-  row: ProposalRow;
-  references: ProposalReferences;
+  row: RequestRow;
+  references: RequestReferences;
   // The batch the row is listed under when grouped by batch; undefined otherwise.
   homeBatchId: string | null | undefined;
 }
