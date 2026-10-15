@@ -144,10 +144,7 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 | `ACT-project-members` | *Members…* | `project.manage_members` at the project | members are people, never agents (422) | log *Member added*, *Member removed*, *Manager changed* |
 | `ACT-project-approve` | *Approve…* | `project.decide` | Proposed (409 `project.decided`) | priority set once; every pending proposal in it approved except those with a copy; log *Approved* |
 | `ACT-project-reject` | *Reject…* | `project.decide` | Proposed (409) | its pending proposals declined with the reason; its intention archived; log *Rejected* |
-| `ACT-project-delete` | *Delete…* | `project.delete` at the project | nothing ever proposed into it (409 `project.has_proposals`); no intention tracks its intention's mix (409 `intention.tracked`) | the project and its intention removed; log *Deleted* |
-
-> **Open — [L28](../../ledger.md#l28-remove-mix-tracking).** Tracking goes, and with it the
-> `intention.tracked` refusal.
+| `ACT-project-delete` | *Delete…* | `project.delete` at the project | nothing ever proposed into it (409 `project.has_proposals`) | the project and its intention removed; log *Deleted* |
 
 ## Intentions and repeats
 
@@ -156,9 +153,7 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 | `ACT-intention-create` | *New intention* | `intention.edit` reaching its funding | a unique name (422 `intention.name`) | *(no log)* |
 | `ACT-intention-save` | *Edit* | `intention.edit` at the intention | not archived (409); the counting start unchanged (422 `intention.counts_from`); not the project's own fields (409 `intention.project`); Overall keeps its shape (422) | *(no log)* |
 | `ACT-intention-archive` | *Archive* | `intention.edit` at the intention | not Overall, not a project's own | preserved as it is, still counting *(no log)* |
-| `ACT-intention-delete` | *Delete…* | `intention.edit` at the intention | not archived, not Overall, not a project's own; no intention or repeat tracks its mix (409 `intention.tracked`) | generated lists keep it as provenance *(no log)* |
-| `ACT-intention-detach` | *Detach* | `intention.edit` at the intention | it tracks another's mix | it gets its own copy of the mix *(no log)* |
-| `ACT-intention-mix` | *Edit mix…* | `mix.edit` and `intention.edit` at the intention (Overall's only at `any`) | it owns its mix (409 `intention.not_owner`); not archived; the mix unchanged meanwhile (409 `mix.revision`); a set names every child of its parent and adds up to at most 100 (422) | a new mix revision *(no log)* |
+| `ACT-intention-delete` | *Delete…* | `intention.edit` at the intention | not archived, not Overall, not a project's own | generated lists keep it as provenance *(no log)* |
 | `ACT-repeat-save` | *Repeat…* | `intention.repeat` | a mix that is none, Primary, or an active shared mix and revision | from the next occurrence on *(no log)* |
 
 ## Categories

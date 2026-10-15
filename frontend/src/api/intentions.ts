@@ -1,7 +1,7 @@
 // The Intentions resource (intentions.md §2, §3, §6; flows.md M1–M7): every intention the caller
 // may see with what the server counts for it, planned, delivered and output in its window, its
-// pace against a target, and its mix read against the output; whose mix it reads and who tracks
-// it; and the repeats that make new ones. Figures of different intentions overlap and are never
+// pace against a target, and its mix read against the output; which mix it chose (PLAN-mix);
+// and the repeats that make new ones. Figures of different intentions overlap and are never
 // added, so nothing here sums across rows.
 
 import { z } from "zod";
@@ -25,15 +25,11 @@ export const mixFlagSchema = z.enum(mixFlags);
 
 const namedSchema = z.object({ id: z.string(), name: z.string() });
 
-// Whose mix it reads (§2): its own, or the owner it tracks, never one further.
+// The mix it chose, which any number of intentions may share (PLAN-mix), and the revision read.
 export const intentionMixSchema = z.object({
   id: z.string(),
   name: z.string(),
   revision: z.number().int().positive(),
-  owner: namedSchema.extend({ isOverall: z.boolean() }),
-  isOwn: z.boolean(),
-  // Those tracking this intention's own mix; 0 for a tracker.
-  trackerCount: count,
 });
 export type IntentionMix = z.infer<typeof intentionMixSchema>;
 
@@ -111,8 +107,8 @@ export type IntentionRow = z.infer<typeof intentionRowSchema>;
 
 export const intentionTemplateRowSchema = z.object({
   template: intentionTemplateSchema,
-  // The owner its occurrences track; null when each gets its own copy.
-  tracks: namedSchema.nullable(),
+  // The mix its occurrences use; null for none.
+  mix: namedSchema.nullable(),
 });
 export type IntentionTemplateRow = z.infer<typeof intentionTemplateRowSchema>;
 
@@ -130,8 +126,8 @@ export type IntentionIndex = z.infer<typeof intentionIndexSchema>;
 const calendarDate = z.iso.date();
 const name = z.string().trim().min(1, "An intention needs a name");
 
-// The one mix field (§2.1, §2.2): keep its own, track an intention that owns one, or own a copy
-// of one as it is now. An owner others track switches to tracking only by moving them with it.
+// The one mix field: none, the Primary mix, or a mix and its latest or a pinned revision
+// (PLAN-mix, PLAN-no-mix).
 export const mixChoiceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("none") }),
   z.object({ kind: z.literal("primary") }),
@@ -140,9 +136,6 @@ export const mixChoiceSchema = z.discriminatedUnion("kind", [
     mixId: z.string(),
     revision: z.number().int().positive().nullable(),
   }),
-  z.object({ kind: z.literal("keep") }),
-  z.object({ kind: z.literal("track"), ownerId: z.string(), isMovingTrackers: z.boolean() }),
-  z.object({ kind: z.literal("copy"), fromId: z.string() }),
 ]);
 export type MixChoice = z.infer<typeof mixChoiceSchema>;
 
@@ -235,9 +228,7 @@ export const intentionTemplateDraftSchema = z.object({
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: z.string().nullable(),
-  // Each occurrence tracks it; only an intention that owns its mix.
-  tracksMixOf: z.string(),
-  mix: mixChoiceSchema.optional(),
+  mix: mixChoiceSchema,
   targetPages: z.number().int().positive().nullable(),
   isArchivingPrevious: z.boolean(),
 });

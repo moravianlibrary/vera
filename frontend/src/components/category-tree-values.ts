@@ -37,11 +37,7 @@ export function treeValueOf(
   return offered.includes(value) ? value : (offered[0] ?? value);
 }
 
-// "the house mix", "Periodicals push — watch's mix".
-export function mixNameOf(mix: Pick<MixTree, "owner">): string {
-  return "mixName" in mix && typeof mix.mixName === "string"
-    ? mix.mixName
-    : mix.owner.isOverall
-      ? "the house mix"
-      : `${mix.owner.name}'s mix`;
+// "House mix", "Periodicals push": a mix is its own record, named (PLAN-mix).
+export function mixNameOf(mix: Pick<MixTree, "mixName">): string {
+  return mix.mixName;
 }

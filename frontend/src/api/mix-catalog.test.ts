@@ -1,7 +1,12 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import { createIntention, archiveIntention, listIntentionIndex } from "@/api/intentions";
+import {
+  archiveIntention,
+  createIntention,
+  createIntentionTemplate,
+  listIntentionIndex,
+} from "@/api/intentions";
 import {
   archiveMix,
   createMix,
@@ -11,7 +16,6 @@ import {
   saveMixSetById,
   snapshotMix,
 } from "@/api/mix-catalog";
-import { createIntentionTemplate } from "@/api/intentions";
 import { findIntentionMix } from "@/api/mixes";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -145,7 +149,6 @@ it("allows a repeat with no target and no mix", async () => {
     every: "month",
     funding: { kind: "any" },
     scopeCategoryId: null,
-    tracksMixOf: "",
     mix: { kind: "none" },
     targetPages: null,
     isArchivingPrevious: true,

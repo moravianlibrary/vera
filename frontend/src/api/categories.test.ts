@@ -1,5 +1,5 @@
 // Categories end to end against the mock server over HTTP: who may read the tree, what custody
-// reaches and from where, and Overall's mix over the tree, the only one Categories shows; then
+// reaches and from where, and the selected mix over the tree, the Primary one by default; then
 // changing the tree, inside custody: creating, moving, deleting, refining a leaf that holds
 // documents, and writing a category's custody set. The changes stay in the mock's state, so each
 // test changes its own categories.
@@ -68,7 +68,7 @@ describe("getCategoryIndex", () => {
     expect(await statusOf(getCategoryIndex())).toBe(403);
   });
 
-  it("gives the tree and custody without a mix to someone who cannot read intentions", async () => {
+  it("PLAN-house-mix: gives the tree and custody without a mix to someone without mix.read", async () => {
     signInAs("curator");
 
     const index = await getCategoryIndex();
@@ -108,13 +108,13 @@ describe("getCategoryIndex", () => {
     expect(index.unheldIds).toEqual(["c1", "c3"]);
   });
 
-  it("reads Overall's mix, of the whole", async () => {
+  it("reads the Primary mix, of the whole", async () => {
     signInAs("digitization");
 
     const index = await getCategoryIndex();
 
     expect(index.mix?.intention.id).toBe("i4");
-    expect(index.mix?.owner.id).toBe("i4");
+    expect(index.mix?.mixId).toBe("d1");
     expect(mixNodeOf(index, "c2")).toMatchObject({ share: 45, ofWhole: 45 });
     expect(mixNodeOf(index, "c21").ofWhole).toBeCloseTo(13.5);
   });

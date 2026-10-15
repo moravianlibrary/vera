@@ -12,7 +12,7 @@
    the quarter, a page target, and the Primary mix.
    → It is Upcoming or Running by its dates; its counting start is fixed
    ([LC-INT-counts-from](../../reference/lifecycles/intention.md#lc-int-counts-from)).
-2. He opens its mix and edits the proportions inside the scope.
+2. He opens its mix on *Mixes* and edits the proportions.
    → A new revision of the mix; every intention following it changes too
    ([PLAN-mix-revision](../../reference/planning/mixes.md#plan-mix-revision)).
 3. He tries to set a child set to 110%.
@@ -34,5 +34,5 @@
 [PLAN-intention](../../reference/planning/intentions.md#plan-intention) ·
 [PLAN-scope](../../reference/planning/intentions.md#plan-scope) ·
 [PLAN-mix-within-scope](../../reference/planning/mixes.md#plan-mix-within-scope) ·
-[ACT-intention-mix](../../reference/access/acts.md#intentions-and-repeats) ·
+[ACT-mix-save](../../reference/access/acts.md#mixes) ·
 [ACT-mix-primary](../../reference/access/acts.md#mixes)

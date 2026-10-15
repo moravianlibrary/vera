@@ -361,21 +361,18 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
 
   const { source } = dialog;
   const edited = source.kind === "edit" ? source.row : null;
-  const isTrackedByRepeat = (row: IntentionRow) =>
-    index.templates.some((template) => template.tracks?.id === row.intention.id);
+  // ACT-intention-delete.
   const isDeletable =
     edited !== null &&
     !edited.intention.isOverall &&
     edited.intention.projectId === null &&
-    (edited.mix?.trackerCount ?? 0) === 0 &&
-    !isTrackedByRepeat(edited);
+    edited.intention.archived === null;
   return (
     <IntentionFormDialog
       key={`${source.kind}-${edited?.intention.id ?? ""}`}
       isOpen
       onClose={onClose}
       source={source}
-      rows={index.rows}
       session={session}
       onSaved={(row) =>
         onDone(
@@ -533,7 +530,7 @@ function RepeatLine({
   const parts: ReactNode[] = [
     everyLabels[template.every].toLowerCase(),
     template.targetPages === null ? null : `${formatCount(template.targetPages)} pp`,
-    row.tracks === null ? "own mix" : `tracks ${row.tracks.name}`,
+    row.mix === null ? "no mix" : row.mix.name,
     `next ${formatCalendarDay(template.nextOn)}`,
     template.isArchivingPrevious ? "archives the previous one" : null,
   ].filter((part) => part !== null);

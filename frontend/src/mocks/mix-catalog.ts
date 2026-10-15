@@ -73,7 +73,6 @@ export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixR
       "d",
       database.distributions.map((candidate) => candidate.id),
     ),
-    ownerId: null,
     name: draft.name,
     isPrimary: false,
     archivedAt: null,

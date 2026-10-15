@@ -69,30 +69,6 @@ Rules: [ACCESS-link-identity](reference/access/people.md#access-link-identity).
 Decided on 2026-10-15. *Unlink* on a person's identity; refused for their last one (suspending is
 [L5](#l5-suspending-a-user)'s job); the person and their history stay. → frontend, then engine.
 
-### L28: Remove mix tracking
-
-Rules: [PLAN-mix](reference/planning/mixes.md#plan-mix),
-[ACT-project-delete](reference/access/acts.md#projects).
-
-Decided on 2026-10-15. *Track another intention's mix* and *detach* go: intentions choose a mix directly. The
-project delete's `intention.tracked` refusal goes with them. No mix is filtered by project. →
-frontend.
-
-### L29: Only Mark Done digitizes
-
-Rules: [PLAN-digitized-date](reference/planning/intentions.md#plan-digitized-date).
-
-Decided on 2026-10-15. An item's digitized date is the day its list was marked Done; a list past its end has
-delivered nothing until then. The code falls back to the list's last day for an item with no
-recorded date (`domain/intentions.ts`). → frontend.
-
-### L30: House mix needs only mix.read
-
-Rules: [VIEW-categories-mix](reference/access/views.md#view-categories-mix).
-
-Decided on 2026-10-15. `mix.read` alone shows the house mix on Categories; today it also needs `intention.read`.
-Whether curators get `mix.read` is a role choice. → frontend.
-
 ### L31: Plugin policy on the instance
 
 Rules: [PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
@@ -134,19 +110,6 @@ machine) and intentions scoped by a property:
 
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
-
-### L41: Remove intention.edit_overall
-
-Rules: [LC-INT-overall](reference/lifecycles/intention.md#lc-int-overall),
-[PLAN-mix](reference/planning/mixes.md#plan-mix).
-
-Decided on 2026-10-15: the permission goes. It guarded only the older path of editing an
-intention's own mix in place, which Overall no longer has. Which mix Overall uses stays under
-`intention.edit@any`.
-
-Built on 2026-10-15: the permission is gone from the catalog and the `admin` role, and Overall's
-mix is written under `intention.edit@any`. → frontend: remove the older path with
-[L28](#l28-remove-mix-tracking).
 
 ### L50: Link and publication plugins
 
@@ -350,7 +313,7 @@ messages, and the generator follows them. → frontend.
   ([VIEW-landing](reference/access/views.md#view-landing)).
 - **L15:** a curator's cancel covers an item already on a list
   ([ACT-cancel](reference/access/acts.md#iterations)).
-- **L16:** the delete refusal over a tracked mix stays until tracking goes ([L28](#l28-remove-mix-tracking)).
+- **L16:** the delete refusal over a tracked mix stayed until tracking went (L28).
 - **L17:** a new or moved category gets no share, and a category with intentions scoped to it is
   not deleted ([PLAN-new-category-share](reference/planning/categories.md#plan-new-category-share)).
 - **L19:** whoever started a run may cancel and rerun it; the mock starts no runs from other pages
@@ -370,6 +333,22 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L28:** decided on 2026-10-15. Intentions choose a mix directly: no tracking another
+  intention's mix and no *Detach*, and the project and intention delete refusals over a tracked
+  mix (`intention.tracked`) are gone. An intention's Mix page reads the mix it chose and links to
+  Mixes to edit it ([PLAN-mix](reference/planning/mixes.md#plan-mix),
+  [ACT-project-delete](reference/access/acts.md#projects),
+  [LC-INT-delete](reference/lifecycles/intention.md#lc-int-delete)).
+- **L41:** `intention.edit_overall` is gone, and with L28 the older path of editing an
+  intention's own mix in place (*Edit mix…*, `intention.not_owner`); which mix Overall uses stays
+  under `intention.edit@any` ([LC-INT-overall](reference/lifecycles/intention.md#lc-int-overall)).
+- **L29:** an item's digitized date is the day its list was marked Done; the fallback to the
+  list's last day is gone, so an item without a date counts as having none
+  ([PLAN-digitized-date](reference/planning/intentions.md#plan-digitized-date)).
+- **L30:** `mix.read` alone shows the house mix on Categories; whether curators get `mix.read` is
+  a role choice ([PLAN-house-mix](reference/planning/intentions.md#plan-house-mix),
+  [VIEW-categories-mix](reference/access/views.md#view-categories-mix)).
 
 - **L59:** decided on 2026-10-15. When the catalog gives several records for an identifier, the
   propose dialog lists them, none picked, and each one picked becomes its own item

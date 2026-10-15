@@ -2,15 +2,14 @@
 // decided 2026-10-07; docs/demos/shared/page-categories.js for the tree and the set editor, which
 // the demo still keeps on Categories). The category tree with the intention's shares, read
 // against its own output, and one category in the pane, *All categories* when none is picked.
-// The percentages are edited here, one sibling set at a time, on the intention that owns the mix,
-// Overall's only with `intention.edit@any`. A tracker shows its owner's mix with a line, *Edit
-// [owner]'s mix* and *Detach*; a scoped intention shows its subtree, the rest dimmed and unused.
+// Read-only: the mix is its own record, edited on Mixes (PLAN-mix, ACT-mix-save), which the header
+// links to. A scoped intention shows its subtree, the rest dimmed and unused.
 // `?c=` is the category open, pushing a history entry. On a phone the pane is a sheet.
 // TODO(rrandiak): labels move to i18n.
 
 import { Fragment, useState } from "react";
 import { useParams, useSearchParams } from "react-router";
-import type { IntentionMixDetail, MixTree } from "@/api/mixes";
+import type { MixTree } from "@/api/mixes";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { CategoryTree } from "@/components/category-tree";
 import { mixNameOf, mixTreeValues } from "@/components/category-tree-values";
@@ -21,23 +20,15 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { MixSetCard } from "@/components/mix-set-card";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf, isInSubtree, isOutsideScope } from "@/domain/categories";
+import { categoryPathOf, isOutsideScope } from "@/domain/categories";
 import type { Category } from "@/domain/entities";
 import { can } from "@/domain/permissions";
-import { DetachDialog, ProportionsDialog } from "@/features/intentions/mix-dialogs";
-import { intentionMixHrefOf } from "@/features/intentions/mix-view";
 import { useIntentionMixQuery } from "@/features/intentions/use-intentions-query";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
 import { formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
-
-// The mix is edited on its owner, with `intention.edit` on it (§2.5).
-interface Notice {
-  title: string;
-  text: string;
-}
 
 export function IntentionMixPage() {
   const { intentionId = null } = useParams();
@@ -46,9 +37,7 @@ export function IntentionMixPage() {
   const { data: liveCategories } = useCategoriesQuery();
   const { data: session } = useSessionQuery();
   const [isRootOpen, setIsRootOpen] = useState(false);
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const [dialog, setDialog] = useState<"proportions" | "detach" | null>(null);
-  // A phone's header has no room for an owner's name beside the title.
+  // A phone's header has no room for the action beside the title.
   const isInMenu = useTier() === "phone";
   const backToIndex = {
     label: "Intentions",
@@ -72,51 +61,23 @@ export function IntentionMixPage() {
     return <PageHeader title="Mix" breadcrumb={backToIndex} />;
   }
 
-  const { mix, trackers } = detail;
+  const { mix } = detail;
   const categories = detail.archivedCategories ?? liveCategories;
-  const { intention, owner } = mix;
-  const isTracker = intention.id !== owner.id;
+  const { intention } = mix;
   const asked = params.get("c");
   const categoryId = categories.some((category) => category.id === asked) ? asked : null;
   const select = (id: string | null) => {
     setIsRootOpen(id === null);
-    setNotice(null);
     setParams(id === null ? {} : { c: id });
   };
-  const canEditOwner = false;
-  const canEditIntention = false;
   const scope = categories.find((category) => category.id === intention.scopeCategoryId);
   const headerActions: ViewAction[] = [
     {
-      id: "shared-mix",
-      label: can(session, "mix.edit") ? "Edit shared mix" : "View shared mix",
-      href: `/mixes/${intention.distributionId}`,
+      id: "mix",
+      label: can(session, "mix.edit") ? "Edit mix" : "Open mix",
+      href: `/mixes/${encodeURIComponent(mix.mixId)}`,
       isInMenu,
     },
-    ...(isTracker
-      ? [
-          ...(canEditOwner
-            ? [
-                {
-                  id: "owner",
-                  label: `Edit ${owner.name}'s mix`,
-                  href: intentionMixHrefOf(owner.id, categoryId),
-                  isInMenu,
-                },
-              ]
-            : []),
-          ...(canEditIntention
-            ? [
-                {
-                  id: "detach",
-                  label: `Detach ${intention.name}`,
-                  onSelect: () => setDialog("detach"),
-                  isInMenu,
-                },
-              ]
-            : []),
-        ]
-      : []),
   ];
   const name =
     categoryId === null
@@ -149,12 +110,9 @@ export function IntentionMixPage() {
           <MixPane
             key={categoryId ?? ""}
             categories={categories}
-            detail={detail}
+            mix={mix}
             categoryId={categoryId}
-            notice={notice}
-            canEditSet={!isTracker && canEditOwner}
             onSelect={select}
-            onEditSet={() => setDialog("proportions")}
           />
         }
         detailTitle={name}
@@ -166,94 +124,26 @@ export function IntentionMixPage() {
           }
         }}
       />
-      {!isTracker && canEditOwner && (
-        <ProportionsDialog
-          key={`${categoryId ?? ""}-${detail.revision}`}
-          isOpen={dialog === "proportions"}
-          onClose={() => setDialog(null)}
-          categories={categories}
-          detail={detail}
-          parentId={categoryId}
-          canKeepOldFor={() => can(session, "intention.edit")}
-          onSaved={(saved, keptCount) =>
-            setNotice({
-              title: "Saved",
-              text: `${mixNameOf(saved.mix)}, ${name === "All categories" ? "top level" : name}${
-                setUnallocatedOf(saved.mix, categoryId) > 0
-                  ? ` — ${formatPercent(setUnallocatedOf(saved.mix, categoryId))} left unallocated, and flagged`
-                  : " — complete"
-              }.${keptCount > 0 ? ` ${plural(keptCount, "intention keeps", "intentions keep")} the old mix, detached.` : ""}${
-                trackers.length - keptCount > 0
-                  ? ` ${plural(trackers.length - keptCount, "other intention changed", "other intentions changed")} with it.`
-                  : ""
-              }`,
-            })
-          }
-        />
-      )}
-      {isTracker && canEditIntention && (
-        <DetachDialog
-          isOpen={dialog === "detach"}
-          onClose={() => setDialog(null)}
-          intention={intention}
-          owner={owner}
-          onDetached={() => {
-            // Opens the pane on a phone, where the notice is.
-            setIsRootOpen(categoryId === null);
-            setNotice({
-              title: `${intention.name} has its own mix`,
-              text: "Edit its proportions here; nobody else changes with it.",
-            });
-          }}
-        />
-      )}
     </>
   );
 }
 
-function setUnallocatedOf(mix: MixTree, categoryId: string | null): number {
-  return categoryId === null
-    ? mix.unallocated
-    : (mix.nodes.find((node) => node.categoryId === categoryId)?.unallocated ?? 0);
-}
-
 interface MixPaneProps {
   categories: readonly Category[];
-  detail: IntentionMixDetail;
+  mix: MixTree;
   // Null is *All categories*.
   categoryId: string | null;
-  notice: Notice | null;
-  // The intention owns the mix and the person may edit it.
-  canEditSet: boolean;
   onSelect: (id: string | null) => void;
-  onEditSet: () => void;
 }
 
-function MixPane({
-  categories,
-  detail,
-  categoryId,
-  notice,
-  canEditSet,
-  onSelect,
-  onEditSet,
-}: MixPaneProps) {
-  const { mix, trackers } = detail;
-  const { intention, owner } = mix;
-  const isTracker = intention.id !== owner.id;
+function MixPane({ categories, mix, categoryId, onSelect }: MixPaneProps) {
+  const { intention } = mix;
   const category = categories.find((candidate) => candidate.id === categoryId) ?? null;
   const children = categories.filter((candidate) => candidate.parentId === categoryId);
   const isLeaf = category !== null && children.length === 0;
   const scopeId = intention.scopeCategoryId;
   const isOutside = isOutsideScope(categories, scopeId, categoryId);
   const scope = categories.find((candidate) => candidate.id === scopeId);
-  // A scoped intention edits its scope's set and those below it.
-  const isSetEditable =
-    canEditSet &&
-    !isLeaf &&
-    (scopeId === null || (categoryId !== null && isInSubtree(categories, categoryId, scopeId)));
-  // Those changing with it, besides the intention read.
-  const otherTrackerCount = isTracker ? trackers.length - 1 : trackers.length;
 
   return (
     <article className="@container max-w-5xl">
@@ -274,17 +164,6 @@ function MixPane({
       </header>
 
       <div className="grid gap-4">
-        {notice !== null && (
-          <StatusNote tone="green" title={notice.title}>
-            {notice.text}
-          </StatusNote>
-        )}
-        {isTracker && (
-          <StatusNote tone="blue" title={`${intention.name} tracks ${owner.name}`}>
-            Editing changes {owner.name}
-            {trackers.length > 1 && ` and ${trackers.length - 1} more`}.
-          </StatusNote>
-        )}
         {scope !== undefined && isOutside && (
           <StatusNote tone="slate" title={`Outside ${intention.name}'s scope`}>
             It reads only{" "}
@@ -305,14 +184,6 @@ function MixPane({
             mix={mix}
             categoryId={categoryId}
             onSelect={onSelect}
-            otherTrackerCount={otherTrackerCount}
-            action={
-              isSetEditable ? (
-                <Button size="sm" variant="outline" onClick={onEditSet}>
-                  Edit proportions…
-                </Button>
-              ) : undefined
-            }
           />
         )}
         {category === null && scope !== undefined && (

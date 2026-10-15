@@ -5,7 +5,7 @@ import { getJson, postJson, putJson } from "@/api/http";
 import { apiRoutes, mixRoute } from "@/api/routes";
 import { distributionSchema } from "@/domain/entities";
 
-export const mixRecordSchema = distributionSchema.omit({ ownerId: true }).extend({
+export const mixRecordSchema = distributionSchema.extend({
   usageCount: z.number().int().nonnegative(),
   followers: z.array(z.object({ id: z.string(), name: z.string(), isArchived: z.boolean() })),
 });

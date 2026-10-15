@@ -44,7 +44,6 @@ import {
 } from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import { mixDraftSchema, mixSetChangeSchema, mixSnapshotDraftSchema } from "@/api/mix-catalog";
-import { mixSetDraftSchema } from "@/api/mixes";
 import { notificationChoicesSchema } from "@/api/notification-preferences";
 import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
 import {
@@ -191,7 +190,7 @@ import {
   saveMixRecordSet,
   snapshotMixRecord,
 } from "@/mocks/mix-catalog";
-import { detachIntention, findIntentionMix, saveMixSet } from "@/mocks/mixes";
+import { findIntentionMix } from "@/mocks/mixes";
 import type { Outcome } from "@/mocks/mutations";
 import {
   changePublicNotificationChoices,
@@ -808,19 +807,6 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(detail);
     }),
-
-    http.put(route(`${apiRoutes.intentions}/:intentionId/mix`), async ({ params, request }) => {
-      const draft = mixSetDraftSchema.safeParse(await request.json());
-      if (!draft.success) {
-        return invalidResponse(draft.error);
-      }
-
-      return outcomeResponse(saveMixSet(currentSession(), String(params.intentionId), draft.data));
-    }),
-
-    http.post(route(`${apiRoutes.intentions}/:intentionId/detach`), ({ params }) =>
-      outcomeResponse(detachIntention(currentSession(), String(params.intentionId))),
-    ),
 
     http.get(route(`${apiRoutes.intentions}/:intentionId/deletion`), ({ params }) =>
       outcomeResponse(previewIntentionDeletion(currentSession(), String(params.intentionId))),

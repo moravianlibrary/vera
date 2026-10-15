@@ -181,7 +181,7 @@ describe("listWatchlists", () => {
     const overall = await getCategoryIndex();
     const selected = await getCategoryIndex("d2");
 
-    expect(overall.mix?.owner.id).toBe("i4");
+    expect(overall.mix?.mixId).toBe("d1");
     expect(selected.mix?.mixId).toBe("d2");
     expect(selected.mix?.intention.scopeCategoryId).toBeNull();
   });

@@ -1,8 +1,8 @@
 // One sibling set of a mix (intentions.md §1, §1.1.1; docs/demos/shared/page-categories.js
 // `render`): each child's share of its parent, of the whole (or the scope), and what it actually
 // got of the intention's output, with the drift marker outside the band; what the set leaves
-// unallocated, flagged, never scaled. Categories shows the selected mix, read-only; an intention's Mix
-// shows its own, with *Edit proportions…* as the card's action.
+// unallocated, flagged, never scaled. Categories and an intention's Mix show the mix read-only; it
+// is edited on Mixes (ACT-mix-save), which Categories links to as the card's action.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -13,7 +13,6 @@ import { StatusNote } from "@/components/status-note";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
 import type { Category } from "@/domain/entities";
 import { formatPercent } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 interface MixSetCardProps {
   showActual?: boolean;
@@ -24,8 +23,6 @@ interface MixSetCardProps {
   onSelect: (id: string | null) => void;
   // A Docs column, where the page knows what each category holds.
   documentCountOf?: (categoryId: string) => number;
-  // Those changing with it besides the intention read, when the page says so.
-  otherTrackerCount?: number;
   action?: ReactNode;
 }
 
@@ -36,7 +33,6 @@ export function MixSetCard({
   categoryId,
   onSelect,
   documentCountOf,
-  otherTrackerCount = 0,
   action,
 }: MixSetCardProps) {
   const children = categories.filter((candidate) => candidate.parentId === categoryId);
@@ -137,8 +133,6 @@ export function MixSetCard({
         <FinePrint>
           <i>Actual</i> is its share of {mix.intention.name}&apos;s output, beside what the mix says
           it should be.
-          {otherTrackerCount > 0 &&
-            ` ${plural(otherTrackerCount, "other intention tracks", "other intentions track")} this mix and change${otherTrackerCount === 1 ? "s" : ""} with it.`}
         </FinePrint>
       )}
     </DetailCard>

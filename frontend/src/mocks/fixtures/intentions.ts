@@ -1,9 +1,8 @@
 // The intentions, their mixes and the one repeat, from docs/demos/shared/vera-data.js (i1–i11,
 // d1–d2, t1); edit by hand from here on. Overall output selects the House mix; Periodicals push
-// is another reusable mix. The legacy owner/track fields remain for old links. Every project
-// has one intention of its own without a mix, holding the target the
-// demo gave the project (§3.4, decided 2026-10-07); VISK 7 backlog became VISK 7 / 2026's. The
-// demo's "today" is 2026-06-25.
+// is another mix several intentions use (PLAN-mix). Every project has one intention of its own
+// without a mix, holding the target the demo gave the project (§3.4, decided 2026-10-07); VISK 7
+// backlog became VISK 7 / 2026's. The demo's "today" is 2026-06-25.
 
 import type { Distribution, Intention, IntentionTemplate } from "@/domain/entities";
 import { projects } from "@/mocks/fixtures/projects";
@@ -11,7 +10,6 @@ import { projects } from "@/mocks/fixtures/projects";
 const initialDistributions: readonly Distribution[] = [
   {
     id: "d1",
-    ownerId: "i4",
     name: "House mix",
     isPrimary: true,
     archivedAt: null,
@@ -33,7 +31,6 @@ const initialDistributions: readonly Distribution[] = [
   },
   {
     id: "d2",
-    ownerId: "i8",
     name: "Periodicals push",
     isPrimary: false,
     archivedAt: null,
@@ -74,7 +71,6 @@ const intentionBase = {
   funding: everything,
   projectId: null,
   scopeCategoryId: null,
-  tracksMixOf: "i4",
   distributionId: "d1",
   targetPages: null,
   endsOn: null,
@@ -89,7 +85,6 @@ export const intentions: readonly Intention[] = [
     id: "i4",
     name: "Overall output",
     description: "All digitized work from the reporting baseline.",
-    tracksMixOf: null,
     countsFrom: "2019-01-01",
     isOverall: true,
   },
@@ -100,7 +95,6 @@ export const intentions: readonly Intention[] = [
     description: "The quarter of the NDK grant that goes to periodicals.",
     funding: { kind: "project", projectId: "p1" },
     scopeCategoryId: "c2",
-    tracksMixOf: "i8",
     distributionId: "d2",
     targetPages: 7500,
     countsFrom: "2026-07-01",
@@ -122,7 +116,6 @@ export const intentions: readonly Intention[] = [
     name: "Regional catch-up",
     description: "Regional weeklies we are behind on. No deadline — done when done.",
     scopeCategoryId: "c21",
-    tracksMixOf: "i8",
     distributionId: "d2",
     targetPages: 4000,
     countsFrom: "2026-03-12",
@@ -163,7 +156,6 @@ export const intentions: readonly Intention[] = [
     name: "Periodicals push — watch",
     description: "Is what we deliver inside Periodicals shaped the way the push says?",
     scopeCategoryId: "c2",
-    tracksMixOf: null,
     distributionId: "d2",
     countsFrom: "2026-01-01",
   },
@@ -219,7 +211,6 @@ function projectIntention(
     name: project.name,
     funding: { kind: "project", projectId },
     projectId,
-    tracksMixOf: null,
     distributionId: null,
     targetPages,
     countsFrom: project.startsOn,
@@ -235,7 +226,6 @@ export const intentionTemplates: readonly IntentionTemplate[] = [
     every: "month",
     funding: everything,
     scopeCategoryId: null,
-    tracksMixOf: "i4",
     distributionId: "d1",
     targetPages: 3000,
     isArchivingPrevious: true,

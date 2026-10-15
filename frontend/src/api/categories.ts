@@ -1,8 +1,8 @@
 // The Categories resource (concepts.md *Category*; intentions.md §2.4; STATUS "Categories"): the
 // tree with what each category holds, who holds custody of it and whom that reaches, and
-// the selected mix over it, read-only: a category has no share of its own, and a mix is edited on its
-// intention. The mix is the intention's, so it comes only with `intention.read`; the tree and
-// custody with `category.read`.
+// the selected mix over it, read-only: a category has no share of its own, and a mix is edited on
+// Mixes. The mix comes with `mix.read` alone (PLAN-house-mix); the tree and custody with
+// `category.read`.
 // Changing the tree (permissions.md §3, Categories; intentions.md §1.1.1, §1.2): a category is
 // created, renamed or moved, and deleted under `category.edit`, and its custody set written whole
 // under `category.grant_custody`; at `custody` both stay inside the person's own subtree, and the
@@ -28,7 +28,7 @@ export type CategoryAttention = (typeof categoryAttentions)[number];
 
 export interface CategoryQuery {
   readonly search?: string;
-  // Which intention's own mix the tree and attention filter read; absent means Overall.
+  // Which mix the tree and attention filter read; absent means the Primary one.
   readonly mixId?: string;
   readonly kinds?: readonly CategoryKind[];
   readonly custodies?: readonly CategoryCustody[];
@@ -140,7 +140,7 @@ export type CategoryNode = z.infer<typeof categoryNodeSchema>;
 export const categoryIndexSchema = z.object({
   totals: categoryTotalsSchema,
   nodes: z.array(categoryNodeSchema),
-  // The selected mix (Overall by default); null without `intention.read`.
+  // The selected mix (the Primary one by default); null without `mix.read` (PLAN-house-mix).
   mix: mixTreeSchema.nullable(),
   // The highest categories nobody holds custody of.
   unheldIds: z.array(z.string()),
@@ -166,11 +166,11 @@ export type CustodyDraft = z.infer<typeof custodyDraftSchema>;
 export const refineDraftSchema = z.object({ name: nameSchema });
 export type RefineDraft = z.infer<typeof refineDraftSchema>;
 
-// A mix that gives the category a share: one intention's own, which its trackers follow.
+// A mix that gives the category a share, and how many intentions use it (PLAN-mix).
 export const mixShareSchema = z.object({
   mix: namedSchema,
   share: z.number().min(0).max(100),
-  trackerCount: count,
+  intentionCount: count,
 });
 export type MixShare = z.infer<typeof mixShareSchema>;
 

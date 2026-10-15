@@ -1,7 +1,7 @@
 // What the server does for Categories (concepts.md *Category*; intentions.md §2.4; STATUS
 // "Categories"): total each category's subtree, resolve who holds custody of it and whom that
-// reaches, and read the selected visible intention owner's mix (Overall by default). Mix editing
-// stays on the intention (`mocks/mixes.ts`).
+// reaches, and read the selected mix (the Primary one by default) under `mix.read` alone
+// (PLAN-house-mix). Mixes are edited on Mixes (`mocks/mix-catalog.ts`).
 // Changing the tree (permissions.md §3, Categories; intentions.md §1.1.1, §1.2): create, rename
 // and move, delete, refine, under `category.edit`; the custody set under
 // `category.grant_custody`. At `custody` each reaches the person's own subtree only, and the top
@@ -279,7 +279,7 @@ export function categoryImpact(session: Session, categoryId: string): Outcome<Ca
           {
             mix: { id: distribution.id, name: distribution.name },
             share: distribution.shares[categoryId] ?? 0,
-            trackerCount: database.intentions.filter(
+            intentionCount: database.intentions.filter(
               (intention) => intention.distributionId === distribution.id,
             ).length,
           },

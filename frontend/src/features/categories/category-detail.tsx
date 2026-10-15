@@ -189,8 +189,8 @@ export function CategoryPane({
         <FinePrint>
           <b className="font-semibold">A category is a line of work.</b> It classifies the attempt
           and gives custody; it holds no share of its own. The shares shown belong to the selected
-          intention&apos;s mix and are edited there. Documents sit on leaves only; custody attaches
-          anywhere and reaches everything under it.
+          mix and are edited on Mixes. Documents sit on leaves only; custody attaches anywhere and
+          reaches everything under it.
         </FinePrint>
       </div>
 

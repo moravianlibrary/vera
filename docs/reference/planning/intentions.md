@@ -36,9 +36,6 @@ An item's digitized date is the day its list was marked Done: only *Mark Done* m
 Digitized. A list past its end date has delivered nothing until it is marked Done. An item with
 no page count is counted and shown as having no pages to add.
 
-> **Open — [L29](../../ledger.md#l29-only-mark-done-digitizes).** The code still falls back to
-> the list's last day for an item with no recorded date.
-
 #### PLAN-target
 
 With a page target an intention has progress, read as one of:
@@ -73,6 +70,3 @@ share of the output, and the drift between intended and output
 #### PLAN-house-mix
 
 The house mix (Overall's) shows on Categories to anyone with `mix.read`.
-
-> **Open — [L30](../../ledger.md#l30-house-mix-needs-only-mixread).** Today it also needs
-> `intention.read`.

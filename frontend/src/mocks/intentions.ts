@@ -2,10 +2,9 @@
 // `domain/intentions.ts`, read its optional mix, and preserve its displayed result at Archive.
 // `intention.read@project` reaches an intention a
 // project the caller is on funds; every other intention only `any` reaches (permissions.md §3).
-// The acts keep the mix rules of §2: an intention tracks only one that owns its mix, so no chain
-// is ever stored; an owner others track switches to tracking only by moving them with it; a copy
-// is a new mix the intention owns. All of it is `intention.edit` on each intention changed, a
-// repeat `intention.repeat`. A repeat's occurrences are fixtures; the mock makes no new ones.
+// An intention chooses a mix directly, none, the Primary mix or a mix any number of others use too
+// (PLAN-mix, PLAN-no-mix). All of it is `intention.edit` on the intention changed, a repeat
+// `intention.repeat`. A repeat's occurrences are fixtures; the mock makes no new ones.
 // A project's own intention (§3.4) is listed once its project is decided; its name, funding,
 // window and target are the project's, changed on Projects, and it is never archived or deleted
 // on its own.
@@ -43,14 +42,12 @@ import {
   intentionStateOf,
   intentionTimeElapsedOf,
   mixCategoriesOf,
-  mixOwnerOf,
   mixReadingOf,
   nextPeriodStartOf,
   pagesPerWeekNeededOf,
   scopeOfIntention,
   shareWithinOf,
   targetVerdictOf,
-  trackersOf,
 } from "@/domain/intentions";
 import { can } from "@/domain/permissions";
 import { daysUntil } from "@/domain/projects";
@@ -134,16 +131,8 @@ export function overallIntention(): Intention {
 
 function mixOf(intention: Intention): IntentionMix | null {
   if (intention.distributionId === null) return null;
-  const owner = mixOwnerOf(intention, database.intentions);
   const distribution = distributionOf(intention);
-  return {
-    id: distribution.id,
-    name: distribution.name,
-    revision: distribution.revision,
-    owner: { id: owner.id, name: owner.name, isOverall: owner.isOverall },
-    isOwn: owner === intention,
-    trackerCount: trackersOf(intention, database.intentions).length,
-  };
+  return { id: distribution.id, name: distribution.name, revision: distribution.revision };
 }
 
 const categoryName = (categoryId: string) =>
@@ -297,11 +286,8 @@ export function preserveIntentionArchive(intention: Intention): IntentionRow {
 }
 
 function templateRowOf(template: IntentionTemplate): IntentionTemplateRow {
-  const tracked = database.intentions.find((candidate) => candidate.id === template.tracksMixOf);
-  return {
-    template,
-    tracks: tracked === undefined ? null : { id: tracked.id, name: tracked.name },
-  };
+  const mix = database.distributions.find((candidate) => candidate.id === template.distributionId);
+  return { template, mix: mix === undefined ? null : { id: mix.id, name: mix.name } };
 }
 
 export function queryIntentionIndex(session: Session): IntentionIndex {
@@ -350,24 +336,14 @@ export function replaceIntention(intention: Intention): void {
 }
 
 // The mix a choice would read, without storing anything.
-function mixChosen(intention: Intention | null, choice: MixChoice): Distribution | null {
+function mixChosen(choice: MixChoice): Distribution | null {
   if (choice.kind === "none") return null;
   if (choice.kind === "primary")
     return database.distributions.find((mix) => mix.isPrimary && mix.archivedAt === null) ?? null;
-  if (choice.kind === "use") {
-    const selected = database.distributions.find((mix) => mix.id === choice.mixId);
-    return selected === undefined
-      ? null
-      : distributionOf({ distributionId: selected.id, mixRevision: choice.revision });
-  }
-  if (choice.kind === "keep") {
-    return intention?.distributionId === null || intention === null
-      ? null
-      : distributionOf(intention);
-  }
-
-  const owner = ownerFor(choice.kind === "track" ? choice.ownerId : choice.fromId);
-  return owner === null ? null : distributionOf(owner);
+  const selected = database.distributions.find((mix) => mix.id === choice.mixId);
+  return selected === undefined
+    ? null
+    : distributionOf({ distributionId: selected.id, mixRevision: choice.revision });
 }
 
 // What the editor says before saving (§2.2, §3): the counts over the draft's whole window, and
@@ -396,7 +372,7 @@ export function previewIntention(
   );
   const before =
     intention === null || intention.distributionId === null ? null : distributionOf(intention);
-  const after = mixChosen(intention, request.mix);
+  const after = mixChosen(request.mix);
   const shareOf = (distribution: Distribution | null, categoryId: string) =>
     distribution === null
       ? null
@@ -449,57 +425,19 @@ function nameRefusal(name: string, intentionId: string | null): Refusal | null {
     : null;
 }
 
-// An intention another can track: one that owns its mix (§2, no chains).
-function ownerFor(ownerId: string): Intention | null {
-  const owner = database.intentions.find((candidate) => candidate.id === ownerId);
-  return owner === undefined || owner.tracksMixOf !== null || owner.distributionId === null
-    ? null
-    : owner;
-}
-
-const chainRefusal: Refusal = {
-  status: 422,
-  message: "Track or copy only an intention that owns its mix",
-  code: "intention.not_owner",
-};
-
 export function nextId(prefix: string, ids: readonly string[]): string {
   const numbers = ids.map((id) => Number(id.slice(prefix.length)) || 0);
   return `${prefix}${Math.max(0, ...numbers) + 1}`;
 }
 
-export function copyMixOf(owner: Intention, ownerId: string): Distribution {
-  const source = distributionOf(owner);
-  const copy: Distribution = {
-    id: nextId(
-      "d",
-      database.distributions.map((distribution) => distribution.id),
-    ),
-    ownerId,
-    name: `${owner.name} copy`,
-    isPrimary: false,
-    archivedAt: null,
-    shares: { ...source.shares },
-    revision: 1,
-    revisions: [
-      { revision: 1, shares: { ...source.shares }, at: new Date().toISOString(), label: null },
-    ],
-  };
-  database.distributions.push(copy);
-  return copy;
-}
-
-// The mix choice applied (§2.1–§2.2), or why it cannot be. Returns what to store on the
-// intention, and the trackers and repeats that move with it.
+// The mix choice applied (PLAN-mix, PLAN-no-mix), or why it cannot be: what to store on the
+// intention.
 function applyMix(
-  session: Session,
-  intention: Intention,
   draft: IntentionDraft,
-  isNew: boolean,
-): Outcome<Pick<Intention, "tracksMixOf" | "distributionId" | "mixRevision">> {
+): Outcome<Pick<Intention, "distributionId" | "mixRevision">> {
   const { mix } = draft;
   if (mix.kind === "none") {
-    return { value: { tracksMixOf: null, distributionId: null, mixRevision: null } };
+    return { value: { distributionId: null, mixRevision: null } };
   }
   if (mix.kind === "primary") {
     const selected = database.distributions.find(
@@ -507,73 +445,17 @@ function applyMix(
     );
     return selected === undefined
       ? { refusal: { status: 409, message: "No active Primary mix" } }
-      : { value: { tracksMixOf: null, distributionId: selected.id, mixRevision: null } };
+      : { value: { distributionId: selected.id, mixRevision: null } };
   }
-  if (mix.kind === "use") {
-    const selected = database.distributions.find((candidate) => candidate.id === mix.mixId);
-    if (selected === undefined || selected.archivedAt !== null)
-      return { refusal: { status: 422, message: "Choose an active mix" } };
-    if (
-      mix.revision !== null &&
-      !selected.revisions.some((candidate) => candidate.revision === mix.revision)
-    )
-      return { refusal: { status: 422, message: "Choose a saved revision" } };
-    return { value: { tracksMixOf: null, distributionId: mix.mixId, mixRevision: mix.revision } };
-  }
-  if (mix.kind === "keep") {
-    return !isNew && intention.tracksMixOf === null
-      ? { value: { tracksMixOf: null, distributionId: intention.distributionId } }
-      : { refusal: { status: 422, message: "It has no mix of its own to keep" } };
-  }
-
-  if (mix.kind === "copy") {
-    const source = ownerFor(mix.fromId);
-    if (source === null) {
-      return { refusal: chainRefusal };
-    }
-
-    const copy = copyMixOf(source, intention.id);
-    // Those tracking it read its mix, so they follow it onto the copy.
-    for (const tracker of isNew ? [] : trackersOf(intention, database.intentions)) {
-      replaceIntention({ ...tracker, distributionId: copy.id });
-    }
-
-    return { value: { tracksMixOf: null, distributionId: copy.id } };
-  }
-
-  const owner = ownerFor(mix.ownerId);
-  if (owner === null || owner.id === intention.id) {
-    return { refusal: chainRefusal };
-  }
-
-  const trackers = isNew ? [] : trackersOf(intention, database.intentions);
-  if (trackers.length > 0 && !mix.isMovingTrackers) {
-    return {
-      refusal: {
-        status: 409,
-        message: "Others track its mix: move them along, or keep its own mix",
-        code: "intention.tracked",
-      },
-    };
-  }
-
-  if (trackers.some((tracker) => !can(session, "intention.edit", scopeOf(tracker)))) {
-    return {
-      refusal: { status: 403, message: "You may not change every intention that tracks it" },
-    };
-  }
-
-  for (const tracker of trackers) {
-    replaceIntention({ ...tracker, tracksMixOf: owner.id, distributionId: owner.distributionId });
-  }
-
-  // A repeat tracking it would make a chain at its next occurrence, so it moves too.
-  database.intentionTemplates = database.intentionTemplates.map((template) =>
-    !isNew && template.tracksMixOf === intention.id
-      ? { ...template, tracksMixOf: owner.id, distributionId: owner.distributionId }
-      : template,
-  );
-  return { value: { tracksMixOf: owner.id, distributionId: owner.distributionId } };
+  const selected = database.distributions.find((candidate) => candidate.id === mix.mixId);
+  if (selected === undefined || selected.archivedAt !== null)
+    return { refusal: { status: 422, message: "Choose an active mix" } };
+  if (
+    mix.revision !== null &&
+    !selected.revisions.some((candidate) => candidate.revision === mix.revision)
+  )
+    return { refusal: { status: 422, message: "Choose a saved revision" } };
+  return { value: { distributionId: mix.mixId, mixRevision: mix.revision } };
 }
 
 const overallShapeRefusal: Refusal = {
@@ -596,13 +478,12 @@ export function createIntention(session: Session, draft: IntentionDraft): Outcom
     ),
     // A project's own intention is made only with the project.
     projectId: null,
-    tracksMixOf: null,
     distributionId: overallIntention().distributionId,
     isOverall: false,
     templateId: null,
     archived: null,
   };
-  const mix = applyMix(session, created, draft, true);
+  const mix = applyMix(draft);
   if ("refusal" in mix) {
     return mix;
   }
@@ -665,7 +546,7 @@ export function saveIntention(
     return { refusal };
   }
 
-  const mix = applyMix(session, intention, draft, false);
+  const mix = applyMix(draft);
   if ("refusal" in mix) {
     return mix;
   }
@@ -724,8 +605,7 @@ export function unarchiveIntention(session: Session, intentionId: string): Outco
   };
 }
 
-// One others track stays: ownership of a mix never moves on its own (concepts.md *Mix*, decided
-// 2026-10-07), so they are detached first, or it is archived.
+// Its mix is its own record (PLAN-mix), so nothing else holds it back.
 function deletableFor(session: Session, intentionId: string): Outcome<Intention> {
   const found = intentionFor(session, intentionId);
   if ("refusal" in found) {
@@ -742,19 +622,6 @@ function deletableFor(session: Session, intentionId: string): Outcome<Intention>
 
   if (intention.projectId !== null) {
     return { refusal: projectRefusal };
-  }
-
-  const isTracked =
-    trackersOf(intention, database.intentions).length > 0 ||
-    database.intentionTemplates.some((template) => template.tracksMixOf === intention.id);
-  if (isTracked) {
-    return {
-      refusal: {
-        status: 409,
-        message: "Others track its mix, so it stays; detach them, or archive it instead",
-        code: "intention.tracked",
-      },
-    };
   }
 
   return found;
@@ -797,7 +664,7 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
   }
 
   const scope = { ...draft, countsFrom: today(), endsOn: null };
-  if (draft.mix?.kind === "use") {
+  if (draft.mix.kind === "use") {
     const chosen = draft.mix;
     const selected = database.distributions.find(
       (mix) => mix.id === chosen.mixId && mix.archivedAt === null,
@@ -808,29 +675,21 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
         !selected.revisions.some((version) => version.revision === chosen.revision))
     )
       return { status: 422, message: "Choose an active mix and saved revision" };
-  } else if (draft.mix === undefined && ownerFor(draft.tracksMixOf) === null) return chainRefusal;
-  else if (draft.mix?.kind === "track" || draft.mix?.kind === "copy" || draft.mix?.kind === "keep")
-    return { status: 422, message: "Choose no mix, Primary, or a shared mix" };
+  }
   return scopeRefusal(session, scope);
 }
 
 function templateMixOf(
   draft: IntentionTemplateDraft,
-): Pick<IntentionTemplate, "tracksMixOf" | "distributionId" | "mixRevision"> {
-  if (draft.mix?.kind === "none")
-    return { tracksMixOf: null, distributionId: null, mixRevision: null };
-  if (draft.mix?.kind === "primary")
-    return {
-      tracksMixOf: null,
-      distributionId:
-        database.distributions.find((mix) => mix.isPrimary && mix.archivedAt === null)?.id ?? null,
-      mixRevision: null,
-    };
-  if (draft.mix?.kind === "use")
-    return { tracksMixOf: null, distributionId: draft.mix.mixId, mixRevision: draft.mix.revision };
+): Pick<IntentionTemplate, "distributionId" | "mixRevision"> {
+  if (draft.mix.kind === "use")
+    return { distributionId: draft.mix.mixId, mixRevision: draft.mix.revision };
   return {
-    tracksMixOf: draft.tracksMixOf,
-    distributionId: distributionOf(ownerFor(draft.tracksMixOf) ?? overallIntention()).id,
+    distributionId:
+      draft.mix.kind === "primary"
+        ? (database.distributions.find((mix) => mix.isPrimary && mix.archivedAt === null)?.id ??
+          null)
+        : null,
     mixRevision: null,
   };
 }

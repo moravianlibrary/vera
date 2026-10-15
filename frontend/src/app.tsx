@@ -149,7 +149,7 @@ const router = createBrowserRouter([
           </Gate>
         ),
       },
-      // An intention's Mix: where its shares are read and edited (intentions.md §2.4).
+      // An intention's Mix: the mix it chose, read against its output (PLAN-mix-reading).
       {
         path: "intentions/:intentionId/mix",
         element: (

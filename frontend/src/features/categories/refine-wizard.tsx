@@ -158,8 +158,8 @@ export function RefineWizard({
           {impact?.shares.map((share) => (
             <DetailRow key={share.mix.id}>
               {share.mix.name}
-              {share.trackerCount > 0 && (
-                <Muted> · and {plural(share.trackerCount, "intention")} tracking it</Muted>
+              {share.intentionCount > 0 && (
+                <Muted> · and {plural(share.intentionCount, "intention")} using it</Muted>
               )}
               <span className="block text-xs text-muted-foreground">
                 {trimmed} gets <b className="font-semibold text-foreground">100%</b> of{" "}

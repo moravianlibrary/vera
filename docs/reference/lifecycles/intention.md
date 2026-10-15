@@ -35,8 +35,8 @@ unarchived, and keeps counting where its scope says. To work on it again, make a
 
 #### LC-INT-delete
 
-Deleting is allowed only when no other intention or repeat tracks its mix, and it is not
-archived. Lists generated with it keep it as provenance.
+Deleting is allowed only when it is not archived; whoever else uses its mix is untouched
+([PLAN-mix](../planning/mixes.md#plan-mix)). Lists generated with it keep it as provenance.
 
 #### LC-INT-overall
 

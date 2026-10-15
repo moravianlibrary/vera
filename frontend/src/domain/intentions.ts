@@ -128,17 +128,10 @@ export function isInIntentionScope(
 
 const isDigitized = (iteration: Iteration) => isProgressAtLeast(iteration.progress, "Digitized");
 
-// When it was digitized: recorded, or the last day of the list it was on.
-function digitizedOnOf(iteration: Iteration, lists: readonly DigitizationList[]): string | null {
-  if (!isDigitized(iteration)) {
-    return null;
-  }
-
-  if (iteration.digitizedAt !== null) {
-    return iteration.digitizedAt.slice(0, 10);
-  }
-
-  return lists.find((list) => list.id === iteration.listId)?.endsOn ?? null;
+// When it was digitized: the day its list was marked Done, recorded on it. A list past its end
+// has delivered nothing until then (PLAN-digitized-date).
+function digitizedOnOf(iteration: Iteration): string | null {
+  return isDigitized(iteration) ? (iteration.digitizedAt?.slice(0, 10) ?? null) : null;
 }
 
 export function countIntention(intention: Intention, data: CountingData): IntentionCount {
@@ -157,7 +150,7 @@ export function countIntention(intention: Intention, data: CountingData): Intent
     );
   });
   const isDigitizedInWindow = (iteration: Iteration) =>
-    isInWindow(intention, digitizedOnOf(iteration, lists));
+    isInWindow(intention, digitizedOnOf(iteration));
   const delivered = planned.filter(isDigitizedInWindow);
   const output = matching.filter(isDigitizedInWindow);
   const pagesIn = (iterations: readonly Iteration[]) =>
@@ -170,7 +163,7 @@ export function countIntention(intention: Intention, data: CountingData): Intent
     deliveredPages: pagesIn(delivered),
     outputPages: pagesIn(output),
     noDateCount: matching.filter(
-      (iteration) => isDigitized(iteration) && digitizedOnOf(iteration, lists) === null,
+      (iteration) => isDigitized(iteration) && digitizedOnOf(iteration) === null,
     ).length,
     noPagesCount: new Set(
       [...planned, ...output].filter((iteration) => pagesOf(iteration) === null),
@@ -291,15 +284,6 @@ export function nextPeriodStartOf(every: RepeatEvery, today: string): string {
 }
 
 // ---------------------------------------------------------------- the mix
-
-// The intention whose mix it reads: itself, or the owner it tracks. No chains (§2).
-export function mixOwnerOf(intention: Intention, intentions: readonly Intention[]): Intention {
-  return intentions.find((candidate) => candidate.id === intention.tracksMixOf) ?? intention;
-}
-
-export function trackersOf(owner: Intention, intentions: readonly Intention[]): Intention[] {
-  return intentions.filter((candidate) => candidate.tracksMixOf === owner.id);
-}
 
 // The categories the mix is read across: the scope's children, or the top of the tree. A leaf
 // scope has none: it is one category, all of it.

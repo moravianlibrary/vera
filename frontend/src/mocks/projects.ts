@@ -31,7 +31,6 @@ import {
   intentionStateOf,
   intentionTimeElapsedOf,
   targetVerdictOf,
-  trackersOf,
 } from "@/domain/intentions";
 import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
@@ -444,8 +443,8 @@ function replaceIntention(intention: Intention): void {
 }
 
 // Starting needs its own grant; it starts Proposed, the creator its manager and only member
-// (flows.md PJ1). Its intention is made with it, tracking Overall's mix, and is listed on
-// Intentions once the project is decided.
+// (flows.md PJ1). Its intention is made with it, without a mix (PLAN-no-mix), and is
+// listed on Intentions once the project is decided.
 export function createProject(session: Session, draft: ProjectDraft): Outcome<ProjectDetail> {
   if (!can(session, "project.create")) {
     return { refusal: { status: 403, message: "You may not start projects" } };
@@ -472,7 +471,6 @@ export function createProject(session: Session, draft: ProjectDraft): Outcome<Pr
       ),
       description: "",
       scopeCategoryId: null,
-      tracksMixOf: null,
       distributionId: null,
       isOverall: false,
       templateId: null,
@@ -776,15 +774,6 @@ export function deleteProject(session: Session, projectId: string): Outcome<null
   }
 
   const intention = intentionOf(project);
-  if (trackersOf(intention, database.intentions).length > 0) {
-    return {
-      refusal: {
-        status: 409,
-        message: "Other intentions track its intention's mix; detach them first",
-        code: "intention.tracked",
-      },
-    };
-  }
 
   database.projects.splice(database.projects.indexOf(project), 1);
   database.intentions = database.intentions.filter((candidate) => candidate !== intention);

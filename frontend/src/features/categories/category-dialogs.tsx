@@ -384,7 +384,7 @@ export function CategoryFormDialog({
             {category === null ? (
               <>
                 It starts with <b className="font-semibold">no share in any mix</b> — it cannot take
-                from shares somebody already set. Give it one on the mix&apos;s intention.
+                from shares somebody already set. Give it one on Mixes.
                 {isParentLeaf &&
                   ` ${nameOf(parentId)} holds no documents, so it simply stops being a leaf; nothing moves.`}
               </>
@@ -433,8 +433,8 @@ export function DeleteCategoryDialog({
           ...impact.shares.map(
             (share): Consequence => ({
               text: `${share.mix.name}: its ${share.share}% becomes unallocated in ${parentName}'s set${
-                share.trackerCount > 0
-                  ? `, for ${plural(share.trackerCount, "intention")} tracking it too`
+                share.intentionCount > 0
+                  ? `, for ${plural(share.intentionCount, "intention")} using it too`
                   : ""
               }.`,
               tone: "amber",

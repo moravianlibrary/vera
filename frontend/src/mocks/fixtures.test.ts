@@ -75,27 +75,15 @@ describe("fixtures", () => {
     expect(dangling).toEqual([]);
   });
 
-  // intentions.md §2: a mix comes from an intention that owns it, one step away.
-  it("give every mix one owner and no tracking chains", () => {
-    const owners = database.intentions.filter((intention) => intention.tracksMixOf === null);
+  // PLAN-mix: an intention chooses a mix that exists, or none.
+  it("give each intention and repeat a mix that exists, or none", () => {
+    const mixIds = new Set(database.distributions.map((distribution) => distribution.id));
     const projectIds = new Set(database.projects.map((project) => project.id));
     const categoryIds = new Set(database.categories.map((category) => category.id));
 
     expect(database.intentions.filter((intention) => intention.isOverall)).toHaveLength(1);
-    expect(
-      database.distributions.map((distribution) => [
-        distribution.id,
-        owners.find((owner) => owner.distributionId === distribution.id)?.id,
-      ]),
-    ).toEqual(
-      database.distributions.map((distribution) => [distribution.id, distribution.ownerId]),
-    );
     for (const intention of [...database.intentions, ...database.intentionTemplates]) {
-      const owner = owners.find((candidate) => candidate.id === intention.tracksMixOf);
-      if (intention.tracksMixOf !== null) {
-        expect(owner?.distributionId).toBe(intention.distributionId);
-      }
-
+      expect(intention.distributionId === null || mixIds.has(intention.distributionId)).toBe(true);
       expect(
         intention.funding.kind !== "project" || projectIds.has(intention.funding.projectId),
       ).toBe(true);

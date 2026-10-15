@@ -112,8 +112,6 @@ export type MixRevision = z.infer<typeof mixRevisionSchema>;
 
 export const distributionSchema = z.object({
   id,
-  // Legacy intention owner; independent mixes have no owning intention.
-  ownerId: id.nullable(),
   name: z.string().min(1),
   isPrimary: z.boolean(),
   archivedAt: timestamp.nullable(),
@@ -146,9 +144,7 @@ export const intentionSchema = z.object({
   projectId: id.nullable(),
   // One category node with its subtree; null is every category.
   scopeCategoryId: id.nullable(),
-  // The intention whose mix this one reads; null when it owns its mix. Never one that tracks.
-  tracksMixOf: id.nullable(),
-  // The mix in use: its own, or the tracked owner's.
+  // The mix it chose, any number of intentions sharing it; null for none (PLAN-mix, PLAN-no-mix).
   distributionId: id.nullable(),
   // Null or absent follows the latest revision; a number pins an immutable one.
   mixRevision: z.number().int().positive().nullable().optional(),
@@ -176,7 +172,6 @@ export const intentionTemplateSchema = z.object({
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: id.nullable(),
-  tracksMixOf: id.nullable(),
   distributionId: id.nullable(),
   mixRevision: z.number().int().positive().nullable().optional(),
   targetPages: z.number().int().positive().nullable(),

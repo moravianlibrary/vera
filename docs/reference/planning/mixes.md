@@ -58,6 +58,3 @@ An intention may have no mix. That is a deliberate choice and never silently bec
 mix. A project's own intention starts without one.
 
 A mix is never filtered by project: a project's own intention already scopes its items.
-
-> **Open — [L28](../../ledger.md#l28-remove-mix-tracking).** The code still keeps the older
-> *track another intention's mix* and *detach* acts beside independent mixes. They go.

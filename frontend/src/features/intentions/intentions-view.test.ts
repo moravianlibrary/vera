@@ -12,7 +12,6 @@ const intention = (id: string, overrides: Partial<Intention> = {}): Intention =>
   funding: { kind: "any" },
   projectId: null,
   scopeCategoryId: null,
-  tracksMixOf: "overall",
   distributionId: "d1",
   targetPages: 1000,
   countsFrom: "2026-01-01",
@@ -40,14 +39,7 @@ const row = (value: Intention, overrides: Partial<IntentionRow> = {}): Intention
   noPagesCount: 0,
   project: null,
   scope: null,
-  mix: {
-    id: "d1",
-    name: "House mix",
-    revision: 4,
-    owner: { id: "overall", name: "House mix", isOverall: true },
-    isOwn: false,
-    trackerCount: 0,
-  },
+  mix: { id: "d1", name: "House mix", revision: 4 },
   mixRows: [],
   unallocated: 0,
   outOfBandCount: 0,
@@ -69,16 +61,7 @@ const rows = [
   }),
   row(intention("gone", { archived: { actor: { kind: "system" }, at: "2026-06-01T00:00:00Z" } })),
   row(intention("watch", { targetPages: null }), { outOfBandCount: 2 }),
-  row(intention("house", { targetPages: null, isOverall: true, tracksMixOf: null }), {
-    mix: {
-      id: "d1",
-      name: "House mix",
-      revision: 4,
-      owner: { id: "house", name: "House mix", isOverall: true },
-      isOwn: true,
-      trackerCount: 3,
-    },
-  }),
+  row(intention("house", { targetPages: null, isOverall: true })),
 ];
 
 describe("verdictBadgeOf", () => {

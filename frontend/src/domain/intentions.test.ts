@@ -18,13 +18,11 @@ import {
   intentionStateOf,
   isInWindow,
   listMixOf,
-  mixOwnerOf,
   mixReadingOf,
   nextPeriodStartOf,
   pagesPerWeekNeededOf,
   shareWithinOf,
   targetVerdictOf,
-  trackersOf,
 } from "@/domain/intentions";
 
 const categories: Category[] = [
@@ -94,8 +92,12 @@ const iterations: Iteration[] = [
     digitizedAt: "2026-06-12T09:00:00Z",
     projectId: "p1",
   }),
-  // On the June list, scanned, no date: the list's last day stands in.
-  iteration("b", "nat", { listId: "june", progress: "Published" }),
+  // On the June list, marked Done on its last day.
+  iteration("b", "nat", {
+    listId: "june",
+    progress: "Published",
+    digitizedAt: "2026-06-30T16:00:00Z",
+  }),
   // On the June list, cancelled before it was scanned: stops counting.
   iteration("c", "mono", { listId: "june", cancellation }),
   // On the July list, not scanned yet.
@@ -103,6 +105,9 @@ const iterations: Iteration[] = [
   // Scanned in June off any list still standing: output, never planned.
   iteration("e", "spec", { progress: "Digitized", digitizedAt: "2026-06-02T09:00:00Z" }),
 ];
+
+// The same, with the June list past its end and not marked Done: b has no day it was digitized.
+const undated = iterations.map((it) => (it.id === "b" ? { ...it, digitizedAt: null } : it));
 
 const pagesById: Record<string, number | null> = { a: 100, b: 200, c: 50, d: 400, e: 300 };
 const data = {
@@ -119,7 +124,6 @@ const intention = (overrides: Partial<Intention> = {}): Intention => ({
   funding: { kind: "any" },
   projectId: null,
   scopeCategoryId: null,
-  tracksMixOf: null,
   distributionId: "d",
   targetPages: null,
   countsFrom: "2026-06-01",
@@ -162,6 +166,14 @@ describe("countIntention", () => {
     ]);
   });
 
+  it("PLAN-digitized-date: delivers nothing from a list past its end until it is marked Done", () => {
+    const counted = countIntention(intention({ endsOn: null }), { ...data, iterations: undated });
+
+    expect(counted.planned.map((it) => it.id)).toContain("b");
+    expect(counted.delivered.map((it) => it.id)).toEqual(["a"]);
+    expect(counted.noDateCount).toBe(1);
+  });
+
   it("matches funding and one category subtree", () => {
     const funded = countIntention(
       intention({ funding: { kind: "project", projectId: "p1" } }),
@@ -184,6 +196,7 @@ describe("countIntention", () => {
   it("says what has no date or no page count instead of dropping it silently", () => {
     const counted = countIntention(intention({ endsOn: null }), {
       ...data,
+      iterations: undated,
       lists: [],
       pagesOf: (it) => (it.id === "e" ? null : 1),
     });
@@ -317,15 +330,6 @@ describe("the mix", () => {
       ["nat", 300, 200, true],
       ["spec", null, 0, false],
     ]);
-  });
-
-  it("is the tracked owner's, one step away", () => {
-    const owner = intention({ id: "owner" });
-    const tracker = intention({ id: "tracker", tracksMixOf: "owner" });
-
-    expect(mixOwnerOf(tracker, [owner, tracker])).toBe(owner);
-    expect(mixOwnerOf(owner, [owner, tracker])).toBe(owner);
-    expect(trackersOf(owner, [owner, tracker])).toEqual([tracker]);
   });
 });
 

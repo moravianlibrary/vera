@@ -1,7 +1,7 @@
 // What the Categories page reads from its URL and works out for its pane (STATUS "Categories";
 // concepts.md *Category*): a saved filter, `?c=` the category open in the pane, none for *All
-// categories*, and `&refine=1` the Refine wizard in its place. `?mix=` selects an intention's
-// own mix for read-only context; editing stays on that intention (intentions.md §2.4).
+// categories*, and `&refine=1` the Refine wizard in its place. `?mix=` selects a mix for
+// read-only context; it is edited on Mixes (ACT-mix-save).
 
 import type { CategoryQuery } from "@/api/categories";
 import {
