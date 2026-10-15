@@ -52,7 +52,7 @@ export function visibleWatchlists(
   return database.watchlists
     .filter((watchlist) =>
       mode === "manage-system"
-        ? hasPermission(session, "watchlist.manage_shared") && isShared(watchlist)
+        ? hasPermission(session, "watchlist.manage_system") && isShared(watchlist)
         : isVisible(session, watchlist),
     )
     .filter((watchlist) => view === null || watchlist.view === view)
@@ -97,7 +97,7 @@ export function findChangeableWatchlist(
       (watchlist) =>
         watchlist.id === watchlistId &&
         (isShared(watchlist)
-          ? hasPermission(session, "watchlist.manage_shared")
+          ? hasPermission(session, "watchlist.manage_system")
           : watchlist.ownerId === session.user.id),
     ) ?? null
   );
@@ -126,7 +126,7 @@ export function canChange(session: Session, audience: WatchlistAudience): boolea
     return true;
   }
 
-  return hasPermission(session, "watchlist.manage_shared");
+  return hasPermission(session, "watchlist.manage_system");
 }
 
 // The two Documents perspectives use different filter vocabularies. Reject a
@@ -182,7 +182,7 @@ export function canOpenView(session: Session, view: WatchlistView): boolean {
 function isInAudience(session: Session, audience: WatchlistAudience): boolean {
   // Managers always belong to a system watchlist's effective audience. This does not
   // grant the source-view or record permissions needed to open its matches.
-  if (audience.kind !== "personal" && hasPermission(session, "watchlist.manage_shared")) {
+  if (audience.kind !== "personal" && hasPermission(session, "watchlist.manage_system")) {
     return true;
   }
   switch (audience.kind) {

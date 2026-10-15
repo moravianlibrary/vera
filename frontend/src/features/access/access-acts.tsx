@@ -1,6 +1,6 @@
 // What may be done on Users & Groups, and the dialog each act opens (view-catalog.md *Users &
 // Groups*; docs/demos/shared/page-access.js). Everything is `access.manage`'s but a shared
-// watchlist, which is `watchlist.manage_shared`'s (*Share…*, *Rename…*, *Edit filter* in its own
+// watchlist, which is `watchlist.manage_system`'s (*Share…*, *Rename…*, *Edit filter* in its own
 // view, *Delete…*); without either the page has no acts at all. The header makes new records: a
 // local account first, then a role, a group and a custody, folded into "…" past the tier's cap
 // (one on a phone, as the demo's *New…*). Each record has its own: a person's roles, groups and

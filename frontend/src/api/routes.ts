@@ -167,7 +167,7 @@ export function iterationActionRoute(iterationId: string, action: IterationActio
   return `${apiRoutes.iterations}/${encodeURIComponent(iterationId)}/${action}`;
 }
 
-// Every failed addition of a batch, retried at once: the batch is the unit an admin retries.
+// Every failed addition of a batch, retried at once: the batch is the unit retried (ACT-retry-batch).
 export function batchRetryRoute(batchId: string): string {
   return `${apiRoutes.batches}/${encodeURIComponent(batchId)}/retry`;
 }

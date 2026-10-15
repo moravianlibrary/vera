@@ -72,6 +72,15 @@ scope included, and refuses with 403.
 | `request.withdraw_own` | own | take back my own ask |
 | `request.read` | `custody` · `project` · `any` | other people's requests |
 | `request.decide` | `custody` · `any` | approve or decline a proposal, rescans included; custody is proposal custody |
+| `request.read_ingest` | `custody` · `any` | ingest detail: batch, failure text |
+| `request.retry` | `custody` · `any` | ingest again |
+| `request.read_payload` | `any` | raw responses |
+| `project.read` | `project` · `any` | see projects |
+| `project.create` | `any` | start a project; it starts Proposed |
+| `project.edit` | `managed` · `any` | edit a project |
+| `project.manage_members` | `managed` · `any` | who is on a project, and its manager |
+| `project.delete` | `managed` · `any` | delete a project with no proposals |
+| `project.decide` | `any` | approve or reject a project, and see every project |
 
 ### Iterations
 
@@ -88,15 +97,7 @@ scope included, and refuses with 403.
 | `iteration.resume` | `custody` · `any` | restart stopped work |
 | `iteration.publish` | `custody` · `any` | set the link where the scan is available |
 
-### Additions
-
-| Permission | Scopes | What it lets you do |
-|---|---|---|
-| `addition.read` | `custody` · `any` | ingest detail: batch, failure text |
-| `addition.retry` | `any` | ingest again |
-| `addition.read_payload` | `any` | raw responses |
-
-### Lists and planning
+### Planning
 
 | Permission | Scopes | What it lets you do |
 |---|---|---|
@@ -106,17 +107,10 @@ scope included, and refuses with 403.
 | `list.delete` | `any` | return a list's members to the pool |
 | `intention.read` | `project` · `any` | see intentions |
 | `intention.edit` | `project` · `any` | create and edit intentions, and their mix |
-| `intention.edit_overall` | `any` | the Overall intention's mix |
 | `intention.repeat` | `any` | repeating intentions |
 | `mix.read` | `any` | see mixes and their revisions |
 | `mix.edit` | `any` | create mixes and edit their proportions |
 | `mix.manage` | `any` | archive mixes and choose the Primary mix |
-| `project.read` | `project` · `any` | see projects |
-| `project.create` | `any` | start a project; it starts Proposed |
-| `project.edit` | `managed` · `any` | edit a project |
-| `project.manage_members` | `managed` · `any` | who is on a project, and its manager |
-| `project.delete` | `managed` · `any` | delete a project with no proposals |
-| `project.decide` | `any` | approve or reject a project, and see every project |
 
 ### Categories
 
@@ -131,7 +125,7 @@ scope included, and refuses with 403.
 | Permission | Scopes | What it lets you do |
 |---|---|---|
 | `watch` | own | save watchlists over what I can read |
-| `watchlist.manage_shared` | `any` | share watchlists and set who sees them |
+| `watchlist.manage_system` | `any` | create, change and remove system watchlists, and set who sees them |
 
 ### Administration
 

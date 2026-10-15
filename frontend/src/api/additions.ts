@@ -1,6 +1,6 @@
 // Additions: approved items being added to VERA by ingest (concepts.md, Request). An ingest that
-// failed is retried, never deleted, and the batch it came in on is the unit an administrator
-// retries (use case A1; `addition.retry`, which only an administrator holds, at any scope).
+// failed is retried, never deleted, and the batch it came in on is the unit retried
+// (ACT-retry-batch; `request.retry`, at `custody` or `any`).
 
 import { z } from "zod";
 import { postJson } from "@/api/http";

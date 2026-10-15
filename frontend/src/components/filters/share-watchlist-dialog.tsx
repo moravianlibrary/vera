@@ -3,7 +3,7 @@
 // roles. Before it is saved it says, from the server, how many people the audience reaches, how
 // many in it cannot open the view, and how many of the reached already keep the same filter as
 // their own, which warns rather than refuses (decided 2026-10-06). Opened from a watchlist's tab
-// and from its record on Users & Groups, under `watchlist.manage_shared`.
+// and from its record on Users & Groups, under `watchlist.manage_system`.
 // TODO(rrandiak): from Preferences → Watchlists (plan.md step 12); labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";

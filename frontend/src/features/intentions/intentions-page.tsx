@@ -245,7 +245,7 @@ export function IntentionsPage() {
           view="intentions"
           filter={view.filter}
           openedId={view.watchlistId}
-          canShare={hasPermission(session, "watchlist.manage_shared")}
+          canShare={hasPermission(session, "watchlist.manage_system")}
           onOpen={view.openWatchlist}
           onDetach={view.detachWatchlist}
           isBare={view.isBare}

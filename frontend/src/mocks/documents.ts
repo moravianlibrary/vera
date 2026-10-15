@@ -138,7 +138,7 @@ function redact(record: DocumentRecord, session: Session, audience: Audience): D
     return publicRecordOf(record, session.user.id);
   }
 
-  if (hasPermission(session, "addition.read")) {
+  if (hasPermission(session, "request.read_ingest")) {
     return record;
   }
 
@@ -370,7 +370,7 @@ function facetsOf(
 
 type Arrangement = GenericArrangement<DocumentRecord, DocumentGroup>;
 
-// Batches are the staff's unit of retry, so they need `addition.read`; a requester's list is
+// Batches are the staff's unit of retry, so they need `request.read_ingest`; a requester's list is
 // never grouped.
 function groupingFor(
   session: Session,
@@ -381,7 +381,7 @@ function groupingFor(
     return null;
   }
 
-  if (grouping === "batch" && !hasPermission(session, "addition.read")) {
+  if (grouping === "batch" && !hasPermission(session, "request.read_ingest")) {
     return null;
   }
 
@@ -403,7 +403,7 @@ function arrangementOf(
   return null;
 }
 
-// Batches with failed additions first, as that is what an admin retries; then newest first, and
+// Batches with failed additions first, as that is what is retried; then newest first, and
 // the rows from no batch last.
 function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
   const additionsOf = (batchId: string) => {
@@ -501,9 +501,9 @@ function logOf(record: DocumentRecord, session: Session, audience: Audience): St
     .filter((entry) => subjects.has(entry.subjectId))
     .toSorted((first, second) => second.at.localeCompare(first.at));
   if (audience === "staff") {
-    // How an ingest failed is withheld with the failure's error (addition.read).
+    // How an ingest failed is withheld with the failure's error (request.read_ingest).
     return oncePerCause(
-      hasPermission(session, "addition.read")
+      hasPermission(session, "request.read_ingest")
         ? entries
         : entries.map((entry) => (isIngestEvent(entry) ? { ...entry, detail: null } : entry)),
     );

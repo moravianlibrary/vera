@@ -491,13 +491,14 @@ function permissionLabel(permission: Permission): string {
     "request.withdraw_own": "Withdraw own proposals",
     "request.read_own": "View own proposals",
     "task.read_own": "View own tasks",
-    "intention.edit_overall": "Edit Overall intention",
     "intention.repeat": "Manage repeats",
     "project.manage_members": "Manage project members",
     "category.grant_custody": "Grant category custody",
-    "addition.read_payload": "View addition payloads",
+    "request.read_ingest": "View ingest detail",
+    "request.retry": "Retry ingest",
+    "request.read_payload": "View ingest payloads",
     "plugin.upload_code": "Upload plugin code",
-    "watchlist.manage_shared": "Manage shared watchlists",
+    "watchlist.manage_system": "Manage system watchlists",
   };
   if (special[permission]) return special[permission];
   const [subject, action = ""] = permission.split(".");

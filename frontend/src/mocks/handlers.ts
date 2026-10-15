@@ -1342,7 +1342,7 @@ export function createHandlers(profile: MockUserProfile) {
       const params = new URL(request.url).searchParams;
       const view = watchlistViewSchema.safeParse(params.get(watchlistViewParam));
       const mode = params.get(watchlistModeParam) === "manage-system" ? "manage-system" : "visible";
-      if (mode === "manage-system" && !hasPermission(currentSession(), "watchlist.manage_shared")) {
+      if (mode === "manage-system" && !hasPermission(currentSession(), "watchlist.manage_system")) {
         return forbidden();
       }
       const rows = visibleWatchlists(currentSession(), view.success ? view.data : null, mode);
@@ -1388,7 +1388,7 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.post(route(apiRoutes.watchlistReach), async ({ request }) => {
-      if (!hasPermission(currentSession(), "watchlist.manage_shared")) {
+      if (!hasPermission(currentSession(), "watchlist.manage_system")) {
         return forbidden();
       }
 

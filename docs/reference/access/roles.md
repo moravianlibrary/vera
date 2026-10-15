@@ -93,6 +93,15 @@ Grants, by scope; an empty cell is not granted.
 | `request.withdraw_own` | own | own | own | own | own |
 | `request.read` |  |  | any | any | any |
 | `request.decide` |  |  | custody | custody | any |
+| `request.read_ingest` |  |  | custody | custody | any |
+| `request.retry` |  |  | custody | custody | any |
+| `request.read_payload` |  |  |  |  | any |
+| `project.read` |  |  | project | any | any |
+| `project.create` |  |  | any | any | any |
+| `project.edit` |  |  | managed | any | any |
+| `project.manage_members` |  |  | managed | any | any |
+| `project.delete` |  |  | managed | any | any |
+| `project.decide` |  |  | any | any | any |
 | **Iterations** | | | | | |
 | `iteration.read` |  |  | any | any | any |
 | `iteration.recheck` |  |  | custody | custody | any |
@@ -104,35 +113,24 @@ Grants, by scope; an empty cell is not granted.
 | `iteration.cancel` |  |  | custody | any | any |
 | `iteration.resume` |  |  | custody | any | any |
 | `iteration.publish` |  |  | custody | custody | any |
-| **Additions** | | | | | |
-| `addition.read` |  |  | custody | custody | any |
-| `addition.retry` |  |  |  |  | any |
-| `addition.read_payload` |  |  |  |  | any |
-| **Lists and planning** | | | | | |
+| **Planning** | | | | | |
 | `list.read` |  |  |  | any | any |
 | `list.create` |  |  |  | any | any |
 | `list.edit` |  |  |  | any | any |
 | `list.delete` |  |  |  | any | any |
 | `intention.read` |  |  |  | any | any |
 | `intention.edit` |  |  |  | any | any |
-| `intention.edit_overall` |  |  |  |  | any |
 | `intention.repeat` |  |  |  |  | any |
 | `mix.read` |  |  |  | any | any |
 | `mix.edit` |  |  |  | any | any |
 | `mix.manage` |  |  |  |  | any |
-| `project.read` |  |  | project | any | any |
-| `project.create` |  |  | any | any | any |
-| `project.edit` |  |  | managed | any | any |
-| `project.manage_members` |  |  | managed | any | any |
-| `project.delete` |  |  | managed | any | any |
-| `project.decide` |  |  | any | any | any |
 | **Categories** | | | | | |
 | `category.read` |  |  | any | any | any |
 | `category.edit` |  |  | custody | custody | any |
 | `category.grant_custody` |  |  | custody | custody | any |
 | **Watchlists** | | | | | |
 | `watch` | own | own | own | own | own |
-| `watchlist.manage_shared` |  |  |  |  | any |
+| `watchlist.manage_system` |  |  |  |  | any |
 | **Administration** | | | | | |
 | `task.read_own` |  |  | own | own | own |
 | `task.read` |  |  |  |  | any |
@@ -152,10 +150,11 @@ What each one is for:
 - **`reader`** — external users (researchers, patrons): propose and follow their own requests.
   Their only sidebar entry is *My Documents*.
 - **`staff`** — library staff: the same grants as `reader` with a higher daily limit.
-- **`curator`** — decides proposals in their proposal custody; validates, classifies, cancels
-  and publishes in their category custody; decides projects, and runs those they manage.
+- **`curator`** — decides proposals in their proposal custody; validates, classifies, cancels,
+  publishes and retries failed additions in their category custody; decides projects, and runs
+  those they manage.
 - **`dig-curator`** — plans the work: digitization lists, intentions, mixes and every project.
   In their custody it has the curator's acts too, and it cancels and resumes anywhere.
 - **`admin`** — everything at `any`, including what no other role has: overruling restrictions,
-  retrying additions, the Overall intention, archiving mixes, repeats, shared watchlists, tasks,
-  plugins, hooks and access.
+  reading ingest payloads, archiving mixes, repeats, system watchlists, tasks, plugins, hooks and
+  access.

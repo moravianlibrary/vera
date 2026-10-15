@@ -51,7 +51,7 @@ empty cell means the entry is absent.
 |---|---|---|---|---|---|---|---|
 | Documents | `/documents` | `request.read_own` · `iteration.read` | My Documents | My Documents | Documents | Documents | Documents |
 | Proposals | `/review/proposals` | `request.decide` |  |  | Proposals | Proposals | Proposals |
-| Documents Validations | `/review/documents` | `validation.approve` |  |  | Documents Validations | Documents Validations | Documents Validations |
+| Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  | Documents Validations | Documents Validations | Documents Validations |
 | Digitization Lists | `/lists` | `list.read` |  |  |  | Digitization Lists | Digitization Lists |
 | Projects | `/projects` | `project.read` · `project.decide` |  |  | Projects | Projects | Projects |
 | Categories | `/categories` | `category.read` |  |  | Categories | Categories | Categories |
@@ -62,7 +62,7 @@ empty cell means the entry is absent.
 | Users management | `/access` | `access.read` |  |  |  |  | Users management |
 | Plugins | `/plugins` | `plugin.read` |  |  |  |  | Plugins |
 | Hooks | `/hooks` | `hook.read` |  |  |  |  | Hooks |
-| Watchlists | `/watchlists` | `watch` · `watchlist.manage_shared` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
+| Watchlists | `/watchlists` | `watch` · `watchlist.manage_system` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
 <!-- /generated:sidebar -->
 
 ## What a page shows, by what you hold
@@ -84,7 +84,7 @@ one is never named, and no reason detail is shown
 
 #### VIEW-ingest-detail
 
-The ingest failure text and the *Batch* grouping on Documents need `addition.read`. Without it,
+The ingest failure text and the *Batch* grouping on Documents need `request.read_ingest`. Without it,
 a failed addition shows only that it failed.
 
 #### VIEW-proposals
@@ -97,9 +97,8 @@ Proposals shows the proposals in the person's proposal custodies, or every propo
 
 #### VIEW-validations
 
-Documents Validations opens with any of `validation.approve`, `validation.deny` or
-`validation.revoke`
-([L38](../../ledger.md#l38-validations-entry-and-page-disagree)). It lists the current iterations that are held for review or forbidden, in
+Documents Validations and its entry open with any of `validation.approve`, `validation.deny` or
+`validation.revoke`. It lists the current iterations that are held for review or forbidden, in
 the person's category custody, or everywhere at `any`.
 
 #### VIEW-lists
@@ -139,6 +138,6 @@ On Plugins, a delivery channel lists the hooks that send through it only to a pe
 
 #### VIEW-watchlists
 
-The Watchlists entry shows with `watch` or `watchlist.manage_shared`. A watchlist over a page
+The Watchlists entry shows with `watch` or `watchlist.manage_system`. A watchlist over a page
 appears only to people who can open that page
 ([WATCH-audience](../integrations/watchlists.md#watch-audience)).

@@ -84,10 +84,12 @@ describe("findIntentionMix", () => {
 });
 
 describe("saveMixSet", () => {
-  it("is written only on the owner, Overall's only with intention.edit_overall", async () => {
+  it("is written only on the owner, Overall's only with intention.edit at any (LC-INT-overall)", async () => {
     signInAs("digitization");
 
     expect(await refusalOf(saveMixSet("i1", periodicals()))).toEqual([409, "intention.not_owner"]);
+    // A curator holds no intention.edit; not reading intentions either, they are not told it exists.
+    signInAs("curator");
     expect(
       await refusalOf(
         saveMixSet("i4", {
@@ -97,7 +99,7 @@ describe("saveMixSet", () => {
           keepOldMixFor: [],
         }),
       ),
-    ).toEqual([403, "forbidden"]);
+    ).toEqual([404, "not_found"]);
   });
 
   it("refuses a set over 100, one naming other children, and one outside the scope", async () => {

@@ -151,7 +151,11 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: "custody",
       },
       {
-        permission: "addition.read",
+        permission: "request.read_ingest",
+        scope: "custody",
+      },
+      {
+        permission: "request.retry",
         scope: "custody",
       },
       {
@@ -239,7 +243,8 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       { permission: "iteration.recheck", scope: "custody" },
       { permission: "iteration.classify", scope: "custody" },
       { permission: "iteration.publish", scope: "custody" },
-      { permission: "addition.read", scope: "custody" },
+      { permission: "request.read_ingest", scope: "custody" },
+      { permission: "request.retry", scope: "custody" },
       { permission: "category.edit", scope: "custody" },
       { permission: "category.grant_custody", scope: "custody" },
       { permission: "project.decide", scope: "any" },
@@ -344,19 +349,19 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "watchlist.manage_shared",
+        permission: "watchlist.manage_system",
         scope: "any",
       },
       {
-        permission: "addition.read",
+        permission: "request.read_ingest",
         scope: "any",
       },
       {
-        permission: "addition.retry",
+        permission: "request.retry",
         scope: "any",
       },
       {
-        permission: "addition.read_payload",
+        permission: "request.read_payload",
         scope: "any",
       },
       {
@@ -381,10 +386,6 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       },
       {
         permission: "intention.edit",
-        scope: "any",
-      },
-      {
-        permission: "intention.edit_overall",
         scope: "any",
       },
       { permission: "mix.read", scope: "any" },

@@ -201,7 +201,7 @@ export function isSameDocumentQuery(first: DocumentQuery, second: DocumentQuery)
 // ---------------------------------------------------------------- grouping
 
 // How the rows are arranged. Not a filter: it keeps every row and is not saved in a watchlist
-// (filtering.md §3.4). Batches need `addition.read`; without it the server does not group by
+// (filtering.md §3.4). Batches need `request.read_ingest`; without it the server does not group by
 // batch, and a requester's list is never grouped.
 export const documentGroupings = ["batch", "project"] as const;
 export const documentGroupingSchema = z.enum(documentGroupings);

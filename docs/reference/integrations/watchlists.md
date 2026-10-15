@@ -16,17 +16,17 @@ A watchlist is either:
 - **system**, shared with everyone or with the members of some groups and the holders of some
   roles.
 
-Anyone saves a personal one. Only `watchlist.manage_shared` creates, changes or removes a system
+Anyone saves a personal one. Only `watchlist.manage_system` creates, changes or removes a system
 one; it keeps who created it, but any holder of the permission maintains it.
 
-> **Open — [L45](../../ledger.md#l45-managing-system-watchlists).** The permission becomes
-> `watchlist.manage_system`. It needs `iteration.read@any`, shows both Documents and My Documents,
-> and lists filter values that match nothing yet.
+> **Open — [L45](../../ledger.md#l45-managing-system-watchlists).** `watchlist.manage_system`
+> is to need `iteration.read@any`, show both Documents and My Documents, and list filter values
+> that match nothing yet.
 
 #### WATCH-audience
 
 Every audience stops at who may open the page: being in a watchlist's audience never gives
-access to the page or its records. Holders of `watchlist.manage_shared` are always in every
+access to the page or its records. Holders of `watchlist.manage_system` are always in every
 system watchlist's audience.
 
 #### WATCH-documents-perspectives

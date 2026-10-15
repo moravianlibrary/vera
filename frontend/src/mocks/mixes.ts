@@ -3,7 +3,7 @@
 // and detach a tracker onto its own copy. A tracker reads its owner's mix. A scoped intention
 // reads only its subtree: shares outside it, the scope's own included, are not sent, and inside
 // it each is of the scope, not of the whole (§3.2). Only the owner's mix is written, under
-// `intention.edit` on it, Overall's under `intention.edit_overall`; every tracker changes with
+// `intention.edit` on it, Overall's under `intention.edit@any`; every tracker changes with
 // it, and one kept on the old mix is detached first, under `intention.edit` on that tracker.
 
 import type { IntentionMixDetail, MixSetDraft, MixTree } from "@/api/mixes";
@@ -108,10 +108,9 @@ export function findIntentionMix(session: Session, intentionId: string): Intenti
     : detailOf(session, intention);
 }
 
+// Overall is funded by no project, so only `intention.edit@any` reaches it (LC-INT-overall).
 const canEdit = (session: Session, intention: Intention) =>
-  intention.isOverall
-    ? can(session, "intention.edit_overall")
-    : can(session, "intention.edit", scopeOfIntention(intention, database.projects));
+  can(session, "intention.edit", scopeOfIntention(intention, database.projects));
 
 // The children the set must name, exactly, or why it cannot be written.
 function setRefusal(owner: Intention, draft: MixSetDraft): Refusal | null {

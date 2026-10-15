@@ -1,5 +1,5 @@
 // What is done to a shared watchlist from Users & Groups (view-catalog.md *Shared watchlists*;
-// filtering.md §4.5), under `watchlist.manage_shared`: who sees it, its name, and deleting it,
+// filtering.md §4.5), under `watchlist.manage_system`: who sees it, its name, and deleting it,
 // which says first how many people lose it. Its filter is edited in its own view, opened on it.
 // TODO(rrandiak): labels move to i18n.
 

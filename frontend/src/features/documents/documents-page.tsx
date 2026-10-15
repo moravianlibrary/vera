@@ -73,11 +73,11 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
 
   const userId = session.user.id;
   const isPublic = isMy;
-  // Batches need `addition.read`; a requester's list is never grouped.
+  // Batches need `request.read_ingest`; a requester's list is never grouped.
   const groupings = isPublic
     ? []
     : documentsView.groupings.filter(
-        (option) => option.value !== "batch" || hasPermission(session, "addition.read"),
+        (option) => option.value !== "batch" || hasPermission(session, "request.read_ingest"),
       );
   const title = isMy ? "My Documents" : "Documents";
   const changedStaff = staffWatchlists.data?.filter((item) => item.newCount > 0).length ?? 0;
@@ -139,7 +139,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
           view={isMy ? "my-documents" : "documents"}
           filter={view.filter}
           openedId={view.watchlistId}
-          canShare={hasPermission(session, "watchlist.manage_shared")}
+          canShare={hasPermission(session, "watchlist.manage_system")}
           onOpen={view.openWatchlist}
           onDetach={view.detachWatchlist}
           isBare={view.isBare}
@@ -183,7 +183,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             groupings={groupings}
             grouping={grouping}
             onGroupingChange={view.setGrouping}
-            canRetryAdditions={hasPermission(session, "addition.retry")}
+            canRetryAdditions={hasPermission(session, "request.retry")}
             canOpenProjects={
               hasPermission(session, "project.read") || hasPermission(session, "project.decide")
             }

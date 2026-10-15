@@ -2,9 +2,9 @@
 // byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
 // far adding it got (decided 2026-10-06: each document counted once, by the status its row
 // shows, so a retry or a new batch does not read as all added, what a gate holds does not read
-// as being added, and the parts add up to the batch), the unit an admin retries; a project says its state and how
-// many of its documents match. An administrator retries a batch's failed additions from its
-// header, at once and without a dialog: a retry only sends them back to ingest.
+// as being added, and the parts add up to the batch), the unit retried; a project says its state
+// and how many of its documents match. A holder of `request.retry` retries a batch's failed
+// additions in their scope from its header (ACT-retry-batch), at once and without a dialog: a retry only sends them back to ingest.
 // TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
 // §2.3); labels move to i18n.
 
@@ -145,7 +145,7 @@ function RetryFailedButton({ batchId, failed }: { batchId: string; failed: numbe
     call: retryBatch,
     invalidates: [documentsQueryKey, watchlistsQueryKey],
     refusalTexts: {
-      403: "Only an administrator retries additions.",
+      403: "What failed is outside your custody.",
       409: "Nothing in this batch is waiting for a retry any more.",
     },
   });

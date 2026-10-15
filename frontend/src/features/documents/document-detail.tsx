@@ -270,7 +270,7 @@ function AddingCard({
   nameOf: (userId: string) => string;
   session: Session;
 }) {
-  const canReadAdditions = hasPermission(session, "addition.read");
+  const canReadAdditions = hasPermission(session, "request.read_ingest");
   const { data: batches = [] } = useBatchesQuery({ isEnabled: canReadAdditions });
   const batchId = batchIdOf(record);
   const batch = batches.find((candidate) => candidate.id === batchId);
@@ -312,9 +312,10 @@ function AddingCard({
           {iteration.ingestFailure?.error ?? "the error is not recorded."}
         </StatusNote>
       )}
-      {isFailed && !hasPermission(session, "addition.retry") && (
+      {isFailed && !hasPermission(session, "request.retry") && (
         <FinePrint>
-          Only an administrator can retry batch <b className="font-mono">{batch.id}</b>.
+          Only a curator in its custody or an administrator can retry batch{" "}
+          <b className="font-mono">{batch.id}</b>.
         </FinePrint>
       )}
     </DetailCard>

@@ -134,7 +134,7 @@ export function CategoriesPage() {
           view="categories"
           filter={view.filter}
           openedId={view.watchlistId}
-          canShare={can(session, "watchlist.manage_shared")}
+          canShare={can(session, "watchlist.manage_system")}
           onOpen={view.openWatchlist}
           onDetach={view.detachWatchlist}
           isBare={view.isBare}

@@ -96,14 +96,6 @@ Decided on 2026-10-15. Every submission is a batch, one item included, so retryi
 same for one item. A batch is shown as one only with two items or more. The code makes a batch
 only for two or more. → frontend (mock), then engine.
 
-### L21: Identifier formats per installation
-
-Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
-
-Decided on 2026-10-15. Tenancy stays out of scope for the engine and the first backend: one VERA, one library. The
-catalog ID, barcode and NBN formats are MZK's and fixed in the code (`TODO(Tenancy)`); they move
-into the plugin configuration of each installation. → engine.
-
 ### L27: Asking for a rescan
 
 Rules: [LC-REQ-join](reference/lifecycles/request.md#lc-req-join).
@@ -233,23 +225,11 @@ Rules: [LC-INT-overall](reference/lifecycles/intention.md#lc-int-overall),
 
 Decided on 2026-10-15: the permission goes. It guarded only the older path of editing an
 intention's own mix in place, which Overall no longer has. Which mix Overall uses stays under
-`intention.edit@any`. → frontend: drop it from the catalog, the shipped `admin` role and the
-older path (with [L28](#l28-remove-mix-tracking)).
+`intention.edit@any`.
 
-### L43: Additions and projects fold into Requests
-
-Rules: [ACT-retry-batch](reference/access/acts.md#proposal-review), [the catalog](reference/access/permissions.md#the-catalog).
-
-Decided on 2026-10-15:
-- `addition.read` becomes `request.read_ingest` (`custody` · `any`);
-- `addition.retry` becomes `request.retry`, accepting `custody` · `any`; `curator` and
-  `dig-curator` hold it at `custody`, `admin` at `any`;
-- `addition.read_payload` becomes `request.read_payload` (`any`);
-- the Additions group goes; the `project.*` permissions keep their names and move to the
-  Requests group;
-- *Lists and planning* becomes *Planning*.
-
-→ frontend (`domain/permissions.ts`, the fixtures, every check), then `make docs`.
+Built on 2026-10-15: the permission is gone from the catalog and the `admin` role, and Overall's
+mix is written under `intention.edit@any`. → frontend: remove the older path with
+[L28](#l28-remove-mix-tracking).
 
 ### L44: Proposals becomes Requests
 
@@ -274,7 +254,7 @@ Decided on 2026-10-15: everyone with `watch` keeps their own watchlists.
 - shows both *Documents* and *My Documents*, so a system watchlist can be built for either;
 - lists every filter value, those that match nothing yet included.
 
-→ frontend.
+Built on 2026-10-15: the rename. → frontend: the rest, with [L46](#l46-permission-dependencies).
 
 ### L47: The project-user role
 
@@ -334,16 +314,6 @@ Rules: [UI-pages](reference/ui/pages.md#ui-pages).
 The columns of each list, what each record pane shows and what each page deliberately leaves out
 are not written down yet. → docs, from the code.
 
-### L38: Validations entry and page disagree
-
-Rules: [VIEW-entry-requires](reference/access/views.md#view-entry-requires),
-[VIEW-validations](reference/access/views.md#view-validations).
-
-The sidebar shows Documents Validations only with `validation.approve`, but the page and the
-server open it with any of `validation.approve`, `validation.deny` or `validation.revoke`. A
-role holding only `deny` could open the page but would never see the entry. → frontend: make the
-entry require any of the three.
-
 ### L42: NBN instead of ČNB
 
 Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
@@ -354,6 +324,14 @@ dialog, the Documents search hint and the fixtures). → frontend: rename the ty
 it *NBN* in English and *ČNB* in Czech.
 
 ## For the engine
+
+### L21: Identifier formats per installation
+
+Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
+
+Decided on 2026-10-15. Tenancy stays out of scope for the engine and the first backend: one VERA, one library. The
+catalog ID, barcode and NBN formats are MZK's and fixed in the code (`TODO(Tenancy)`); they move
+into the plugin configuration of each installation. → engine.
 
 ### L8: Placing again is a run
 
@@ -514,3 +492,14 @@ messages, and the generator follows them. → frontend.
   ([engine plan](develop/engine.md#settled)).
 - **Start now's refusal** is `list.already_started`, so refusal codes and event names never share
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
+
+### Built, 2026-10-15
+
+- **L43:** `addition.*` became `request.read_ingest`, `request.retry` (`custody` · `any`, held
+  by `curator` and `dig-curator` at `custody`) and `request.read_payload`; the `project.*`
+  permissions moved to Requests; *Lists and planning* became *Planning*
+  ([the catalog](reference/access/permissions.md#the-catalog),
+  [ACT-retry-batch](reference/access/acts.md#proposal-review)).
+- **L38:** the Documents Validations entry shows with any of `validation.approve`,
+  `validation.deny` or `validation.revoke`
+  ([VIEW-validations](reference/access/views.md#view-validations)).

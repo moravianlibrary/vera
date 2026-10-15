@@ -59,7 +59,7 @@ hold it, with no actor named and no detail.
 
 #### LOG-ingest-detail
 
-The detail of an ingest entry (the failure text) is withheld from anyone without `addition.read`.
+The detail of an ingest entry (the failure text) is withheld from anyone without `request.read_ingest`.
 
 #### LOG-where-read
 

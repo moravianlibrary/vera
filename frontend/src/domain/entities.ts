@@ -365,7 +365,7 @@ export const iterationSchema = z.object({
   ingestFailure: z
     .object({
       attempts: z.number().int().positive(),
-      // Withheld from callers without `addition.read`.
+      // Withheld from callers without `request.read_ingest`.
       error: z.string().nullable(),
     })
     .nullable(),

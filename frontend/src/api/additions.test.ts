@@ -1,5 +1,5 @@
-// Retrying a batch's failed additions end to end against the mock server over HTTP: only an
-// administrator retries, the whole batch's failures at once, and what is retried is being added
+// Retrying a batch's failed additions end to end against the mock server over HTTP: the batch's
+// failures within the scope of `request.retry` at once (ACT-retry-batch), and what is retried is being added
 // again, with its attempt counted and logged.
 
 import { setupServer } from "msw/node";
@@ -30,7 +30,7 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("retrying a batch", () => {
-  it("is refused to a curator who reads additions but may not retry them", async () => {
+  it("is refused to a curator when what failed is outside their custody", async () => {
     signInAs("curator");
 
     expect(await statusOf(retryBatch("B-0141"))).toBe(403);

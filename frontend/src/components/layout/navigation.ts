@@ -39,7 +39,7 @@ export const navigationEntries: readonly NavigationEntry[] = [
     path: "/review/documents",
     rail: "DV",
     label: "Documents Validations",
-    requires: ["validation.approve"],
+    requires: ["validation.approve", "validation.deny", "validation.revoke"],
   },
   { id: "lists", path: "/lists", rail: "DL", label: "Digitization Lists", requires: ["list.read"] },
   {
@@ -88,7 +88,7 @@ export const navigationEntries: readonly NavigationEntry[] = [
     path: "/watchlists",
     rail: "WL",
     label: "Watchlists",
-    requires: ["watch", "watchlist.manage_shared"],
+    requires: ["watch", "watchlist.manage_system"],
   },
 ];
 

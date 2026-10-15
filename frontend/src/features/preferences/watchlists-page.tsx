@@ -72,7 +72,7 @@ export function WatchlistsPage() {
 function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
-  const canShare = session !== undefined && hasPermission(session, "watchlist.manage_shared");
+  const canShare = session !== undefined && hasPermission(session, "watchlist.manage_system");
   const { data: users = [] } = useUsersQuery({ isEnabled: canShare });
   const queryClient = useQueryClient();
   const {

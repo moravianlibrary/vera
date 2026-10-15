@@ -66,10 +66,7 @@ and an act on it is refused (409).
 | `ACT-approve` | *Approve…* | `request.decide`, the proposal in the person's custody | Pending; its checks have answered (409); a leaf category (422); a rescan note when a copy exists (422) | every open ask of the document approved; one iteration, which the oldest ask originates; log *Approved* per ask |
 | `ACT-decline` | *Decline…* | `request.decide`, as above | Pending | every open ask declined, with the two texts; log *Declined* per ask |
 | `ACT-approve-batch` | *Approve batch…* | `request.decide` | the open, checked proposals of a batch that need no rescan; some may be unticked | as *Approve…* for each; rescans and unchecked ones are left out and counted |
-| `ACT-retry-batch` | *Retry failed* | `addition.retry` | some of the batch failed to be added (409) | each failed item back to ingest with its attempt counted; log *Ingest retried* |
-
-> **Open — [L43](../../ledger.md#l43-additions-and-projects-fold-into-requests).** Retrying
-> becomes `request.retry`, at `custody` or `any`, and curators hold it in their custody.
+| `ACT-retry-batch` | *Retry failed* | `request.retry` | some of the batch failed to be added (409), and some of that within the grant's scope (403) | each failed item within the scope back to ingest with its attempt counted; log *Ingest retried* |
 
 ## Iterations
 
@@ -140,7 +137,7 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 | `ACT-intention-archive` | *Archive* | `intention.edit` at the intention | not Overall, not a project's own | preserved as it is, still counting *(no log)* |
 | `ACT-intention-delete` | *Delete…* | `intention.edit` at the intention | not archived, not Overall, not a project's own; no intention or repeat tracks its mix (409 `intention.tracked`) | generated lists keep it as provenance *(no log)* |
 | `ACT-intention-detach` | *Detach* | `intention.edit` at the intention | it tracks another's mix | it gets its own copy of the mix *(no log)* |
-| `ACT-intention-mix` | *Edit mix…* | `mix.edit` and `intention.edit` at the intention, or `intention.edit_overall` for Overall | it owns its mix (409 `intention.not_owner`); not archived; the mix unchanged meanwhile (409 `mix.revision`); a set names every child of its parent and adds up to at most 100 (422) | a new mix revision *(no log)* |
+| `ACT-intention-mix` | *Edit mix…* | `mix.edit` and `intention.edit` at the intention (Overall's only at `any`) | it owns its mix (409 `intention.not_owner`); not archived; the mix unchanged meanwhile (409 `mix.revision`); a set names every child of its parent and adds up to at most 100 (422) | a new mix revision *(no log)* |
 | `ACT-repeat-save` | *Repeat…* | `intention.repeat` | a mix that is none, Primary, or an active shared mix and revision | from the next occurrence on *(no log)* |
 
 ## Categories
@@ -173,8 +170,8 @@ Categories reaches them on the Mixes page ([VIEW-mixes-entry](views.md#view-mixe
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-watchlist-save` | *Save as watchlist* | the person can open the view; `watchlist.manage_shared` for any audience but personal | a filter valid for the view (422); not a duplicate of one they see (409) | — |
-| `ACT-watchlist-change` | rename, refilter, delete | their own personal one; `watchlist.manage_shared` for a shared one | — | — |
+| `ACT-watchlist-save` | *Save as watchlist* | the person can open the view; `watchlist.manage_system` for any audience but personal | a filter valid for the view (422); not a duplicate of one they see (409) | — |
+| `ACT-watchlist-change` | rename, refilter, delete | their own personal one; `watchlist.manage_system` for a system one | — | — |
 
 > **Open — [L18](../../ledger.md#l18-watch-is-not-checked).** Saving a personal watchlist does not
 > check `watch`. The permission only reveals the Watchlists entry.

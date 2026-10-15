@@ -71,7 +71,7 @@ export function iterationNoteOf(
     return {
       tone: "red",
       title: "Could not be added",
-      text: iteration.ingestFailure?.error ?? "an administrator retries it.",
+      text: iteration.ingestFailure?.error ?? "a curator or an administrator retries it.",
       actedBy: null,
     };
   }

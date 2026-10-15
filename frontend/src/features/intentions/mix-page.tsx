@@ -3,7 +3,7 @@
 // the demo still keeps on Categories). The category tree with the intention's shares, read
 // against its own output, and one category in the pane, *All categories* when none is picked.
 // The percentages are edited here, one sibling set at a time, on the intention that owns the mix,
-// Overall's only with `intention.edit_overall`. A tracker shows its owner's mix with a line, *Edit
+// Overall's only with `intention.edit@any`. A tracker shows its owner's mix with a line, *Edit
 // [owner]'s mix* and *Detach*; a scoped intention shows its subtree, the rest dimmed and unused.
 // `?c=` is the category open, pushing a history entry. On a phone the pane is a sheet.
 // TODO(rrandiak): labels move to i18n.
@@ -33,8 +33,7 @@ import { useTier } from "@/hooks/use-tier";
 import { formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
-// The mix is edited on its owner: `intention.edit_overall` for Overall's, else `intention.edit`
-// on it (§2.5).
+// The mix is edited on its owner, with `intention.edit` on it (§2.5).
 interface Notice {
   title: string;
   text: string;
