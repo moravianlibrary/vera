@@ -8,20 +8,12 @@ import type { RequestGroup } from "@/api/requests";
 import { GroupHeader } from "@/components/lists/group-header";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import type { Batch, User } from "@/domain/entities";
+import type { User } from "@/domain/entities";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
 type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 type RequesterGroup = Extract<RequestGroup, { kind: "requester" }>;
-
-export const batchViaLabels = {
-  typed: "typed",
-  file: "file",
-  pastedList: "pasted list",
-  barcodeScan: "barcode scan",
-  harvest: "harvest",
-} as const satisfies Record<Batch["via"], string>;
 
 interface RequestGroupHeaderProps {
   group: RequestGroup;
@@ -69,8 +61,7 @@ function BatchHeader({ group, users, onBulkApprove }: BatchHeaderProps) {
       }
       meta={
         <>
-          <UserName user={submitter} fallback={batch.submittedBy} /> · via{" "}
-          {batchViaLabels[batch.via]} · {group.askCount} asked
+          <UserName user={submitter} fallback={batch.submittedBy} /> · {group.askCount} asked
           {group.elsewhereCount > 0 && (
             <>
               {" · "}

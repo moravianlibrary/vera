@@ -57,7 +57,6 @@ function harvest(batchId: string, size: number): void {
   database.batches.push({
     id: batchId,
     name: "ISSN harvest",
-    via: "harvest",
     submittedBy: "a2",
     submittedAt: "2026-06-25T06:00:00Z",
   });

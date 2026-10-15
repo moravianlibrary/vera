@@ -59,6 +59,27 @@ and an act on it is refused (409).
 > **Open — [L14](../../ledger.md#l14-acts-not-built).** Withdrawing is not built. The permission
 > exists and Requests shows withdrawn asks, but there is no act or endpoint for it.
 
+#### ACT-ways-in
+
+*Propose…* and *Add…* hold one list of items, filled by any of these ways and mixed freely. Each
+item is checked as it lands, so the list says what submitting will do.
+
+| Way in | What it does | Needs |
+|---|---|---|
+| Type it | one identifier of a chosen type, a volume or issue, a reason | — |
+| Catalog search | searches the catalogs that can be searched, and adds a result | a Catalog adapter that searches |
+| Record link | the link to, or the ID of, a record in a catalog that cannot be searched, found there | a Catalog adapter that reads it |
+| Paste list | one item per line: identifier, volume or issue, reason; each line read as the chosen type, or detected | detecting: an Input plugin that detects types |
+| File upload | a CSV or TXT file with the same columns | — |
+| Barcode scan | continuous: each scan is added as it arrives, with nothing to click. A hardware scanner types like a keyboard; the camera reads codes too | the camera: an Input plugin that reads barcodes |
+| Photo capture | a photo of a cover, title page or catalog card is read, identifiers or its text, and matched to catalog records; the candidates come back with why each matched, and nothing is added until the person picks one | an Input plugin that reads photos |
+
+A way whose plugin is not enabled is absent, not disabled
+([PERM-absent-not-disabled](permissions.md#perm-absent-not-disabled)).
+
+> **Open — [L58](../../ledger.md#l58-ways-in).** Built: typing, pasting and a file. Auto-detect is
+> always on in the mock rather than following an enabled Input instance.
+
 ## Request review
 
 | ID | Act | Needs | Allowed when | Writes |

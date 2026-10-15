@@ -51,7 +51,6 @@ function draftOf(items: ProposalItem[], overrides: Partial<ProposalDraft> = {}):
     reason: "For the seminar",
     projectId: null,
     batchName: null,
-    via: "pastedList",
     approval: null,
     ...overrides,
   };

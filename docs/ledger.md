@@ -193,6 +193,16 @@ the Czech UI calls it ČNB. The code names the type `cnb` (`domain/proposals.ts`
 dialog, the Documents search hint and the fixtures). → frontend: rename the type to `nbn`, label
 it *NBN* in English and *ČNB* in Czech.
 
+### L58: Ways in
+
+Rules: [ACT-ways-in](reference/access/acts.md#act-ways-in).
+
+Decided on 2026-10-15, from the demo's propose dialog: the ways in beside typing, pasting and a
+file. Catalog search with record links for catalogs that cannot be searched, continuous barcode
+scanning (a hardware scanner always; the camera through an Input plugin) and photo capture with
+candidates to pick from. Each way shows only while its plugin is enabled, auto-detect included.
+→ frontend, after the plugins step (Input instances), then engine.
+
 ## For the engine
 
 ### L21: Identifier formats per installation
@@ -369,9 +379,13 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-15
 
+- **L57:** decided on 2026-10-15. A batch is the submitter's, named by them, and has no source:
+  an Input plugin only adds items, and one batch mixes the ways in. This replaces L55's typed
+  batch; the header names who submitted it ([ENT-batch](reference/model/entities.md#ent-batch)).
+
 - **L56:** decided on 2026-10-15. The shipped `curator` reads requests at `custody`, not `any`,
-  so Requests shows them what their request custodies hold
-  ([ROLE-shipped](reference/access/roles.md#role-shipped)).
+  so Requests shows them what their request custodies hold; `dig-curator` keeps `any`, as it plans
+  every project ([ROLE-shipped](reference/access/roles.md#role-shipped)).
 
 - **L44:** Proposals is *Requests* at `/requests`, proposal custody is *request custody*
   ([ACCESS-request-custody](reference/access/custody.md#access-request-custody)), and the code

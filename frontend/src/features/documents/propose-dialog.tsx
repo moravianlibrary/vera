@@ -5,8 +5,8 @@
 // details (why, a project, and for a curator the category, priority and approving at once),
 // and a report of what was done. Anybody without `request.decide` adds at most the deployment's
 // limit at once; what does not fit is reported, never dropped silently.
-// TODO(rrandiak): catalog search, record links from catalogs that cannot be searched, barcode
-// scanning and photo capture (the last two need Input plugins); labels move to i18n.
+// TODO(rrandiak): catalog search, record links, barcode scanning and photo capture, each only
+// while its plugin is enabled (ACT-ways-in, L58); labels move to i18n.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, FileUp, X } from "lucide-react";
@@ -50,7 +50,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { isShownAsBatch } from "@/domain/documents";
-import type { Batch, Priority, Session } from "@/domain/entities";
+import type { Priority, Session } from "@/domain/entities";
 import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
 import type { IdentifierType, ProposalLine } from "@/domain/proposals";
@@ -291,7 +291,6 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
             submit.mutate({
               ...details,
               items: accepted.map(({ source: _source, ...item }) => item),
-              via: viaOf(accepted),
             });
           }}
         />
@@ -306,15 +305,6 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
       )}
     </>
   );
-}
-
-// A file is a file whatever else came with it, and typed items alone are typed (ENT-batch).
-function viaOf(items: readonly { source: string }[]): Batch["via"] {
-  if (items.some((item) => item.source.startsWith("file"))) {
-    return "file";
-  }
-
-  return items.every((item) => item.source === "typed") ? "typed" : "pastedList";
 }
 
 // ---------------------------------------------------------------- items

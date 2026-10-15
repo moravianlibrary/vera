@@ -74,7 +74,6 @@ export const proposalDraftSchema = z.object({
   projectId: z.string().nullable(),
   // Named only when several items make a batch.
   batchName: z.string().nullable(),
-  via: batchSchema.shape.via,
   // Approve the new items with no copy at once; `request.decide` (LC-REQ-approve-now).
   approval: z.object({ categoryId: z.string(), priority: prioritySchema }).nullable(),
 });

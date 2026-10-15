@@ -463,7 +463,6 @@ function createBatch(session: Session, draft: ProposalDraft, now: string): Store
   const batch: StoredBatch = {
     id: `B-${String(highest + 1).padStart(4, "0")}`,
     name: draft.batchName ?? `proposals-${now.slice(0, 10)}`,
-    via: draft.via,
     submittedBy: session.user.id,
     submittedAt: now,
   };
