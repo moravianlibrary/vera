@@ -29,17 +29,23 @@ it is theirs.
 An item can be proposed by any of these identifiers. Each type is an instance of an
 **Identifier** plugin ([PLG-kinds](../integrations/plugins.md#plg-kinds)), which recognises a
 value, checks it and normalises it before anything is looked up, and names the type in each
-language. VERA ships one predefined instance per type below, configured with MZK's formats; a
-library changes their configuration and order, or adds one, such as a recogniser of its shelf
-marks. The predefined instances show on Plugins like any other and can be edited, but not
-deleted:
+language.
+
+VERA ships one Identifier implementation, **Pattern**, configured per instance with the type's
+key, its label in each language, a regular expression, how a value is normalised (trimmed,
+upper-cased, hyphens dropped) and an optional checksum (ISBN-10, ISBN-13, ISSN). One predefined
+Pattern instance per type below is configured with MZK's formats. A library changes their
+configuration and order, or adds an instance, such as a pattern for its shelf marks; only a
+check a pattern cannot make, such as looking a shelf mark up in a local register, needs an
+implementation of its own. The predefined instances show on Plugins like any other and can be
+edited, but not deleted:
 
 | Type | Format |
 |---|---|
 | Catalog ID | `MZK01-000000001` (three or four letters, two digits, a hyphen, nine digits) |
 | NBN | the national bibliography number (MARC 015); in Czech, the ČNB: `cnb` and nine digits |
-| ISBN | `978` or `979` and ten to fourteen digits or hyphens |
-| ISSN | `1234-567X` |
+| ISBN | `978` or `979` and ten to fourteen digits or hyphens; ISBN-13 checksum |
+| ISSN | `1234-567X`; ISSN checksum |
 | Barcode | `MZK-2024-000001` |
 | Shelf mark | the library's own; no common format, so no predefined recogniser |
 

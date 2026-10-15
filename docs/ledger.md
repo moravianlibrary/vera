@@ -193,9 +193,11 @@ Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers),
 
 Decided on 2026-10-15: each identifier type is an instance of a new **Identifier** plugin kind,
 which recognises, checks and normalises a value and names the type in each language (*NBN*,
-*ČNB*). VERA ships predefined instances with MZK's formats, shown on Plugins as editable but not
-deletable, their order deciding detection; a library configures them or adds its own, such as a
-shelf-mark recogniser. This replaces moving the formats into each
+*ČNB*). One built-in **Pattern** implementation does it with a regular expression, a
+normalisation and an optional checksum (ISBN-10, ISBN-13, ISSN), one instance per type. VERA ships
+predefined Pattern instances with MZK's formats, shown on Plugins as editable but not deletable,
+their order deciding detection; a library configures them or adds its own, such as a shelf-mark
+pattern. Only a check a pattern cannot make needs its own implementation. This replaces moving the formats into each
 installation's configuration; tenancy stays out of scope. The code fixes the types and formats
 in `domain/proposals.ts` (`TODO(Tenancy)`), and the client checks them as typed: the server is to
 send each type's pattern and labels with the propose settings, and a type checked only by plugin
