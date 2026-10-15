@@ -55,9 +55,14 @@ function heldCatalogRecords(): CatalogRecord[] {
     const barcodes = documents.flatMap((document) =>
       document.unit?.type === "barcode" ? [[document.unit.value, document.unit.value]] : [],
     );
-    const shelfMarks = documents.flatMap((document) =>
-      document.shelfMark === null ? [] : [document.shelfMark],
-    );
+    // A shelf mark on one unit names it; one shared by several units names none (DOC-units).
+    const shelfMarks = new Map<string, string | null>();
+    for (const document of documents) {
+      if (document.shelfMark !== null) {
+        const unit = document.unit?.value ?? null;
+        shelfMarks.set(document.shelfMark, shelfMarks.has(document.shelfMark) ? null : unit);
+      }
+    }
     const [first] = documents;
     return {
       catalogId,
@@ -65,7 +70,7 @@ function heldCatalogRecords(): CatalogRecord[] {
       type: first?.type ?? "Monograph",
       units: units.length === 0 ? null : units,
       identifiers: [],
-      shelfMarks: [...new Set(shelfMarks)],
+      shelfMarks: Object.fromEntries(shelfMarks),
       barcodes: Object.fromEntries(barcodes),
     };
   });

@@ -12,7 +12,8 @@ and unit are asks for the same document.
 
 #### DOC-units
 
-When a record has several units, an ask must name one. A barcode names its unit directly. A
+When a record has several units, an ask must name one. A barcode names its unit directly; a
+shelf mark names one when the catalog puts it on a single unit. A
 record with a single unit needs none. An ask that names no unit of a record with several is
 answered with the units to choose from.
 
@@ -49,8 +50,7 @@ One VERA serves one library.
 
 A pasted list has one item per line: identifier, unit and reason, separated by `;`, a tab, or a
 comma. A line starting with `#` is skipped. With a type chosen, every line is read as that
-type; without one, each line's type is detected from its format. A shelf mark has no format,
-so a line is read as one only when that type is chosen.
+type; without one, each line's type is detected from its format.
 
 ## Properties
 

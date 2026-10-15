@@ -191,6 +191,13 @@ function resolve(item: ProposalItem): Resolution {
     return { record, unit: barcodeUnit };
   }
 
+  // DOC-units: a shelf mark names its unit when the catalog puts it on one; otherwise the unit is
+  // chosen as for any identifier of the record.
+  const shelfMarkUnit = item.type === "shelfMark" ? shelfMarkUnitOf(record, item.value) : null;
+  if (shelfMarkUnit !== null) {
+    return { record, unit: shelfMarkUnit };
+  }
+
   if (record.units === null) {
     return { record, unit: null };
   }
@@ -220,9 +227,7 @@ function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
         return item.value in candidate.barcodes;
       // DOC-identifiers: a shelf mark has no common format, so it is matched as it is written.
       case "shelfMark":
-        return candidate.shelfMarks.some(
-          (shelfMark) => shelfMark.toUpperCase() === item.value.trim().toUpperCase(),
-        );
+        return shelfMarkOf(candidate, item.value) !== undefined;
       default:
         return candidate.identifiers.some(
           (identifier) => normalized(identifier) === normalized(item.value),
@@ -230,6 +235,17 @@ function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
     }
   });
   return record ?? null;
+}
+
+// The record's shelf mark written as the value is, ignoring case; undefined when it has none.
+function shelfMarkOf(record: CatalogRecord, value: string): string | undefined {
+  const wanted = value.trim().toUpperCase();
+  return Object.keys(record.shelfMarks).find((shelfMark) => shelfMark.toUpperCase() === wanted);
+}
+
+function shelfMarkUnitOf(record: CatalogRecord, value: string): string | null {
+  const shelfMark = shelfMarkOf(record, value);
+  return shelfMark === undefined ? null : (record.shelfMarks[shelfMark] ?? null);
 }
 
 function recordOf(document: Document): DocumentRecord {

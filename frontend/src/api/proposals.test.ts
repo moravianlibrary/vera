@@ -88,6 +88,17 @@ describe("checkProposalItems", () => {
     expect(checks.map((check) => check.kind)).toEqual(["new", "notInCatalog"]);
   });
 
+  it("takes the unit a shelf mark is on, and asks when it names none (DOC-units)", async () => {
+    signInAs("reader");
+
+    const checks = await checkProposalItems([
+      { type: "shelfMark", value: "ST2-0951", unit: null },
+      { type: "shelfMark", value: "ST2-095x", unit: null },
+    ]);
+
+    expect(checks.map((check) => check.kind)).toEqual(["new", "whichUnit"]);
+  });
+
   it("speaks to a requester in the public vocabulary", async () => {
     signInAs("reader");
 

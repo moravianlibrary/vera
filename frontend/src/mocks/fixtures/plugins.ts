@@ -271,13 +271,13 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
     "pt8",
     "IdentifierDetector",
     "Input",
-    "Recognises which identifier each pasted line is — ISBN, ISSN, NBN, barcode, catalog ID.",
+    "Recognises which identifier each pasted line is — ISBN, ISSN, NBN, barcode, catalog ID, and shelf marks as the library writes them.",
     {
       version: "1.2.0",
       installedAt: "2026-02-04",
       triggers: ["OnDemand"],
       declares: {
-        identifierTypes: ["NBN", "ISSN", "ISBN", "Barcode", "Catalog ID"],
+        identifierTypes: ["NBN", "ISSN", "ISBN", "Barcode", "Catalog ID", "Shelf mark"],
         inputMode: "Text",
       },
       fields: ["checksums", "unknown"],

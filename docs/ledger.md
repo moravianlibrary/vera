@@ -362,9 +362,9 @@ messages, and the generator follows them. → frontend.
 ### Built, 2026-10-15
 
 - **L48:** the document's field is `shelfMark`, shown as *Shelf mark*, and a shelf mark is an
-  identifier type to propose by, which the catalog adapter resolves
-  ([DOC-identifiers](reference/model/documents.md#doc-identifiers),
-  [DOC-lines](reference/model/documents.md#doc-lines)).
+  identifier type to propose by, which the catalog adapter resolves; it names a unit when the
+  catalog puts it on one ([DOC-identifiers](reference/model/documents.md#doc-identifiers),
+  [DOC-units](reference/model/documents.md#doc-units)).
 - **L42:** the identifier type is `nbn`, labelled *NBN*; the Czech labels are to name it *ČNB*
   ([DOC-identifiers](reference/model/documents.md#doc-identifiers)).
 
