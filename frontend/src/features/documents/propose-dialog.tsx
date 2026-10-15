@@ -55,6 +55,7 @@ import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
 import type { IdentifierType, ProposalLine } from "@/domain/proposals";
 import {
+  defaultBatchNameOf,
   identifierTypeSchema,
   identifierTypes,
   isIdentifierOf,
@@ -806,7 +807,8 @@ function DetailsStep({
       project.state !== "Rejected" && isProjectMember(project, session.user.id, session.groupIds),
   );
 
-  const [batchName, setBatchName] = useState(`proposals-${new Date().toISOString().slice(0, 10)}`);
+  // Empty unless the person names it; the server names it by when it came in (ENT-batch).
+  const [batchName, setBatchName] = useState("");
   const [reason, setReason] = useState("");
   const [projectId, setProjectId] = useState<string>(noProject);
   const [isApprovedNow, setIsApprovedNow] = useState(true);
@@ -819,10 +821,11 @@ function DetailsStep({
     <>
       <div className="-mx-6 grid min-h-0 content-start gap-4 overflow-y-auto px-6">
         {isStaff && isBatch && (
-          <Field id={`${fieldId}-batch`} label="Batch name">
+          <Field id={`${fieldId}-batch`} label="Batch name" hint="optional">
             <Input
               id={`${fieldId}-batch`}
               value={batchName}
+              placeholder={defaultBatchNameOf(new Date())}
               onChange={(event) => setBatchName(event.target.value)}
             />
           </Field>

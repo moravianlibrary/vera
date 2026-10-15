@@ -72,7 +72,7 @@ export const proposalDraftSchema = z.object({
   // For every item without its own.
   reason: z.string().nullable(),
   projectId: z.string().nullable(),
-  // Named only when several items make a batch.
+  // Null leaves the name to the server: when the batch was submitted (ENT-batch).
   batchName: z.string().nullable(),
   // Approve the new items with no copy at once; `request.decide` (LC-REQ-approve-now).
   approval: z.object({ categoryId: z.string(), priority: prioritySchema }).nullable(),

@@ -381,7 +381,9 @@ messages, and the generator follows them. → frontend.
 
 - **L57:** decided on 2026-10-15. A batch is the submitter's, named by them, and has no source:
   an Input plugin only adds items, and one batch mixes the ways in. This replaces L55's typed
-  batch; the header names who submitted it ([ENT-batch](reference/model/entities.md#ent-batch)).
+  batch; the header names who submitted it. The name is optional: the dialog shows the default,
+  when it was submitted in the library's time, and the server gives it
+  ([ENT-batch](reference/model/entities.md#ent-batch)).
 
 - **L56:** decided on 2026-10-15. The shipped `curator` reads requests at `custody`, not `any`,
   so Requests shows them what their request custodies hold; `dig-curator` keeps `any`, as it plans

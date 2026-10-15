@@ -28,6 +28,7 @@ import type {
   Session,
 } from "@/domain/entities";
 import { isProjectMember } from "@/domain/projects";
+import { defaultBatchNameOf } from "@/domain/proposals";
 import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
 import type { StoredBatch } from "@/mocks/batches";
 import { servedBatchOf } from "@/mocks/batches";
@@ -462,7 +463,7 @@ function createBatch(session: Session, draft: ProposalDraft, now: string): Store
   );
   const batch: StoredBatch = {
     id: `B-${String(highest + 1).padStart(4, "0")}`,
-    name: draft.batchName ?? `proposals-${now.slice(0, 10)}`,
+    name: draft.batchName ?? defaultBatchNameOf(new Date(now)),
     submittedBy: session.user.id,
     submittedAt: now,
   };

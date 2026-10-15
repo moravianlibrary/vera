@@ -265,7 +265,10 @@ describe("submitProposal", () => {
 
     const report = await submitProposal(draftOf([catalogItem("MZK01-001520331", "roč. 2")]));
 
-    expect(report.batch).toMatchObject({ size: 1 });
+    expect(report.batch).toMatchObject({
+      size: 1,
+      name: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/),
+    });
     expect(database.requests.at(-1)?.batchId).toBe(report.batch?.id);
   });
 

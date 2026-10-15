@@ -65,3 +65,23 @@ function columnsOf(line: string): string[] {
   const separator = line.includes(";") ? ";" : line.includes("\t") ? "\t" : ",";
   return line.split(separator).map((column) => column.trim());
 }
+
+// ---------------------------------------------------------------- batch name
+
+// TODO(Tenancy): the library's time zone is MZK's.
+const batchNameFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Europe/Prague",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+// The name of a batch nobody named: when it was submitted, in the library's time (ENT-batch).
+export function defaultBatchNameOf(at: Date): string {
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    batchNameFormatter.formatToParts(at).find((each) => each.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")}`;
+}

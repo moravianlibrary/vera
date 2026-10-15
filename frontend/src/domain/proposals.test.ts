@@ -1,7 +1,7 @@
 // Identifier formats and the pasted or uploaded list, read the way the Propose dialog reads them.
 
 import { describe, expect, it } from "vitest";
-import { detectIdentifierType, parseProposalLines } from "@/domain/proposals";
+import { defaultBatchNameOf, detectIdentifierType, parseProposalLines } from "@/domain/proposals";
 
 describe("detectIdentifierType", () => {
   it.each([
@@ -49,5 +49,11 @@ describe("parseProposalLines", () => {
     const lines = parseProposalLines("1801-1234\ncnb001388120", "issn");
 
     expect(lines.map((line) => line.type)).toEqual(["issn", null]);
+  });
+});
+
+describe("defaultBatchNameOf", () => {
+  it("names a batch by when it came in, in the library's time (ENT-batch)", () => {
+    expect(defaultBatchNameOf(new Date("2026-10-15T22:05:00Z"))).toBe("2026-10-16 00:05");
   });
 });
