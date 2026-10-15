@@ -5,21 +5,21 @@
 
 import { z } from "zod";
 
-// plugins.md §4.1–§4.13.
+// PLG-kinds: in the order a document meets them, which Plugins lists them in.
 export const pluginKinds = [
-  "CatalogAdapter",
-  "Registry",
+  "Identity",
+  "Input",
   "Harvester",
+  "CatalogAdapter",
   "PropertySource",
+  "Registry",
   "Validation",
   "Restriction",
   "Custody",
-  "Input",
+  "Classifier",
   "ListGenerator",
-  "Identity",
   "Message",
   "DeliveryChannel",
-  "Classifier",
 ] as const;
 export const pluginKindSchema = z.enum(pluginKinds);
 export type PluginKind = z.infer<typeof pluginKindSchema>;

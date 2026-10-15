@@ -38,9 +38,6 @@ arriving, facts, copies, gates, routing, planning, publishing, then communicatio
 > **Open — [L21](../../ledger.md#l21-identifier-plugins).** The Identifier kind is decided but
 > not built ([DOC-identifiers](../model/documents.md#doc-identifiers)).
 
-> **Open — [L51](../../ledger.md#l51-order-of-plugin-kinds).** The Plugins page still uses the
-> older order.
-
 > **Open — [L50](../../ledger.md#l50-link-and-publication-plugins).** Two kinds are decided but
 > not built, placed after List generator: **Link**, which turns what is pasted into *Set link…* (a PID, a viewer URL) into the
 > canonical link; and **Publication detector**, which finds where a scanned iteration was

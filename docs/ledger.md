@@ -17,14 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L51: Order of plugin kinds
-
-Rules: [PLG-kinds](reference/integrations/plugins.md#plg-kinds).
-
-Decided on 2026-10-15: the order a document meets them (Identity, Input, Harvester, Catalog
-adapter, Property source, Registry, Validation, Restriction, Custody, Classifier, List generator,
-Link, Publication detector, Message, Delivery channel), with no group headings. → frontend.
-
 ### L31: Plugin policy on the instance
 
 Rules: [PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
@@ -303,6 +295,8 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L51:** Plugins lists the kinds in the order a document meets them, with no group headings
+  ([PLG-kinds](reference/integrations/plugins.md#plg-kinds)).
 - **L34:** message acts named for who they reach: *Message askers…* on a proposal and on a
   forbidden item, *Ask to overrule…* on a forbidden item for anyone who cannot overrule it,
   *Message manager…* on a project's page and *Message list author…* on Documents' Digitization

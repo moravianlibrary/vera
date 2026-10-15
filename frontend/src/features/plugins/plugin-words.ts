@@ -10,51 +10,51 @@ import type { DeclaredName, DeclaredNameKind, PluginKind, PluginTrigger } from "
 import { plural } from "@/lib/plural";
 
 export const pluginKindLabels = {
-  CatalogAdapter: "Catalog adapter",
-  Registry: "Registry",
+  Identity: "Identity",
+  Input: "Input",
   Harvester: "Harvester",
+  CatalogAdapter: "Catalog adapter",
   PropertySource: "Property source",
+  Registry: "Registry",
   Validation: "Validation",
   Restriction: "Restriction",
   Custody: "Custody",
-  Input: "Input",
+  Classifier: "Classifier",
   ListGenerator: "List generator",
-  Identity: "Identity",
   Message: "Message",
   DeliveryChannel: "Delivery channel",
-  Classifier: "Classifier",
 } as const satisfies Record<PluginKind, string>;
 
 export const pluginKindTones = {
-  CatalogAdapter: "blue",
-  Registry: "purple",
+  Identity: "blue",
+  Input: "blue",
   Harvester: "amber",
+  CatalogAdapter: "blue",
   PropertySource: "green",
+  Registry: "purple",
   Validation: "slate",
   Restriction: "red",
   Custody: "amber",
-  Input: "blue",
+  Classifier: "purple",
   ListGenerator: "purple",
-  Identity: "blue",
   Message: "green",
   DeliveryChannel: "green",
-  Classifier: "purple",
 } as const satisfies Record<PluginKind, Tone>;
 
 export const pluginKindJobs = {
-  CatalogAdapter: "reads catalog records — page counts, material type, units",
-  Registry: "asks whether a copy already exists somewhere",
+  Identity: "a way to log in — the login page is built from these",
+  Input: "a way of entering items in the propose dialog",
   Harvester: "finds new documents and proposes them",
+  CatalogAdapter: "reads catalog records — page counts, material type, units",
   PropertySource: "supplies a value when the catalog has none",
+  Registry: "asks whether a copy already exists somewhere",
   Validation: "checks a record is complete enough to digitize",
   Restriction: "forbids digitizing — copyright, embargo; only an admin overrules it",
   Custody: "places proposals into request custodies",
-  Input: "a way of entering items in the propose dialog",
+  Classifier: "suggests the category a proposal is decided under",
   ListGenerator: "builds a digitization list for an intention",
-  Identity: "a way to log in — the login page is built from these",
   Message: "where Message… hands a conversation off to — mail, chat",
   DeliveryChannel: "where a hook can send — email, chat, webhook, file",
-  Classifier: "suggests the category a proposal is decided under",
 } as const satisfies Record<PluginKind, string>;
 
 export const triggerLabels = {

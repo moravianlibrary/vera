@@ -26,6 +26,7 @@ import { listPluginInstances } from "@/api/reference";
 import { listSchedules } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
+import { pluginKinds } from "@/domain/plugins";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -61,15 +62,14 @@ describe("getPluginIndex", () => {
     expect(await refusalOf(getPluginIndex())).toMatchObject({ status: 403 });
   });
 
-  it("lists the implementations in kind order, each with its versions", async () => {
+  it("lists the implementations in kind order, each with its versions (PLG-kinds)", async () => {
     signInAs("admin");
     const { implementations } = await getPluginIndex();
 
-    expect(implementations.slice(0, 3).map((implementation) => implementation.name)).toEqual([
-      "AlephCatalogAdapter",
-      "KrameriusRegistry",
-      "RDCZRegistry",
-    ]);
+    // PLG-kinds: the order a document meets them.
+    const ranks = implementations.map((implementation) => pluginKinds.indexOf(implementation.kind));
+    expect(ranks).toEqual(ranks.toSorted((first, second) => first - second));
+    expect(implementations[0]?.kind).toBe("Identity");
     expect(implementations.find((implementation) => implementation.id === "pt3")).toMatchObject({
       kind: "Registry",
       versions: [
