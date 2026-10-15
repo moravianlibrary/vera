@@ -13,7 +13,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up frontend-env frontend-install frontend-users frontend-user dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint typecheck check test version-check set-version open-client
+.PHONY: help up frontend-env frontend-install frontend-users frontend-user dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint typecheck check test version-check set-version open-client docs docs-check
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -133,7 +133,13 @@ lint: ## Lint frontend source files
 typecheck: ## Type-check frontend source files
 	cd frontend && bun run typecheck
 
-check: format-check lint typecheck version-check ## Run the project checks
+check: format-check lint typecheck version-check docs-check ## Run the project checks
+
+docs: ## Rewrite the generated blocks in the reference from the code
+	cd frontend && bun ../docs/tools/docs.ts
+
+docs-check: ## Check the reference: generated blocks, rule IDs, links
+	cd frontend && bun ../docs/tools/docs.ts --check
 
 test: ## Run frontend tests
 	cd frontend && bun run test
