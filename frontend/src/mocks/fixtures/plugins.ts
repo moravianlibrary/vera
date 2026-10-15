@@ -368,6 +368,26 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       fields: ["signup", "password_min"],
     },
   ),
+  // PLG-kinds: Link and Publication detector (decided 2026-10-15, not in the demo).
+  implementation(
+    "pt29",
+    "KrameriusLink",
+    "Link",
+    "Reads a Kramerius PID or viewer address and gives the item's canonical link there.",
+    { version: "1.0.0", installedAt: "2026-10-16", triggers: ["OnDemand"], fields: ["base_url"] },
+  ),
+  implementation(
+    "pt30",
+    "KrameriusPublicationDetector",
+    "PublicationDetector",
+    "Asks a Kramerius instance which digitized items it now publishes, and sets their links.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-10-16",
+      triggers: ["OnSchedule", "OnDemand"],
+      fields: ["base_url", "since?"],
+    },
+  ),
   implementation(
     "pt23",
     "MailtoMessage",
@@ -824,6 +844,24 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     settings: { kind: "Classifier", order: 1 },
     createdAt: "2026-10-07",
     lastRunAt: june(24, 15, 10),
+  }),
+  instance({
+    id: "pi32",
+    name: "Digitální knihovna MZK",
+    implementationId: "pt29",
+    configuration: { base_url: "https://www.digitalniknihovna.cz/mzk" },
+    triggers: ["OnDemand"],
+    createdAt: "2026-10-16",
+    lastRunAt: null,
+  }),
+  instance({
+    id: "pi33",
+    name: "MZK Kramerius publications",
+    implementationId: "pt30",
+    configuration: { base_url: "https://kramerius.mzk.cz" },
+    triggers: ["OnSchedule", "OnDemand"],
+    createdAt: "2026-10-16",
+    lastRunAt: null,
   }),
   instance({
     id: "pi31",

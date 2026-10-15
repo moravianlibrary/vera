@@ -32,9 +32,11 @@ export type ReclassificationResult = z.infer<typeof reclassificationResultSchema
 
 // ---------------------------------------------------------------- publish
 
-// Where a reader opens the scan. Setting it is what makes the item Published (flows.md P1).
+// Where a reader opens the scan. Setting it is what makes the item Published (ACT-publish): a web
+// address, or a PID or viewer's address an enabled Link instance turns into the canonical link,
+// which the result carries (PLG-kinds).
 export const publicationSchema = z.object({
-  link: z.url({ protocol: /^https?$/ }),
+  link: z.string().trim().min(1),
 });
 export type Publication = z.infer<typeof publicationSchema>;
 

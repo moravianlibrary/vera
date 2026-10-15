@@ -98,7 +98,7 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
 | `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |
-| `ACT-publish` | *Set link…* | `iteration.publish` | digitized (409); a new link (422) | progress Published; log *Published* or *Link changed*; hook `iteration.published` |
+| `ACT-publish` | *Set link…* | `iteration.publish` | digitized (409); a web address, or a PID or viewer's address a Link instance reads, which it makes canonical (422); a new link (422) | progress Published; log *Published* or *Link changed*; hook `iteration.published` |
 | `ACT-overrule` | *Overrule restriction…* | `restriction.overrule` | a restriction stands and is not overruled (409) | the overrule with a staff note, beside the rule's finding; gates move progress; log *Restriction overruled* |
 
 *Cancel…* at `custody` covers an item already on a list: the curator is responsible for it, the

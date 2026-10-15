@@ -350,10 +350,14 @@ export function UserRecord({
       }
       sub={
         user.kind === "agent" ? (
-          <>
-            A plugin acting as a user: it enters through <b>{user.entry ?? "its plugin"}</b>, so
-            what it proposes goes through review. It never logs in.
-          </>
+          user.entry === null ? (
+            <>A plugin acting as a user; what it does is logged as it. It never logs in.</>
+          ) : (
+            <>
+              A plugin acting as a user: it enters through <b>{user.entry}</b>, so what it proposes
+              goes through review. It never logs in.
+            </>
+          )
         ) : (
           user.email
         )

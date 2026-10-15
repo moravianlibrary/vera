@@ -39,7 +39,7 @@ import { defectNameOf, isFoundAfterScan, pagesSubject, reviewStateOf } from "@/d
 import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
-import { recordHookEvent } from "@/mocks/hooks";
+import { canonicalLinkOf, setLink } from "@/mocks/links";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
 
@@ -113,34 +113,24 @@ export function publishIteration(
     return { refusal: { status: 409, message: "It is not digitized yet" } };
   }
 
-  if (iteration.publishedLink === publication.link) {
+  // A PID or a viewer's address is read by a Link instance (PLG-kinds).
+  const link = canonicalLinkOf(publication.link);
+  if (link === null) {
+    return {
+      refusal: {
+        status: 422,
+        code: "iteration.link_unread",
+        message: "It is no web address, and no Link plugin reads it",
+      },
+    };
+  }
+
+  if (iteration.publishedLink === link) {
     return { refusal: { status: 422, message: "It is already available there" } };
   }
 
-  replaceIteration({ ...iteration, publishedLink: publication.link, progress: "Published" });
-  const isChange = iteration.publishedLink !== null;
-  writeLog({
-    subjectKind: "iteration",
-    subjectId: iteration.id,
-    at: new Date().toISOString(),
-    actor: { kind: "user", userId: session.user.id },
-    correlationId: crypto.randomUUID(),
-    event: isChange ? "Link changed" : "Published",
-    detail: isChange ? `From ${iteration.publishedLink} to ${publication.link}.` : publication.link,
-  });
-  recordHookEvent(
-    "iteration.published",
-    iteration.id,
-    "",
-    `${iteration.id} is published at ${publication.link}`,
-    {
-      categoryPath: categoryPathOf(database.categories, iteration.categoryId).map(
-        (category) => category.name,
-      ),
-    },
-  );
-
-  return { value: { publishedLink: publication.link, progress: "Published" } };
+  setLink(iteration, link, { kind: "user", userId: session.user.id });
+  return { value: { publishedLink: link, progress: "Published" } };
 }
 
 // ---------------------------------------------------------------- page count and recheck

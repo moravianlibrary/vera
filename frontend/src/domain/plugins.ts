@@ -18,6 +18,8 @@ export const pluginKinds = [
   "Custody",
   "Classifier",
   "ListGenerator",
+  "Link",
+  "PublicationDetector",
   "Message",
   "DeliveryChannel",
 ] as const;

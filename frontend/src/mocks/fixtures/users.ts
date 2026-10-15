@@ -78,4 +78,11 @@ export const users: readonly User[] = [
     kind: "agent",
     email: null,
   },
+  // MZK Kramerius publications' agent: what it sets is logged as it (PLG-kinds).
+  {
+    id: "a3",
+    name: "Publication detector",
+    kind: "agent",
+    email: null,
+  },
 ];

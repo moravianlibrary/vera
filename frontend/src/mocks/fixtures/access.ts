@@ -625,6 +625,7 @@ export const userAccess: Readonly<Record<string, UserAccess>> = {
   ),
   a1: { handRoleIds: ["reader"], mappedRoles: [], identities: [], entry: "Additions" },
   a2: { handRoleIds: ["reader"], mappedRoles: [], identities: [], entry: "Proposals" },
+  a3: { handRoleIds: ["reader"], mappedRoles: [], identities: [], entry: null },
 };
 
 // Custody granted to people directly, by category (the demo's `categoryMembers`); groups carry

@@ -59,19 +59,6 @@ machine) and intentions scoped by a property:
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
 
-### L50: Link and publication plugins
-
-Rules: [PLG-kinds](reference/integrations/plugins.md#plg-kinds),
-[ACT-publish](reference/access/acts.md#iterations).
-
-Decided on 2026-10-15: two new plugin kinds.
-- **Link:** *Set link…* accepts a PID or a viewer URL, and a Link instance turns it into the
-  canonical link (a Digitální knihovna `…/view/uuid:X?page=…` becomes `…/uuid/uuid:X`).
-- **Publication detector:** finds where a scanned iteration was published and sets its link, as
-  its agent, logged like *Set link…*.
-
-→ frontend (plugin kinds, the *Set link…* dialog), then engine.
-
 ### L36: Pages reference
 
 Rules: [UI-pages](reference/ui/pages.md#ui-pages).
@@ -288,6 +275,12 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L50:** the Link and Publication detector plugin kinds. *Set link…* takes a web address or a
+  PID; an enabled Link instance (Kramerius, in the mock) turns a PID or its viewer's address into
+  the canonical link, and without one only a web address is kept. A Publication detector run
+  sets the links of digitized items as its agent, logged *Published* as *Set link…* is
+  ([PLG-kinds](reference/integrations/plugins.md#plg-kinds),
+  [ACT-publish](reference/access/acts.md#iterations)).
 - **L32:** disabling a delivery channel counts the active hooks it stops and names them to anyone
   with `hook.read` ([PLG-delivery-hooks](reference/integrations/plugins.md#plg-delivery-hooks)).
   The "says what stops first" test still fails on the plug-in's run count (22, not 2), the same

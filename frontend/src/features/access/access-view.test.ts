@@ -31,13 +31,14 @@ describe("filteredIndex", () => {
     expect(filteredIndex(index, { show: ["agent"] }).users.map(({ id }) => id)).toEqual([
       "a1",
       "a2",
+      "a3",
     ]);
   });
 
   it("counts what each Show would find", () => {
     expect(showFacetsOf(index, {}).show).toEqual([
       { value: "person", count: 10 },
-      { value: "agent", count: 2 },
+      { value: "agent", count: 3 },
       { value: "none", count: 1 },
     ]);
   });

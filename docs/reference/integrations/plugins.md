@@ -29,6 +29,8 @@ Several instances of one implementation may run side by side (one catalog adapte
 | Custody | places proposals in request custodies |
 | Classifier | suggests the category a proposal is approved into |
 | List generator | drafts a digitization list for an intention |
+| Link | turns a PID or a viewer's address pasted into *Set link…* into the canonical link |
+| Publication detector | finds where a digitized item was published and sets its link, as its agent |
 | Message | where a message act hands a conversation to |
 | Delivery channel | where a hook sends: email, chat, webhook, file |
 
@@ -37,11 +39,6 @@ arriving, facts, copies, gates, routing, planning, publishing, then communicatio
 
 > **Open — [L21](../../ledger.md#l21-identifier-plugins).** The Identifier kind is decided but
 > not built ([DOC-identifiers](../model/documents.md#doc-identifiers)).
-
-> **Open — [L50](../../ledger.md#l50-link-and-publication-plugins).** Two kinds are decided but
-> not built, placed after List generator: **Link**, which turns what is pasted into *Set link…* (a PID, a viewer URL) into the
-> canonical link; and **Publication detector**, which finds where a scanned iteration was
-> published and sets its link, as its agent.
 
 #### PLG-declares
 

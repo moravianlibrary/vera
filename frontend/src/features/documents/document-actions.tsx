@@ -241,8 +241,10 @@ interface ActionDialogProps {
 
 // ---------------------------------------------------------------- publish
 
+// A web address, or a PID or a viewer's address that a Link plugin turns into the canonical link
+// (PLG-kinds); the server says which it could not read.
 const publishFormSchema = z.object({
-  link: z.url({ protocol: /^https?$/, error: "Enter the web address where the scan opens" }),
+  link: z.string().trim().min(1, "Enter where the scan opens"),
 });
 type PublishForm = z.infer<typeof publishFormSchema>;
 
@@ -253,7 +255,8 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
     invalidates: iterationInvalidations,
     refusalTexts: {
       409: "It is not digitized yet.",
-      422: "It is already available there, or the address is not a web address.",
+      "iteration.link_unread": "That is no web address, and no Link plugin reads it as a PID.",
+      422: "It is already available there.",
     },
   });
   const isPublished = iteration.publishedLink !== null;
@@ -271,13 +274,12 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
       onSubmit={(values) => publish.run(values)}
       render={(form) => (
         <>
-          <Field id={`${id}-link`} label="Link" hint="where a reader opens the scan">
-            <Input
-              id={`${id}-link`}
-              type="url"
-              placeholder="https://…"
-              {...form.register("link")}
-            />
+          <Field
+            id={`${id}-link`}
+            label="Link"
+            hint="where a reader opens the scan: its address, or its PID"
+          >
+            <Input id={`${id}-link`} placeholder="https://… or uuid:…" {...form.register("link")} />
           </Field>
           <FieldError message={form.formState.errors.link?.message} />
           <p className="text-xs text-muted-foreground">

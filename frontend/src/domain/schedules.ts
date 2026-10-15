@@ -47,8 +47,8 @@ export const overlaps = ["skip", "wait"] as const;
 export const overlapSchema = z.enum(overlaps);
 export type Overlap = z.infer<typeof overlapSchema>;
 
-// The plugin kinds that can run by themselves (plugins.md §2.4, ON_SCHEDULE); an input or a list
-// generator runs only while somebody uses it.
+// The plugin kinds that can run by themselves (plugins.md §2.4, ON_SCHEDULE); an input, a list
+// generator or a link runs only while somebody uses it.
 export const schedulableKinds = [
   "CatalogAdapter",
   "Registry",
@@ -56,6 +56,7 @@ export const schedulableKinds = [
   "PropertySource",
   "Validation",
   "Restriction",
+  "PublicationDetector",
 ] as const;
 
 // An intention repeat makes the next occurrence as its period starts: Monday, the 1st, or the

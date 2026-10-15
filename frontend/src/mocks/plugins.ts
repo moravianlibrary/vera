@@ -40,6 +40,7 @@ import {
   noDeclarations,
 } from "@/mocks/fixtures/plugins";
 import { hooksUsingChannel } from "@/mocks/hooks";
+import { detectPublications } from "@/mocks/links";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import {
   enabledInstancesOf,
@@ -530,6 +531,11 @@ export function runInstanceNow(session: Session, instanceId: string): Outcome<Ru
     itemCount: lastRun?.itemCount || 100,
     rerunOf: null,
   });
+  // The mock finds what it would at once, rather than as the run goes (PLG-kinds).
+  if (kindOf(instance) === "PublicationDetector") {
+    detectPublications();
+  }
+
   return { value: publicRunOf(started, mockNow()) };
 }
 

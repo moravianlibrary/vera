@@ -21,6 +21,8 @@ export const pluginKindLabels = {
   Custody: "Custody",
   Classifier: "Classifier",
   ListGenerator: "List generator",
+  Link: "Link",
+  PublicationDetector: "Publication detector",
   Message: "Message",
   DeliveryChannel: "Delivery channel",
 } as const satisfies Record<PluginKind, string>;
@@ -37,6 +39,8 @@ export const pluginKindTones = {
   Custody: "amber",
   Classifier: "purple",
   ListGenerator: "purple",
+  Link: "blue",
+  PublicationDetector: "green",
   Message: "green",
   DeliveryChannel: "green",
 } as const satisfies Record<PluginKind, Tone>;
@@ -53,6 +57,8 @@ export const pluginKindJobs = {
   Custody: "places proposals into request custodies",
   Classifier: "suggests the category a proposal is decided under",
   ListGenerator: "builds a digitization list for an intention",
+  Link: "turns a PID or a viewer's address pasted into Set link… into the canonical link",
+  PublicationDetector: "finds where a scanned item was published and sets its link",
   Message: "where Message… hands a conversation off to — mail, chat",
   DeliveryChannel: "where a hook can send — email, chat, webhook, file",
 } as const satisfies Record<PluginKind, string>;
@@ -139,6 +145,12 @@ export function lossText(impact: PluginImpact, instanceName: string): string {
       return hasOthers
         ? "it disappears from Generate; other generators stay."
         : "it is the last generator: the Generate button disappears from Digitization Lists.";
+    case "Link":
+      return hasOthers
+        ? "Set link… stops reading its addresses; the others still read theirs."
+        : "Set link… takes only a full web address, kept as typed.";
+    case "PublicationDetector":
+      return "it stops setting links; links it already set stay.";
     case "Identity":
       return `it leaves the login page. ${plural(impact.userCount, "person signs", "people sign")} in through it; they keep their records but cannot log in this way, and roles it mapped stay until their next login elsewhere.`;
     case "Message":
