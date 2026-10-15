@@ -18,21 +18,21 @@ export interface NavigationEntry {
 }
 
 export const navigationEntries: readonly NavigationEntry[] = [
-  // Two pages, one per detail (VIEW-own-label): the approved work in staff detail, and what
-  // one asked for, or one's projects asked for, in public detail.
-  {
-    id: "documents",
-    path: "/documents",
-    rail: "Do",
-    label: "Documents",
-    requires: ["iteration.read"],
-  },
+  // Two pages, one per detail (VIEW-own-label): what one asked for, or one's projects asked
+  // for, in public detail, and the approved work in staff detail.
   {
     id: "my-documents",
     path: "/my-documents",
     rail: "MD",
     label: "My Documents",
     requires: ["request.read_mine"],
+  },
+  {
+    id: "documents",
+    path: "/documents",
+    rail: "Do",
+    label: "Documents",
+    requires: ["iteration.read"],
   },
   {
     id: "proposals",

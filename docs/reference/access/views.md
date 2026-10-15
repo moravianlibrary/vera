@@ -49,8 +49,8 @@ empty cell means the entry is absent.
 <!-- generated:sidebar -->
 | Entry | Path | Shown with any of | `reader` | `staff` | `project-user` | `curator` | `dig-curator` | `admin` |
 |---|---|---|---|---|---|---|---|---|
-| Documents | `/documents` | `iteration.read` |  |  |  | Documents | Documents | Documents |
 | My Documents | `/my-documents` | `request.read_mine` | My Documents | My Documents | My Documents | My Documents | My Documents | My Documents |
+| Documents | `/documents` | `iteration.read` |  |  |  | Documents | Documents | Documents |
 | Proposals | `/review/proposals` | `request.decide` |  |  |  | Proposals | Proposals | Proposals |
 | Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  |  | Documents Validations | Documents Validations | Documents Validations |
 | Digitization Lists | `/lists` | `list.read` |  |  |  |  | Digitization Lists | Digitization Lists |

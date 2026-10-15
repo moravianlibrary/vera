@@ -27,7 +27,7 @@ describe("Documents and My Documents (VIEW-own-label)", () => {
         .filter((entry) => entry.id === "documents" || entry.id === "my-documents")
         .map((entry) => entry.path);
     expect(documentEntriesOf(reader)).toEqual(["/my-documents"]);
-    expect(documentEntriesOf(admin)).toEqual(["/documents", "/my-documents"]);
+    expect(documentEntriesOf(admin)).toEqual(["/my-documents", "/documents"]);
     expect(canOpenNavigationEntry(reader, "my-documents")).toBe(true);
     expect(canOpenNavigationEntry(admin, "my-documents")).toBe(true);
     expect(canOpenNavigationEntry(resolveSession("no-access"), "my-documents")).toBe(false);
