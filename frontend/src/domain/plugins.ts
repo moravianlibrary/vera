@@ -61,11 +61,11 @@ export const inputModes = ["Text", "Camera", "Photo"] as const;
 export const loginEntries = ["Redirect", "Form"] as const;
 // What a harvester's agent proposes into: review, or already approved (view-map.md §6).
 export const entryPoints = ["proposals", "additions"] as const;
+export type EntryPoint = (typeof entryPoints)[number];
 
 // What an implementation declares, each a closed list it keeps stable (plugins.md §2.1, §2.5).
-// The property tiers, the registry mapping and the agent are the demo's, on the implementation.
-// TODO(rrandiak): plugins.md §2.7–§2.8 and §4.2 (Proposed) set tiers, the mapping and the agent
-// on the instance instead; they move there if that is confirmed.
+// Its property tiers, which registry states count as a copy and its agent are only the defaults
+// of each instance's policy (PLG-upgrade).
 export const declarationsSchema = z.object({
   properties: z.array(z.object({ key: z.string(), tier: z.number().int() })),
   identifierTypes: z.array(z.string()),
@@ -81,6 +81,65 @@ export const declarationsSchema = z.object({
   loginEntry: z.enum(loginEntries).nullable(),
 });
 export type Declarations = z.infer<typeof declarationsSchema>;
+
+// What each instance sets for itself, from its version's declarations (PLG-upgrade): the tier of
+// each property it supplies, the registry states that count as an existing copy
+// (REG-copy-not-gate), and a harvester's agent. `manual` alone is tier 100.
+export const maxPluginTier = 99;
+export const instancePolicySchema = z.object({
+  tiers: z.array(z.object({ key: z.string(), tier: z.number().int().min(0).max(maxPluginTier) })),
+  copyStates: z.array(z.string()),
+  agent: z
+    .object({ name: z.string().trim().min(1, "Name its agent"), entryPoint: z.enum(entryPoints) })
+    .nullable(),
+});
+export type InstancePolicy = z.infer<typeof instancePolicySchema>;
+
+export function defaultPolicyOf(declares: Declarations): InstancePolicy {
+  return {
+    tiers: declares.properties.map(({ key, tier }) => ({ key, tier })),
+    copyStates: declares.rawStates.filter((state) => state.isExistingCopy).map(({ raw }) => raw),
+    agent: declares.agent === null ? null : { ...declares.agent },
+  };
+}
+
+// The policy carried to another version: what both declare keeps the instance's choice, what is
+// new takes the new version's default, and what it retired goes.
+export function policyForVersion(policy: InstancePolicy, declares: Declarations): InstancePolicy {
+  const defaults = defaultPolicyOf(declares);
+  const declaredRaw = new Set(declares.rawStates.map(({ raw }) => raw));
+  const previousRaw = new Set(policy.copyStates);
+  return {
+    tiers: defaults.tiers.map(
+      (entry) => policy.tiers.find((chosen) => chosen.key === entry.key) ?? entry,
+    ),
+    copyStates: [
+      ...policy.copyStates.filter((raw) => declaredRaw.has(raw)),
+      ...defaults.copyStates.filter((raw) => !previousRaw.has(raw)),
+    ],
+    agent: declares.agent === null ? null : (policy.agent ?? defaults.agent),
+  };
+}
+
+// Why the policy does not fit what the version declares; null when it does.
+export function policyMismatchOf(policy: InstancePolicy, declares: Declarations): string | null {
+  const declaredKeys = declares.properties.map(({ key }) => key).toSorted();
+  const keys = policy.tiers.map(({ key }) => key).toSorted();
+  if (declaredKeys.join("\n") !== keys.join("\n")) {
+    return "Give a tier to each property it supplies, and only those";
+  }
+
+  const declaredRaw = new Set(declares.rawStates.map(({ raw }) => raw));
+  if (policy.copyStates.some((raw) => !declaredRaw.has(raw))) {
+    return "Only a state the registry reports can count as a copy";
+  }
+
+  if ((declares.agent === null) !== (policy.agent === null)) {
+    return declares.agent === null ? "It proposes nothing, so it has no agent" : "Name its agent";
+  }
+
+  return null;
+}
 
 // One field of an instance's configuration (plugins.md §2.2): a secret is stored apart and never
 // sent back.

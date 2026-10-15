@@ -23,12 +23,15 @@ import type {
 import type { Run } from "@/api/tasks";
 import type { Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
-import type { PluginKind } from "@/domain/plugins";
+import type { InstancePolicy, PluginKind } from "@/domain/plugins";
 import {
   compareVersions,
   declarationDifferenceOf,
+  defaultPolicyOf,
   isRunnableContract,
   pluginKinds,
+  policyForVersion,
+  policyMismatchOf,
 } from "@/domain/plugins";
 import { schedulableKinds } from "@/domain/schedules";
 import { database } from "@/mocks/database";
@@ -66,6 +69,19 @@ function versionOf(instance: StoredPluginInstance): PluginVersion | undefined {
   );
 }
 
+// PLG-upgrade: its own, else its version's defaults.
+function policyOf(instance: StoredPluginInstance): InstancePolicy {
+  const declares = versionOf(instance)?.declares;
+  return instance.policy ?? (declares === undefined ? noPolicy : defaultPolicyOf(declares));
+}
+
+const noPolicy: InstancePolicy = { tiers: [], copyStates: [], agent: null };
+
+function policyRefusal(version: PluginVersion, policy: InstancePolicy | undefined): Refusal | null {
+  const mismatch = policy === undefined ? null : policyMismatchOf(policy, version.declares);
+  return mismatch === null ? null : { status: 422, message: mismatch, code: "plugin.policy" };
+}
+
 function secretKeysOf(instance: StoredPluginInstance): Set<string> {
   return new Set(
     (versionOf(instance)?.configFields ?? [])
@@ -99,6 +115,7 @@ function detailOf(
     linkedCategoryId: instance.linkedCategoryId,
     triggers: [...instance.triggers],
     settings: instance.settings,
+    policy: policyOf(instance),
     createdBy: instance.createdBy,
     createdAt: instance.createdAt,
     schedules: database.schedules
@@ -302,7 +319,7 @@ export function createInstance(
     return { refusal: { status: 404, message: "No such implementation VERA can run" } };
   }
 
-  const refusal = draftRefusal(implementation, draft, null);
+  const refusal = draftRefusal(implementation, draft, null) ?? policyRefusal(version, draft.policy);
   if (refusal !== null) {
     return { refusal };
   }
@@ -327,6 +344,7 @@ export function createInstance(
     // Every trigger it accepts but a schedule, which is made on Schedules.
     triggers: version.triggers.filter((trigger) => trigger !== "OnSchedule"),
     settings: draft.settings,
+    ...(draft.policy === undefined ? {} : { policy: draft.policy }),
     createdBy: session.user.id,
     createdAt: calendarDayOf(mockNow()),
     lastRunAt: null,
@@ -352,7 +370,8 @@ export function saveInstance(
     return { refusal: noSuchInstance };
   }
 
-  const refusal = draftRefusal(implementation, draft, instance);
+  const refusal =
+    draftRefusal(implementation, draft, instance) ?? policyRefusal(version, draft.policy);
   if (refusal !== null) {
     return { refusal };
   }
@@ -369,6 +388,7 @@ export function saveInstance(
       configuration: configuration.value,
       linkedCategoryId: draft.linkedCategoryId,
       settings: draft.settings,
+      policy: draft.policy ?? instance.policy,
     }),
   };
 }
@@ -616,10 +636,18 @@ export function upgradeInstance(
       ?.versions.find((version) => version.version === upgrade.value.toVersion)
       ?.configFields.map((field) => field.key),
   );
+  const declares = implementationOf(instance)?.versions.find(
+    (version) => version.version === upgrade.value.toVersion,
+  )?.declares;
   return {
     value: replaceInstance({
       ...instance,
       version: upgrade.value.toVersion,
+      // Its own choices carried over; what is new takes the new version's default (PLG-upgrade).
+      policy:
+        instance.policy === undefined || declares === undefined
+          ? undefined
+          : policyForVersion(instance.policy, declares),
       configuration: Object.fromEntries(
         Object.entries(instance.configuration).filter(([key]) => kept.has(key)),
       ),

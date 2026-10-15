@@ -20,16 +20,16 @@ Each of these waits for a decision first. None is open now.
 ### L31: Plugin policy on the instance
 
 Rules: [PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
-[REG-copy-not-gate](reference/integrations/registries.md#reg-copy-not-gate).
+[ACCESS-custody-by-plugins](reference/access/custody.md#access-custody-by-plugins),
+[ACCESS-custody-rename](reference/access/custody.md#access-custody-rename).
 
-Decided on 2026-10-15.
-- Property tiers, a registry's state mapping (which states count as a copy) and a harvester's
-  agent are set on each instance, with the implementation's values as defaults.
-- A Custody rule returns one of the custodies on Users & Groups, picked in the rule editor. Today
-  the server reads the names from the rule's expression and the editor neither shows nor edits
-  them (`TODO(rrandiak)` in `features/plugins/instance-editor.tsx`).
-
-→ frontend, then engine.
+Decided on 2026-10-15. Tiers, copy states and a harvester's agent on the instance are built
+(see *Done*). Left: a Custody rule returns one of the custodies on Users & Groups, picked in the
+rule editor. Today the server reads the names from the rule's expression and the editor neither
+shows nor edits them (`TODO(rrandiak)` in `features/plugins/instance-editor.tsx`). The reference
+also says a rule returns names and that a rename stops it placing; whether a rule picks a custody
+(bound to it, rename-safe) or names one waits for a **decision**. → decision, then frontend and
+engine.
 
 ### L22: Properties
 
@@ -275,6 +275,12 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L31, in part:** each instance sets its property tiers, which registry states count as an
+  existing copy, and a harvester's agent (name, entry point), in its editor and drawer; the
+  implementation's declarations are the defaults, and *Move to v…* carries the instance's
+  choices over. The Custody rule's custody stays open
+  ([PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
+  [REG-copy-not-gate](reference/integrations/registries.md#reg-copy-not-gate)).
 - **L50:** the Link and Publication detector plugin kinds. *Set link…* takes a web address or a
   PID; an enabled Link instance (Kramerius, in the mock) turns a PID or its viewer's address into
   the canonical link, and without one only a web address is kept. A Publication detector run

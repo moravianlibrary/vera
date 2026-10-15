@@ -21,6 +21,7 @@ import {
   configFieldSchema,
   declarationsSchema,
   declaredNameKinds,
+  instancePolicySchema,
   pluginKindSchema,
   pluginTriggerSchema,
 } from "@/domain/plugins";
@@ -100,6 +101,8 @@ export const pluginInstanceDetailSchema = z.object({
   // Its own triggers; when it runs by itself is its schedules.
   triggers: z.array(pluginTriggerSchema),
   settings: instanceSettingsSchema.nullable(),
+  // Its tiers, copy states and agent (PLG-upgrade).
+  policy: instancePolicySchema,
   createdBy: id,
   createdAt: day,
   schedules: z.array(
@@ -144,6 +147,8 @@ export const instanceDraftSchema = z.object({
   configuration: z.record(z.string(), z.string()),
   linkedCategoryId: id.nullable(),
   settings: instanceSettingsSchema.nullable(),
+  // Left out, a new instance takes its version's defaults and a saved one keeps its own.
+  policy: instancePolicySchema.optional(),
 });
 export type InstanceDraft = z.infer<typeof instanceDraftSchema>;
 

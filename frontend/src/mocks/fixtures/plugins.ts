@@ -10,7 +10,13 @@
 // a contract VERA does not run.
 
 import type { InstanceSettings, PluginVersion } from "@/api/plugins";
-import type { ConfigField, Declarations, PluginKind, PluginTrigger } from "@/domain/plugins";
+import type {
+  ConfigField,
+  Declarations,
+  InstancePolicy,
+  PluginKind,
+  PluginTrigger,
+} from "@/domain/plugins";
 
 export interface StoredPluginImplementation {
   readonly id: string;
@@ -33,6 +39,8 @@ export interface StoredPluginInstance {
   readonly linkedCategoryId: string | null;
   readonly triggers: readonly PluginTrigger[];
   readonly settings: InstanceSettings | null;
+  // Absent while it keeps its version's defaults (PLG-upgrade).
+  readonly policy?: InstancePolicy;
   readonly createdBy: string;
   readonly createdAt: string;
   readonly lastRunAt: Date | null;

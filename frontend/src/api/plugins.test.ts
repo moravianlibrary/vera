@@ -203,6 +203,55 @@ describe("an instance", () => {
   });
 });
 
+describe("an instance's policy (PLG-upgrade)", () => {
+  it("starts from its version's declarations, and is set on the instance", async () => {
+    signInAs("admin");
+    const rdcz = instanceOf(await getPluginIndex(), "pi5");
+    if (rdcz === undefined) {
+      throw new Error("RDCZ production is in the fixtures");
+    }
+
+    expect(rdcz.policy).toEqual({ tiers: [], copyStates: ["Digitized"], agent: null });
+    const draft = {
+      name: rdcz.name,
+      configuration: rdcz.configuration,
+      linkedCategoryId: null,
+      settings: null,
+    };
+    const saved = await savePluginInstance("pi5", {
+      ...draft,
+      policy: { ...rdcz.policy, copyStates: ["Digitized", "Revision"] },
+    });
+    expect(saved.policy.copyStates).toEqual(["Digitized", "Revision"]);
+    expect((await savePluginInstance("pi5", draft)).policy.copyStates).toEqual([
+      "Digitized",
+      "Revision",
+    ]);
+    expect(
+      await refusalOf(
+        savePluginInstance("pi5", { ...draft, policy: { ...rdcz.policy, copyStates: ["Lost"] } }),
+      ),
+    ).toMatchObject({ status: 422, code: "plugin.policy" });
+  });
+
+  it("gives a harvester's agent its own name and entry point", async () => {
+    signInAs("admin");
+    const harvester = instanceOf(await getPluginIndex(), "pi8");
+    if (harvester === undefined) {
+      throw new Error("Moravian periodicals is in the fixtures");
+    }
+
+    const saved = await savePluginInstance("pi8", {
+      name: harvester.name,
+      configuration: harvester.configuration,
+      linkedCategoryId: harvester.linkedCategoryId,
+      settings: null,
+      policy: { ...harvester.policy, agent: { name: "Moravian sweep", entryPoint: "additions" } },
+    });
+    expect(saved.policy.agent).toEqual({ name: "Moravian sweep", entryPoint: "additions" });
+  });
+});
+
 describe("switching an instance off", () => {
   it("says what stops first", async () => {
     signInAs("admin");

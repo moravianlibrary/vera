@@ -2,8 +2,9 @@
 // "Plugins"). An implementation opens its contract: what it supplies and at which tier, a
 // registry's mapping, a harvester's agent, a validation's rules, the identifiers it resolves,
 // a generator's class, the triggers it accepts, the fields an instance is configured with, the
-// versions installed and its instances. An instance opens its configuration (never a secret),
-// VERA's settings on it, when it runs (its schedules are shown here and edited only on
+// versions installed and its instances; its tiers, copy states and agent are each instance's
+// defaults (PLG-upgrade). An instance opens its configuration (never a secret), VERA's settings
+// on it, its own tiers, copy states and agent, when it runs (its schedules are shown here and edited only on
 // Schedules), its recent runs from Tasks and what it supplies.
 // TODO(rrandiak): labels move to i18n.
 
@@ -22,6 +23,7 @@ import { DetailCard, DetailRow, FactGrid, FinePrint, Muted } from "@/components/
 import { RunStateBadge } from "@/components/run-state-badge";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
+import type { InstancePolicy } from "@/domain/plugins";
 import { isRunnableContract } from "@/domain/plugins";
 import { schedulableKinds } from "@/domain/schedules";
 import {
@@ -167,8 +169,8 @@ function Contract({ version }: { version: PluginVersion }) {
             </DetailRow>
           ))}
           <FinePrint>
-            The highest tier with a value wins. <code>manual</code> is tier 100 and reserved: a
-            person who looked outranks every plugin.
+            Each instance's default; an instance sets its own. The highest tier with a value wins.{" "}
+            <code>manual</code> is tier 100 and reserved: a person who looked outranks every plugin.
           </FinePrint>
         </DetailCard>
       )}
@@ -179,7 +181,7 @@ function Contract({ version }: { version: PluginVersion }) {
               <tr className="text-left text-xs text-muted-foreground">
                 <th className="py-1 font-medium">Raw</th>
                 <th className="py-1 font-medium">State</th>
-                <th className="py-1 font-medium">Existing copy</th>
+                <th className="py-1 font-medium">Existing copy, by default</th>
               </tr>
             </thead>
             <tbody>
@@ -209,7 +211,7 @@ function Contract({ version }: { version: PluginVersion }) {
         </DetailCard>
       )}
       {declares.agent !== null && (
-        <DetailCard title="Agent">
+        <DetailCard title="Agent, by default">
           <FactGrid
             facts={[
               { label: "Name", value: declares.agent.name },
@@ -384,6 +386,8 @@ export function InstanceDrawer({
         <SettingsCard settings={instance.settings} names={names} reach={reach} />
       )}
 
+      {version !== undefined && <PolicyCard policy={instance.policy} version={version} />}
+
       <DetailCard title="When it runs">
         <FactGrid
           facts={[
@@ -506,6 +510,52 @@ function RecentRunsCard({
             </div>
           </DetailRow>
         ))
+      )}
+    </DetailCard>
+  );
+}
+
+// PLG-upgrade: what this instance sets, beside what its version declares.
+function PolicyCard({ policy, version }: { policy: InstancePolicy; version: PluginVersion }) {
+  const { declares } = version;
+  if (
+    declares.properties.length === 0 &&
+    declares.rawStates.length === 0 &&
+    policy.agent === null
+  ) {
+    return null;
+  }
+
+  const declaredTierOf = (key: string) =>
+    declares.properties.find((property) => property.key === key)?.tier;
+  return (
+    <DetailCard title="Its policy">
+      {policy.tiers.map(({ key, tier }) => (
+        <DetailRow
+          key={key}
+          aside={
+            <Muted>
+              tier {tier}
+              {declaredTierOf(key) !== tier && ` · declared ${declaredTierOf(key)}`}
+            </Muted>
+          }
+        >
+          <span className="font-mono">{key}</span>
+        </DetailRow>
+      ))}
+      {declares.rawStates.length > 0 && (
+        <DetailRow aside={<Muted>count as an existing copy</Muted>}>
+          {policy.copyStates.length === 0 ? (
+            <Muted>no state</Muted>
+          ) : (
+            <span className="font-mono text-xs">{policy.copyStates.join(", ")}</span>
+          )}
+        </DetailRow>
+      )}
+      {policy.agent !== null && (
+        <DetailRow aside={<Muted>{entryPointText(policy.agent.entryPoint)}</Muted>}>
+          Agent {policy.agent.name}
+        </DetailRow>
       )}
     </DetailCard>
   );

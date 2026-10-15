@@ -76,12 +76,19 @@ what the new version adds and retires.
 
 *Move to v…* is on the instance's drawer, so instances move one at a time.
 
+Each instance sets its own property tiers, which of a registry's states count as an existing
+copy, and a harvester's agent: its name and where what it finds enters. The implementation's
+declarations are the defaults. Moved to another version, an instance keeps its choices for what
+both declare; what is new takes the new version's default, and what is retired goes.
+
 A Custody rule returns one of the request custodies on Users & Groups, picked in the rule
 editor; it never names one by free text.
 
-> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** Property tiers, a
-> registry's state mapping and a harvester's agent are declared by the implementation. They are
-> to be set on each instance, with the implementation's values as defaults.
+> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** The editor neither shows
+> nor edits the custodies a rule returns: the server reads their names from its expression.
+> Whether a rule picks a custody or names one
+> ([ACCESS-custody-by-plugins](../access/custody.md#access-custody-by-plugins),
+> [ACCESS-custody-rename](../access/custody.md#access-custody-rename)) waits for a decision.
 
 #### PLG-disable
 

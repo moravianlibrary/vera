@@ -39,11 +39,11 @@ progress, Planned, Unmapped. A *Not found* is no evidence.
 A copy elsewhere blocks nothing. It is news for whoever decides: approving over it is a rescan
 ([DOC-existing-copy](../model/documents.md#doc-existing-copy)).
 
+Which registry states count as an existing copy is set on each instance, the implementation's
+declaration the default ([PLG-upgrade](plugins.md#plg-upgrade)).
+
 #### REG-scheduled
 
 Registry checks run with the other checks on a request and at ingest, and on a schedule over the
 whole corpus. A change found after VERA decided shows beside the badge as a footnote, for a person
 to act on.
-
-> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** Which registry states
-> count as an existing copy is declared by the implementation. It is to be set on each instance.

@@ -4,9 +4,13 @@
 // settings on it sit beside the configuration: an identity's login button, its order, the role a
 // new user gets, *match by email* and the claims it maps to roles (one per line, "claim → role");
 // a message's or a classifier's order. The user id claim is set when the instance is made and
-// shown after. When it runs by itself is set on Schedules, once it exists.
+// shown after. Its policy, from its version's declarations as defaults (PLG-upgrade): the tier of
+// each property it supplies, which registry states count as an existing copy
+// (REG-copy-not-gate), and a harvester's agent. When it runs by itself is set on Schedules, once
+// it exists.
 // TODO(rrandiak): the custody names a custody rule returns are read from its expression by the
-// server; the editor neither shows nor edits them. Labels move to i18n.
+// server; the editor neither shows nor edits them, until it is settled whether a rule names a
+// custody or picks one (L31). Labels move to i18n.
 
 import { useId } from "react";
 import { Controller } from "react-hook-form";
@@ -32,9 +36,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { isRunnableContract } from "@/domain/plugins";
+import type { EntryPoint, InstancePolicy } from "@/domain/plugins";
+import { defaultPolicyOf, entryPoints, isRunnableContract, maxPluginTier } from "@/domain/plugins";
 import { schedulableKinds } from "@/domain/schedules";
 import type { PluginNotice } from "@/features/plugins/plugin-acts";
+import { entryPointText } from "@/features/plugins/plugin-words";
 import { pluginInvalidations } from "@/features/plugins/use-plugins-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery, useRolesQuery } from "@/hooks/use-reference-query";
@@ -59,6 +65,11 @@ interface InstanceForm {
   defaultRoleId: string;
   matchByEmail: boolean;
   mappings: string;
+  // PLG-upgrade: by property key.
+  tiers: Record<string, string>;
+  copyStates: string[];
+  agentName: string;
+  agentEntryPoint: EntryPoint;
 }
 
 export const refusalTexts = {
@@ -67,6 +78,7 @@ export const refusalTexts = {
   "plugin.user_claim_fixed": "The user id claim is fixed once people sign in through it.",
   "plugin.last_identity": "It is the last way to log in; enable another first.",
   "plugin.contract": "Its version was built for a contract VERA does not run.",
+  "plugin.policy": "Its tiers, copy states or agent do not fit what its version declares.",
   403: "Only those who configure plugins change them.",
 };
 
@@ -94,6 +106,10 @@ function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly Na
       defaultRoleId: z.string(),
       matchByEmail: z.boolean(),
       mappings: z.string(),
+      tiers: z.record(z.string(), z.string()),
+      copyStates: z.array(z.string()),
+      agentName: z.string(),
+      agentEntryPoint: z.enum(entryPoints),
     })
     .superRefine((values, context) => {
       for (const field of version.configFields) {
@@ -107,6 +123,21 @@ function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly Na
             message: `${field.key} is required.`,
           });
         }
+      }
+
+      for (const { key } of version.declares.properties) {
+        const tier = Number(values.tiers[key]);
+        if (!Number.isInteger(tier) || tier < 0 || tier > maxPluginTier) {
+          context.addIssue({
+            code: "custom",
+            path: ["tiers", key],
+            message: `A tier is a whole number from 0 to ${maxPluginTier}; manual alone is 100.`,
+          });
+        }
+      }
+
+      if (version.declares.agent !== null && values.agentName.trim() === "") {
+        context.addIssue({ code: "custom", path: ["agentName"], message: "Name its agent." });
       }
 
       const unknown = mappingsOf(values.mappings, roles).find(
@@ -150,6 +181,22 @@ function settingsOf(
     default:
       return null;
   }
+}
+
+function policyOf(version: PluginVersion, values: InstanceForm): InstancePolicy {
+  return {
+    tiers: version.declares.properties.map(({ key }) => ({
+      key,
+      tier: Number(values.tiers[key]),
+    })),
+    copyStates: version.declares.rawStates
+      .map(({ raw }) => raw)
+      .filter((raw) => values.copyStates.includes(raw)),
+    agent:
+      version.declares.agent === null
+        ? null
+        : { name: values.agentName.trim(), entryPoint: values.agentEntryPoint },
+  };
 }
 
 interface InstanceEditorDialogProps {
@@ -200,6 +247,8 @@ export function InstanceEditorDialog({
     implementation.kind === "Classifier" ||
     implementation.kind === "Identity";
   const configured = new Map(Object.entries(instance?.configuration ?? {}));
+  const policy = instance?.policy ?? defaultPolicyOf(version.declares);
+  const { declares } = version;
 
   return (
     <FormDialog<InstanceForm>
@@ -224,6 +273,10 @@ export function InstanceEditorDialog({
         mappings: (identity?.mappings ?? [])
           .map((mapping) => `${mapping.claim} ${mappingArrow} ${roleName(mapping.roleId)}`)
           .join("\n"),
+        tiers: Object.fromEntries(policy.tiers.map(({ key, tier }) => [key, String(tier)])),
+        copyStates: [...policy.copyStates],
+        agentName: policy.agent?.name ?? "",
+        agentEntryPoint: policy.agent?.entryPoint ?? "proposals",
       }}
       submitLabel={isNew ? "Create instance" : "Save"}
       fieldOf={(refusal) => (refusal.code === "plugin.name_taken" ? "name" : null)}
@@ -242,6 +295,7 @@ export function InstanceEditorDialog({
           linkedCategoryId:
             values.linkedCategoryId === allCategories ? null : values.linkedCategoryId,
           settings: settingsOf(implementation.kind, values, settings, roles),
+          policy: policyOf(version, values),
         });
         if (result.isDone) {
           onSaved(
@@ -423,6 +477,108 @@ export function InstanceEditorDialog({
                 {...form.register("order")}
               />
             </Field>
+          )}
+
+          {declares.properties.length > 0 && (
+            <fieldset className="grid gap-2">
+              <legend className="mb-2 text-xs font-semibold text-muted-foreground">
+                Tiers of what it supplies
+              </legend>
+              {declares.properties.map(({ key, tier }) => (
+                <div key={key} className="grid gap-1">
+                  <Field
+                    id={`${id}-tier-${key}`}
+                    label={key}
+                    hint={`${implementation.name} declares ${tier}`}
+                  >
+                    <Input
+                      id={`${id}-tier-${key}`}
+                      type="number"
+                      min={0}
+                      max={maxPluginTier}
+                      className="w-24"
+                      {...form.register(`tiers.${key}`)}
+                    />
+                  </Field>
+                  <FieldError message={form.formState.errors.tiers?.[key]?.message} />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                The highest tier with a value wins; manual is 100, above every plugin.
+              </p>
+            </fieldset>
+          )}
+
+          {declares.rawStates.length > 0 && (
+            <fieldset className="grid gap-2">
+              <legend className="mb-2 text-xs font-semibold text-muted-foreground">
+                Counts as an existing copy
+              </legend>
+              <Controller
+                control={form.control}
+                name="copyStates"
+                render={({ field }) => (
+                  <div className="grid gap-1.5">
+                    {declares.rawStates.map((state) => (
+                      <label
+                        key={state.raw}
+                        htmlFor={`${id}-copy-${state.raw}`}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Checkbox
+                          id={`${id}-copy-${state.raw}`}
+                          checked={field.value.includes(state.raw)}
+                          onCheckedChange={(checked) =>
+                            field.onChange(
+                              checked === true
+                                ? [...field.value, state.raw]
+                                : field.value.filter((raw) => raw !== state.raw),
+                            )
+                          }
+                        />
+                        <span className="font-mono text-xs">{state.raw}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {state.state ?? "Unmapped"}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              />
+              <p className="text-xs text-muted-foreground">
+                A copy blocks nothing: it is news for whoever decides.
+              </p>
+            </fieldset>
+          )}
+
+          {declares.agent !== null && (
+            <fieldset className="grid gap-3">
+              <legend className="mb-2 text-xs font-semibold text-muted-foreground">Agent</legend>
+              <Field id={`${id}-agent`} label="Name" hint="what it proposes is logged as it">
+                <Input id={`${id}-agent`} {...form.register("agentName")} />
+              </Field>
+              <FieldError message={form.formState.errors.agentName?.message} />
+              <Field id={`${id}-entry`} label="What it finds enters">
+                <Controller
+                  control={form.control}
+                  name="agentEntryPoint"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id={`${id}-entry`} className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entryPoints.map((entryPoint) => (
+                          <SelectItem key={entryPoint} value={entryPoint}>
+                            {entryPointText(entryPoint)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </Field>
+            </fieldset>
           )}
 
           {(schedulableKinds as readonly string[]).includes(implementation.kind) && (

@@ -1,14 +1,18 @@
 // What a new version declares beside an older one (plugins.md §2.5–§2.6): names added and retired
 // by their kind, config fields added and dropped, versions compared by number, and which contract
-// versions VERA runs.
+// versions VERA runs; and an instance's policy, its defaults, and carried to another version
+// (PLG-upgrade).
 
 import { describe, expect, it } from "vitest";
 import type { Declarations } from "@/domain/plugins";
 import {
   compareVersions,
   declarationDifferenceOf,
+  defaultPolicyOf,
   isRunnableContract,
   isUnchanged,
+  policyForVersion,
+  policyMismatchOf,
 } from "@/domain/plugins";
 
 const none: Declarations = {
@@ -79,5 +83,72 @@ describe("declarationDifferenceOf", () => {
 
     expect(declarationDifferenceOf(from, to).retired).toHaveLength(1);
     expect(isUnchanged(declarationDifferenceOf(from, from))).toBe(true);
+  });
+});
+
+describe("an instance's policy (PLG-upgrade)", () => {
+  const declares: Declarations = {
+    ...none,
+    properties: [
+      { key: "page_count", tier: 50 },
+      { key: "material_type", tier: 50 },
+    ],
+    rawStates: [
+      { raw: "Digitized", state: "Digitized", isExistingCopy: true },
+      { raw: "Revision", state: null, isExistingCopy: false },
+    ],
+  };
+
+  it("defaults to what the version declares", () => {
+    expect(defaultPolicyOf(declares)).toEqual({
+      tiers: [
+        { key: "page_count", tier: 50 },
+        { key: "material_type", tier: 50 },
+      ],
+      copyStates: ["Digitized"],
+      agent: null,
+    });
+  });
+
+  it("keeps its choices on another version, defaults what is new and drops what is retired", () => {
+    const own = {
+      tiers: [
+        { key: "page_count", tier: 70 },
+        { key: "material_type", tier: 20 },
+      ],
+      copyStates: ["Digitized", "Revision"],
+      agent: null,
+    };
+    const next: Declarations = {
+      ...declares,
+      properties: [
+        { key: "page_count", tier: 50 },
+        { key: "units", tier: 40 },
+      ],
+      rawStates: [
+        { raw: "Revision", state: null, isExistingCopy: false },
+        { raw: "Published", state: "Published", isExistingCopy: true },
+      ],
+    };
+
+    expect(policyForVersion(own, next)).toEqual({
+      tiers: [
+        { key: "page_count", tier: 70 },
+        { key: "units", tier: 40 },
+      ],
+      copyStates: ["Revision", "Published"],
+      agent: null,
+    });
+  });
+
+  it("says why a policy does not fit its version", () => {
+    const fits = defaultPolicyOf(declares);
+
+    expect(policyMismatchOf(fits, declares)).toBeNull();
+    expect(policyMismatchOf({ ...fits, tiers: [] }, declares)).toMatch(/tier/);
+    expect(policyMismatchOf({ ...fits, copyStates: ["Lost"] }, declares)).toMatch(/registry/);
+    expect(
+      policyMismatchOf({ ...fits, agent: { name: "Sweep", entryPoint: "additions" } }, declares),
+    ).toMatch(/no agent/);
   });
 });
