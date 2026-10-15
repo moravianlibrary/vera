@@ -135,9 +135,7 @@ export function Sidebar({
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
-                  isActive ||
-                    (entry.id === "documents" && location.pathname === "/my-documents") ||
-                    (entry.id === "categories" && location.pathname.startsWith("/mixes"))
+                  isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )

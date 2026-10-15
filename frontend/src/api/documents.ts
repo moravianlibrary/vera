@@ -1,7 +1,7 @@
 // The Documents resource: one row per document within the caller's reach, and one document's
 // full record with its history. The server decides the reach and the audience: with
 // `iteration.read` the caller sees every document in the staff vocabulary; with only
-// `request.read_own` they see their own asks in the public vocabulary (navigation.md §1.1).
+// `request.read_mine` they see their own asks in the public vocabulary (navigation.md §1.1).
 
 import { z } from "zod";
 import { facetCountsOf } from "@/api/facets";

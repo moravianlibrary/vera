@@ -13,9 +13,8 @@ import {
   toDocumentSearchParams,
 } from "@/api/documents";
 import type { MockUserProfile } from "@/config/env";
-import { progressValues } from "@/domain/entities";
-import { createHandlers } from "@/mocks/handlers";
 import { database } from "@/mocks/database";
+import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
 
@@ -69,35 +68,35 @@ describe("listDocuments as a reader", () => {
   });
 });
 
-describe("listDocuments at iteration.read@project (VIEW-documents-audience)", () => {
+describe("My Documents at request.read_mine@project (VIEW-documents-audience)", () => {
   // u9 holds project-user and is on p1 and p2 through group g2.
   const ownProjects = new Set(["p1", "p2"]);
-  const touchesOwnProject = (record: Awaited<ReturnType<typeof listDocuments>>["items"][number]) =>
-    [...record.requests, ...record.iterations].some(
-      (source) => source.projectId !== null && ownProjects.has(source.projectId),
-    );
+  const isReached = (request: { requesterId: string; projectId: string | null }) =>
+    request.requesterId === "u9" ||
+    (request.projectId !== null && ownProjects.has(request.projectId));
 
-  it("shows staff detail for the documents of their projects only", async () => {
+  it("shows what other members asked for in their projects, in public detail", async () => {
     signInAs("project-user");
-    const page = await listDocuments({}, { limit: maximumDocumentSliceSize });
-    signInAs("admin");
-    const everything = await listDocuments({}, { limit: maximumDocumentSliceSize });
+    const page = await listDocuments({}, { perspective: "my", limit: maximumDocumentSliceSize });
 
-    expect(page.audience).toBe("staff");
+    expect(page.audience).toBe("public");
     expect(page.items.length).toBeGreaterThan(0);
-    expect(page.total).toBeLessThan(everything.total);
-    expect(page.items.every(touchesOwnProject)).toBe(true);
+    expect(page.items.every((record) => record.requests.every(isReached))).toBe(true);
+    expect(
+      page.items.some((record) => record.requests.some((request) => request.requesterId !== "u9")),
+    ).toBe(true);
   });
 
-  it("does not open a document outside their projects", async () => {
-    signInAs("admin");
-    const everything = await listDocuments({}, { limit: maximumDocumentSliceSize });
-    const outside = everything.items.find((record) => !touchesOwnProject(record));
+  it("does not open a document nobody asked for in their projects", async () => {
+    const outside = database.documents.find((document) => {
+      const requests = database.requests.filter((request) => request.documentId === document.id);
+      return requests.length > 0 && !requests.some(isReached);
+    });
     expect(outside).toBeDefined();
     if (outside === undefined) return;
 
     signInAs("project-user");
-    expect(await findDocument(outside.document.id)).toBeNull();
+    expect(await findDocument(outside.id, "my")).toBeNull();
   });
 });
 
@@ -139,13 +138,12 @@ describe("listDocuments as curator", () => {
     expect(page.items.every((record) => record.iterations.at(-1)?.restriction !== null)).toBe(true);
   });
 
-  it("gives a document with no iteration no progress", async () => {
+  it("holds approved work only, leaving undecided asks to Requests (VIEW-documents-audience)", async () => {
     signInAs("curator");
 
-    const page = await listDocuments({ decisions: ["Pending"], progress: [...progressValues] });
-    const pendingOnly = await listDocuments({ decisions: ["Pending"] });
+    const page = await listDocuments({}, { limit: maximumDocumentSliceSize });
 
-    expect(page.total).toBeLessThan(pendingOnly.total); // the proposals drop out
+    expect(page.items.length).toBeGreaterThan(0);
     expect(page.items.every((record) => record.iterations.length > 0)).toBe(true);
   });
 

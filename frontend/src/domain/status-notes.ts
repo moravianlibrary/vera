@@ -9,7 +9,7 @@ import {
   currentIterationOf,
   followedIterationId,
   iterationOf,
-  requestsBy,
+  latestPublicAskOf,
 } from "@/domain/documents";
 import type { Iteration, Request } from "@/domain/entities";
 import {
@@ -160,7 +160,7 @@ export function staffRecordNoteOf(record: DocumentRecord): StatusNote | null {
 
 // The note at the top of a requester's record, about their latest ask.
 export function publicRecordNoteOf(record: DocumentRecord, userId: string): StatusNote | null {
-  const [latest] = requestsBy(record, userId);
+  const latest = latestPublicAskOf(record, userId);
   if (latest === undefined) {
     return null;
   }

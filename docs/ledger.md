@@ -17,37 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L53: Reach and detail of documents
-
-Rules: [VIEW-documents-audience](reference/access/views.md#view-documents-audience),
-[VIEW-own-label](reference/access/views.md#view-own-label),
-[the catalog](reference/access/permissions.md#the-catalog),
-[ROLE-shipped](reference/access/roles.md#role-shipped).
-
-Decided on 2026-10-15. Which documents a person sees comes from a grant's scope; how much of each
-they see comes from which permission grants it.
-- **Public detail:** `request.read_own` becomes `request.read_mine`, at `own` (their own asks)
-  or `project` (also what other members asked for in the projects they are on). It opens **My
-  Documents**, in the requester's vocabulary. `request.create` and `request.withdraw_own` need
-  it.
-- **Staff detail:** `iteration.read`, unchanged, at `custody`, `project` or `any`; every scope
-  also reaches the person's own asks. It opens **Documents**.
-- Two pages, two sidebar entries; someone with both has both, and the switch on the page goes.
-- Each page is one stage: **Requests** before and at the decision (with
-  [L44](#l44-proposals-becomes-requests)), **Documents Validations** the defect gate, and
-  **Documents** the approved work until it is published: iterations from *Ready* on, cancelled
-  ones included. Pending and declined asks leave Documents. Its name is to say that stage
-  (*Digitization*, *Progress*…), settled with the Czech terms in part 5
-  ([L37](#l37-czech-terms)).
-- `project-user` holds `request.read_mine@project` and no `iteration.read`.
-  `watchlist.manage_system` needs `iteration.read@any` and `request.read_mine`, and its holder
-  keeps being offered every filter value on both pages, whatever their own reach on either
-  ([WATCH-personal-system](reference/integrations/watchlists.md#watch-personal-system)).
-
-Built so far: L2's narrowing (see *Done*), which stays the rule of Documents.
-→ frontend (catalog and dependencies, the shipped roles, the mock's reach, the sidebar, both
-pages, watchlist views), then `make docs`.
-
 ### L14: Acts not built
 
 Rules: [ACT-withdraw](reference/access/acts.md#proposing),
@@ -402,6 +371,10 @@ The Czech column is a first draft. Several terms, such as *iteration*, *mix*, *h
 
 Decided on 2026-10-15: corrected in their own session in part 5. → i18n.
 
+Also decided on 2026-10-15: *Documents* is to be named for its stage, the approved work until it
+is published (*Digitization*, *Progress*…), in Czech first
+([VIEW-own-label](reference/access/views.md#view-own-label)).
+
 ### L12: Permission descriptions
 
 Rules: [the catalog](reference/access/permissions.md#the-catalog).
@@ -441,6 +414,13 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L53:** reach and detail are separate. `request.read_own` became `request.read_mine` (`own` ·
+  `project`) and opens My Documents in public detail; `iteration.read` opens Documents, which
+  holds approved work only, every scope also reaching one's own asks. Each page has its own
+  entry, the switch went, and `project-user` is public-only
+  ([VIEW-documents-audience](reference/access/views.md#view-documents-audience)). Documents is
+  still to be named for its stage in part 5 ([L37](#l37-czech-terms)).
 
 - **L2:** Documents narrows to the scope of `iteration.read`: category custody at `custody`, the
   person's projects at `project`, everything at `any`

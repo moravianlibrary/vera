@@ -33,8 +33,10 @@ import {
   roleChangeReachOf,
   roleNameOf,
 } from "@/domain/access";
-import type { Grant, HeldScope, Permission, PermissionEntry } from "@/domain/permissions";
+import type { CatalogScope, Grant, Permission, PermissionEntry } from "@/domain/permissions";
 import {
+  grantScopeOf,
+  isSelfScoped,
   missingRequirementsOf,
   permissionCatalog,
   permissionGroups,
@@ -377,7 +379,7 @@ function PermissionRow({
         <span className="block font-mono text-[0.6875rem]">{permission}</span>
         <span className="block text-muted-foreground">{permissionLines[permission]}</span>
       </label>
-      {scopes === null ? (
+      {isSelfScoped(permission) ? (
         <span className="flex shrink-0 items-center gap-1.5 text-xs">
           <Checkbox
             id={id}
@@ -388,8 +390,10 @@ function PermissionRow({
         </span>
       ) : (
         <Select
-          value={scope ?? noScope}
-          onValueChange={(value) => onChange(value === noScope ? undefined : (value as HeldScope))}
+          value={scope === undefined ? noScope : (scope ?? "own")}
+          onValueChange={(value) =>
+            onChange(value === noScope ? undefined : grantScopeOf(value as CatalogScope))
+          }
         >
           <SelectTrigger id={id} size="sm" className="w-28 shrink-0 text-xs">
             <SelectValue />

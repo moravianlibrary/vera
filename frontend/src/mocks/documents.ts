@@ -26,6 +26,7 @@ import {
   effectivePageCount,
   existingCopyStateOf,
   followedIterationId,
+  latestPublicAskOf,
   projectIdOf,
   publicRecordStatusOf,
   requestsBy,
@@ -39,7 +40,7 @@ import type {
   StatusLogEntry,
 } from "@/domain/entities";
 import { scopeOfIteration } from "@/domain/iterations";
-import { can, hasPermission } from "@/domain/permissions";
+import { can, hasPermission, isWithinScope, scopesOf } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
 import { isRestricted, validationOf } from "@/domain/status";
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
@@ -126,27 +127,42 @@ export function recordOf(document: Document): DocumentRecord {
   };
 }
 
-// A requester reaches only what they asked for; a document nobody asked for is not a record.
+// A document nobody asked for is not a record (VIEW-documents-audience).
 function isInReach(session: Session, record: DocumentRecord, audience: Audience): boolean {
   if (audience === "staff") {
-    return record.requests.length > 0 && isInStaffReach(session, record);
+    return isInStaffReach(session, record);
   }
 
-  return requestsBy(record, session.user.id).length > 0;
+  return publicAsksOf(session, record).length > 0;
 }
 
-// Staff reach follows the scope of `iteration.read` (VIEW-documents-audience): at `any` every
-// document; at `custody` one whose current iteration is in the holder's category custody
-// (SCOPE-custody-category); at `project` one asked for or funded through a project they are on
-// (SCOPE-project).
-function isInStaffReach(session: Session, record: DocumentRecord): boolean {
-  if (can(session, "iteration.read", { kind: "unscoped" })) {
-    return true;
-  }
+// The asks a person reads in public detail, on My Documents: their own, and at
+// `request.read_mine@project` those made into the projects they are on.
+function publicAsksOf(session: Session, record: DocumentRecord): Request[] {
+  const projectScoped = scopesOf(session, "request.read_mine").includes("project");
+  const isOnProject = (projectId: string | null) => {
+    const project = database.projects.find((candidate) => candidate.id === projectId);
+    return project !== undefined && isWithinScope(session, "project", scopeOfProject(project));
+  };
+  return record.requests.filter(
+    (request) =>
+      request.requesterId === session.user.id || (projectScoped && isOnProject(request.projectId)),
+  );
+}
 
+// Documents holds approved work only, until it is published: a document with an iteration
+// (VIEW-documents-audience). Its reach follows the scope of `iteration.read`, and every scope
+// also reaches one's own asks: at `any` every document; at `custody` one whose current iteration
+// is in the holder's category custody (SCOPE-custody-category); at `project` one asked for or
+// funded through a project they are on (SCOPE-project).
+function isInStaffReach(session: Session, record: DocumentRecord): boolean {
   const current = currentIterationOf(record);
+  if (current === null || !can(session, "iteration.read")) {
+    return false;
+  }
   if (
-    current !== null &&
+    can(session, "iteration.read", { kind: "unscoped" }) ||
+    requestsBy(record, session.user.id).length > 0 ||
     can(session, "iteration.read", scopeOfIteration(database.categories, current.categoryId))
   ) {
     return true;
@@ -163,7 +179,7 @@ function isInStaffReach(session: Session, record: DocumentRecord): boolean {
 
 function redact(record: DocumentRecord, session: Session, audience: Audience): DocumentRecord {
   if (audience === "public") {
-    return publicRecordOf(record, session.user.id);
+    return publicRecordOf(record, publicAsksOf(session, record));
   }
 
   if (hasPermission(session, "request.read_ingest")) {
@@ -173,9 +189,9 @@ function redact(record: DocumentRecord, session: Session, audience: Audience): D
   return { ...record, iterations: record.iterations.map(withoutIngestError) };
 }
 
-// Own asks only, the iterations they follow, and the public half of every reason.
-function publicRecordOf(record: DocumentRecord, userId: string): DocumentRecord {
-  const requests = requestsBy(record, userId).toReversed().map(publicRequestOf);
+// The asks the reader reaches, the iterations they follow, and the public half of every reason.
+function publicRecordOf(record: DocumentRecord, asks: readonly Request[]): DocumentRecord {
+  const requests = asks.map(publicRequestOf);
   const followed = new Set(requests.map(followedIterationId));
   return {
     document: record.document,
@@ -515,8 +531,9 @@ function latestActivityOf(record: DocumentRecord): string {
 }
 
 function byOwnLatestAsk(userId: string) {
+  const latestAt = (record: DocumentRecord) => latestPublicAskOf(record, userId)?.at ?? "";
   return (first: DocumentRecord, second: DocumentRecord): number =>
-    (requestsBy(second, userId)[0]?.at ?? "").localeCompare(requestsBy(first, userId)[0]?.at ?? "");
+    latestAt(second).localeCompare(latestAt(first));
 }
 
 // ---------------------------------------------------------------- history

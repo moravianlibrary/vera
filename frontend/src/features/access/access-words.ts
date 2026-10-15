@@ -20,7 +20,7 @@ import { isRangeField } from "@/lib/view-definition";
 
 export const permissionLines = {
   "request.create": "raise a proposal",
-  "request.read_own": "my requests and what they became",
+  "request.read_mine": "My Documents: what I asked for, or my projects did, in public detail",
   "request.withdraw_own": "take back my own ask",
   "request.read": "other people's requests",
   "request.decide": "approve or decline a proposal, rescans included; custody is proposal custody",

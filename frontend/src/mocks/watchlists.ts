@@ -288,7 +288,7 @@ const counters = {
   documents: (session, filter) =>
     queryDocuments(session, parseDocumentSearchParams(filter), { cursor: null, limit: 1 }).total,
   "my-documents": (session, filter) =>
-    hasPermission(session, "request.read_own")
+    hasPermission(session, "request.read_mine")
       ? queryDocuments(
           session,
           parseDocumentSearchParams(filter),
@@ -351,7 +351,7 @@ function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
         (row) => row.document.id,
       );
     case "my-documents":
-      return hasPermission(session, "request.read_own")
+      return hasPermission(session, "request.read_mine")
         ? queryDocuments(session, parseDocumentSearchParams(filter), all, null, "public").items.map(
             (row) => row.document.id,
           )

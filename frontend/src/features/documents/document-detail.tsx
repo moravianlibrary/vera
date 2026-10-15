@@ -41,9 +41,9 @@ import {
   currentIterationOf,
   documentIdentifierOf,
   effectivePageCount,
+  latestPublicAskOf,
   publicRecordStatusOf,
   recordStatusOf,
-  requestsBy,
 } from "@/domain/documents";
 import type { Iteration, Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
@@ -456,7 +456,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
   const { record, log } = detail;
   const { document } = record;
   const userId = session.user.id;
-  const [latest] = requestsBy(record, userId);
+  const latest = latestPublicAskOf(record, userId);
   const status = publicRecordStatusOf(record, userId);
   const note = publicRecordNoteOf(record, userId);
   const readingLink = readingLinkOf(record);

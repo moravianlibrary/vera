@@ -3,7 +3,7 @@
 
 import type { Session } from "@/domain/entities";
 import type { Permission } from "@/domain/permissions";
-import { canOpenMyDocuments, hasAnyPermission, hasPermission } from "@/domain/permissions";
+import { hasAnyPermission, hasPermission } from "@/domain/permissions";
 
 export interface NavigationEntry {
   readonly id: string;
@@ -18,14 +18,21 @@ export interface NavigationEntry {
 }
 
 export const navigationEntries: readonly NavigationEntry[] = [
+  // Two pages, one per detail (VIEW-own-label): the approved work in staff detail, and what
+  // one asked for, or one's projects asked for, in public detail.
   {
     id: "documents",
     path: "/documents",
     rail: "Do",
     label: "Documents",
-    ownLabel: "My Documents",
-    ownUnless: "iteration.read",
-    requires: ["request.read_own", "iteration.read"],
+    requires: ["iteration.read"],
+  },
+  {
+    id: "my-documents",
+    path: "/my-documents",
+    rail: "MD",
+    label: "My Documents",
+    requires: ["request.read_mine"],
   },
   {
     id: "proposals",
@@ -103,20 +110,12 @@ export function visibleNavigation(session: Session): VisibleNavigationEntry[] {
       .filter((entry) => hasAnyPermission(session, entry.requires))
       // Mix management is reached from the Categories mix picker when that page is available.
       .filter((entry) => entry.id !== "mixes" || !hasCategories)
-      .map((entry) => ({
-        ...entry,
-        path:
-          entry.id === "documents" && !hasPermission(session, "iteration.read")
-            ? "/my-documents"
-            : entry.path,
-        visibleLabel: labelFor(entry, session),
-      }))
+      .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }))
   );
 }
 
 // A nested page may stay addressable even when it has no separate sidebar row.
 export function canOpenNavigationEntry(session: Session, entryId: string): boolean {
-  if (entryId === "my-documents") return canOpenMyDocuments(session);
   const entry = navigationEntries.find((candidate) => candidate.id === entryId);
   return entry !== undefined && hasAnyPermission(session, entry.requires);
 }

@@ -67,15 +67,13 @@ still manage access.
 VERA installs `reader`, `staff`, `project-user`, `curator`, `dig-curator` and `admin` with the
 grants and limits below.
 
-> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** `project-user` is to hold
-> `request.read_mine@project` instead of `iteration.read@project`: public detail only.
 
 <!-- generated:role-limits -->
 | Role | Description | Items per submission | Accepted items per day |
 |---|---|---|---|
 | `reader` | Proposes and follows their own requests. Holds only self-scoped grants. | 10 | 100 |
 | `staff` | Library staff: the reader grants with a higher daily proposal limit. | 10 | 300 |
-| `project-user` | Starts projects and runs those they manage; sees the documents and intentions of the projects they are on. | 10 | 300 |
+| `project-user` | Starts projects and runs those they manage; follows the documents and intentions of the projects they are on. | 10 | 300 |
 | `curator` | Decides proposals in their proposal custody; validates, classifies and publishes inside their category custody; decides projects. | unlimited | unlimited |
 | `dig-curator` | Plans the work: lists, intentions, projects. | unlimited | unlimited |
 | `admin` | Everything, at any scope. | unlimited | unlimited |
@@ -88,7 +86,7 @@ Grants, by scope; an empty cell is not granted.
 |---|---|---|---|---|---|---|
 | **Requests** | | | | | | |
 | `request.create` | own | own | own | own | own | own |
-| `request.read_own` | own | own | own | own | own | own |
+| `request.read_mine` | own | own | project | own | own | own |
 | `request.withdraw_own` | own | own | own | own | own | own |
 | `request.read` |  |  |  | any | any | any |
 | `request.decide` |  |  |  | custody | custody | any |
@@ -102,7 +100,7 @@ Grants, by scope; an empty cell is not granted.
 | `project.delete` |  |  | managed | managed | any | any |
 | `project.decide` |  |  |  | any | any | any |
 | **Iterations** | | | | | | |
-| `iteration.read` |  |  | project | any | any | any |
+| `iteration.read` |  |  |  | any | any | any |
 | `iteration.recheck` |  |  |  | custody | custody | any |
 | `iteration.classify` |  |  |  | custody | custody | any |
 | `validation.approve` |  |  |  | custody | custody | any |
@@ -150,8 +148,8 @@ What each one is for:
   Their only sidebar entry is *My Documents*.
 - **`staff`** — library staff: the same grants as `reader` with a higher daily limit.
 - **`project-user`** — runs projects, with the staff limits: the reader's grants, starting
-  projects and running those they manage, and the documents and intentions of the projects they
-  are on.
+  projects and running those they manage, the intentions of the projects they are on, and their
+  documents on *My Documents*, in public detail.
 - **`curator`** — decides proposals in their proposal custody; validates, classifies, cancels,
   publishes and retries failed additions in their category custody; decides projects, and runs
   those they manage.

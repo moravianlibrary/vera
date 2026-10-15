@@ -73,10 +73,7 @@ describe("includedRolesOf", () => {
       "reader",
       "staff",
     ]);
-    expect(includedRolesOf(roles, roleOf("dig-curator")).map(({ id }) => id)).toEqual([
-      "project-user",
-      "curator",
-    ]);
+    expect(includedRolesOf(roles, roleOf("dig-curator")).map(({ id }) => id)).toEqual(["curator"]);
     expect(includedRolesOf(roles, roleOf("admin")).map(({ id }) => id)).toEqual(["dig-curator"]);
   });
 });
@@ -189,7 +186,19 @@ describe("PERM-requires", () => {
         { permission: "watch", scope: null },
         { permission: "iteration.read", scope: "custody" },
       ]).map(({ needs }) => needs),
-    ).toEqual([{ permission: "iteration.read", scope: "any" }]);
+    ).toEqual([
+      { permission: "request.read_mine", scope: null },
+      { permission: "iteration.read", scope: "any" },
+    ]);
+  });
+
+  it("lets request.read_mine at project cover a need at own", () => {
+    expect(
+      missingRequirementsOf([
+        { permission: "request.create", scope: null },
+        { permission: "request.read_mine", scope: "project" },
+      ]),
+    ).toEqual([]);
   });
 
   it("lets project.create stand on project.read at any scope", () => {

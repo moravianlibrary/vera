@@ -13,16 +13,13 @@ holds any of them, at any scope. An entry they cannot open is absent, never disa
 
 #### VIEW-own-label
 
-Two entries change their label and path for a person whose reach is only their own records:
-- **Documents** becomes *My Documents* at `/my-documents` without `iteration.read`;
-- **Tasks** becomes *My Tasks* without `task.read`.
+Documents comes in two pages, each its own entry, one per detail:
+- **Documents**, with `iteration.read`: the approved work in staff detail;
+- **My Documents**, with `request.read_mine`: what the person asked for, or their projects asked
+  for, in public detail.
 
-My Documents also opens for a holder of `watchlist.manage_system`, who builds system watchlists
-over either view. Whoever opens both switches between them on the page.
+Someone holding both has both entries. **Tasks** becomes *My Tasks* without `task.read`.
 
-> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** My Documents is to list what
-> `request.read_mine` reaches (own asks, or a project's too) in public detail, and Documents the
-> approved work `iteration.read` reaches; someone with both has both entries.
 
 #### VIEW-mixes-entry
 
@@ -52,7 +49,8 @@ empty cell means the entry is absent.
 <!-- generated:sidebar -->
 | Entry | Path | Shown with any of | `reader` | `staff` | `project-user` | `curator` | `dig-curator` | `admin` |
 |---|---|---|---|---|---|---|---|---|
-| Documents | `/documents` | `request.read_own` · `iteration.read` | My Documents | My Documents | Documents | Documents | Documents | Documents |
+| Documents | `/documents` | `iteration.read` |  |  |  | Documents | Documents | Documents |
+| My Documents | `/my-documents` | `request.read_mine` | My Documents | My Documents | My Documents | My Documents | My Documents | My Documents |
 | Proposals | `/review/proposals` | `request.decide` |  |  |  | Proposals | Proposals | Proposals |
 | Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  |  | Documents Validations | Documents Validations | Documents Validations |
 | Digitization Lists | `/lists` | `list.read` |  |  |  |  | Digitization Lists | Digitization Lists |
@@ -72,23 +70,23 @@ empty cell means the entry is absent.
 
 #### VIEW-documents-audience
 
-Documents has two audiences:
-- **staff**, with `iteration.read`: the documents anyone asked for within the grant's scope,
-  with their full record. At `custody`, those whose current iteration is in the person's category
-  custody ([SCOPE-custody-category](scopes.md#scope-custody-category)); at `project`, those asked
-  for or funded through a project they are on ([SCOPE-project](scopes.md#scope-project)); at
-  `any`, every one. Their own asks outside it stay in *My Documents*;
-- **public**, with `request.read_own` only: what the person asked for themselves, their own
-  asks, and the public half of every reason.
+Which documents a person sees comes from a grant's scope; how much of each, from which permission
+grants it ([VIEW-own-label](#view-own-label)):
+- **staff**, on Documents, with `iteration.read`: approved work, a document with an iteration,
+  until it is published or cancelled, with its full record. At `custody`, those whose current
+  iteration is in the person's category custody
+  ([SCOPE-custody-category](scopes.md#scope-custody-category)); at `project`, those asked for or
+  funded through a project they are on ([SCOPE-project](scopes.md#scope-project)); at `any`,
+  every one; at each, also the person's own. Undecided and declined asks are on Requests;
+- **public**, on My Documents, with `request.read_mine`: at `own`, what the person asked for; at
+  `project`, also what other members asked for in the projects they are on. Each with the asks
+  it reaches and the public half of every reason.
 
 In the public audience, the history shows only the steps that move a request forward or hold it
 (accepted, not accepted, not available, on hold, digitized, available to read). A person who did
 one is never named, and no reason detail is shown
 ([LOG-public](../model/log.md#log-public)).
 
-> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** Public detail is to come from
-> `request.read_mine` at `own` or `project`, staff detail from `iteration.read`, whose every scope
-> also reaches one's own asks; Documents is to keep only approved work.
 
 #### VIEW-ingest-detail
 

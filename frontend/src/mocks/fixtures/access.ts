@@ -18,7 +18,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "request.read_own",
+        permission: "request.read_mine",
         scope: null,
       },
       {
@@ -42,7 +42,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "request.read_own",
+        permission: "request.read_mine",
         scope: null,
       },
       {
@@ -55,17 +55,17 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       },
     ],
   },
-  // ROLE-shipped: runs projects with the staff limits; reads the documents and intentions of the
-  // projects they are on (VIEW-documents-audience).
+  // ROLE-shipped: runs projects with the staff limits; reads the documents of the projects they
+  // are on in public detail (VIEW-documents-audience), and their intentions.
   {
     id: "project-user",
     proposalBatchLimit: 10,
     proposalDailyLimit: 300,
     description:
-      "Starts projects and runs those they manage; sees the documents and intentions of the projects they are on.",
+      "Starts projects and runs those they manage; follows the documents and intentions of the projects they are on.",
     grants: [
       { permission: "request.create", scope: null },
-      { permission: "request.read_own", scope: null },
+      { permission: "request.read_mine", scope: "project" },
       { permission: "request.withdraw_own", scope: null },
       { permission: "watch", scope: null },
       { permission: "project.read", scope: "project" },
@@ -73,7 +73,6 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       { permission: "project.edit", scope: "managed" },
       { permission: "project.manage_members", scope: "managed" },
       { permission: "project.delete", scope: "managed" },
-      { permission: "iteration.read", scope: "project" },
       { permission: "intention.read", scope: "project" },
     ],
   },
@@ -89,7 +88,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "request.read_own",
+        permission: "request.read_mine",
         scope: null,
       },
       {
@@ -205,7 +204,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "request.read_own",
+        permission: "request.read_mine",
         scope: null,
       },
       {
@@ -311,7 +310,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: null,
       },
       {
-        permission: "request.read_own",
+        permission: "request.read_mine",
         scope: null,
       },
       {

@@ -49,6 +49,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
   switch (entryId) {
     case "documents":
       return <DocumentsPage perspective="staff" />;
+    case "my-documents":
+      return <DocumentsPage perspective="my" />;
     case "proposals":
       return <ProposalsPage />;
     case "validations":
@@ -129,14 +131,6 @@ const router = createBrowserRouter([
           </Gate>
         ),
       })),
-      {
-        path: "my-documents",
-        element: (
-          <Gate entryId="my-documents">
-            <DocumentsPage perspective="my" />
-          </Gate>
-        ),
-      },
       // Digitization Lists' editor: one page, three surfaces (view-map.md §2.4).
       ...["lists/new", "lists/:listId/edit"].map((path) => ({
         path,

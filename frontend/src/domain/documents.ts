@@ -60,6 +60,16 @@ export function askersOf(record: DocumentRecord): Request[] {
   );
 }
 
+// The ask a public record is read by (VIEW-documents-audience): the person's own latest, or, for
+// a document they reach only through a project, the latest ask made into it. A public record
+// holds only the asks its reader reaches.
+export function latestPublicAskOf(record: DocumentRecord, userId: string): Request | undefined {
+  return (
+    requestsBy(record, userId)[0] ??
+    record.requests.toSorted((first, second) => second.at.localeCompare(first.at))[0]
+  );
+}
+
 export function requestsBy(record: DocumentRecord, userId: string): Request[] {
   return record.requests
     .filter((request) => request.requesterId === userId)
@@ -102,7 +112,7 @@ export function recordStatusOf(record: DocumentRecord): DisplayStatus | null {
 
 // What a requester sees for their most recent ask about this document.
 export function publicRecordStatusOf(record: DocumentRecord, userId: string): PublicStatus | null {
-  const [latest] = requestsBy(record, userId);
+  const latest = latestPublicAskOf(record, userId);
   if (latest === undefined) {
     return null;
   }

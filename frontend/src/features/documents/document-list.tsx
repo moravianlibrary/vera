@@ -15,9 +15,9 @@ import {
   currentIterationOf,
   documentIdentifierOf,
   effectivePageCount,
+  latestPublicAskOf,
   publicRecordStatusOf,
   recordStatusOf,
-  requestsBy,
   strongestRegistryRecord,
 } from "@/domain/documents";
 import type { Category } from "@/domain/entities";
@@ -212,7 +212,7 @@ function publicColumns(userId: string): ColumnDefinition<DocumentRecord>[] {
       track: "max-content",
       isNumeric: true,
       cell: (record) => {
-        const latestAsk = requestsBy(record, userId)[0];
+        const latestAsk = latestPublicAskOf(record, userId);
         return latestAsk === undefined ? null : <Muted>{formatDay(latestAsk.at)}</Muted>;
       },
     },

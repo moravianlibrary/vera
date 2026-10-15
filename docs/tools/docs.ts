@@ -52,7 +52,7 @@ function permissionCatalogTable(): string {
         .map((permission) => {
           const { scopes } = permissionCatalog[permission] as PermissionEntry;
           const accepted =
-            scopes === null ? "own" : scopes.map((scope) => `\`${scope}\``).join(" · ");
+            scopes.map((scope) => (scope === "own" ? "own" : `\`${scope}\``)).join(" · ");
           return `| \`${permission}\` | ${accepted} | ${permissionLines[permission]} |`;
         });
       return [

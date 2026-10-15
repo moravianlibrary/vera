@@ -14,9 +14,9 @@ not on the permission, so the same permission at `any` is a wider role, not anot
 
 #### PERM-self-scoped
 
-A self-scoped permission (`request.create`, `request.read_own`, `request.withdraw_own`,
-`task.read_own`, `watch`) acts on the holder's own records and takes no scope. It is still a
-grant and has to be given.
+A self-scoped permission (`request.create`, `request.withdraw_own`, `task.read_own`, `watch`)
+acts on the holder's own records and takes no scope. `request.read_mine` takes `own` too, or
+`project` to reach further. Each is still a grant and has to be given.
 
 *Why:* without the grant, an account given nothing would still see its own documents, and a
 misconfigured empty role would go unnoticed. VERA fails closed: a person with no roles sees an
@@ -49,14 +49,14 @@ Nothing reads implicitly: deciding projects shows them only through `project.rea
 <!-- generated:permission-requires -->
 | Permission | Needs |
 |---|---|
-| `request.create`, `request.withdraw_own` | `request.read_own` |
+| `request.create`, `request.withdraw_own` | `request.read_mine` |
 | `request.decide` | `request.read` |
 | `request.read_ingest`, `iteration.recheck`, `iteration.classify`, `validation.approve`, `validation.deny`, `validation.revoke`, `restriction.overrule`, `iteration.cancel`, `iteration.resume`, `iteration.publish`, `list.read` | `iteration.read` |
 | `request.retry`, `request.read_payload` | `request.read_ingest` |
 | `project.create` | `project.read` (any scope) |
 | `project.edit`, `project.manage_members`, `project.delete` | `project.read` |
 | `project.decide` | `project.read@any` |
-| `watchlist.manage_system` | `watch`, `iteration.read@any` |
+| `watchlist.manage_system` | `watch`, `request.read_mine` (any scope), `iteration.read@any` |
 | `list.create`, `list.edit`, `list.delete` | `list.read@any`, `iteration.read@any` |
 | `intention.edit` | `intention.read`, `mix.read` |
 | `intention.repeat` | `intention.edit@any` |
@@ -84,7 +84,8 @@ scope included, and refuses with 403.
 
 ## The catalog
 
-`own` marks a self-scoped permission. The headings are the groups the role editor shows.
+`own` is the holder's own records; a permission offering only `own` is self-scoped. The headings
+are the groups the role editor shows.
 
 <!-- generated:permission-catalog -->
 ### Requests
@@ -92,7 +93,7 @@ scope included, and refuses with 403.
 | Permission | Scopes | What it lets you do |
 |---|---|---|
 | `request.create` | own | raise a proposal |
-| `request.read_own` | own | my requests and what they became |
+| `request.read_mine` | own · `project` | My Documents: what I asked for, or my projects did, in public detail |
 | `request.withdraw_own` | own | take back my own ask |
 | `request.read` | `custody` · `project` · `any` | other people's requests |
 | `request.decide` | `custody` · `any` | approve or decline a proposal, rescans included; custody is proposal custody |

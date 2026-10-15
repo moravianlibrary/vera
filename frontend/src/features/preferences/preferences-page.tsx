@@ -494,7 +494,7 @@ function permissionLabel(permission: Permission): string {
   const special: Partial<Record<Permission, string>> = {
     watch: "Watch changes",
     "request.withdraw_own": "Withdraw own proposals",
-    "request.read_own": "View own proposals",
+    "request.read_mine": "View My Documents",
     "task.read_own": "View own tasks",
     "intention.repeat": "Manage repeats",
     "project.manage_members": "Manage project members",

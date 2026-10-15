@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const permissionKeys = [
   "request.create",
-  "request.read_own",
+  "request.read_mine",
   "request.withdraw_own",
   "request.read",
   "request.decide",
@@ -89,10 +89,10 @@ export function scopesOf(holder: GrantHolder, permission: Permission): GrantScop
     .map((grant) => grant.scope);
 }
 
-// My Documents opens with `request.read_own`, and for whoever manages system watchlists, who
-// builds them over either Documents view (VIEW-own-label, WATCH-personal-system).
+// My Documents opens with `request.read_mine` (VIEW-own-label); a manager of system watchlists
+// holds it too (PERM-requires).
 export function canOpenMyDocuments(holder: GrantHolder): boolean {
-  return hasAnyPermission(holder, ["request.read_own", "watchlist.manage_system"]);
+  return hasPermission(holder, "request.read_mine");
 }
 
 // ---------------------------------------------------------------- scope against a record
@@ -133,7 +133,11 @@ export function can(holder: ScopeHolder, permission: Permission, record?: Scoped
   return scopes.some((scope) => isWithinScope(holder, scope, record));
 }
 
-function isWithinScope(holder: ScopeHolder, scope: GrantScope, record: ScopedRecord): boolean {
+export function isWithinScope(
+  holder: ScopeHolder,
+  scope: GrantScope,
+  record: ScopedRecord,
+): boolean {
   const userId = holder.user.id;
   switch (scope) {
     case "any":
@@ -201,12 +205,19 @@ export type PermissionGroup = (typeof permissionGroups)[number];
 
 export type HeldScope = Exclude<GrantScope, null>;
 
+// A scope the catalogue offers; `own` is a grant's `null` scope, the holder's own records.
+export type CatalogScope = "own" | HeldScope;
+
 export interface PermissionEntry {
   readonly group: PermissionGroup;
-  readonly scopes: readonly HeldScope[] | null;
+  readonly scopes: readonly CatalogScope[];
 }
 
-const ownOnly = null;
+export const grantScopeOf = (scope: CatalogScope): GrantScope => (scope === "own" ? null : scope);
+
+const ownOnly = ["own"] as const;
+// VIEW-documents-audience: one's own asks, or also those made into one's projects.
+const ownOrProject = ["own", "project"] as const;
 const custodyOrAny = ["custody", "any"] as const;
 const readScopes = ["custody", "project", "any"] as const;
 const anyOnly = ["any"] as const;
@@ -215,7 +226,7 @@ const projectOrAny = ["project", "any"] as const;
 
 export const permissionCatalog = {
   "request.create": { group: "Requests", scopes: ownOnly },
-  "request.read_own": { group: "Requests", scopes: ownOnly },
+  "request.read_mine": { group: "Requests", scopes: ownOrProject },
   "request.withdraw_own": { group: "Requests", scopes: ownOnly },
   "request.read": { group: "Requests", scopes: readScopes },
   "request.decide": { group: "Requests", scopes: custodyOrAny },
@@ -267,11 +278,16 @@ export const permissionCatalog = {
   "access.manage": { group: "Administration", scopes: anyOnly },
 } as const satisfies Record<Permission, PermissionEntry>;
 
-// Whether the permission takes the grant's scope: none for a self-scoped one, one of its own
-// otherwise.
+// Whether the permission takes the grant's scope, `null` being `own`.
 export function isAcceptedGrant({ permission, scope }: Grant): boolean {
   const { scopes } = permissionCatalog[permission] as PermissionEntry;
-  return scopes === null ? scope === null : scope !== null && scopes.includes(scope);
+  return scopes.includes(scope ?? "own");
+}
+
+// A permission that reaches only the holder's own records and takes no scope to choose.
+export function isSelfScoped(permission: Permission): boolean {
+  const { scopes } = permissionCatalog[permission] as PermissionEntry;
+  return scopes.length === 1 && scopes[0] === "own";
 }
 
 // ---------------------------------------------------------------- what a permission needs
@@ -292,8 +308,8 @@ const readsIterations = needs("iteration.read");
 const readsProjects = needs("project.read");
 
 export const permissionRequires: Partial<Record<Permission, readonly Requirement[]>> = {
-  "request.create": needs("request.read_own"),
-  "request.withdraw_own": needs("request.read_own"),
+  "request.create": needs("request.read_mine"),
+  "request.withdraw_own": needs("request.read_mine"),
   "request.decide": needs("request.read"),
   "request.read_ingest": readsIterations,
   "request.retry": needs("request.read_ingest"),
@@ -322,7 +338,12 @@ export const permissionRequires: Partial<Record<Permission, readonly Requirement
   "mix.manage": needs("mix.edit"),
   "category.edit": needs("category.read"),
   "category.grant_custody": needs("category.read"),
-  "watchlist.manage_system": [{ permission: "watch" }, ...needsAtAny("iteration.read")],
+  // My Documents watchlists are built over one's own reach: holding it at all will do.
+  "watchlist.manage_system": [
+    { permission: "watch" },
+    { permission: "request.read_mine", at: "held" },
+    ...needsAtAny("iteration.read"),
+  ],
   "task.cancel": needs("task.read"),
   "task.schedule": needs("task.read"),
   "plugin.configure": needs("plugin.read"),
@@ -333,30 +354,38 @@ export const permissionRequires: Partial<Record<Permission, readonly Requirement
 };
 
 // Whether a grant at `held` reaches everything one at `scope` does: `any` covers every scope,
-// `project` covers `managed`, as a project's manager is on it.
+// `project` covers `managed`, as a project's manager is on it, and every scope covers `own`.
 export function coversScope(held: GrantScope, scope: GrantScope): boolean {
-  return held === "any" || held === scope || (held === "project" && scope === "managed");
+  return (
+    held === "any" ||
+    held === scope ||
+    scope === null ||
+    (held === "project" && scope === "managed")
+  );
 }
 
 // The scope a requirement of a grant at `scope` must be held at, the narrowest that does.
 export function requiredScopeOf(requirement: Requirement, scope: GrantScope): GrantScope {
   const { scopes } = permissionCatalog[requirement.permission] as PermissionEntry;
-  if (scopes === null) {
+  if (isSelfScoped(requirement.permission)) {
     return null;
   }
   if (requirement.at === "any") {
     return "any";
   }
-  const fits = (candidate: HeldScope) => requirement.at === "held" || coversScope(candidate, scope);
-  return scopes.find(fits) ?? "any";
+  const fits = (candidate: GrantScope) =>
+    requirement.at === "held" || coversScope(candidate, scope);
+  // `own` is null, so look the scope up by position rather than by `??`.
+  const candidates = scopes.map(grantScopeOf);
+  const index = candidates.findIndex(fits);
+  return index === -1 ? "any" : (candidates[index] ?? null);
 }
 
 function meets(requirement: Requirement, scope: GrantScope, held: GrantScope | undefined): boolean {
   if (held === undefined) {
     return false;
   }
-  const { scopes } = permissionCatalog[requirement.permission] as PermissionEntry;
-  if (scopes === null || requirement.at === "held") {
+  if (isSelfScoped(requirement.permission) || requirement.at === "held") {
     return true;
   }
   return coversScope(held, requirement.at === "any" ? "any" : scope);

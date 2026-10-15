@@ -18,18 +18,16 @@ describe("Mixes navigation", () => {
   });
 });
 
-describe("Documents perspectives", () => {
-  it("opens a requester's documents directly and offers both perspectives to a manager", () => {
+describe("Documents and My Documents (VIEW-own-label)", () => {
+  it("gives each detail its own entry, both to someone holding both", () => {
     const reader = resolveSession("reader");
     const admin = resolveSession("admin");
-    expect(visibleNavigation(reader).find((entry) => entry.id === "documents")).toMatchObject({
-      path: "/my-documents",
-      visibleLabel: "My Documents",
-    });
-    expect(visibleNavigation(admin).find((entry) => entry.id === "documents")).toMatchObject({
-      path: "/documents",
-      visibleLabel: "Documents",
-    });
+    const documentEntriesOf = (profile: ReturnType<typeof resolveSession>) =>
+      visibleNavigation(profile)
+        .filter((entry) => entry.id === "documents" || entry.id === "my-documents")
+        .map((entry) => entry.path);
+    expect(documentEntriesOf(reader)).toEqual(["/my-documents"]);
+    expect(documentEntriesOf(admin)).toEqual(["/documents", "/my-documents"]);
     expect(canOpenNavigationEntry(reader, "my-documents")).toBe(true);
     expect(canOpenNavigationEntry(admin, "my-documents")).toBe(true);
     expect(canOpenNavigationEntry(resolveSession("no-access"), "my-documents")).toBe(false);
