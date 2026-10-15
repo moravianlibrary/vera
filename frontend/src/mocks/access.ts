@@ -422,6 +422,47 @@ export function linkIdentity(
   return { value: identity };
 }
 
+// ACCESS-link-identity: one way in less. Never their last: suspending is how to stop somebody
+// logging in (ACCESS-suspend). Their record, roles and history stay.
+export function unlinkIdentity(
+  session: Session,
+  userId: string,
+  instanceId: string,
+  externalId: string,
+): Outcome<null> {
+  const refusal = guard(session);
+  if (refusal !== null) {
+    return { refusal };
+  }
+
+  if (findUser(userId) === null) {
+    return { refusal: unknownRecord("user") };
+  }
+
+  const held = accessOf(userId);
+  const isIt = (identity: Identity) =>
+    identity.instanceId === instanceId && identity.externalId === externalId;
+  if (!held.identities.some(isIt)) {
+    return { refusal: unknownRecord("identity") };
+  }
+
+  if (held.identities.length === 1) {
+    return {
+      refusal: {
+        status: 409,
+        code: "access.last_identity",
+        message: "It is their only way in; suspend them instead",
+      },
+    };
+  }
+
+  database.userAccess = {
+    ...database.userAccess,
+    [userId]: { ...held, identities: held.identities.filter((identity) => !isIt(identity)) },
+  };
+  return { value: null };
+}
+
 // ACCESS-suspend: their login is refused and their roles give nothing until restored; the roles,
 // groups, history and open asks stay. A person only: an agent never logs in.
 export function suspendUser(session: Session, userId: string): Outcome<AccessUser> {

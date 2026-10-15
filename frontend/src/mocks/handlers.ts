@@ -117,6 +117,7 @@ import {
   setHandRoles,
   setUserGroups,
   suspendUser,
+  unlinkIdentity,
 } from "@/mocks/access";
 import { retryBatch } from "@/mocks/additions";
 import { servedBatches } from "@/mocks/batches";
@@ -633,6 +634,20 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/roles`, handRolesSchema, setHandRoles),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/groups`, userGroupsSchema, setUserGroups),
+    http.delete(
+      route(`${apiRoutes.accessUsers}/:id/identities/:instanceId/:externalId`),
+      ({ params }) => {
+        const outcome = unlinkIdentity(
+          currentSession(),
+          String(params.id),
+          String(params.instanceId),
+          String(params.externalId),
+        );
+        return "refusal" in outcome
+          ? problemResponse(outcome.refusal)
+          : new HttpResponse(null, { status: 204 });
+      },
+    ),
     http.post(route(`${apiRoutes.accessUsers}/:id/suspend`), ({ params }) =>
       outcomeResponse(suspendUser(currentSession(), String(params.id))),
     ),

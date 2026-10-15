@@ -25,6 +25,7 @@ import {
   setHandRoles,
   setUserGroups,
   suspendUser,
+  unlinkIdentity,
 } from "@/api/access";
 import { ApiError } from "@/api/http";
 import { getSession } from "@/api/session";
@@ -298,6 +299,28 @@ describe("users", () => {
     expect(
       await linkIdentity({ userId: "u1", link: { instanceId: "pi23", externalId: "jana@mzk.cz" } }),
     ).toEqual({ instanceId: "pi23", externalId: "jana@mzk.cz", lastLoginAt: null });
+  });
+
+  it("unlinks an identity, never the last one (ACCESS-link-identity)", async () => {
+    signInAs("admin");
+    await linkIdentity({ userId: "u2", link: { instanceId: "pi23", externalId: "u2@mzk.cz" } });
+    const before = userOf(await getAccessIndex(), "u2");
+    const [first, second] = before?.identities ?? [];
+    if (first === undefined || second === undefined) {
+      throw new Error("u2 has two identities after the link");
+    }
+
+    expect(
+      await refusalOf(
+        unlinkIdentity({ userId: "u2", identity: { instanceId: "pi23", externalId: "nobody" } }),
+      ),
+    ).toMatchObject({ status: 404 });
+    await unlinkIdentity({ userId: "u2", identity: first });
+    expect(userOf(await getAccessIndex(), "u2")?.identities).toEqual([second]);
+    expect(await refusalOf(unlinkIdentity({ userId: "u2", identity: second }))).toMatchObject({
+      status: 409,
+      code: "access.last_identity",
+    });
   });
 
   it("suspends a person: login refused, roles kept, until restored (ACCESS-suspend)", async () => {

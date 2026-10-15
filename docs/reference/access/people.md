@@ -90,8 +90,9 @@ An admin can link another identity to an existing person, so one person has seve
 and keeps one record, one set of roles and one history. The identity must not belong to anyone
 else. An agent cannot have an identity.
 
-> **Open — [L6](../../ledger.md#l6-unlinking-an-identity).** *Unlink* is decided but not built:
-> refused for a person's last identity; the person and their history stay.
+An admin can unlink an identity, but never a person's last one: suspending is how to stop
+somebody logging in ([ACCESS-suspend](#access-suspend)). The person, their roles and their
+history stay.
 
 #### ACCESS-local-account
 

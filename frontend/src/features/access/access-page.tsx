@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { AccessIndex } from "@/api/access";
-import { restoreUser } from "@/api/access";
+import { restoreUser, unlinkIdentity } from "@/api/access";
 import { ActionBar } from "@/components/actions/action-bar";
 import { DataTable } from "@/components/data-table";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Button } from "@/components/ui/button";
+import type { AccessUser, Identity } from "@/domain/access";
 import {
   categoryCustodyOf,
   heldRoleIdsOf,
@@ -299,6 +300,22 @@ export function AccessPage() {
     invalidates: accessInvalidations,
     refusalTexts: accessRefusalTexts,
   });
+  const unlink = useActionMutation({
+    call: unlinkIdentity,
+    invalidates: accessInvalidations,
+    refusalTexts: accessRefusalTexts,
+  });
+  // ACCESS-link-identity: Link identity… gives it back, so it asks nothing.
+  const unlinkNow = async (user: AccessUser, identity: Identity) => {
+    const result = await unlink.run({ userId: user.id, identity });
+    const provider = pluginInstances.find((item) => item.id === identity.instanceId)?.name;
+    const way = `${provider ?? identity.instanceId} ${identity.externalId}`;
+    setNotice(
+      result.isDone
+        ? { title: "Identity unlinked", text: `${user.name} can no longer log in with ${way}.` }
+        : { title: "Not unlinked", text: result.refusal.message, isRefusal: true },
+    );
+  };
   // ACCESS-suspend: Restore gives back everything suspending held, so it asks nothing.
   const restoreNow = async (userId: string) => {
     const name = index?.users.find((user) => user.id === userId)?.name ?? "They";
@@ -574,7 +591,15 @@ export function AccessPage() {
             <ActionBar actions={detailActions} cap={1} menuLabel="More" />
           </div>
           {selectedUser && (
-            <UserRecord index={index} names={names} onSelect={open} user={selectedUser} />
+            <UserRecord
+              index={index}
+              names={names}
+              onSelect={open}
+              user={selectedUser}
+              onUnlink={
+                canManage ? (identity) => void unlinkNow(selectedUser, identity) : undefined
+              }
+            />
           )}
           {selectedRole && (
             <RoleRecord index={index} names={names} onSelect={open} role={selectedRole} />

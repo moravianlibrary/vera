@@ -12,11 +12,13 @@ import { Link } from "react-router";
 import type { AccessIndex } from "@/api/access";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
+import { Button } from "@/components/ui/button";
 import type {
   AccessGroup,
   AccessUser,
   CustodyRecord,
   EffectivePermission,
+  Identity,
   Role,
   RoleWay,
 } from "@/domain/access";
@@ -317,7 +319,12 @@ export function UserRecord({
   onSelect,
   actions,
   user,
-}: RecordProps & { user: AccessUser }) {
+  onUnlink,
+}: RecordProps & {
+  user: AccessUser;
+  // Given with `access.manage`; offered on each identity but the last (ACCESS-link-identity).
+  onUnlink?: (identity: Identity) => void;
+}) {
   const held = heldRolesOf(user);
   const permissions = effectivePermissionsOf(index.roles, heldRoleIdsOf(user));
   const custodies = requestCustodyOf(user.id, index.groups, index.custodies);
@@ -405,11 +412,23 @@ export function UserRecord({
               <Row
                 key={`${identity.instanceId}:${identity.externalId}`}
                 aside={
-                  <Muted>
-                    {identity.lastLoginAt === null
-                      ? "never logged in"
-                      : `last ${agoText(identity.lastLoginAt, index.asOf)}`}
-                  </Muted>
+                  <>
+                    <Muted>
+                      {identity.lastLoginAt === null
+                        ? "never logged in"
+                        : `last ${agoText(identity.lastLoginAt, index.asOf)}`}
+                    </Muted>
+                    {onUnlink !== undefined && user.identities.length > 1 && (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="ml-2 h-auto p-0 text-xs"
+                        onClick={() => onUnlink(identity)}
+                      >
+                        Unlink
+                      </Button>
+                    )}
+                  </>
                 }
               >
                 <Link to={pluginInstanceHrefOf(identity.instanceId)} className={linkClass}>

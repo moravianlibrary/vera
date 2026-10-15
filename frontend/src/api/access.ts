@@ -169,6 +169,19 @@ export async function linkIdentity({
   return postJson(accessRecordActionRoute("users", userId, "identities"), link, identitySchema);
 }
 
+// ACCESS-link-identity: refused for their last one; the person and their history stay.
+export async function unlinkIdentity({
+  userId,
+  identity,
+}: {
+  userId: string;
+  identity: Pick<Identity, "instanceId" | "externalId">;
+}): Promise<void> {
+  return deleteResource(
+    `${accessRecordActionRoute("users", userId, "identities")}/${encodeURIComponent(identity.instanceId)}/${encodeURIComponent(identity.externalId)}`,
+  );
+}
+
 // ACCESS-suspend: login refused and roles inactive until restored; nothing else changes.
 export async function suspendUser(userId: string): Promise<AccessUser> {
   return postJson(accessRecordActionRoute("users", userId, "suspend"), {}, accessUserSchema);

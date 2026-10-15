@@ -67,6 +67,7 @@ const refusalTexts = {
   "access.fallback": "The fallback keeps its name, and cannot be deleted.",
   "access.suspended": "They are suspended already.",
   "access.not_suspended": "They are not suspended.",
+  "access.last_identity": "It is their only way in. Suspend them instead.",
   403: "You may no longer change users, groups or roles.",
 };
 

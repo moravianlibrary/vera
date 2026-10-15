@@ -34,13 +34,6 @@ Decided on 2026-10-15: the order a document meets them (Identity, Input, Harvest
 adapter, Property source, Registry, Validation, Restriction, Custody, Classifier, List generator,
 Link, Publication detector, Message, Delivery channel), with no group headings. → frontend.
 
-### L6: Unlinking an identity
-
-Rules: [ACCESS-link-identity](reference/access/people.md#access-link-identity).
-
-Decided on 2026-10-15. *Unlink* on a person's identity; refused for their last one (suspending is
-[ACCESS-suspend](reference/access/people.md#access-suspend)'s job); the person and their history stay. → frontend, then engine.
-
 ### L31: Plugin policy on the instance
 
 Rules: [PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
@@ -319,6 +312,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L6:** *Unlink* on each of a person's identities but the last, on Users & Groups; the person,
+  their roles and history stay
+  ([ACCESS-link-identity](reference/access/people.md#access-link-identity),
+  [ACT-identity-unlink](reference/access/acts.md#users--groups)).
 - **L5:** *Suspend…* and *Restore* on a person on Users & Groups: login refused and roles kept
   but giving nothing while suspended; groups, history and open asks stay. Refused for an agent
   and when nobody could manage access after

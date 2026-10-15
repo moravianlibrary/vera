@@ -229,6 +229,7 @@ Every act needs `access.manage` and is refused when it would leave nobody able t
 | `ACT-user-roles` | *Roles…* (hand-set) | existing roles |
 | `ACT-user-groups` | *Groups…* | existing groups |
 | `ACT-identity-link` | *Link identity…* | a person, not an agent (422); the identity not someone else's (409) |
+| `ACT-identity-unlink` | *Unlink* on an identity | not their last identity (409) |
 | `ACT-user-suspend` | *Suspend…* | a person, not an agent (422); not suspended already (409) |
 | `ACT-user-restore` | *Restore* | suspended (409) |
 | `ACT-local-account` | *New local account…* | local accounts enabled (422); a free username (409) |
