@@ -67,6 +67,9 @@ still manage access.
 VERA installs `reader`, `staff`, `project-user`, `curator`, `dig-curator` and `admin` with the
 grants and limits below.
 
+> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** `project-user` is to hold
+> `request.read_mine@project` instead of `iteration.read@project`: public detail only.
+
 <!-- generated:role-limits -->
 | Role | Description | Items per submission | Accepted items per day |
 |---|---|---|---|

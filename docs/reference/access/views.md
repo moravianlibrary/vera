@@ -20,6 +20,10 @@ Two entries change their label and path for a person whose reach is only their o
 My Documents also opens for a holder of `watchlist.manage_system`, who builds system watchlists
 over either view. Whoever opens both switches between them on the page.
 
+> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** My Documents is to list what
+> `request.read_mine` reaches (own asks, or a project's too) in public detail, and Documents the
+> approved work `iteration.read` reaches; someone with both has both entries.
+
 #### VIEW-mixes-entry
 
 *Mixes* has its own entry only for a person who cannot open Categories; everyone else reaches
@@ -81,6 +85,10 @@ In the public audience, the history shows only the steps that move a request for
 (accepted, not accepted, not available, on hold, digitized, available to read). A person who did
 one is never named, and no reason detail is shown
 ([LOG-public](../model/log.md#log-public)).
+
+> **Open — [L53](../../ledger.md#l53-reach-and-detail-of-documents).** Public detail is to come from
+> `request.read_mine` at `own` or `project`, staff detail from `iteration.read`, whose every scope
+> also reaches one's own asks; Documents is to keep only approved work.
 
 #### VIEW-ingest-detail
 
