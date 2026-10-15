@@ -308,10 +308,13 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
   );
 }
 
-// A file is a file whatever else came with it.
-// TODO(rrandiak): a "typed" way for a batch of typed items once the batch contract has one.
+// A file is a file whatever else came with it, and typed items alone are typed (ENT-batch).
 function viaOf(items: readonly { source: string }[]): Batch["via"] {
-  return items.some((item) => item.source.startsWith("file")) ? "file" : "pastedList";
+  if (items.some((item) => item.source.startsWith("file"))) {
+    return "file";
+  }
+
+  return items.every((item) => item.source === "typed") ? "typed" : "pastedList";
 }
 
 // ---------------------------------------------------------------- items

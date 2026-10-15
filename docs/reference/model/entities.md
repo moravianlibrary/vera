@@ -45,8 +45,8 @@ produces its iteration and the others follow it ([LC-REQ-one-iteration](../lifec
 
 #### ENT-batch
 
-A **batch** is one submission of requests: a file, a pasted list, barcode
-scans, or a harvest. It is what an administrator retries and what a decider can approve
+A **batch** is one submission of requests: typed items, a file, a pasted list, barcode scans,
+or a harvest. It is what an administrator retries and what a decider can approve
 together. Every submission is a batch, one item included; a batch is shown as one only when it
 holds two items or more.
 

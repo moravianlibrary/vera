@@ -16,6 +16,7 @@ type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
 type RequesterGroup = Extract<ProposalGroup, { kind: "requester" }>;
 
 export const batchViaLabels = {
+  typed: "typed",
   file: "file",
   pastedList: "pasted list",
   barcodeScan: "barcode scan",

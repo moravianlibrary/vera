@@ -21,7 +21,8 @@ stateDiagram-v2
 A new ask is looked up in the catalog first. It is one of:
 - **not in the catalog**: refused;
 - **which unit?**: the record has several units and none was named;
-- **mine**: the asker already has an open or approved ask for it, so it is skipped;
+- **mine**: the asker already has an open ask for it, or an approved one whose attempt is not yet
+  published or cancelled, so it is skipped;
 - **in VERA**: someone else's work on it is already moving, so the ask joins it;
 - **new**: nobody's work is moving on it, even if it was asked for before.
 

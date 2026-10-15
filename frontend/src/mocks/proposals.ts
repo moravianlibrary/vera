@@ -13,7 +13,12 @@ import type {
   RateLimitStatus,
 } from "@/api/proposals";
 import type { DocumentRecord } from "@/domain/documents";
-import { currentIterationOf, isAttemptOver, recordStatusOf } from "@/domain/documents";
+import {
+  currentIterationOf,
+  followedIterationId,
+  isAttemptOver,
+  recordStatusOf,
+} from "@/domain/documents";
 import type {
   Document,
   ExistingCopy,
@@ -242,13 +247,26 @@ function isAttemptMoving(record: DocumentRecord): boolean {
   return current !== null && !isAttemptOver(current);
 }
 
-// An open or approved ask of the caller's, the attempt it produced over or not (LC-REQ-check).
 function isAskedBy(record: DocumentRecord, userId: string): boolean {
+  const current = currentIterationOf(record);
   return record.requests.some(
-    (request) =>
-      request.requesterId === userId &&
-      (isPending(request) || request.decision === "Approved" || request.decision === "Duplicate"),
+    (request) => request.requesterId === userId && isStillAsked(request, current),
   );
+}
+
+// Open, or approved for an attempt not yet over: asking again is skipped (LC-REQ-check, mine).
+function isStillAsked(request: Request, current: Iteration | null): boolean {
+  if (isPending(request)) {
+    return true;
+  }
+
+  if (request.decision !== "Approved" && request.decision !== "Duplicate") {
+    return false;
+  }
+
+  // Approved, and not yet ingested.
+  const followedId = followedIterationId(request);
+  return followedId === null || (followedId === current?.id && !isAttemptOver(current));
 }
 
 function isPending(request: Request): boolean {

@@ -389,6 +389,12 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-15
 
+- **L54:** decided on 2026-10-15. An approved ask stops counting as the asker's own once its
+  attempt is published or cancelled, so its asker can ask again; the ask is a new proposal
+  ([LC-REQ-check](reference/lifecycles/request.md#lc-req-check)).
+- **L55:** decided on 2026-10-15. Typed items alone make a *typed* batch; a file wins over the
+  rest, and anything pasted makes a pasted list ([ENT-batch](reference/model/entities.md#ent-batch)).
+
 - **L52:** *approve now* stores no mark: what has a copy, or is not yet checked, stays Pending
   like any other proposal, with no *held* status or note
   ([LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now)).

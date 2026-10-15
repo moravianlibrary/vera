@@ -220,7 +220,7 @@ export type DigitizationList = z.infer<typeof digitizationListSchema>;
 export const batchSchema = z.object({
   id,
   name: z.string(),
-  via: z.enum(["file", "pastedList", "barcodeScan", "harvest"]),
+  via: z.enum(["typed", "file", "pastedList", "barcodeScan", "harvest"]),
   submittedBy: id,
   submittedAt: timestamp,
   // How many requests the submission made: one item is a batch too, shown as one only from two

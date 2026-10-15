@@ -86,12 +86,14 @@ describe("checkProposalItems", () => {
     expect(check?.kind === "inVera" && check.status).toBe("WaitingToBeScheduled");
   });
 
-  it("recognises what the caller already asks for", async () => {
+  it("recognises what the caller already asks for while it moves (LC-REQ-check)", async () => {
     signInAs("reader");
 
-    const [check] = await checkProposalItems([catalogItem("MZK01-001284756", "1918–1925")]);
+    const [moving] = await checkProposalItems([catalogItem("MZK01-000998431", "1899")]);
+    const [published] = await checkProposalItems([catalogItem("MZK01-001284756", "1918–1925")]);
 
-    expect(check?.kind).toBe("mine");
+    expect(moving?.kind).toBe("mine");
+    expect(published).toMatchObject({ kind: "new", isAskedBefore: true });
   });
 
   it("takes an ask after a published or cancelled attempt as new (LC-REQ-join)", async () => {
