@@ -107,6 +107,7 @@ import {
   deleteCustody,
   deleteRole,
   linkIdentity,
+  restoreUser,
   roleImpact,
   saveRole as saveAccessRole,
   saveCustody,
@@ -115,6 +116,7 @@ import {
   setGroupMembers,
   setHandRoles,
   setUserGroups,
+  suspendUser,
 } from "@/mocks/access";
 import { retryBatch } from "@/mocks/additions";
 import { servedBatches } from "@/mocks/batches";
@@ -262,7 +264,7 @@ import {
   runScheduleNow,
   saveSchedule,
 } from "@/mocks/schedules";
-import { accessUserOf, resolveSession } from "@/mocks/session";
+import { accessUserOf, isSuspendedUser, resolveSession } from "@/mocks/session";
 import {
   cancelRun,
   canReadRuns,
@@ -366,8 +368,10 @@ export function createHandlers(profile: MockUserProfile) {
     });
 
   return [
+    // A suspended person's login is refused (ACCESS-suspend).
     http.get(route(apiRoutes.session), () =>
-      window.sessionStorage.getItem(signedOutKey) === "1"
+      window.sessionStorage.getItem(signedOutKey) === "1" ||
+      isSuspendedUser(currentSession().user.id)
         ? new HttpResponse(null, { status: 401 })
         : HttpResponse.json(currentSession()),
     ),
@@ -629,6 +633,12 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/roles`, handRolesSchema, setHandRoles),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/groups`, userGroupsSchema, setUserGroups),
+    http.post(route(`${apiRoutes.accessUsers}/:id/suspend`), ({ params }) =>
+      outcomeResponse(suspendUser(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.accessUsers}/:id/restore`), ({ params }) =>
+      outcomeResponse(restoreUser(currentSession(), String(params.id))),
+    ),
     accessWrite(
       "post",
       `${apiRoutes.accessUsers}/:id/identities`,

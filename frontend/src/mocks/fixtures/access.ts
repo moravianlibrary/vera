@@ -543,6 +543,8 @@ export interface UserAccess {
   readonly mappedRoles: readonly MappedRole[];
   readonly identities: readonly Identity[];
   readonly entry: string | null;
+  // ACCESS-suspend: absent or null while they may log in.
+  readonly suspendedAt?: string | null;
 }
 
 const keycloak = "pi22";

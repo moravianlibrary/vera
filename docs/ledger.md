@@ -17,14 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L5: Suspending a user
-
-Rules: [ACCESS-mapping-at-login](reference/access/people.md#access-mapping-at-login).
-
-Decided on 2026-10-15. An admin can *Suspend…* a person and *Restore* them, on Users & Groups
-with `access.manage`: login refused while suspended, roles kept but inactive, history and open
-asks kept. Mapped roles otherwise stay until the next login. → frontend, then engine.
-
 ### L34: Message targets
 
 Rules: [MSG-recipients](reference/integrations/messaging.md#msg-recipients).
@@ -47,7 +39,7 @@ Link, Publication detector, Message, Delivery channel), with no group headings. 
 Rules: [ACCESS-link-identity](reference/access/people.md#access-link-identity).
 
 Decided on 2026-10-15. *Unlink* on a person's identity; refused for their last one (suspending is
-[L5](#l5-suspending-a-user)'s job); the person and their history stay. → frontend, then engine.
+[ACCESS-suspend](reference/access/people.md#access-suspend)'s job); the person and their history stay. → frontend, then engine.
 
 ### L31: Plugin policy on the instance
 
@@ -327,6 +319,11 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L5:** *Suspend…* and *Restore* on a person on Users & Groups: login refused and roles kept
+  but giving nothing while suspended; groups, history and open asks stay. Refused for an agent
+  and when nobody could manage access after
+  ([ACCESS-suspend](reference/access/people.md#access-suspend),
+  [ACT-user-suspend](reference/access/acts.md#users--groups)).
 - **L14:** *Withdraw…* on the caller's own waiting ask, on Documents and My Documents; *Resume…*,
   *Cancel…* and *Overrule restriction…* in Documents' More ▾. Resume takes a held item off its
   list and back to the pool; an overrule keeps the rule's finding beside it

@@ -3,9 +3,9 @@
 // user, role, group and request custody with the relations between them, and works out the
 // provenance from it (domain/access.ts). Everything written here is `access.manage`'s: roles and
 // their grants, the roles a person holds by hand, groups and their members, request custodies
-// and theirs, local accounts and linked identities. Mapped roles follow the provider and are
-// never written here; category custody is written on Categories, which rules place a proposal
-// on Plugins.
+// and theirs, local accounts and linked identities, and a person suspended and restored. Mapped
+// roles follow the provider and are never written here; category custody is written on
+// Categories, which rules place a proposal on Plugins.
 
 import { z } from "zod";
 import { deleteResource, getJson, postJson, putJson } from "@/api/http";
@@ -167,6 +167,15 @@ export async function linkIdentity({
   link: IdentityLink;
 }): Promise<Identity> {
   return postJson(accessRecordActionRoute("users", userId, "identities"), link, identitySchema);
+}
+
+// ACCESS-suspend: login refused and roles inactive until restored; nothing else changes.
+export async function suspendUser(userId: string): Promise<AccessUser> {
+  return postJson(accessRecordActionRoute("users", userId, "suspend"), {}, accessUserSchema);
+}
+
+export async function restoreUser(userId: string): Promise<AccessUser> {
+  return postJson(accessRecordActionRoute("users", userId, "restore"), {}, accessUserSchema);
 }
 
 // ---------------------------------------------------------------- groups

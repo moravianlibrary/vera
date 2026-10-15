@@ -25,6 +25,7 @@ import {
   setGroupMembers,
   setHandRoles,
   setUserGroups,
+  suspendUser,
 } from "@/api/access";
 import { Field } from "@/components/classification-fields";
 import type { Consequence } from "@/components/dialogs/consequence-dialog";
@@ -55,6 +56,8 @@ import { plural } from "@/lib/plural";
 export interface AccessNotice {
   title: string;
   text: string;
+  // Green unless an act that opens no dialog was refused.
+  isRefusal?: boolean;
 }
 
 const refusalTexts = {
@@ -62,8 +65,13 @@ const refusalTexts = {
   "access.name_taken": "There is already one with that name.",
   "access.identity_taken": "Somebody already signs in with that.",
   "access.fallback": "The fallback keeps its name, and cannot be deleted.",
+  "access.suspended": "They are suspended already.",
+  "access.not_suspended": "They are not suspended.",
   403: "You may no longer change users, groups or roles.",
 };
+
+// The page's acts that open no dialog word their refusals the same way.
+export const accessRefusalTexts = refusalTexts;
 
 const noRoleText =
   "A group never gives a role. Roles are set by hand here, or mapped by an Identity plugin from a claim.";
@@ -289,6 +297,50 @@ export function LinkIdentityDialog({
             <FieldError message={errors.externalId?.message} />
           </>
         );
+      }}
+    />
+  );
+}
+
+// ACCESS-suspend: nothing is taken away, so restoring gives everything back.
+export function SuspendUserDialog({
+  isOpen,
+  onClose,
+  user,
+  onSaved,
+}: DialogProps & { user: AccessUser; onSaved: (notice: AccessNotice) => void }) {
+  const suspend = useActionMutation({
+    call: suspendUser,
+    invalidates: accessInvalidations,
+    refusalTexts,
+  });
+  const roleCount = heldRoleIdsOf(user).length;
+  const consequences: Consequence[] = [
+    { text: `${user.name} cannot log in until restored.`, tone: "red" },
+    ...(roleCount === 0
+      ? []
+      : [{ text: `Their ${plural(roleCount, "role")} are kept, but give nothing meanwhile.` }]),
+    { text: "Their groups, history and open asks stay." },
+  ];
+  return (
+    <ConsequenceDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Suspend ${user.name}?`}
+      description={`What suspending ${user.name} does`}
+      consequences={consequences}
+      confirmLabel="Suspend"
+      isDestructive
+      onConfirm={async () => {
+        const result = await suspend.run(user.id);
+        if (result.isDone) {
+          onSaved({
+            title: `${user.name} suspended`,
+            text: "They cannot log in until restored.",
+          });
+        }
+
+        return result;
       }}
     />
   );

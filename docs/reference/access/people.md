@@ -117,8 +117,11 @@ Mappings are evaluated at every login. A mapped role whose claim is gone is remo
 match is added. Between logins nothing changes. To cut access at once, an admin removes roles by
 hand.
 
-> **Open — [L5](../../ledger.md#l5-suspending-a-user).** An admin is to be able to *Suspend…*
-> a person and *Restore* them: login refused, roles kept but inactive, history kept.
+#### ACCESS-suspend
+
+An admin can suspend a person and restore them. While suspended, their login is refused and the
+roles they hold, by hand or mapped, are kept but give nothing. Their groups, history and open
+asks stay. Restoring gives back what they held. An agent is not suspended: it never logs in.
 
 #### ACCESS-hand-untouched
 

@@ -5,7 +5,7 @@
 
 import type { MockUserProfile } from "@/config/env";
 import type { AccessUser } from "@/domain/access";
-import { grantsOf, heldRoleIdsOf } from "@/domain/access";
+import { grantsOf, heldRoleIdsOf, isSuspended } from "@/domain/access";
 import type { Session } from "@/domain/entities";
 import type { Permission } from "@/domain/permissions";
 import { database } from "@/mocks/database";
@@ -49,10 +49,17 @@ export function sessionOf(userId: string): Session | null {
   };
 }
 
-// The roles a person holds now, however they hold them; none for somebody never given one.
+// The roles a person holds now, however they hold them; none for somebody never given one, and
+// none while they are suspended, though they are kept (ACCESS-suspend).
 export function roleIdsOf(userId: string): string[] {
   const access = database.userAccess[userId];
-  return access === undefined ? [] : heldRoleIdsOf(access);
+  return access === undefined || isSuspended(access) ? [] : heldRoleIdsOf(access);
+}
+
+// ACCESS-suspend: their login is refused.
+export function isSuspendedUser(userId: string): boolean {
+  const access = database.userAccess[userId];
+  return access !== undefined && isSuspended(access);
 }
 
 // Everyone holding the permission through some role, at any scope.
@@ -76,6 +83,7 @@ export function accessUserOf(user: Session["user"]): AccessUser {
       .filter((group) => group.memberIds.includes(user.id))
       .map(({ id }) => id),
     identities: [...(access?.identities ?? [])],
+    suspendedAt: access?.suspendedAt ?? null,
   };
 }
 

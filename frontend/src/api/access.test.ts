@@ -17,17 +17,19 @@ import {
   getCustodyImpact,
   getRoleImpact,
   linkIdentity,
+  restoreUser,
   saveCustody,
   saveRole,
   setCustodyMembers,
   setGroupMembers,
   setHandRoles,
   setUserGroups,
+  suspendUser,
 } from "@/api/access";
 import { ApiError } from "@/api/http";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
-import { heldRolesOf } from "@/domain/access";
+import { heldRolesOf, managersOf } from "@/domain/access";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -296,6 +298,51 @@ describe("users", () => {
     expect(
       await linkIdentity({ userId: "u1", link: { instanceId: "pi23", externalId: "jana@mzk.cz" } }),
     ).toEqual({ instanceId: "pi23", externalId: "jana@mzk.cz", lastLoginAt: null });
+  });
+
+  it("suspends a person: login refused, roles kept, until restored (ACCESS-suspend)", async () => {
+    signInAs("admin");
+    const suspended = await suspendUser("u4");
+
+    expect(suspended.suspendedAt).not.toBeNull();
+    expect(suspended.handRoleIds).not.toHaveLength(0);
+    expect(await refusalOf(suspendUser("u4"))).toMatchObject({
+      status: 409,
+      code: "access.suspended",
+    });
+    expect(await refusalOf(suspendUser("a1"))).toMatchObject({ status: 422 });
+
+    signInAs("staff");
+    expect(await refusalOf(getSession())).toMatchObject({ status: 401 });
+
+    signInAs("admin");
+    const restored = await restoreUser("u4");
+    expect(restored.suspendedAt).toBeNull();
+    expect(restored.handRoleIds).toEqual(suspended.handRoleIds);
+    expect(await refusalOf(restoreUser("u4"))).toMatchObject({
+      status: 409,
+      code: "access.not_suspended",
+    });
+
+    signInAs("staff");
+    expect((await getSession()).grants).not.toHaveLength(0);
+  });
+
+  it("refuses to suspend the last person able to manage access (ACCESS-last-manager)", async () => {
+    signInAs("admin");
+    const index = await getAccessIndex();
+    const others = managersOf(index.users, index.roles).filter((user) => user.id !== "u3");
+    for (const user of others) {
+      await suspendUser(user.id);
+    }
+
+    expect(await refusalOf(suspendUser("u3"))).toMatchObject({
+      status: 409,
+      code: "access.last_manager",
+    });
+    for (const user of others) {
+      await restoreUser(user.id);
+    }
   });
 
   it("creates a local account, refusing a username already taken", async () => {

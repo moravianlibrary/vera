@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { AccessIndex } from "@/api/access";
+import { restoreUser } from "@/api/access";
 import { ActionBar } from "@/components/actions/action-bar";
 import { DataTable } from "@/components/data-table";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -25,6 +26,7 @@ import {
   recordActionsFor,
 } from "@/features/access/access-acts";
 import type { AccessNotice } from "@/features/access/access-dialogs";
+import { accessRefusalTexts } from "@/features/access/access-dialogs";
 import { CategoryAccessDetail } from "@/features/access/access-management-detail";
 import {
   AgentBadge,
@@ -32,6 +34,7 @@ import {
   GroupRecord,
   namesOf,
   RoleRecord,
+  SuspendedBadge,
   UserRecord,
 } from "@/features/access/access-records";
 import { AccessRelationships } from "@/features/access/access-relationships";
@@ -43,7 +46,8 @@ import {
   userShowLabels,
   userShows,
 } from "@/features/access/access-view";
-import { useAccessQuery } from "@/features/access/use-access-query";
+import { accessInvalidations, useAccessQuery } from "@/features/access/use-access-query";
+import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useLoadMore } from "@/hooks/use-load-more";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -290,6 +294,21 @@ export function AccessPage() {
   const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const [dialog, setDialog] = useState<AccessDialog | null>(null);
   const [notice, setNotice] = useState<AccessNotice | null>(null);
+  const restore = useActionMutation({
+    call: restoreUser,
+    invalidates: accessInvalidations,
+    refusalTexts: accessRefusalTexts,
+  });
+  // ACCESS-suspend: Restore gives back everything suspending held, so it asks nothing.
+  const restoreNow = async (userId: string) => {
+    const name = index?.users.find((user) => user.id === userId)?.name ?? "They";
+    const result = await restore.run(userId);
+    setNotice(
+      result.isDone
+        ? { title: `${name} restored`, text: "They can log in, and their roles count again." }
+        : { title: `${name} not restored`, text: result.refusal.message, isRefusal: true },
+    );
+  };
   const [exploring, setExploring] = useState(false);
   const [savedFilters, setSavedFilters] = useState<Record<string, string>>({});
   const [loaded, setLoaded] = useState({ key: "", count: loadSize });
@@ -467,6 +486,13 @@ export function AccessPage() {
                 <AgentBadge />
               </>
             )}
+          {row.kind === "users" &&
+            index?.users.find((user) => user.id === row.id)?.suspendedAt != null && (
+              <>
+                {" "}
+                <SuspendedBadge />
+              </>
+            )}
           <p className="text-xs text-muted-foreground">{row.secondary}</p>
         </div>
       ),
@@ -516,6 +542,7 @@ export function AccessPage() {
       ? recordActionsFor(index, selected as AccessSelection, setDialog, {
           canManageAccess: canManage,
           canManageShared: false,
+          onRestore: (userId) => void restoreNow(userId),
         })
       : [];
   const detail =
@@ -620,7 +647,7 @@ export function AccessPage() {
           <>
             {notice && (
               <NoticeLine
-                tone="green"
+                tone={notice.isRefusal ? "red" : "green"}
                 title={notice.title}
                 onDismiss={() => setNotice(null)}
                 className="mx-4 mt-4 sm:mx-6"

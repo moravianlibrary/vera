@@ -54,6 +54,9 @@ export const accessUserSchema = userSchema.extend({
   groupIds: z.array(id),
   // None for an agent: it is created with its plugin and never logs in.
   identities: z.array(identitySchema),
+  // Set while an admin has them suspended: their login is refused and their roles give nothing,
+  // though they are kept (ACCESS-suspend).
+  suspendedAt: timestamp.nullable(),
 });
 export type AccessUser = z.infer<typeof accessUserSchema>;
 
@@ -117,6 +120,11 @@ export interface HeldRole {
 interface RoleHolder {
   readonly handRoleIds: readonly string[];
   readonly mappedRoles: readonly MappedRole[];
+  readonly suspendedAt?: string | null;
+}
+
+export function isSuspended(user: RoleHolder): boolean {
+  return user.suspendedAt != null;
 }
 
 // Each role the person holds with every way it reaches them: by hand first, then each mapping.
@@ -217,13 +225,16 @@ export function effectivePermissionsOf(
   );
 }
 
-// Who could still manage access: refused when an act would leave nobody (view-catalog.md).
+// Who could still manage access: refused when an act would leave nobody (ACCESS-last-manager).
+// A suspended person's roles give nothing meanwhile (ACCESS-suspend).
 export function managersOf<User extends RoleHolder>(
   users: readonly User[],
   roles: readonly Role[],
 ): User[] {
-  return users.filter((user) =>
-    grantsOf(roles, heldRoleIdsOf(user)).some((grant) => grant.permission === "access.manage"),
+  return users.filter(
+    (user) =>
+      !isSuspended(user) &&
+      grantsOf(roles, heldRoleIdsOf(user)).some((grant) => grant.permission === "access.manage"),
   );
 }
 

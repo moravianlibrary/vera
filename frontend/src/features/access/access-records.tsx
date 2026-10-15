@@ -44,6 +44,7 @@ import {
   waysShortText,
 } from "@/features/access/access-words";
 import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
+import { formatDay } from "@/lib/format-date";
 import { agoText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
@@ -202,6 +203,15 @@ export function AgentBadge() {
   );
 }
 
+// ACCESS-suspend.
+export function SuspendedBadge() {
+  return (
+    <ToneBadge tone="red" className="px-1.5 py-0 text-[0.625rem]">
+      suspended
+    </ToneBadge>
+  );
+}
+
 function HandTag() {
   return (
     <span className="rounded-full bg-tone-purple px-2 py-px text-[0.6875rem] text-tone-purple-foreground">
@@ -324,7 +334,13 @@ export function UserRecord({
   return (
     <RecordFrame
       title={user.name}
-      badge={user.kind === "agent" ? <AgentBadge /> : undefined}
+      badge={
+        user.kind === "agent" ? (
+          <AgentBadge />
+        ) : user.suspendedAt !== null ? (
+          <SuspendedBadge />
+        ) : undefined
+      }
       sub={
         user.kind === "agent" ? (
           <>
@@ -337,6 +353,12 @@ export function UserRecord({
       }
       actions={actions}
     >
+      {user.suspendedAt !== null && (
+        <StatusNote tone="red" title={`Suspended ${formatDay(user.suspendedAt)}`} className="mb-1">
+          They cannot log in. Their roles are kept but give nothing until they are restored; their
+          groups, history and open asks stay.
+        </StatusNote>
+      )}
       {held.length === 0 && (
         <StatusNote tone="amber" title="No access yet" className="mb-1">
           {firstIdentity === undefined

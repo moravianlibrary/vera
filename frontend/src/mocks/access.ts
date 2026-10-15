@@ -125,6 +125,7 @@ function keepsManager(
   const holders = database.users.map((user) => ({
     handRoleIds: access[user.id]?.handRoleIds ?? [],
     mappedRoles: access[user.id]?.mappedRoles ?? [],
+    suspendedAt: access[user.id]?.suspendedAt ?? null,
   }));
   return managersOf(holders, roles).length > 0;
 }
@@ -419,6 +420,69 @@ export function linkIdentity(
     [userId]: { ...held, identities: [...held.identities, identity] },
   };
   return { value: identity };
+}
+
+// ACCESS-suspend: their login is refused and their roles give nothing until restored; the roles,
+// groups, history and open asks stay. A person only: an agent never logs in.
+export function suspendUser(session: Session, userId: string): Outcome<AccessUser> {
+  const refusal = guard(session);
+  if (refusal !== null) {
+    return { refusal };
+  }
+
+  const user = findUser(userId);
+  if (user === null) {
+    return { refusal: unknownRecord("user") };
+  }
+
+  if (user.kind === "agent") {
+    return { refusal: { status: 422, message: "An agent never logs in" } };
+  }
+
+  if (user.suspendedAt !== null) {
+    return {
+      refusal: { status: 409, code: "access.suspended", message: `${user.name} is suspended` },
+    };
+  }
+
+  const access = {
+    ...database.userAccess,
+    [userId]: { ...accessOf(userId), suspendedAt: mockNow().toISOString() },
+  };
+  if (!keepsManager(database.roles, access)) {
+    return { refusal: lastManager };
+  }
+
+  database.userAccess = access;
+  return { value: findUser(userId) as AccessUser };
+}
+
+export function restoreUser(session: Session, userId: string): Outcome<AccessUser> {
+  const refusal = guard(session);
+  if (refusal !== null) {
+    return { refusal };
+  }
+
+  const user = findUser(userId);
+  if (user === null) {
+    return { refusal: unknownRecord("user") };
+  }
+
+  if (user.suspendedAt === null) {
+    return {
+      refusal: {
+        status: 409,
+        code: "access.not_suspended",
+        message: `${user.name} is not suspended`,
+      },
+    };
+  }
+
+  database.userAccess = {
+    ...database.userAccess,
+    [userId]: { ...accessOf(userId), suspendedAt: null },
+  };
+  return { value: findUser(userId) as AccessUser };
 }
 
 // Somebody with no institutional account; everyone else appears at their first login.

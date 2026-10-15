@@ -20,6 +20,7 @@ import {
   GroupMembersDialog,
   LinkIdentityDialog,
   NewLocalAccountDialog,
+  SuspendUserDialog,
   UserGroupsDialog,
   UserRolesDialog,
 } from "@/features/access/access-dialogs";
@@ -40,6 +41,7 @@ export type AccessDialog =
         | "userRoles"
         | "userGroups"
         | "linkIdentity"
+        | "suspendUser"
         | "editRole"
         | "copyRole"
         | "deleteRole"
@@ -74,17 +76,18 @@ export function headerActionsFor(open: Open): ViewAction[] {
   ];
 }
 
-// Which of the two the caller holds.
+// Which of the two the caller holds, and the acts that open no dialog.
 export interface AccessMay {
   canManageAccess: boolean;
   canManageShared: boolean;
+  onRestore: (userId: string) => void;
 }
 
 export function recordActionsFor(
   index: AccessIndex,
   selection: AccessSelection,
   open: Open,
-  { canManageAccess, canManageShared }: AccessMay,
+  { canManageAccess, canManageShared, onRestore }: AccessMay,
 ): ViewAction[] {
   if (selection.kind === "watchlists") {
     const watchlist = index.sharedWatchlists.find((candidate) => candidate.id === selection.id);
@@ -126,10 +129,17 @@ export function recordActionsFor(
   switch (selection.kind) {
     case "users": {
       const user = index.users.find((candidate) => candidate.id === id);
+      if (user?.kind !== "person") {
+        return [act("userRoles", "Roles…"), act("userGroups", "Groups…")];
+      }
+
       return [
         act("userRoles", "Roles…"),
         act("userGroups", "Groups…"),
-        ...(user?.kind === "person" ? [act("linkIdentity", "Link identity…")] : []),
+        act("linkIdentity", "Link identity…"),
+        user.suspendedAt === null
+          ? { ...act("suspendUser", "Suspend…"), isDestructive: true }
+          : { id: "restoreUser", label: "Restore", onSelect: () => onRestore(user.id) },
       ];
     }
     case "roles":
@@ -216,6 +226,10 @@ export function AccessDialogView({ dialog, index, names, onClose, onDone }: Acce
     case "linkIdentity":
       return user === undefined ? null : (
         <LinkIdentityDialog {...common} user={user} onSaved={(notice) => onDone(notice)} />
+      );
+    case "suspendUser":
+      return user === undefined ? null : (
+        <SuspendUserDialog {...common} user={user} onSaved={(notice) => onDone(notice)} />
       );
     case "editRole":
     case "copyRole":
