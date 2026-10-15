@@ -72,13 +72,6 @@ Decided on 2026-10-15: two new plugin kinds.
 
 → frontend (plugin kinds, the *Set link…* dialog), then engine.
 
-### L32: Channel impact
-
-Rules: [PLG-delivery-hooks](reference/integrations/plugins.md#plg-delivery-hooks).
-
-Disabling a delivery channel says the hooks sending through it stop, without counting or naming
-them (`TODO(rrandiak)` in `features/plugins/plugin-words.ts`). → frontend.
-
 ### L36: Pages reference
 
 Rules: [UI-pages](reference/ui/pages.md#ui-pages).
@@ -295,6 +288,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L32:** disabling a delivery channel counts the active hooks it stops and names them to anyone
+  with `hook.read` ([PLG-delivery-hooks](reference/integrations/plugins.md#plg-delivery-hooks)).
+  The "says what stops first" test still fails on the plug-in's run count (22, not 2), the same
+  run fixture drift as the tasks baseline, untouched here.
 - **L51:** Plugins lists the kinds in the order a document meets them, with no group headings
   ([PLG-kinds](reference/integrations/plugins.md#plg-kinds)).
 - **L34:** message acts named for who they reach: *Message askers…* on a proposal and on a

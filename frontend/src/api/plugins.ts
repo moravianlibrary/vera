@@ -180,8 +180,10 @@ export const pluginImpactSchema = z.object({
   userCount: count,
   // A custody rule: the open proposals it places now.
   openProposalCount: count,
-  // A Delivery channel: active hooks whose sending stops while it is off.
+  // A Delivery channel: active hooks whose sending stops while it is off, counted for anyone and
+  // named for whoever may read hooks (PLG-delivery-hooks).
   hookCount: count,
+  hooks: z.array(z.object({ id: z.string(), name: z.string() })),
 });
 export type PluginImpact = z.infer<typeof pluginImpactSchema>;
 

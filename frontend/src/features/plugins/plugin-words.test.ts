@@ -15,6 +15,7 @@ const impact = (patch: Partial<PluginImpact>): PluginImpact => ({
   userCount: 0,
   openProposalCount: 0,
   hookCount: 0,
+  hooks: [],
   ...patch,
 });
 
@@ -27,6 +28,23 @@ describe("lossText", () => {
   it("counts who signs in through an identity", () => {
     expect(lossText(impact({ kind: "Identity", userCount: 1 }), "eduID.cz")).toMatch(
       /1 person signs in through it/,
+    );
+  });
+
+  it("counts the hooks a channel stops, and names them to whoever may read hooks (PLG-delivery-hooks)", () => {
+    const hooks = [
+      { id: "h1", name: "Notify Kramerius on publish" },
+      { id: "h3", name: "Ops channel on ingest failure" },
+    ];
+
+    expect(lossText(impact({ kind: "DeliveryChannel", hookCount: 2 }), "Slack")).toMatch(
+      /^2 active hooks sending through it stop;/,
+    );
+    expect(lossText(impact({ kind: "DeliveryChannel", hookCount: 2, hooks }), "Slack")).toMatch(
+      /stop — Notify Kramerius on publish, Ops channel on ingest failure;/,
+    );
+    expect(lossText(impact({ kind: "DeliveryChannel" }), "Slack")).toBe(
+      "no active hook sends through it.",
     );
   });
 });

@@ -216,6 +216,16 @@ describe("switching an instance off", () => {
     expect(await getPluginImpact("pi1")).toMatchObject({ scheduleCount: 1, runCount: 2 });
   });
 
+  it("names the active hooks a delivery channel stops (PLG-delivery-hooks)", async () => {
+    signInAs("admin");
+    const impact = await getPluginImpact("pi20");
+
+    expect(impact.kind).toBe("DeliveryChannel");
+    expect(impact.hookCount).toBeGreaterThan(0);
+    expect(impact.hooks.map(({ name }) => name)).toContain("Notify Kramerius on publish");
+    expect(impact.hooks).toHaveLength(impact.hookCount);
+  });
+
   it("takes a list generator out of Generate until it is enabled again", async () => {
     signInAs("admin");
     await disablePluginInstance("pi15");

@@ -448,6 +448,8 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       (kind !== "Input" || versionOf(candidate)?.declares.inputMode === inputMode),
   );
   const names = instance.settings?.kind === "Custody" ? instance.settings.custodyNames : [];
+  // PLG-delivery-hooks: what a channel switched off stops.
+  const stoppedHooks = hooksUsingChannel(instance.id).filter((hook) => hook.state === "active");
   const custodyIds = new Set(
     database.requestCustodies
       .filter((custody) => names.includes(custody.name))
@@ -466,7 +468,10 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       openProposalCount: openProposalPlacements().filter((placedIn) =>
         placedIn.some((custodyId) => custodyIds.has(custodyId)),
       ).length,
-      hookCount: hooksUsingChannel(instance.id).filter((hook) => hook.state === "active").length,
+      hookCount: stoppedHooks.length,
+      hooks: hasPermission(session, "hook.read")
+        ? stoppedHooks.map(({ id, name }) => ({ id, name }))
+        : [],
     },
   };
 }

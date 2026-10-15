@@ -115,6 +115,4 @@ which is repaired there and read again with *Recheck*.
 #### PLG-delivery-hooks
 
 A delivery channel's drawer lists the hooks that send through it to anyone with `hook.read`.
-
-> **Open — [L32](../../ledger.md#l32-channel-impact).** Disabling a delivery channel says "the
-> hooks sending through it stop sending" without counting them.
+Disabling it says how many active hooks stop sending, and names them to anyone with `hook.read`.

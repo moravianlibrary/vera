@@ -146,7 +146,9 @@ export function lossText(impact: PluginImpact, instanceName: string): string {
         ? "Message… stops offering it; other ways stay."
         : "it is the last one: Message… disappears everywhere.";
     case "DeliveryChannel":
-      return `${plural(impact.hookCount, "active hook")} sending through it ${impact.hookCount === 1 ? "stops" : "stop"}; waiting deliveries resume when the channel is enabled again.`;
+      return impact.hookCount === 0
+        ? "no active hook sends through it."
+        : `${plural(impact.hookCount, "active hook")} sending through it ${impact.hookCount === 1 ? "stops" : "stop"}${impact.hooks.length === 0 ? "" : ` — ${impact.hooks.map(({ name }) => name).join(", ")}`}; waiting deliveries resume when the channel is enabled again.`;
     case "Classifier":
       return hasOthers
         ? "the decide form stops showing its suggestions; the others still suggest."
