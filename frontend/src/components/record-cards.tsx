@@ -263,7 +263,7 @@ export function CatalogCard({
                 </>
               ),
           },
-          { label: "Signature", value: document.signature ?? "—" },
+          { label: "Shelf mark", value: document.shelfMark ?? "—" },
           { label: "Catalog ID", value: <span className="font-mono">{document.catalogId}</span> },
         ]}
       />

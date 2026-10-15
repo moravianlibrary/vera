@@ -284,7 +284,8 @@ export const documentSchema = z.object({
     .nullable(),
   title: z.string(),
   type: documentTypeSchema,
-  signature: z.string().nullable(),
+  // Where the copy stands in the library, read from the catalog (DOC-identifiers).
+  shelfMark: z.string().nullable(),
   pageSources: z.array(pageSourceSchema),
   registryRecords: z.array(registryRecordSchema),
 });

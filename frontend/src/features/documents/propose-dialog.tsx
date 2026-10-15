@@ -67,12 +67,14 @@ import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
+// DOC-identifiers: the Czech labels name the NBN ČNB.
 const identifierLabels = {
   catalogId: "Catalog ID",
-  cnb: "CNBID",
+  nbn: "NBN",
   isbn: "ISBN",
   issn: "ISSN",
   barcode: "Barcode",
+  shelfMark: "Shelf mark",
 } as const satisfies Record<IdentifierType, string>;
 
 const steps = ["Items", "Details", "Submitted"] as const;

@@ -15,7 +15,7 @@ export const documents: readonly Document[] = [
     },
     title: "Lidové noviny",
     type: "Periodical",
-    signature: "ST1-0032",
+    shelfMark: "ST1-0032",
     pageSources: [
       {
         source: "catalog",
@@ -64,7 +64,7 @@ export const documents: readonly Document[] = [
     },
     title: "Právo lidu",
     type: "Periodical",
-    signature: "ST2-0187",
+    shelfMark: "ST2-0187",
     pageSources: [
       {
         source: "catalog",
@@ -106,7 +106,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravská orlice",
     type: "Periodical",
-    signature: "ST1-0104",
+    shelfMark: "ST1-0104",
     pageSources: [
       {
         source: "manual",
@@ -152,7 +152,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Kniha o Brně",
     type: "Monograph",
-    signature: "MB4-0921",
+    shelfMark: "MB4-0921",
     pageSources: [
       {
         source: "catalog",
@@ -184,7 +184,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hlas Moravy",
     type: "Periodical",
-    signature: "ST3-0455",
+    shelfMark: "ST3-0455",
     pageSources: [
       {
         source: "predictor",
@@ -223,7 +223,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Graduál rajhradský",
     type: "Manuscript",
-    signature: "RKP-0012",
+    shelfMark: "RKP-0012",
     pageSources: [
       {
         source: "manual",
@@ -255,7 +255,7 @@ export const documents: readonly Document[] = [
     },
     title: "Zemědělské listy",
     type: "Periodical",
-    signature: "ST2-0311",
+    shelfMark: "ST2-0311",
     pageSources: [
       {
         source: "catalog",
@@ -287,7 +287,7 @@ export const documents: readonly Document[] = [
     },
     title: "Slovácké noviny",
     type: "Periodical",
-    signature: "ST1-0788",
+    shelfMark: "ST1-0788",
     pageSources: [
       {
         source: "catalog",
@@ -316,7 +316,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Mapa Moravy 1846",
     type: "Map",
-    signature: "MAP-0067",
+    shelfMark: "MAP-0067",
     pageSources: [
       {
         source: "catalog",
@@ -334,7 +334,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Dějiny Velehradu",
     type: "Monograph",
-    signature: "MB2-0140",
+    shelfMark: "MB2-0140",
     pageSources: [
       {
         source: "catalog",
@@ -366,7 +366,7 @@ export const documents: readonly Document[] = [
     },
     title: "Věstník spolku",
     type: "Periodical",
-    signature: "ST4-0025",
+    shelfMark: "ST4-0025",
     pageSources: [],
     registryRecords: [],
   },
@@ -376,7 +376,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Kodex Gigas — fragment",
     type: "Manuscript",
-    signature: "RKP-0341",
+    shelfMark: "RKP-0341",
     pageSources: [
       {
         source: "manual",
@@ -397,7 +397,7 @@ export const documents: readonly Document[] = [
     },
     title: "Selské noviny",
     type: "Periodical",
-    signature: "ST2-0512",
+    shelfMark: "ST2-0512",
     pageSources: [
       {
         source: "catalog",
@@ -429,7 +429,7 @@ export const documents: readonly Document[] = [
     },
     title: "Čas",
     type: "Periodical",
-    signature: "ST1-0233",
+    shelfMark: "ST1-0233",
     pageSources: [
       {
         source: "catalog",
@@ -461,7 +461,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hospodářský obzor",
     type: "Periodical",
-    signature: "ST4-0117",
+    shelfMark: "ST4-0117",
     pageSources: [
       {
         source: "catalog",
@@ -493,7 +493,7 @@ export const documents: readonly Document[] = [
     },
     title: "Brněnské noviny",
     type: "Periodical",
-    signature: "ST1-0620",
+    shelfMark: "ST1-0620",
     pageSources: [
       {
         source: "predictor",
@@ -525,7 +525,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hlas lidu",
     type: "Periodical",
-    signature: "ST2-0877",
+    shelfMark: "ST2-0877",
     pageSources: [
       {
         source: "predictor",
@@ -557,7 +557,7 @@ export const documents: readonly Document[] = [
     },
     title: "Našinec",
     type: "Periodical",
-    signature: "ST3-0149",
+    shelfMark: "ST3-0149",
     pageSources: [],
     registryRecords: [],
   },
@@ -567,7 +567,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Moravské hory a doly",
     type: "Monograph",
-    signature: "MB1-0217",
+    shelfMark: "MB1-0217",
     pageSources: [
       {
         source: "catalog",
@@ -599,7 +599,7 @@ export const documents: readonly Document[] = [
     },
     title: "Rovnost",
     type: "Periodical",
-    signature: "ST1-0515",
+    shelfMark: "ST1-0515",
     pageSources: [
       {
         source: "catalog",
@@ -631,7 +631,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hanák",
     type: "Periodical",
-    signature: "ST2-0402",
+    shelfMark: "ST2-0402",
     pageSources: [
       {
         source: "catalog",
@@ -663,7 +663,7 @@ export const documents: readonly Document[] = [
     },
     title: "Příroda a škola",
     type: "Periodical",
-    signature: "ST4-0088",
+    shelfMark: "ST4-0088",
     pageSources: [
       {
         source: "catalog",
@@ -695,7 +695,7 @@ export const documents: readonly Document[] = [
     },
     title: "Znojemský týdeník",
     type: "Periodical",
-    signature: "ST2-0633",
+    shelfMark: "ST2-0633",
     pageSources: [
       {
         source: "catalog",
@@ -727,7 +727,7 @@ export const documents: readonly Document[] = [
     },
     title: "Kroměřížské noviny",
     type: "Periodical",
-    signature: "ST2-0719",
+    shelfMark: "ST2-0719",
     pageSources: [
       {
         source: "catalog",
@@ -759,7 +759,7 @@ export const documents: readonly Document[] = [
     },
     title: "Opavský týdeník",
     type: "Periodical",
-    signature: "ST2-0290",
+    shelfMark: "ST2-0290",
     pageSources: [
       {
         source: "catalog",
@@ -791,7 +791,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravské noviny",
     type: "Periodical",
-    signature: "ST1-0077",
+    shelfMark: "ST1-0077",
     pageSources: [
       {
         source: "catalog",
@@ -823,7 +823,7 @@ export const documents: readonly Document[] = [
     },
     title: "Lidové listy",
     type: "Periodical",
-    signature: "ST1-0391",
+    shelfMark: "ST1-0391",
     pageSources: [
       {
         source: "catalog",
@@ -855,7 +855,7 @@ export const documents: readonly Document[] = [
     },
     title: "Časopis Matice moravské",
     type: "Periodical",
-    signature: "ST4-0012",
+    shelfMark: "ST4-0012",
     pageSources: [
       {
         source: "catalog",
@@ -884,7 +884,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Pověsti z Hané",
     type: "Monograph",
-    signature: "MB1-0388",
+    shelfMark: "MB1-0388",
     pageSources: [
       {
         source: "catalog",
@@ -913,7 +913,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Brněnský průmysl 1900",
     type: "Monograph",
-    signature: "MB3-0144",
+    shelfMark: "MB3-0144",
     pageSources: [
       {
         source: "catalog",
@@ -942,7 +942,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Žaltář olomoucký",
     type: "Manuscript",
-    signature: "RKP-0077",
+    shelfMark: "RKP-0077",
     pageSources: [
       {
         source: "manual",
@@ -971,7 +971,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Kancionál brněnský",
     type: "Manuscript",
-    signature: "RKP-0190",
+    shelfMark: "RKP-0190",
     pageSources: [
       {
         source: "manual",
@@ -1003,7 +1003,7 @@ export const documents: readonly Document[] = [
     },
     title: "Brněnské noviny",
     type: "Periodical",
-    signature: "ST1-0102",
+    shelfMark: "ST1-0102",
     pageSources: [
       {
         source: "catalog",
@@ -1032,7 +1032,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Moravský zemský zákoník",
     type: "Monograph",
-    signature: "MB2-0033",
+    shelfMark: "MB2-0033",
     pageSources: [
       {
         source: "catalog",
@@ -1064,7 +1064,7 @@ export const documents: readonly Document[] = [
     },
     title: "Brünner Zeitung",
     type: "Periodical",
-    signature: "ST1-0044",
+    shelfMark: "ST1-0044",
     pageSources: [
       {
         source: "catalog",
@@ -1093,7 +1093,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Herbář Mattioliho",
     type: "Monograph",
-    signature: "ST-0412",
+    shelfMark: "ST-0412",
     pageSources: [
       {
         source: "catalog",
@@ -1122,7 +1122,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Kancionál Šamotulský",
     type: "Monograph",
-    signature: "ST-0588",
+    shelfMark: "ST-0588",
     pageSources: [
       {
         source: "catalog",
@@ -1151,7 +1151,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Atlas Moravy 1890",
     type: "Map",
-    signature: "MAP-0310",
+    shelfMark: "MAP-0310",
     pageSources: [
       {
         source: "catalog",
@@ -1180,7 +1180,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Plány města Brna 1825–1850",
     type: "Map",
-    signature: "MAP-0299",
+    shelfMark: "MAP-0299",
     pageSources: [
       {
         source: "catalog",
@@ -1209,7 +1209,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Brno — plán regulace",
     type: "Monograph",
-    signature: "MB3-0612",
+    shelfMark: "MB3-0612",
     pageSources: [],
     registryRecords: [],
   },
@@ -1222,7 +1222,7 @@ export const documents: readonly Document[] = [
     },
     title: "Národní listy",
     type: "Periodical",
-    signature: "ST1-0901",
+    shelfMark: "ST1-0901",
     pageSources: [
       {
         source: "catalog",
@@ -1264,7 +1264,7 @@ export const documents: readonly Document[] = [
     },
     title: "Ostravský deník",
     type: "Periodical",
-    signature: "ST2-0644",
+    shelfMark: "ST2-0644",
     pageSources: [
       {
         source: "predictor",
@@ -1293,7 +1293,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Průvodce Moravským krasem",
     type: "Monograph",
-    signature: "MB1-0455",
+    shelfMark: "MB1-0455",
     pageSources: [
       {
         source: "catalog",
@@ -1322,7 +1322,7 @@ export const documents: readonly Document[] = [
     unit: null,
     title: "Herbář moravský",
     type: "Manuscript",
-    signature: "RKP-0455",
+    shelfMark: "RKP-0455",
     pageSources: [
       {
         source: "catalog",
@@ -1343,7 +1343,7 @@ export const documents: readonly Document[] = [
     },
     title: "Slovácké noviny",
     type: "Periodical",
-    signature: "ST1-0789",
+    shelfMark: "ST1-0789",
     pageSources: [],
     registryRecords: [],
   },
@@ -1356,7 +1356,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravská orlice",
     type: "Periodical",
-    signature: "ST1-0412",
+    shelfMark: "ST1-0412",
     pageSources: [
       {
         source: "catalog",
@@ -1388,7 +1388,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravská orlice",
     type: "Periodical",
-    signature: "ST1-0412",
+    shelfMark: "ST1-0412",
     pageSources: [
       {
         source: "catalog",
@@ -1420,7 +1420,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravská orlice",
     type: "Periodical",
-    signature: "ST1-0412",
+    shelfMark: "ST1-0412",
     pageSources: [
       {
         source: "catalog",
@@ -1452,7 +1452,7 @@ export const documents: readonly Document[] = [
     },
     title: "Moravská orlice",
     type: "Periodical",
-    signature: "ST1-0412",
+    shelfMark: "ST1-0412",
     pageSources: [
       {
         source: "catalog",
@@ -1484,7 +1484,7 @@ export const documents: readonly Document[] = [
     },
     title: "Brněnský kalendář",
     type: "Periodical",
-    signature: "ST4-0120",
+    shelfMark: "ST4-0120",
     pageSources: [
       {
         source: "catalog",
@@ -1516,7 +1516,7 @@ export const documents: readonly Document[] = [
     },
     title: "Brněnský kalendář",
     type: "Periodical",
-    signature: "ST4-0120",
+    shelfMark: "ST4-0120",
     pageSources: [
       {
         source: "catalog",
@@ -1548,7 +1548,7 @@ export const documents: readonly Document[] = [
     },
     title: "Plán města Brna",
     type: "Map",
-    signature: "MP1-0871",
+    shelfMark: "MP1-0871",
     pageSources: [],
     registryRecords: [],
   },
@@ -1561,7 +1561,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hlídka",
     type: "Periodical",
-    signature: "ST3-0233",
+    shelfMark: "ST3-0233",
     pageSources: [
       {
         source: "predictor",
@@ -1593,7 +1593,7 @@ export const documents: readonly Document[] = [
     },
     title: "Hlídka",
     type: "Periodical",
-    signature: "ST3-0233",
+    shelfMark: "ST3-0233",
     pageSources: [
       {
         source: "predictor",

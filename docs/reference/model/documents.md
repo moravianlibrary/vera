@@ -39,9 +39,6 @@ A **shelf mark** (*signatura*) says where the copy stands in the library. It is 
 read from the catalog. Its format differs between libraries and even collections, so recognising
 and resolving one is left to the library's plugins and their configuration.
 
-> **Open — [L48](../../ledger.md#l48-shelf-mark).** Proposing by shelf mark is not built, and the
-> code calls the field `signature`.
-
 One VERA serves one library.
 
 > **Open — [L21](../../ledger.md#l21-identifier-formats-per-installation).** The catalog ID,
@@ -52,7 +49,8 @@ One VERA serves one library.
 
 A pasted list has one item per line: identifier, unit and reason, separated by `;`, a tab, or a
 comma. A line starting with `#` is skipped. With a type chosen, every line is read as that
-type; without one, each line's type is detected from its format.
+type; without one, each line's type is detected from its format. A shelf mark has no format,
+so a line is read as one only when that type is chosen.
 
 ## Properties
 

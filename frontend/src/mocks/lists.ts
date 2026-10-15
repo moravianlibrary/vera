@@ -303,7 +303,7 @@ function matchesPool(item: ListItem, query: PoolQuery): boolean {
 
   const needle = search.toLowerCase();
   const { document, iteration } = item;
-  const texts = [document.title, document.catalogId, document.unit?.value, document.signature];
+  const texts = [document.title, document.catalogId, document.unit?.value, document.shelfMark];
   return (
     texts.some((text) => text?.toLowerCase().includes(needle)) ||
     [iteration.id, document.id].some((id) => id.toLowerCase() === needle)

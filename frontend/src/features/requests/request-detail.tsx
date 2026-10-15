@@ -114,7 +114,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
         <RecordHeading
           title={document.title}
           identifier={documentIdentifierOf(document)}
-          details={[document.type, document.signature]}
+          details={[document.type, document.shelfMark]}
         />
         <ActionBar actions={headingActions} className="mb-4" />
       </div>

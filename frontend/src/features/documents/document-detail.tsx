@@ -103,7 +103,7 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
         <RecordHeading
           title={document.title}
           identifier={documentIdentifierOf(document)}
-          details={[document.type, document.signature]}
+          details={[document.type, document.shelfMark]}
         />
         <DocumentActions record={record} session={session} className="mb-4" />
       </div>

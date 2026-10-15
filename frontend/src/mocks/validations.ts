@@ -210,7 +210,7 @@ function predicatesOf(query: ValidationQuery): Predicate[] {
   return predicates;
 }
 
-// Title, identifiers, signature and the defects; an iteration or document ID matches whole.
+// Title, identifiers, shelf mark and the defects; an iteration or document ID matches whole.
 function matchesSearch(row: ValidationRow, search: string): boolean {
   const needle = search.toLowerCase();
   const { document, iteration } = row;
@@ -218,7 +218,7 @@ function matchesSearch(row: ValidationRow, search: string): boolean {
     document.title,
     document.catalogId,
     document.unit?.value,
-    document.signature,
+    document.shelfMark,
     ...iteration.defects.flatMap((defect) => [defectNameOf(defect), defect.subject]),
   ];
   const ids = [iteration.id, document.id].map((id) => id.toLowerCase());

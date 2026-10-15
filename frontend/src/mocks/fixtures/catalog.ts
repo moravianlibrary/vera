@@ -11,8 +11,10 @@ export interface CatalogRecord {
   type: DocumentType;
   // Null for a record that is one document; otherwise the units the catalog enumerates.
   units: readonly string[] | null;
-  // CNB, ISBN and ISSN that resolve to the record.
+  // NBN, ISBN and ISSN that resolve to the record.
   identifiers: readonly string[];
+  // The shelf marks of its copies, which resolve to it too (DOC-identifiers).
+  shelfMarks: readonly string[];
   // Barcode to the unit it is on; a monograph's barcode names the whole record.
   barcodes: Readonly<Record<string, string | null>>;
 }
@@ -24,6 +26,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["1936–1938", "1939", "1940"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -32,6 +35,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["1901", "1902", "1903"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -40,6 +44,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["1889", "1890"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -48,6 +53,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Monograph",
     units: null,
     identifiers: [],
+    shelfMarks: [],
     barcodes: { "MZK-2801-000533": null },
   },
   {
@@ -56,6 +62,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["1907–1911"],
     identifiers: ["cnb001388120"],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -64,6 +71,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Monograph",
     units: null,
     identifiers: ["978-80-7325-456-3"],
+    shelfMarks: ["ST3-0871"],
     barcodes: {},
   },
   {
@@ -72,6 +80,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["roč. 1", "roč. 2"],
     identifiers: ["1801-1234"],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -80,6 +89,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["MZK-2801-000341"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: { "MZK-2801-000341": "MZK-2801-000341" },
   },
   {
@@ -88,6 +98,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["MZK-2801-000977", "MZK-2801-000412", "MZK-2801-000618"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {
       "MZK-2801-000977": "MZK-2801-000977",
       "MZK-2801-000412": "MZK-2801-000412",
@@ -100,6 +111,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["1941", "1942"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
   // The record D35 should have been linked to: its own ID answers nothing (IT19's defect), so
@@ -110,6 +122,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["roč. 11", "roč. 12", "roč. 13"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
   {
@@ -118,6 +131,7 @@ export const catalogRecords: readonly CatalogRecord[] = [
     type: "Periodical",
     units: ["roč. 12", "roč. 13"],
     identifiers: [],
+    shelfMarks: [],
     barcodes: {},
   },
 ];

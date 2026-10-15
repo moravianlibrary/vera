@@ -64,7 +64,7 @@ describe("checkProposalItems", () => {
       catalogItem("MZK01-001277001"),
       catalogItem("MZK01-001277001", "1940"),
       catalogItem("MZK01-001277001", "1936–1938"),
-      { type: "cnb", value: "cnb001388120", unit: null },
+      { type: "nbn", value: "cnb001388120", unit: null },
       catalogItem("MZK09-999999999"),
     ]);
 
@@ -75,6 +75,17 @@ describe("checkProposalItems", () => {
       "inVera",
       "notInCatalog",
     ]);
+  });
+
+  it("resolves a shelf mark through the catalog (DOC-identifiers)", async () => {
+    signInAs("reader");
+
+    const checks = await checkProposalItems([
+      { type: "shelfMark", value: "st3-0871", unit: null },
+      { type: "shelfMark", value: "XX-0000", unit: null },
+    ]);
+
+    expect(checks.map((check) => check.kind)).toEqual(["new", "notInCatalog"]);
   });
 
   it("speaks to a requester in the public vocabulary", async () => {

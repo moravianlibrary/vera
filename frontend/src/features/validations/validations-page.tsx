@@ -89,7 +89,7 @@ export function ValidationsPage() {
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
         searchLabel="Search what waits for review"
-        searchPlaceholder="Search — title, catalog ID, signature, defect"
+        searchPlaceholder="Search — title, catalog ID, shelf mark, defect"
       />
 
       <MasterDetail

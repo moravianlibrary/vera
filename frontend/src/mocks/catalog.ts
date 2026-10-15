@@ -55,6 +55,9 @@ function heldCatalogRecords(): CatalogRecord[] {
     const barcodes = documents.flatMap((document) =>
       document.unit?.type === "barcode" ? [[document.unit.value, document.unit.value]] : [],
     );
+    const shelfMarks = documents.flatMap((document) =>
+      document.shelfMark === null ? [] : [document.shelfMark],
+    );
     const [first] = documents;
     return {
       catalogId,
@@ -62,6 +65,7 @@ function heldCatalogRecords(): CatalogRecord[] {
       type: first?.type ?? "Monograph",
       units: units.length === 0 ? null : units,
       identifiers: [],
+      shelfMarks: [...new Set(shelfMarks)],
       barcodes: Object.fromEntries(barcodes),
     };
   });

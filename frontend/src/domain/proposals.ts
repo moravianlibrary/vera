@@ -7,17 +7,30 @@
 
 import { z } from "zod";
 
-export const identifierTypes = ["catalogId", "cnb", "isbn", "issn", "barcode"] as const;
+// DOC-identifiers: the NBN is the type's international name; only the Czech UI calls it ČNB.
+export const identifierTypes = [
+  "catalogId",
+  "nbn",
+  "isbn",
+  "issn",
+  "barcode",
+  "shelfMark",
+] as const;
 export const identifierTypeSchema = z.enum(identifierTypes);
 export type IdentifierType = z.infer<typeof identifierTypeSchema>;
 
+// A shelf mark has no common format (DOC-identifiers): any value may be one, so it is checked by
+// the library's plugins, and never detected.
 const identifierPatterns = {
   catalogId: /^[A-Z]{3,4}\d{2}-\d{9}$/,
-  cnb: /^cnb\d{9}$/i,
+  nbn: /^cnb\d{9}$/i,
   isbn: /^97[89][-\d]{10,14}$/,
   issn: /^\d{4}-\d{3}[\dX]$/,
   barcode: /^MZK-\d{4}-\d{6}$/,
+  shelfMark: /\S/,
 } as const satisfies Record<IdentifierType, RegExp>;
+
+const detectableTypes = identifierTypes.filter((type) => type !== "shelfMark");
 
 export function isIdentifierOf(type: IdentifierType, value: string): boolean {
   return identifierPatterns[type].test(value);
@@ -25,7 +38,7 @@ export function isIdentifierOf(type: IdentifierType, value: string): boolean {
 
 // The first type whose format the value has; null when it has none.
 export function detectIdentifierType(value: string): IdentifierType | null {
-  return identifierTypes.find((type) => isIdentifierOf(type, value)) ?? null;
+  return detectableTypes.find((type) => isIdentifierOf(type, value)) ?? null;
 }
 
 export interface ProposalLine {

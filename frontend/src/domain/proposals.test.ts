@@ -6,13 +6,17 @@ import { defaultBatchNameOf, detectIdentifierType, parseProposalLines } from "@/
 describe("detectIdentifierType", () => {
   it.each([
     ["MZK01-001277001", "catalogId"],
-    ["cnb001388120", "cnb"],
+    ["cnb001388120", "nbn"],
     ["978-80-7325-456-3", "isbn"],
     ["1801-1234", "issn"],
     ["MZK-2801-000341", "barcode"],
     ["Slovácké noviny", null],
   ] as const)("reads %s as %s", (value, expected) => {
     expect(detectIdentifierType(value)).toBe(expected);
+  });
+
+  it("never takes a value for a shelf mark, which has no common format (DOC-identifiers)", () => {
+    expect(detectIdentifierType("ST1-0412")).toBeNull();
   });
 });
 
@@ -30,7 +34,7 @@ describe("parseProposalLines", () => {
         unit: "1889",
         reason: "For the 1889 elections",
       },
-      { type: "cnb", value: "cnb001388120", unit: null, reason: null },
+      { type: "nbn", value: "cnb001388120", unit: null, reason: null },
     ]);
   });
 
@@ -49,6 +53,12 @@ describe("parseProposalLines", () => {
     const lines = parseProposalLines("1801-1234\ncnb001388120", "issn");
 
     expect(lines.map((line) => line.type)).toEqual(["issn", null]);
+  });
+
+  it("reads any value as a shelf mark when that type is chosen (DOC-identifiers)", () => {
+    const lines = parseProposalLines("ST1-0412;roč. 3\nII 12.345", "shelfMark");
+
+    expect(lines.map((line) => line.type)).toEqual(["shelfMark", "shelfMark"]);
   });
 });
 

@@ -218,6 +218,11 @@ function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
         return candidate.catalogId === item.value.toUpperCase();
       case "barcode":
         return item.value in candidate.barcodes;
+      // DOC-identifiers: a shelf mark has no common format, so it is matched as it is written.
+      case "shelfMark":
+        return candidate.shelfMarks.some(
+          (shelfMark) => shelfMark.toUpperCase() === item.value.trim().toUpperCase(),
+        );
       default:
         return candidate.identifiers.some(
           (identifier) => normalized(identifier) === normalized(item.value),
@@ -448,7 +453,7 @@ function createDocument(catalogId: string, unit: string | null): Document {
     unit: unit === null ? null : { type: unitTypeOf(unit), value: unit },
     title: record?.title ?? catalogId,
     type: record?.type ?? "Monograph",
-    signature: null,
+    shelfMark: null,
     pageSources: [],
     registryRecords: [],
   };

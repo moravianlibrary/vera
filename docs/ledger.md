@@ -148,15 +148,6 @@ Built on 2026-10-15: the permission is gone from the catalog and the `admin` rol
 mix is written under `intention.edit@any`. → frontend: remove the older path with
 [L28](#l28-remove-mix-tracking).
 
-### L48: Shelf mark
-
-Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
-
-Decided on 2026-10-15: the field is the **shelf mark** (*signatura*), one string. It is also an
-identifier type to propose by, recognised and resolved by the library's plugins. The code calls
-it `signature`, a false friend in English. → frontend: rename to `shelfMark`, add the identifier
-type.
-
 ### L50: Link and publication plugins
 
 Rules: [PLG-kinds](reference/integrations/plugins.md#plg-kinds),
@@ -183,15 +174,6 @@ Rules: [UI-pages](reference/ui/pages.md#ui-pages).
 
 The columns of each list, what each record pane shows and what each page deliberately leaves out
 are not written down yet. → docs, from the code.
-
-### L42: NBN instead of ČNB
-
-Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers).
-
-Changed at the user's request on 2026-10-15: the identifier type is the NBN internally, and only
-the Czech UI calls it ČNB. The code names the type `cnb` (`domain/proposals.ts`, the propose
-dialog, the Documents search hint and the fixtures). → frontend: rename the type to `nbn`, label
-it *NBN* in English and *ČNB* in Czech.
 
 ### L58: Ways in
 
@@ -378,6 +360,13 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L48:** the document's field is `shelfMark`, shown as *Shelf mark*, and a shelf mark is an
+  identifier type to propose by, which the catalog adapter resolves
+  ([DOC-identifiers](reference/model/documents.md#doc-identifiers),
+  [DOC-lines](reference/model/documents.md#doc-lines)).
+- **L42:** the identifier type is `nbn`, labelled *NBN*; the Czech labels are to name it *ČNB*
+  ([DOC-identifiers](reference/model/documents.md#doc-identifiers)).
 
 - **L57:** decided on 2026-10-15. A batch is the submitter's, named by them, and has no source:
   an Input plugin only adds items, and one batch mixes the ways in. This replaces L55's typed

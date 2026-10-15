@@ -329,7 +329,7 @@ function rangePredicatesOf({ pages, asked }: DocumentQuery): Predicate[] {
 function matchesSearch(record: DocumentRecord, search: string): boolean {
   const needle = search.toLowerCase();
   const { document } = record;
-  const texts = [document.title, document.catalogId, document.unit?.value, document.signature];
+  const texts = [document.title, document.catalogId, document.unit?.value, document.shelfMark];
   const ids = [...record.iterations, ...record.requests].map((entry) => entry.id.toLowerCase());
   return texts.some((text) => text?.toLowerCase().includes(needle)) || ids.includes(needle);
 }

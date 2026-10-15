@@ -120,7 +120,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
         onQueryChange={(next) => view.setQuery(next)}
         searchLabel="Search documents"
         searchPlaceholder={
-          isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, signature, cnb…"
+          isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, shelf mark, NBN…"
         }
         activeExtraCount={query.isMine === true ? 1 : 0}
         extras={

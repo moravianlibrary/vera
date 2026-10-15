@@ -1,6 +1,6 @@
 // Joins a heading's detail parts into the one secondary line the demos draw under a title, e.g.
 // "MZK05-000009901 · Manuscript · RKP-0341". Missing or empty parts are skipped, so a record
-// without a signature never leaves a stray separator.
+// without a shelf mark never leaves a stray separator.
 
 export const detailSeparator = " · ";
 

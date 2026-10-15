@@ -346,7 +346,7 @@ function matchesSearch(row: RequestRow, search: string): boolean {
     document.title,
     document.catalogId,
     document.unit?.value,
-    document.signature,
+    document.shelfMark,
     ...askerNames,
     ...batchIdsOf(row),
   ];
