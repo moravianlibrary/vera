@@ -10,6 +10,9 @@ import {
   checkProposalItems,
   getProposalSettings,
   getRateLimitStatus,
+  readPhoto,
+  readRecordLink,
+  searchCatalogs,
   submitProposal,
 } from "@/api/proposals";
 import type { MockUserProfile } from "@/config/env";
@@ -323,5 +326,80 @@ describe("submitProposal", () => {
     expect(report).toMatchObject({ proposed: 1, approved: 0, joined: 0 });
     expect(ask).toMatchObject({ documentId: "D1", requesterId: "u8", decision: "Pending" });
     expect(ask?.existingCopies.map((copy) => copy.source)).toContain("VERA");
+  });
+});
+
+describe("the ways in (ACT-ways-in)", () => {
+  it("offers each way while its plugin is enabled (PERM-absent-not-disabled)", async () => {
+    signInAs("reader");
+    const settings = await getProposalSettings();
+
+    expect(settings).toMatchObject({
+      canDetectTypes: true,
+      canScanWithCamera: true,
+      canReadPhotos: true,
+    });
+    expect(settings.searchCatalogs.map(({ name }) => name)).toEqual(["MZK Aleph", "VKOL Aleph"]);
+    expect(settings.linkCatalogs.map(({ name }) => name)).toEqual(["NKP Aleph"]);
+
+    const instances = database.pluginInstances;
+    database.pluginInstances = instances.map((instance) =>
+      ["pi11", "pi12", "pi13", "pi2"].includes(instance.id)
+        ? { ...instance, isEnabled: false }
+        : instance,
+    );
+    try {
+      expect(await getProposalSettings()).toMatchObject({
+        canDetectTypes: false,
+        canScanWithCamera: false,
+        canReadPhotos: false,
+        linkCatalogs: [],
+      });
+    } finally {
+      database.pluginInstances = instances;
+    }
+  });
+
+  it("searches the catalogs that can be searched, one or all", async () => {
+    signInAs("reader");
+    const everywhere = await searchCatalogs("slovácké", null);
+
+    expect(everywhere.map(({ catalogId, catalog }) => [catalogId, catalog.name])).toEqual([
+      ["MZK01-001277001", "MZK Aleph"],
+      ["VKOL01-000456123", "VKOL Aleph"],
+    ]);
+    expect((await searchCatalogs("slovácké", "pi3")).map(({ catalogId }) => catalogId)).toEqual([
+      "VKOL01-000456123",
+    ]);
+    expect(await searchCatalogs("zlatá praha", null)).toEqual([]);
+  });
+
+  it("reads a record link or ID in a catalog that cannot be searched", async () => {
+    signInAs("reader");
+
+    expect(
+      await readRecordLink({
+        catalogInstanceId: "pi2",
+        link: "https://aleph.nkp.cz/F/?func=direct&doc_number=002345678&base=NKC01",
+      }),
+    ).toEqual({ catalogId: "NKC01-002345678" });
+    expect(await readRecordLink({ catalogInstanceId: "pi2", link: "NKC01-002345678" })).toEqual({
+      catalogId: "NKC01-002345678",
+    });
+    expect(await statusOf(readRecordLink({ catalogInstanceId: "pi2", link: "Zlatá Praha" }))).toBe(
+      422,
+    );
+    expect(await statusOf(readRecordLink({ catalogInstanceId: "pi1", link: "MZK01-1" }))).toBe(404);
+  });
+
+  it("reads a photo into candidates, each with why it matched", async () => {
+    signInAs("reader");
+    const reading = await readPhoto(new File(["jpeg"], "card.jpg", { type: "image/jpeg" }));
+
+    expect(reading.hasIdentifiers).toBe(false);
+    expect(reading.candidates[0]).toMatchObject({
+      catalogId: "MZK03-000778120",
+      why: "title and author match",
+    });
   });
 });

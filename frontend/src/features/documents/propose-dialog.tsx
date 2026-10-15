@@ -1,12 +1,13 @@
 // Propose: one dialog holding one list of items (view-map.md §1, propose;
-// docs/demos/shared/page-documents.js § propose). Items come in typed, as a pasted list or as a
-// file, mixed freely, and each is checked as it lands, so every row already says what
-// submitting will do: propose it, ask for it too, wait for a volume, or skip it. Then the
-// details (why, a project, and for a curator the category, priority and approving at once),
-// and a report of what was done. Anybody without `request.decide` adds at most the deployment's
-// limit at once; what does not fit is reported, never dropped silently.
-// TODO(rrandiak): catalog search, record links, barcode scanning and photo capture, each only
-// while its plugin is enabled (ACT-ways-in, L58); labels move to i18n.
+// docs/demos/shared/page-documents.js § propose). Items come in by any of the ways in, mixed
+// freely: typed, found by a catalog search or a record link, pasted, from a file, scanned or
+// read from a photo, each way there only while its plugin is enabled (ACT-ways-in). Each is
+// checked as it lands, so every row already says what submitting will do: propose it, ask for
+// it too, wait for a volume, or skip it. Then the details (why, a project, and for a curator the
+// category, priority and approving at once), and a report of what was done. Anybody without
+// `request.decide` adds at most the deployment's limit at once; what does not fit is reported,
+// never dropped silently.
+// TODO(rrandiak): labels move to i18n.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, FileUp, X } from "lucide-react";
@@ -16,6 +17,7 @@ import type {
   ProposalCheck,
   ProposalDraft,
   ProposalReport,
+  ProposalSettings,
   RateLimitStatus,
 } from "@/api/proposals";
 import {
@@ -61,6 +63,7 @@ import {
   isIdentifierOf,
   parseProposalLines,
 } from "@/domain/proposals";
+import { BarcodeWay, CatalogSearchWay, PhotoWay } from "@/features/documents/propose-ways";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
@@ -81,6 +84,8 @@ const steps = ["Items", "Details", "Submitted"] as const;
 type Step = (typeof steps)[number];
 
 const autoDetect = "auto";
+
+type Way = "typed" | "catalog" | "pasted" | "file" | "barcode" | "photo";
 const noProject = "none";
 
 // An item on the list. Its check is null while it is being made, and a failed one is retried
@@ -292,7 +297,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
         <ItemsStep
           items={items}
           limit={limit}
-          canDetectTypes={settings?.canDetectTypes ?? false}
+          settings={settings}
           rateLimit={rateLimit}
           notice={notice}
           onAdd={add}
@@ -341,7 +346,8 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
 interface ItemsStepProps {
   items: DraftItem[];
   limit: number;
-  canDetectTypes: boolean;
+  // Which ways in the enabled plugins offer; none beyond the plain ones until it answers.
+  settings: ProposalSettings | undefined;
   rateLimit: RateLimitStatus | undefined;
   notice: string | null;
   onAdd: (lines: ProposalLine[], source: string) => void;
@@ -355,7 +361,7 @@ interface ItemsStepProps {
 function ItemsStep({
   items,
   limit,
-  canDetectTypes,
+  settings,
   rateLimit,
   notice,
   onAdd,
@@ -379,25 +385,74 @@ function ItemsStep({
         : "Nothing to submit yet";
 
   const dailyRemaining = rateLimit?.perDay ?? null;
+  const [way, setWay] = useState<Way>("typed");
+  const canDetectTypes = settings?.canDetectTypes ?? false;
+  const searchCatalogs = settings?.searchCatalogs ?? [];
+  const linkCatalogs = settings?.linkCatalogs ?? [];
+  const hasCatalogWay = searchCatalogs.length + linkCatalogs.length > 0;
+  // PERM-absent-not-disabled: a way whose plugin is not enabled is not offered.
+  const ways: { way: Way; label: string }[] = [
+    { way: "typed", label: "Type it" },
+    ...(hasCatalogWay
+      ? [
+          {
+            way: "catalog" as const,
+            label: searchCatalogs.length > 0 ? "Catalog search" : "Record link",
+          },
+        ]
+      : []),
+    { way: "pasted", label: "Paste list" },
+    { way: "file", label: "File upload" },
+    { way: "barcode", label: "Barcode scan" },
+    ...(settings?.canReadPhotos === true
+      ? [{ way: "photo" as const, label: "Photo capture" }]
+      : []),
+  ];
 
   return (
     <>
       <div className="-mx-6 min-h-0 overflow-y-auto px-6">
-        <Tabs defaultValue="typed">
-          <TabsList>
-            <TabsTrigger value="typed">Type it</TabsTrigger>
-            <TabsTrigger value="pasted">Paste list</TabsTrigger>
-            <TabsTrigger value="file">File upload</TabsTrigger>
+        <Tabs value={way} onValueChange={(picked) => setWay(picked as Way)}>
+          <TabsList className="h-auto flex-wrap">
+            {ways.map((each) => (
+              <TabsTrigger key={each.way} value={each.way}>
+                {each.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
           <TabsContent value="typed" className="pt-2">
             <TypedWay onAdd={(line) => onAdd([line], "typed")} />
           </TabsContent>
+          {hasCatalogWay && (
+            <TabsContent value="catalog" className="pt-2">
+              <CatalogSearchWay
+                searchCatalogs={searchCatalogs}
+                linkCatalogs={linkCatalogs}
+                onAdd={onAdd}
+              />
+            </TabsContent>
+          )}
           <TabsContent value="pasted" className="pt-2">
-            <PastedWay canDetectTypes={canDetectTypes} onAdd={(lines) => onAdd(lines, "pasted")} />
+            <PastedWay
+              key={String(canDetectTypes)}
+              canDetectTypes={canDetectTypes}
+              onAdd={(lines) => onAdd(lines, "pasted")}
+            />
           </TabsContent>
           <TabsContent value="file" className="pt-2">
             <FileWay onAdd={onAdd} />
           </TabsContent>
+          <TabsContent value="barcode" className="pt-2">
+            <BarcodeWay canScanWithCamera={settings?.canScanWithCamera === true} onAdd={onAdd} />
+          </TabsContent>
+          {settings?.canReadPhotos === true && (
+            <TabsContent value="photo" className="pt-2">
+              <PhotoWay
+                onAdd={onAdd}
+                onSearchInstead={hasCatalogWay ? () => setWay("catalog") : undefined}
+              />
+            </TabsContent>
+          )}
         </Tabs>
 
         {notice !== null && (

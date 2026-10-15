@@ -5,17 +5,29 @@
 
 import { z } from "zod";
 import { recordStatusSchema } from "@/api/documents";
-import { getJson, postJson } from "@/api/http";
+import { getJson, postForm, postJson } from "@/api/http";
 import { apiRoutes } from "@/api/routes";
 import { batchSchema, prioritySchema } from "@/domain/entities";
 import { identifierTypeSchema } from "@/domain/proposals";
 
+const namedSchema = z.object({ id: z.string(), name: z.string() });
+
+// The ways in beyond typing, pasting, a file and a hardware scanner, each there only while its
+// plugin is enabled (ACT-ways-in, PERM-absent-not-disabled).
 export const proposalSettingsSchema = z.object({
   // Effective role limit for the current user; null means unlimited.
   maxAtOnce: z.number().int().nonnegative().nullable(),
-  // Whether an identifier detector plugin reads each pasted line's type; without one the
-  // person picks the type and every line is read as it.
+  // Whether an enabled Input instance reads each pasted line's type; without one the person
+  // picks the type and every line is read as it.
   canDetectTypes: z.boolean(),
+  // The enabled Catalog adapters that can be searched from here.
+  searchCatalogs: z.array(namedSchema),
+  // Those that cannot, whose record link or ID is read instead; where to find a record there.
+  linkCatalogs: z.array(namedSchema.extend({ opacUrl: z.url().nullable() })),
+  // An enabled Input instance reads barcodes from the camera; a hardware scanner needs none.
+  canScanWithCamera: z.boolean(),
+  // An enabled Input instance reads photos and matches them to catalog records.
+  canReadPhotos: z.boolean(),
 });
 export type ProposalSettings = z.infer<typeof proposalSettingsSchema>;
 
@@ -94,6 +106,63 @@ export const proposalReportSchema = z.object({
   skipped: z.array(proposalItemSchema),
 });
 export type ProposalReport = z.infer<typeof proposalReportSchema>;
+
+// ---------------------------------------------------------------- ways in
+
+// A record a catalog search found, ready to add as a catalog ID.
+export const catalogHitSchema = z.object({
+  catalogId: z.string(),
+  title: z.string(),
+  // The units it enumerates, for the person to see before adding.
+  units: z.array(z.string()),
+  catalog: namedSchema,
+});
+export type CatalogHit = z.infer<typeof catalogHitSchema>;
+
+export const recordLinkSchema = z.object({
+  catalogInstanceId: z.string(),
+  link: z.string().trim().min(1),
+});
+export type RecordLink = z.infer<typeof recordLinkSchema>;
+
+// The catalog ID the link or ID names; refused when the catalog reads neither.
+export const recordLinkReadingSchema = z.object({ catalogId: z.string() });
+
+// What a photo was read as, and the records it matched, each with why: nothing is added until
+// one is picked.
+export const photoReadingSchema = z.object({
+  // "a catalog card", "a cover".
+  seen: z.string(),
+  read: z.array(
+    z.object({ label: z.string(), value: z.string(), confidence: z.number().min(0).max(1) }),
+  ),
+  // Whether any identifier was on it; otherwise it was matched by its text.
+  hasIdentifiers: z.boolean(),
+  candidates: z.array(z.object({ catalogId: z.string(), title: z.string(), why: z.string() })),
+});
+export type PhotoReading = z.infer<typeof photoReadingSchema>;
+
+export async function searchCatalogs(
+  query: string,
+  catalogId: string | null,
+): Promise<CatalogHit[]> {
+  const params = new URLSearchParams({ q: query });
+  if (catalogId !== null) {
+    params.set("catalog", catalogId);
+  }
+
+  return getJson(apiRoutes.proposalCatalogSearch, z.array(catalogHitSchema), params);
+}
+
+export async function readRecordLink(link: RecordLink): Promise<{ catalogId: string }> {
+  return postJson(apiRoutes.proposalRecordLink, link, recordLinkReadingSchema);
+}
+
+export async function readPhoto(photo: File): Promise<PhotoReading> {
+  const body = new FormData();
+  body.set("photo", photo);
+  return postForm(apiRoutes.proposalPhoto, body, photoReadingSchema);
+}
 
 export async function getProposalSettings(): Promise<ProposalSettings> {
   return getJson(apiRoutes.proposalSettings, proposalSettingsSchema);

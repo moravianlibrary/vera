@@ -55,7 +55,7 @@ import {
   projectMembersSchema,
   projectRejectionSchema,
 } from "@/api/projects";
-import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
+import { proposalDraftSchema, proposalLookupSchema, recordLinkSchema } from "@/api/proposals";
 import {
   approvalSchema,
   bulkApprovalSchema,
@@ -304,6 +304,7 @@ import {
   visibleWatchlists,
   watchlistReachOf,
 } from "@/mocks/watchlists";
+import { readPhoto, readRecordLink, searchCatalogs } from "@/mocks/ways-in";
 
 const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
@@ -1164,6 +1165,36 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.proposalSettings), () =>
       HttpResponse.json(proposalSettingsOf(currentSession())),
     ),
+
+    // ACT-ways-in: each is the proposer's, like the lookup.
+    http.get(route(apiRoutes.proposalCatalogSearch), ({ request }) => {
+      if (!hasPermission(currentSession(), "request.create")) {
+        return problemResponse({ status: 403, message: "You may not propose" });
+      }
+
+      const params = new URL(request.url).searchParams;
+      return HttpResponse.json(searchCatalogs(params.get("q") ?? "", params.get("catalog")));
+    }),
+    http.post(route(apiRoutes.proposalRecordLink), async ({ request }) => {
+      if (!hasPermission(currentSession(), "request.create")) {
+        return problemResponse({ status: 403, message: "You may not propose" });
+      }
+
+      const link = recordLinkSchema.safeParse(await request.json());
+      return link.success
+        ? outcomeResponse(readRecordLink(link.data))
+        : invalidResponse(link.error);
+    }),
+    http.post(route(apiRoutes.proposalPhoto), async ({ request }) => {
+      if (!hasPermission(currentSession(), "request.create")) {
+        return problemResponse({ status: 403, message: "You may not propose" });
+      }
+
+      const photo = (await request.formData()).get("photo");
+      return photo instanceof File
+        ? outcomeResponse(readPhoto())
+        : problemResponse({ status: 422, message: "Take a photo to read" });
+    }),
 
     http.get(route(apiRoutes.proposalRateLimit), () => {
       const session = currentSession();

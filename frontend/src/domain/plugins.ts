@@ -57,6 +57,7 @@ export type GeneratorClass = z.infer<typeof generatorClassSchema>;
 // A delivery channel provides one interface (STATUS "Hooks"); an input one way into Propose (§4.8).
 export const channelInterfaces = ["Email", "Chat", "Webhook", "File"] as const;
 export const inputModes = ["Text", "Camera", "Photo"] as const;
+export type InputMode = (typeof inputModes)[number];
 // An identity is a button that redirects, or VERA's own form (§4.10).
 export const loginEntries = ["Redirect", "Form"] as const;
 // What a harvester's agent proposes into: review, or already approved (view-map.md §6).

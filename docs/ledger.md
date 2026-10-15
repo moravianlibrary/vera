@@ -66,16 +66,6 @@ Rules: [UI-pages](reference/ui/pages.md#ui-pages).
 The columns of each list, what each record pane shows and what each page deliberately leaves out
 are not written down yet. → docs, from the code.
 
-### L58: Ways in
-
-Rules: [ACT-ways-in](reference/access/acts.md#act-ways-in).
-
-Decided on 2026-10-15, from the demo's propose dialog: the ways in beside typing, pasting and a
-file. Catalog search with record links for catalogs that cannot be searched, continuous barcode
-scanning (a hardware scanner always; the camera through an Input plugin) and photo capture with
-candidates to pick from. Each way shows only while its plugin is enabled, auto-detect included.
-→ frontend, after the plugins step (Input instances), then engine.
-
 ### L21: Identifier plugins
 
 Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers),
@@ -92,7 +82,7 @@ pattern. Only a check a pattern cannot make needs its own implementation. This r
 installation's configuration; tenancy stays out of scope. The code fixes the types and formats
 in `domain/proposals.ts` (`TODO(Tenancy)`), and the client checks them as typed: the server is to
 send each type's pattern and labels with the propose settings, and a type checked only by plugin
-code is checked with the catalog lookup. → frontend after [L58](#l58-ways-in), then engine.
+code is checked with the catalog lookup. → frontend, then engine.
 
 ### L60: Browser notifications for watchlists
 
@@ -275,6 +265,12 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L58:** the propose dialog's ways in beside typing, pasting and a file: catalog search over
+  the enabled Catalog adapters that search, with a record link or ID for those that cannot;
+  continuous barcode scanning, a hardware scanner always and the camera while a camera Input
+  instance is enabled (read with the browser's barcode reader); photo capture with candidates
+  and why each matched. Each way, auto-detect included, follows its enabled plugin
+  ([ACT-ways-in](reference/access/acts.md#act-ways-in)).
 - **L31, in part:** each instance sets its property tiers, which registry states count as an
   existing copy, and a harvester's agent (name, entry point), in its editor and drawer; the
   implementation's declarations are the defaults, and *Move to v…* carries the instance's

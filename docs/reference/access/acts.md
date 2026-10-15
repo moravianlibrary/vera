@@ -74,8 +74,8 @@ item is checked as it lands, so the list says what submitting will do.
 A way whose plugin is not enabled is absent, not disabled
 ([PERM-absent-not-disabled](permissions.md#perm-absent-not-disabled)).
 
-> **Open — [L58](../../ledger.md#l58-ways-in).** Built: typing, pasting and a file. Auto-detect is
-> always on in the mock rather than following an enabled Input instance.
+The catalog ways are one: the searchable catalogs first, then, for each catalog that cannot be
+searched, where to find a record and a field for its link or ID.
 
 ## Request review
 

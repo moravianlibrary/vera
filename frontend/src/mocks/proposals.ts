@@ -36,9 +36,9 @@ import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
+import { waysInOf } from "@/mocks/ways-in";
 
 // The mock library's calendar day is Prague time. Both proposal limits belong to roles.
-const canDetectTypes = true;
 
 // Track submission timestamps per user for rate limiting.
 // Keyed by user ID, each entry is an array of ISO timestamps.
@@ -60,7 +60,7 @@ function roleProposalLimitOf(
 }
 
 export function proposalSettingsOf(session: Session): ProposalSettings {
-  return { maxAtOnce: proposalLimitOf(session), canDetectTypes };
+  return { maxAtOnce: proposalLimitOf(session), ...waysInOf() };
 }
 
 export function proposalLimitOf(session: Session): number | null {

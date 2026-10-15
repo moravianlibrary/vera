@@ -42,6 +42,11 @@ export const apiRoutes = {
   roles: "/roles",
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
+  // ACT-ways-in: searching the catalogs that can be searched, reading a record link in one that
+  // cannot, and reading a photo.
+  proposalCatalogSearch: "/proposals/catalog-search",
+  proposalRecordLink: "/proposals/record-link",
+  proposalPhoto: "/proposals/photo",
   proposals: "/proposals",
   // Remaining rate limit count for the current user (checked before submit).
   proposalRateLimit: "/proposals/rate-limit",
