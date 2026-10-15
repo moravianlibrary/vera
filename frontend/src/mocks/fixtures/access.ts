@@ -129,7 +129,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       },
       {
         permission: "request.read",
-        scope: "any",
+        scope: "custody",
       },
       {
         permission: "iteration.recheck",

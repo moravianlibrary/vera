@@ -88,7 +88,7 @@ Grants, by scope; an empty cell is not granted.
 | `request.create` | own | own | own | own | own | own |
 | `request.read_mine` | own | own | project | own | own | own |
 | `request.withdraw_own` | own | own | own | own | own | own |
-| `request.read` |  |  |  | any | any | any |
+| `request.read` |  |  |  | custody | any | any |
 | `request.decide` |  |  |  | custody | custody | any |
 | `request.read_ingest` |  |  |  | custody | custody | any |
 | `request.retry` |  |  |  | custody | custody | any |

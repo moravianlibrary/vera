@@ -114,18 +114,17 @@ describe("listRequests", () => {
     expect(page.items.every((row) => row.decision === "Pending")).toBe(true);
   });
 
-  it("shows a curator every request through request.read, deciding only their custody's (VIEW-requests)", async () => {
+  it("shows a curator the requests in their request custody, and lets them decide those (VIEW-requests)", async () => {
     signInAs("curator");
 
     const page = await listRequests({}, { limit: 200 });
-    const outside = await findRequest("D31");
-    const inside = page.items.find(
-      (row) => row.decision === "Pending" && row.custodyIds.includes("pc1"),
-    );
+    const open = page.items.find((row) => row.decision === "Pending");
 
-    expect(page.items.map((row) => row.record.document.id)).toContain("D31");
-    expect(outside).toMatchObject({ canDecide: false });
-    expect(inside && (await findRequest(inside.record.document.id))?.canDecide).toBe(true);
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.items.every((row) => row.custodyIds.includes("pc1"))).toBe(true);
+    expect(page.items.map((row) => row.record.document.id)).not.toContain("D31");
+    expect(page.facets.custodyIds.map((facet) => facet.value)).not.toContain("pc0");
+    expect(open && (await findRequest(open.record.document.id))?.canDecide).toBe(true);
   });
 
   it("shows every decision unfiltered, and only the open ones awaiting a decision", async () => {
@@ -329,7 +328,7 @@ describe("deciding", () => {
         approveProposal("D31", { categoryId: "c4", priority: "Normal", rescanNote: null }),
       ),
     ).toBe(403);
-    expect((await findRequest("D31"))?.canDecide).toBe(false);
+    expect(await findRequest("D31")).toBeNull();
   });
 
   it("logs a suggestion the decider changed as overruled, and one a batch changed as overridden", async () => {

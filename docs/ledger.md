@@ -369,6 +369,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-15
 
+- **L56:** decided on 2026-10-15. The shipped `curator` reads requests at `custody`, not `any`,
+  so Requests shows them what their request custodies hold
+  ([ROLE-shipped](reference/access/roles.md#role-shipped)).
+
 - **L44:** Proposals is *Requests* at `/requests`, proposal custody is *request custody*
   ([ACCESS-request-custody](reference/access/custody.md#access-request-custody)), and the code
   follows (`features/requests`, `api/requests`, `RequestRow`, `RequestCustody`); a proposal stays
