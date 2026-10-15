@@ -57,6 +57,9 @@ Each person decides, per watchlist and per channel (email, chat), whether to be 
 until they switch it on. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
+> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Whether browser push
+> becomes a channel, naming the watchlist and the records that entered it.
+
 #### WATCH-mail-batch
 
 Watchlist mail is batched per person across all their watchlists, in a 15-minute window: at

@@ -13,7 +13,25 @@ When the change is made and checked, the entry moves to *Done*.
 
 ## Open questions
 
-Each of these waits for a decision first. None is open now.
+Each of these waits for a decision first.
+
+### L60: Browser notifications for watchlists
+
+Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+[WATCH-mail-batch](reference/integrations/watchlists.md#watch-mail-batch),
+[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
+
+Raised on 2026-10-16, not decided: a browser push notification as another watchlist channel,
+beside email and chat, saying which watchlist changed and which records entered it. Today a
+person is told only by email or chat, and the sidebar badge shows unseen entries. To settle:
+- whether browser push is a channel per watchlist, switched on like the others;
+- what one notification names: the watchlist and a count, or the records too, and how many before
+  it is cut short;
+- whether it is batched like watchlist mail, or sent as records enter;
+- how it follows *Do not send notifications*, and whether it needs the browser's permission
+  asked from Preferences.
+
+→ decision, then frontend and engine.
 
 ## Not built yet
 
