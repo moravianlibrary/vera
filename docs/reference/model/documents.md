@@ -21,7 +21,8 @@ answered with the units to choose from.
 
 When the catalog gives several records for an identifier, a shelf mark or any other, the ask is
 answered with the records to choose from. The person picks one or more, and each picked record
-is its own ask, checked as any other: its unit, whether VERA holds it, whether it is theirs.
+is its own ask by its catalog ID, checked as any other: its unit, whether VERA holds it, whether
+it is theirs.
 
 #### DOC-identifiers
 
@@ -29,7 +30,9 @@ An item can be proposed by any of these identifiers. Each type is an instance of
 **Identifier** plugin ([PLG-kinds](../integrations/plugins.md#plg-kinds)), which recognises a
 value, checks it and normalises it before anything is looked up, and names the type in each
 language. VERA ships one predefined instance per type below, configured with MZK's formats; a
-library changes their configuration, or adds one, such as a recogniser of its shelf marks:
+library changes their configuration and order, or adds one, such as a recogniser of its shelf
+marks. The predefined instances show on Plugins like any other and can be edited, but not
+deleted:
 
 | Type | Format |
 |---|---|
