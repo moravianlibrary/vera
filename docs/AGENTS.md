@@ -1,96 +1,51 @@
-# VERA Documentation Index
+# Agents
 
-This is the agent navigation hub for VERA's documentation. It organizes the docs
-so you can find the right file when answering questions about the frontend implementation.
+Where to look, what never to do, and how to change a rule. This file routes; it never states a
+rule itself.
 
-## Design (implementation reference)
+## Where a rule lives
 
-Decision records that guide the code. These are what we are implementing against;
-they may become obsolete as the product evolves.
+| Question | File |
+|---|---|
+| What a thing is, what it holds | [model/entities](reference/model/entities.md), [model/documents](reference/model/documents.md) |
+| How things connect, and what must not | [model/relationships](reference/model/relationships.md) |
+| Status, gates, the badge | [model/status](reference/model/status.md) |
+| What is logged | [model/log](reference/model/log.md) |
+| States and transitions | [lifecycles/](reference/lifecycles/) |
+| Categories, mixes, intentions, generating lists | [planning/](reference/planning/) |
+| Who may do what | [access/permissions](reference/access/permissions.md), [scopes](reference/access/scopes.md), [roles](reference/access/roles.md) |
+| Users, identities, groups, custody | [access/people](reference/access/people.md), [access/custody](reference/access/custody.md) |
+| Which pages a person sees | [access/views](reference/access/views.md) |
+| Every act: permission, when allowed, what it writes | [access/acts](reference/access/acts.md) |
+| Plugins, registries, hooks, messages, watchlists | [integrations/](reference/integrations/) |
+| Tiers, navigation, pages and their filters | [ui/](reference/ui/) |
+| A term in Czech | [glossary](glossary.md) |
+| Why it is so | [decisions/](decisions/README.md) |
+| Whether it is built | [ledger](ledger.md) |
 
-- **`design/shared/view-rules.md`** — rules for building UI entries (actions, rows, fields)
-- **`design/shared/view-map.md`** — which permissions map to which sidebar entries
-- **`design/shared/view-catalog.md`** — the full view catalog
-- **`design/shared/navigation.md`** — sidebar construction rules
-- **`design/shared/page-composition.md`** — page composition conventions
-- **`design/shared/filtering.md`** — filter rules
-- **`design/shared/entities/watchlists-and-notifications.md`** — Watchlists page, system watchlists, badges, delivery, and Hook preferences
-- **`design/shared/flows.md`** — flow reference (D1, D2, PJ1, etc.)
-- **`design/shared/entities/`** — entity definitions
-  - `permissions.md` — role-based permissions, grants, scopes, the 5 shipped roles
-  - `identity.md` — identity plugins, login flow, mapped roles
-  - `status-model.md` — the status state machine
-  - `relationships.md` — entity relationships, custody, membership
-  - `proposal-custody.md` — proposal custody (before approval)
-  - `concepts.md` — core entity model
-  - `projects.md`, `intentions.md`, `plugins.md`, etc.
+The [reference README](reference/README.md) gives the ID scheme and what is generated.
 
-## Permissions (reference docs)
+## Never
 
-Human-readable breakdown of the permission system, extracted from the code.
+- State a rule outside the reference. Cite its ID instead: `// LC-LIST-done` in code, the ID in a
+  test's name, a link in a document.
+- Edit a generated table by hand. Run `make docs`.
+- Edit `docs/demos/`, `docs/design/` or the other older material; they are sources, not targets.
+- Cite the older material from new code or documents.
+- Add a navigation group, divider or count nobody asked for
+  ([DEC-0007](decisions/DEC-0007-flat-navigation.md)).
+- Add a way to fix a catalog record in VERA
+  ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)).
+- Reuse or renumber a removed ID.
 
-- **`permissions/catalog.md`** — every permission and its accepted scopes (the table in `domain/permissions.ts`)
-- **`permissions/roles.md`** — the five shipped roles and their grants
-- **`permissions/scope-resolution.md`** — how `@custody`, `@project`, `@managed`, `@any` resolve against records
-- **`permissions/can-check.md`** — how the `can()` hook resolves permissions at runtime
+## Changing a rule
 
-## Access (identity, roles, groups, custody)
+1. Change the rule in the reference, or add one: a heading whose whole text is its ID.
+2. If the code does not follow yet, add an entry to the [ledger](ledger.md) and an *Open* line
+   under the rule linking to it.
+3. Change the code, citing the ID; then move the ledger entry to *Done* and drop the *Open* line.
+4. Run `make docs-check`. It fails on a stale table, an ID defined twice or cited but undefined,
+   and a broken link or anchor.
 
-How users arrive, what roles they hold, and how groups/custody/project membership work.
-
-- **`access/identity.md`** — identity plugins (Keycloak, local, eduID), login page flow
-- **`access/role-resolution.md`** — hand-set vs. mapped roles, `heldRolesOf()`, provenance
-- **`access/groups.md`** — what groups carry: category custody, proposal custody, project membership
-- **`access/custody.md`** — proposal custody (who decides before approval) + category custody (who is responsible after)
-- **`access/project-membership.md`** — project members, managers, group memberships
-
-## User Journey (flowcharts per role)
-
-Mermaid diagrams showing what each role can see and do, end-to-end.
-
-- **`user-journey/index.md`** — overview of all journeys and how to read them
-- **`user-journey/reader.md`** — reader: propose, see own documents only
-- **`user-journey/staff.md`** — staff: reader access with a higher daily proposal limit
-- **`user-journey/curator.md`** — curator: review proposals, validate iterations, manage category custody
-- **`user-journey/digitization.md`** — dig-curator: plan and execute digitization lists
-- **`user-journey/admin.md`** — admin: manage users, roles, groups, custody, plugins, hooks, tasks
-
-## Workflows (state machines)
-
-Mermaid state diagrams extracted from `docs/design/shared/model/workflows.js`.
-
-- **`workflows/request.md`** — request.decision lifecycle
-- **`workflows/iteration.md`** — iteration.progress lifecycle
-- **`workflows/list.md`** — list state machine
-- **`workflows/project.md`** — project.state machine
-- **`workflows/intention.md`** — intention mix selection, snapshots, and archives
-
-## Demos (interactive HTML)
-
-- **`demos/`** — standalone HTML demo pages for each view. Run with `bun` or serve with `npx serve demos/`.
-  - `index.html` — entry point
-  - `model.html` — workflow state diagrams
-  - `page-*.js` — demo scripts per view
-
-## Frontend source structure (quick reference)
-
-```
-frontend/src/
-├── domain/          ← pure domain logic: permissions, entities, access, status, proposals
-├── api/             ← API client: routes, queries, mutations
-├── features/        ← feature modules: view logic, dialogs, pages
-│   ├── access/      ← Users & Groups page
-│   ├── categories/  ← Categories page
-│   ├── documents/   ← Documents page
-│   ├── proposals/   ← Proposals page
-│   ├── lists/       ← Digitization Lists page
-│   ├── projects/    ← Projects page
-│   ├── intentions/  ← Intentions page
-│   ├── validations/ ← Validations page
-│   ├── tasks/       ← Tasks page
-│   ├── plugins/     ← Plugins page
-│   ├── hooks/       ← Hooks page
-├── hooks/           ← shared hooks: useCan, useSession, usePicked, etc.
-├── lib/             ← utilities: view-definition, date/number formatting
-└── mocks/           ← MSW mock data (maps to MOCK_USERS in Makefile)
-```
+A question only the user can answer goes in the ledger under *Open questions*, never decided
+silently.
