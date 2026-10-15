@@ -61,8 +61,6 @@ running list. The item stays on the list, marked, and *Mark Done* does not move 
 
 **Resume** lifts a hold. The item returns to the pool, not to its old list.
 
-> **Open — [L14](../../ledger.md#l14-acts-not-built).** Resume is not built.
-
 #### LC-ITER-reclassify
 
 The category and priority change until the scan exists. Moved outside the person's custody, the

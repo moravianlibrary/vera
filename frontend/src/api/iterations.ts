@@ -1,7 +1,9 @@
 // What may be changed on a document's current iteration from the Documents and Validations panes:
 // reclassify it, set where its scan is available, enter its
-// page count, run the checks again over the record as the catalog has it now, and cancel it. Each is its own permission, scoped by the iteration's category (permissions.md §3), and the
-// server checks it again; a pane only leaves out what the caller may not do.
+// page count, run the checks again over the record as the catalog has it now, cancel it and resume
+// it (ACT-cancel, ACT-resume), and overrule its restriction (ACT-overrule). Each is its own
+// permission, scoped by the iteration's category (permissions.md §3), and the server checks it
+// again; a pane only leaves out what the caller may not do.
 
 import { z } from "zod";
 import { postJson } from "@/api/http";
@@ -81,6 +83,25 @@ export const cancellationResultSchema = z.object({
 });
 export type CancellationResult = z.infer<typeof cancellationResultSchema>;
 
+// ---------------------------------------------------------------- resume and overrule
+
+// Resume carries nothing: the hold is lifted and the item returns to the pool, not to its old
+// list (LC-ITER-resume).
+export const resumeSchema = z.object({});
+export type Resume = z.infer<typeof resumeSchema>;
+
+// Why an administrator lifts the restriction; staff read it (ACT-overrule).
+export const overruleSchema = z.object({
+  note: z.string().trim().min(1),
+});
+export type Overrule = z.infer<typeof overruleSchema>;
+
+// Where the gates leave it once the hold or the restriction is gone.
+export const releaseResultSchema = z.object({
+  progress: progressSchema,
+});
+export type ReleaseResult = z.infer<typeof releaseResultSchema>;
+
 // ---------------------------------------------------------------- calls
 
 export async function reclassifyIteration(
@@ -125,4 +146,15 @@ export async function cancelIteration(
     cancellation,
     cancellationResultSchema,
   );
+}
+
+export async function resumeIteration(iterationId: string): Promise<ReleaseResult> {
+  return postJson(iterationActionRoute(iterationId, "resume"), {}, releaseResultSchema);
+}
+
+export async function overruleRestriction(
+  iterationId: string,
+  overrule: Overrule,
+): Promise<ReleaseResult> {
+  return postJson(iterationActionRoute(iterationId, "overrule"), overrule, releaseResultSchema);
 }

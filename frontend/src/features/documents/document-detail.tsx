@@ -5,8 +5,8 @@
 // reads their own ask: its status in the public words, why they asked, and what has happened.
 // What a caller may not read the server has already withheld; the cards gate only what they
 // offer.
-// Its acts sit beside the heading (document-actions.tsx).
-// TODO(rrandiak): Ask for this too and Withdraw; Retry and Raw payload on Adding, Message on
+// Its acts sit beside the heading (document-actions.tsx); a requester's is withdrawing their ask.
+// TODO(rrandiak): Ask for this too; Retry and Raw payload on Adding, Message on
 // Digitization and Open in catalog; the cards' links check grants at any scope, not against
 // custody or project; labels move to i18n.
 
@@ -485,11 +485,14 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
 
   return (
     <>
-      <RecordHeading
-        title={document.title}
-        identifier={documentIdentifierOf(document)}
-        details={[latest === undefined ? null : `asked ${formatDay(latest.at)}`]}
-      />
+      <div className="flex flex-wrap items-start justify-between gap-x-4">
+        <RecordHeading
+          title={document.title}
+          identifier={documentIdentifierOf(document)}
+          details={[latest === undefined ? null : `asked ${formatDay(latest.at)}`]}
+        />
+        <DocumentActions record={record} session={session} isOwn className="mb-4" />
+      </div>
       {note !== null && <RecordNote note={note} nameOf={() => ""} />}
       <StatTiles
         stats={[

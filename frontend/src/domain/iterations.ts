@@ -22,6 +22,17 @@ export function isCancellable(iteration: Iteration): boolean {
   return iteration.cancellation === null && !isProgressAtLeast(iteration.progress, "Digitized");
 }
 
+// A hold is lifted only before the scan exists (ACT-resume).
+export function isResumable(iteration: Iteration): boolean {
+  return iteration.cancellation !== null && !isProgressAtLeast(iteration.progress, "Digitized");
+}
+
+// A restriction stands until a recheck no longer finds it or an administrator overrules it
+// (ACT-overrule).
+export function isOverrulable(iteration: Iteration): boolean {
+  return isRestricted(iteration);
+}
+
 // Where a verdict or a fix leaves progress: Ready only while the restriction and validation gates
 // pass, back to Enqueued when one fails after Ready, and returning when it clears (flows.md V14).
 // A cancellation holds an item where it is rather than moving it; an item on a list stays there,

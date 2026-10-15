@@ -23,6 +23,7 @@ import {
   previewMarkDone,
   readList,
   saveList,
+  startList,
   toListSearchParams,
 } from "@/api/lists";
 import type { MockUserProfile } from "@/config/env";
@@ -628,5 +629,24 @@ describe("acting on a list", () => {
     ).toBe(true);
     expect(detail.log.map((entry) => entry.event)).toContain("Marked Done");
     expect(await statusOf(markDone("L-2026-014"))).toBe(409);
+  });
+});
+
+describe("ACT-list-start", () => {
+  it("moves a Planned list's start date to today, once", async () => {
+    signInAs("digitization");
+
+    const detail = await startList("L-2026-016");
+
+    expect(detail.row.state).toBe("InProgress");
+    expect(detail.row.list.startsOn).toBe("2026-06-25"); // LC-LIST-start-now
+    expect(detail.log.map((entry) => entry.event)).toContain("Started early");
+    expect(await statusOf(startList("L-2026-016"))).toBe(409);
+  });
+
+  it("needs list.edit", async () => {
+    signInAs("staff");
+
+    expect(await statusOf(startList("L-2026-015"))).toBe(403);
   });
 });

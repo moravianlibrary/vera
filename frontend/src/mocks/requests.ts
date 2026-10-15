@@ -18,6 +18,7 @@ import type {
   RequestPage,
   RequestQuery,
   RequestRangeField,
+  WithdrawalResult,
 } from "@/api/requests";
 import { requestPageSchema, requestSliceSize } from "@/api/requests";
 import { categoryPathOf } from "@/domain/categories";
@@ -30,7 +31,7 @@ import type {
   Session,
   StatusLogEntry,
 } from "@/domain/entities";
-import { isWithinScope, scopesOf } from "@/domain/permissions";
+import { hasPermission, isWithinScope, scopesOf } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
 import type { RequestRow } from "@/domain/requests";
 import {
@@ -546,6 +547,43 @@ export function declineProposal(
   }
 
   return { value: { documentId, decision: "Denied", askCount: asksOf(row).length } };
+}
+
+// The asker takes back their own asks on the document that still wait (ACT-withdraw). Each is
+// Withdrawn for good; asking again makes a new request (LC-REQ-final). The others' asks stand.
+export function withdrawAsk(session: Session, documentId: string): Outcome<WithdrawalResult> {
+  if (!hasPermission(session, "request.withdraw_own")) {
+    return { refusal: { status: 403, message: "You may not withdraw asks" } };
+  }
+
+  const own = database.requests.filter(
+    (request) => request.documentId === documentId && request.requesterId === session.user.id,
+  );
+  if (own.length === 0) {
+    return { refusal: { status: 404, message: "You have not asked for this document" } };
+  }
+
+  const pending = own.filter((request) => request.decision === "Pending");
+  if (pending.length === 0) {
+    return { refusal: { status: 409, message: "It has been decided meanwhile" } };
+  }
+
+  const now = new Date().toISOString();
+  const correlationId = crypto.randomUUID();
+  for (const ask of pending) {
+    replaceRequest({ ...withoutPendingFields(ask), decision: "Withdrawn", withdrawnAt: now });
+    writeLog({
+      subjectKind: "request",
+      subjectId: ask.id,
+      at: now,
+      actor: { kind: "user", userId: session.user.id },
+      correlationId,
+      event: "Withdrawn",
+      detail: "Withdrawn by the asker.",
+    });
+  }
+
+  return { value: { documentId, withdrawnCount: pending.length } };
 }
 
 // Takes every open row the batch asked for that may be approved together, wherever its earliest

@@ -133,6 +133,11 @@ export function proposalDecisionRoute(documentId: string, decision: "approve" | 
   return `${requestRoute(documentId)}/${decision}`;
 }
 
+// The caller takes back their own ask on the document while it waits (ACT-withdraw).
+export function askWithdrawalRoute(documentId: string): string {
+  return `${requestRoute(documentId)}/withdraw`;
+}
+
 // Everything open a batch asked for, approved at once (status-model.md §2.8).
 export function proposalBulkApprovalRoute(batchId: string): string {
   return `${apiRoutes.requests}/batches/${encodeURIComponent(batchId)}/approve`;
@@ -160,6 +165,8 @@ export const iterationActions = [
   "page-count",
   "recheck",
   "cancel",
+  "resume",
+  "overrule",
 ] as const;
 export type IterationAction = (typeof iterationActions)[number];
 

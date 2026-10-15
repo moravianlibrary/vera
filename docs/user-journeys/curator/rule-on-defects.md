@@ -43,4 +43,5 @@
 
 ## Not covered
 
-Overruling the restriction (admin, **not built**: [L14](../../ledger.md#l14-acts-not-built)).
+Overruling the restriction: an administrator's act, from Documents
+([ACT-overrule](../../reference/access/acts.md#iterations)).

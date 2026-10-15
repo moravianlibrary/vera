@@ -22,12 +22,14 @@ be, readable when it's done."
    → It is Published, and its askers see *Available*
    ([LC-ITER-published](../../reference/lifecycles/iteration.md#lc-iter-published)). A hook on
    `iteration.published` fires ([HOOK-events](../../reference/integrations/hooks.md#hook-events)).
-4. She resumes the cancelled item. **(not built: [L14](../../ledger.md#l14-acts-not-built))**
-   → It returns to the pool.
+4. She resumes the cancelled item.
+   → It returns to the pool, Ready once every gate passes
+   ([LC-ITER-resume](../../reference/lifecycles/iteration.md#lc-iter-resume)).
 
 ## Rules
 
 [SCOPE-custody-category](../../reference/access/scopes.md#scope-custody-category) ·
 [ACT-cancel](../../reference/access/acts.md#iterations) ·
+[ACT-resume](../../reference/access/acts.md#iterations) ·
 [ACT-publish](../../reference/access/acts.md#iterations) ·
 [LC-ITER-scanned](../../reference/lifecycles/iteration.md#lc-iter-scanned)

@@ -18,6 +18,7 @@ import {
   maximumRequestSliceSize,
   parseRequestSearchParams,
   toRequestSearchParams,
+  withdrawAsk,
 } from "@/api/requests";
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
@@ -337,5 +338,31 @@ describe("deciding", () => {
 
     expect(approvalEntryOf("D32")?.detail).toContain("says otherwise”) — overruled.");
     expect(approvalEntryOf("D28")?.detail).toContain("— overridden by the batch's category.");
+  });
+});
+
+describe("ACT-withdraw", () => {
+  it("takes back the caller's own ask while it waits, once", async () => {
+    signInAs("reader");
+
+    const result = await withdrawAsk("D21");
+    const ask = database.requests.find((request) => request.id === "R19");
+
+    expect(result.withdrawnCount).toBe(1);
+    expect(ask?.decision).toBe("Withdrawn");
+    expect(await statusOf(withdrawAsk("D21"))).toBe(409); // LC-REQ-final
+  });
+
+  it("leaves other people's asks alone", async () => {
+    signInAs("reader");
+
+    expect(await statusOf(withdrawAsk("D22"))).toBe(404); // a1's
+    expect(database.requests.find((request) => request.id === "R20")?.decision).toBe("Pending");
+  });
+
+  it("needs request.withdraw_own", async () => {
+    signInAs("no-access");
+
+    expect(await statusOf(withdrawAsk("D30"))).toBe(403);
   });
 });

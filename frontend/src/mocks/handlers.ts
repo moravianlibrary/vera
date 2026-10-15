@@ -28,10 +28,12 @@ import {
 } from "@/api/intentions";
 import {
   cancellationRequestSchema,
+  overruleSchema,
   pageCountSchema,
   publicationSchema,
   recheckSchema,
   reclassificationSchema,
+  resumeSchema,
 } from "@/api/iterations";
 import {
   generationRequestSchema,
@@ -161,9 +163,11 @@ import {
 import {
   cancelIteration,
   enterPageCount,
+  overruleRestriction,
   publishIteration,
   recheckIteration,
   reclassifyIteration,
+  resumeIteration,
 } from "@/mocks/iterations";
 import { canGenerate, enabledGenerators, generateDraft } from "@/mocks/list-generation";
 import {
@@ -179,6 +183,7 @@ import {
   queryLists,
   queryPool,
   saveList,
+  startListNow,
 } from "@/mocks/lists";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import {
@@ -245,6 +250,7 @@ import {
   findRequestDetail,
   publicCustodyOf,
   queryRequests,
+  withdrawAsk,
 } from "@/mocks/requests";
 import {
   canReadSchedules,
@@ -1043,6 +1049,10 @@ export function createHandlers(profile: MockUserProfile) {
       return outcomeResponse(saveList(currentSession(), String(params.listId), draft.data));
     }),
 
+    http.post(route(`${apiRoutes.digitizationLists}/:listId/start`), ({ params }) =>
+      outcomeResponse(startListNow(currentSession(), String(params.listId))),
+    ),
+
     http.get(route(`${apiRoutes.digitizationLists}/:listId/done`), ({ params }) =>
       outcomeResponse(previewMarkDone(currentSession(), String(params.listId))),
     ),
@@ -1123,6 +1133,8 @@ export function createHandlers(profile: MockUserProfile) {
     iterationAction("page-count", pageCountSchema, enterPageCount),
     iterationAction("recheck", recheckSchema, recheckIteration),
     iterationAction("cancel", cancellationRequestSchema, cancelIteration),
+    iterationAction("resume", resumeSchema, resumeIteration),
+    iterationAction("overrule", overruleSchema, overruleRestriction),
 
     http.get(route(apiRoutes.proposalSettings), () =>
       HttpResponse.json(proposalSettingsOf(currentSession())),
@@ -1271,6 +1283,10 @@ export function createHandlers(profile: MockUserProfile) {
 
       return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
     }),
+
+    http.post(route(`${apiRoutes.requests}/:documentId/withdraw`), ({ params }) =>
+      outcomeResponse(withdrawAsk(currentSession(), String(params.documentId))),
+    ),
 
     http.get(route(apiRoutes.validations), ({ request }) => {
       const session = currentSession();

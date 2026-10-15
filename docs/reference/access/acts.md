@@ -54,10 +54,7 @@ and an act on it is refused (409).
 |---|---|---|---|---|
 | `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
 | `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
-| `ACT-withdraw` | withdraw an ask | `request.withdraw_own` | the ask is still Pending | — |
-
-> **Open — [L14](../../ledger.md#l14-acts-not-built).** Withdrawing is not built. The permission
-> exists and Requests shows withdrawn asks, but there is no act or endpoint for it.
+| `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409) | each of the person's open asks on it Withdrawn; others' asks stand; log *Withdrawn* per ask |
 
 #### ACT-ways-in
 
@@ -100,13 +97,9 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 | `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again and the checks rerun; defects no longer found are gone; log *Rechecked* |
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
-| `ACT-resume` | *Resume* | `iteration.resume` | cancelled, not scanned | — |
+| `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |
 | `ACT-publish` | *Set link…* | `iteration.publish` | digitized (409); a new link (422) | progress Published; log *Published* or *Link changed*; hook `iteration.published` |
-| `ACT-overrule` | *Overrule restriction…* | `restriction.overrule` | restricted | — |
-
-> **Open — [L14](../../ledger.md#l14-acts-not-built).** *Resume* and *Overrule* are not built.
-> Cancelled and Not-digitizable items stay held, and a restriction clears only when a recheck no
-> longer finds it.
+| `ACT-overrule` | *Overrule restriction…* | `restriction.overrule` | a restriction stands and is not overruled (409) | the overrule with a staff note, beside the rule's finding; gates move progress; log *Restriction overruled* |
 
 *Cancel…* at `custody` covers an item already on a list: the curator is responsible for it, the
 list's history records why it left, and `iteration.cancelled` lets a hook tell the planner.
@@ -128,12 +121,10 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 |---|---|---|---|---|
 | `ACT-list-create` | *New list* / *Generate* | `list.create` | ends on or after it starts (422); every member is in the pool (409 `list.member_unavailable`) | log *Created*, *Generated — …*, *Listed* per member; hook `list.created` |
 | `ACT-list-save` | *Edit* | `list.edit` | not Done (409 `list.done`); members on this list or in the pool | log *Dates moved*, *Renamed*, *Members moved*; *Taken off a list* per member removed |
-| `ACT-list-start` | *Start now* | `list.edit` | Planned: its start date is still ahead (409 `list.already_started`) | its start date becomes today, so it is In progress and its members move from Planned to In progress; log *Started early* with the old date; hooks `list.dates_changed`, `list.started` |
+| `ACT-list-start` | *Start now…* | `list.edit` | Planned: its start date is still ahead (409 `list.already_started`) | its start date becomes today, so it is In progress and its members move from Planned to In progress; log *Started early* with the old date; hooks `list.dates_changed`, `list.started` |
 | `ACT-list-done` | *Mark Done…* | `list.edit` | In progress (409 `list.not_started`), not Done | every open member Digitized; dates fixed; log *Marked Done*; hook `list.done` |
 | `ACT-list-not-digitizable` | *Could not be digitized…* | `list.edit` | In progress; the member neither scanned nor stopped (409 `iteration.stopped`) | cancelled as Not digitizable with a public message; log *Could not be digitized* |
 | `ACT-list-delete` | *Delete…* | `list.delete` | not Done (409 `list.done`) | members back to the pool or Enqueued; each keeps the list's name; log *List deleted*, *Deleted* |
-
-> **Open — [L40](../../ledger.md#l40-start-a-list-now).** *Start now* is not built.
 
 ## Projects
 

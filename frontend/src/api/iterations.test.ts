@@ -1,5 +1,6 @@
 // The Documents pane's More ▾ end to end against the mock server over HTTP: reclassifying a
-// document's iteration and setting where its scan is available,
+// document's iteration, setting where its scan is available, resuming a held one and overruling
+// a restriction,
 // each within the caller's grant and the iteration's state. Each changes the mock's state, so
 // each test acts on its own iteration.
 
@@ -7,7 +8,12 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
-import { publishIteration, reclassifyIteration } from "@/api/iterations";
+import {
+  overruleRestriction,
+  publishIteration,
+  reclassifyIteration,
+  resumeIteration,
+} from "@/api/iterations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -113,5 +119,48 @@ describe("setting where it is available", () => {
     expect(await statusOf(publishIteration("IT28", { link: "https://a.cz/x" }))).toBe(409); // Ready, in custody
     expect(await statusOf(publishIteration("IT37", { link: "https://a.cz/x" }))).toBe(403);
     expect(await statusOf(publishIteration("IT36", { link: "ftp://a.cz/x" }))).toBe(422);
+  });
+});
+
+describe("ACT-resume", () => {
+  it("lifts the hold and returns the item to the pool", async () => {
+    signInAs("admin");
+
+    const result = await resumeIteration("IT9");
+    const detail = await findDocument("D9");
+    const current = detail?.record.iterations.at(-1);
+
+    expect(result.progress).toBe("Ready");
+    expect(current?.cancellation).toBeNull();
+    expect(current?.listId).toBeNull(); // LC-ITER-resume
+    expect(detail?.log[0]?.event).toBe("Resumed");
+    expect(await statusOf(resumeIteration("IT9"))).toBe(409); // no longer held
+  });
+
+  it("is not a reader's to do", async () => {
+    signInAs("reader");
+
+    expect(await statusOf(resumeIteration("IT9"))).toBe(404);
+  });
+});
+
+describe("ACT-overrule", () => {
+  it("is an administrator's only, never custody", async () => {
+    signInAs("curator");
+
+    expect(await statusOf(overruleRestriction("IT14", { note: "Rights cleared." }))).toBe(403);
+  });
+
+  it("lifts the restriction with a note and keeps the rule's finding", async () => {
+    signInAs("admin");
+
+    await overruleRestriction("IT14", { note: "Rights cleared in writing." });
+    const detail = await findDocument("D14");
+    const current = detail?.record.iterations.at(-1);
+
+    expect(current?.restriction).not.toBeNull();
+    expect(current?.restrictionOverride?.note).toBe("Rights cleared in writing.");
+    expect(detail?.log[0]?.event).toBe("Restriction overruled");
+    expect(await statusOf(overruleRestriction("IT14", { note: "Again." }))).toBe(409);
   });
 });

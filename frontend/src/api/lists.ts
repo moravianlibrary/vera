@@ -500,6 +500,11 @@ export async function saveList(listId: string, draft: ListDraft): Promise<ListDe
   return putJson(digitizationListRoute(listId), draft, listDetailSchema);
 }
 
+// A Planned list started early: its start date becomes today (ACT-list-start, LC-LIST-start-now).
+export async function startList(listId: string): Promise<ListDetail> {
+  return postJson(`${digitizationListRoute(listId)}/start`, {}, listDetailSchema);
+}
+
 export async function previewMarkDone(listId: string): Promise<MarkDoneDryRun> {
   return getJson(`${digitizationListRoute(listId)}/done`, markDoneDryRunSchema);
 }

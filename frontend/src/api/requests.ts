@@ -2,7 +2,8 @@
 // the caller's `request.read`; one document's asks with their history; and the decisions on a
 // proposal, within the reach of `request.decide`. A decision covers every open ask of the
 // document (status-model.md §2.7). Approving sets the category and the priority; over an
-// existing copy it is a rescan and needs a note. A decline carries what every asker is told.
+// existing copy it is a rescan and needs a note. A decline carries what every asker is told. An
+// asker withdraws their own ask while it waits, with nothing to say (ACT-withdraw).
 
 import { z } from "zod";
 import type { Answer } from "@/api/documents";
@@ -11,6 +12,7 @@ import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson, postJson } from "@/api/http";
 import {
   apiRoutes,
+  askWithdrawalRoute,
   proposalBulkApprovalRoute,
   proposalDecisionRoute,
   requestRoute,
@@ -286,6 +288,14 @@ export const decisionResultSchema = z.object({
 });
 export type DecisionResult = z.infer<typeof decisionResultSchema>;
 
+// The caller's asks it took back: Withdrawn from then on, and asking again makes a new request
+// (LC-REQ-final).
+export const withdrawalResultSchema = z.object({
+  documentId: z.string(),
+  withdrawnCount: z.number().int().positive(),
+});
+export type WithdrawalResult = z.infer<typeof withdrawalResultSchema>;
+
 // What the bulk approve took, and what it left to be decided on its own, counted when it ran.
 export const bulkApprovalResultSchema = z.object({
   approvedCount: z.number().int(),
@@ -336,6 +346,10 @@ export async function declineProposal(
   decline: Decline,
 ): Promise<DecisionResult> {
   return postJson(proposalDecisionRoute(documentId, "decline"), decline, decisionResultSchema);
+}
+
+export async function withdrawAsk(documentId: string): Promise<WithdrawalResult> {
+  return postJson(askWithdrawalRoute(documentId), {}, withdrawalResultSchema);
 }
 
 export async function bulkApproveProposals(

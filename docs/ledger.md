@@ -17,26 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L14: Acts not built
-
-Rules: [ACT-withdraw](reference/access/acts.md#proposing),
-[ACT-resume](reference/access/acts.md#iterations),
-[ACT-overrule](reference/access/acts.md#iterations).
-
-Withdrawing an ask, resuming a cancelled iteration and overruling a restriction have
-permissions, and the frontend mentions them, but there is no act and no endpoint. → frontend,
-then engine.
-
-### L40: Start a list now
-
-Rules: [ACT-list-start](reference/access/acts.md#digitization-lists),
-[LC-LIST-start-now](reference/lifecycles/list.md#lc-list-start-now).
-
-Added at the user's request on 2026-10-14. A Planned list can be started early: its start date
-becomes today. Not built: it needs the act on the list's page and an endpoint (or editing the
-start date to today through *Edit*, which already works and could carry the same log entry). →
-frontend, then engine.
-
 ### L5: Suspending a user
 
 Rules: [ACCESS-mapping-at-login](reference/access/people.md#access-mapping-at-login).
@@ -344,6 +324,20 @@ messages, and the generator follows them. → frontend.
   ([engine plan](develop/engine.md#settled)).
 - **Start now's refusal** is `list.already_started`, so refusal codes and event names never share
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
+
+### Built, 2026-10-16
+
+- **L14:** *Withdraw…* on the caller's own waiting ask, on Documents and My Documents; *Resume…*,
+  *Cancel…* and *Overrule restriction…* in Documents' More ▾. Resume takes a held item off its
+  list and back to the pool; an overrule keeps the rule's finding beside it
+  ([ACT-withdraw](reference/access/acts.md#proposing),
+  [ACT-resume](reference/access/acts.md#iterations),
+  [ACT-overrule](reference/access/acts.md#iterations),
+  [LC-ITER-resume](reference/lifecycles/iteration.md#lc-iter-resume)).
+- **L40:** *Start now…* on a Planned list's page: its start date becomes today, logged *Started
+  early* with the date it replaced. Its hooks wait for L33
+  ([ACT-list-start](reference/access/acts.md#digitization-lists),
+  [LC-LIST-start-now](reference/lifecycles/list.md#lc-list-start-now)).
 
 ### Built, 2026-10-15
 

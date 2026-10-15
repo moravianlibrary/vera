@@ -575,6 +575,37 @@ function runningList(session: Session, listId: string): Outcome<DigitizationList
 const isOpenMember = (iteration: Iteration) =>
   !isScanned(iteration) && iteration.cancellation === null;
 
+// Started early (ACT-list-start): its start date becomes today, so its open members read In
+// progress, and the log keeps the date it replaced (LC-LIST-start-now). The state follows the
+// date, so nothing else is written.
+export function startListNow(session: Session, listId: string): Outcome<ListDetail> {
+  const found = actionableList(session, listId, "list.edit");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const list = found.value;
+  if (listStateOf(list, today()) !== "Planned") {
+    return {
+      refusal: {
+        status: 409,
+        message: "It has started already",
+        code: "list.already_started",
+      },
+    };
+  }
+
+  const started: DigitizationList = { ...list, startsOn: today() };
+  database.lists.splice(database.lists.indexOf(list), 1, started);
+  const progress = progressOnList(started, today());
+  for (const iteration of membersOf(started.id).filter(isOpenMember)) {
+    replaceIteration({ ...iteration, progress });
+  }
+
+  logList(session, started, crypto.randomUUID(), "Started early", `was to start ${list.startsOn}`);
+  return { value: detailOf(started) };
+}
+
 export function previewMarkDone(session: Session, listId: string): Outcome<MarkDoneDryRun> {
   const found = runningList(session, listId);
   if ("refusal" in found) {

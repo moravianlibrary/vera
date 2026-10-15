@@ -1,7 +1,7 @@
 // What the server does when someone changes a document's current iteration from the Documents or
 // Validations pane: reclassify it (C6,
 // V13), set where its scan is available (P1), enter its page count, recheck it against the
-// catalog and cancel it. Each checks its permission against the iteration's category,
+// catalog, cancel and resume it, and overrule its restriction. Each checks its permission against the iteration's category,
 // refuses what the iteration's state does not allow, and writes the status log. Entering a
 // page count runs the checks again, and a recheck runs them over the record as the catalog has
 // it now; a defect they no longer find needs no verdict, and the gates move progress
@@ -10,6 +10,7 @@
 import type {
   CancellationRequest,
   CancellationResult,
+  Overrule,
   PageCount,
   Publication,
   PublicationResult,
@@ -17,14 +18,18 @@ import type {
   RecheckResult,
   Reclassification,
   ReclassificationResult,
+  ReleaseResult,
+  Resume,
 } from "@/api/iterations";
 import { categoryPathOf } from "@/domain/categories";
 import { followedIterationId } from "@/domain/documents";
 import type { Document, Iteration, Session } from "@/domain/entities";
 import {
   isCancellable,
+  isOverrulable,
   isPublishable,
   isReclassifiable,
+  isResumable,
   progressAfterGates,
   scopeOfIteration,
 } from "@/domain/iterations";
@@ -327,6 +332,93 @@ export function cancelIteration(
     .filter((request) => followedIterationId(request) === iteration.id)
     .map((request) => request.requesterId);
   return { value: { progress, askerCount: new Set(askerIds).size } };
+}
+
+// ---------------------------------------------------------------- resume
+
+// The hold is lifted (ACT-resume): the item returns to the pool, not to its old list, so one
+// marked could not be digitized comes off its list too (LC-ITER-resume). The gates then say
+// whether it is Ready.
+export function resumeIteration(
+  session: Session,
+  iterationId: string,
+  _resume: Resume,
+): Outcome<ReleaseResult> {
+  const found = actionableIteration(session, iterationId, "iteration.resume");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const { iteration } = found.value;
+  if (!isResumable(iteration)) {
+    return { refusal: { status: 409, message: "It is not held, or it has been scanned" } };
+  }
+
+  const released = { ...iteration, listId: null, cancellation: null };
+  const progress = progressAfterGates(
+    iteration.listId === null ? released : { ...released, progress: "Ready" },
+  );
+  replaceIteration({ ...released, progress });
+  writeLog({
+    subjectKind: "iteration",
+    subjectId: iteration.id,
+    at: new Date().toISOString(),
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    event: "Resumed",
+    detail: [
+      iteration.listId === null ? null : `Taken off ${iteration.listId}.`,
+      progressNote(iteration.progress, progress),
+    ]
+      .filter((sentence) => sentence !== null)
+      .join(" "),
+  });
+  return { value: { progress } };
+}
+
+// ---------------------------------------------------------------- overrule
+
+// An administrator lifts the restriction a rule found (ACT-overrule); `restriction.overrule` is
+// held at `any` only, never custody. The finding stays beside the overrule, and the gates move
+// progress (STAT-gates).
+export function overruleRestriction(
+  session: Session,
+  iterationId: string,
+  overrule: Overrule,
+): Outcome<ReleaseResult> {
+  const found = actionableIteration(session, iterationId, "restriction.overrule");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const { iteration } = found.value;
+  if (!isOverrulable(iteration)) {
+    return { refusal: { status: 409, message: "No restriction stands on it" } };
+  }
+
+  const now = new Date().toISOString();
+  const overruled = {
+    ...iteration,
+    restrictionOverride: { actorId: session.user.id, at: now, note: overrule.note },
+  };
+  const progress = isFoundAfterScan(iteration) ? iteration.progress : progressAfterGates(overruled);
+  replaceIteration({ ...overruled, progress });
+  writeLog({
+    subjectKind: "iteration",
+    subjectId: iteration.id,
+    at: now,
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    event: "Restriction overruled",
+    detail: [
+      `${iteration.restriction?.rule ?? "The rule"} no longer stops it.`,
+      overrule.note,
+      progressNote(iteration.progress, progress),
+    ]
+      .filter((sentence) => sentence !== null)
+      .join(" "),
+  });
+  return { value: { progress } };
 }
 
 // ---------------------------------------------------------------- shared

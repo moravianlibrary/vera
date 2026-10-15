@@ -1,6 +1,7 @@
 // What is done to a digitization list from its pane (page-lists.js browse; flows.md L12–L16).
 // *Mark Done…* while it runs, primary once it has ended: every open member moves to Digitized,
-// as the server's dry run counts it first. *Delete…* in More ▾, never on a Done list: no reason,
+// as the server's dry run counts it first. *Start now…* on a Planned list moves its start date to
+// today (ACT-list-start, LC-LIST-start-now). *Delete…* in More ▾, never on a Done list: no reason,
 // and the dialog says what happens to each member. Per item, while the list is not Done and the
 // item is still open: *Could not be digitized…* with a message, while the list runs; *Cancel…*
 // with a reason, which takes it off the list; and taking it off in the editor.
@@ -16,6 +17,7 @@ import {
   markNotDigitizable,
   previewDeletion,
   previewMarkDone,
+  startList,
 } from "@/api/lists";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -29,15 +31,17 @@ import { can, hasPermission } from "@/domain/permissions";
 import { listInvalidations, listsQueryKey } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
+import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
 const listRefusalTexts = {
   "list.done": "This list was marked Done meanwhile; it no longer changes.",
   "list.not_started": "It has not started yet: nothing on it is being scanned.",
+  "list.already_started": "It has started meanwhile.",
 } as const;
 
-type OpenDialog = "done" | "delete" | null;
+type OpenDialog = "start" | "done" | "delete" | null;
 
 interface ListActionsOptions {
   detail: ListDetail;
@@ -63,6 +67,11 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
   });
   const done = useActionMutation({
     call: markDone,
+    invalidates: listInvalidations,
+    refusalTexts: listRefusalTexts,
+  });
+  const start = useActionMutation({
+    call: startList,
     invalidates: listInvalidations,
     refusalTexts: listRefusalTexts,
   });
@@ -96,6 +105,10 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
   const ordered = row.isOverdue ? [markDoneAction, editAction] : [editAction, markDoneAction];
   const actions = ordered.filter((action) => action !== null);
 
+  if (hasPermission(session, "list.edit") && row.state === "Planned") {
+    actions.push({ id: "start", label: "Start now…", onSelect: () => setOpenDialog("start") });
+  }
+
   if (hasPermission(session, "list.delete") && isOpen) {
     actions.push({
       id: "delete",
@@ -108,6 +121,22 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
 
   const dialogs = (
     <>
+      <ConsequenceDialog
+        isOpen={openDialog === "start"}
+        onClose={() => setOpenDialog(null)}
+        title={`Start ${list.name} now?`}
+        description={`It was to start ${formatCalendarDay(list.startsOn)}; its start date becomes today.`}
+        consequences={[
+          { text: "It is In progress from now, and so is everything on it not held." },
+          {
+            text: "Intentions count a list by the day it starts, so it may count towards other ones.",
+          },
+          { text: "The history keeps the date it replaced." },
+        ]}
+        confirmLabel="Start now"
+        isDestructive={false}
+        onConfirm={() => start.run(list.id)}
+      />
       <ConsequenceDialog
         isOpen={openDialog === "done"}
         onClose={() => setOpenDialog(null)}

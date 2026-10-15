@@ -396,6 +396,7 @@ export function useMoreActions({
 
 // ---------------------------------------------------------------- forbidden
 
+// A restriction takes no verdict; the overrule is an act on the record in Documents (ACT-overrule).
 export function ForbiddenCard({ session }: { session: Session }) {
   const mayOverrule = can(session, "restriction.overrule");
 
@@ -403,7 +404,7 @@ export function ForbiddenCard({ session }: { session: Session }) {
     <DetailCard title="What you can do">
       <p className="text-muted-foreground">
         {mayOverrule
-          ? "Overrule it from Documents. The rule is re-checked on every change to the record, and a re-check that no longer finds it clears it."
+          ? "Overrule it from Documents — More → Overrule restriction…; the rule is re-checked on every change to the record, and a re-check that no longer finds it clears it."
           : "Nothing here acts on a restriction. If the rule is wrong for this item, message an administrator: they can overrule it. A re-check that no longer finds it clears it by itself."}
       </p>
       <FinePrint>A restriction is set by a rule, never by a person.</FinePrint>

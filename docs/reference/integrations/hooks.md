@@ -22,9 +22,9 @@ file) to a recipient, with its own batching and retries.
 #### HOOK-list-transitions
 
 `list.started` fires when a list becomes In progress: on its start date, from the daily job, or
-at once on *Start now*. `list.done` fires on *Mark Done*. A list created to start today fires
+at once on *Start now…*. `list.done` fires on *Mark Done*. A list created to start today fires
 `list.created` and `list.started` together. `list.dates_changed` still fires for every date
-change, *Start now* included.
+change, *Start now…* included.
 
 *Why:* a list's state follows its date and is never written
 ([LC-LIST-state](../lifecycles/list.md#lc-list-state)), so nothing would otherwise mark the

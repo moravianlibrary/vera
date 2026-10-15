@@ -29,9 +29,9 @@
 5. Later, another of his asks is published. He returns to VERA.
    → *My Documents* in the sidebar carries a badge of 1. Opening the watchlist shows the new
    entry, and the badge clears ([WATCH-new](../../reference/integrations/watchlists.md#watch-new)).
-6. He withdraws the ask still waiting for review. **(not built:
-   [L14](../../ledger.md#l14-acts-not-built))**
-   → It shows *Withdrawn*.
+6. He withdraws the ask still waiting for review.
+   → It shows *Withdrawn*; asking again later would make a new request
+   ([LC-REQ-final](../../reference/lifecycles/request.md#lc-req-final)).
 
 ## Rules
 

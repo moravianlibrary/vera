@@ -21,7 +21,7 @@ date and are never written. **Done** is an act. Each move fires a hook event
 
 #### LC-LIST-start-now
 
-A Planned list can be started early: *Start now* moves its start date to today, which makes it In
+A Planned list can be started early: *Start now…* moves its start date to today, which makes it In
 progress. It changes the date, not the state: the state still follows the date. It is logged
 with the date it replaced. A list already In progress or Done cannot be started.
 
