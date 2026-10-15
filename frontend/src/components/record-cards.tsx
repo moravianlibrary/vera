@@ -20,7 +20,7 @@ import type {
   StatusLogEntry,
   User,
 } from "@/domain/entities";
-import { useProjectsQuery } from "@/hooks/use-reference-query";
+import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
@@ -36,6 +36,7 @@ export function AskersCard({
 }) {
   const current = currentIterationOf(record);
   const { data: projects = [] } = useProjectsQuery();
+  const isShownBatch = useIsShownBatch();
   const requests = record.requests.toSorted((first, second) => second.at.localeCompare(first.at));
   const askerCount = new Set(record.requests.map((request) => request.requesterId)).size;
 
@@ -50,7 +51,7 @@ export function AskersCard({
             aside={
               <Muted>
                 {formatDay(request.at)}
-                {request.batchId !== null && (
+                {isShownBatch(request.batchId) && (
                   <span className="block font-mono">{request.batchId}</span>
                 )}
               </Muted>
@@ -69,9 +70,6 @@ export function AskersCard({
                   ? ", after its approval"
                   : ""}
               </div>
-            )}
-            {request.decision === "Pending" && request.approveOnCheck !== null && (
-              <div className="text-muted-foreground">asked for approval on arrival</div>
             )}
           </DetailRow>
         );

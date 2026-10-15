@@ -41,6 +41,7 @@ import {
   currentIterationOf,
   documentIdentifierOf,
   effectivePageCount,
+  isShownAsBatch,
   latestPublicAskOf,
   publicRecordStatusOf,
   recordStatusOf,
@@ -56,6 +57,7 @@ import {
 import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
 import { DocumentActions } from "@/features/documents/document-actions";
+import { RetryFailedButton } from "@/features/documents/document-group-header";
 import {
   useBatchesQuery,
   useCategoriesQuery,
@@ -278,7 +280,11 @@ function AddingCard({
     return null;
   }
 
+  // A batch of one is not named: it is retried from here, a larger one from its header
+  // (ENT-batch, ACT-retry-batch).
+  const isShown = isShownAsBatch(batch);
   const isFailed = iteration.progress === "IngestFailed";
+  const canRetry = hasPermission(session, "request.retry");
   const ingest = isFailed ? (
     <ToneBadge tone="red">Failed</ToneBadge>
   ) : iteration.progress === "Enqueued" ? (
@@ -291,14 +297,18 @@ function AddingCard({
     <DetailCard title="Adding">
       <FactGrid
         facts={[
-          {
-            label: "Batch",
-            value: (
-              <>
-                <span className="font-mono">{batch.id}</span> <Muted>{batch.name}</Muted>
-              </>
-            ),
-          },
+          ...(isShown
+            ? [
+                {
+                  label: "Batch",
+                  value: (
+                    <>
+                      <span className="font-mono">{batch.id}</span> <Muted>{batch.name}</Muted>
+                    </>
+                  ),
+                },
+              ]
+            : []),
           {
             label: "Submitted",
             value: joinDetails([formatDay(batch.submittedAt), nameOf(batch.submittedBy)]),
@@ -312,10 +322,22 @@ function AddingCard({
           {iteration.ingestFailure?.error ?? "the error is not recorded."}
         </StatusNote>
       )}
-      {isFailed && !hasPermission(session, "request.retry") && (
+      {isFailed && canRetry && !isShown && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <RetryFailedButton batchId={batch.id} failed={1} />
+        </div>
+      )}
+      {isFailed && !canRetry && (
         <FinePrint>
-          Only a curator in its custody or an administrator can retry batch{" "}
-          <b className="font-mono">{batch.id}</b>.
+          Only a curator in its custody or an administrator can retry{" "}
+          {isShown ? (
+            <>
+              batch <b className="font-mono">{batch.id}</b>
+            </>
+          ) : (
+            "it"
+          )}
+          .
         </FinePrint>
       )}
     </DetailCard>

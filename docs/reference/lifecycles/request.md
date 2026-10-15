@@ -34,9 +34,6 @@ An ask for a document whose work is already moving joins it:
 A document whose current attempt is published or cancelled is not moving: a new ask for it is a
 new proposal, decided as a rescan with the existing copy shown.
 
-> **Open — [L27](../../ledger.md#l27-asking-for-a-rescan).** The code counts any iteration as
-> moving, so the new ask follows the old attempt as a Duplicate.
-
 #### LC-REQ-one-iteration
 
 One decision covers every open ask of a document. Approving creates one iteration:
@@ -48,9 +45,6 @@ One decision covers every open ask of a document. Approving creates one iteratio
 A person who may also decide can propose with *approve now*. An item with no existing copy is
 approved at once. One with a copy, or whose check has not answered, stays Pending and is decided
 like any other proposal: approving it over a copy is a rescan.
-
-> **Open — [L52](../../ledger.md#l52-remove-approve-on-check).** The code still marks such a
-> proposal *approve on check*, a mark nothing ever acts on.
 
 #### LC-REQ-checks-first
 

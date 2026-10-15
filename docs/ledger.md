@@ -62,16 +62,6 @@ Decided on 2026-10-15: the order a document meets them (Identity, Input, Harvest
 adapter, Property source, Registry, Validation, Restriction, Custody, Classifier, List generator,
 Link, Publication detector, Message, Delivery channel), with no group headings. → frontend.
 
-### L52: Remove approve on check
-
-Rules: [LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now),
-[ACT-propose-approved](reference/access/acts.md#proposing).
-
-Decided on 2026-10-15. *Propose… with approve now* approves what has no copy at once; the rest
-stays Pending like any other proposal. The code stores an *approve on check* mark
-(`approveOnCheck`) that nothing ever acts on, and shows it in review. → frontend: drop the field,
-its status notes and where review reads it.
-
 ### L1: request.read opens Requests
 
 Rules: [ACCESS-membership-not-capability](reference/access/custody.md#access-membership-not-capability),
@@ -87,22 +77,6 @@ Rules: [ACCESS-link-identity](reference/access/people.md#access-link-identity).
 
 Decided on 2026-10-15. *Unlink* on a person's identity; refused for their last one (suspending is
 [L5](#l5-suspending-a-user)'s job); the person and their history stay. → frontend, then engine.
-
-### L20: Every submission is a batch
-
-Rules: [ENT-batch](reference/model/entities.md#ent-batch).
-
-Decided on 2026-10-15. Every submission is a batch, one item included, so retrying, provenance and approval work the
-same for one item. A batch is shown as one only with two items or more. The code makes a batch
-only for two or more. → frontend (mock), then engine.
-
-### L27: Asking for a rescan
-
-Rules: [LC-REQ-join](reference/lifecycles/request.md#lc-req-join).
-
-Decided on 2026-10-15. An ask for a document whose current attempt is published or cancelled is a new proposal,
-decided as a rescan with the existing copy shown. The code counts any iteration as moving, so the
-ask follows the old attempt as a Duplicate. → frontend.
 
 ### L28: Remove mix tracking
 
@@ -414,6 +388,17 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L52:** *approve now* stores no mark: what has a copy, or is not yet checked, stays Pending
+  like any other proposal, with no *held* status or note
+  ([LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now)).
+- **L27:** an ask after a published or cancelled attempt is a new proposal, shown with the
+  existing copy and approved as a rescan; the asker's own earlier ask still skips it
+  ([LC-REQ-join](reference/lifecycles/request.md#lc-req-join)).
+- **L20:** every submission is a batch, one item included; a batch is sent with its size and
+  shown as one only from two items. The fixtures' single asks got batches of their own, and a
+  single failed item is retried from its Adding card
+  ([ENT-batch](reference/model/entities.md#ent-batch)).
 
 - **L53:** reach and detail are separate. `request.read_own` became `request.read_mine` (`own` ·
   `project`) and opens My Documents in public detail; `iteration.read` opens Documents, which

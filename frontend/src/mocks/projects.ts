@@ -853,12 +853,7 @@ function logRequest(
 }
 
 function withoutPendingFields(request: PendingRequest) {
-  const {
-    decision: _decision,
-    approveOnCheck: _approveOnCheck,
-    isAfterProjectApproval: _isAfterProjectApproval,
-    ...base
-  } = request;
+  const { decision: _decision, isAfterProjectApproval: _isAfterProjectApproval, ...base } = request;
   return base;
 }
 

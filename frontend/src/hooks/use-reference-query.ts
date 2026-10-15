@@ -12,6 +12,7 @@ import {
   listRoles,
   listUsers,
 } from "@/api/reference";
+import { isShownAsBatch } from "@/domain/documents";
 
 export const referenceQueryKey = ["reference"] as const;
 
@@ -81,6 +82,12 @@ export function useBatchesQuery({ isEnabled = true }: ReferenceQueryOptions = {}
     staleTime: Infinity,
     enabled: isEnabled,
   });
+}
+
+// Whether a batch is shown as one: a batch of one is not (ENT-batch).
+export function useIsShownBatch(): (batchId: string) => boolean {
+  const { data: batches = [] } = useBatchesQuery();
+  return (batchId) => batches.some((batch) => batch.id === batchId && isShownAsBatch(batch));
 }
 
 export function useProposalCustodiesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {

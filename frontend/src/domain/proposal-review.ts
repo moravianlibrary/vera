@@ -68,15 +68,6 @@ export function isBeingChecked(row: ProposalRow): boolean {
   return row.decision === "Pending" && asksOf(row).some((request) => request.checkedAt === null);
 }
 
-// Approval was asked for on arrival and a copy turned up, so it waits here (status-model §2.8).
-export function isHeld(row: ProposalRow): boolean {
-  return (
-    row.decision === "Pending" &&
-    isRescan(row) &&
-    asksOf(row).some((request) => request.decision === "Pending" && request.approveOnCheck !== null)
-  );
-}
-
 export function isAfterProjectApproval(row: ProposalRow): boolean {
   return asksOf(row).some(
     (request) => request.decision === "Pending" && request.isAfterProjectApproval,
@@ -97,11 +88,7 @@ export function projectIdsOf(row: ProposalRow): string[] {
 }
 
 export function batchIdsOf(row: ProposalRow): string[] {
-  return [
-    ...new Set(
-      asksOf(row).flatMap((request) => (request.batchId === null ? [] : [request.batchId])),
-    ),
-  ];
+  return [...new Set(asksOf(row).map((request) => request.batchId))];
 }
 
 // The distinct reasons the askers gave, in the order they asked.

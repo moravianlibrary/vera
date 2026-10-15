@@ -13,9 +13,8 @@ import type {
   RateLimitStatus,
 } from "@/api/proposals";
 import type { DocumentRecord } from "@/domain/documents";
-import { currentIterationOf, recordStatusOf } from "@/domain/documents";
+import { currentIterationOf, isAttemptOver, recordStatusOf } from "@/domain/documents";
 import type {
-  Batch,
   Document,
   ExistingCopy,
   Iteration,
@@ -25,6 +24,8 @@ import type {
 } from "@/domain/entities";
 import { isProjectMember } from "@/domain/projects";
 import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
+import type { StoredBatch } from "@/mocks/batches";
+import { servedBatchOf } from "@/mocks/batches";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
@@ -230,22 +231,28 @@ function recordOf(document: Document): DocumentRecord {
   };
 }
 
-// Work is moving: an attempt exists, or a decision every asker waits on.
+// Work is moving: an attempt not yet over, or a decision every asker waits on. An ask after a
+// published or cancelled attempt is a new proposal, decided as a rescan (LC-REQ-join).
 function isLive(record: DocumentRecord): boolean {
-  return (
-    record.iterations.length > 0 ||
-    record.requests.some((request) => request.decision === "Pending")
-  );
+  return isAttemptMoving(record) || record.requests.some(isPending);
 }
 
+function isAttemptMoving(record: DocumentRecord): boolean {
+  const current = currentIterationOf(record);
+  return current !== null && !isAttemptOver(current);
+}
+
+// An open or approved ask of the caller's, the attempt it produced over or not (LC-REQ-check).
 function isAskedBy(record: DocumentRecord, userId: string): boolean {
   return record.requests.some(
     (request) =>
       request.requesterId === userId &&
-      (request.decision === "Pending" ||
-        request.decision === "Approved" ||
-        request.decision === "Duplicate"),
+      (isPending(request) || request.decision === "Approved" || request.decision === "Duplicate"),
   );
+}
+
+function isPending(request: Request): boolean {
+  return request.decision === "Pending";
 }
 
 function statusFor(session: Session, record: DocumentRecord): RecordStatus {
@@ -264,13 +271,14 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
   const project = database.projects.find((candidate) => candidate.id === draft.projectId);
   const submitted = draft.items.map((item) => ({ item, check: checkItem(session, item) }));
   const accepted = submitted.filter(({ check }) => check.kind === "new" || check.kind === "inVera");
-  const batch = accepted.length > 1 ? createBatch(session, draft, now) : null;
+  // Every submission is a batch, one item included (ENT-batch).
+  const batch = accepted.length === 0 ? null : createBatch(session, draft, now);
 
   let proposed = 0;
   let approved = 0;
   let joined = 0;
   for (const { item, check } of accepted) {
-    if (check.kind !== "new" && check.kind !== "inVera") {
+    if (batch === null || (check.kind !== "new" && check.kind !== "inVera")) {
       continue;
     }
 
@@ -289,7 +297,7 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
       requesterId: session.user.id,
       at: now,
       reason: item.reason ?? draft.reason,
-      batchId: batch?.id ?? null,
+      batchId: batch.id,
       projectId: project?.id ?? null,
       existingCopies: existingCopiesOf(recordOf(document), now),
       checkedAt: now,
@@ -310,9 +318,8 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
 
     database.requests.push({
       ...base,
+      // With a copy found, approve now leaves it Pending like any other (LC-REQ-approve-now).
       decision: "Pending",
-      // With a copy found, approval asked for waits for a curator: it would be a rescan.
-      approveOnCheck: draft.approval === null ? null : { actorId: session.user.id, at: now },
       isAfterProjectApproval: project?.state === "Approved",
     });
   }
@@ -324,7 +331,7 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
   }
 
   return {
-    batch,
+    batch: batch === null ? null : servedBatchOf(batch.id),
     proposed,
     approved,
     joined,
@@ -336,14 +343,15 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
 
 type RequestBase = Omit<
   Extract<Request, { decision: "Pending" }>,
-  "decision" | "approveOnCheck" | "isAfterProjectApproval"
+  "decision" | "isAfterProjectApproval"
 >;
 
-// Asking for work already moving follows it; asking while it is undecided waits with the others.
+// Asking for work already moving follows it; asking while it is undecided waits with the others
+// (LC-REQ-join).
 function joiningRequestOf(record: DocumentRecord, base: RequestBase): Request {
   const current = currentIterationOf(record);
-  if (current === null) {
-    return { ...base, decision: "Pending", approveOnCheck: null, isAfterProjectApproval: false };
+  if (current === null || isAttemptOver(current)) {
+    return { ...base, decision: "Pending", isAfterProjectApproval: false };
   }
 
   return { ...base, decision: "Duplicate", tracksIterationId: current.id };
@@ -429,12 +437,12 @@ function createDocument(catalogId: string, unit: string | null): Document {
   return document;
 }
 
-function createBatch(session: Session, draft: ProposalDraft, now: string): Batch {
+function createBatch(session: Session, draft: ProposalDraft, now: string): StoredBatch {
   const highest = Math.max(
     0,
     ...database.batches.map((batch) => Number(batch.id.replace(/^B-/, "")) || 0),
   );
-  const batch: Batch = {
+  const batch: StoredBatch = {
     id: `B-${String(highest + 1).padStart(4, "0")}`,
     name: draft.batchName ?? `proposals-${now.slice(0, 10)}`,
     via: draft.via,

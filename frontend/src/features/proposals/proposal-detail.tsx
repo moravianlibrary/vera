@@ -45,7 +45,6 @@ import {
   firstAskOf,
   isAfterProjectApproval,
   isBeingChecked,
-  isHeld,
   isRescan,
   projectIdsOf,
 } from "@/domain/proposal-review";
@@ -59,6 +58,7 @@ import { useCan } from "@/hooks/use-can";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useCategoriesQuery,
+  useIsShownBatch,
   useProjectsQuery,
   useProposalCustodiesQuery,
   useUsersQuery,
@@ -408,14 +408,6 @@ function ProposalNote({ row, nameOf }: { row: ProposalRow; nameOf: (userId: stri
     return null;
   }
 
-  if (isHeld(row)) {
-    return (
-      <StatusNote tone="amber" className="mb-4" title="Asked to be added">
-        Approval was asked for on arrival, and {copy.source} already has it.
-      </StatusNote>
-    );
-  }
-
   return (
     <StatusNote
       tone="purple"
@@ -429,9 +421,12 @@ function ProposalNote({ row, nameOf }: { row: ProposalRow; nameOf: (userId: stri
 
 function ProposalFacts({ row }: { row: ProposalRow }) {
   const first = firstAskOf(row);
-  const elsewhere = batchIdsOf(row).filter((batchId) => batchId !== first?.batchId);
+  const isShownBatch = useIsShownBatch();
+  const elsewhere = batchIdsOf(row).filter(
+    (batchId) => batchId !== first?.batchId && isShownBatch(batchId),
+  );
   const batchLine = [
-    first?.batchId === null || first === null ? "asked on its own" : `in ${first.batchId}`,
+    first === null || !isShownBatch(first.batchId) ? "asked on its own" : `in ${first.batchId}`,
     ...elsewhere.map((batchId) => `also ${batchId}`),
   ].join(" · ");
 

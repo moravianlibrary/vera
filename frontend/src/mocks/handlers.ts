@@ -45,6 +45,7 @@ import {
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import { mixDraftSchema, mixSetChangeSchema, mixSnapshotDraftSchema } from "@/api/mix-catalog";
 import { mixSetDraftSchema } from "@/api/mixes";
+import { notificationChoicesSchema } from "@/api/notification-preferences";
 import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
 import {
   parseProjectSearchParams,
@@ -72,7 +73,6 @@ import {
 } from "@/api/schedules";
 import { parseRunSearchParams, retentionSchema } from "@/api/tasks";
 import { userSettingsChangeSchema } from "@/api/user-settings";
-import { notificationChoicesSchema } from "@/api/notification-preferences";
 import {
   acceptanceSchema,
   denialSchema,
@@ -82,9 +82,9 @@ import {
   revocationSchema,
 } from "@/api/validations";
 import {
+  isSameWatchlistFilter,
   watchlistChangeSchema,
   watchlistDraftSchema,
-  isSameWatchlistFilter,
   watchlistModeParam,
   watchlistReachRequestSchema,
   watchlistViewerChangeSchema,
@@ -116,6 +116,7 @@ import {
   setUserGroups,
 } from "@/mocks/access";
 import { retryBatch } from "@/mocks/additions";
+import { servedBatches } from "@/mocks/batches";
 import {
   canReadCategories,
   categoryImpact,
@@ -192,6 +193,10 @@ import {
 } from "@/mocks/mix-catalog";
 import { detachIntention, findIntentionMix, saveMixSet } from "@/mocks/mixes";
 import type { Outcome } from "@/mocks/mutations";
+import {
+  changePublicNotificationChoices,
+  publicNotificationChoices,
+} from "@/mocks/notification-tokens";
 import { instanceSummaries } from "@/mocks/plugin-instances";
 import {
   canReadPlugins,
@@ -271,20 +276,16 @@ import {
   queryValidations,
   revokeAcceptance,
 } from "@/mocks/validations";
-import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
-import {
-  changePublicNotificationChoices,
-  publicNotificationChoices,
-} from "@/mocks/notification-tokens";
 import {
   flushWatchlistChat,
   flushWatchlistMail,
   noteSystemWatchlistChange,
 } from "@/mocks/watchlist-delivery";
+import { storeWatchlistViewers } from "@/mocks/watchlist-viewer-store";
 import {
+  audienceReachOf,
   canChange,
   canOpenView,
-  audienceReachOf,
   findChangeableWatchlist,
   findDuplicateWatchlist,
   findVisibleWatchlist,
@@ -964,7 +965,7 @@ export function createHandlers(profile: MockUserProfile) {
       return new HttpResponse(null, { status: 204 });
     }),
     http.get(route(apiRoutes.lists), () => HttpResponse.json(database.lists)),
-    http.get(route(apiRoutes.batches), () => HttpResponse.json(database.batches)),
+    http.get(route(apiRoutes.batches), () => HttpResponse.json(servedBatches())),
 
     http.get(route(apiRoutes.digitizationLists), ({ request }) => {
       const session = currentSession();

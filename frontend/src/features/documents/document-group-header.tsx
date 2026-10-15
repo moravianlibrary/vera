@@ -60,10 +60,9 @@ interface BatchHeaderProps {
 
 function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
   const { batch, size, additions } = group;
+  // A batch of one is listed with what was asked for on its own (ENT-batch).
   if (batch === null) {
-    return (
-      <GroupHeader title="Not from a batch" meta="asked for one at a time, or still a proposal" />
-    );
+    return <GroupHeader title="One at a time" meta="asked for on its own, or still a proposal" />;
   }
 
   const submitter = users.find((user) => user.id === batch.submittedBy)?.name ?? batch.submittedBy;
@@ -139,7 +138,7 @@ function AdditionCounts({ size, additions }: AdditionCountsProps) {
 }
 
 // The footnote says a refusal; success needs no word, as the refetch takes the failures off.
-function RetryFailedButton({ batchId, failed }: { batchId: string; failed: number }) {
+export function RetryFailedButton({ batchId, failed }: { batchId: string; failed: number }) {
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const retry = useActionMutation({
     call: retryBatch,

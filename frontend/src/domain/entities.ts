@@ -223,6 +223,9 @@ export const batchSchema = z.object({
   via: z.enum(["file", "pastedList", "barcodeScan", "harvest"]),
   submittedBy: id,
   submittedAt: timestamp,
+  // How many requests the submission made: one item is a batch too, shown as one only from two
+  // (ENT-batch).
+  size: z.number().int().positive(),
 });
 export type Batch = z.infer<typeof batchSchema>;
 
@@ -395,7 +398,8 @@ const requestBase = {
   requesterId: id,
   at: timestamp,
   reason: z.string().nullable(),
-  batchId: id.nullable(),
+  // Every submission is a batch, one item included (ENT-batch).
+  batchId: id,
   projectId: id.nullable(),
   existingCopies: z.array(existingCopySchema),
   // Null until restriction and copy checks have run once.
@@ -407,8 +411,6 @@ export const requestSchema = z.discriminatedUnion("decision", [
   z.object({
     ...requestBase,
     decision: z.literal("Pending"),
-    // "Approve now" is an intent that waits for the copy check (status-model.md §2.8).
-    approveOnCheck: z.object({ actorId: id, at: timestamp }).nullable(),
     // Proposed into a project after the project itself was approved.
     isAfterProjectApproval: z.boolean(),
   }),

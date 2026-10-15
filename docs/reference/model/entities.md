@@ -45,13 +45,10 @@ produces its iteration and the others follow it ([LC-REQ-one-iteration](../lifec
 
 #### ENT-batch
 
-A **batch** is one submission of several requests at once: a file, a pasted list, barcode
+A **batch** is one submission of requests: a file, a pasted list, barcode
 scans, or a harvest. It is what an administrator retries and what a decider can approve
 together. Every submission is a batch, one item included; a batch is shown as one only when it
 holds two items or more.
-
-> **Open — [L20](../../ledger.md#l20-every-submission-is-a-batch).** The code makes a batch only
-> for two items or more.
 
 #### ENT-list
 

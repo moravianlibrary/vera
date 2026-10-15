@@ -26,7 +26,7 @@ describe("fixtures", () => {
     ["categories", z.array(categorySchema), database.categories],
     ["projects", z.array(projectSchema), database.projects],
     ["lists", z.array(digitizationListSchema), database.lists],
-    ["batches", z.array(batchSchema), database.batches],
+    ["batches", z.array(batchSchema.omit({ size: true })), database.batches],
     ["documents", z.array(documentSchema), database.documents],
     ["iterations", z.array(iterationSchema), database.iterations],
     ["requests", z.array(requestSchema), database.requests],

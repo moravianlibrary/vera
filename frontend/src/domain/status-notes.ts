@@ -137,9 +137,9 @@ export function staffRecordNoteOf(record: DocumentRecord): StatusNote | null {
     return iterationNoteOf(current, origin, "staff");
   }
 
-  const pending = record.requests.find((request) => request.decision === "Pending");
-  if (pending !== undefined) {
-    return heldNoteOf(pending, "staff");
+  // An undecided ask, approve now included, says nothing yet (LC-REQ-approve-now).
+  if (record.requests.some((request) => request.decision === "Pending")) {
+    return null;
   }
 
   const isAllDeclined = record.requests.every(
@@ -175,7 +175,7 @@ export function publicRecordNoteOf(record: DocumentRecord, userId: string): Stat
   }
 
   if (latest.decision === "Pending") {
-    return heldNoteOf(latest, "public");
+    return null;
   }
 
   if (latest.decision === "Duplicate") {
@@ -190,29 +190,6 @@ export function publicRecordNoteOf(record: DocumentRecord, userId: string): Stat
   const iterationId = followedIterationId(latest);
   const iteration = iterationId === null ? null : iterationOf(record, iterationId);
   return iteration === null ? null : iterationNoteOf(iteration, null, "public");
-}
-
-// Approval asked for on arrival waits when the copy check finds a copy: approving it now is a
-// rescan, which a curator decides on its own (status-model.md §2.8).
-function heldNoteOf(request: Request, audience: Audience): StatusNote | null {
-  if (request.decision !== "Pending" || request.approveOnCheck === null) {
-    return null;
-  }
-
-  const [copy] = request.existingCopies;
-  if (copy === undefined) {
-    return null;
-  }
-
-  return {
-    tone: "amber",
-    title: "Held for review",
-    text:
-      audience === "public"
-        ? `Approval was asked for, but ${copy.source} already has it — a curator decides whether to scan it again.`
-        : `Approval was asked for on arrival, and ${copy.source} already has it. Approving it now is a rescan, so a curator decides it on its own.`,
-    actedBy: null,
-  };
 }
 
 // ---------------------------------------------------------------- desk

@@ -26,6 +26,7 @@ import {
   effectivePageCount,
   existingCopyStateOf,
   followedIterationId,
+  isShownAsBatch,
   latestPublicAskOf,
   projectIdOf,
   publicRecordStatusOf,
@@ -46,6 +47,7 @@ import { isRestricted, validationOf } from "@/domain/status";
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
+import { servedBatches, shownBatchIdOf } from "@/mocks/batches";
 import { database } from "@/mocks/database";
 import { mockToday } from "@/mocks/today";
 
@@ -448,7 +450,7 @@ function arrangementOf(
 }
 
 // Batches with failed additions first, as that is what is retried; then newest first, and
-// the rows from no batch last.
+// the rows asked for one at a time, a batch of one, last (ENT-batch).
 function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
   const additionsOf = (batchId: string) => {
     const records = reachable.filter((record) => batchIdOf(record) === batchId);
@@ -458,7 +460,8 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
     ) as Record<AdditionState, number>;
     return { size: records.length, additions };
   };
-  const batchOrder = database.batches
+  const batchOrder = servedBatches()
+    .filter(isShownAsBatch)
     .map((batch) => ({ batch, ...additionsOf(batch.id) }))
     .toSorted(
       (first, second) =>
@@ -467,7 +470,8 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
     );
   const keys = batchOrder.map((entry) => entry.batch.id);
 
-  return groupedBy(batchIdOf, keys, (batchId, total, rowCount) => {
+  const shownOf = (record: DocumentRecord) => shownBatchIdOf(batchIdOf(record));
+  return groupedBy(shownOf, keys, (batchId, total, rowCount) => {
     const entry = batchOrder.find((candidate) => candidate.batch.id === batchId);
     return {
       kind: "batch",

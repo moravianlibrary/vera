@@ -1,18 +1,17 @@
 // Where a proposal stands, as the list and the pane say it (page-proposals.js statusOf): decided
-// one way or the other, still being checked, held because approval was asked for over a copy,
-// or awaiting a decision.
+// one way or the other, still being checked, or awaiting a decision (LC-REQ-approve-now: approve
+// now leaves nothing held apart).
 // TODO(rrandiak): labels move to i18n.
 
 import type { Tone } from "@/components/status-badge";
 import { ToneBadge } from "@/components/status-badge";
 import type { ProposalRow } from "@/domain/proposal-review";
-import { isBeingChecked, isHeld } from "@/domain/proposal-review";
+import { isBeingChecked } from "@/domain/proposal-review";
 
 const proposalStatuses = {
   declined: { tone: "red", label: "Declined" },
   withdrawn: { tone: "slate", label: "Withdrawn" },
   beingChecked: { tone: "slate", label: "Being checked" },
-  held: { tone: "amber", label: "Asked to be added" },
   awaitingReview: { tone: "amber", label: "Awaiting a decision" },
 } as const satisfies Record<string, { tone: Tone; label: string }>;
 
@@ -31,7 +30,7 @@ function proposalStatusOf(row: ProposalRow): ProposalStatus {
     return "beingChecked";
   }
 
-  return isHeld(row) ? "held" : "awaitingReview";
+  return "awaitingReview";
 }
 
 export function ProposalStatusBadge({ row }: { row: ProposalRow }) {

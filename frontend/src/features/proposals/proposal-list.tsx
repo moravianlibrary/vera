@@ -29,6 +29,7 @@ import { ProposalGroupHeader } from "@/features/proposals/proposal-group-header"
 import { ProposalStatusBadge } from "@/features/proposals/proposal-status";
 import { proposalsView } from "@/features/proposals/proposals-view";
 import type { PagedList } from "@/hooks/use-paged-list";
+import { useIsShownBatch } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
@@ -227,6 +228,7 @@ interface WhyLineProps {
 
 function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   const first = firstAskOf(row);
+  const isShownBatch = useIsShownBatch();
   if (row.decision === "Denied" && first?.decision === "Denied") {
     return (
       <>
@@ -295,7 +297,9 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   );
 
   if (homeBatchId !== undefined) {
-    const elsewhere = batchIdsOf(row).filter((batchId) => batchId !== homeBatchId);
+    const elsewhere = batchIdsOf(row).filter(
+      (batchId) => batchId !== homeBatchId && isShownBatch(batchId),
+    );
     if (elsewhere.length > 0) {
       parts.push(<span key="elsewhere">also asked in {elsewhere.join(", ")}</span>);
     }

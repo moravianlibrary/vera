@@ -48,6 +48,7 @@ import {
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
+import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";
 import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
@@ -204,10 +205,15 @@ const fieldValues: FieldValues = {
     return copies.length === 0 ? ["None"] : [...new Set(copies.map((copy) => copy.state))];
   },
   askerIds: askerIdsOf,
-  batchIds: batchIdsOf,
+  batchIds: shownBatchIdsOf,
   askerCounts: (row) => [askerCountOf(row)],
   afterProjectApproval: (row) => [answerOf(isAfterProjectApproval(row))],
 };
+
+// Only a batch shown as one can be filtered on (ENT-batch).
+function shownBatchIdsOf(row: ProposalRow): string[] {
+  return batchIdsOf(row).flatMap((batchId) => shownBatchIdOf(batchId) ?? []);
+}
 
 function askerCountOf(row: ProposalRow): AskerCount {
   return askerIdsOf(row).length > 1 ? "Several" : "One";
@@ -342,18 +348,19 @@ function arrangementOf(
 }
 
 // A row is listed in the batch of its earliest ask. Batches come in the order their first rows
-// wait, oldest first, and what was proposed on its own comes last.
+// wait, oldest first, and what was proposed on its own, a batch of one included, comes last
+// (ENT-batch).
 function batchArrangementOf(
   matching: readonly ProposalRow[],
   reachable: readonly ProposalRow[],
 ): Arrangement<ProposalRow, ProposalGroup> {
-  const homeOf = (row: ProposalRow) => firstAskOf(row)?.batchId ?? null;
+  const homeOf = (row: ProposalRow) => shownBatchIdOf(firstAskOf(row)?.batchId ?? null);
   const order = [...new Set(matching.flatMap((row) => homeOf(row) ?? []))];
   const openInBatch = (batchId: string) =>
     reachable.filter((row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId));
 
   return groupedBy(homeOf, order, (batchId, total, rowCount) => {
-    const batch = database.batches.find((candidate) => candidate.id === batchId) ?? null;
+    const batch = batchId === null ? null : servedBatchOf(batchId);
     const asks = matching.flatMap((row) =>
       asksOf(row).filter((request) => request.batchId === batchId),
     );
@@ -678,7 +685,6 @@ type PendingRequest = Extract<Request, { decision: "Pending" }>;
 function withoutPendingFields(request: Request) {
   const {
     decision: _decision,
-    approveOnCheck: _approveOnCheck,
     isAfterProjectApproval: _isAfterProjectApproval,
     ...base
   } = request as PendingRequest;

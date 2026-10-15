@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type {
+  Batch,
   Document,
   ExistingCopy,
   Iteration,
@@ -31,6 +32,11 @@ export type DocumentRecord = z.infer<typeof documentRecordSchema>;
 
 export function currentIterationOf(record: DocumentRecord): Iteration | null {
   return record.iterations.at(-1) ?? null;
+}
+
+// A published or cancelled attempt is over: nothing more moves on it (LC-REQ-join).
+export function isAttemptOver(iteration: Iteration): boolean {
+  return iteration.progress === "Published" || iteration.cancellation !== null;
 }
 
 export function iterationOf(record: DocumentRecord, iterationId: string): Iteration | null {
@@ -134,6 +140,11 @@ export function projectIdOf(record: DocumentRecord): string | null {
   return record.requests.find((request) => request.projectId !== null)?.projectId ?? null;
 }
 
+// A batch of one is no batch to show (ENT-batch).
+export function isShownAsBatch(batch: Batch): boolean {
+  return batch.size >= 2;
+}
+
 // The batch the current attempt came in on: its originating request's, or before approval the
 // batch any ask came in on.
 export function batchIdOf(record: DocumentRecord): string | null {
@@ -142,7 +153,7 @@ export function batchIdOf(record: DocumentRecord): string | null {
     return record.requests.find((request) => request.id === current.requestId)?.batchId ?? null;
   }
 
-  return record.requests.find((request) => request.batchId !== null)?.batchId ?? null;
+  return record.requests[0]?.batchId ?? null;
 }
 
 // How far adding a document of a batch got, for the batch's header (decided 2026-10-06). Each

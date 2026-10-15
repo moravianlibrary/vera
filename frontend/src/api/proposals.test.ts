@@ -93,6 +93,19 @@ describe("checkProposalItems", () => {
 
     expect(check?.kind).toBe("mine");
   });
+
+  it("takes an ask after a published or cancelled attempt as new (LC-REQ-join)", async () => {
+    signInAs("staff");
+    const [afterPublished] = await checkProposalItems([
+      catalogItem("MZK01-001284756", "1918–1925"),
+    ]);
+
+    signInAs("curator");
+    const [afterCancelled] = await checkProposalItems([catalogItem("MZK04-000067120")]);
+
+    expect(afterPublished).toMatchObject({ kind: "new", isAskedBefore: true });
+    expect(afterCancelled).toMatchObject({ kind: "new", isAskedBefore: true });
+  });
 });
 
 describe("submitProposal", () => {
@@ -243,6 +256,30 @@ describe("submitProposal", () => {
       }),
     );
 
-    expect(report).toMatchObject({ proposed: 1, approved: 1, batch: null });
+    expect(report).toMatchObject({ proposed: 1, approved: 1, batch: { size: 1 } });
+  });
+
+  it("makes a batch of one item too (ENT-batch)", async () => {
+    signInAs("staff");
+
+    const report = await submitProposal(draftOf([catalogItem("MZK01-001520331", "roč. 2")]));
+
+    expect(report.batch).toMatchObject({ size: 1 });
+    expect(database.requests.at(-1)?.batchId).toBe(report.batch?.id);
+  });
+
+  it("proposes a rescan beside the published copy, approve now or not (LC-REQ-join)", async () => {
+    signInAs("curator");
+
+    const report = await submitProposal(
+      draftOf([catalogItem("MZK01-001284756", "1918–1925")], {
+        approval: { categoryId: "c1", priority: "High" },
+      }),
+    );
+    const ask = database.requests.at(-1);
+
+    expect(report).toMatchObject({ proposed: 1, approved: 0, joined: 0 });
+    expect(ask).toMatchObject({ documentId: "D1", requesterId: "u8", decision: "Pending" });
+    expect(ask?.existingCopies.map((copy) => copy.source)).toContain("VERA");
   });
 });

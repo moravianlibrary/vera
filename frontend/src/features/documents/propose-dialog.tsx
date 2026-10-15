@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { isShownAsBatch } from "@/domain/documents";
 import type { Batch, Priority, Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
@@ -888,7 +889,7 @@ function DetailsStep({
               >
                 <b className="font-semibold">Approve now</b> — the {newCount} new skip review.{" "}
                 <span className="text-muted-foreground">
-                  Any with an existing copy is held in Proposals.
+                  Any with an existing copy waits in Proposals like any other.
                 </span>
               </Label>
             </div>
@@ -976,7 +977,7 @@ function ReportStep({ report, skipped, viewTitle, onDone }: ReportStepProps) {
         <div className="flex items-start gap-2 border-l-[3px] border-tone-green-foreground bg-tone-green/50 px-3.5 py-2 text-sm">
           <Check className="mt-0.5 size-4 shrink-0 text-tone-green-foreground" />
           <p>
-            {report.batch === null ? (
+            {report.batch === null || !isShownAsBatch(report.batch) ? (
               <b className="font-semibold">Submitted.</b>
             ) : (
               <>

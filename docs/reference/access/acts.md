@@ -52,7 +52,7 @@ and an act on it is refused (409).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-propose` | *Propose…* | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item; several items make a batch *(no log)* |
+| `ACT-propose` | *Propose…* | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
 | `ACT-propose-approved` | *Propose…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
 | `ACT-withdraw` | withdraw an ask | `request.withdraw_own` | the ask is still Pending | — |
 

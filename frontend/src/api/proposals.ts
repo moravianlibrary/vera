@@ -75,7 +75,7 @@ export const proposalDraftSchema = z.object({
   // Named only when several items make a batch.
   batchName: z.string().nullable(),
   via: batchSchema.shape.via,
-  // Approve the new items now, as the checks finish (status-model.md §2.8); `request.decide`.
+  // Approve the new items with no copy at once; `request.decide` (LC-REQ-approve-now).
   approval: z.object({ categoryId: z.string(), priority: prioritySchema }).nullable(),
 });
 export type ProposalDraft = z.infer<typeof proposalDraftSchema>;
@@ -83,7 +83,7 @@ export type ProposalDraft = z.infer<typeof proposalDraftSchema>;
 export const proposalReportSchema = z.object({
   batch: batchSchema.nullable(),
   proposed: z.number().int().nonnegative(),
-  // Of the proposed, those approved at once; the rest of an approval asked for are held.
+  // Of the proposed, those approved at once; the rest stay Pending (LC-REQ-approve-now).
   approved: z.number().int().nonnegative(),
   joined: z.number().int().nonnegative(),
   skipped: z.array(proposalItemSchema),
