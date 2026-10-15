@@ -17,15 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L34: Message targets
-
-Rules: [MSG-recipients](reference/integrations/messaging.md#msg-recipients).
-
-Decided on 2026-10-15. Each message act is named for who it reaches: *Message askers…* on a
-proposal and a forbidden item, *Ask to overrule…* on a forbidden item, *Message manager…* on a
-project, *Message list author…* on a listed item. None on a user or a plugin run. Built: one
-*Message…* on a proposal and on a forbidden item. → frontend.
-
 ### L51: Order of plugin kinds
 
 Rules: [PLG-kinds](reference/integrations/plugins.md#plg-kinds).
@@ -312,6 +303,12 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L34:** message acts named for who they reach: *Message askers…* on a proposal and on a
+  forbidden item, *Ask to overrule…* on a forbidden item for anyone who cannot overrule it,
+  *Message manager…* on a project's page and *Message list author…* on Documents' Digitization
+  card for a listed item. Neither the manager nor the list's author is offered a message to
+  themselves ([MSG-recipients](reference/integrations/messaging.md#msg-recipients),
+  [ACT-message](reference/access/acts.md#act-message)).
 - **L6:** *Unlink* on each of a person's identities but the last, on Users & Groups; the person,
   their roles and history stay
   ([ACCESS-link-identity](reference/access/people.md#access-link-identity),

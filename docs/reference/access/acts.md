@@ -241,6 +241,8 @@ Every act needs `access.manage` and is refused when it would leave nobody able t
 
 #### ACT-message
 
-*Message…* hands a conversation about a record to a Message plugin: a proposal's askers, or the
-people who may overrule a restriction. It needs only that the person can see the record, and
-VERA keeps nothing of it ([MSG-keeps-nothing](../integrations/messaging.md#msg-keeps-nothing)).
+Each message act hands a conversation about a record to a Message plugin, named for who it
+reaches ([MSG-recipients](../integrations/messaging.md#msg-recipients)): *Message askers…*, *Ask
+to overrule…*, *Message manager…* and *Message list author…*. It needs only that the person can
+see the record, and VERA keeps nothing of it
+([MSG-keeps-nothing](../integrations/messaging.md#msg-keeps-nothing)).

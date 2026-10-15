@@ -68,7 +68,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   const { data: users = [] } = useUsersQuery();
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
-  const [isMessaging, setIsMessaging] = useState(false);
+  const [messaging, setMessaging] = useState<"overrule" | "forbiddenAskers" | null>(null);
   const { data: messageChannels = [] } = useMessageChannelsQuery();
   // What the last recheck found, until another item is opened.
   const [lastRecheck, setLastRecheck] = useState<LastRecheck | null>(null);
@@ -130,18 +130,24 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
       }),
   });
 
-  // Only an administrator overrules a restriction; anyone else may reach one (messaging.md §3).
-  // Message… needs no permission of its own, only an enabled Message instance (§4).
+  // A forbidden item reaches those who may overrule it, unless the caller is one, and its askers
+  // (MSG-recipients). Neither needs a permission of its own, only an enabled Message instance
+  // (MSG-order).
   const headingActions: ViewAction[] = [];
-  const canMessageAdmins =
-    row.review === "Forbidden" &&
-    !can(session, "restriction.overrule", scope) &&
-    messageChannels.length > 0;
-  if (canMessageAdmins) {
+  const canMessage = row.review === "Forbidden" && messageChannels.length > 0;
+  if (canMessage && !can(session, "restriction.overrule", scope)) {
     headingActions.push({
-      id: "message",
-      label: "Message admins…",
-      onSelect: () => setIsMessaging(true),
+      id: "ask-to-overrule",
+      label: "Ask to overrule…",
+      onSelect: () => setMessaging("overrule"),
+    });
+  }
+
+  if (canMessage && row.askerIds.length > 0) {
+    headingActions.push({
+      id: "message-askers",
+      label: "Message askers…",
+      onSelect: () => setMessaging("forbiddenAskers"),
     });
   }
 
@@ -227,11 +233,11 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
 
       {more.dialogs}
       <MessageDialog
-        isOpen={isMessaging}
-        onClose={() => setIsMessaging(false)}
-        subject={{ kind: "restriction", id: iteration.id }}
+        isOpen={messaging !== null}
+        onClose={() => setMessaging(null)}
+        subject={{ kind: messaging ?? "overrule", id: iteration.id }}
         label={document.title}
-        recipientLabel="who may overrule it"
+        recipientLabel={messaging === "forbiddenAskers" ? "who asked" : "who may overrule it"}
       />
     </article>
   );

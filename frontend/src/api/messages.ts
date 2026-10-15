@@ -10,15 +10,24 @@ import { z } from "zod";
 import { getJson } from "@/api/http";
 import { apiRoutes } from "@/api/routes";
 
-// What a message can be about; each kind resolves its own recipients (messaging.md §3).
-// A restriction's message goes to those who may overrule it (Validations' *Message admins…*).
-export const messageSubjectKinds = ["proposal", "restriction"] as const;
+// What a message is about and whom it reaches, each kind with its own act (MSG-recipients): a
+// proposal's askers (*Message askers…*), those who may overrule a forbidden item (*Ask to
+// overrule…*) and its askers (*Message askers…*), a project's manager (*Message manager…*), and
+// whoever made the list an item is on (*Message list author…*).
+export const messageSubjectKinds = [
+  "proposal",
+  "overrule",
+  "forbiddenAskers",
+  "project",
+  "listedItem",
+] as const;
 export const messageSubjectKindSchema = z.enum(messageSubjectKinds);
 export type MessageSubjectKind = z.infer<typeof messageSubjectKindSchema>;
 
 export interface MessageSubject {
   readonly kind: MessageSubjectKind;
-  // The record's own ID: a document's for a proposal, an iteration's for a restriction.
+  // The record's own ID: a document's for a proposal, a project's for a project, else an
+  // iteration's.
   readonly id: string;
 }
 

@@ -1,6 +1,6 @@
 // Messaging end to end against the mock server over HTTP: the Message instances in their order,
-// who a message about a proposal or a restriction goes to, whom each instance can reach and where it hands off,
-// and that a record the caller cannot see has nobody to message.
+// who each message act reaches (MSG-recipients), whom each instance can reach and where it hands
+// off, and that a record the caller cannot see has nobody to message.
 
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -84,7 +84,7 @@ describe("prepareMessage", () => {
   it("sends a forbidden item's message to those who may overrule it", async () => {
     signInAs("curator");
 
-    const handOff = await prepareMessage({ kind: "restriction", id: "IT14" });
+    const handOff = await prepareMessage({ kind: "overrule", id: "IT14" });
 
     expect(handOff.recipients.map((recipient) => recipient.name)).toEqual(["Petr Dvořák"]);
     expect(handOff.context).toMatch(/^Forbidden by Copyright: /);
@@ -94,6 +94,34 @@ describe("prepareMessage", () => {
   it("has no restriction to message about on an item no rule forbade", async () => {
     signInAs("curator");
 
-    expect(await statusOf(prepareMessage({ kind: "restriction", id: "IT16" }))).toBe(404);
+    expect(await statusOf(prepareMessage({ kind: "overrule", id: "IT16" }))).toBe(404);
+  });
+
+  it("sends a forbidden item's askers message to who asked (MSG-recipients)", async () => {
+    signInAs("admin");
+
+    const handOff = await prepareMessage({ kind: "forbiddenAskers", id: "IT6" });
+
+    expect(handOff.recipients.map((recipient) => recipient.userId)).toEqual(["u1"]);
+    expect(handOff.context).toMatch(/^Forbidden by /);
+  });
+
+  it("sends a project's message to its manager (MSG-recipients)", async () => {
+    signInAs("admin");
+
+    const handOff = await prepareMessage({ kind: "project", id: "p1" });
+
+    expect(handOff.recipients.map((recipient) => recipient.name)).toEqual(["Martin Svoboda"]);
+    expect(handOff.about).toMatchObject({ label: "NDK Periodika" });
+  });
+
+  it("sends a listed item's message to whoever made the list (MSG-recipients)", async () => {
+    signInAs("curator");
+
+    const handOff = await prepareMessage({ kind: "listedItem", id: "IT1" });
+
+    expect(handOff.recipients.map((recipient) => recipient.name)).toEqual(["Martin Svoboda"]);
+    expect(handOff.context).toMatch(/^On the list /);
+    expect(await statusOf(prepareMessage({ kind: "listedItem", id: "IT9" }))).toBe(404);
   });
 });

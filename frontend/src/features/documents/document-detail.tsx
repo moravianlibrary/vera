@@ -12,6 +12,7 @@
 
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import type { DocumentDetail } from "@/api/documents";
 import type { Fact, Stat } from "@/components/detail-card";
@@ -23,6 +24,7 @@ import {
   Muted,
   StatTiles,
 } from "@/components/detail-card";
+import { MessageDialog } from "@/components/dialogs/message-dialog";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import {
   AskersCard,
@@ -58,6 +60,7 @@ import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
 import { DocumentActions } from "@/features/documents/document-actions";
 import { RetryFailedButton } from "@/features/documents/document-group-header";
+import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useBatchesQuery,
   useCategoriesQuery,
@@ -131,7 +134,12 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
           <>
             <DefectsCard iteration={current} session={session} />
             <AddingCard record={record} iteration={current} nameOf={nameOf} session={session} />
-            <DigitizationCard iteration={current} nameOf={nameOf} session={session} />
+            <DigitizationCard
+              iteration={current}
+              title={document.title}
+              nameOf={nameOf}
+              session={session}
+            />
             <EarlierCard record={record} />
           </>
         )}
@@ -346,13 +354,18 @@ function AddingCard({
 
 function DigitizationCard({
   iteration,
+  title,
   nameOf,
   session,
 }: {
   iteration: Iteration;
+  // The document's, which the message names.
+  title: string;
   nameOf: (userId: string) => string;
   session: Session;
 }) {
+  const { data: messageChannels = [] } = useMessageChannelsQuery();
+  const [isMessaging, setIsMessaging] = useState(false);
   const { data: projects = [] } = useProjectsQuery();
   // A curator sees the list an item is on, its name and dates, without list.read.
   const { data: lists = [] } = useDigitizationListsQuery();
@@ -441,9 +454,31 @@ function DigitizationCard({
       ),
   });
 
+  // A listed item reaches whoever made its list, for anyone else, while a Message instance is
+  // enabled (MSG-recipients, MSG-order).
+  const canMessageAuthor =
+    list !== undefined && messageChannels.length > 0 && list.createdBy !== session.user.id;
   return (
-    <DetailCard title="Digitization">
+    <DetailCard
+      title="Digitization"
+      action={
+        canMessageAuthor ? (
+          <Button size="sm" variant="outline" onClick={() => setIsMessaging(true)}>
+            Message list author…
+          </Button>
+        ) : undefined
+      }
+    >
       <FactGrid facts={facts} />
+      {canMessageAuthor && (
+        <MessageDialog
+          isOpen={isMessaging}
+          onClose={() => setIsMessaging(false)}
+          subject={{ kind: "listedItem", id: iteration.id }}
+          label={title}
+          recipientLabel="who made the list"
+        />
+      )}
     </DetailCard>
   );
 }

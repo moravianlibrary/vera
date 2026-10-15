@@ -30,10 +30,6 @@ There is no *Message…* on a user or a plugin run: VERA is not a mail client
 ([DEC-0010](../../decisions/DEC-0010-messaging-hands-off.md)), and hooks tell administrators about
 failed runs.
 
-> **Open — [L34](../../ledger.md#l34-message-targets).** Built: one *Message…* on a proposal and
-> one on a forbidden item (to who may overrule). The named acts, the askers of a forbidden item, a
-> project and a listed item are not.
-
 #### MSG-keeps-nothing
 
 VERA keeps nothing of a message, and a redirect is not logged: VERA cannot know it was sent.

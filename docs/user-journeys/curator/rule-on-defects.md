@@ -29,7 +29,7 @@
 6. She denies it, with a public reason.
    → It shows *Validation denied*; its askers read the reason
    ([STAT-denial-lapses](../../reference/model/status.md#stat-denial-lapses)).
-7. On the forbidden item she finds no verdict to give, and uses *Message…* to ask an
+7. On the forbidden item she finds no verdict to give, and uses *Ask to overrule…* to ask an
    administrator.
    → Her mail opens addressed to the holders of `restriction.overrule`
    ([MSG-recipients](../../reference/integrations/messaging.md#msg-recipients)).

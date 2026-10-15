@@ -1,7 +1,6 @@
 // What the server does for *Message…* (messaging.md): offers the enabled Message instances in
-// their order, resolves who a message about a record goes to (§3: a proposal's askers, a
-// restriction's administrators) and lets each instance say
-// whom it can reach and where it hands off to (§2). It keeps nothing: a redirect is not logged,
+// their order, resolves who a message about a record goes to (MSG-recipients) and lets each
+// instance say whom it can reach and where it hands off to (§2). It keeps nothing: a redirect is not logged,
 // since VERA cannot know it was sent (§4). A record the caller cannot see is not found.
 
 import type { MessageChannel, MessageHandOff, MessageSubject } from "@/api/messages";
@@ -11,10 +10,12 @@ import type { Session, User } from "@/domain/entities";
 import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/requests";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
+import { findDocumentDetail } from "@/mocks/documents";
 import type { MessageImplementation } from "@/mocks/fixtures/message-channels";
 import { slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
+import { findProjectDetail } from "@/mocks/projects";
 import { findReachableRow } from "@/mocks/requests";
 import { holdersOfPermission } from "@/mocks/session";
 import { findReachableValidation } from "@/mocks/validations";
@@ -65,8 +66,14 @@ function resolveSubject(session: Session, subject: MessageSubject): ResolvedSubj
   switch (subject.kind) {
     case "proposal":
       return resolveProposal(session, subject.id);
-    case "restriction":
-      return resolveRestriction(session, subject.id);
+    case "overrule":
+      return resolveRestriction(session, subject.id, "overrule");
+    case "forbiddenAskers":
+      return resolveRestriction(session, subject.id, "askers");
+    case "project":
+      return resolveProject(session, subject.id);
+    case "listedItem":
+      return resolveListedItem(session, subject.id);
   }
 }
 
@@ -91,9 +98,13 @@ function resolveProposal(session: Session, documentId: string): ResolvedSubject 
   };
 }
 
-// A forbidden item in the caller's custody: only an administrator can overrule the rule, so
-// that is who hears about it (messaging.md §3, page-validation.js forbiddenPane).
-function resolveRestriction(session: Session, iterationId: string): ResolvedSubject | null {
+// A forbidden item in the caller's custody: to whoever may overrule the rule, or to its askers
+// (MSG-recipients).
+function resolveRestriction(
+  session: Session,
+  iterationId: string,
+  to: "overrule" | "askers",
+): ResolvedSubject | null {
   const row = findReachableValidation(session, iterationId);
   const restriction = row?.iteration.restriction ?? null;
   if (row === null || row.review !== "Forbidden" || restriction === null) {
@@ -105,7 +116,42 @@ function resolveRestriction(session: Session, iterationId: string): ResolvedSubj
     label: `${document.title} · ${documentIdentifierOf(document)}`,
     path: `${pathOf("validations")}?id=${encodeURIComponent(iterationId)}&review=Forbidden`,
     context: `Forbidden by ${restriction.rule}: ${restriction.internalText ?? restriction.publicText}`,
-    recipientIds: holdersOfPermission("restriction.overrule"),
+    recipientIds: to === "overrule" ? holdersOfPermission("restriction.overrule") : row.askerIds,
+  };
+}
+
+// A project the caller can see: to its manager (MSG-recipients).
+function resolveProject(session: Session, projectId: string): ResolvedSubject | null {
+  const detail = findProjectDetail(session, projectId);
+  if (detail === null) {
+    return null;
+  }
+
+  const { project } = detail.row;
+  return {
+    label: project.name,
+    path: `${pathOf("projects")}?id=${encodeURIComponent(project.id)}`,
+    context: `Project · ${project.state}`,
+    recipientIds: [project.managerId],
+  };
+}
+
+// An item on a list, in a document the caller can see: to whoever made the list
+// (MSG-recipients).
+function resolveListedItem(session: Session, iterationId: string): ResolvedSubject | null {
+  const iteration = database.iterations.find((candidate) => candidate.id === iterationId);
+  const detail = iteration === undefined ? null : findDocumentDetail(session, iteration.documentId);
+  const list = database.lists.find((candidate) => candidate.id === iteration?.listId);
+  if (detail === null || list === undefined) {
+    return null;
+  }
+
+  const { document } = detail.record;
+  return {
+    label: `${document.title} · ${documentIdentifierOf(document)}`,
+    path: `${pathOf("documents")}?id=${encodeURIComponent(document.id)}`,
+    context: `On the list ${list.name}`,
+    recipientIds: [list.createdBy],
   };
 }
 

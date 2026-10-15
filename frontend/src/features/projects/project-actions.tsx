@@ -3,12 +3,14 @@
 // on its card and its page; on the page also Edit for its manager or a dig-curator, Delete…
 // under More only while nothing was proposed into it, and Members' Edit on the members card.
 // An act the person may not do is absent. Approve… comes first, as the primary, while it waits.
-// TODO(rrandiak): *Message…* (messaging.md §3) waits for a project subject on the message
-// hand-off; labels move to i18n.
+// *Message manager…* on the page reaches its manager, for anyone but the manager, while a Message
+// instance is enabled (MSG-recipients, MSG-order).
+// TODO(rrandiak): labels move to i18n.
 
 import { useState } from "react";
 import type { ProjectRow } from "@/api/projects";
 import type { ViewAction } from "@/components/actions/action-bar";
+import { MessageDialog } from "@/components/dialogs/message-dialog";
 import type { Session } from "@/domain/entities";
 import { can } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
@@ -19,8 +21,9 @@ import {
   ProjectFormDialog,
   RejectDialog,
 } from "@/features/projects/project-dialogs";
+import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 
-type OpenDialog = "approve" | "reject" | "edit" | "members" | "delete" | null;
+type OpenDialog = "approve" | "reject" | "edit" | "members" | "delete" | "message" | null;
 
 interface ProjectActionsOptions {
   row: ProjectRow;
@@ -33,6 +36,7 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
   const scope = scopeOfProject(project);
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
   const canDecide = project.state === "Proposed" && can(session, "project.decide");
+  const { data: messageChannels = [] } = useMessageChannelsQuery();
 
   const decisionActions: ViewAction[] = canDecide
     ? [
@@ -52,6 +56,14 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
       label: "Edit",
       isPrimary: !canDecide,
       onSelect: () => setOpenDialog("edit"),
+    });
+  }
+
+  if (messageChannels.length > 0 && project.managerId !== session.user.id) {
+    pageActions.push({
+      id: "message-manager",
+      label: "Message manager…",
+      onSelect: () => setOpenDialog("message"),
     });
   }
 
@@ -96,6 +108,13 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
           row={row}
         />
       )}
+      <MessageDialog
+        isOpen={openDialog === "message"}
+        onClose={close}
+        subject={{ kind: "project", id: project.id }}
+        label={project.name}
+        recipientLabel="its manager"
+      />
       <DeleteProjectDialog
         isOpen={openDialog === "delete"}
         onClose={close}
