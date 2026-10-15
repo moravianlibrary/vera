@@ -288,11 +288,11 @@ export const decisionResultSchema = z.object({
 });
 export type DecisionResult = z.infer<typeof decisionResultSchema>;
 
-// The caller's asks it took back: Withdrawn from then on, and asking again makes a new request
-// (LC-REQ-final).
+// The caller's ask it took back, their only open one on the document (LC-REQ-check): Withdrawn
+// from then on, and asking again makes a new request (LC-REQ-final).
 export const withdrawalResultSchema = z.object({
   documentId: z.string(),
-  withdrawnCount: z.number().int().positive(),
+  requestId: z.string(),
 });
 export type WithdrawalResult = z.infer<typeof withdrawalResultSchema>;
 

@@ -73,7 +73,7 @@ export function DocumentActions({
   const { title } = record.document;
 
   const actions: ViewAction[] = [];
-  // ACT-withdraw: the caller's own ask, while it still waits.
+  // ACT-withdraw: the caller's own ask, while it still waits; there is at most one (LC-REQ-check).
   const isOwnPending = record.requests.some(
     (request) => request.requesterId === session.user.id && request.decision === "Pending",
   );

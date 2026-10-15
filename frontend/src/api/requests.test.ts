@@ -348,7 +348,7 @@ describe("ACT-withdraw", () => {
     const result = await withdrawAsk("D21");
     const ask = database.requests.find((request) => request.id === "R19");
 
-    expect(result.withdrawnCount).toBe(1);
+    expect(result.requestId).toBe("R19");
     expect(ask?.decision).toBe("Withdrawn");
     expect(await statusOf(withdrawAsk("D21"))).toBe(409); // LC-REQ-final
   });

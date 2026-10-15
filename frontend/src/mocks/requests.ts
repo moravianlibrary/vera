@@ -549,8 +549,9 @@ export function declineProposal(
   return { value: { documentId, decision: "Denied", askCount: asksOf(row).length } };
 }
 
-// The asker takes back their own asks on the document that still wait (ACT-withdraw). Each is
-// Withdrawn for good; asking again makes a new request (LC-REQ-final). The others' asks stand.
+// The asker takes back their own ask on the document while it waits (ACT-withdraw); they have at
+// most one open (LC-REQ-check). It is Withdrawn for good, and asking again makes a new request
+// (LC-REQ-final). Others' asks stand.
 export function withdrawAsk(session: Session, documentId: string): Outcome<WithdrawalResult> {
   if (!hasPermission(session, "request.withdraw_own")) {
     return { refusal: { status: 403, message: "You may not withdraw asks" } };
@@ -563,27 +564,23 @@ export function withdrawAsk(session: Session, documentId: string): Outcome<Withd
     return { refusal: { status: 404, message: "You have not asked for this document" } };
   }
 
-  const pending = own.filter((request) => request.decision === "Pending");
-  if (pending.length === 0) {
+  const ask = own.find((request) => request.decision === "Pending");
+  if (ask === undefined) {
     return { refusal: { status: 409, message: "It has been decided meanwhile" } };
   }
 
   const now = new Date().toISOString();
-  const correlationId = crypto.randomUUID();
-  for (const ask of pending) {
-    replaceRequest({ ...withoutPendingFields(ask), decision: "Withdrawn", withdrawnAt: now });
-    writeLog({
-      subjectKind: "request",
-      subjectId: ask.id,
-      at: now,
-      actor: { kind: "user", userId: session.user.id },
-      correlationId,
-      event: "Withdrawn",
-      detail: "Withdrawn by the asker.",
-    });
-  }
-
-  return { value: { documentId, withdrawnCount: pending.length } };
+  replaceRequest({ ...withoutPendingFields(ask), decision: "Withdrawn", withdrawnAt: now });
+  writeLog({
+    subjectKind: "request",
+    subjectId: ask.id,
+    at: now,
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    event: "Withdrawn",
+    detail: "Withdrawn by the asker.",
+  });
+  return { value: { documentId, requestId: ask.id } };
 }
 
 // Takes every open row the batch asked for that may be approved together, wherever its earliest

@@ -54,7 +54,7 @@ and an act on it is refused (409).
 |---|---|---|---|---|
 | `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
 | `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
-| `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409) | each of the person's open asks on it Withdrawn; others' asks stand; log *Withdrawn* per ask |
+| `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409); there is at most one ([LC-REQ-check](../lifecycles/request.md#lc-req-check)) | that ask Withdrawn; others' asks stand; log *Withdrawn* |
 
 #### ACT-ways-in
 
