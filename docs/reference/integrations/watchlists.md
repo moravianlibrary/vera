@@ -73,7 +73,8 @@ bundled with it.
 
 A push names the watchlist and the records that entered it: the first three by name, the rest as
 *+N more*. Pushes are batched per person and watchlist, in seconds: the batch is sent once
-nothing new has entered for 5 seconds, and 30 seconds after its first record at most.
+nothing new has entered for 5 seconds, and 30 seconds after its first record at most. Entries
+the person opened before it is sent are left out, and if none remain nothing is pushed.
 
 > **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Not built yet.
 
