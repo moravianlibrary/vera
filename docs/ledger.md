@@ -22,15 +22,15 @@ Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
 [WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
 
 Raised on 2026-10-16. Decided on 2026-10-16:
-- browser push is a watchlist channel beside email and chat, switched on per watchlist, off until
-  the person switches it on;
+- browser push is a watchlist channel beside email and chat, switched per watchlist; unlike them
+  it is on by default once the person allows the site's notifications in the browser, and
+  nothing is pushed before that;
 - a notification names the watchlist and the records that entered it, the first three by name
   and the rest as *+N more*;
-- it is batched, in a window of seconds rather than watchlist mail's 15 minutes;
+- it is batched in seconds, not watchlist mail's 15 minutes: the window closes once nothing new
+  has entered for 5 seconds, and after 30 seconds at most;
 - *Do not send notifications* silences it too; where the browser's permission is asked waits
   until watchlist preferences move under Preferences.
-
-Still open: the length of the window.
 
 → decision, then frontend and engine.
 
