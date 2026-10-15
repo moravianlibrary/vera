@@ -13,26 +13,7 @@ When the change is made and checked, the entry moves to *Done*.
 
 ## Open questions
 
-Each of these waits for a decision first.
-
-### L60: Browser notifications for watchlists
-
-Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
-[WATCH-mail-batch](reference/integrations/watchlists.md#watch-mail-batch),
-[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
-
-Raised on 2026-10-16. Decided on 2026-10-16:
-- browser push is a watchlist channel beside email and chat, switched per watchlist; unlike them
-  it is on by default once the person allows the site's notifications in the browser, and
-  nothing is pushed before that;
-- a notification names the watchlist and the records that entered it, the first three by name
-  and the rest as *+N more*;
-- it is batched in seconds, not watchlist mail's 15 minutes: the window closes once nothing new
-  has entered for 5 seconds, and after 30 seconds at most;
-- *Do not send notifications* silences it too; where the browser's permission is asked waits
-  until watchlist preferences move under Preferences.
-
-→ decision, then frontend and engine.
+Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
@@ -184,6 +165,19 @@ installation's configuration; tenancy stays out of scope. The code fixes the typ
 in `domain/proposals.ts` (`TODO(Tenancy)`), and the client checks them as typed: the server is to
 send each type's pattern and labels with the propose settings, and a type checked only by plugin
 code is checked with the catalog lookup. → frontend after [L58](#l58-ways-in), then engine.
+
+### L60: Browser notifications for watchlists
+
+Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+[WATCH-push](reference/integrations/watchlists.md#watch-push),
+[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
+
+Decided on 2026-10-16: browser push is a third watchlist channel, on by default for every
+watchlist, personal and system, once the person allows the site's notifications; each
+notification names the watchlist and the records that entered, batched in seconds. Today there
+is no push, and the watchlist preferences sit on the Watchlists page. Where the browser's
+permission is asked waits until those preferences move under Preferences. → frontend, then
+engine.
 
 ## For the engine
 

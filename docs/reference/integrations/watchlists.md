@@ -53,12 +53,14 @@ with ten new records adds one. Badges cannot be switched off.
 
 #### WATCH-delivery
 
-Each person decides, per watchlist and per channel (email, chat), whether to be told; it is off
-until they switch it on. They are told when a record **enters** the filter, not when one in it
+Each person decides, per watchlist and per channel (email, chat, browser push), whether to be
+told. Email and chat are off until they switch them on. Browser push is on for every watchlist
+they see, personal and system, once they allow the site's notifications in the browser; nothing
+is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
-> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Whether browser push
-> becomes a channel, naming the watchlist and the records that entered it.
+> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** There is no browser
+> push yet.
 
 #### WATCH-mail-batch
 
@@ -66,6 +68,14 @@ Watchlist mail is batched per person across all their watchlists, in a 15-minute
 most one email per window, grouped by watchlist, a record shown once. Entries the person opened
 before the window closed are left out, and if none remain no mail is sent. Hook mail is never
 bundled with it.
+
+#### WATCH-push
+
+A push names the watchlist and the records that entered it: the first three by name, the rest as
+*+N more*. Pushes are batched per person and watchlist, in seconds: the batch is sent once
+nothing new has entered for 5 seconds, and 30 seconds after its first record at most.
+
+> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Not built yet.
 
 #### WATCH-system-change
 
@@ -87,8 +97,8 @@ added later follows its own default.
 
 #### WATCH-do-not-send
 
-*Do not send notifications* stops every optional notification, hook and watchlist mail alike,
-and keeps the individual choices for when it is cleared.
+*Do not send notifications* stops every optional notification, hook mail, watchlist mail and push
+alike, and keeps the individual choices for when it is cleared.
 
 #### WATCH-manage-link
 
