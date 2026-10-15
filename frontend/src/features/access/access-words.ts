@@ -51,7 +51,7 @@ export const permissionLines = {
   "project.create": "start a project; it starts Proposed",
   "project.edit": "edit a project",
   "project.manage_members": "who is on a project, and its manager",
-  "project.decide": "approve or reject a project, and see every project",
+  "project.decide": "approve or reject a project",
   "project.delete": "delete a project with no proposals",
   "category.read": "see the tree",
   "category.edit": "rename, move, refine",

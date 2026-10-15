@@ -17,9 +17,8 @@ Two entries change their label and path for a person whose reach is only their o
 - **Documents** becomes *My Documents* at `/my-documents` without `iteration.read`;
 - **Tasks** becomes *My Tasks* without `task.read`.
 
-> **Open — [L45](../../ledger.md#l45-managing-system-watchlists).** A holder of
-> `watchlist.manage_system` will see both *Documents* and *My Documents*, to build system
-> watchlists for either.
+My Documents also opens for a holder of `watchlist.manage_system`, who builds system watchlists
+over either view. Whoever opens both switches between them on the page.
 
 #### VIEW-mixes-entry
 
@@ -53,7 +52,7 @@ empty cell means the entry is absent.
 | Proposals | `/review/proposals` | `request.decide` |  |  | Proposals | Proposals | Proposals |
 | Documents Validations | `/review/documents` | `validation.approve` · `validation.deny` · `validation.revoke` |  |  | Documents Validations | Documents Validations | Documents Validations |
 | Digitization Lists | `/lists` | `list.read` |  |  |  | Digitization Lists | Digitization Lists |
-| Projects | `/projects` | `project.read` · `project.decide` |  |  | Projects | Projects | Projects |
+| Projects | `/projects` | `project.read` |  |  | Projects | Projects | Projects |
 | Categories | `/categories` | `category.read` |  |  | Categories | Categories | Categories |
 | Intentions | `/intentions` | `intention.read` |  |  |  | Intentions | Intentions |
 | Mixes | `/mixes` | `mix.read` |  |  |  |  |  |
@@ -110,7 +109,8 @@ Digitization Lists shows the lists within `list.read`'s reach
 #### VIEW-projects
 
 Projects shows the projects the person is on at `project.read@project`, and every project at
-`project.read@any` or with `project.decide`.
+`project.read@any`. Deciding shows nothing by itself
+([PERM-requires](permissions.md#perm-requires)).
 
 #### VIEW-categories-mix
 

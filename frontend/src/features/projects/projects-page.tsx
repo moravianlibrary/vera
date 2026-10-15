@@ -123,8 +123,7 @@ export function ProjectsPage() {
         <span className="text-muted-foreground">{row.project.reason}</span>
       ) : null,
   };
-  const seesEvery =
-    can(session, "project.decide") || scopesOf(session, "project.read").includes("any");
+  const seesEvery = scopesOf(session, "project.read").includes("any");
 
   return (
     <>

@@ -19,7 +19,12 @@ import { Switch } from "@/components/ui/switch";
 import type { WatchlistView } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import type { Grant, Permission } from "@/domain/permissions";
-import { hasPermission, permissionCatalog, permissionGroups } from "@/domain/permissions";
+import {
+  canOpenMyDocuments,
+  hasPermission,
+  permissionCatalog,
+  permissionGroups,
+} from "@/domain/permissions";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -192,7 +197,7 @@ function DisplayPreferences() {
   const visibleViews = watchlistViewSchema.options.filter((view) => {
     if (session === undefined) return false;
     if (view === "documents") return hasPermission(session, "iteration.read");
-    if (view === "my-documents") return hasPermission(session, "request.read_own");
+    if (view === "my-documents") return canOpenMyDocuments(session);
     return navigationEntries.some(
       (entry) =>
         entry.id === view &&

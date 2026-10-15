@@ -15,7 +15,7 @@ import {
   roleChangeReachOf,
   roleNameOf,
 } from "@/domain/access";
-import { isAcceptedGrant } from "@/domain/permissions";
+import { isAcceptedGrant, missingRequirementsOf, withRequirements } from "@/domain/permissions";
 import { roles } from "@/mocks/fixtures/access";
 
 const roleOf = (roleId: string): Role => {
@@ -145,5 +145,69 @@ describe("the catalogue", () => {
 
   it("names a role in lower case, words joined by hyphens", () => {
     expect(roleNameOf("  Maps  Curator ")).toBe("maps-curator");
+  });
+});
+
+describe("PERM-requires", () => {
+  it("holds for every shipped role", () => {
+    expect(
+      roles.flatMap((role) =>
+        missingRequirementsOf(role.grants).map(
+          ({ grant, needs }) => `${role.id}: ${grant.permission} needs ${needs.permission}`,
+        ),
+      ),
+    ).toEqual([]);
+  });
+
+  it("asks for a need at a scope covering the grant's, project covering managed", () => {
+    expect(
+      missingRequirementsOf([
+        { permission: "iteration.recheck", scope: "custody" },
+        { permission: "iteration.read", scope: "project" },
+        { permission: "project.edit", scope: "managed" },
+        { permission: "project.read", scope: "project" },
+      ]),
+    ).toEqual([
+      {
+        grant: { permission: "iteration.recheck", scope: "custody" },
+        needs: { permission: "iteration.read", scope: "custody" },
+      },
+    ]);
+  });
+
+  it("asks for any where marked, and is met by a self-scoped need held at all", () => {
+    expect(
+      missingRequirementsOf([
+        { permission: "watchlist.manage_system", scope: "any" },
+        { permission: "watch", scope: null },
+        { permission: "iteration.read", scope: "custody" },
+      ]).map(({ needs }) => needs),
+    ).toEqual([{ permission: "iteration.read", scope: "any" }]);
+  });
+
+  it("lets project.create stand on project.read at any scope", () => {
+    expect(
+      missingRequirementsOf([
+        { permission: "project.create", scope: "any" },
+        { permission: "project.read", scope: "project" },
+      ]),
+    ).toEqual([]);
+  });
+
+  it("ticks what is needed, transitively, widening and never narrowing", () => {
+    expect(
+      withRequirements([
+        { permission: "intention.repeat", scope: "any" },
+        { permission: "validation.deny", scope: "custody" },
+        { permission: "iteration.read", scope: "project" },
+      ]),
+    ).toEqual([
+      { permission: "intention.repeat", scope: "any" },
+      { permission: "validation.deny", scope: "custody" },
+      { permission: "intention.edit", scope: "any" },
+      { permission: "iteration.read", scope: "any" },
+      { permission: "intention.read", scope: "any" },
+      { permission: "mix.read", scope: "any" },
+    ]);
   });
 });

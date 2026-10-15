@@ -170,11 +170,8 @@ Categories reaches them on the Mixes page ([VIEW-mixes-entry](views.md#view-mixe
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-watchlist-save` | *Save as watchlist* | the person can open the view; `watchlist.manage_system` for any audience but personal | a filter valid for the view (422); not a duplicate of one they see (409) | — |
+| `ACT-watchlist-save` | *Save as watchlist* | the person can open the view; `watch` for a personal one, `watchlist.manage_system` for any other audience | a filter valid for the view (422); not a duplicate of one they see (409) | — |
 | `ACT-watchlist-change` | rename, refilter, delete | their own personal one; `watchlist.manage_system` for a system one | — | — |
-
-> **Open — [L18](../../ledger.md#l18-watch-is-not-checked).** Saving a personal watchlist does not
-> check `watch`. The permission only reveals the Watchlists entry.
 
 ## Tasks and schedules
 

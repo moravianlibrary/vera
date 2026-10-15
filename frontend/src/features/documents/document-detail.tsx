@@ -336,8 +336,7 @@ function DigitizationCard({
   const { data: lists = [] } = useDigitizationListsQuery();
   const project = projects.find((candidate) => candidate.id === iteration.projectId);
   const list = lists.find((candidate) => candidate.id === iteration.listId);
-  const canOpenProjects =
-    hasPermission(session, "project.read") || hasPermission(session, "project.decide");
+  const canOpenProjects = hasPermission(session, "project.read");
   const { cancellation } = iteration;
 
   const facts: Fact[] = [

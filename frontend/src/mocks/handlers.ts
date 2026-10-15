@@ -94,7 +94,7 @@ import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
+import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
 import {
   accessIndex,
   canReadAccess,
@@ -1103,7 +1103,7 @@ export function createHandlers(profile: MockUserProfile) {
       const params = new URL(request.url).searchParams;
       const session = currentSession();
       const isMy = params.get("perspective") === "my";
-      if (isMy && !hasPermission(session, "request.read_own")) return forbidden();
+      if (isMy && !canOpenMyDocuments(session)) return forbidden();
       const page = queryDocuments(
         session,
         parseDocumentSearchParams(params),
@@ -1117,7 +1117,7 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(`${apiRoutes.documents}/:documentId`), ({ params, request }) => {
       const session = currentSession();
       const isMy = new URL(request.url).searchParams.get("perspective") === "my";
-      if (isMy && !hasPermission(session, "request.read_own")) return forbidden();
+      if (isMy && !canOpenMyDocuments(session)) return forbidden();
       const detail = findDocumentDetail(
         session,
         String(params.documentId),
@@ -1362,6 +1362,10 @@ export function createHandlers(profile: MockUserProfile) {
       }
       if (!canOpenView(session, draft.data.view)) return forbidden();
 
+      // ACT-watchlist-save: a personal one needs `watch`, any other `watchlist.manage_system`.
+      if (draft.data.audience.kind === "personal" && !hasPermission(session, "watch")) {
+        return forbidden();
+      }
       if (!canChange(session, draft.data.audience)) {
         return forbidden();
       }

@@ -24,7 +24,9 @@ import type { AnyRange } from "@/components/filters/range-filter";
 import { RangeChip, rangeOf } from "@/components/filters/range-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useReferenceLabels } from "@/hooks/use-reference-labels";
+import { hasPermission } from "@/domain/permissions";
+import { useReferenceLabels, useReferenceValues } from "@/hooks/use-reference-labels";
+import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
 import type {
   FilterableQuery,
@@ -75,9 +77,15 @@ export function FilterBar<Query extends FilterableQuery>({
     (field): field is ListFieldDefinition<Query> => !isRangeField(field),
   );
   const rangeDefinitions = fields.filter(isRangeField);
-  const labels = useReferenceLabels(
-    listDefinitions.flatMap(({ field }) => (field.kind === "reference" ? [field.reference] : [])),
+  const referenceKinds = listDefinitions.flatMap(({ field }) =>
+    field.kind === "reference" ? [field.reference] : [],
   );
+  const labels = useReferenceLabels(referenceKinds);
+  // Whoever builds system watchlists is offered every value, matched or not
+  // (WATCH-personal-system).
+  const { data: session } = useSessionQuery();
+  const offersEvery = session !== undefined && hasPermission(session, "watchlist.manage_system");
+  const everyReference = useReferenceValues(offersEvery ? referenceKinds : []);
 
   const filterFieldOf = ({ key, label, field }: ListFieldDefinition<Query>): FilterField => {
     const selected = (query[key] as readonly string[] | undefined) ?? [];
@@ -88,7 +96,12 @@ export function FilterBar<Query extends FilterableQuery>({
       return {
         key,
         label,
-        options: optionsOf(counts, selected, labels[field.reference]).toSorted(byLabel),
+        options: optionsOf(
+          counts,
+          selected,
+          labels[field.reference],
+          offersEvery ? everyReference[field.reference] : [],
+        ).toSorted(byLabel),
         selected,
         onChange: change,
       };
@@ -97,9 +110,12 @@ export function FilterBar<Query extends FilterableQuery>({
     return {
       key,
       label,
-      options: optionsOf(counts, selected, (value) => field.labels[value] ?? value).toSorted(
-        byOrderOf(field.values),
-      ),
+      options: optionsOf(
+        counts,
+        selected,
+        (value) => field.labels[value] ?? value,
+        offersEvery ? field.values : [],
+      ).toSorted(byOrderOf(field.values)),
       selected,
       // A stale value outside the vocabulary is dropped on the next pick.
       onChange: (values) => change(values.filter((value) => field.values.includes(value))),

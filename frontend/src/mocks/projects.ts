@@ -65,12 +65,12 @@ const today = () => dayOf(mockToday);
 // ---------------------------------------------------------------- reach
 
 export function canReadProjects(session: Session): boolean {
-  return can(session, "project.read") || can(session, "project.decide");
+  return can(session, "project.read");
 }
 
-// Deciding projects includes seeing every one (projects.md §3, decided 2026-10-01).
+// Deciding reads nothing by itself: it needs `project.read@any` (PERM-requires).
 function isVisible(session: Session, project: Project): boolean {
-  return can(session, "project.decide") || can(session, "project.read", scopeOfProject(project));
+  return can(session, "project.read", scopeOfProject(project));
 }
 
 function findVisible(session: Session, projectId: string): Project | null {

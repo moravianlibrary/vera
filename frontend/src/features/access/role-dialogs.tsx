@@ -1,6 +1,7 @@
 // A role's editor and its delete (view-catalog.md *Users & Groups*; docs/demos/shared/
 // page-access.js `editRole`, `delRole`; component-interfaces.md §6.5). The editor sets a scope
-// per permission, only from those the permission takes, *own* for a self-scoped one; New role
+// per permission, only from those the permission takes, *own* for a self-scoped one, and ticks
+// what a permission needs with it (PERM-requires); New role
 // and Duplicate open it empty or copied. A role people hold is saved whole after a second step
 // saying what changes and whom it reaches, each holder with what they actually gain or lose once
 // their other roles are counted. It refuses to leave nobody able to manage access. Deleting says
@@ -33,7 +34,13 @@ import {
   roleNameOf,
 } from "@/domain/access";
 import type { Grant, HeldScope, Permission, PermissionEntry } from "@/domain/permissions";
-import { permissionCatalog, permissionGroups, permissionKeys } from "@/domain/permissions";
+import {
+  missingRequirementsOf,
+  permissionCatalog,
+  permissionGroups,
+  permissionKeys,
+  withRequirements,
+} from "@/domain/permissions";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import type { AccessNames } from "@/features/access/access-records";
 import { permissionLines, scopeLabelOf, waysShortText } from "@/features/access/access-words";
@@ -94,6 +101,13 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       (!Number.isInteger(draft.proposalDailyLimit) || draft.proposalDailyLimit < 0)
     ) {
       return "The daily proposal limit must be a whole number of at least zero.";
+    }
+
+    const [missing] = missingRequirementsOf(draft.grants);
+    if (missing !== undefined) {
+      const { grant, needs } = missing;
+      const at = needs.scope === null ? "" : ` (${scopeLabelOf(needs.scope)})`;
+      return `${grant.permission} needs ${needs.permission}${at}: grant it, or take ${grant.permission} away.`;
     }
 
     const name = roleNameOf(draft.name);
@@ -224,17 +238,21 @@ function RoleFields({
 }) {
   const scopeOf = (permission: Permission) =>
     draft.grants.find((grant) => grant.permission === permission)?.scope;
-  const setScope = (permission: Permission, scope: Grant["scope"] | undefined) =>
+  // Ticking a permission ticks what it needs too (PERM-requires); unticking a need is left to
+  // the save's check, which names what still needs it.
+  const setScope = (permission: Permission, scope: Grant["scope"] | undefined) => {
+    const grants = draft.grants.filter((grant) => grant.permission !== permission);
     onChange({
       ...draft,
-      grants: [
-        ...draft.grants.filter((grant) => grant.permission !== permission),
-        ...(scope === undefined ? [] : [{ permission, scope }]),
-      ].toSorted(
+      grants: (scope === undefined
+        ? grants
+        : withRequirements([...grants, { permission, scope }])
+      ).toSorted(
         (first, second) =>
           permissionKeys.indexOf(first.permission) - permissionKeys.indexOf(second.permission),
       ),
     });
+  };
 
   return (
     <>

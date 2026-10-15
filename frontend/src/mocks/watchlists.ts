@@ -24,7 +24,7 @@ import { isSameWatchlistFilter } from "@/api/watchlists";
 import { matchingCategoryIds } from "@/domain/category-filters";
 import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
+import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
 import { publicStatuses } from "@/domain/status";
 import {
   matchingIntentions,
@@ -161,7 +161,7 @@ export function canOpenView(session: Session, view: WatchlistView): boolean {
     case "documents":
       return audienceOf(session) === "staff";
     case "my-documents":
-      return hasPermission(session, "request.read_own");
+      return canOpenMyDocuments(session);
     case "proposals":
       return canDecide(session);
     case "validations":

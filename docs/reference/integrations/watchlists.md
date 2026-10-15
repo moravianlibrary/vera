@@ -16,12 +16,12 @@ A watchlist is either:
 - **system**, shared with everyone or with the members of some groups and the holders of some
   roles.
 
-Anyone saves a personal one. Only `watchlist.manage_system` creates, changes or removes a system
-one; it keeps who created it, but any holder of the permission maintains it.
-
-> **Open — [L45](../../ledger.md#l45-managing-system-watchlists).** `watchlist.manage_system`
-> is to need `iteration.read@any`, show both Documents and My Documents, and list filter values
-> that match nothing yet.
+A holder of `watch` saves a personal one. Only `watchlist.manage_system` creates, changes or
+removes a system one; it keeps who created it, but any holder of the permission maintains it.
+Its holder reads every document ([PERM-requires](../access/permissions.md#perm-requires)), opens
+both Documents views ([VIEW-own-label](../access/views.md#view-own-label)), and is offered every
+filter value, those that match nothing yet included, since a system watchlist waits for what
+comes later.
 
 #### WATCH-audience
 

@@ -170,43 +170,6 @@ machine) and intentions scoped by a property:
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
 
-### L46: Permission dependencies
-
-Rules: [PERM-requires](reference/access/permissions.md#perm-requires).
-
-Decided on 2026-10-15. A role that grants a permission must grant what it needs,
-at a scope that covers it. The table, with the 2026-10-15 renames applied:
-
-| Permission | Needs |
-|---|---|
-| `request.create`, `request.withdraw_own` | `request.read_own` |
-| `request.decide` | `request.read` |
-| `request.read_ingest` | `iteration.read` |
-| `request.retry`, `request.read_payload` | `request.read_ingest` |
-| `project.create` | `project.read` |
-| `project.edit`, `project.manage_members`, `project.delete` | `project.read` |
-| `project.decide` | `project.read@any` |
-| `iteration.recheck`, `iteration.classify`, `iteration.cancel`, `iteration.resume`, `iteration.publish`, `validation.*`, `restriction.overrule` | `iteration.read` |
-| `list.read` | `iteration.read` |
-| `list.create`, `list.edit`, `list.delete` | `list.read@any`, `iteration.read@any` |
-| `intention.edit` | `intention.read`, `mix.read` |
-| `intention.repeat` | `intention.edit@any` |
-| `mix.edit` | `mix.read` |
-| `mix.manage` | `mix.edit` |
-| `category.edit`, `category.grant_custody` | `category.read` |
-| `watchlist.manage_system` | `watch`, `iteration.read@any` |
-| `task.cancel`, `task.schedule` | `task.read` |
-| `plugin.configure`, `plugin.run` | `plugin.read` |
-| `plugin.upload_code` | `plugin.configure` |
-| `hook.configure` | `hook.read` |
-| `access.manage` | `access.read` |
-
-A scope *covers* another when it is `any` or the same scope; `project` covers `managed`, since a
-project's manager is on it.
-
-The implicit reads go with it: `project.decide` no longer shows every project by itself, it
-needs `project.read@any`. → frontend (role editor, mock check, the shipped roles), then engine.
-
 ### L2: Documents follows the scope of iteration.read
 
 Rules: [SCOPE-custody-category](reference/access/scopes.md#scope-custody-category),
@@ -241,20 +204,6 @@ custody* becomes *request custody*. A proposal stays the word for an undecided r
 is *Propose…* for a person without `request.decide`, and *Add…* for one who holds it.
 
 → docs (glossary, reference, user journeys), then frontend (routes, labels, code names).
-
-### L45: Managing system watchlists
-
-Rules: [WATCH-personal-system](reference/integrations/watchlists.md#watch-personal-system),
-[VIEW-own-label](reference/access/views.md#view-own-label).
-
-Decided on 2026-10-15: everyone with `watch` keeps their own watchlists.
-`watchlist.manage_shared` becomes `watchlist.manage_system`, which:
-- creates, changes and removes system watchlists;
-- needs `iteration.read@any` ([L46](#l46-permission-dependencies));
-- shows both *Documents* and *My Documents*, so a system watchlist can be built for either;
-- lists every filter value, those that match nothing yet included.
-
-Built on 2026-10-15: the rename. → frontend: the rest, with [L46](#l46-permission-dependencies).
 
 ### L47: The project-user role
 
@@ -292,13 +241,6 @@ Decided on 2026-10-15: two new plugin kinds.
   its agent, logged like *Set link…*.
 
 → frontend (plugin kinds, the *Set link…* dialog), then engine.
-
-### L18: watch is not checked
-
-Rules: [ACT-watchlist-save](reference/access/acts.md#watchlists).
-
-Saving a personal watchlist checks only that the person can open the view, not `watch`. The
-permission only reveals the Watchlists entry. → frontend (the mock), then engine.
 
 ### L32: Channel impact
 
@@ -494,6 +436,16 @@ messages, and the generator follows them. → frontend.
   a spelling ([ACT-list-start](reference/access/acts.md#digitization-lists)).
 
 ### Built, 2026-10-15
+
+- **L46:** a role must grant what its permissions need; the role editor ticks it, the server
+  refuses a role without it (422 `role.requires`), and `project.decide` no longer reads by
+  itself, so `curator` holds `project.read@any`
+  ([PERM-requires](reference/access/permissions.md#perm-requires)).
+- **L18:** saving a personal watchlist needs `watch`
+  ([ACT-watchlist-save](reference/access/acts.md#watchlists)).
+- **L45:** `watchlist.manage_shared` became `watchlist.manage_system`; it needs
+  `iteration.read@any`, opens both Documents views and is offered every filter value
+  ([WATCH-personal-system](reference/integrations/watchlists.md#watch-personal-system)).
 
 - **L43:** `addition.*` became `request.read_ingest`, `request.retry` (`custody` · `any`, held
   by `curator` and `dig-curator` at `custody`) and `request.read_payload`; the `project.*`

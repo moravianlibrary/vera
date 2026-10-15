@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { hasPermission } from "@/domain/permissions";
+import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentList } from "@/features/documents/document-list";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
@@ -36,7 +36,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
   const { data: session } = useSessionQuery();
   const canSwitch =
     session !== undefined &&
-    hasPermission(session, "request.read_own") &&
+    canOpenMyDocuments(session) &&
     hasPermission(session, "iteration.read");
   const canWatchBoth = session !== undefined && canSwitch && hasPermission(session, "watch");
   const staffWatchlists = useWatchlistsQuery("documents", { isEnabled: canWatchBoth });
@@ -184,9 +184,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             grouping={grouping}
             onGroupingChange={view.setGrouping}
             canRetryAdditions={hasPermission(session, "request.retry")}
-            canOpenProjects={
-              hasPermission(session, "project.read") || hasPermission(session, "project.decide")
-            }
+            canOpenProjects={hasPermission(session, "project.read")}
             userId={userId}
             selectedId={selectedId}
             onSelect={select}

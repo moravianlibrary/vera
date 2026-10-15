@@ -10,11 +10,16 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import type { Role } from "../../frontend/src/domain/access.ts";
-import type { Permission, PermissionEntry } from "../../frontend/src/domain/permissions.ts";
+import type {
+  Permission,
+  PermissionEntry,
+  Requirement,
+} from "../../frontend/src/domain/permissions.ts";
 import {
   permissionCatalog,
   permissionGroups,
   permissionKeys,
+  permissionRequires,
 } from "../../frontend/src/domain/permissions.ts";
 import { permissionLines } from "../../frontend/src/features/access/access-words.ts";
 import { navigationEntries, visibleNavigation } from "../../frontend/src/components/layout/navigation.ts";
@@ -59,6 +64,28 @@ function permissionCatalogTable(): string {
       ].join("\n");
     })
     .join("\n\n");
+}
+
+// What each permission needs, permissions with the same needs on one row, in catalog order.
+function permissionRequiresTable(): string {
+  const needText = ({ permission, at }: Requirement) =>
+    at === "any" ? `\`${permission}@any\`` : at === "held" ? `\`${permission}\` (any scope)` : `\`${permission}\``;
+  const rows = new Map<string, Permission[]>();
+  for (const permission of permissionKeys) {
+    const needs = permissionRequires[permission];
+    if (needs !== undefined) {
+      const text = needs.map(needText).join(", ");
+      rows.set(text, [...(rows.get(text) ?? []), permission]);
+    }
+  }
+  return [
+    "| Permission | Needs |",
+    "|---|---|",
+    ...[...rows].map(
+      ([needs, permissions]) =>
+        `| ${permissions.map((permission) => `\`${permission}\``).join(", ")} | ${needs} |`,
+    ),
+  ].join("\n");
 }
 
 function scopeCell(role: Role, permission: Permission): string {
@@ -160,6 +187,7 @@ const generators: Record<string, () => string> = {
   "page-filters": pageFiltersTable,
   sidebar: sidebarTable,
   "permission-catalog": permissionCatalogTable,
+  "permission-requires": permissionRequiresTable,
   "role-grants": roleGrantsTable,
   "role-limits": roleLimitsTable,
 };

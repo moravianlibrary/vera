@@ -96,7 +96,7 @@ Grants, by scope; an empty cell is not granted.
 | `request.read_ingest` |  |  | custody | custody | any |
 | `request.retry` |  |  | custody | custody | any |
 | `request.read_payload` |  |  |  |  | any |
-| `project.read` |  |  | project | any | any |
+| `project.read` |  |  | any | any | any |
 | `project.create` |  |  | any | any | any |
 | `project.edit` |  |  | managed | any | any |
 | `project.manage_members` |  |  | managed | any | any |

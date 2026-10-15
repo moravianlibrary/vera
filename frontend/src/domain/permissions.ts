@@ -89,6 +89,12 @@ export function scopesOf(holder: GrantHolder, permission: Permission): GrantScop
     .map((grant) => grant.scope);
 }
 
+// My Documents opens with `request.read_own`, and for whoever manages system watchlists, who
+// builds them over either Documents view (VIEW-own-label, WATCH-personal-system).
+export function canOpenMyDocuments(holder: GrantHolder): boolean {
+  return hasAnyPermission(holder, ["request.read_own", "watchlist.manage_system"]);
+}
+
 // ---------------------------------------------------------------- scope against a record
 
 // What a pane's action is about, as far as a grant's scope can tell (permissions.md §2).
@@ -266,6 +272,135 @@ export const permissionCatalog = {
 export function isAcceptedGrant({ permission, scope }: Grant): boolean {
   const { scopes } = permissionCatalog[permission] as PermissionEntry;
   return scopes === null ? scope === null : scope !== null && scopes.includes(scope);
+}
+
+// ---------------------------------------------------------------- what a permission needs
+
+// A permission another needs (PERM-requires). Held at a scope covering the grant's by default;
+// `any` where the need is only met everywhere; `held` where any scope will do, as creating a
+// project reaches no project yet. A self-scoped need is met by holding it.
+export interface Requirement {
+  readonly permission: Permission;
+  readonly at?: "any" | "held";
+}
+
+const needs = (...permissions: Permission[]): Requirement[] =>
+  permissions.map((permission) => ({ permission }));
+const needsAtAny = (...permissions: Permission[]): Requirement[] =>
+  permissions.map((permission) => ({ permission, at: "any" }));
+const readsIterations = needs("iteration.read");
+const readsProjects = needs("project.read");
+
+export const permissionRequires: Partial<Record<Permission, readonly Requirement[]>> = {
+  "request.create": needs("request.read_own"),
+  "request.withdraw_own": needs("request.read_own"),
+  "request.decide": needs("request.read"),
+  "request.read_ingest": readsIterations,
+  "request.retry": needs("request.read_ingest"),
+  "request.read_payload": needs("request.read_ingest"),
+  "project.create": [{ permission: "project.read", at: "held" }],
+  "project.edit": readsProjects,
+  "project.manage_members": readsProjects,
+  "project.delete": readsProjects,
+  "project.decide": needsAtAny("project.read"),
+  "iteration.recheck": readsIterations,
+  "iteration.classify": readsIterations,
+  "validation.approve": readsIterations,
+  "validation.deny": readsIterations,
+  "validation.revoke": readsIterations,
+  "restriction.overrule": readsIterations,
+  "iteration.cancel": readsIterations,
+  "iteration.resume": readsIterations,
+  "iteration.publish": readsIterations,
+  "list.read": readsIterations,
+  "list.create": needsAtAny("list.read", "iteration.read"),
+  "list.edit": needsAtAny("list.read", "iteration.read"),
+  "list.delete": needsAtAny("list.read", "iteration.read"),
+  "intention.edit": needs("intention.read", "mix.read"),
+  "intention.repeat": needsAtAny("intention.edit"),
+  "mix.edit": needs("mix.read"),
+  "mix.manage": needs("mix.edit"),
+  "category.edit": needs("category.read"),
+  "category.grant_custody": needs("category.read"),
+  "watchlist.manage_system": [{ permission: "watch" }, ...needsAtAny("iteration.read")],
+  "task.cancel": needs("task.read"),
+  "task.schedule": needs("task.read"),
+  "plugin.configure": needs("plugin.read"),
+  "plugin.run": needs("plugin.read"),
+  "plugin.upload_code": needs("plugin.configure"),
+  "hook.configure": needs("hook.read"),
+  "access.manage": needs("access.read"),
+};
+
+// Whether a grant at `held` reaches everything one at `scope` does: `any` covers every scope,
+// `project` covers `managed`, as a project's manager is on it.
+export function coversScope(held: GrantScope, scope: GrantScope): boolean {
+  return held === "any" || held === scope || (held === "project" && scope === "managed");
+}
+
+// The scope a requirement of a grant at `scope` must be held at, the narrowest that does.
+export function requiredScopeOf(requirement: Requirement, scope: GrantScope): GrantScope {
+  const { scopes } = permissionCatalog[requirement.permission] as PermissionEntry;
+  if (scopes === null) {
+    return null;
+  }
+  if (requirement.at === "any") {
+    return "any";
+  }
+  const fits = (candidate: HeldScope) => requirement.at === "held" || coversScope(candidate, scope);
+  return scopes.find(fits) ?? "any";
+}
+
+function meets(requirement: Requirement, scope: GrantScope, held: GrantScope | undefined): boolean {
+  if (held === undefined) {
+    return false;
+  }
+  const { scopes } = permissionCatalog[requirement.permission] as PermissionEntry;
+  if (scopes === null || requirement.at === "held") {
+    return true;
+  }
+  return coversScope(held, requirement.at === "any" ? "any" : scope);
+}
+
+export interface MissingRequirement {
+  readonly grant: Grant;
+  readonly needs: Grant;
+}
+
+// What a role's grants need and it does not grant, each at the scope it would take
+// (PERM-requires).
+export function missingRequirementsOf(grants: readonly Grant[]): MissingRequirement[] {
+  const heldScopeOf = (permission: Permission) =>
+    grants.find((grant) => grant.permission === permission)?.scope;
+  return grants.flatMap((grant) =>
+    (permissionRequires[grant.permission] ?? [])
+      .filter(
+        (requirement) => !meets(requirement, grant.scope, heldScopeOf(requirement.permission)),
+      )
+      .map((requirement) => ({
+        grant,
+        needs: {
+          permission: requirement.permission,
+          scope: requiredScopeOf(requirement, grant.scope),
+        },
+      })),
+  );
+}
+
+// The grants with every need added or widened, transitively: what the role editor ticks with a
+// permission (PERM-requires).
+export function withRequirements(grants: readonly Grant[]): Grant[] {
+  let next = [...grants];
+  for (;;) {
+    const [missing] = missingRequirementsOf(next);
+    if (missing === undefined) {
+      return next;
+    }
+    // A need already held at a scope that does not cover is widened to `any`, never narrowed.
+    const held = next.find((grant) => grant.permission === missing.needs.permission);
+    const needed = held === undefined ? missing.needs : { ...missing.needs, scope: "any" as const };
+    next = [...next.filter((grant) => grant !== held), needed];
+  }
 }
 
 // The catalogue's order: by heading, then as the heading lists them.

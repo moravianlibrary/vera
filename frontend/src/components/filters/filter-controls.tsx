@@ -166,14 +166,17 @@ interface FacetCount<Value extends string> {
   count: number;
 }
 
-// The values with a match, plus any picked value that no longer has one, so its chip still reads.
+// The values with a match, plus any picked value that no longer has one, so its chip still reads,
+// and every value of `everyValue` when given: a system watchlist is built for what may match
+// later (WATCH-personal-system).
 export function optionsOf<Value extends string>(
   counts: readonly FacetCount<Value>[] | undefined,
   selected: readonly Value[] | undefined,
   labelOf: (value: Value) => string,
+  everyValue: readonly Value[] = [],
 ): FilterOption[] {
   const counted = counts ?? [];
-  const unmatched = (selected ?? [])
+  const unmatched = [...new Set([...(selected ?? []), ...everyValue])]
     .filter((value) => !counted.some((entry) => entry.value === value))
     .map((value) => ({ value, count: 0 }));
 

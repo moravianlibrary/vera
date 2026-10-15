@@ -146,6 +146,25 @@ describe("roles", () => {
     ).toMatchObject({ status: 422 });
   });
 
+  it("refuses a role that grants a permission without what it needs (PERM-requires)", async () => {
+    signInAs("admin");
+
+    expect(
+      await refusalOf(
+        createRole({
+          name: "maps-curator",
+          description: "",
+          proposalBatchLimit: 10,
+          proposalDailyLimit: 300,
+          grants: [
+            { permission: "iteration.publish", scope: "custody" },
+            { permission: "iteration.read", scope: "project" },
+          ],
+        }),
+      ),
+    ).toMatchObject({ status: 422, code: "role.requires" });
+  });
+
   it("names a new role the way shipped ones are named, once", async () => {
     signInAs("admin");
     const role = await createRole({

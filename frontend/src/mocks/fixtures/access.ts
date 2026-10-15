@@ -88,7 +88,7 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
       },
       {
         permission: "project.read",
-        scope: "project",
+        scope: "any",
       },
       {
         permission: "project.edit",

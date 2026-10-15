@@ -35,16 +35,40 @@ A role grants each permission at most once, at one scope.
 #### PERM-requires
 
 Some permissions need another: managing a project needs reading it. A role that grants one must
-also grant what it needs, at a scope that covers it (`any` covers every scope; otherwise the
-same scope). The role editor ticks what is needed when a permission is ticked, and the server
+also grant what it needs, at a scope that covers it (`any` covers every scope and `project`
+covers `managed`; otherwise the same scope). The role editor ticks what is needed when a permission is ticked, and the server
 refuses a role that misses one (422).
 
 *Why:* the check is on the role, not the person. A union of roles that each hold what they need
 holds what it needs, so a person can never end up able to act on what they cannot see.
 
-> **Open — [L46](../../ledger.md#l46-permission-dependencies).** Not built; the dependencies are
-> listed in the ledger. Today some permissions read implicitly instead: `project.decide` also
-> shows every project.
+In the table, `@any` marks a need met only at `any`, and *any scope* one met at whatever scope it
+is held, as creating a project reaches no project yet. A self-scoped need is met by holding it.
+Nothing reads implicitly: deciding projects shows them only through `project.read@any`.
+
+<!-- generated:permission-requires -->
+| Permission | Needs |
+|---|---|
+| `request.create`, `request.withdraw_own` | `request.read_own` |
+| `request.decide` | `request.read` |
+| `request.read_ingest`, `iteration.recheck`, `iteration.classify`, `validation.approve`, `validation.deny`, `validation.revoke`, `restriction.overrule`, `iteration.cancel`, `iteration.resume`, `iteration.publish`, `list.read` | `iteration.read` |
+| `request.retry`, `request.read_payload` | `request.read_ingest` |
+| `project.create` | `project.read` (any scope) |
+| `project.edit`, `project.manage_members`, `project.delete` | `project.read` |
+| `project.decide` | `project.read@any` |
+| `watchlist.manage_system` | `watch`, `iteration.read@any` |
+| `list.create`, `list.edit`, `list.delete` | `list.read@any`, `iteration.read@any` |
+| `intention.edit` | `intention.read`, `mix.read` |
+| `intention.repeat` | `intention.edit@any` |
+| `mix.edit` | `mix.read` |
+| `mix.manage` | `mix.edit` |
+| `category.edit`, `category.grant_custody` | `category.read` |
+| `task.cancel`, `task.schedule` | `task.read` |
+| `plugin.configure`, `plugin.run` | `plugin.read` |
+| `plugin.upload_code` | `plugin.configure` |
+| `hook.configure` | `hook.read` |
+| `access.manage` | `access.read` |
+<!-- /generated:permission-requires -->
 
 #### PERM-absent-not-disabled
 
@@ -80,7 +104,7 @@ scope included, and refuses with 403.
 | `project.edit` | `managed` · `any` | edit a project |
 | `project.manage_members` | `managed` · `any` | who is on a project, and its manager |
 | `project.delete` | `managed` · `any` | delete a project with no proposals |
-| `project.decide` | `any` | approve or reject a project, and see every project |
+| `project.decide` | `any` | approve or reject a project |
 
 ### Iterations
 

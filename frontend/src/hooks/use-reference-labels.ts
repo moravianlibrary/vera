@@ -78,3 +78,36 @@ export function useReferenceLabels(
     pluginInstances: nameOf(instances),
   };
 }
+
+// Every record of each kind asked for, by id: the values a filter offers to someone who builds
+// system watchlists, matched or not (WATCH-personal-system). Plugins named in a defect have no
+// list of their own.
+export function useReferenceValues(
+  kinds: readonly ReferenceKind[],
+): Readonly<Record<ReferenceKind, readonly string[]>> {
+  const isNeeded = (kind: ReferenceKind) => ({ isEnabled: kinds.includes(kind) });
+  const { data: session } = useSessionQuery();
+  const { data: users = [] } = useUsersQuery(isNeeded("users"));
+  const { data: projects = [] } = useProjectsQuery(isNeeded("projects"));
+  const { data: mixes = [] } = useQuery({
+    queryKey: ["mixes"],
+    queryFn: listMixes,
+    enabled: kinds.includes("mixes") && session !== undefined && can(session, "mix.read"),
+  });
+  const { data: categories = [] } = useCategoriesQuery(isNeeded("categories"));
+  const { data: batches = [] } = useBatchesQuery(isNeeded("batches"));
+  const { data: custodies = [] } = useProposalCustodiesQuery(isNeeded("proposalCustodies"));
+  const { data: instances = [] } = usePluginInstancesQuery(isNeeded("pluginInstances"));
+  const idsOf = (records: readonly { id: string }[]) => records.map((record) => record.id);
+
+  return {
+    users: idsOf(users),
+    projects: idsOf(projects),
+    mixes: idsOf(mixes),
+    categories: idsOf(categories),
+    batches: idsOf(batches),
+    proposalCustodies: idsOf(custodies),
+    defectPlugins: [],
+    pluginInstances: idsOf(instances),
+  };
+}

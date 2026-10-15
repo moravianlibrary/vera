@@ -25,7 +25,7 @@ import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@/d
 import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@/domain/access";
 import type { Session } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
-import { hasPermission, isAcceptedGrant } from "@/domain/permissions";
+import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
@@ -143,6 +143,16 @@ function grantsRefusal(draft: RoleDraft): Refusal | null {
         refused.scope === null
           ? `${refused.permission} needs a scope`
           : `${refused.permission} does not take the scope ${refused.scope}`,
+    };
+  }
+
+  const [missing] = missingRequirementsOf(draft.grants);
+  if (missing !== undefined) {
+    const { grant, needs } = missing;
+    return {
+      status: 422,
+      code: "role.requires",
+      message: `${grant.permission} needs ${needs.permission}${needs.scope === null ? "" : ` at ${needs.scope}`}`,
     };
   }
 

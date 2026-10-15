@@ -3,7 +3,7 @@
 
 import type { Session } from "@/domain/entities";
 import type { Permission } from "@/domain/permissions";
-import { hasAnyPermission, hasPermission } from "@/domain/permissions";
+import { canOpenMyDocuments, hasAnyPermission, hasPermission } from "@/domain/permissions";
 
 export interface NavigationEntry {
   readonly id: string;
@@ -47,7 +47,7 @@ export const navigationEntries: readonly NavigationEntry[] = [
     path: "/projects",
     rail: "Pj",
     label: "Projects",
-    requires: ["project.read", "project.decide"],
+    requires: ["project.read"],
   },
   {
     id: "categories",
@@ -116,7 +116,7 @@ export function visibleNavigation(session: Session): VisibleNavigationEntry[] {
 
 // A nested page may stay addressable even when it has no separate sidebar row.
 export function canOpenNavigationEntry(session: Session, entryId: string): boolean {
-  if (entryId === "my-documents") return hasPermission(session, "request.read_own");
+  if (entryId === "my-documents") return canOpenMyDocuments(session);
   const entry = navigationEntries.find((candidate) => candidate.id === entryId);
   return entry !== undefined && hasAnyPermission(session, entry.requires);
 }
