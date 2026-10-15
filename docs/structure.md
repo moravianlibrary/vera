@@ -95,7 +95,7 @@ docs/
     testing.md          unit, contract (engine and backend), user journeys end-to-end
     conventions.md      the shared coding conventions plus VERA's layer
 
-  decisions/            NNNN-title.md: context, decision, rejected alternatives
+  decisions/            DEC-NNNN-title.md: context, decision, rejected alternatives
 ```
 
 `AGENTS.md` stays short. It routes and never restates a rule.
@@ -120,6 +120,7 @@ docs/
 | `PERM`, `SCOPE`, `ROLE`, `ACCESS`, `VIEW`, `ACT` | `access/*` |
 | `PLG`, `REG`, `HOOK`, `MSG`, `WATCH` | `integrations/*` |
 | `UI` | `ui/*` |
+| `DEC` | `decisions/DEC-NNNN-title.md`: four digits, not a slug |
 
 ## 4. What is generated and checked
 
