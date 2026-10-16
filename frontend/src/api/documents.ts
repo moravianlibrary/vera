@@ -6,6 +6,13 @@
 import { z } from "zod";
 import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson } from "@/api/http";
+import type { PropertyParams } from "@/api/properties";
+import {
+  canonicalPropertyParams,
+  propertyFacetsSchema,
+  propertyParamsOf,
+  writePropertyParams,
+} from "@/api/properties";
 import { apiRoutes, documentRoute } from "@/api/routes";
 import type { AskDecision, ExistingCopyState } from "@/domain/documents";
 import {
@@ -73,12 +80,14 @@ export interface DocumentQuery {
   // any current asker asked.
   readonly pages?: ValueRange<number>;
   readonly asked?: DayRange;
+  // DOC-property-filter: a condition per property, as `p.<key>` writes it.
+  readonly properties?: PropertyParams;
 }
 
 // The fields that are lists of values, each counted as a facet.
 export type DocumentListField = Exclude<
   keyof DocumentQuery,
-  "search" | "isMine" | DocumentRangeField
+  "search" | "isMine" | "properties" | DocumentRangeField
 >;
 export type DocumentRangeField = "pages" | "asked";
 
@@ -99,6 +108,8 @@ export const documentQueryParams = {
   askerIds: "asker",
   pages: "pages",
   asked: "asked",
+  // A prefix: `p.size`, `p.size.none`.
+  properties: "p.",
 } as const satisfies Record<keyof DocumentQuery, string>;
 
 const mineValue = "1";
@@ -147,6 +158,7 @@ export function toDocumentSearchParams(query: DocumentQuery): URLSearchParams {
     params.set(documentQueryParams.asked, asked);
   }
 
+  writePropertyParams(params, query.properties);
   return params;
 }
 
@@ -177,13 +189,14 @@ export function parseDocumentSearchParams(params: URLSearchParams): DocumentQuer
     askerIds: listOf("askerIds", idValueSchema),
     pages: parseRange(params.get(documentQueryParams.pages), parseCount),
     asked: parseDayRange(params.get(documentQueryParams.asked)),
+    properties: propertyParamsOf(params),
   };
 }
 
 // True when the two name the same filter, however their lists are ordered.
 export function isSameDocumentQuery(first: DocumentQuery, second: DocumentQuery): boolean {
   const canonical = (query: DocumentQuery) => {
-    const params = toDocumentSearchParams(query);
+    const params = toDocumentSearchParams({ ...query, properties: undefined });
     for (const field of listFields) {
       const values = query[field];
       if (values !== undefined && values.length > 0) {
@@ -192,7 +205,7 @@ export function isSameDocumentQuery(first: DocumentQuery, second: DocumentQuery)
     }
 
     params.sort();
-    return params.toString();
+    return `${params.toString()}&${canonicalPropertyParams(query.properties)}`;
   };
 
   return canonical(first) === canonical(second);
@@ -291,6 +304,8 @@ export const documentPageSchema = z.object({
     existingCopies: facetCountsOf(existingCopyStateSchema),
     askerIds: facetCountsOf(z.string()),
   } satisfies Record<DocumentListField, z.ZodType>),
+  // DOC-property-filter: the enum and yes/no properties' values, by key.
+  propertyFacets: propertyFacetsSchema,
 });
 export type DocumentPage = z.infer<typeof documentPageSchema>;
 

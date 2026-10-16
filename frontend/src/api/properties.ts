@@ -4,6 +4,7 @@
 // written in a page's URL as `p.<key>` and `p.<key>.none` (DOC-property-filter).
 
 import { z } from "zod";
+import { facetCountsOf } from "@/api/facets";
 import { deleteResource, getJson, postJson, putJson } from "@/api/http";
 import { apiRoutes, documentRoute } from "@/api/routes";
 import type { PropertyCondition, PropertyDefinition } from "@/domain/properties";
@@ -125,6 +126,20 @@ export async function enterPropertyValues({
 }): Promise<BulkPropertyEntryResult> {
   return postJson(bulkPropertyRoute(key), entry, bulkPropertyEntryResultSchema);
 }
+
+// ---------------------------------------------------------------- facets
+
+// An enum or yes/no property's values with how many records each finds, and how many hold no
+// value, counted over every other active filter (UI-facets).
+export const propertyFacetSchema = z.object({
+  values: facetCountsOf(z.string()),
+  noValue: z.number().int().nonnegative(),
+});
+export type PropertyFacet = z.infer<typeof propertyFacetSchema>;
+
+// By property key.
+export const propertyFacetsSchema = z.record(z.string(), propertyFacetSchema);
+export type PropertyFacets = z.infer<typeof propertyFacetsSchema>;
 
 // ---------------------------------------------------------------- conditions in a URL
 

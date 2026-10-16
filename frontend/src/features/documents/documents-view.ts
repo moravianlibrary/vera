@@ -72,6 +72,7 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
   toSearchParams: toDocumentSearchParams,
   parseSearchParams: parseDocumentSearchParams,
   isSameQuery: isSameDocumentQuery,
+  filtersProperties: true,
   fields: [
     {
       key: "statuses",
@@ -166,9 +167,11 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
   groupingParam: documentGroupingParam,
 };
 
-const requesterQuery = ({ search, statuses }: DocumentQuery): DocumentQuery => ({
+// A requester's public properties are filtered on too; the server reads only those.
+const requesterQuery = ({ search, statuses, properties }: DocumentQuery): DocumentQuery => ({
   search,
   statuses,
+  properties,
 });
 
 export const myDocumentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
@@ -176,6 +179,7 @@ export const myDocumentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = 
   toSearchParams: (query) => toDocumentSearchParams(requesterQuery(query)),
   parseSearchParams: (params) => requesterQuery(parseDocumentSearchParams(params)),
   isSameQuery: isSameDocumentQuery,
+  filtersProperties: true,
   fields: documentsView.fields.filter((field) => field.audience === "public"),
   groupings: [],
   groupingParam: documentGroupingParam,

@@ -49,10 +49,10 @@ The filter fields and groupings of each page, as the code declares them:
 <!-- generated:page-filters -->
 | Page | Watchlists | Filters | Groupings |
 |---|---|---|---|
-| Documents | `documents` | Status (on the bar) · Decision (on the bar) · Progress (on the bar) · Validation · Forbidden · Cancelled · Category · Project · Priority · Existing copy · Asked by · Pages (range) · Asked (range) | Group by batch · Group by project |
-| My Documents | `my-documents` | Status (on the bar) | — |
-| Requests | `requests` | Decision (on the bar) · Request custody (on the bar) · Material type · Project · Existing copy · Asked by · Batch · Askers · After the project's approval · Asked (range) | Group by batch · Group by requester |
-| Documents Validations | `validations` | Review (on the bar) · Category (on the bar) · Forbidden · Defect · Priority · Project · Waiting since (range) | Group by category · Group by defect |
+| Documents | `documents` | Status (on the bar) · Decision (on the bar) · Progress (on the bar) · Validation · Forbidden · Cancelled · Category · Project · Priority · Existing copy · Asked by · Pages (range) · Asked (range) · each property (by its type) | Group by batch · Group by project |
+| My Documents | `my-documents` | Status (on the bar) · each property (by its type) | — |
+| Requests | `requests` | Decision (on the bar) · Request custody (on the bar) · Material type · Project · Existing copy · Asked by · Batch · Askers · After the project's approval · Asked (range) · each property (by its type) | Group by batch · Group by requester |
+| Documents Validations | `validations` | Review (on the bar) · Category (on the bar) · Forbidden · Defect · Priority · Project · Waiting since (range) · each property (by its type) | Group by category · Group by defect |
 | Digitization Lists | `lists` | State (on the bar) · Needs attention · Runs (range) | — |
 | Projects | `projects` | Decision (on the bar) · Period (on the bar) · Pace · Project dates (range) · Time elapsed (range) · Delivered (range) | — |
 | Categories | `categories` | Kind (on the bar) · Custody · Needs attention · Documents (range) · Ready pages (range) | — |

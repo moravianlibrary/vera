@@ -22,7 +22,7 @@ import type {
 } from "@/api/requests";
 import { requestPageSchema, requestSliceSize } from "@/api/requests";
 import { categoryPathOf } from "@/domain/categories";
-import { existingCopiesOf } from "@/domain/documents";
+import { currentIterationOf, existingCopiesOf } from "@/domain/documents";
 import type {
   Document,
   Iteration,
@@ -58,7 +58,12 @@ import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/request-custodies";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
-import { mayReadStaffProperties } from "@/mocks/properties";
+import {
+  filterablePropertiesOf,
+  mayReadStaffProperties,
+  propertyFacetsOf,
+  propertyPredicatesOf,
+} from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
@@ -204,7 +209,8 @@ function baseIdOf(requestId: string): string {
 
 // ---------------------------------------------------------------- list
 
-type FilterField = "search" | RequestListField | RequestRangeField;
+// A property's condition counts as its own field, `p.<key>`.
+type FilterField = `p.${string}` | "search" | RequestListField | RequestRangeField;
 
 interface Predicate {
   field: FilterField;
@@ -260,7 +266,23 @@ export function queryRequests(
   grouping: RequestGrouping | null = null,
 ): RequestPage {
   const reachable = reachableRows(session);
-  const predicates = predicatesOf(query);
+  // DOC-property-filter: the properties the page shows that the caller may read.
+  const properties = filterablePropertiesOf(session, false)
+    // The Type filter is its material type already.
+    .filter((definition) => definition.key !== "material_type");
+  const subjectOf = (row: RequestRow) => ({
+    document: row.record.document,
+    iteration: currentIterationOf(row.record),
+  });
+  const predicates = [
+    ...predicatesOf(query),
+    ...propertyPredicatesOf(query.properties, properties).map(
+      ({ key, matches }): Predicate => ({
+        field: `p.${key}`,
+        matches: (row) => matches(subjectOf(row)),
+      }),
+    ),
+  ];
   // A facet counts over every other filter, so picking a value never hides its siblings.
   const matchingAllBut = (field: FilterField | null) =>
     reachable.filter((row) =>
@@ -285,6 +307,9 @@ export function queryRequests(
     // Each list's values were produced by that field's own value function.
     facets: requestPageSchema.shape.facets.parse(
       Object.fromEntries(listFields.map((field) => [field, countOf(field)])),
+    ),
+    propertyFacets: propertyFacetsOf(properties, (key) =>
+      matchingAllBut(`p.${key}`).map(subjectOf),
     ),
   };
 }

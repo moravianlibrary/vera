@@ -10,6 +10,13 @@ import type { Answer } from "@/api/documents";
 import { answerSchema } from "@/api/documents";
 import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson, postJson } from "@/api/http";
+import type { PropertyParams } from "@/api/properties";
+import {
+  canonicalPropertyParams,
+  propertyFacetsSchema,
+  propertyParamsOf,
+  writePropertyParams,
+} from "@/api/properties";
 import { apiRoutes, validationRoute, verdictRoute } from "@/api/routes";
 import type { Priority } from "@/domain/entities";
 import { prioritySchema, progressSchema, statusLogEntrySchema } from "@/domain/entities";
@@ -33,10 +40,15 @@ export interface ValidationQuery {
   readonly projectIds?: readonly string[];
   // Advanced, a range rather than values (filtering.md §6): the day it started waiting.
   readonly waiting?: DayRange;
+  // DOC-property-filter: a condition per property, as `p.<key>` writes it.
+  readonly properties?: PropertyParams;
 }
 
 export type ValidationRangeField = "waiting";
-export type ValidationListField = Exclude<keyof ValidationQuery, "search" | ValidationRangeField>;
+export type ValidationListField = Exclude<
+  keyof ValidationQuery,
+  "search" | "properties" | ValidationRangeField
+>;
 
 // Query-string names; the same names address the filter in the page URL.
 export const validationQueryParams = {
@@ -48,6 +60,7 @@ export const validationQueryParams = {
   priorities: "priority",
   projectIds: "project",
   waiting: "since",
+  properties: "p.",
 } as const satisfies Record<keyof ValidationQuery, string>;
 
 const idValueSchema = z.string().min(1);
@@ -85,6 +98,7 @@ export function toValidationSearchParams(query: ValidationQuery): URLSearchParam
     params.set(validationQueryParams.waiting, waiting);
   }
 
+  writePropertyParams(params, query.properties);
   return params;
 }
 
@@ -103,6 +117,7 @@ export function parseValidationSearchParams(params: URLSearchParams): Validation
   }
 
   query.waiting = parseDayRange(params.get(validationQueryParams.waiting));
+  query.properties = propertyParamsOf(params);
 
   // Every value of each field was parsed by that field's own schema.
   return query as ValidationQuery;
@@ -111,9 +126,9 @@ export function parseValidationSearchParams(params: URLSearchParams): Validation
 // True when the two name the same filter, however their lists are ordered.
 export function isSameValidationQuery(first: ValidationQuery, second: ValidationQuery): boolean {
   const canonical = (query: ValidationQuery) => {
-    const params = toValidationSearchParams(query);
+    const params = toValidationSearchParams({ ...query, properties: undefined });
     params.sort();
-    return params.toString();
+    return `${params.toString()}&${canonicalPropertyParams(query.properties)}`;
   };
 
   return canonical(first) === canonical(second);
@@ -198,6 +213,7 @@ export const validationPageSchema = z.object({
     priorities: facetCountsOf(prioritySchema),
     projectIds: facetCountsOf(z.string()),
   } satisfies Record<ValidationListField, z.ZodType>),
+  propertyFacets: propertyFacetsSchema,
 });
 export type ValidationPage = z.infer<typeof validationPageSchema>;
 

@@ -15,6 +15,10 @@ import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { hasPermission } from "@/domain/permissions";
+import {
+  filterablePropertiesOf,
+  usePropertiesQuery,
+} from "@/features/properties/use-properties-query";
 import { BulkApproveDialog } from "@/features/requests/bulk-approve-dialog";
 import type { DecisionOutcome } from "@/features/requests/request-detail";
 import { RequestDetailPane } from "@/features/requests/request-detail";
@@ -33,6 +37,7 @@ type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
 export function RequestsPage() {
   const view = useViewUrlState(requestsView);
+  const { data: propertyIndex } = usePropertiesQuery();
   const { query, selectedId, grouping, select } = view;
   const [decided, setDecided] = useState<DecisionOutcome | null>(null);
   const [bulkGroup, setBulkGroup] = useState<BatchGroup | null>(null);
@@ -105,6 +110,12 @@ export function RequestsPage() {
         query={query}
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
+        properties={{
+          definitions: filterablePropertiesOf(propertyIndex?.definitions, false, ["material_type"]),
+          params: query.properties,
+          facets: summary?.propertyFacets,
+          onChange: (properties) => view.setQuery({ ...query, properties }),
+        }}
         searchLabel="Search requests"
         searchPlaceholder="Search — title, catalog ID, volume, who asked, batch"
       />

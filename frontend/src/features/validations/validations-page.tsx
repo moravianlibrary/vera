@@ -17,6 +17,10 @@ import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { hasPermission } from "@/domain/permissions";
 import {
+  filterablePropertiesOf,
+  usePropertiesQuery,
+} from "@/features/properties/use-properties-query";
+import {
   useValidationQuery,
   useValidationsQuery,
 } from "@/features/validations/use-validations-query";
@@ -30,6 +34,7 @@ import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function ValidationsPage() {
   const view = useViewUrlState(validationsView);
+  const { data: propertyIndex } = usePropertiesQuery();
   const { query, selectedId, grouping, select } = view;
   const [left, setLeft] = useState<LeftOutcome | null>(null);
   const { data: session } = useSessionQuery();
@@ -88,6 +93,12 @@ export function ValidationsPage() {
         query={query}
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
+        properties={{
+          definitions: filterablePropertiesOf(propertyIndex?.definitions, false),
+          params: query.properties,
+          facets: summary?.propertyFacets,
+          onChange: (properties) => view.setQuery({ ...query, properties }),
+        }}
         searchLabel="Search what waits for review"
         searchPlaceholder="Search — title, catalog ID, shelf mark, defect"
       />

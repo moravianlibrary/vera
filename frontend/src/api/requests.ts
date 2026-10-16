@@ -10,6 +10,13 @@ import type { Answer } from "@/api/documents";
 import { answerSchema } from "@/api/documents";
 import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson, postJson } from "@/api/http";
+import type { PropertyParams } from "@/api/properties";
+import {
+  canonicalPropertyParams,
+  propertyFacetsSchema,
+  propertyParamsOf,
+  writePropertyParams,
+} from "@/api/properties";
 import {
   apiRoutes,
   askWithdrawalRoute,
@@ -54,10 +61,15 @@ export interface RequestQuery {
   // Advanced, a range rather than values (filtering.md §6): the day any of the row's asks was
   // made.
   readonly asked?: DayRange;
+  // DOC-property-filter: a condition per property, as `p.<key>` writes it.
+  readonly properties?: PropertyParams;
 }
 
 // The fields that are lists of values, each counted as a facet.
-export type RequestListField = Exclude<keyof RequestQuery, "search" | RequestRangeField>;
+export type RequestListField = Exclude<
+  keyof RequestQuery,
+  "search" | "properties" | RequestRangeField
+>;
 export type RequestRangeField = "asked";
 
 // Query-string names; the same names address the filter in the page URL.
@@ -73,6 +85,7 @@ export const requestQueryParams = {
   askerCounts: "askers",
   afterProjectApproval: "after",
   asked: "asked",
+  properties: "p.",
 } as const satisfies Record<keyof RequestQuery, string>;
 
 const idValueSchema = z.string().min(1);
@@ -113,6 +126,7 @@ export function toRequestSearchParams(query: RequestQuery): URLSearchParams {
     params.set(requestQueryParams.asked, asked);
   }
 
+  writePropertyParams(params, query.properties);
   return params;
 }
 
@@ -131,6 +145,7 @@ export function parseRequestSearchParams(params: URLSearchParams): RequestQuery 
   }
 
   query.asked = parseDayRange(params.get(requestQueryParams.asked));
+  query.properties = propertyParamsOf(params);
 
   // Every value of each field was parsed by that field's own schema.
   return query as RequestQuery;
@@ -139,9 +154,9 @@ export function parseRequestSearchParams(params: URLSearchParams): RequestQuery 
 // True when the two name the same filter, however their lists are ordered.
 export function isSameRequestQuery(first: RequestQuery, second: RequestQuery): boolean {
   const canonical = (query: RequestQuery) => {
-    const params = toRequestSearchParams(query);
+    const params = toRequestSearchParams({ ...query, properties: undefined });
     params.sort();
-    return params.toString();
+    return `${params.toString()}&${canonicalPropertyParams(query.properties)}`;
   };
 
   return canonical(first) === canonical(second);
@@ -241,6 +256,7 @@ export const requestPageSchema = z.object({
     askerCounts: facetCountsOf(askerCountSchema),
     afterProjectApproval: facetCountsOf(answerSchema),
   } satisfies Record<RequestListField, z.ZodType>),
+  propertyFacets: propertyFacetsSchema,
 });
 export type RequestPage = z.infer<typeof requestPageSchema>;
 

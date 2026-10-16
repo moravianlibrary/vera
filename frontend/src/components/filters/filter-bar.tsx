@@ -20,6 +20,8 @@ import {
   QuickFilter,
 } from "@/components/filters/filter-controls";
 import { FilterSheet } from "@/components/filters/filter-sheet";
+import type { PropertyFilterProps } from "@/components/filters/property-filters";
+import { propertyListFieldsOf, usePropertyChips } from "@/components/filters/property-filters";
 import type { AnyRange } from "@/components/filters/range-filter";
 import { RangeChip, rangeOf } from "@/components/filters/range-filter";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,8 @@ interface FilterBarProps<Query extends FilterableQuery> {
   extras?: ReactNode;
   // How many of those toggles are on, for the phone's Filter (n).
   activeExtraCount?: number;
+  // DOC-property-filter: the properties the page shows, filtered on beside its own fields.
+  properties?: PropertyFilterProps;
 }
 
 export function FilterBar<Query extends FilterableQuery>({
@@ -67,8 +71,10 @@ export function FilterBar<Query extends FilterableQuery>({
   searchPlaceholder,
   extras,
   activeExtraCount = 0,
+  properties,
 }: FilterBarProps<Query>) {
   const tier = useTier();
+  const propertyChips = usePropertyChips(properties);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   // Ranges added from "+ Add filter" that read "any" yet; the last one added opens its editor.
   const [addedRangeKeys, setAddedRangeKeys] = useState<readonly string[]>([]);
@@ -123,7 +129,10 @@ export function FilterBar<Query extends FilterableQuery>({
   };
 
   const quickFields = listDefinitions.filter((field) => field.isQuick === true).map(filterFieldOf);
-  const chipFields = listDefinitions.filter((field) => field.isQuick !== true).map(filterFieldOf);
+  const chipFields = [
+    ...listDefinitions.filter((field) => field.isQuick !== true).map(filterFieldOf),
+    ...(properties === undefined ? [] : propertyListFieldsOf(properties, offersEvery)),
+  ];
   const activeChipFields = chipFields.filter((field) => field.selected.length > 0);
 
   const activeRanges = rangeDefinitions.filter((field) => rangeOf(query, field) !== undefined);
@@ -169,11 +178,13 @@ export function FilterBar<Query extends FilterableQuery>({
     const activeCount =
       [...quickFields, ...chipFields].filter((field) => field.selected.length > 0).length +
       activeRanges.length +
+      propertyChips.activeCount +
       activeExtraCount;
     const clearFields = () =>
       onQueryChange({
         ...query,
         ...Object.fromEntries(fields.map((field) => [field.key, undefined])),
+        ...(properties === undefined ? {} : { properties: undefined }),
       });
 
     return (
@@ -194,7 +205,19 @@ export function FilterBar<Query extends FilterableQuery>({
           onOpenChange={setIsSheetOpen}
           quickFields={quickFields}
           chipFields={chipFields}
-          extras={extras}
+          extras={
+            <>
+              {extras}
+              {propertyChips.chips}
+              {propertyChips.addable.length > 0 && (
+                <AddFilterMenu
+                  fields={[]}
+                  ranges={propertyChips.addable}
+                  onAddRange={propertyChips.add}
+                />
+              )}
+            </>
+          }
           rangeFields={rangeDefinitions}
           query={query}
           onRangeChange={changeRange}
@@ -214,20 +237,26 @@ export function FilterBar<Query extends FilterableQuery>({
 
       {extras}
 
-      {(chipFields.length > 0 || rangeDefinitions.length > 0) && (
+      {(chipFields.length > 0 ||
+        rangeDefinitions.length > 0 ||
+        propertyChips.addable.length > 0) && (
         <div className="flex flex-wrap items-center gap-2">
           {activeChipFields.map((field) => (
             <FilterChip key={field.key} field={field} />
           ))}
           {rangeChips}
+          {propertyChips.chips}
           <AddFilterMenu
             fields={chipFields}
-            ranges={rangeDefinitions.map((field) => ({
-              key: field.key,
-              label: field.label,
-              isOnBar: rangesOnBar.includes(field),
-            }))}
-            onAddRange={addRange}
+            ranges={[
+              ...rangeDefinitions.map((field) => ({
+                key: field.key,
+                label: field.label,
+                isOnBar: rangesOnBar.includes(field),
+              })),
+              ...propertyChips.addable,
+            ]}
+            onAddRange={(key) => (key.startsWith("p.") ? propertyChips.add(key) : addRange(key))}
           />
         </div>
       )}

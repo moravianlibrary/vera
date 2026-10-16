@@ -8,33 +8,45 @@
 import type {
   PropertyEntry,
   PropertyEntryResult,
+  PropertyFacets,
   PropertyImpact,
   PropertyIndex,
+  PropertyParams,
 } from "@/api/properties";
-import { propertyParamKeyOf } from "@/api/properties";
+import { conditionsOf, propertyParamKeyOf } from "@/api/properties";
 import { currentIterationOf } from "@/domain/documents";
 import type { Document, Iteration, Session, Watchlist } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { progressAfterGates } from "@/domain/iterations";
 import { can, hasPermission } from "@/domain/permissions";
-import type { PropertyDefinition, PropertyDraft, PropertyValues } from "@/domain/properties";
+import type {
+  PropertyDefinition,
+  PropertyDraft,
+  PropertyValue,
+  PropertyValues,
+} from "@/domain/properties";
 import {
   editPermissionOf,
+  facetValueOf,
   formatPropertyValue,
+  isActiveCondition,
   isValueOf,
   mayBeEnteredByHand,
+  meetsCondition,
   pageCountKey,
   propertyNameOf,
+  valueInUseAt,
   valueInUseOf,
   valuesOf,
 } from "@/domain/properties";
 import { isFoundAfterScan, reviewStateOf } from "@/domain/validations";
+import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import type { StoredPropertyDefinition } from "@/mocks/fixtures/properties";
 import { recordHookEvent } from "@/mocks/hooks";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
-import { mockNow } from "@/mocks/today";
+import { mockNow, mockToday } from "@/mocks/today";
 import { noteSystemWatchlistChange } from "@/mocks/watchlist-delivery";
 import { audienceReachOf } from "@/mocks/watchlists";
 
@@ -524,4 +536,103 @@ export function enterPropertyValues(
       ),
     },
   };
+}
+
+// ---------------------------------------------------------------- filtering
+
+// What a record is, for a property: its document, and the attempt a page shows it by.
+export interface PropertySubjectRecord {
+  readonly document: Document;
+  readonly iteration: Iteration | null;
+}
+
+// The value in use a record holds; the predefined four read the document's own fields
+// (DOC-property-predefined). A day given reads what was in use then (PLAN-scope).
+export function recordValueOf(
+  { document, iteration }: PropertySubjectRecord,
+  definition: PropertyDefinition,
+  at?: string,
+): PropertyValue | null {
+  switch (definition.key) {
+    case pageCountKey: {
+      const sources = document.pageSources.filter(
+        (source) => at === undefined || source.observedAt <= at,
+      );
+      return sources.toSorted((first, second) => second.tier - first.tier)[0]?.value ?? null;
+    }
+    case "material_type":
+      return document.type;
+    case "shelf_mark":
+      return document.shelfMark;
+    case "title":
+      return document.title;
+  }
+
+  const properties = definition.about === "document" ? document.properties : iteration?.properties;
+  const values = valuesOf(properties ?? [], definition.key);
+  return (at === undefined ? valueInUseOf(values) : valueInUseAt(values, at))?.value ?? null;
+}
+
+export interface PropertyPredicate {
+  readonly key: string;
+  readonly matches: (record: PropertySubjectRecord) => boolean;
+}
+
+// DOC-property-filter: one predicate per condition on a property the caller may read here.
+export function propertyPredicatesOf(
+  params: PropertyParams | undefined,
+  definitions: readonly PropertyDefinition[],
+): PropertyPredicate[] {
+  return conditionsOf(params, definitions)
+    .filter(isActiveCondition)
+    .flatMap((condition) => {
+      const definition = definitions.find((candidate) => candidate.key === condition.key);
+      return definition === undefined
+        ? []
+        : [
+            {
+              key: condition.key,
+              matches: (record: PropertySubjectRecord) =>
+                meetsCondition(condition, recordValueOf(record, definition), mockToday),
+            },
+          ];
+    });
+}
+
+// UI-facets: an enum's or a yes/no's values, and no value, over the records every other filter
+// leaves.
+export function propertyFacetsOf(
+  definitions: readonly PropertyDefinition[],
+  matchingAllBut: (key: string) => readonly PropertySubjectRecord[],
+): PropertyFacets {
+  return Object.fromEntries(
+    definitions
+      .filter((definition) => definition.type.kind === "enum" || definition.type.kind === "yesNo")
+      .map((definition) => {
+        const records = matchingAllBut(definition.key);
+        const values = records.map((record) => recordValueOf(record, definition));
+        return [
+          definition.key,
+          {
+            values: countValues(
+              values.flatMap((value) =>
+                value === null ? [] : (Array.isArray(value) ? value : [value]).map(facetValueOf),
+              ),
+            ),
+            noValue: values.filter((value) => value === null).length,
+          },
+        ];
+      }),
+  );
+}
+
+// The properties a page filters on: what the caller may read, for its audience, the page count
+// apart, which has its own Pages filter.
+export function filterablePropertiesOf(session: Session, isPublic: boolean): PropertyDefinition[] {
+  return readablePropertyDefinitions(session).filter(
+    (definition) =>
+      definition.key !== pageCountKey &&
+      (!isPublic || definition.visibility === "public") &&
+      (isPublic || mayReadStaffProperties(session) || definition.visibility === "public"),
+  );
 }

@@ -202,7 +202,12 @@ function pageFiltersTable(): string {
     "| Page | Watchlists | Filters | Groupings |",
     "|---|---|---|---|",
     ...pageViews.map(([page, definition]) => {
-      const fields = (definition.fields as readonly FilterFieldDefinition<unknown>[]).map(fieldText);
+      const fields = [
+        ...(definition.fields as readonly FilterFieldDefinition<unknown>[]).map(fieldText),
+        ...("filtersProperties" in definition && definition.filtersProperties === true
+          ? ["each property (by its type)"]
+          : []),
+      ];
       const groupings = definition.groupings.map((option) => option.label);
       return `| ${page} | ${definition.view === undefined ? "no" : `\`${definition.view}\``} | ${fields.join(" · ") || "—"} | ${groupings.join(" · ") || "—"} |`;
     }),

@@ -39,6 +39,7 @@ export const validationsView: ViewDefinition<ValidationQuery, ValidationGrouping
   toSearchParams: toValidationSearchParams,
   parseSearchParams: parseValidationSearchParams,
   isSameQuery: isSameValidationQuery,
+  filtersProperties: true,
   fields: [
     {
       key: "reviews",

@@ -11,6 +11,7 @@ import { parseCategorySearchParams } from "@/api/categories";
 import { documentQueryParams, parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
 import { parseProjectSearchParams } from "@/api/projects";
+import { propertyParamKeyOf } from "@/api/properties";
 import { parseRequestSearchParams } from "@/api/requests";
 import { parseRunSearchParams } from "@/api/tasks";
 import { parseValidationSearchParams } from "@/api/validations";
@@ -37,6 +38,7 @@ import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
+import { publicPropertyKeys } from "@/mocks/properties";
 import { canReadRequests, queryRequests } from "@/mocks/requests";
 import { sessionOf } from "@/mocks/session";
 import { canReadRuns, queryRuns } from "@/mocks/tasks";
@@ -140,7 +142,13 @@ export function isValidWatchlistFilter(
   }
   if (view !== "my-documents") return true;
   const allowed = new Set<string>([documentQueryParams.search, documentQueryParams.statuses]);
-  if (!Object.keys(filter).every((key) => allowed.has(key))) return false;
+  // WATCH-documents-perspectives: My Documents filters on public properties only.
+  const publicKeys = publicPropertyKeys();
+  const isAllowed = (key: string) => {
+    const propertyKey = propertyParamKeyOf(key);
+    return propertyKey === null ? allowed.has(key) : publicKeys.has(propertyKey);
+  };
+  if (!Object.keys(filter).every(isAllowed)) return false;
   const statuses = filter[documentQueryParams.statuses];
   return (
     statuses === undefined ||

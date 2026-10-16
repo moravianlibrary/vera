@@ -44,6 +44,7 @@ export const requestsView: ViewDefinition<RequestQuery, RequestGrouping> = {
   toSearchParams: toRequestSearchParams,
   parseSearchParams: parseRequestSearchParams,
   isSameQuery: isSameRequestQuery,
+  filtersProperties: true,
   fields: [
     {
       key: "decisions",

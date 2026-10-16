@@ -105,6 +105,9 @@ export interface ViewDefinition<Query, Grouping extends string = never> {
   readonly isSameQuery: (first: Query, second: Query) => boolean;
   // In the order the bar and the picker list them.
   readonly fields: readonly FilterFieldDefinition<Query>[];
+  // Its records show properties, so it filters on each one the person may read
+  // (DOC-property-filter), after its own fields.
+  readonly filtersProperties?: boolean;
   // Every grouping the view knows; a page offers those the caller may use. Grouping is
   // presentation, never part of the filter or of a watchlist (filtering.md §3.4).
   readonly groupings: readonly ViewGroupingOption<Grouping>[];

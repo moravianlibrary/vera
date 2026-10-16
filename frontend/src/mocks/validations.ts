@@ -36,6 +36,7 @@ import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
 import { progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
+import { filterablePropertiesOf, propertyFacetsOf, propertyPredicatesOf } from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
@@ -103,7 +104,8 @@ export function findReachableValidation(
 
 // ---------------------------------------------------------------- list
 
-type FilterField = "search" | ValidationListField | ValidationRangeField;
+// A property's condition counts as its own field, `p.<key>`.
+type FilterField = `p.${string}` | "search" | ValidationListField | ValidationRangeField;
 
 interface Predicate {
   field: FilterField;
@@ -137,7 +139,18 @@ export function queryValidations(
   grouping: ValidationGrouping | null = null,
 ): ValidationPage {
   const reachable = reachableRows(session);
-  const predicates = predicatesOf(query);
+  // DOC-property-filter: the properties the page shows that the caller may read.
+  const properties = filterablePropertiesOf(session, false);
+  const subjectOf = (row: ValidationRow) => ({ document: row.document, iteration: row.iteration });
+  const predicates = [
+    ...predicatesOf(query),
+    ...propertyPredicatesOf(query.properties, properties).map(
+      ({ key, matches }): Predicate => ({
+        field: `p.${key}`,
+        matches: (row) => matches(subjectOf(row)),
+      }),
+    ),
+  ];
   // A facet counts over every other filter, so picking a value never hides its siblings.
   const matchingAllBut = (field: FilterField | null) =>
     reachable.filter((row) =>
@@ -162,6 +175,9 @@ export function queryValidations(
     // Each list's values were produced by that field's own value function.
     facets: validationPageSchema.shape.facets.parse(
       Object.fromEntries(listFields.map((field) => [field, countOf(field)])),
+    ),
+    propertyFacets: propertyFacetsOf(properties, (key) =>
+      matchingAllBut(`p.${key}`).map(subjectOf),
     ),
   };
 }

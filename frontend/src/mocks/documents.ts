@@ -50,7 +50,12 @@ import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatches, shownBatchIdOf } from "@/mocks/batches";
 import { database } from "@/mocks/database";
-import { publicPropertyKeys } from "@/mocks/properties";
+import {
+  filterablePropertiesOf,
+  propertyFacetsOf,
+  propertyPredicatesOf,
+  publicPropertyKeys,
+} from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 export function queryDocuments(
@@ -69,7 +74,18 @@ export function queryDocuments(
 
   const fields = audienceFields[audience];
   const valuesOf = fieldValuesOf(userId);
-  const predicates = predicatesOf(query, audience, valuesOf, userId);
+  // DOC-property-filter: a property is filtered on where it is read, against the current attempt.
+  const properties = filterablePropertiesOf(session, audience === "public");
+  const predicates = [
+    ...predicatesOf(query, audience, valuesOf, userId),
+    ...propertyPredicatesOf(query.properties, properties).map(
+      ({ key, matches }): Predicate => ({
+        field: `p.${key}`,
+        matches: (record) =>
+          matches({ document: record.document, iteration: currentIterationOf(record) }),
+      }),
+    ),
+  ];
   // A facet counts over every other filter, so picking a value never hides its siblings.
   const matchingAllBut = (field: FilterField | null) =>
     reachable.filter((record) =>
@@ -90,6 +106,12 @@ export function queryDocuments(
     nextCursor,
     groups: arrangement === null ? [] : arrangement.headersOf(items, matching),
     facets: facetsOf(fields, valuesOf, matchingAllBut),
+    propertyFacets: propertyFacetsOf(properties, (key) =>
+      matchingAllBut(`p.${key}`).map((record) => ({
+        document: record.document,
+        iteration: currentIterationOf(record),
+      })),
+    ),
   };
 }
 
@@ -245,7 +267,8 @@ function withoutIngestError(iteration: Iteration): Iteration {
 
 // ---------------------------------------------------------------- filters
 
-type FilterField = "search" | "isMine" | DocumentListField | DocumentRangeField;
+// A property's condition counts as its own field, `p.<key>`.
+type FilterField = "search" | "isMine" | DocumentListField | DocumentRangeField | `p.${string}`;
 
 interface Predicate {
   field: FilterField;

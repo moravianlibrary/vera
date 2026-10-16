@@ -21,6 +21,10 @@ import { documentsView, myDocumentsView } from "@/features/documents/documents-v
 import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useBulkPropertyEntry } from "@/features/properties/bulk-property-entry";
+import {
+  filterablePropertiesOf,
+  usePropertiesQuery,
+} from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
@@ -35,6 +39,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
   const { summary } = documents;
   // DOC-property-hand: a value entered on the picked documents at once.
   const bulk = useBulkPropertyEntry(session, !isMy);
+  const { data: propertyIndex } = usePropertiesQuery();
 
   // Once per search, so a closed record stays closed.
   const autoOpenedSearchRef = useRef<string | null>(null);
@@ -127,6 +132,12 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
         searchPlaceholder={
           isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, shelf mark, NBN…"
         }
+        properties={{
+          definitions: filterablePropertiesOf(propertyIndex?.definitions, isPublic),
+          params: query.properties,
+          facets: summary?.propertyFacets,
+          onChange: (properties) => view.setQuery({ ...query, properties }),
+        }}
         activeExtraCount={query.isMine === true ? 1 : 0}
         extras={
           !isPublic && (
