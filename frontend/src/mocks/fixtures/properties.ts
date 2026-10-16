@@ -152,6 +152,24 @@ export function catalogPropertyValuesOf(
   ];
 }
 
+// DOC-property-predefined: a recheck's reading replaces the adapter's earlier one, and keeps every
+// other source of the three.
+export function withCatalogReading(
+  document: Pick<Document, "title" | "type" | "shelfMark" | "properties">,
+  observedAt: string,
+): PropertyValues[] {
+  const reading = catalogPropertyValuesOf(document, observedAt);
+  const isAdapter = (source: PropertyValues["sources"][number]) =>
+    source.source.kind === "plugin" && source.source.instanceId === catalogAdapter.instanceId;
+  const kept = document.properties.map((values) => {
+    const fresh = reading.find((read) => read.key === values.key);
+    return fresh === undefined
+      ? values
+      : { ...values, sources: [...fresh.sources, ...values.sources.filter((s) => !isAdapter(s))] };
+  });
+  return [...kept, ...reading.filter((read) => !kept.some((values) => values.key === read.key))];
+}
+
 // Document properties by document, beyond the predefined four.
 export const documentPropertyValues: Readonly<Record<string, readonly PropertyValues[]>> = {
   D1: [{ key: "size", sources: [byHand("A2", "u2", "2026-05-12T09:00:00Z")] }],

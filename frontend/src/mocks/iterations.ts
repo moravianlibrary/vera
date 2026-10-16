@@ -39,6 +39,7 @@ import { defectNameOf, isFoundAfterScan, pagesSubject, reviewStateOf } from "@/d
 import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
+import { withCatalogReading } from "@/mocks/fixtures/properties";
 import { canonicalLinkOf, setLink } from "@/mocks/links";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
@@ -187,6 +188,11 @@ export function recheckIteration(
   }
 
   const { iteration, document } = found.value;
+  // DOC-property-predefined: the mock's catalog reads back what VERA holds, read now.
+  replaceDocument({
+    ...document,
+    properties: withCatalogReading(document, new Date().toISOString()),
+  });
   return {
     value: applyRecheck(session, iteration, repairedSubjectsOf(document.catalogId), {
       event: "Rechecked",

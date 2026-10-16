@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import { editPermissionOf } from "@/domain/properties";
 import { database } from "@/mocks/database";
+import { recheckIteration } from "@/mocks/iterations";
 import {
   createProperty,
   deleteProperty,
@@ -124,5 +125,17 @@ describe("the predefined four's sources (DOC-property-predefined)", () => {
     expect(document?.properties.map((values) => values.key)).toEqual(
       expect.arrayContaining(["material_type", "shelf_mark", "size"]),
     );
+  });
+
+  it("records a recheck's reading with its own time, in place of the earlier one", () => {
+    const iteration = database.iterations.find((candidate) => candidate.id === "IT19");
+    const before = new Date().toISOString();
+    expect(recheckIteration(admin(), "IT19", {})).toHaveProperty("value");
+    const document = database.documents.find((candidate) => candidate.id === iteration?.documentId);
+    for (const key of ["title", "material_type", "shelf_mark"]) {
+      const sources = document?.properties.find((values) => values.key === key)?.sources ?? [];
+      expect(sources).toHaveLength(1);
+      expect(sources[0]?.observedAt >= before).toBe(true);
+    }
   });
 });

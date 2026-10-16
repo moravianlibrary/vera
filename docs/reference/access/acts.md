@@ -99,7 +99,7 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
 | `ACT-reclassify` | *Change category or priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over |
-| `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again and the checks rerun; defects no longer found are gone; log *Rechecked* |
+| `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again, its title, material type and shelf mark recorded with the recheck's time ([DOC-property-predefined](../model/documents.md#doc-property-predefined)), and the checks rerun; defects no longer found are gone; log *Rechecked* |
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
 | `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |

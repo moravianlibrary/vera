@@ -134,6 +134,16 @@ The frontend simulates membership, batching and outboxes in memory. The engine n
 
 → engine.
 
+### L67: Recheck reads the catalog
+
+Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-predefined),
+[the iteration acts](reference/access/acts.md#iterations).
+
+Decided on 2026-10-16. A recheck records a fresh catalog reading of the title, material type and
+shelf mark. The mock records the values the document already holds, with the recheck's time, in
+place of the catalog adapter's earlier reading; the engine reads them from the adapter, and a
+changed value replaces the document's own field. → engine.
+
 ## For part 5 (writing and i18n)
 
 ### L37: Czech terms
@@ -221,6 +231,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L67, in the mock:** a recheck records the title, material type and shelf mark again as
+  the catalog adapter's reading, with the recheck's time
+  ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)); reading the
+  adapter itself stays with the engine.
 - **L36:** the pages reference names each list's columns, generated from the code per tier
   ([UI-columns](reference/ui/pages.md#ui-columns)), the cards of each record pane in order
   ([UI-record-pane](reference/ui/pages.md#ui-record-pane)), and what each page leaves to
