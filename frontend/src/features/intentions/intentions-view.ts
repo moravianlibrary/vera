@@ -2,11 +2,11 @@
 // intentions-board-view.ts.
 // TODO(rrandiak): labels move to i18n.
 
-import type { IntentionRow, MixRowView } from "@/api/intentions";
+import type { IntentionRow, MixRowView } from "@vera/contract/intentions";
+import type { Intention, RepeatEvery } from "@vera/domain/entities";
+import type { TargetVerdict } from "@vera/domain/intentions";
+import { mixBand } from "@vera/domain/intentions";
 import type { Tone } from "@/components/status-badge";
-import type { Intention, RepeatEvery } from "@/domain/entities";
-import type { TargetVerdict } from "@/domain/intentions";
-import { mixBand } from "@/domain/intentions";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";

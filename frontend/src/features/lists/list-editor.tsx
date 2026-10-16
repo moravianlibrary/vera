@@ -12,9 +12,6 @@
 // towards the intention it was generated with, or will stop counting towards one (L8, L10).
 // TODO(rrandiak): labels move to i18n.
 
-import type { ReactNode } from "react";
-import { useDeferredValue, useEffect, useId, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 import type {
   GenerationDraft,
   ListDetail,
@@ -22,9 +19,15 @@ import type {
   ListItem,
   ListReading,
   ListShape,
-} from "@/api/lists";
+} from "@vera/contract/lists";
+import type { PropertyParams } from "@vera/contract/properties";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Category } from "@vera/domain/entities";
+import { priorities } from "@vera/domain/entities";
+import type { ReactNode } from "react";
+import { useDeferredValue, useEffect, useId, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { createList, saveList } from "@/api/lists";
-import type { PropertyParams } from "@/api/properties";
 import { Muted } from "@/components/detail-card";
 import type { PropertyFilterProps } from "@/components/filters/property-filters";
 import { PropertyFilterControls } from "@/components/filters/property-filters";
@@ -33,9 +36,6 @@ import { PriorityBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { TransferEditor } from "@/components/transfer-editor";
 import { Input } from "@/components/ui/input";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Category } from "@/domain/entities";
-import { priorities } from "@/domain/entities";
 import { GenerateDialog } from "@/features/lists/generate-dialog";
 import { GenerationReport } from "@/features/lists/generation-report";
 import { CountsTowardsLine, MixMeters } from "@/features/lists/list-intentions";

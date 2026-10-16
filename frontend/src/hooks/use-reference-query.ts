@@ -1,6 +1,7 @@
 // Reference data views resolve names through. It changes rarely, so it is fetched once per visit.
 
 import { useQuery } from "@tanstack/react-query";
+import { isShownAsBatch } from "@vera/domain/documents";
 import {
   listBatches,
   listCategories,
@@ -12,7 +13,6 @@ import {
   listUsers,
 } from "@/api/reference";
 import { listRequestCustodies } from "@/api/requests";
-import { isShownAsBatch } from "@/domain/documents";
 
 export const referenceQueryKey = ["reference"] as const;
 

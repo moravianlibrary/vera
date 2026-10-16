@@ -6,10 +6,12 @@
 // repeat's definition stays on Intentions, which its row links to. `?s=` marks one schedule.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ScheduleIndex, ScheduleRow, TimelineRange } from "@vera/contract/schedules";
+import { timelineRanges } from "@vera/contract/schedules";
+import { hasPermission } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import type { ScheduleIndex, ScheduleRow, TimelineRange } from "@/api/schedules";
-import { resumeSchedule, runScheduleNow, timelineRanges } from "@/api/schedules";
+import { resumeSchedule, runScheduleNow } from "@/api/schedules";
 import { DataTable } from "@/components/data-table";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
@@ -18,7 +20,6 @@ import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import type { TimelineLane } from "@/components/visualizations/timeline";
 import { Timeline } from "@/components/visualizations/timeline";
-import { hasPermission } from "@/domain/permissions";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import type { NameOf, ShownNotice } from "@/features/tasks/run-parts";
 import { NoticeLine, Sub } from "@/features/tasks/run-parts";

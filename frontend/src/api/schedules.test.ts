@@ -3,10 +3,10 @@
 // pausing, resuming, running and deleting one. The mock's clock stands still at the demo's moment,
 // Thursday 2026-06-25 10:40. The acts change the mock's state, so they come last.
 
+import type { ScheduleIndex } from "@vera/contract/schedules";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import type { ScheduleIndex } from "@/api/schedules";
 import {
   createSchedule,
   deleteSchedule,

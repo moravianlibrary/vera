@@ -1,7 +1,7 @@
 // Batches as the server sends them. Every submission is one, one item included, and each is sent
 // with how many requests it made, so a batch of one can be shown as none (ENT-batch).
 
-import type { Batch } from "@/domain/entities";
+import type { Batch } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 
 export type StoredBatch = Omit<Batch, "size">;

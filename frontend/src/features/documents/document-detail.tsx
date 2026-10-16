@@ -10,11 +10,31 @@
 // Digitization and Open in catalog; the cards' links check grants at any scope, not against
 // custody or project; labels move to i18n.
 
+import type { DocumentDetail } from "@vera/contract/documents";
+import { categoryPathOf } from "@vera/domain/categories";
+import type { DocumentRecord } from "@vera/domain/documents";
+import {
+  batchIdOf,
+  currentIterationOf,
+  documentIdentifierOf,
+  effectivePageCount,
+  isShownAsBatch,
+  latestPublicAskOf,
+  publicRecordStatusOf,
+  recordStatusOf,
+} from "@vera/domain/documents";
+import type { Iteration, Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
+import {
+  isProgressAtLeast,
+  iterationStatusOf,
+  outstandingDefects,
+  validationOf,
+} from "@vera/domain/status";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
-import type { DocumentDetail } from "@/api/documents";
 import type { Fact, Stat } from "@/components/detail-card";
 import {
   DetailCard,
@@ -36,28 +56,6 @@ import {
 import { PriorityBadge, StatusBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf } from "@/domain/categories";
-import type { DocumentRecord } from "@/domain/documents";
-import {
-  batchIdOf,
-  currentIterationOf,
-  documentIdentifierOf,
-  effectivePageCount,
-  isShownAsBatch,
-  latestPublicAskOf,
-  publicRecordStatusOf,
-  recordStatusOf,
-} from "@/domain/documents";
-import type { Iteration, Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
-import {
-  isProgressAtLeast,
-  iterationStatusOf,
-  outstandingDefects,
-  validationOf,
-} from "@/domain/status";
-import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
-import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
 import { DocumentActions } from "@/features/documents/document-actions";
 import { RetryFailedButton } from "@/features/documents/document-group-header";
 import { PropertiesCard } from "@/features/properties/properties-card";
@@ -71,6 +69,8 @@ import {
 } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
+import type { StatusNote as StatusNoteParts } from "@/lib/status-notes";
+import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/lib/status-notes";
 
 const categorySeparator = " / ";
 

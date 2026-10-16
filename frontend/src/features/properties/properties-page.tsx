@@ -5,10 +5,13 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import type { NewProperty } from "@vera/contract/properties";
+import { hasPermission } from "@vera/domain/permissions";
+import type { PropertyDefinition } from "@vera/domain/properties";
+import { editPermissionOf, mayBeEnteredByHand, propertyNameOf } from "@vera/domain/properties";
 import { Tags } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import type { NewProperty } from "@/api/properties";
 import {
   createProperty,
   deleteProperty,
@@ -27,9 +30,6 @@ import { RecordList } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { Button } from "@/components/ui/button";
-import { hasPermission } from "@/domain/permissions";
-import type { PropertyDefinition } from "@/domain/properties";
-import { editPermissionOf, mayBeEnteredByHand, propertyNameOf } from "@/domain/properties";
 import {
   PropertyEditor,
   propertyRefusalTexts,

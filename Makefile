@@ -24,8 +24,8 @@ frontend-env: ## Create frontend/.env.local from the example when missing
 	@test -f frontend/.env.local || cp frontend/.env.example frontend/.env.local
 	@echo "Frontend environment ready at frontend/.env.local"
 
-frontend-install: ## Install frontend dependencies with Bun
-	cd frontend && bun install
+frontend-install: ## Install the dependencies of the frontend and the shared packages with Bun
+	bun install
 
 frontend-users: ## List available emulated users for the frontend
 	@printf '%s\n' 'Available fake users: admin, curator, digitization, staff, reader, no-access, project-user'
@@ -130,8 +130,10 @@ format-check: ## Check frontend formatting
 lint: ## Lint frontend source files
 	cd frontend && bun run lint
 
-typecheck: ## Type-check frontend source files
+typecheck: ## Type-check the frontend and the shared packages
 	cd frontend && bun run typecheck
+	cd contract && bun run typecheck
+	cd domain && bun run typecheck
 
 check: format-check lint typecheck version-check docs-check ## Run the project checks
 
@@ -141,8 +143,10 @@ docs: ## Rewrite the generated blocks in the reference from the code
 docs-check: ## Check the reference: generated blocks, rule IDs, links
 	cd frontend && bun ../docs/tools/docs.ts --check
 
-test: ## Run frontend tests
+test: ## Run the frontend tests and the shared packages' tests
 	cd frontend && bun run test
+	cd contract && bun test
+	cd domain && bun test
 
 version-check: ## Ensure package version matches VERSION
 	@test "$$(node -p "require('./frontend/package.json').version")" = "$$(cat VERSION)" || { echo "frontend/package.json and VERSION differ"; exit 1; }

@@ -10,11 +10,16 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
+import type { CategoryIndex, CategoryNode, CategoryTotals } from "@vera/contract/categories";
+import type { MixTree } from "@vera/contract/mixes";
+import { categoryPathOf, isOutsideScope, scopeOfCategory } from "@vera/domain/categories";
+import { currentIterationOf } from "@vera/domain/documents";
+import type { Category, Session } from "@vera/domain/entities";
+import { can, hasPermission } from "@vera/domain/permissions";
+import { iterationStatusOf } from "@vera/domain/status";
 import { Fragment, type ReactNode, useState } from "react";
 import { Link } from "react-router";
-import type { CategoryIndex, CategoryNode, CategoryTotals } from "@/api/categories";
 import { listDocuments } from "@/api/documents";
-import type { MixTree } from "@/api/mixes";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { mixNameOf } from "@/components/category-tree-values";
@@ -25,11 +30,6 @@ import { MixSetCard } from "@/components/mix-set-card";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf, isOutsideScope, scopeOfCategory } from "@/domain/categories";
-import { currentIterationOf } from "@/domain/documents";
-import type { Category, Session } from "@/domain/entities";
-import { can, hasPermission } from "@/domain/permissions";
-import { iterationStatusOf } from "@/domain/status";
 import { levelOf } from "@/features/categories/categories-view";
 import type { CategoryNotice } from "@/features/categories/category-dialogs";
 import {

@@ -4,11 +4,11 @@
 // schedule is for `task.read`, who sees Schedules; to its plugin for `plugin.read`.
 // TODO(rrandiak): labels move to i18n.
 
+import type { RunDetail, RunItem } from "@vera/contract/tasks";
 import { Download } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
-import type { RunDetail, RunItem } from "@/api/tasks";
 import { getRunLog } from "@/api/tasks";
 import { DetailCard, FactGrid, FinePrint } from "@/components/detail-card";
 import { RunStateBadge } from "@/components/run-state-badge";

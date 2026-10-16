@@ -8,6 +8,8 @@
 // TODO(rrandiak): the rest of filtering.md §3.3 — *not*, *empty* and fields reached through
 // another record; labels move to i18n.
 
+import type { DayPreset, DayRange, ValueRange } from "@vera/domain/value-range";
+import { isOpenRange, isReversedRange, recentDayPresets } from "@vera/domain/value-range";
 import { ChevronDown, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { DateRangeField } from "@/components/fields/date-range-field";
@@ -16,8 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatDay } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
-import type { DayPreset, DayRange, ValueRange } from "@/lib/value-range";
-import { isOpenRange, isReversedRange, recentDayPresets } from "@/lib/value-range";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
 export type AnyRange = ValueRange<number> | DayRange;

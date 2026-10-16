@@ -1,9 +1,9 @@
 // Filtering on properties (DOC-property-filter): by type, with *no value*, counted as facets, on
 // every page that shows them, and public ones only in public detail (DOC-property-visibility).
 
+import { isSameDocumentQuery } from "@vera/contract/documents";
+import { conditionsOf, propertyParamsOf, withCondition } from "@vera/contract/properties";
 import { describe, expect, it } from "vitest";
-import { isSameDocumentQuery } from "@/api/documents";
-import { conditionsOf, propertyParamsOf, withCondition } from "@/api/properties";
 import { queryDocuments } from "@/mocks/documents";
 import { allPropertyDefinitions } from "@/mocks/properties";
 import { queryRequests } from "@/mocks/requests";

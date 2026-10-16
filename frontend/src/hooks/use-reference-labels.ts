@@ -3,14 +3,14 @@
 // reads as its id. Only the kinds asked for are fetched.
 
 import { useQuery } from "@tanstack/react-query";
-import { listMixes } from "@/api/mix-catalog";
-import { categoryLabelOf } from "@/components/classification-fields";
 import {
   anyProjectFundingFilterValue,
   noMixFilterValue,
   noProjectFundingFilterValue,
-} from "@/domain/intentions";
-import { can } from "@/domain/permissions";
+} from "@vera/domain/intentions";
+import { can } from "@vera/domain/permissions";
+import { listMixes } from "@/api/mix-catalog";
+import { categoryLabelOf } from "@/components/classification-fields";
 import {
   useBatchesQuery,
   useCategoriesQuery,

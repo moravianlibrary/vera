@@ -6,8 +6,8 @@
 // kept in one place; a project with no target draws the time alone.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ProjectRow } from "@vera/contract/projects";
 import { Fragment } from "react";
-import type { ProjectRow } from "@/api/projects";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
 import { ToneBadge } from "@/components/status-badge";

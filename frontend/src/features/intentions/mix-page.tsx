@@ -7,9 +7,12 @@
 // `?c=` is the category open, pushing a history entry. On a phone the pane is a sheet.
 // TODO(rrandiak): labels move to i18n.
 
+import type { MixTree } from "@vera/contract/mixes";
+import { categoryPathOf, isOutsideScope } from "@vera/domain/categories";
+import type { Category } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
 import { Fragment, useState } from "react";
 import { useParams, useSearchParams } from "react-router";
-import type { MixTree } from "@/api/mixes";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { CategoryTree } from "@/components/category-tree";
 import { mixNameOf, mixTreeValues } from "@/components/category-tree-values";
@@ -20,9 +23,6 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { MixSetCard } from "@/components/mix-set-card";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf, isOutsideScope } from "@/domain/categories";
-import type { Category } from "@/domain/entities";
-import { can } from "@/domain/permissions";
 import { useIntentionMixQuery } from "@/features/intentions/use-intentions-query";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";

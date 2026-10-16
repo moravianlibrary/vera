@@ -8,10 +8,23 @@
 // admins…*. Then the attempt, the catalog record and the history.
 // TODO(rrandiak): labels move to i18n.
 
+import type { RecheckResult } from "@vera/contract/iterations";
+import type { ValidationDetail } from "@vera/contract/validations";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Defect, Session } from "@vera/domain/entities";
+import { scopeOfIteration } from "@vera/domain/iterations";
+import { can } from "@vera/domain/permissions";
+import { outstandingDefects } from "@vera/domain/status";
+import type { ValidationRow } from "@vera/domain/validations";
+import {
+  acceptedDefectsOf,
+  defectNameOf,
+  deniedDefectsOf,
+  isFoundAfterScan,
+  pagesSubject,
+} from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import type { RecheckResult } from "@/api/iterations";
-import type { ValidationDetail } from "@/api/validations";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
@@ -22,19 +35,6 @@ import type { Outcome } from "@/components/pane-state";
 import { CatalogCard, HistoryCard, RecordHeading } from "@/components/record-cards";
 import { PriorityBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Defect, Session } from "@/domain/entities";
-import { scopeOfIteration } from "@/domain/iterations";
-import { can } from "@/domain/permissions";
-import { outstandingDefects } from "@/domain/status";
-import type { ValidationRow } from "@/domain/validations";
-import {
-  acceptedDefectsOf,
-  defectNameOf,
-  deniedDefectsOf,
-  isFoundAfterScan,
-  pagesSubject,
-} from "@/domain/validations";
 import { PropertiesCard } from "@/features/properties/properties-card";
 import { DefectRow, PageCountEntry } from "@/features/validations/defect-card";
 import {

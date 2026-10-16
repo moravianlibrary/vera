@@ -5,7 +5,7 @@
 
 import type { ReactNode } from "react";
 import { StatusNote } from "@/components/status-note";
-import type { NoteTone } from "@/domain/status-notes";
+import type { NoteTone } from "@/lib/status-notes";
 import { cn } from "@/lib/utils";
 
 interface NoticeLineProps {

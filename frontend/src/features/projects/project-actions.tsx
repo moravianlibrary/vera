@@ -7,13 +7,13 @@
 // instance is enabled (MSG-recipients, MSG-order).
 // TODO(rrandiak): labels move to i18n.
 
+import type { ProjectRow } from "@vera/contract/projects";
+import type { Session } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
 import { useState } from "react";
-import type { ProjectRow } from "@/api/projects";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { MessageDialog } from "@/components/dialogs/message-dialog";
-import type { Session } from "@/domain/entities";
-import { can } from "@/domain/permissions";
-import { scopeOfProject } from "@/domain/projects";
 import {
   ApproveDialog,
   DeleteProjectDialog,

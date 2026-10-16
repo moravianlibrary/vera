@@ -3,10 +3,10 @@
 // filter bar offers and how its rows may be grouped (frontend/component-interfaces.md §9.2,
 // §3.1). The URL hook, the filter bar, the watchlist tabs and the list read it.
 
-import type { Audience } from "@/domain/documents";
-import type { WatchlistView } from "@/domain/entities";
+import type { Audience } from "@vera/domain/documents";
+import type { WatchlistView } from "@vera/domain/entities";
+import type { DayPreset, DayRange, ValueRange } from "@vera/domain/value-range";
 import type { ReferenceKind } from "@/hooks/use-reference-labels";
-import type { DayPreset, DayRange, ValueRange } from "@/lib/value-range";
 
 // A filter's query: a search, and fields that are each a list of values matching any of them.
 export interface FilterableQuery {

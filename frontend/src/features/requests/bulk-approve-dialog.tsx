@@ -8,9 +8,13 @@
 // the list in slices, a section after it would only be complete once every slice is loaded.
 // TODO(rrandiak): labels move to i18n.
 
+import type { BulkApprovalResult, RequestGroup } from "@vera/contract/requests";
+import { documentIdentifierOf, existingCopiesOf } from "@vera/domain/documents";
+import type { Category, Priority } from "@vera/domain/entities";
+import type { RequestRow } from "@vera/domain/requests";
+import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@vera/domain/requests";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { BulkApprovalResult, RequestGroup } from "@/api/requests";
 import { bulkApproveProposals } from "@/api/requests";
 import {
   CategorySelect,
@@ -22,10 +26,6 @@ import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Checkbox } from "@/components/ui/checkbox";
-import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
-import type { Category, Priority } from "@/domain/entities";
-import type { RequestRow } from "@/domain/requests";
-import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@/domain/requests";
 import {
   decisionInvalidations,
   useBatchProposalsQuery,

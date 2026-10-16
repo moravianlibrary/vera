@@ -1,7 +1,7 @@
 // Hooks and deliveries around the mock clock's 2026-06-25 10:40, from the
 // accepted notebook Hooks demo. Channels are references to Plugins' instances.
 
-import type { Hook, HookAttempt, HookDelivery } from "@/api/hooks";
+import type { Hook, HookAttempt, HookDelivery } from "@vera/contract/hooks";
 
 const at = (day: number, hour: number, minute: number) =>
   new Date(2026, 5, day, hour, minute).toISOString();

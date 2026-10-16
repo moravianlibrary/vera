@@ -3,7 +3,7 @@
 // 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
 // values became 09:00 UTC.
 
-import type { Document } from "@/domain/entities";
+import type { Document } from "@vera/domain/entities";
 import { catalogPropertyValuesOf, documentPropertyValues } from "@/mocks/fixtures/properties";
 
 const catalogDocuments: readonly Omit<Document, "properties">[] = [

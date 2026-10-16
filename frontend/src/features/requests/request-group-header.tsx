@@ -4,11 +4,11 @@
 // requester says how many documents they asked for first. On the shared GroupHeader frame.
 // TODO(rrandiak): labels move to i18n.
 
-import type { RequestGroup } from "@/api/requests";
+import type { RequestGroup } from "@vera/contract/requests";
+import type { User } from "@vera/domain/entities";
 import { GroupHeader } from "@/components/lists/group-header";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import type { User } from "@/domain/entities";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 

@@ -6,16 +6,16 @@
 // the branch would drop out of generation. Routed as `?c=ID&refine=1`.
 // TODO(rrandiak): labels move to i18n.
 
+import type { CategoryNode } from "@vera/contract/categories";
+import { isNameTaken } from "@vera/domain/categories";
+import type { Category } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { CategoryNode } from "@/api/categories";
 import { refineCategory } from "@/api/categories";
 import { Field } from "@/components/classification-fields";
 import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
 import { PaneWizard } from "@/components/pane-wizard";
 import { Input } from "@/components/ui/input";
-import { isNameTaken } from "@/domain/categories";
-import type { Category } from "@/domain/entities";
 import type { CategoryNotice } from "@/features/categories/category-dialogs";
 import {
   categoryInvalidations,

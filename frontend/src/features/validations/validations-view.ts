@@ -5,19 +5,19 @@
 // Grouped by category or by defect (component-interfaces.md §2.2, decided 2026-10-06).
 // TODO(rrandiak): labels move to i18n.
 
-import { answers } from "@/api/documents";
-import type { ValidationGrouping, ValidationQuery } from "@/api/validations";
+import { answers } from "@vera/contract/documents";
+import type { ValidationGrouping, ValidationQuery } from "@vera/contract/validations";
 import {
   isSameValidationQuery,
   parseValidationSearchParams,
   toValidationSearchParams,
   validationGroupingParam,
-} from "@/api/validations";
+} from "@vera/contract/validations";
+import type { Priority } from "@vera/domain/entities";
+import { priorities } from "@vera/domain/entities";
+import type { ReviewedState } from "@vera/domain/validations";
+import { reviewedStates } from "@vera/domain/validations";
 import { answerLabels } from "@/components/filters/value-labels";
-import type { Priority } from "@/domain/entities";
-import { priorities } from "@/domain/entities";
-import type { ReviewedState } from "@/domain/validations";
-import { reviewedStates } from "@/domain/validations";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

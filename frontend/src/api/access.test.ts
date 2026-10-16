@@ -3,9 +3,10 @@
 // identities under `access.manage`, never leaving nobody able to manage access. The acts change
 // the mock's state, so they come last, and each test reads what it needs afresh.
 
+import type { AccessIndex } from "@vera/contract/access";
+import { heldRolesOf, managersOf } from "@vera/domain/access";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { AccessIndex } from "@/api/access";
 import {
   createCustody,
   createGroup,
@@ -31,7 +32,6 @@ import { ApiError } from "@/api/http";
 import { getPluginIndex } from "@/api/plugins";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
-import { heldRolesOf, managersOf } from "@/domain/access";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();

@@ -1,4 +1,4 @@
-import type { MixRecord } from "@/api/mix-catalog";
+import type { MixRecord } from "@vera/contract/mix-catalog";
 import { Label } from "@/components/ui/label";
 import {
   Select,

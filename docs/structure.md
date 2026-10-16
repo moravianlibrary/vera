@@ -24,7 +24,7 @@ backend comes after.
   frontend and the engine. When a refinement changes a rule, the change is entered in
   `ledger.md` until the code follows.
 - **Generated where the code is the source.** The permission catalog, role grants and the
-  view-access matrix are tables produced from `frontend/src/domain`. A check fails when a
+  view-access matrix are tables produced from `domain/src`. A check fails when a
   table and the code disagree.
 - **Decisions keep their reasons; nothing else keeps history.** When the old material is
   removed, the decisions worth keeping survive as short records in `decisions/`. Everything
@@ -127,7 +127,7 @@ docs/
 A `make docs-check` target (Bun script under `docs/tools/`). It:
 
 - regenerates `access/permissions.md`, the grants in `access/roles.md` and the matrix in
-  `access/views.md` from `frontend/src/domain` and the navigation definition, and fails on
+  `access/views.md` from `domain/src` and the navigation definition, and fails on
   a diff;
 - fails when code, tests or user journeys cite a rule ID that does not exist, or when a
   reference rule is cited by no test (a warning until the engine exists);

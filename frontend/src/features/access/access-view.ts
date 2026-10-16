@@ -4,12 +4,12 @@
 // selected record and does not display shared watchlists.
 // TODO(rrandiak): labels move to i18n.
 
-import type { AccessIndex } from "@/api/access";
-import type { AccessRecordKind } from "@/api/routes";
-import { accessRecordKinds } from "@/api/routes";
+import type { AccessIndex } from "@vera/contract/access";
+import type { AccessRecordKind } from "@vera/contract/routes";
+import { accessRecordKinds } from "@vera/contract/routes";
+import type { AccessUser } from "@vera/domain/access";
+import { heldRoleIdsOf } from "@vera/domain/access";
 import type { Facets } from "@/components/filters/filter-bar";
-import type { AccessUser } from "@/domain/access";
-import { heldRoleIdsOf } from "@/domain/access";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

@@ -1,12 +1,12 @@
-import { Link } from "react-router";
-import type { AccessIndex } from "@/api/access";
+import type { AccessIndex } from "@vera/contract/access";
 import {
   categoryCustodyOf,
   heldRolesOf,
   holdersOf,
   projectsOf,
   requestCustodyOf,
-} from "@/domain/access";
+} from "@vera/domain/access";
+import { Link } from "react-router";
 import type { AccessNames } from "@/features/access/access-records";
 import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";
 

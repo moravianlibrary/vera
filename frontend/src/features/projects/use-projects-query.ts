@@ -3,7 +3,7 @@
 // the propose form offers, so they refetch those too.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { ProjectQuery } from "@/api/projects";
+import type { ProjectQuery } from "@vera/contract/projects";
 import { findProject, listProjectIndex } from "@/api/projects";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";

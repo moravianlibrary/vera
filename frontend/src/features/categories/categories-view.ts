@@ -3,7 +3,7 @@
 // categories*, and `&refine=1` the Refine wizard in its place. `?mix=` selects a mix for
 // read-only context; it is edited on Mixes (ACT-mix-save).
 
-import type { CategoryQuery } from "@/api/categories";
+import type { CategoryQuery } from "@vera/contract/categories";
 import {
   categoryAttentions,
   categoryCustodies,
@@ -11,9 +11,9 @@ import {
   isSameCategoryQuery,
   parseCategorySearchParams,
   toCategorySearchParams,
-} from "@/api/categories";
-import { categoryPathOf } from "@/domain/categories";
-import type { Category } from "@/domain/entities";
+} from "@vera/contract/categories";
+import { categoryPathOf } from "@vera/domain/categories";
+import type { Category } from "@vera/domain/entities";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

@@ -1,9 +1,9 @@
 // A deterministic mock outbox. The real service consumes entry events; MSW reconciles the
 // current matching set when a watchlist is read and flushes due batches opportunistically.
-import type { WatchlistSummary } from "@/api/watchlists";
-import type { WatchlistView } from "@/domain/entities";
-import type { PushNotice } from "@/domain/watchlist-push";
-import { isPushDue, pushNoticeOf } from "@/domain/watchlist-push";
+import type { WatchlistSummary } from "@vera/contract/watchlists";
+import type { WatchlistView } from "@vera/domain/entities";
+import type { PushNotice } from "@vera/domain/watchlist-push";
+import { isPushDue, pushNoticeOf } from "@vera/domain/watchlist-push";
 import { database } from "@/mocks/database";
 import { pushAllowedSince } from "@/mocks/push";
 import { sessionOf } from "@/mocks/session";

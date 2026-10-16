@@ -8,10 +8,13 @@
 // edit the owner's, *Proportions* otherwise.
 // TODO(rrandiak): labels move to i18n.
 
+import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@vera/contract/intentions";
+import type { Session } from "@vera/domain/entities";
+import { scopeOfIntention } from "@vera/domain/intentions";
+import { can, hasPermission } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@/api/intentions";
 import { archiveIntention } from "@/api/intentions";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -21,10 +24,6 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { StatusNote } from "@/components/status-note";
-import type { Session } from "@/domain/entities";
-import { scopeOfIntention } from "@/domain/intentions";
-import { can, hasPermission } from "@/domain/permissions";
-import type { NoteTone } from "@/domain/status-notes";
 import type { MixLink } from "@/features/intentions/intention-card";
 import { IntentionCard } from "@/features/intentions/intention-card";
 import type { IntentionSource } from "@/features/intentions/intention-dialogs";
@@ -60,6 +59,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
+import type { NoteTone } from "@/lib/status-notes";
 import { cn } from "@/lib/utils";
 
 type OpenDialog =

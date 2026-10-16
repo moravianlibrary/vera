@@ -6,15 +6,11 @@
 // (DOC-property-hand).
 // TODO(rrandiak): labels move to i18n.
 
-import { useState } from "react";
-import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
-import { ToneBadge } from "@/components/status-badge";
-import { Button } from "@/components/ui/button";
-import type { Audience, DocumentRecord } from "@/domain/documents";
-import { currentIterationOf } from "@/domain/documents";
-import type { Session } from "@/domain/entities";
-import { can } from "@/domain/permissions";
-import type { PropertyDefinition, PropertyValues, SourcedValue } from "@/domain/properties";
+import type { Audience, DocumentRecord } from "@vera/domain/documents";
+import { currentIterationOf } from "@vera/domain/documents";
+import type { Session } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
+import type { PropertyDefinition, PropertyValues, SourcedValue } from "@vera/domain/properties";
 import {
   editPermissionOf,
   formatPropertyValue,
@@ -23,8 +19,12 @@ import {
   sourcesByTierOf,
   valueInUseOf,
   valuesOf,
-} from "@/domain/properties";
-import { isFoundAfterScan } from "@/domain/validations";
+} from "@vera/domain/properties";
+import { isFoundAfterScan } from "@vera/domain/validations";
+import { useState } from "react";
+import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
+import { ToneBadge } from "@/components/status-badge";
+import { Button } from "@/components/ui/button";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";

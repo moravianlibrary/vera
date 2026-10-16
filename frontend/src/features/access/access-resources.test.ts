@@ -1,5 +1,5 @@
+import type { AccessIndex } from "@vera/contract/access";
 import { describe, expect, it } from "vitest";
-import type { AccessIndex } from "@/api/access";
 import {
   categorySourcesOf,
   proposalSourcesOf,

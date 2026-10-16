@@ -3,7 +3,7 @@
 // it refetches all three.
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Approval, RequestGrouping, RequestQuery } from "@/api/requests";
+import type { Approval, RequestGrouping, RequestQuery } from "@vera/contract/requests";
 import { approveProposal, findRequest, listRequests } from "@/api/requests";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";

@@ -6,9 +6,15 @@
 // provenance, and its mix is read against that intention, else Overall (intentions.md §5).
 // TODO(rrandiak): labels move to i18n.
 
+import type { ListDetail, ListItem } from "@vera/contract/lists";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Session } from "@vera/domain/entities";
+import type { MemberBlocker } from "@vera/domain/lists";
+import { isScanned } from "@vera/domain/lists";
+import { can } from "@vera/domain/permissions";
+import { iterationStatusOf, statusFootnoteOf } from "@vera/domain/status";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import type { ListDetail, ListItem } from "@/api/lists";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components/detail-card";
@@ -16,12 +22,6 @@ import { visibleNavigation } from "@/components/layout/navigation";
 import { HistoryCard, RecordHeading } from "@/components/record-cards";
 import { StatusWithFootnote } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Session } from "@/domain/entities";
-import type { MemberBlocker } from "@/domain/lists";
-import { isScanned } from "@/domain/lists";
-import { can } from "@/domain/permissions";
-import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
 import { ItemActions, useListActions } from "@/features/lists/list-actions";
 import { MixMeters } from "@/features/lists/list-intentions";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";

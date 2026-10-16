@@ -8,11 +8,22 @@
 // verdicts. Each act is offered only where the caller's grant reaches the item's category.
 // TODO(rrandiak): labels move to i18n.
 
+import type {
+  CancellationRequest,
+  RecheckResult,
+  ReclassificationResult,
+} from "@vera/contract/iterations";
+import type { Denial } from "@vera/contract/validations";
+import type { Defect, Session } from "@vera/domain/entities";
+import { isCancellable, isReclassifiable } from "@vera/domain/iterations";
+import type { ScopedRecord } from "@vera/domain/permissions";
+import { can } from "@vera/domain/permissions";
+import { outstandingDefects } from "@vera/domain/status";
+import type { ValidationRow } from "@vera/domain/validations";
+import { acceptedDefectsOf, defectNameOf, isFoundAfterScan } from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { CancellationRequest, RecheckResult, ReclassificationResult } from "@/api/iterations";
 import { cancelIteration, recheckIteration } from "@/api/iterations";
-import type { Denial } from "@/api/validations";
 import { acceptDefects, denyDefects, revokeAcceptance } from "@/api/validations";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { Field } from "@/components/classification-fields";
@@ -24,13 +35,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Defect, Session } from "@/domain/entities";
-import { isCancellable, isReclassifiable } from "@/domain/iterations";
-import type { ScopedRecord } from "@/domain/permissions";
-import { can } from "@/domain/permissions";
-import { outstandingDefects } from "@/domain/status";
-import type { ValidationRow } from "@/domain/validations";
-import { acceptedDefectsOf, defectNameOf, isFoundAfterScan } from "@/domain/validations";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 

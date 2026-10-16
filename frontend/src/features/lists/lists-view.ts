@@ -2,14 +2,14 @@
 // interval from a list's start through its end; a requested interval matches when they overlap.
 // TODO(rrandiak): labels move to i18n.
 
-import type { ListQuery } from "@/api/lists";
+import type { ListQuery } from "@vera/contract/lists";
 import {
   isSameListQuery,
   listAttentions,
   parseListSearchParams,
   toListSearchParams,
-} from "@/api/lists";
-import { listStates } from "@/domain/lists";
+} from "@vera/contract/lists";
+import { listStates } from "@vera/domain/lists";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

@@ -4,7 +4,7 @@
 // without a mix, holding the target the demo gave the project (§3.4, decided 2026-10-07); VISK 7
 // backlog became VISK 7 / 2026's. The demo's "today" is 2026-06-25.
 
-import type { Distribution, Intention, IntentionTemplate } from "@/domain/entities";
+import type { Distribution, Intention, IntentionTemplate } from "@vera/domain/entities";
 import { projects } from "@/mocks/fixtures/projects";
 
 const initialDistributions: readonly Distribution[] = [

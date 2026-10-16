@@ -7,13 +7,7 @@
 // changed on Categories; mappings and Custody rules on Plugins.
 // TODO(rrandiak): labels move to i18n.
 
-import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import type { AccessIndex } from "@/api/access";
-import { ToneBadge } from "@/components/status-badge";
-import { StatusNote } from "@/components/status-note";
-import { Button } from "@/components/ui/button";
+import type { AccessIndex } from "@vera/contract/access";
 import type {
   AccessGroup,
   AccessUser,
@@ -22,7 +16,7 @@ import type {
   Identity,
   Role,
   RoleWay,
-} from "@/domain/access";
+} from "@vera/domain/access";
 import {
   categoryCustodyOf,
   custodyMembersOf,
@@ -35,9 +29,15 @@ import {
   projectsOf,
   requestCustodyOf,
   requestReachOf,
-} from "@/domain/access";
-import type { GrantScope, Permission } from "@/domain/permissions";
-import { byCatalogOrder, catalogEntryOf, permissionGroups } from "@/domain/permissions";
+} from "@vera/domain/access";
+import type { GrantScope, Permission } from "@vera/domain/permissions";
+import { byCatalogOrder, catalogEntryOf, permissionGroups } from "@vera/domain/permissions";
+import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+import { ToneBadge } from "@/components/status-badge";
+import { StatusNote } from "@/components/status-note";
+import { Button } from "@/components/ui/button";
 import type { AccessSelection, AccessSelectionKind } from "@/features/access/access-view";
 import {
   confersText,

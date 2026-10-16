@@ -2,7 +2,7 @@
 // demo data) read a proposal by; the instances, in the order whose first suggestion wins, are
 // Plugins' (fixtures/plugins.ts). Each answers a leaf with its reason, or nothing.
 
-import type { DocumentType } from "@/domain/entities";
+import type { DocumentType } from "@vera/domain/entities";
 
 // What PlaceOfPublication reads a Moravian place by: the mock has no imprint, so the title
 // stands in for it.

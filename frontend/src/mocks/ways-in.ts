@@ -9,8 +9,8 @@ import type {
   PhotoReading,
   ProposalSettings,
   RecordLink,
-} from "@/api/proposals";
-import type { InputMode } from "@/domain/plugins";
+} from "@vera/contract/proposals";
+import type { InputMode } from "@vera/domain/plugins";
 import { knownCatalogRecords } from "@/mocks/catalog";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import { identifierRules } from "@/mocks/identifiers";

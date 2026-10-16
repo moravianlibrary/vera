@@ -3,11 +3,11 @@
 // it, the scope's own included, are not sent, and inside it each is of the scope, not of the
 // whole (PLAN-mix-within-scope). The mix itself is edited on Mixes (ACT-mix-save).
 
-import type { IntentionMixDetail, MixTree } from "@/api/mixes";
-import { isInSubtree } from "@/domain/categories";
-import type { Intention, Session } from "@/domain/entities";
-import { countIntention, shareWithinOf } from "@/domain/intentions";
-import { siblingSetOf } from "@/domain/mixes";
+import type { IntentionMixDetail, MixTree } from "@vera/contract/mixes";
+import { isInSubtree } from "@vera/domain/categories";
+import type { Intention, Session } from "@vera/domain/entities";
+import { countIntention, shareWithinOf } from "@vera/domain/intentions";
+import { siblingSetOf } from "@vera/domain/mixes";
 import { database } from "@/mocks/database";
 import { countingData, distributionOf, isVisible } from "@/mocks/intentions";
 

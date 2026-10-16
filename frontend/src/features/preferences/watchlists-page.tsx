@@ -4,11 +4,15 @@
 // permission is asked here and moves with these preferences. A switch that is on says so when
 // its channel is off for every watchlist (WATCH-channel-off).
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { WatchlistSummary, WatchlistViewerChange } from "@vera/contract/watchlists";
+import { isChannelOn } from "@vera/contract/watchlists";
+import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
+import { isShared, watchlistViewSchema } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import type { WatchlistSummary, WatchlistViewerChange } from "@/api/watchlists";
-import { isChannelOn, listWatchlists } from "@/api/watchlists";
+import { listWatchlists } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { navigationEntries } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -34,9 +38,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
-import { isShared, watchlistViewSchema } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
 import {
   isOffForAll,
   isPushOffForAll,

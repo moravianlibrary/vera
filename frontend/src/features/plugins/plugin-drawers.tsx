@@ -8,14 +8,17 @@
 // Schedules), its recent runs from Tasks and what it supplies.
 // TODO(rrandiak): labels move to i18n.
 
-import type { ReactNode } from "react";
-import { Link } from "react-router";
 import type {
   InstanceSettings,
   PluginImplementation,
   PluginInstanceDetail,
   PluginVersion,
-} from "@/api/plugins";
+} from "@vera/contract/plugins";
+import type { InstancePolicy } from "@vera/domain/plugins";
+import { isRunnableContract } from "@vera/domain/plugins";
+import { schedulableKinds } from "@vera/domain/schedules";
+import type { ReactNode } from "react";
+import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import type { Fact } from "@/components/detail-card";
@@ -23,9 +26,6 @@ import { DetailCard, DetailRow, FactGrid, FinePrint, Muted } from "@/components/
 import { RunStateBadge } from "@/components/run-state-badge";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
-import type { InstancePolicy } from "@/domain/plugins";
-import { isRunnableContract } from "@/domain/plugins";
-import { schedulableKinds } from "@/domain/schedules";
 import {
   InstanceStateBadge,
   KindBadge,

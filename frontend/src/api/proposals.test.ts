@@ -1,11 +1,11 @@
 // Proposing end to end against the mock server over HTTP: what each item's check says it will
 // do, and what a submit makes of it, for a requester and a curator.
 
+import type { ProposalDraft, ProposalItem } from "@vera/contract/proposals";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
-import type { ProposalDraft, ProposalItem } from "@/api/proposals";
 import {
   checkProposalItems,
   getProposalSettings,

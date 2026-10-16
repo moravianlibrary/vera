@@ -1,8 +1,8 @@
 // The server's rules for properties: who defines them, keys never used twice, the predefined four
 // kept, hand entry refused once an attempt is scanned, and deleting one removes what names it.
 
+import { editPermissionOf } from "@vera/domain/properties";
 import { describe, expect, it } from "vitest";
-import { editPermissionOf } from "@/domain/properties";
 import { database } from "@/mocks/database";
 import { recheckIteration } from "@/mocks/iterations";
 import {

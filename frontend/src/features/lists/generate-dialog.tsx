@@ -9,8 +9,8 @@
 // dropped for the plain mix.
 // TODO(rrandiak): labels move to i18n.
 
+import type { GenerationDraft, ListGenerator, ListShape } from "@vera/contract/lists";
 import { useId } from "react";
-import type { GenerationDraft, ListGenerator, ListShape } from "@/api/lists";
 import { generateDraft } from "@/api/lists";
 import { Field } from "@/components/classification-fields";
 import type { DialogStep } from "@/components/dialogs/stepped-dialog";

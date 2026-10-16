@@ -3,11 +3,11 @@
 // instance say whom it can reach and where it hands off to (§2). It keeps nothing: a redirect is not logged,
 // since VERA cannot know it was sent (§4). A record the caller cannot see is not found.
 
-import type { MessageChannel, MessageHandOff, MessageSubject } from "@/api/messages";
+import type { MessageChannel, MessageHandOff, MessageSubject } from "@vera/contract/messages";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Session, User } from "@vera/domain/entities";
+import { askerIdsOf, asksOf, projectIdsOf } from "@vera/domain/requests";
 import { navigationEntries } from "@/components/layout/navigation";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Session, User } from "@/domain/entities";
-import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/requests";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
 import { findDocumentDetail } from "@/mocks/documents";

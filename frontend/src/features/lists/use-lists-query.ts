@@ -4,7 +4,7 @@
 // what intentions count, so it refetches all of them.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { ListQuery, ListReadingRequest, PoolQuery } from "@/api/lists";
+import type { ListQuery, ListReadingRequest, PoolQuery } from "@vera/contract/lists";
 import { findList, listGenerators, listLists, listPool, listShapes, readList } from "@/api/lists";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";

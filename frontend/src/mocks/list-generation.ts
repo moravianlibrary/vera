@@ -15,12 +15,12 @@ import type {
   ListGenerator,
   ListItem,
   ShortfallCause,
-} from "@/api/lists";
-import { categoryLineageOf, leafCategoriesOf } from "@/domain/categories";
-import type { Category, Session } from "@/domain/entities";
-import { isInIntentionScope, mixNodesOf, shareWithinOf } from "@/domain/intentions";
-import { isInPool } from "@/domain/lists";
-import { hasPermission } from "@/domain/permissions";
+} from "@vera/contract/lists";
+import { categoryLineageOf, leafCategoriesOf } from "@vera/domain/categories";
+import type { Category, Session } from "@vera/domain/entities";
+import { isInIntentionScope, mixNodesOf, shareWithinOf } from "@vera/domain/intentions";
+import { isInPool } from "@vera/domain/lists";
+import { hasPermission } from "@vera/domain/permissions";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { database } from "@/mocks/database";
 import { advisorReasons } from "@/mocks/fixtures/list-generators";

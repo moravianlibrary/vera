@@ -12,19 +12,19 @@ import type {
   PropertyImpact,
   PropertyIndex,
   PropertyParams,
-} from "@/api/properties";
-import { conditionsOf, propertyParamKeyOf } from "@/api/properties";
-import { currentIterationOf } from "@/domain/documents";
-import type { Document, Intention, Iteration, Session, Watchlist } from "@/domain/entities";
-import { isShared } from "@/domain/entities";
-import { progressAfterGates } from "@/domain/iterations";
-import { can, hasPermission } from "@/domain/permissions";
+} from "@vera/contract/properties";
+import { conditionsOf, propertyParamKeyOf } from "@vera/contract/properties";
+import { currentIterationOf } from "@vera/domain/documents";
+import type { Document, Intention, Iteration, Session, Watchlist } from "@vera/domain/entities";
+import { isShared } from "@vera/domain/entities";
+import { progressAfterGates } from "@vera/domain/iterations";
+import { can, hasPermission } from "@vera/domain/permissions";
 import type {
   PropertyDefinition,
   PropertyDraft,
   PropertyValue,
   PropertyValues,
-} from "@/domain/properties";
+} from "@vera/domain/properties";
 import {
   editPermissionOf,
   facetValueOf,
@@ -38,8 +38,8 @@ import {
   valueInUseAt,
   valueInUseOf,
   valuesOf,
-} from "@/domain/properties";
-import { isFoundAfterScan, reviewStateOf } from "@/domain/validations";
+} from "@vera/domain/properties";
+import { isFoundAfterScan, reviewStateOf } from "@vera/domain/validations";
 import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import type { StoredPropertyDefinition } from "@/mocks/fixtures/properties";

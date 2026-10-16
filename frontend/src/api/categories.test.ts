@@ -4,9 +4,9 @@
 // documents, and writing a category's custody set. The changes stay in the mock's state, so each
 // test changes its own categories.
 
+import type { CategoryIndex } from "@vera/contract/categories";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { CategoryIndex } from "@/api/categories";
 import {
   createCategory,
   deleteCategory,

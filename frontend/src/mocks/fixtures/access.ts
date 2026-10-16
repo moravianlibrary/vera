@@ -3,7 +3,7 @@
 // 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
 // values became 09:00 UTC.
 
-import type { AccessGroup, Identity, MappedRole, Role } from "@/domain/access";
+import type { AccessGroup, Identity, MappedRole, Role } from "@vera/domain/access";
 
 // The six shipped roles (ROLE-shipped): bundles, not a ladder, each named by its id.
 const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [

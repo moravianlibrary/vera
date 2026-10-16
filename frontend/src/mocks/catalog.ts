@@ -2,7 +2,7 @@
 // VERA already holds, which answers for its own catalog ID, units and barcodes. Proposing checks
 // an identifier against it; a recheck reads what has been repaired in it.
 
-import type { Document } from "@/domain/entities";
+import type { Document } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
 import { catalogAdapter, catalogRecords, catalogRepairs } from "@/mocks/fixtures/catalog";

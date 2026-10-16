@@ -3,10 +3,14 @@
 // mock's state, so each test makes its own intentions after the reading tests. An intention
 // chooses a mix directly, and any number share one (PLAN-mix).
 
+import type {
+  IntentionDraft,
+  IntentionIndex,
+  IntentionTemplateDraft,
+} from "@vera/contract/intentions";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import type { IntentionDraft, IntentionIndex, IntentionTemplateDraft } from "@/api/intentions";
 import {
   archiveIntention,
   createIntention,

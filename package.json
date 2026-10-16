@@ -1,0 +1,12 @@
+{
+  "name": "vera",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "contract",
+    "domain"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.0"
+  }
+}

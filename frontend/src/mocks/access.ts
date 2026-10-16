@@ -20,13 +20,13 @@ import type {
   RoleDraft,
   RoleImpact,
   UserGroups,
-} from "@/api/access";
-import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@/domain/access";
-import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@/domain/access";
-import type { Session } from "@/domain/entities";
-import { isShared } from "@/domain/entities";
-import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@/domain/permissions";
-import { propertyNameOf } from "@/domain/properties";
+} from "@vera/contract/access";
+import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@vera/domain/access";
+import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@vera/domain/access";
+import type { Session } from "@vera/domain/entities";
+import { isShared } from "@vera/domain/entities";
+import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@vera/domain/permissions";
+import { propertyNameOf } from "@vera/domain/properties";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";

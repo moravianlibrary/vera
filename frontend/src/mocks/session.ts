@@ -3,11 +3,11 @@
 // groups plus direct membership (permissions.md §1, §4). Read afresh on every request, so a role
 // changed on Users & Groups reaches the next one.
 
+import type { AccessUser } from "@vera/domain/access";
+import { grantsOf, heldRoleIdsOf, isSuspended } from "@vera/domain/access";
+import type { Session } from "@vera/domain/entities";
+import type { Permission } from "@vera/domain/permissions";
 import type { MockUserProfile } from "@/config/env";
-import type { AccessUser } from "@/domain/access";
-import { grantsOf, heldRoleIdsOf, isSuspended } from "@/domain/access";
-import type { Session } from "@/domain/entities";
-import type { Permission } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 
 const userIdsByProfile = {

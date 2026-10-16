@@ -10,6 +10,13 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import {
+  categoryFacets,
+  matchingCategoryIds,
+  visibleCategoryIds,
+} from "@vera/contract/category-filters";
+import { scopeOfCategory } from "@vera/domain/categories";
+import { can } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { listMixes } from "@/api/mix-catalog";
@@ -21,9 +28,6 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { MixPicker } from "@/components/mix-picker";
 import { Button } from "@/components/ui/button";
-import { scopeOfCategory } from "@/domain/categories";
-import { categoryFacets, matchingCategoryIds, visibleCategoryIds } from "@/domain/category-filters";
-import { can } from "@/domain/permissions";
 import {
   categoriesUrlStateOf,
   categoriesView,

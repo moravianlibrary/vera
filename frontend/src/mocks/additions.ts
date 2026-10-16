@@ -3,11 +3,11 @@
 // to ingest, being added again, with its attempt counted and the retry logged. The mock runs no
 // ingest, so they stay being added.
 
-import type { BatchRetryResult } from "@/api/additions";
-import { batchIdOf, currentIterationOf } from "@/domain/documents";
-import type { Iteration, Session } from "@/domain/entities";
-import { scopeOfIteration } from "@/domain/iterations";
-import { can } from "@/domain/permissions";
+import type { BatchRetryResult } from "@vera/contract/additions";
+import { batchIdOf, currentIterationOf } from "@vera/domain/documents";
+import type { Iteration, Session } from "@vera/domain/entities";
+import { scopeOfIteration } from "@vera/domain/iterations";
+import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import { recordOf } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";

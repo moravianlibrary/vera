@@ -1,9 +1,14 @@
 // Independent mix records and revision history. The legacy distribution array stores the shares
 // until all consumers have moved to mix IDs; this API never derives ownership from an intention.
 
-import type { MixDraft, MixRecord, MixSetChange, MixSnapshotDraft } from "@/api/mix-catalog";
-import type { Distribution, Session } from "@/domain/entities";
-import { can } from "@/domain/permissions";
+import type {
+  MixDraft,
+  MixRecord,
+  MixSetChange,
+  MixSnapshotDraft,
+} from "@vera/contract/mix-catalog";
+import type { Distribution, Session } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import { isVisible, nextId, replaceIntention } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";

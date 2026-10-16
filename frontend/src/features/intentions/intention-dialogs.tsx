@@ -9,10 +9,6 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import { useId, useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { Link } from "react-router";
-import { z } from "zod";
 import type {
   IntentionDraft,
   IntentionPreviewRequest,
@@ -20,7 +16,17 @@ import type {
   IntentionTemplateDraft,
   IntentionTemplateRow,
   MixChoice,
-} from "@/api/intentions";
+} from "@vera/contract/intentions";
+import type { Category, IntentionFunding, Project, Session } from "@vera/domain/entities";
+import { repeatEverySchema } from "@vera/domain/entities";
+import { mixBand } from "@vera/domain/intentions";
+import { can } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
+import { propertyConditionSchema } from "@vera/domain/properties";
+import { useId, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { Link } from "react-router";
+import { z } from "zod";
 import {
   createIntention,
   createIntentionTemplate,
@@ -47,12 +53,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Category, IntentionFunding, Project, Session } from "@/domain/entities";
-import { repeatEverySchema } from "@/domain/entities";
-import { mixBand } from "@/domain/intentions";
-import { can } from "@/domain/permissions";
-import { scopeOfProject } from "@/domain/projects";
-import { propertyConditionSchema } from "@/domain/properties";
 import { columnTitles, everyLabels, shareTextOf } from "@/features/intentions/intentions-view";
 import { intentionInvalidations } from "@/features/intentions/use-intentions-query";
 import {

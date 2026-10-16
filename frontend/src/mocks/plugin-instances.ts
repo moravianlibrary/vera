@@ -3,8 +3,8 @@
 // deleting one on Plugins takes it out of Generate, the decide form's suggestion, *Message…*,
 // the login page and custody placement. A deleted instance is kept only so its runs name it.
 
-import type { IdentityInstance } from "@/domain/access";
-import type { PluginInstance, PluginKind } from "@/domain/plugins";
+import type { IdentityInstance } from "@vera/domain/access";
+import type { PluginInstance, PluginKind } from "@vera/domain/plugins";
 import { database } from "@/mocks/database";
 import type { StoredPluginImplementation, StoredPluginInstance } from "@/mocks/fixtures/plugins";
 

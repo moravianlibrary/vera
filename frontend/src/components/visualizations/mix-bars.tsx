@@ -5,7 +5,7 @@
 // for bars, as on Categories, the markers form says only how far outside the ±5 band it is.
 // TODO(rrandiak): labels move to i18n.
 
-import { mixBand } from "@/domain/intentions";
+import { mixBand } from "@vera/domain/intentions";
 import { cn } from "@/lib/utils";
 
 const shareTones = ["bg-chart-5", "bg-chart-3", "bg-chart-2", "bg-chart-1", "bg-blue-200"];

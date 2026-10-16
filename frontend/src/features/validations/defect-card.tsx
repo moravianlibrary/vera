@@ -6,18 +6,18 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { RecheckResult } from "@vera/contract/iterations";
+import type { Defect, Iteration } from "@vera/domain/entities";
+import { defectNameOf } from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import type { RecheckResult } from "@/api/iterations";
 import { enterPageCount } from "@/api/iterations";
 import { FieldError } from "@/components/iteration-dialogs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Defect, Iteration } from "@/domain/entities";
-import { defectNameOf } from "@/domain/validations";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { formatDay } from "@/lib/format-date";

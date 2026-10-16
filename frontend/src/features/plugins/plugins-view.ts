@@ -7,10 +7,14 @@
 // picked, when its own name does, so one with no instance can still be found.
 // TODO(rrandiak): labels move to i18n.
 
-import type { PluginImplementation, PluginIndex, PluginInstanceDetail } from "@/api/plugins";
+import type {
+  PluginImplementation,
+  PluginIndex,
+  PluginInstanceDetail,
+} from "@vera/contract/plugins";
+import type { PluginKind } from "@vera/domain/plugins";
+import { pluginKinds } from "@vera/domain/plugins";
 import type { Facets } from "@/components/filters/filter-bar";
-import type { PluginKind } from "@/domain/plugins";
-import { pluginKinds } from "@/domain/plugins";
 import { pluginKindLabels } from "@/features/plugins/plugin-words";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";

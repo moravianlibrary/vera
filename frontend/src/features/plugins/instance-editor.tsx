@@ -11,16 +11,24 @@
 // it exists.
 // TODO(rrandiak): labels move to i18n.
 
-import { useId } from "react";
-import { Controller } from "react-hook-form";
-import { z } from "zod";
 import type {
   InstanceDraft,
   InstanceSettings,
   PluginImplementation,
   PluginInstanceDetail,
   PluginVersion,
-} from "@/api/plugins";
+} from "@vera/contract/plugins";
+import type { EntryPoint, InstancePolicy } from "@vera/domain/plugins";
+import {
+  defaultPolicyOf,
+  entryPoints,
+  isRunnableContract,
+  maxPluginTier,
+} from "@vera/domain/plugins";
+import { schedulableKinds } from "@vera/domain/schedules";
+import { useId } from "react";
+import { Controller } from "react-hook-form";
+import { z } from "zod";
 import { createPluginInstance, savePluginInstance } from "@/api/plugins";
 import { categoryLabelOf, Field } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
@@ -35,9 +43,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { EntryPoint, InstancePolicy } from "@/domain/plugins";
-import { defaultPolicyOf, entryPoints, isRunnableContract, maxPluginTier } from "@/domain/plugins";
-import { schedulableKinds } from "@/domain/schedules";
 import type { PluginNotice } from "@/features/plugins/plugin-acts";
 import { entryPointText } from "@/features/plugins/plugin-words";
 import { pluginInvalidations } from "@/features/plugins/use-plugins-query";

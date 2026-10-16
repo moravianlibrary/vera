@@ -1,6 +1,6 @@
+import type { AccessIndex } from "@vera/contract/access";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import type { AccessIndex } from "@/api/access";
 import { Button } from "@/components/ui/button";
 import type { AccessNames } from "@/features/access/access-records";
 import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";

@@ -4,8 +4,8 @@
 // three of the mix. The pick is remembered per viewer and falls back to the first one offered.
 // TODO(rrandiak): labels move to i18n.
 
-import type { MixTree } from "@/api/mixes";
-import type { CategoryTreeValue } from "@/domain/categories";
+import type { MixTree } from "@vera/contract/mixes";
+import type { CategoryTreeValue } from "@vera/domain/categories";
 
 export const categoryTreeValueLabels = {
   share: "Share of parent",

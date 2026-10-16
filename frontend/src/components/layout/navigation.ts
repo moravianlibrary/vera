@@ -1,9 +1,9 @@
 // The sidebar entries, in navigation.md §1 order. An entry the session holds no grant for is
 // absent, never disabled. Holding a permission at any scope reveals the entry.
 
-import type { Session } from "@/domain/entities";
-import type { Permission } from "@/domain/permissions";
-import { hasAnyPermission, hasPermission } from "@/domain/permissions";
+import type { Session } from "@vera/domain/entities";
+import type { Permission } from "@vera/domain/permissions";
+import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
 
 export interface NavigationEntry {
   readonly id: string;

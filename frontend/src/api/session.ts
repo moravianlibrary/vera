@@ -1,10 +1,10 @@
 // The signed-in user with their effective grants and custody, resolved by the server.
 
+import { apiRoutes } from "@vera/contract/routes";
+import { accessUserSchema } from "@vera/domain/access";
+import type { Session } from "@vera/domain/entities";
+import { sessionSchema } from "@vera/domain/entities";
 import { deleteResource, getJson } from "@/api/http";
-import { apiRoutes } from "@/api/routes";
-import { accessUserSchema } from "@/domain/access";
-import type { Session } from "@/domain/entities";
-import { sessionSchema } from "@/domain/entities";
 
 export async function getSession(): Promise<Session> {
   return getJson(apiRoutes.session, sessionSchema);

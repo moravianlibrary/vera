@@ -3,9 +3,10 @@
 // which says first how many people lose it. Its filter is edited in its own view, opened on it.
 // TODO(rrandiak): labels move to i18n.
 
+import type { SharedWatchlist } from "@vera/contract/access";
+import type { WatchlistAudience } from "@vera/domain/entities";
 import { useId } from "react";
 import { z } from "zod";
-import type { SharedWatchlist } from "@/api/access";
 import { deleteWatchlist, updateWatchlist } from "@/api/watchlists";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
@@ -14,7 +15,6 @@ import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialo
 import { FieldError } from "@/components/iteration-dialogs";
 import { navigationEntries } from "@/components/layout/navigation";
 import { Input } from "@/components/ui/input";
-import type { WatchlistAudience } from "@/domain/entities";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import { accessQueryKey } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";

@@ -1,6 +1,6 @@
+import { pushQuietMilliseconds } from "@vera/domain/watchlist-push";
 import { setupWorker } from "msw/browser";
 import { env } from "@/config/env";
-import { pushQuietMilliseconds } from "@/domain/watchlist-push";
 import { handlers } from "./handlers";
 import { resolveSession } from "./session";
 import { startMockClock } from "./today";

@@ -2,7 +2,7 @@
 // when something runs by itself, and Plugins says it of an instance's schedules.
 // TODO(rrandiak): labels move to i18n.
 
-import type { Cadence } from "@/domain/schedules";
+import type { Cadence } from "@vera/domain/schedules";
 
 const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 

@@ -54,8 +54,8 @@ twice, when code or docs cite an ID nobody defined, or when a relative link poin
 
 | Block | Source |
 |---|---|
-| `permission-catalog` | `frontend/src/domain/permissions.ts` (`permissionCatalog`), with the lines from the access messages in `frontend/src/i18n/locales/en/access.json` |
-| `permission-requires` | `frontend/src/domain/permissions.ts` (`permissionRequires`) |
+| `permission-catalog` | `domain/src/permissions.ts` (`permissionCatalog`), with the lines from the access messages in `frontend/src/i18n/locales/en/access.json` |
+| `permission-requires` | `domain/src/permissions.ts` (`permissionRequires`) |
 | `role-grants`, `role-limits` | the shipped roles in `frontend/src/mocks/fixtures/access.ts` |
 | `sidebar` | `frontend/src/components/layout/navigation.ts`, with each shipped role's grants |
 | `page-filters` | each page's view definition in `frontend/src/features/*/…-view.ts` |

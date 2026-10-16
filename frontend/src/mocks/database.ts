@@ -1,10 +1,10 @@
 // The mock server's in-memory state: the fixtures, repeated `VITE_MOCK_DOCUMENT_COPIES` times,
 // plus whatever the session writes. Reloading the page resets it.
 
-import type { IntentionRow } from "@/api/intentions";
-import type { MixTree } from "@/api/mixes";
+import type { IntentionRow } from "@vera/contract/intentions";
+import type { MixTree } from "@vera/contract/mixes";
+import type { Category, Watchlist } from "@vera/domain/entities";
 import { env } from "@/config/env";
-import type { Category, Watchlist } from "@/domain/entities";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";

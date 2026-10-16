@@ -4,8 +4,8 @@
 // Publication detector finds digitized items its repository now publishes and sets their links
 // as its agent, logged as *Set link…* is.
 
-import { categoryPathOf } from "@/domain/categories";
-import type { Actor, Iteration } from "@/domain/entities";
+import { categoryPathOf } from "@vera/domain/categories";
+import type { Actor, Iteration } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import { recordHookEvent } from "@/mocks/hooks";

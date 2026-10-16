@@ -1,7 +1,7 @@
 // Copies of the fixtures stay coherent: unique IDs, and every reference lands inside its copy.
 
+import { followedIterationId } from "@vera/domain/documents";
 import { describe, expect, it } from "vitest";
-import { followedIterationId } from "@/domain/documents";
 import { documents } from "@/mocks/fixtures/documents";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { requests } from "@/mocks/fixtures/requests";

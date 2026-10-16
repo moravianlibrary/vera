@@ -2,15 +2,9 @@
 // reads, and a header over each batch or project when grouped.
 // TODO(rrandiak): the one-line reason under a row; labels move to i18n.
 
-import type { ReactNode } from "react";
-import type { DocumentGroup, DocumentGrouping } from "@/api/documents";
-import { Muted } from "@/components/detail-card";
-import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
-import { RecordList } from "@/components/lists/record-list";
-import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
-import { Badge } from "@/components/ui/badge";
-import { categoryPathOf } from "@/domain/categories";
-import type { Audience, DocumentRecord } from "@/domain/documents";
+import type { DocumentGroup, DocumentGrouping } from "@vera/contract/documents";
+import { categoryPathOf } from "@vera/domain/categories";
+import type { Audience, DocumentRecord } from "@vera/domain/documents";
 import {
   askersOf,
   currentIterationOf,
@@ -20,9 +14,15 @@ import {
   publicRecordStatusOf,
   recordStatusOf,
   strongestRegistryRecord,
-} from "@/domain/documents";
-import type { Category } from "@/domain/entities";
-import { statusFootnoteOf } from "@/domain/status";
+} from "@vera/domain/documents";
+import type { Category } from "@vera/domain/entities";
+import { statusFootnoteOf } from "@vera/domain/status";
+import type { ReactNode } from "react";
+import { Muted } from "@/components/detail-card";
+import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
+import { RecordList } from "@/components/lists/record-list";
+import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";

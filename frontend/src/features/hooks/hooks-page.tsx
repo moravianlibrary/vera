@@ -2,10 +2,11 @@
 // (STATUS "Hooks"; docs/demos/shared/page-hooks.js). The selected hook lives at ?h=.
 // TODO(rrandiak): labels move to i18n.
 
+import type { Hook, HookDelivery, HookIndex, HookPreview } from "@vera/contract/hooks";
+import { hasPermission } from "@vera/domain/permissions";
 import { Webhook } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import type { Hook, HookDelivery, HookIndex, HookPreview } from "@/api/hooks";
 import {
   createHook,
   deleteHook,
@@ -34,7 +35,6 @@ import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { hasPermission } from "@/domain/permissions";
 import { HookEditor } from "@/features/hooks/hook-editor";
 import {
   activityOf,

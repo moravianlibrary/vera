@@ -7,18 +7,22 @@
 // Schedules.
 // TODO(rrandiak): labels move to i18n.
 
+import type {
+  PluginImplementation,
+  PluginIndex,
+  PluginInstanceDetail,
+} from "@vera/contract/plugins";
+import type { Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import type { PluginImplementation, PluginIndex, PluginInstanceDetail } from "@/api/plugins";
 import { enablePluginInstance, runPluginInstance } from "@/api/plugins";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { NoticeLine } from "@/components/notice-line";
 import { TableWithDrawer } from "@/components/table-with-drawer";
-import type { Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
 import type { PluginDialog, PluginNotice } from "@/features/plugins/plugin-acts";
 import {
   headerActionsFor,

@@ -6,15 +6,15 @@
 // implementation with no instance says it does nothing until one is configured.
 // TODO(rrandiak): labels move to i18n.
 
+import type { PluginImplementation, PluginInstanceDetail } from "@vera/contract/plugins";
+import type { PluginKind } from "@vera/domain/plugins";
+import { pluginKinds } from "@vera/domain/plugins";
 import type { ReactNode } from "react";
-import type { PluginImplementation, PluginInstanceDetail } from "@/api/plugins";
 import type { GroupLevel } from "@/components/data-table";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RunStateBadge } from "@/components/run-state-badge";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import type { PluginKind } from "@/domain/plugins";
-import { pluginKinds } from "@/domain/plugins";
 import {
   pluginKindJobs,
   pluginKindLabels,

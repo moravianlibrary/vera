@@ -4,6 +4,18 @@
 // them hold for an item in scope.
 // TODO(rrandiak): labels move to i18n.
 
+import type { PropertyCondition, PropertyDefinition, TextMatch } from "@vera/domain/properties";
+import {
+  enumValueNameOf,
+  isActiveCondition,
+  propertyNameOf,
+  textConditionOf,
+  textMatches,
+  textMatchLabels,
+  textSummaryOf,
+  withTextCondition,
+  yesNoValues,
+} from "@vera/domain/properties";
 import { Plus, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -17,18 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PropertyCondition, PropertyDefinition, TextMatch } from "@/domain/properties";
-import {
-  enumValueNameOf,
-  isActiveCondition,
-  propertyNameOf,
-  textConditionOf,
-  textMatches,
-  textMatchLabels,
-  textSummaryOf,
-  withTextCondition,
-  yesNoValues,
-} from "@/domain/properties";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 
 // "Machines: Zeutschel", "Size: A4 or no value", "Width: 20–40 cm", "Note: starts with “Rare”".

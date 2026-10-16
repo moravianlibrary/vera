@@ -6,9 +6,12 @@
 // leaves its share unallocated, flagged where the mix is edited.
 // TODO(rrandiak): labels move to i18n.
 
+import type { CategoryNode, CustodyGrant } from "@vera/contract/categories";
+import { categoryPathOf, isInSubtree, placesFor, scopeOfCategory } from "@vera/domain/categories";
+import type { Category, Session } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
 import { useId } from "react";
 import { z } from "zod";
-import type { CategoryNode, CustodyGrant } from "@/api/categories";
 import {
   createCategory,
   deleteCategory,
@@ -30,9 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoryPathOf, isInSubtree, placesFor, scopeOfCategory } from "@/domain/categories";
-import type { Category, Session } from "@/domain/entities";
-import { can } from "@/domain/permissions";
 import {
   categoryInvalidations,
   useCategoryImpactQuery,

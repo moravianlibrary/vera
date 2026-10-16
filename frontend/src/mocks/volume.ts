@@ -2,7 +2,7 @@
 // can be tried at thousands of rows. Copy n of a record gets the ID suffix `.n`, and a copied
 // document a catalog ID of its own so identifier search still finds one record.
 
-import type { Document, Iteration, Request, StatusLogEntry } from "@/domain/entities";
+import type { Document, Iteration, Request, StatusLogEntry } from "@vera/domain/entities";
 
 interface Records {
   documents: readonly Document[];

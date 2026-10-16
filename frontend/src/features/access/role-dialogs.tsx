@@ -9,9 +9,29 @@
 // anything.
 // TODO(rrandiak): labels move to i18n.
 
+import type { AccessIndex, RoleDraft } from "@vera/contract/access";
+import type { AccessUser, GrantChange, PersonReached, Role } from "@vera/domain/access";
+import {
+  grantChangeOf,
+  holdersOf,
+  managersOf,
+  roleChangeReachOf,
+  roleNameOf,
+} from "@vera/domain/access";
+import type { CatalogScope, Grant, Permission } from "@vera/domain/permissions";
+import {
+  byCatalogOrder,
+  catalogEntryOf,
+  grantScopeOf,
+  isSelfScoped,
+  missingRequirementsOf,
+  permissionGroups,
+  permissionKeys,
+  withRequirements,
+} from "@vera/domain/permissions";
+import { editPermissionOf } from "@vera/domain/properties";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import type { AccessIndex, RoleDraft } from "@/api/access";
 import { createRole, deleteRole, saveRole } from "@/api/access";
 import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
@@ -26,26 +46,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AccessUser, GrantChange, PersonReached, Role } from "@/domain/access";
-import {
-  grantChangeOf,
-  holdersOf,
-  managersOf,
-  roleChangeReachOf,
-  roleNameOf,
-} from "@/domain/access";
-import type { CatalogScope, Grant, Permission } from "@/domain/permissions";
-import {
-  byCatalogOrder,
-  catalogEntryOf,
-  grantScopeOf,
-  isSelfScoped,
-  missingRequirementsOf,
-  permissionGroups,
-  permissionKeys,
-  withRequirements,
-} from "@/domain/permissions";
-import { editPermissionOf } from "@/domain/properties";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import type { AccessNames } from "@/features/access/access-records";
 import { permissionLineOf, scopeLabelOf, waysShortText } from "@/features/access/access-words";

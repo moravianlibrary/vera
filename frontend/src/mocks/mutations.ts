@@ -3,8 +3,8 @@
 // and the checks more than one action makes. Kept apart from the resources so each of them
 // reads only its own rules.
 
-import { categoryPathOf, leafCategoriesOf } from "@/domain/categories";
-import type { Iteration, StatusLogEntry } from "@/domain/entities";
+import { categoryPathOf, leafCategoriesOf } from "@vera/domain/categories";
+import type { Iteration, StatusLogEntry } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 
 // Answered as RFC 9457 Problem Details (problem.ts): the message is its detail, and the code, when

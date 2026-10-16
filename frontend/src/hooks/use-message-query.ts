@@ -3,7 +3,7 @@
 // A hand-off is resolved afresh each time the dialog opens, since who asked may have changed.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { MessageSubject } from "@/api/messages";
+import type { MessageSubject } from "@vera/contract/messages";
 import { listMessageChannels, prepareMessage } from "@/api/messages";
 
 export const messagesQueryKey = ["messages"] as const;

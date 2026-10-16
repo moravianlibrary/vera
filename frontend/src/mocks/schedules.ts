@@ -11,19 +11,19 @@ import type {
   ScheduleIndex,
   ScheduleRow,
   TimelineRange,
-} from "@/api/schedules";
-import { listedRunCeiling } from "@/api/schedules";
-import type { Run } from "@/api/tasks";
-import type { Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
-import type { Cadence } from "@/domain/schedules";
+} from "@vera/contract/schedules";
+import { listedRunCeiling } from "@vera/contract/schedules";
+import type { Run } from "@vera/contract/tasks";
+import type { Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
+import type { Cadence } from "@vera/domain/schedules";
 import {
   isTooFrequent,
   nextOccurrenceOf,
   occurrencesOf,
   repeatCadenceOf,
   schedulableKinds,
-} from "@/domain/schedules";
+} from "@vera/domain/schedules";
 import { database } from "@/mocks/database";
 import type { StoredSchedule } from "@/mocks/fixtures/tasks";
 import type { Outcome, Refusal } from "@/mocks/mutations";

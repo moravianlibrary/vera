@@ -3,7 +3,7 @@
 // resolves too; the mock catalog reads those from the documents themselves. A record of several
 // volumes or issues lists them, and a barcode names one of them.
 
-import type { DocumentType } from "@/domain/entities";
+import type { DocumentType } from "@vera/domain/entities";
 
 export interface CatalogRecord {
   catalogId: string;

@@ -16,19 +16,28 @@ import type {
   ValidationQuery,
   ValidationRangeField,
   VerdictResult,
-} from "@/api/validations";
-import { severalPlugins, validationPageSchema, validationSliceSize } from "@/api/validations";
-import { categoryLineageOf } from "@/domain/categories";
-import { followedIterationId } from "@/domain/documents";
-import type { Iteration, Session, StatusLogEntry, ValidationVerdict } from "@/domain/entities";
-import { priorities } from "@/domain/entities";
-import { progressAfterGates, scopeOfIteration } from "@/domain/iterations";
-import type { Permission } from "@/domain/permissions";
-import { can } from "@/domain/permissions";
-import { approvedKeysOf, outstandingDefects } from "@/domain/status";
-import type { ValidationRow } from "@/domain/validations";
-import { defectNameOf, defectsToRuleOn, reviewStateOf, waitingSinceOf } from "@/domain/validations";
-import { isWithinRange, resolveDayRange } from "@/lib/value-range";
+} from "@vera/contract/validations";
+import {
+  severalPlugins,
+  validationPageSchema,
+  validationSliceSize,
+} from "@vera/contract/validations";
+import { categoryLineageOf } from "@vera/domain/categories";
+import { followedIterationId } from "@vera/domain/documents";
+import type { Iteration, Session, StatusLogEntry, ValidationVerdict } from "@vera/domain/entities";
+import { priorities } from "@vera/domain/entities";
+import { progressAfterGates, scopeOfIteration } from "@vera/domain/iterations";
+import type { Permission } from "@vera/domain/permissions";
+import { can } from "@vera/domain/permissions";
+import { approvedKeysOf, outstandingDefects } from "@vera/domain/status";
+import type { ValidationRow } from "@vera/domain/validations";
+import {
+  defectNameOf,
+  defectsToRuleOn,
+  reviewStateOf,
+  waitingSinceOf,
+} from "@vera/domain/validations";
+import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { catalogLinkOf } from "@/mocks/catalog";

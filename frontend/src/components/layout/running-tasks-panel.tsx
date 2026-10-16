@@ -4,10 +4,10 @@
 // It reads what Tasks reads, in the same reach: everything for `task.read`, else the person's own.
 // TODO(rrandiak): labels move to i18n.
 
+import type { Session } from "@vera/domain/entities";
+import { hasAnyPermission } from "@vera/domain/permissions";
 import { Link } from "react-router";
 import { percentOf, RunProgress } from "@/components/visualizations/run-progress";
-import type { Session } from "@/domain/entities";
-import { hasAnyPermission } from "@/domain/permissions";
 import { useRunningRunsQuery } from "@/hooks/use-running-runs-query";
 
 interface RunningTasksPanelProps {

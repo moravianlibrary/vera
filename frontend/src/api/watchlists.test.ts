@@ -1,16 +1,21 @@
 // Watchlists end to end: the caller's own and the shared ones on a view, and who may change a
 // shared one, against the mock server over HTTP.
 
+import { parseCategorySearchParams } from "@vera/contract/categories";
+import { matchingCategoryIds } from "@vera/contract/category-filters";
+import { parseIntentionsSearchParams } from "@vera/contract/intention-filters";
+import { parseRunSearchParams } from "@vera/contract/tasks";
+import { isShared } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { getCategoryIndex, parseCategorySearchParams } from "@/api/categories";
+import { getCategoryIndex } from "@/api/categories";
 import { listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
 import { listProjectIndex } from "@/api/projects";
 import { getPushDevices, registerPushDevice } from "@/api/push";
-import { listRuns, parseRunSearchParams } from "@/api/tasks";
+import { listRuns } from "@/api/tasks";
 import {
   createWatchlist,
   deleteWatchlist,
@@ -21,12 +26,7 @@ import {
   updateWatchlistViewer,
 } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
-import { matchingCategoryIds } from "@/domain/category-filters";
-import { isShared } from "@/domain/entities";
-import {
-  matchingIntentions,
-  parseIntentionsSearchParams,
-} from "@/features/intentions/intentions-board-view";
+import { matchingIntentions } from "@/features/intentions/intentions-board-view";
 import { database } from "@/mocks/database";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";

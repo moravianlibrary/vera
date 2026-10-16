@@ -6,10 +6,23 @@
 // Beside the heading, *Message askers…* writes to everyone who asked (messaging.md §3).
 // TODO(rrandiak): labels move to i18n.
 
+import type { Decline, RequestDetail } from "@vera/contract/requests";
+import { documentIdentifierOf, existingCopiesOf } from "@vera/domain/documents";
+import type { Category, Priority, Project, RequestCustody, Session } from "@vera/domain/entities";
+import type { ClassifierSuggestion, RequestRow } from "@vera/domain/requests";
+import {
+  askerIdsOf,
+  asksOf,
+  batchIdsOf,
+  firstAskOf,
+  isAfterProjectApproval,
+  isBeingChecked,
+  isRescan,
+  projectIdsOf,
+} from "@vera/domain/requests";
 import { Sparkles } from "lucide-react";
 import { useId, useState } from "react";
 import { ApiError } from "@/api/http";
-import type { Decline, RequestDetail } from "@/api/requests";
 import { declineProposal } from "@/api/requests";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -35,19 +48,6 @@ import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
-import type { Category, Priority, Project, RequestCustody, Session } from "@/domain/entities";
-import type { ClassifierSuggestion, RequestRow } from "@/domain/requests";
-import {
-  askerIdsOf,
-  asksOf,
-  batchIdsOf,
-  firstAskOf,
-  isAfterProjectApproval,
-  isBeingChecked,
-  isRescan,
-  projectIdsOf,
-} from "@/domain/requests";
 import { PropertiesCard } from "@/features/properties/properties-card";
 import { RequestStatusBadge } from "@/features/requests/request-status";
 import {

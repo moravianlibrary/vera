@@ -2,9 +2,9 @@
 // included; an empty end is open.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ValueRange } from "@vera/domain/value-range";
+import { parseCount } from "@vera/domain/value-range";
 import { Input } from "@/components/ui/input";
-import type { ValueRange } from "@/lib/value-range";
-import { parseCount } from "@/lib/value-range";
 
 interface NumberRangeFieldProps {
   id: string;

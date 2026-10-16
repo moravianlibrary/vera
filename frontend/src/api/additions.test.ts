@@ -2,10 +2,11 @@
 // failures within the scope of `request.retry` at once (ACT-retry-batch), and what is retried is being added
 // again, with its attempt counted and logged.
 
+import { maximumDocumentSliceSize } from "@vera/contract/documents";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { retryBatch } from "@/api/additions";
-import { findDocument, listDocuments, maximumDocumentSliceSize } from "@/api/documents";
+import { findDocument, listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";

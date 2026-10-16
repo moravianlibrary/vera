@@ -9,12 +9,12 @@
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import type { Role } from "../../frontend/src/domain/access.ts";
+import type { Role } from "../../domain/src/access.ts";
 import type {
   PermissionEntry,
   Requirement,
   StaticPermission,
-} from "../../frontend/src/domain/permissions.ts";
+} from "../../domain/src/permissions.ts";
 import {
   catalogEntryOf,
   permissionCatalog,
@@ -22,44 +22,49 @@ import {
   permissionKeys,
   permissionRequires,
   propertyEditRequires,
-} from "../../frontend/src/domain/permissions.ts";
-import { editPermissionOf } from "../../frontend/src/domain/properties.ts";
-import { permissionLineOf } from "../../frontend/src/features/access/access-words.ts";
-import { navigationEntries, visibleNavigation } from "../../frontend/src/components/layout/navigation.ts";
-import { roles } from "../../frontend/src/mocks/fixtures/access.ts";
-import { accessView } from "../../frontend/src/features/access/access-view.ts";
-import { categoriesView } from "../../frontend/src/features/categories/categories-view.ts";
-import { documentsView, myDocumentsView } from "../../frontend/src/features/documents/documents-view.ts";
-import { hooksView } from "../../frontend/src/features/hooks/hooks-view.ts";
-import { intentionsView } from "../../frontend/src/features/intentions/intentions-board-view.ts";
-import { listsView } from "../../frontend/src/features/lists/lists-view.ts";
-import { pluginsView } from "../../frontend/src/features/plugins/plugins-view.ts";
-import { projectsView } from "../../frontend/src/features/projects/projects-view.ts";
-import { requestsView } from "../../frontend/src/features/requests/requests-view.ts";
-import { tasksView } from "../../frontend/src/features/tasks/tasks-view.ts";
-import { validationsView } from "../../frontend/src/features/validations/validations-view.ts";
-import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
+} from "../../domain/src/permissions.ts";
+import { editPermissionOf } from "../../domain/src/properties.ts";
+import {
+  navigationEntries,
+  visibleNavigation,
+} from "../../frontend/src/components/layout/navigation.ts";
 import type { ColumnDefinition } from "../../frontend/src/components/lists/record-list.tsx";
+import { accessView } from "../../frontend/src/features/access/access-view.ts";
+import { permissionLineOf } from "../../frontend/src/features/access/access-words.ts";
+import { categoriesView } from "../../frontend/src/features/categories/categories-view.ts";
 import {
   publicDocumentColumns,
   staffDocumentColumns,
 } from "../../frontend/src/features/documents/document-list.tsx";
+import {
+  documentsView,
+  myDocumentsView,
+} from "../../frontend/src/features/documents/documents-view.ts";
 import { hookColumns } from "../../frontend/src/features/hooks/hooks-page.tsx";
+import { hooksView } from "../../frontend/src/features/hooks/hooks-view.ts";
+import { intentionsView } from "../../frontend/src/features/intentions/intentions-board-view.ts";
 import { listEditorColumns } from "../../frontend/src/features/lists/list-editor.tsx";
 import { listColumns } from "../../frontend/src/features/lists/list-rows.tsx";
+import { listsView } from "../../frontend/src/features/lists/lists-view.ts";
 import { instanceColumns } from "../../frontend/src/features/plugins/plugin-table.tsx";
+import { pluginsView } from "../../frontend/src/features/plugins/plugins-view.ts";
 import {
   endedProjectColumns,
   rejectedProjectColumns,
 } from "../../frontend/src/features/projects/projects-page.tsx";
+import { projectsView } from "../../frontend/src/features/projects/projects-view.ts";
 import { propertyColumns } from "../../frontend/src/features/properties/properties-page.tsx";
 import { requestColumns } from "../../frontend/src/features/requests/request-list.tsx";
+import { requestsView } from "../../frontend/src/features/requests/requests-view.ts";
 import { runColumns } from "../../frontend/src/features/tasks/run-parts.tsx";
 import { scheduleColumns } from "../../frontend/src/features/tasks/schedules-page.tsx";
+import { tasksView } from "../../frontend/src/features/tasks/tasks-view.ts";
 import { validationColumns } from "../../frontend/src/features/validations/validation-list.tsx";
+import { validationsView } from "../../frontend/src/features/validations/validations-view.ts";
 import type { PerTier } from "../../frontend/src/hooks/use-tier.ts";
 import { tiers, valueForTier } from "../../frontend/src/hooks/use-tier.ts";
-
+import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
+import { roles } from "../../frontend/src/mocks/fixtures/access.ts";
 
 const root = resolve(import.meta.dir, "../..");
 const docs = join(root, "docs");
@@ -104,7 +109,11 @@ function permissionCatalogTable(): string {
 // What each permission needs, permissions with the same needs on one row, in catalog order.
 function permissionRequiresTable(): string {
   const needText = ({ permission, at }: Requirement) =>
-    at === "any" ? `\`${permission}@any\`` : at === "held" ? `\`${permission}\` (any scope)` : `\`${permission}\``;
+    at === "any"
+      ? `\`${permission}@any\``
+      : at === "held"
+        ? `\`${permission}\` (any scope)`
+        : `\`${permission}\``;
   const rows = new Map<string, string[]>();
   const add = (permission: string, needs: readonly Requirement[]) => {
     const text = needs.map(needText).join(", ");
@@ -434,10 +443,11 @@ function sourceFiles(directory: string): string[] {
 
 // The structure and the reference's own README name example IDs that are not rules.
 const examples = [join(docs, "structure.md"), join(docs, "reference/README.md")];
-const citing = [
-  ...sourceFiles(join(root, "frontend/src")),
-  ...newDocs.filter((file) => !examples.includes(file)),
-];
+// The code: the frontend and the packages it shares with the engine.
+const codeFiles = ["frontend/src", "contract/src", "domain/src"].flatMap((dir) =>
+  sourceFiles(join(root, dir)),
+);
+const citing = [...codeFiles, ...newDocs.filter((file) => !examples.includes(file))];
 for (const file of citing) {
   for (const [, id] of readFileSync(file, "utf8").matchAll(citation)) {
     if (!defined.has(id)) {
@@ -459,7 +469,9 @@ function anchorOf(heading: string): string {
 
 function anchorsIn(file: string): Set<string> {
   const text = readFileSync(file, "utf8").replace(/```[\s\S]*?```/g, "");
-  return new Set([...text.matchAll(/^#{1,6} (.+)$/gm)].map(([, heading]) => anchorOf(heading ?? "")));
+  return new Set(
+    [...text.matchAll(/^#{1,6} (.+)$/gm)].map(([, heading]) => anchorOf(heading ?? "")),
+  );
 }
 
 const linkPattern = /\]\(([^)\s#]*)(?:#([^)\s]*))?\)/g;
@@ -476,7 +488,9 @@ for (const file of newDocs) {
     }
 
     if (fragment !== undefined && linked.endsWith(".md") && !anchorsIn(linked).has(fragment)) {
-      failures.push(`${relative(root, file)}: links to ${target}#${fragment}, which has no such heading`);
+      failures.push(
+        `${relative(root, file)}: links to ${target}#${fragment}, which has no such heading`,
+      );
     }
   }
 }
@@ -487,7 +501,7 @@ const oldSources =
   /docs\/demos|docs\/design|STATUS|\b(?:component-interfaces|component-inventory|continuation|intentions|flows|plugins|permissions|filtering|view-map|status-model|projects|view-rules|navigation|messaging|concepts|proposal-custody|identity|page-composition|view-catalog|status-log|document-properties|relationships|document-identity|registry-status|priority-levels|identifier-types|watchlists-and-notifications|users-management-redesign)\.md\b|page-[a-z]+\.js|vera-[a-z]+\.(?:js|css)/g;
 let oldCitations = 0;
 let oldFiles = 0;
-for (const file of sourceFiles(join(root, "frontend/src"))) {
+for (const file of codeFiles) {
   const count = readFileSync(file, "utf8").match(oldSources)?.length ?? 0;
   oldCitations += count;
   oldFiles += count > 0 ? 1 : 0;

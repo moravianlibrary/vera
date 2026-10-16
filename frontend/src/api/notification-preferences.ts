@@ -1,22 +1,13 @@
-import { z } from "zod";
+// Calls the notification-preferences endpoints; what they take and answer is in
+// @vera/contract/notification-preferences.
+
+import type {
+  NotificationChoices,
+  PublicNotificationPreferences,
+} from "@vera/contract/notification-preferences";
+import { publicNotificationPreferencesSchema } from "@vera/contract/notification-preferences";
+import { notificationPreferencePath } from "@vera/contract/routes";
 import { getJson, patchJson } from "@/api/http";
-import { notificationHookSchema } from "@/api/hooks";
-import { notificationPreferencePath } from "@/api/routes";
-
-export const notificationChoicesSchema = z.object({
-  doNotSend: z.boolean(),
-  hooks: z.record(z.string(), z.boolean()),
-});
-export type NotificationChoices = z.infer<typeof notificationChoicesSchema>;
-
-export const publicNotificationPreferencesSchema = z.object({
-  userId: z.string(),
-  email: z.string(),
-  focusedHookId: z.string(),
-  hooks: z.array(notificationHookSchema),
-  notifications: notificationChoicesSchema,
-});
-export type PublicNotificationPreferences = z.infer<typeof publicNotificationPreferencesSchema>;
 
 export function getPublicNotificationPreferences(
   token: string,

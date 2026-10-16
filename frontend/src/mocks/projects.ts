@@ -22,31 +22,31 @@ import type {
   ProjectQuery,
   ProjectRejection,
   ProjectRow,
-} from "@/api/projects";
-import { projectPaces, projectStates } from "@/api/projects";
-import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
-import type { Intention, Iteration, Project, Request, Session } from "@/domain/entities";
+} from "@vera/contract/projects";
+import { projectPaces, projectStates } from "@vera/contract/projects";
+import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
+import type { Intention, Iteration, Project, Request, Session } from "@vera/domain/entities";
 import {
   countIntention,
   intentionStateOf,
   intentionTimeElapsedOf,
   targetVerdictOf,
-} from "@/domain/intentions";
-import { listStateOf } from "@/domain/lists";
-import type { Permission } from "@/domain/permissions";
-import { can } from "@/domain/permissions";
+} from "@vera/domain/intentions";
+import { listStateOf } from "@vera/domain/lists";
+import type { Permission } from "@vera/domain/permissions";
+import { can } from "@vera/domain/permissions";
 import {
   daysUntil,
   periodOf,
   projectPeriods,
   scopeOfProject,
   timeElapsedOf,
-} from "@/domain/projects";
-import { isProgressAtLeast } from "@/domain/status";
+} from "@vera/domain/projects";
+import { isProgressAtLeast } from "@vera/domain/status";
+import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
-import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@/lib/value-range";
 import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import {

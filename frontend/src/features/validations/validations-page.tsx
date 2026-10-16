@@ -5,9 +5,10 @@
 // used, the shared *Review needed* being the queue the demo opens on.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ValidationDetail } from "@vera/contract/validations";
+import { hasPermission } from "@vera/domain/permissions";
 import { ClipboardCheck } from "lucide-react";
 import { useState } from "react";
-import type { ValidationDetail } from "@/api/validations";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -15,7 +16,6 @@ import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
-import { hasPermission } from "@/domain/permissions";
 import {
   filterablePropertiesOf,
   usePropertiesQuery,

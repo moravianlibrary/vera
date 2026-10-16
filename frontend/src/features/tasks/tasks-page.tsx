@@ -4,18 +4,18 @@
 // is *My Tasks*, the person's own runs.
 // TODO(rrandiak): labels move to i18n.
 
+import type { Run, RunIndex } from "@vera/contract/tasks";
+import type { Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
+import { canCancelRun, canRunAgain, isOwnRun } from "@vera/domain/tasks";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import type { Run, RunIndex } from "@/api/tasks";
 import { runAgain } from "@/api/tasks";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { canOpenNavigationEntry, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TableWithDrawer } from "@/components/table-with-drawer";
-import type { Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
-import { canCancelRun, canRunAgain, isOwnRun } from "@/domain/tasks";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import { CancelRunDialog, RetentionDialog } from "@/features/tasks/run-dialogs";
 import { RunDrawer } from "@/features/tasks/run-drawer";

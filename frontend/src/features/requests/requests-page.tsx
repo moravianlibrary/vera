@@ -4,9 +4,10 @@
 // `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // TODO(rrandiak): labels move to i18n.
 
+import type { RequestDetail, RequestGroup } from "@vera/contract/requests";
+import { hasPermission } from "@vera/domain/permissions";
 import { Inbox } from "lucide-react";
 import { useState } from "react";
-import type { RequestDetail, RequestGroup } from "@/api/requests";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -14,7 +15,6 @@ import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
-import { hasPermission } from "@/domain/permissions";
 import {
   filterablePropertiesOf,
   usePropertiesQuery,

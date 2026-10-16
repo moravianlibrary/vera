@@ -7,10 +7,13 @@
 // rows dim.
 // TODO(rrandiak): labels move to i18n.
 
+import type { CategoryNode, CategoryTotals } from "@vera/contract/categories";
+import type { MixNode, MixTree } from "@vera/contract/mixes";
+import type { CategoryTreeValue } from "@vera/domain/categories";
+import { categoryTreeValues, isOutsideScope, searchedCategoriesOf } from "@vera/domain/categories";
+import type { Category } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { CategoryNode, CategoryTotals } from "@/api/categories";
-import type { MixNode, MixTree } from "@/api/mixes";
 import {
   categoryTreeValueLabels,
   isMixValue,
@@ -20,9 +23,6 @@ import {
 import { Tree } from "@/components/tree";
 import { Input } from "@/components/ui/input";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
-import type { CategoryTreeValue } from "@/domain/categories";
-import { categoryTreeValues, isOutsideScope, searchedCategoriesOf } from "@/domain/categories";
-import type { Category } from "@/domain/entities";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { formatCount, formatPercent } from "@/lib/format-number";
 

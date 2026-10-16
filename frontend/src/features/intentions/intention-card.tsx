@@ -8,9 +8,10 @@
 // links to its Mix.
 // TODO(rrandiak): labels move to i18n.
 
+import type { FillRowView, IntentionRow, MixRowView } from "@vera/contract/intentions";
+import { mixBand } from "@vera/domain/intentions";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import type { FillRowView, IntentionRow, MixRowView } from "@/api/intentions";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
@@ -19,7 +20,6 @@ import type { ColumnDefinition } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { MixBar, MixBars } from "@/components/visualizations/mix-bars";
 import { PaceBars } from "@/components/visualizations/pace-bars";
-import { mixBand } from "@/domain/intentions";
 import {
   bandText,
   everyLabels,

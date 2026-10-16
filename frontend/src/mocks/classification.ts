@@ -3,9 +3,9 @@
 // answered, since they run when the checks finish. A node with children is rejected as an
 // answer (§3), so the decider never sees it.
 
-import { leafCategoriesOf } from "@/domain/categories";
-import type { Document, Request } from "@/domain/entities";
-import type { ClassifierSuggestion } from "@/domain/requests";
+import { leafCategoriesOf } from "@vera/domain/categories";
+import type { Document, Request } from "@vera/domain/entities";
+import type { ClassifierSuggestion } from "@vera/domain/requests";
 import { database } from "@/mocks/database";
 import { materialLeaves, moravianPlaces } from "@/mocks/fixtures/classifiers";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";

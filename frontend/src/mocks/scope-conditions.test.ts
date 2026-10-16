@@ -2,8 +2,8 @@
 // on its digitized date for one that is, narrowing what it counts and what is generated for it,
 // and gone with a deleted property (DOC-property-delete).
 
+import type { Intention, Iteration } from "@vera/domain/entities";
 import { describe, expect, it } from "vitest";
-import type { Intention, Iteration } from "@/domain/entities";
 import { database } from "@/mocks/database";
 import { createIntention, previewIntention } from "@/mocks/intentions";
 import { createProperty, deleteProperty, meetsScopeConditions } from "@/mocks/properties";

@@ -2,9 +2,9 @@
 // several assignments reach the same person. The tables count people once, details show every
 // route into the proposal, category, or project.
 
-import type { AccessIndex, AccessProposal } from "@/api/access";
-import { custodyMembersOf } from "@/domain/access";
-import type { Category } from "@/domain/entities";
+import type { AccessIndex, AccessProposal } from "@vera/contract/access";
+import { custodyMembersOf } from "@vera/domain/access";
+import type { Category } from "@vera/domain/entities";
 
 export interface CustodySource {
   userId: string;

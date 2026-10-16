@@ -4,10 +4,11 @@
 // rest. Running a run again asks nothing: the old run stays as it was.
 // TODO(rrandiak): labels move to i18n.
 
+import type { Retention, Run } from "@vera/contract/tasks";
+import { retentionSchema } from "@vera/contract/tasks";
 import { useId } from "react";
 import type { z } from "zod";
-import type { Retention, Run } from "@/api/tasks";
-import { cancelRun, retentionSchema, saveRetention } from "@/api/tasks";
+import { cancelRun, saveRetention } from "@/api/tasks";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";

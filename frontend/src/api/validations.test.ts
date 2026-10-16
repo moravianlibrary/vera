@@ -3,20 +3,22 @@
 // refuses, and the fixes in place and Cancel that the pane offers beside them. Verdicts change the
 // mock's state, so each test rules on its own iterations.
 
+import type { ValidationQuery } from "@vera/contract/validations";
+import {
+  isSameValidationQuery,
+  parseValidationSearchParams,
+  toValidationSearchParams,
+} from "@vera/contract/validations";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
 import { cancelIteration, enterPageCount, recheckIteration } from "@/api/iterations";
-import type { ValidationQuery } from "@/api/validations";
 import {
   acceptDefects,
   denyDefects,
   findValidation,
-  isSameValidationQuery,
   listValidations,
-  parseValidationSearchParams,
   revokeAcceptance,
-  toValidationSearchParams,
 } from "@/api/validations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";

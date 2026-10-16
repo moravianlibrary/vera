@@ -4,8 +4,8 @@
 // how far it is at any moment, and when it finishes. The curator's re-check (T-9915) is theirs
 // here, not Jana's as in the demo, so a curator sees one run of their own going.
 
-import type { Place, Retention, RunTrigger } from "@/api/tasks";
-import type { Cadence, Overlap } from "@/domain/schedules";
+import type { Place, Retention, RunTrigger } from "@vera/contract/tasks";
+import type { Cadence, Overlap } from "@vera/domain/schedules";
 
 export interface StoredRunError {
   readonly iterationId: string;

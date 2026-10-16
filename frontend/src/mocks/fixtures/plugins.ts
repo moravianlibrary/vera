@@ -9,14 +9,14 @@
 // implementation, with what it adds and retires, and two new implementations, one built against
 // a contract VERA does not run.
 
-import type { InstanceSettings, PluginVersion } from "@/api/plugins";
+import type { InstanceSettings, PluginVersion } from "@vera/contract/plugins";
 import type {
   ConfigField,
   Declarations,
   InstancePolicy,
   PluginKind,
   PluginTrigger,
-} from "@/domain/plugins";
+} from "@vera/domain/plugins";
 
 export interface StoredPluginImplementation {
   readonly id: string;

@@ -3,13 +3,13 @@
 // Tones follow docs/demos/shared/vera-model.js.
 // TODO(rrandiak): labels move to i18n.
 
+import type { RecordStatus } from "@vera/contract/documents";
+import type { Priority, RegistryRecord, RegistryState } from "@vera/domain/entities";
+import type { ListState } from "@vera/domain/lists";
+import type { StatusFootnote } from "@vera/domain/status";
 import { cva } from "class-variance-authority";
 import type { ReactNode } from "react";
-import type { RecordStatus } from "@/api/documents";
 import { Badge } from "@/components/ui/badge";
-import type { Priority, RegistryRecord, RegistryState } from "@/domain/entities";
-import type { ListState } from "@/domain/lists";
-import type { StatusFootnote } from "@/domain/status";
 import { cn } from "@/lib/utils";
 
 const toneVariants = cva("border-transparent", {

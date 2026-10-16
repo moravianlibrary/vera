@@ -1,9 +1,9 @@
 // How the Projects page arranges the rows the server sends.
 
+import type { ProjectRow } from "@vera/contract/projects";
+import type { Project } from "@vera/domain/entities";
+import type { ProjectPeriod } from "@vera/domain/projects";
 import { describe, expect, it } from "vitest";
-import type { ProjectRow } from "@/api/projects";
-import type { Project } from "@/domain/entities";
-import type { ProjectPeriod } from "@/domain/projects";
 import { paceOf, projectNoteOf, projectSectionsOf } from "@/features/projects/projects-view";
 
 const base = {

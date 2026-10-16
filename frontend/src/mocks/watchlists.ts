@@ -7,30 +7,28 @@
 // else's personal watchlist is out of the caller's sight and never blocks theirs. Sharing warns
 // rather than refuses: its reach says how many of the reached already keep the same filter.
 
-import { parseCategorySearchParams } from "@/api/categories";
-import { documentQueryParams, parseDocumentSearchParams } from "@/api/documents";
-import { parseListSearchParams } from "@/api/lists";
-import { parseProjectSearchParams } from "@/api/projects";
-import { propertyParamKeyOf } from "@/api/properties";
-import { parseRequestSearchParams } from "@/api/requests";
-import { parseRunSearchParams } from "@/api/tasks";
-import { parseValidationSearchParams } from "@/api/validations";
+import { parseCategorySearchParams } from "@vera/contract/categories";
+import { matchingCategoryIds } from "@vera/contract/category-filters";
+import { documentQueryParams, parseDocumentSearchParams } from "@vera/contract/documents";
+import { parseIntentionsSearchParams } from "@vera/contract/intention-filters";
+import { parseListSearchParams } from "@vera/contract/lists";
+import { parseProjectSearchParams } from "@vera/contract/projects";
+import { propertyParamKeyOf } from "@vera/contract/properties";
+import { parseRequestSearchParams } from "@vera/contract/requests";
+import { parseRunSearchParams } from "@vera/contract/tasks";
+import { parseValidationSearchParams } from "@vera/contract/validations";
 import type {
   WatchlistReach,
   WatchlistReachRequest,
   WatchlistSummary,
   WatchlistViewer,
-} from "@/api/watchlists";
-import { isSameWatchlistFilter } from "@/api/watchlists";
-import { matchingCategoryIds } from "@/domain/category-filters";
-import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
-import { isShared } from "@/domain/entities";
-import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
-import { publicStatuses } from "@/domain/status";
-import {
-  matchingIntentions,
-  parseIntentionsSearchParams,
-} from "@/features/intentions/intentions-board-view";
+} from "@vera/contract/watchlists";
+import { isSameWatchlistFilter } from "@vera/contract/watchlists";
+import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@vera/domain/entities";
+import { isShared } from "@vera/domain/entities";
+import { canOpenMyDocuments, hasPermission } from "@vera/domain/permissions";
+import { publicStatuses } from "@vera/domain/status";
+import { matchingIntentions } from "@/features/intentions/intentions-board-view";
 import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";

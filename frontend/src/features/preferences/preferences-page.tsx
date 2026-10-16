@@ -1,9 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
+import { pushChannelId } from "@vera/contract/watchlists";
+import type { WatchlistView } from "@vera/domain/entities";
+import { watchlistViewSchema } from "@vera/domain/entities";
+import type { Grant, Permission } from "@vera/domain/permissions";
+import {
+  canOpenMyDocuments,
+  catalogEntryOf,
+  hasPermission,
+  permissionGroups,
+  propertyOfPermission,
+} from "@vera/domain/permissions";
 import { useState } from "react";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { getNotificationHooks } from "@/api/hooks";
 import { getAccount } from "@/api/session";
-import { listWatchlists, pushChannelId } from "@/api/watchlists";
+import { listWatchlists } from "@/api/watchlists";
 import { TabLink, TabStrip } from "@/components/filters/tab-strip";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -15,16 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type { WatchlistView } from "@/domain/entities";
-import { watchlistViewSchema } from "@/domain/entities";
-import type { Grant, Permission } from "@/domain/permissions";
-import {
-  canOpenMyDocuments,
-  catalogEntryOf,
-  hasPermission,
-  permissionGroups,
-  propertyOfPermission,
-} from "@/domain/permissions";
 import {
   pushChannelName,
   unreachableTextOf,

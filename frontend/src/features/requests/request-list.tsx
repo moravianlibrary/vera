@@ -4,16 +4,10 @@
 // many reasons there are when they differ, so that no one asker's reason stands for the rest.
 // TODO(rrandiak): labels move to i18n.
 
-import type { ReactElement } from "react";
-import { Fragment } from "react";
-import type { RequestGroup, RequestGrouping } from "@/api/requests";
-import { Muted } from "@/components/detail-card";
-import type { ColumnDefinition } from "@/components/lists/record-list";
-import { RecordList } from "@/components/lists/record-list";
-import { ToneBadge } from "@/components/status-badge";
-import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
-import type { ExistingCopy, Project, RequestCustody, User } from "@/domain/entities";
-import type { RequestRow } from "@/domain/requests";
+import type { RequestGroup, RequestGrouping } from "@vera/contract/requests";
+import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
+import type { ExistingCopy, Project, RequestCustody, User } from "@vera/domain/entities";
+import type { RequestRow } from "@vera/domain/requests";
 import {
   askerIdsOf,
   asksOf,
@@ -24,7 +18,13 @@ import {
   isRescan,
   projectIdsOf,
   reasonsOf,
-} from "@/domain/requests";
+} from "@vera/domain/requests";
+import type { ReactElement } from "react";
+import { Fragment } from "react";
+import { Muted } from "@/components/detail-card";
+import type { ColumnDefinition } from "@/components/lists/record-list";
+import { RecordList } from "@/components/lists/record-list";
+import { ToneBadge } from "@/components/status-badge";
 import { RequestGroupHeader } from "@/features/requests/request-group-header";
 import { RequestStatusBadge } from "@/features/requests/request-status";
 import { requestsView } from "@/features/requests/requests-view";

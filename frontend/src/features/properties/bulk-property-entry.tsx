@@ -4,10 +4,13 @@
 // as an attempt already scanned does.
 // TODO(rrandiak): labels move to i18n.
 
+import type { BulkPropertyEntryResult } from "@vera/contract/properties";
+import type { Session } from "@vera/domain/entities";
+import type { PropertyDefinition } from "@vera/domain/properties";
+import { propertyNameOf } from "@vera/domain/properties";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import type { BulkPropertyEntryResult } from "@/api/properties";
 import type { RowPicking } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Button } from "@/components/ui/button";
@@ -17,9 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Session } from "@/domain/entities";
-import type { PropertyDefinition } from "@/domain/properties";
-import { propertyNameOf } from "@/domain/properties";
 import { canEnterProperty } from "@/features/properties/properties-card";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";

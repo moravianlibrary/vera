@@ -5,10 +5,10 @@
 // document as the catalog record shows them; the page count keeps its own sources
 // (DOC-page-count).
 
-import type { Document } from "@/domain/entities";
-import type { Grant } from "@/domain/permissions";
-import type { PropertyDefinition, PropertyValues } from "@/domain/properties";
-import { editPermissionOf } from "@/domain/properties";
+import type { Document } from "@vera/domain/entities";
+import type { Grant } from "@vera/domain/permissions";
+import type { PropertyDefinition, PropertyValues } from "@vera/domain/properties";
+import { editPermissionOf } from "@vera/domain/properties";
 
 // What the store keeps; whether the catalog holds it is read from the adapters' declarations.
 export type StoredPropertyDefinition = Omit<PropertyDefinition, "isCatalogFact">;

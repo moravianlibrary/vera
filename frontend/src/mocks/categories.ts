@@ -18,8 +18,8 @@ import type {
   CustodyGrant,
   MixShare,
   RefineDraft,
-} from "@/api/categories";
-import type { CustodyHolders } from "@/domain/categories";
+} from "@vera/contract/categories";
+import type { CustodyHolders } from "@vera/domain/categories";
 import {
   categoryPathOf,
   custodyReachOf,
@@ -27,11 +27,11 @@ import {
   isNameTaken,
   scopeOfCategory,
   unheldCategoriesOf,
-} from "@/domain/categories";
-import type { Category, Iteration, Session } from "@/domain/entities";
-import { isInPool, isScanned } from "@/domain/lists";
-import type { Permission } from "@/domain/permissions";
-import { can } from "@/domain/permissions";
+} from "@vera/domain/categories";
+import type { Category, Iteration, Session } from "@vera/domain/entities";
+import { isInPool, isScanned } from "@vera/domain/lists";
+import type { Permission } from "@vera/domain/permissions";
+import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import { countingData, isVisible, nextId, overallIntention } from "@/mocks/intentions";
 import { mixTreeOf } from "@/mocks/mixes";

@@ -1,7 +1,7 @@
 // The Hooks list's URL filters and subject groups remain stable for deep links.
 
+import type { HookIndex } from "@vera/contract/hooks";
 import { describe, expect, it } from "vitest";
-import type { HookIndex } from "@/api/hooks";
 import { hookGroupOf, hooksView, shownHooksOf } from "@/features/hooks/hooks-view";
 import { hookDeliveries, hooks } from "@/mocks/fixtures/hooks";
 

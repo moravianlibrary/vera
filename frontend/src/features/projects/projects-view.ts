@@ -5,24 +5,24 @@
 // intention's (§1.1).
 // TODO(rrandiak): labels move to i18n.
 
-import type { ProjectQuery, ProjectRow } from "@/api/projects";
+import type { ProjectQuery, ProjectRow } from "@vera/contract/projects";
 import {
   isSameProjectQuery,
   parseProjectSearchParams,
   projectPaces,
   projectStates,
   toProjectSearchParams,
-} from "@/api/projects";
+} from "@vera/contract/projects";
+import type { Project } from "@vera/domain/entities";
+import type { TargetVerdict } from "@vera/domain/intentions";
+import type { ProjectPeriod } from "@vera/domain/projects";
+import { projectPeriods } from "@vera/domain/projects";
+import type { DayPreset } from "@vera/domain/value-range";
 import type { Tone } from "@/components/status-badge";
-import type { Project } from "@/domain/entities";
-import type { TargetVerdict } from "@/domain/intentions";
-import type { ProjectPeriod } from "@/domain/projects";
-import { projectPeriods } from "@/domain/projects";
-import type { NoteTone } from "@/domain/status-notes";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
-import type { DayPreset } from "@/lib/value-range";
+import type { NoteTone } from "@/lib/status-notes";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

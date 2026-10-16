@@ -3,8 +3,8 @@
 // lib/format-cadence.ts's and a moment lib/format-moment.ts's.
 // TODO(rrandiak): labels move to i18n.
 
-import type { Overlap } from "@/domain/schedules";
-import type { TriggerKind } from "@/domain/tasks";
+import type { Overlap } from "@vera/domain/schedules";
+import type { TriggerKind } from "@vera/domain/tasks";
 
 export const triggerLabels = {
   schedule: "Schedule",

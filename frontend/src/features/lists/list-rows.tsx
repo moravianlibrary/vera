@@ -5,14 +5,14 @@
 // the house mix, and the intention it was generated with.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ListRow } from "@vera/contract/lists";
+import type { DigitizationList } from "@vera/domain/entities";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
-import type { ListRow } from "@/api/lists";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { ListStateBadge } from "@/components/status-badge";
-import type { DigitizationList } from "@/domain/entities";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";

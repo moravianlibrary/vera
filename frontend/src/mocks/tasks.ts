@@ -16,20 +16,20 @@ import type {
   RunningRuns,
   RunQuery,
   RunTrigger,
-} from "@/api/tasks";
-import { runIndexSchema } from "@/api/tasks";
-import type { Session } from "@/domain/entities";
-import { hasAnyPermission, hasPermission } from "@/domain/permissions";
-import { nextOccurrenceOf, repeatCadenceOf } from "@/domain/schedules";
-import type { RunState } from "@/domain/tasks";
-import { canCancelRun, canRunAgain } from "@/domain/tasks";
+} from "@vera/contract/tasks";
+import { runIndexSchema } from "@vera/contract/tasks";
+import type { Session } from "@vera/domain/entities";
+import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
+import { nextOccurrenceOf, repeatCadenceOf } from "@vera/domain/schedules";
+import type { RunState } from "@vera/domain/tasks";
+import { canCancelRun, canRunAgain } from "@vera/domain/tasks";
+import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import type { StoredRun } from "@/mocks/fixtures/tasks";
 import type { Outcome } from "@/mocks/mutations";
 import { findInstanceSummary } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
-import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@/lib/value-range";
 
 const minuteMilliseconds = 60_000;
 const dayMilliseconds = 24 * 60 * minuteMilliseconds;

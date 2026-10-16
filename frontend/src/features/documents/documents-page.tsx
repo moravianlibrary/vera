@@ -5,6 +5,7 @@
 // opens that match.
 // TODO(rrandiak): labels move to i18n.
 
+import { hasPermission, proposeActOf } from "@vera/domain/permissions";
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -14,7 +15,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentList } from "@/features/documents/document-list";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";

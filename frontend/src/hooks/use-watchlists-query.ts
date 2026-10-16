@@ -2,7 +2,8 @@
 // watchlist query, since the counts are the server's to recompute.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WatchlistChange, WatchlistViewerChange } from "@/api/watchlists";
+import type { WatchlistChange, WatchlistViewerChange } from "@vera/contract/watchlists";
+import type { WatchlistView } from "@vera/domain/entities";
 import {
   createWatchlist,
   deleteWatchlist,
@@ -11,7 +12,6 @@ import {
   updateWatchlist,
   updateWatchlistViewer,
 } from "@/api/watchlists";
-import type { WatchlistView } from "@/domain/entities";
 
 export const watchlistsQueryKey = ["watchlists"] as const;
 

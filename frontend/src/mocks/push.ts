@@ -2,7 +2,7 @@
 // subscription the browser made, and since when, which is the push baseline. In memory: a
 // reload forgets them, and the client registers again while the browser still allows it.
 
-import type { PushDevices, PushSubscriptionBody } from "@/api/push";
+import type { PushDevices, PushSubscriptionBody } from "@vera/contract/push";
 
 // A valid P-256 public key, as a real server's VAPID key would be; the mock pushes nothing
 // through a push service, so nobody holds its private half.

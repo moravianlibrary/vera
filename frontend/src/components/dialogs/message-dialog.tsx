@@ -8,8 +8,8 @@
 // TODO(rrandiak): instances that send on their own ask for the text first (messaging.md §2);
 // labels move to i18n.
 
+import type { MessageSubject } from "@vera/contract/messages";
 import { useId, useState } from "react";
-import type { MessageSubject } from "@/api/messages";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";

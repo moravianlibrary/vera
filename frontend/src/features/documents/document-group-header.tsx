@@ -8,16 +8,16 @@
 // TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
 // §2.3); labels move to i18n.
 
+import type { DocumentGroup } from "@vera/contract/documents";
+import type { AdditionState } from "@vera/domain/documents";
+import { additionStates } from "@vera/domain/documents";
+import type { Project, User } from "@vera/domain/entities";
 import { useState } from "react";
 import { Link } from "react-router";
 import { retryBatch } from "@/api/additions";
-import type { DocumentGroup } from "@/api/documents";
 import { GroupHeader } from "@/components/lists/group-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { AdditionState } from "@/domain/documents";
-import { additionStates } from "@/domain/documents";
-import type { Project, User } from "@/domain/entities";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";

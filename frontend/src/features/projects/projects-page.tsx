@@ -4,9 +4,11 @@
 // remembered section unless it is the only one shown. A card or row opens its project.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ProjectRow } from "@vera/contract/projects";
+import type { Session } from "@vera/domain/entities";
+import { can, hasPermission, scopesOf } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import type { ProjectRow } from "@/api/projects";
 import type { CardSection } from "@/components/card-sections";
 import { CardSections } from "@/components/card-sections";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -15,8 +17,6 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
-import type { Session } from "@/domain/entities";
-import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectCard } from "@/features/projects/project-card";
 import { ProjectFormDialog } from "@/features/projects/project-dialogs";

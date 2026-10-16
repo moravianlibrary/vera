@@ -40,15 +40,15 @@ flowchart LR
   TESTS --> CTRL["/_engine: reset, seed, clock, outbox"]
 ```
 
-- **Contract.** The routes are `frontend/src/api/routes.ts`; the request and response shapes are
-  the zod schemas in `frontend/src/api/`. The engine parses every request and checks every
+- **Contract.** The routes are `contract/src/routes.ts`; the request and response shapes are
+  the zod schemas in `contract/src/`. The engine parses every request and checks every
   response against them.
 - **Commands.** One command per act in [acts](../reference/access/acts.md). Each command:
   1. checks the permission and scope;
   2. checks the state, refusing with the status and code the act lists;
   3. writes the change, its log entries and its hook events in one transaction.
 - **Queries.** One per page read model (the overview endpoints), computed from SQLite.
-- **Domain.** The pure functions in `frontend/src/domain` (permissions, status, counting,
+- **Domain.** The pure functions in `domain/src` (permissions, status, counting,
   mixes) are used as they are, so the frontend and the engine cannot disagree.
 - **Jobs.** Ingest, custody placement, registry checks, scheduled runs, hook deliveries,
   watchlist membership and repeats run on the engine's clock. They are triggered by commands

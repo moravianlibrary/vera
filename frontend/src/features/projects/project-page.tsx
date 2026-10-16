@@ -6,9 +6,14 @@
 // beside it and are not shown here (intentions.md §3.4).
 // TODO(rrandiak): labels move to i18n.
 
+import type { FundedItem, ProjectDetail, ProjectProposal } from "@vera/contract/projects";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Category, Session } from "@vera/domain/entities";
+import { progressValues } from "@vera/domain/entities";
+import { can } from "@vera/domain/permissions";
+import { iterationStatusOf, statusFootnoteOf } from "@vera/domain/status";
 import type { ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import type { FundedItem, ProjectDetail, ProjectProposal } from "@/api/projects";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { DataTable } from "@/components/data-table";
 import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
@@ -27,11 +32,6 @@ import {
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { PaceBars } from "@/components/visualizations/pace-bars";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Category, Session } from "@/domain/entities";
-import { progressValues } from "@/domain/entities";
-import { can } from "@/domain/permissions";
-import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
 import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectBadges } from "@/features/projects/project-card";
 import {

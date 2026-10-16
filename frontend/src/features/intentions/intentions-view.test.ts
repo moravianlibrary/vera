@@ -1,8 +1,8 @@
 // Words on intention cards.
 
+import type { IntentionRow } from "@vera/contract/intentions";
+import type { Intention } from "@vera/domain/entities";
 import { describe, expect, it } from "vitest";
-import type { IntentionRow } from "@/api/intentions";
-import type { Intention } from "@/domain/entities";
 import { mixLabelOf, verdictBadgeOf } from "@/features/intentions/intentions-view";
 
 const intention = (id: string, overrides: Partial<Intention> = {}): Intention => ({

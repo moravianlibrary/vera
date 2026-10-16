@@ -5,21 +5,21 @@
 // vocabulary, and the other fields do not exist for them.
 // TODO(rrandiak): labels move to i18n.
 
-import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
+import type { DocumentGrouping, DocumentQuery } from "@vera/contract/documents";
 import {
   answers,
   documentGroupingParam,
   isSameDocumentQuery,
   parseDocumentSearchParams,
   toDocumentSearchParams,
-} from "@/api/documents";
+} from "@vera/contract/documents";
+import type { AskDecision } from "@vera/domain/documents";
+import { askDecisions, existingCopyStates } from "@vera/domain/documents";
+import type { Priority, Progress } from "@vera/domain/entities";
+import { priorities, progressValues } from "@vera/domain/entities";
+import type { PublicStatus, Validation } from "@vera/domain/status";
+import { publicStatuses, validations } from "@vera/domain/status";
 import { answerLabels, existingCopyLabels } from "@/components/filters/value-labels";
-import type { AskDecision } from "@/domain/documents";
-import { askDecisions, existingCopyStates } from "@/domain/documents";
-import type { Priority, Progress } from "@/domain/entities";
-import { priorities, progressValues } from "@/domain/entities";
-import type { PublicStatus, Validation } from "@/domain/status";
-import { publicStatuses, validations } from "@/domain/status";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

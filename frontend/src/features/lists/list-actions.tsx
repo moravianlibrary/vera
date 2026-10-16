@@ -8,9 +8,13 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import type { DeletionDryRun, ListDetail, ListItem, MarkDoneDryRun } from "@vera/contract/lists";
+import type { Session } from "@vera/domain/entities";
+import { isCancellable, scopeOfIteration } from "@vera/domain/iterations";
+import { isScanned } from "@vera/domain/lists";
+import { can, hasPermission } from "@vera/domain/permissions";
 import { useState } from "react";
 import { cancelIteration } from "@/api/iterations";
-import type { DeletionDryRun, ListDetail, ListItem, MarkDoneDryRun } from "@/api/lists";
 import {
   deleteList,
   markDone,
@@ -24,10 +28,6 @@ import { ActionBar } from "@/components/actions/action-bar";
 import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
-import type { Session } from "@/domain/entities";
-import { isCancellable, scopeOfIteration } from "@/domain/iterations";
-import { isScanned } from "@/domain/lists";
-import { can, hasPermission } from "@/domain/permissions";
 import { listInvalidations, listsQueryKey } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";

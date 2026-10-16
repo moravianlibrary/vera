@@ -19,11 +19,11 @@ import type {
   PluginInstanceDetail,
   PluginVersion,
   UploadReading,
-} from "@/api/plugins";
-import type { Run } from "@/api/tasks";
-import type { Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
-import type { InstancePolicy, PluginKind } from "@/domain/plugins";
+} from "@vera/contract/plugins";
+import type { Run } from "@vera/contract/tasks";
+import type { Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
+import type { InstancePolicy, PluginKind } from "@vera/domain/plugins";
 import {
   compareVersions,
   declarationDifferenceOf,
@@ -32,8 +32,8 @@ import {
   pluginKinds,
   policyForVersion,
   policyMismatchOf,
-} from "@/domain/plugins";
-import { schedulableKinds } from "@/domain/schedules";
+} from "@vera/domain/plugins";
+import { schedulableKinds } from "@vera/domain/schedules";
 import { database } from "@/mocks/database";
 import type { StoredPluginImplementation, StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import {

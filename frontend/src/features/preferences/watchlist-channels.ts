@@ -4,9 +4,10 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import type { UserSettings } from "@/api/user-settings";
-import type { WatchlistChannel } from "@/api/watchlists";
-import { listWatchlistChannels, pushChannelId } from "@/api/watchlists";
+import type { UserSettings } from "@vera/contract/user-settings";
+import type { WatchlistChannel } from "@vera/contract/watchlists";
+import { pushChannelId } from "@vera/contract/watchlists";
+import { listWatchlistChannels } from "@/api/watchlists";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 export const pushChannelName = "Browser push";

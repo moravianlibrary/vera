@@ -12,10 +12,10 @@ import type {
   DocumentQuery,
   DocumentRangeField,
   DocumentSlice,
-} from "@/api/documents";
-import { documentPageSchema, documentSliceSize } from "@/api/documents";
-import { categoryLineageOf } from "@/domain/categories";
-import type { AdditionState, AskDecision, Audience, DocumentRecord } from "@/domain/documents";
+} from "@vera/contract/documents";
+import { documentPageSchema, documentSliceSize } from "@vera/contract/documents";
+import { categoryLineageOf } from "@vera/domain/categories";
+import type { AdditionState, AskDecision, Audience, DocumentRecord } from "@vera/domain/documents";
 import {
   additionStateOf,
   additionStates,
@@ -31,7 +31,7 @@ import {
   projectIdOf,
   publicRecordStatusOf,
   requestsBy,
-} from "@/domain/documents";
+} from "@vera/domain/documents";
 import type {
   Decision,
   Document,
@@ -39,13 +39,13 @@ import type {
   Request,
   Session,
   StatusLogEntry,
-} from "@/domain/entities";
-import { scopeOfIteration } from "@/domain/iterations";
-import { can, hasPermission, isWithinScope, scopesOf } from "@/domain/permissions";
-import { scopeOfProject } from "@/domain/projects";
-import type { PropertyValues } from "@/domain/properties";
-import { isRestricted, validationOf } from "@/domain/status";
-import { isWithinRange, resolveDayRange } from "@/lib/value-range";
+} from "@vera/domain/entities";
+import { scopeOfIteration } from "@vera/domain/iterations";
+import { can, hasPermission, isWithinScope, scopesOf } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
+import type { PropertyValues } from "@vera/domain/properties";
+import { isRestricted, validationOf } from "@vera/domain/status";
+import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatches, shownBatchIdOf } from "@/mocks/batches";

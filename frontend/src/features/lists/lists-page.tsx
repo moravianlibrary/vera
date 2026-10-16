@@ -4,6 +4,7 @@
 // *New list* opens the editor, and needs `list.create`.
 // TODO(rrandiak): labels move to i18n.
 
+import { hasPermission } from "@vera/domain/permissions";
 import { ListChecks } from "lucide-react";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
@@ -11,7 +12,6 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
-import { hasPermission } from "@/domain/permissions";
 import { ListDetailPane } from "@/features/lists/list-detail";
 import { ListRows } from "@/features/lists/list-rows";
 import { listsView } from "@/features/lists/lists-view";

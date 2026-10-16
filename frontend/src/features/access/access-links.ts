@@ -5,16 +5,16 @@
 // lights up the groups and roles in its audience and the people it reaches, and they light it up.
 // TODO(rrandiak): labels move to i18n.
 
-import type { AccessIndex } from "@/api/access";
-import type { LinkedLine, LinkedTag } from "@/components/linked-columns";
-import { linkKeyOf } from "@/components/linked-columns";
+import type { AccessIndex } from "@vera/contract/access";
 import {
   custodyMembersOf,
   heldRolesOf,
   holdersOf,
   isMappedOnly,
   requestCustodyOf,
-} from "@/domain/access";
+} from "@vera/domain/access";
+import type { LinkedLine, LinkedTag } from "@/components/linked-columns";
+import { linkKeyOf } from "@/components/linked-columns";
 import type { AccessSelection } from "@/features/access/access-view";
 import { viaText, waysShortText } from "@/features/access/access-words";
 

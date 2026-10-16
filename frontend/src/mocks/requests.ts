@@ -3,7 +3,7 @@
 // decide. A decision covers every open ask of the document, writes the status log, and on
 // approval creates the one iteration the oldest ask originates (status-model.md §2.7).
 
-import type { Answer } from "@/api/documents";
+import type { Answer } from "@vera/contract/documents";
 import type {
   Approval,
   AskerCount,
@@ -19,10 +19,10 @@ import type {
   RequestQuery,
   RequestRangeField,
   WithdrawalResult,
-} from "@/api/requests";
-import { requestPageSchema, requestSliceSize } from "@/api/requests";
-import { categoryPathOf } from "@/domain/categories";
-import { currentIterationOf, existingCopiesOf } from "@/domain/documents";
+} from "@vera/contract/requests";
+import { requestPageSchema, requestSliceSize } from "@vera/contract/requests";
+import { categoryPathOf } from "@vera/domain/categories";
+import { currentIterationOf, existingCopiesOf } from "@vera/domain/documents";
 import type {
   Document,
   Iteration,
@@ -30,10 +30,10 @@ import type {
   RequestCustody,
   Session,
   StatusLogEntry,
-} from "@/domain/entities";
-import { hasPermission, isWithinScope, scopesOf } from "@/domain/permissions";
-import { scopeOfProject } from "@/domain/projects";
-import type { RequestRow } from "@/domain/requests";
+} from "@vera/domain/entities";
+import { hasPermission, isWithinScope, scopesOf } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
+import type { RequestRow } from "@vera/domain/requests";
 import {
   askerIdsOf,
   asksOf,
@@ -46,8 +46,8 @@ import {
   isRescan,
   projectIdsOf,
   rowDecisionOf,
-} from "@/domain/requests";
-import { isWithinRange, resolveDayRange } from "@/lib/value-range";
+} from "@vera/domain/requests";
+import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";

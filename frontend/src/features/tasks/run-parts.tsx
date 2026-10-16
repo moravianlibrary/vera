@@ -4,9 +4,9 @@
 // run is named through the reference data; VERA itself starts schedules and repeats.
 // TODO(rrandiak): labels move to i18n.
 
+import type { Run } from "@vera/contract/tasks";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import type { Run } from "@/api/tasks";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine as SharedNoticeLine } from "@/components/notice-line";
 import { RunStateBadge } from "@/components/run-state-badge";

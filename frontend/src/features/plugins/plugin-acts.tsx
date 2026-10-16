@@ -9,13 +9,17 @@
 // moves with it.
 // TODO(rrandiak): labels move to i18n.
 
-import { useId } from "react";
 import type {
   PluginImplementation,
   PluginIndex,
   PluginInstanceDetail,
   UploadReading,
-} from "@/api/plugins";
+} from "@vera/contract/plugins";
+import type { Session } from "@vera/domain/entities";
+import { hasPermission } from "@vera/domain/permissions";
+import { compareVersions, isRunnableContract } from "@vera/domain/plugins";
+import { schedulableKinds } from "@vera/domain/schedules";
+import { useId } from "react";
 import {
   deletePluginInstance,
   disablePluginInstance,
@@ -32,10 +36,6 @@ import type { DialogStep } from "@/components/dialogs/stepped-dialog";
 import { SteppedDialog } from "@/components/dialogs/stepped-dialog";
 import { StatusNote } from "@/components/status-note";
 import { Input } from "@/components/ui/input";
-import type { Session } from "@/domain/entities";
-import { hasPermission } from "@/domain/permissions";
-import { compareVersions, isRunnableContract } from "@/domain/plugins";
-import { schedulableKinds } from "@/domain/schedules";
 import { InstanceEditorDialog, refusalTexts } from "@/features/plugins/instance-editor";
 import { KindBadge } from "@/features/plugins/plugin-table";
 import {

@@ -4,16 +4,16 @@
 // read into the one cadence the chosen Repeat keeps, and back.
 // TODO(rrandiak): labels move to i18n.
 
-import { z } from "zod";
-import type { TimelineRange } from "@/api/schedules";
-import { timelineRanges } from "@/api/schedules";
-import type { Cadence, EditableCadenceKind } from "@/domain/schedules";
+import type { TimelineRange } from "@vera/contract/schedules";
+import { timelineRanges } from "@vera/contract/schedules";
+import type { Cadence, EditableCadenceKind } from "@vera/domain/schedules";
 import {
   clockTimeSchema,
   editableCadenceKinds,
   overlapSchema,
   shortestIntervalMinutes,
-} from "@/domain/schedules";
+} from "@vera/domain/schedules";
+import { z } from "zod";
 
 export const rangeParam = "range";
 export const focusedScheduleParam = "s";

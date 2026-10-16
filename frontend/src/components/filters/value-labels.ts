@@ -1,8 +1,8 @@
 // How filter values shared by several views read on their chips and in their pickers.
 // TODO(rrandiak): labels move to i18n.
 
-import type { Answer } from "@/api/documents";
-import type { ExistingCopyState } from "@/domain/documents";
+import type { Answer } from "@vera/contract/documents";
+import type { ExistingCopyState } from "@vera/domain/documents";
 
 export const answerLabels = { Yes: "Yes", No: "No" } as const satisfies Record<Answer, string>;
 

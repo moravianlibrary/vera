@@ -1,8 +1,8 @@
 // What switching an instance off is said to stop: the last of its kind says what disappears, one
 // among others says the others stay; and when an instance is offered a newer version to move to.
 
+import type { PluginImpact } from "@vera/contract/plugins";
 import { describe, expect, it } from "vitest";
-import type { PluginImpact } from "@/api/plugins";
 import { newerVersionOf } from "@/features/plugins/plugin-acts";
 import { lossText } from "@/features/plugins/plugin-words";
 import { pluginIndex } from "@/mocks/plugins";

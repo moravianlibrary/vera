@@ -6,10 +6,22 @@
 // Each property the person may read is offered under "+ Add filter".
 // TODO(rrandiak): labels move to i18n.
 
+import type { PropertyFacets, PropertyParams } from "@vera/contract/properties";
+import { conditionsOf, withCondition, withoutCondition } from "@vera/contract/properties";
+import type { PropertyCondition, PropertyDefinition, TextMatch } from "@vera/domain/properties";
+import {
+  enumValueNameOf,
+  propertyNameOf,
+  textConditionOf,
+  textMatches,
+  textMatchLabels,
+  textSummaryOf,
+  withTextCondition,
+  yesNoValues,
+} from "@vera/domain/properties";
+import type { DayRange, ValueRange } from "@vera/domain/value-range";
 import { ChevronDown, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import type { PropertyFacets, PropertyParams } from "@/api/properties";
-import { conditionsOf, withCondition, withoutCondition } from "@/api/properties";
 import type { FilterField } from "@/components/filters/filter-controls";
 import {
   AddFilterMenu,
@@ -29,19 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PropertyCondition, PropertyDefinition, TextMatch } from "@/domain/properties";
-import {
-  enumValueNameOf,
-  propertyNameOf,
-  textConditionOf,
-  textMatches,
-  textMatchLabels,
-  textSummaryOf,
-  withTextCondition,
-  yesNoValues,
-} from "@/domain/properties";
 import { cn } from "@/lib/utils";
-import type { DayRange, ValueRange } from "@/lib/value-range";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
 export interface PropertyFilterProps {

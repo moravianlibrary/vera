@@ -4,12 +4,15 @@
 // an editable one's filter. A bare view reopens the last saved tab. Grouping is not saved.
 // New-entry badges and per-person seen state follow watchlists-and-notifications.md.
 
+import type { WatchlistSummary } from "@vera/contract/watchlists";
+import { isSameWatchlistFilter } from "@vera/contract/watchlists";
+import type { Watchlist, WatchlistAudience, WatchlistView } from "@vera/domain/entities";
+import { isShared } from "@vera/domain/entities";
 import { Building2, ChevronDown, CircleAlert } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useCallback, useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
-import type { WatchlistSummary } from "@/api/watchlists";
-import { createWatchlist, isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
+import { createWatchlist, updateWatchlist } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { TabButton, TabStrip } from "@/components/filters/tab-strip";
 import {
@@ -48,8 +51,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
-import { isShared } from "@/domain/entities";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useRememberedWatchlist } from "@/hooks/use-remembered-watchlist";
 import {

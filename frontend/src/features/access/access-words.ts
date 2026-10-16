@@ -4,10 +4,10 @@
 // Curators".
 // TODO(rrandiak): the labels other than the permission lines move to i18n.
 
-import type { RoleWay, Via } from "@/domain/access";
-import type { Watchlist } from "@/domain/entities";
-import type { GrantScope, Permission } from "@/domain/permissions";
-import { isStaticPermission } from "@/domain/permissions";
+import type { RoleWay, Via } from "@vera/domain/access";
+import type { Watchlist } from "@vera/domain/entities";
+import type { GrantScope, Permission } from "@vera/domain/permissions";
+import { isStaticPermission } from "@vera/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";

@@ -5,9 +5,9 @@
 // sidebar's panel and Schedules' last runs.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { TimelineRange } from "@/api/schedules";
+import type { TimelineRange } from "@vera/contract/schedules";
+import type { RunQuery } from "@vera/contract/tasks";
 import { listSchedules } from "@/api/schedules";
-import type { RunQuery } from "@/api/tasks";
 import { getRun, listRuns } from "@/api/tasks";
 import { runningInterval, tasksQueryKey } from "@/hooks/use-running-runs-query";
 

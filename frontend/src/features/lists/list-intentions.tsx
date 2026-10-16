@@ -4,8 +4,8 @@
 // run is read against the allocation it accepted. The editor's top and the pane both use them.
 // TODO(rrandiak): labels move to i18n.
 
+import type { CountsTowardsRow, ListMix, ListMixRow } from "@vera/contract/lists";
 import { Link } from "react-router";
-import type { CountsTowardsRow, ListMix, ListMixRow } from "@/api/lists";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 

@@ -2,8 +2,8 @@
 // the one picked on the login page, else the browser's, else English; the first login keeps it
 // as theirs, and a pick on the login page replaces the one they hold.
 
-export const languages = ["cs", "en"] as const;
-export type Language = (typeof languages)[number];
+import type { Language } from "@vera/contract/user-settings";
+import { languages } from "@vera/contract/user-settings";
 
 // Each language named in itself, as a picker offers it.
 export const languageNames: Readonly<Record<Language, string>> = {

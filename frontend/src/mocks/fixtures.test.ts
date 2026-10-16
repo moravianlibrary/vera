@@ -1,9 +1,7 @@
 // The fixtures are the fake backend's database: every record must parse as the API would send it,
 // and every reference must point at a record that exists.
 
-import { describe, expect, it } from "vitest";
-import { z } from "zod";
-import { followedIterationId } from "@/domain/documents";
+import { followedIterationId } from "@vera/domain/documents";
 import {
   batchSchema,
   categorySchema,
@@ -17,7 +15,9 @@ import {
   requestSchema,
   statusLogEntrySchema,
   userSchema,
-} from "@/domain/entities";
+} from "@vera/domain/entities";
+import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import { database } from "@/mocks/database";
 
 describe("fixtures", () => {

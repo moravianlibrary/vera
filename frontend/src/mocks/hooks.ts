@@ -11,11 +11,11 @@ import type {
   HookIndex,
   HookPreview,
   HookTestResult,
-} from "@/api/hooks";
-import { hookEventSchema } from "@/api/hooks";
-import type { Session } from "@/domain/entities";
-import { retryAtOf, sendAtOf } from "@/domain/hooks";
-import { hasPermission } from "@/domain/permissions";
+} from "@vera/contract/hooks";
+import { hookEventSchema } from "@vera/contract/hooks";
+import type { Session } from "@vera/domain/entities";
+import { retryAtOf, sendAtOf } from "@vera/domain/hooks";
+import { hasPermission } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { issueNotificationToken } from "@/mocks/notification-tokens";

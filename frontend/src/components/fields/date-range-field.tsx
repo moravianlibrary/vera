@@ -3,9 +3,9 @@
 // its own picker. The presets are the filter's (components/filters/range-filter.tsx).
 // TODO(rrandiak): labels move to i18n.
 
+import type { ValueRange } from "@vera/domain/value-range";
+import { parseDay } from "@vera/domain/value-range";
 import { Input } from "@/components/ui/input";
-import type { ValueRange } from "@/lib/value-range";
-import { parseDay } from "@/lib/value-range";
 
 interface DateRangeFieldProps {
   id: string;

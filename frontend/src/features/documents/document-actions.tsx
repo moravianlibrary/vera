@@ -8,9 +8,21 @@
 // TODO(rrandiak): Ask for this too beside the menu; labels move to i18n. No Edit descriptive
 // metadata: VERA corrects no catalog data (decided 2026-10-06).
 
+import type { CancellationRequest, Overrule, Publication } from "@vera/contract/iterations";
+import type { DocumentRecord } from "@vera/domain/documents";
+import { currentIterationOf, followedIterationId } from "@vera/domain/documents";
+import type { Iteration, Session } from "@vera/domain/entities";
+import {
+  isCancellable,
+  isOverrulable,
+  isPublishable,
+  isReclassifiable,
+  isResumable,
+  scopeOfIteration,
+} from "@vera/domain/iterations";
+import { can, hasPermission } from "@vera/domain/permissions";
 import { useId, useState } from "react";
 import { z } from "zod";
-import type { CancellationRequest, Overrule, Publication } from "@/api/iterations";
 import {
   cancelIteration,
   overruleRestriction,
@@ -26,18 +38,6 @@ import { FormDialog } from "@/components/dialogs/form-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
 import { FieldError, ReclassifyDialog } from "@/components/iteration-dialogs";
 import { Input } from "@/components/ui/input";
-import type { DocumentRecord } from "@/domain/documents";
-import { currentIterationOf, followedIterationId } from "@/domain/documents";
-import type { Iteration, Session } from "@/domain/entities";
-import {
-  isCancellable,
-  isOverrulable,
-  isPublishable,
-  isReclassifiable,
-  isResumable,
-  scopeOfIteration,
-} from "@/domain/iterations";
-import { can, hasPermission } from "@/domain/permissions";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";

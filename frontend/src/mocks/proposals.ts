@@ -3,7 +3,7 @@
 // there are several (view-map.md §1, propose; status-model.md §2.7–2.8). An item is resolved
 // again on submit; what the dialog was told is never trusted.
 
-import type { RecordStatus } from "@/api/documents";
+import type { RecordStatus } from "@vera/contract/documents";
 import type {
   ProposalCheck,
   ProposalDraft,
@@ -11,14 +11,14 @@ import type {
   ProposalReport,
   ProposalSettings,
   RateLimitStatus,
-} from "@/api/proposals";
-import type { DocumentRecord } from "@/domain/documents";
+} from "@vera/contract/proposals";
+import type { DocumentRecord } from "@vera/domain/documents";
 import {
   currentIterationOf,
   followedIterationId,
   isAttemptOver,
   recordStatusOf,
-} from "@/domain/documents";
+} from "@vera/domain/documents";
 import type {
   Document,
   ExistingCopy,
@@ -26,10 +26,10 @@ import type {
   Project,
   Request,
   Session,
-} from "@/domain/entities";
-import { isProjectMember } from "@/domain/projects";
-import { defaultBatchNameOf } from "@/domain/proposals";
-import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
+} from "@vera/domain/entities";
+import { isProjectMember } from "@vera/domain/projects";
+import { defaultBatchNameOf } from "@vera/domain/proposals";
+import { isProgressAtLeast, publicIterationStatusOf } from "@vera/domain/status";
 import type { StoredBatch } from "@/mocks/batches";
 import { servedBatchOf } from "@/mocks/batches";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";

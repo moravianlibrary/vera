@@ -5,8 +5,8 @@
 // editor's top strip until dismissed.
 // TODO(rrandiak): labels move to i18n.
 
+import type { GenerationDraft, ShortfallCause } from "@vera/contract/lists";
 import { X } from "lucide-react";
-import type { GenerationDraft, ShortfallCause } from "@/api/lists";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";

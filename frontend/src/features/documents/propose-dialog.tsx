@@ -10,16 +10,29 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, FileUp, X } from "lucide-react";
-import type { ReactNode } from "react";
-import { useId, useRef, useState } from "react";
 import type {
   ProposalCheck,
   ProposalDraft,
   ProposalReport,
   ProposalSettings,
   RateLimitStatus,
-} from "@/api/proposals";
+} from "@vera/contract/proposals";
+import { isShownAsBatch } from "@vera/domain/documents";
+import type { Priority, Session } from "@vera/domain/entities";
+import type { IdentifierType, IdentifierTypeRule } from "@vera/domain/identifiers";
+import {
+  identifierLabelOf,
+  identifierTypeSchema,
+  isIdentifierOf,
+  normalisedOf,
+} from "@vera/domain/identifiers";
+import { hasPermission, proposeActOf } from "@vera/domain/permissions";
+import { isProjectMember } from "@vera/domain/projects";
+import type { ProposalLine } from "@vera/domain/proposals";
+import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@vera/domain/proposals";
+import { Check, FileUp, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { useId, useRef, useState } from "react";
 import {
   checkProposalItems,
   getProposalSettings,
@@ -51,19 +64,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { isShownAsBatch } from "@/domain/documents";
-import type { Priority, Session } from "@/domain/entities";
-import type { IdentifierType, IdentifierTypeRule } from "@/domain/identifiers";
-import {
-  identifierLabelOf,
-  identifierTypeSchema,
-  isIdentifierOf,
-  normalisedOf,
-} from "@/domain/identifiers";
-import { hasPermission, proposeActOf } from "@/domain/permissions";
-import { isProjectMember } from "@/domain/projects";
-import type { ProposalLine } from "@/domain/proposals";
-import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@/domain/proposals";
 import { IdentifierRulesContext, useIdentifierRules } from "@/features/documents/identifier-rules";
 import { BarcodeWay, CatalogSearchWay, PhotoWay } from "@/features/documents/propose-ways";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";

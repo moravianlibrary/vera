@@ -1,6 +1,15 @@
+import type { AccessIndex } from "@vera/contract/access";
+import type { AccessUser, Identity } from "@vera/domain/access";
+import {
+  categoryCustodyOf,
+  heldRoleIdsOf,
+  holdersOf,
+  projectsOf,
+  requestCustodyOf,
+} from "@vera/domain/access";
+import { hasPermission } from "@vera/domain/permissions";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import type { AccessIndex } from "@/api/access";
 import { restoreUser, unlinkIdentity } from "@/api/access";
 import { ActionBar } from "@/components/actions/action-bar";
 import { DataTable } from "@/components/data-table";
@@ -11,15 +20,6 @@ import { PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Button } from "@/components/ui/button";
-import type { AccessUser, Identity } from "@/domain/access";
-import {
-  categoryCustodyOf,
-  heldRoleIdsOf,
-  holdersOf,
-  projectsOf,
-  requestCustodyOf,
-} from "@/domain/access";
-import { hasPermission } from "@/domain/permissions";
 import type { AccessDialog } from "@/features/access/access-acts";
 import {
   AccessDialogView,

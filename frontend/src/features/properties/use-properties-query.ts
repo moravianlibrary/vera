@@ -2,9 +2,9 @@
 // that offers a property (DOC-property-filter). Changing one refetches what shows it.
 
 import { useQuery } from "@tanstack/react-query";
+import type { PropertyDefinition } from "@vera/domain/properties";
+import { pageCountKey } from "@vera/domain/properties";
 import { fetchPropertyIndex } from "@/api/properties";
-import type { PropertyDefinition } from "@/domain/properties";
-import { pageCountKey } from "@/domain/properties";
 import { accessQueryKey } from "@/features/access/use-access-query";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";

@@ -16,14 +16,14 @@ import type {
   NotDigitizableRequest,
   PoolPage,
   PoolQuery,
-} from "@/api/lists";
-import { listAttentions, listSliceSize } from "@/api/lists";
-import { categoryLineageOf, categoryPathOf } from "@/domain/categories";
-import { effectivePageCount } from "@/domain/documents";
-import type { DigitizationList, Iteration, Session, StatusLogEntry } from "@/domain/entities";
-import { priorities } from "@/domain/entities";
-import { progressAfterGates, scopeOfIteration } from "@/domain/iterations";
-import type { ListState } from "@/domain/lists";
+} from "@vera/contract/lists";
+import { listAttentions, listSliceSize } from "@vera/contract/lists";
+import { categoryLineageOf, categoryPathOf } from "@vera/domain/categories";
+import { effectivePageCount } from "@vera/domain/documents";
+import type { DigitizationList, Iteration, Session, StatusLogEntry } from "@vera/domain/entities";
+import { priorities } from "@vera/domain/entities";
+import { progressAfterGates, scopeOfIteration } from "@vera/domain/iterations";
+import type { ListState } from "@vera/domain/lists";
 import {
   isInPool,
   isOverdue,
@@ -32,15 +32,15 @@ import {
   listStates,
   memberBlockerOf,
   progressOnList,
-} from "@/domain/lists";
-import type { Permission } from "@/domain/permissions";
-import { can, hasPermission, scopesOf } from "@/domain/permissions";
-import { scopeOfProject } from "@/domain/projects";
-import { pageCountKey } from "@/domain/properties";
-import { isRestricted, statusFootnoteOf, validationOf } from "@/domain/status";
+} from "@vera/domain/lists";
+import type { Permission } from "@vera/domain/permissions";
+import { can, hasPermission, scopesOf } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
+import { pageCountKey } from "@vera/domain/properties";
+import { isRestricted, statusFootnoteOf, validationOf } from "@vera/domain/status";
+import { dayOf, isReversedRange, resolveDayRange } from "@vera/domain/value-range";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { dayOf, isReversedRange, resolveDayRange } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import { recordHookEvent } from "@/mocks/hooks";

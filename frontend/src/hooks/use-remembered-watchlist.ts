@@ -4,7 +4,7 @@
 // to another device.
 // TODO(rrandiak): a fixed opening tab per view, chosen in Preferences → Display.
 
-import type { WatchlistView } from "@/domain/entities";
+import type { WatchlistView } from "@vera/domain/entities";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 
 export function useRememberedWatchlist(view: WatchlistView) {

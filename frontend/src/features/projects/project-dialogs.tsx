@@ -7,9 +7,16 @@
 // Users & Groups builds it (plan.md step 9); labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import type {
+  DecidedDocument,
+  ProjectDetail,
+  ProjectDraft,
+  ProjectRow,
+} from "@vera/contract/projects";
+import type { Priority } from "@vera/domain/entities";
+import { prioritySchema } from "@vera/domain/entities";
 import { useId, useState } from "react";
 import { z } from "zod";
-import type { DecidedDocument, ProjectDetail, ProjectDraft, ProjectRow } from "@/api/projects";
 import {
   approveProject,
   createProject,
@@ -36,8 +43,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Priority } from "@/domain/entities";
-import { prioritySchema } from "@/domain/entities";
 import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";
 import { projectInvalidations, projectsQueryKey } from "@/features/projects/use-projects-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
@@ -174,7 +179,11 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
               form.formState.errors.startsOn?.message ?? form.formState.errors.endsOn?.message
             }
           />
-          <Field id={`${id}-target`} label="Target pages" hint="none: its intention only counts output">
+          <Field
+            id={`${id}-target`}
+            label="Target pages"
+            hint="none: its intention only counts output"
+          >
             <Input
               id={`${id}-target`}
               inputMode="numeric"

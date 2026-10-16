@@ -1,9 +1,9 @@
 // An intention's mix end to end against the mock server over HTTP: the mix it chose, read inside
 // its scope only (PLAN-mix-within-scope). Writing a mix is on Mixes (api/mix-catalog.test.ts).
 
+import type { IntentionMixDetail } from "@vera/contract/mixes";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { IntentionMixDetail } from "@/api/mixes";
 import { findIntentionMix } from "@/api/mixes";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";

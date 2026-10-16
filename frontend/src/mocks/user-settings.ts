@@ -2,9 +2,9 @@
 // emulate is a server that remembers a person's settings, so they are kept in this browser's
 // storage. Where there is no storage they last as long as the page.
 
+import type { UserSettings, UserSettingsChange } from "@vera/contract/user-settings";
+import { userSettingsSchema } from "@vera/contract/user-settings";
 import { z } from "zod";
-import type { UserSettings, UserSettingsChange } from "@/api/user-settings";
-import { userSettingsSchema } from "@/api/user-settings";
 
 const storageKey = "vera.mock.user-settings";
 const storedSchema = z.record(z.string(), userSettingsSchema);

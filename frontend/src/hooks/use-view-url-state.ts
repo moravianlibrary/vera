@@ -3,9 +3,9 @@
 // name for it), the grouping and `?watchlist=`, the tab the filter was opened from. Every change
 // replaces the history entry, so Back leaves the view rather than stepping through its filters.
 
+import type { Watchlist } from "@vera/domain/entities";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import type { Watchlist } from "@/domain/entities";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { parseGrouping } from "@/lib/view-definition";
 

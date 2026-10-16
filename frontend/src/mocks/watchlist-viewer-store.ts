@@ -1,5 +1,5 @@
+import { watchlistViewerSchema } from "@vera/contract/watchlists";
 import { z } from "zod";
-import { watchlistViewerSchema } from "@/api/watchlists";
 
 const storageKey = "vera.mock.watchlist-viewers";
 const storedSchema = z.array(

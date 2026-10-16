@@ -5,8 +5,14 @@
 // reason shown on the row so nobody resumes it too early.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ScheduleRow } from "@vera/contract/schedules";
+import {
+  editableCadenceKinds,
+  occurrencesOf,
+  overlaps,
+  schedulableKinds,
+} from "@vera/domain/schedules";
 import { useId } from "react";
-import type { ScheduleRow } from "@/api/schedules";
 import { createSchedule, deleteSchedule, pauseSchedule, saveSchedule } from "@/api/schedules";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
@@ -23,12 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  editableCadenceKinds,
-  occurrencesOf,
-  overlaps,
-  schedulableKinds,
-} from "@/domain/schedules";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import type { ScheduleForm } from "@/features/tasks/schedules-view";
 import {

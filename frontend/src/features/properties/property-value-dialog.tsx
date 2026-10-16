@@ -6,8 +6,10 @@
 // again when a rule reads the property.
 // TODO(rrandiak): labels move to i18n.
 
+import type { BulkPropertyEntryResult, PropertyEntryResult } from "@vera/contract/properties";
+import type { PropertyDefinition, PropertyValue, ScalarValue } from "@vera/domain/properties";
+import { isValueOf, propertyNameOf } from "@vera/domain/properties";
 import { useId, useState } from "react";
-import type { BulkPropertyEntryResult, PropertyEntryResult } from "@/api/properties";
 import { enterPropertyValue, enterPropertyValues } from "@/api/properties";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,8 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { PropertyDefinition, PropertyValue, ScalarValue } from "@/domain/properties";
-import { isValueOf, propertyNameOf } from "@/domain/properties";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { propertiesQueryKey } from "@/features/properties/use-properties-query";
 import { validationsQueryKey } from "@/features/validations/use-validations-query";

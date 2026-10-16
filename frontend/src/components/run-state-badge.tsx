@@ -2,10 +2,10 @@
 // on Plugins for an instance's last and recent runs. Done with errors counts them.
 // TODO(rrandiak): labels move to i18n.
 
-import type { Run } from "@/api/tasks";
+import type { Run } from "@vera/contract/tasks";
+import type { RunState } from "@vera/domain/tasks";
 import type { Tone } from "@/components/status-badge";
 import { ToneBadge } from "@/components/status-badge";
-import type { RunState } from "@/domain/tasks";
 import { plural } from "@/lib/plural";
 
 export const runStateLabels = {

@@ -7,6 +7,9 @@
 // User options live in a dropdown at the foot; labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import type { Language } from "@vera/contract/user-settings";
+import { languages } from "@vera/contract/user-settings";
+import type { Session } from "@vera/domain/entities";
 import {
   ChevronsRight,
   LogOut,
@@ -34,13 +37,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Session } from "@/domain/entities";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useLanguage } from "@/hooks/use-language";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
-import type { Language } from "@/i18n/language";
-import { languageNames, languages } from "@/i18n/language";
+import { languageNames } from "@/i18n/language";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {

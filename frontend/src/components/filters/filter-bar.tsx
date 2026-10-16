@@ -7,6 +7,7 @@
 // the search and one Filter button, and the rest opens as a sheet (filter-sheet.tsx).
 // TODO(rrandiak): labels move to i18n.
 
+import { hasPermission } from "@vera/domain/permissions";
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -26,7 +27,6 @@ import type { AnyRange } from "@/components/filters/range-filter";
 import { RangeChip, rangeOf } from "@/components/filters/range-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { hasPermission } from "@/domain/permissions";
 import { useReferenceLabels, useReferenceValues } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";

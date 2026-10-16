@@ -3,11 +3,12 @@
 // what each takes out of the rest of VERA; then uploading a package, installing it and moving an
 // instance to it. The acts change the mock's state, so each block reads what the one before left.
 
+import type { PluginIndex } from "@vera/contract/plugins";
+import { pluginKinds } from "@vera/domain/plugins";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
 import { listGenerators } from "@/api/lists";
-import type { PluginIndex } from "@/api/plugins";
 import {
   createPluginInstance,
   deletePluginInstance,
@@ -26,7 +27,6 @@ import { listPluginInstances } from "@/api/reference";
 import { listSchedules } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
-import { pluginKinds } from "@/domain/plugins";
 import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 

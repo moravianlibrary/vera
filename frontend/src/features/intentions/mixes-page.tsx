@@ -2,9 +2,11 @@
 // its own; output comparisons remain on an intention and its reporting window.
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { MixRecord } from "@vera/contract/mix-catalog";
+import { categoryPathOf, searchedCategoriesOf } from "@vera/domain/categories";
+import { can } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import type { MixRecord } from "@/api/mix-catalog";
 import {
   archiveMix,
   createMix,
@@ -30,8 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoryPathOf, searchedCategoriesOf } from "@/domain/categories";
-import { can } from "@/domain/permissions";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";

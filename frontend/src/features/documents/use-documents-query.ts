@@ -2,7 +2,7 @@
 // asked, and one record.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
+import type { DocumentGrouping, DocumentQuery } from "@vera/contract/documents";
 import { findDocument, listDocuments } from "@/api/documents";
 import { usePagedList } from "@/hooks/use-paged-list";
 

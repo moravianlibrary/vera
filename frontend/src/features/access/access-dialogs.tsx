@@ -8,17 +8,17 @@
 // its delete, as the server counts it. Each says where it is done and what follows.
 // TODO(rrandiak): labels move to i18n.
 
+import type { AccessIndex, LocalAccount, RecordDraft } from "@vera/contract/access";
+import { identityLinkSchema, localAccountSchema, recordDraftSchema } from "@vera/contract/access";
+import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@vera/domain/access";
+import { heldRoleIdsOf, requestReachOf } from "@vera/domain/access";
 import { useId } from "react";
-import type { AccessIndex, LocalAccount, RecordDraft } from "@/api/access";
 import {
   createCustody,
   createGroup,
   createLocalAccount,
   deleteCustody,
-  identityLinkSchema,
   linkIdentity,
-  localAccountSchema,
-  recordDraftSchema,
   saveCustody,
   saveGroup,
   setCustodyMembers,
@@ -43,8 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@/domain/access";
-import { heldRoleIdsOf, requestReachOf } from "@/domain/access";
 import type { AccessNames } from "@/features/access/access-records";
 import { AgentBadge } from "@/features/access/access-records";
 import { confersText } from "@/features/access/access-words";

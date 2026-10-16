@@ -4,16 +4,16 @@
 // allocation a correcting run would hand to the list editor. A member cancelled before it was
 // digitized no longer counts, as in the intention's own planned figure.
 
-import type { CorrectionPreview } from "@/api/intentions";
+import type { CorrectionPreview } from "@vera/contract/intentions";
 import type {
   CountsTowardsRow,
   ListMix,
   ListReading,
   ListReadingRequest,
   ListShape,
-} from "@/api/lists";
-import { categoryLineageOf } from "@/domain/categories";
-import type { DigitizationList, Intention, Iteration, Session } from "@/domain/entities";
+} from "@vera/contract/lists";
+import { categoryLineageOf } from "@vera/domain/categories";
+import type { DigitizationList, Intention, Iteration, Session } from "@vera/domain/entities";
 import {
   correctionOf,
   countIntention,
@@ -21,11 +21,11 @@ import {
   isInIntentionScope,
   listMixOf,
   mixReadingOf,
-} from "@/domain/intentions";
-import { isInPool } from "@/domain/lists";
-import { hasPermission } from "@/domain/permissions";
-import { isProgressAtLeast } from "@/domain/status";
-import { dayOf } from "@/lib/value-range";
+} from "@vera/domain/intentions";
+import { isInPool } from "@vera/domain/lists";
+import { hasPermission } from "@vera/domain/permissions";
+import { isProgressAtLeast } from "@vera/domain/status";
+import { dayOf } from "@vera/domain/value-range";
 import { database } from "@/mocks/database";
 import { countingData, distributionOf, overallIntention } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";

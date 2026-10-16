@@ -7,13 +7,13 @@ import type {
   IdentifierRecogniser,
   IdentifierType,
   IdentifierTypeRule,
-} from "@/domain/identifiers";
+} from "@vera/domain/identifiers";
 import {
   identifierChecksums,
   identifierTypeSchema,
   identifierTypes,
   normalisationSteps,
-} from "@/domain/identifiers";
+} from "@vera/domain/identifiers";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import type { Refusal } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf, liveInstances } from "@/mocks/plugin-instances";

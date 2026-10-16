@@ -3,25 +3,27 @@
 // proposals, lists and history, and its acts, which its intention follows. The acts change the
 // mock's state, so each test takes its own project.
 
+import type { IntentionIndex } from "@vera/contract/intentions";
+import {
+  isSameProjectQuery,
+  parseProjectSearchParams,
+  toProjectSearchParams,
+} from "@vera/contract/projects";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import type { IntentionIndex } from "@/api/intentions";
 import { listIntentionIndex } from "@/api/intentions";
 import {
   approveProject,
   createProject,
   deleteProject,
   findProject,
-  isSameProjectQuery,
   listProjectIndex,
-  parseProjectSearchParams,
   previewDecision,
   previewProjectChange,
   rejectProject,
   saveProject,
   saveProjectMembers,
-  toProjectSearchParams,
 } from "@/api/projects";
 import { listGroups } from "@/api/reference";
 import type { MockUserProfile } from "@/config/env";

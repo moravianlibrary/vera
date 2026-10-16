@@ -1,9 +1,9 @@
 // The language the interface speaks (UI-language), and the person's choice of it.
 
+import type { Language } from "@vera/contract/user-settings";
 import { useEffect } from "react";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { i18n } from "@/i18n";
-import type { Language } from "@/i18n/language";
 import {
   forgetLoginLanguagePick,
   languageInUse,

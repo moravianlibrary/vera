@@ -3,21 +3,21 @@
 // and the advanced range Asked, filtering.md §6) and its groupings.
 // TODO(rrandiak): labels move to i18n.
 
-import { answers } from "@/api/documents";
-import type { AskerCount, RequestGrouping, RequestQuery } from "@/api/requests";
+import { answers } from "@vera/contract/documents";
+import type { AskerCount, RequestGrouping, RequestQuery } from "@vera/contract/requests";
 import {
   askerCounts,
   isSameRequestQuery,
   parseRequestSearchParams,
   requestGroupingParam,
   toRequestSearchParams,
-} from "@/api/requests";
+} from "@vera/contract/requests";
+import { existingCopyStates } from "@vera/domain/documents";
+import type { DocumentType } from "@vera/domain/entities";
+import { documentTypeSchema } from "@vera/domain/entities";
+import type { ProposalDecision } from "@vera/domain/requests";
+import { proposalDecisions } from "@vera/domain/requests";
 import { answerLabels, existingCopyLabels } from "@/components/filters/value-labels";
-import { existingCopyStates } from "@/domain/documents";
-import type { DocumentType } from "@/domain/entities";
-import { documentTypeSchema } from "@/domain/entities";
-import type { ProposalDecision } from "@/domain/requests";
-import { proposalDecisions } from "@/domain/requests";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

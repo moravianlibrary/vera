@@ -1,8 +1,8 @@
 // Hooks' URL filters, subject grouping and seven-day activity (STATUS "Hooks").
 // TODO(rrandiak): labels move to i18n.
 
-import type { Hook, HookIndex } from "@/api/hooks";
-import { hookGroups, hookInterfaceSchema } from "@/api/hooks";
+import type { Hook, HookIndex } from "@vera/contract/hooks";
+import { hookGroups, hookInterfaceSchema } from "@vera/contract/hooks";
 import type { Facets } from "@/components/filters/filter-bar";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";

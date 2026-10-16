@@ -3,6 +3,9 @@
 // whether one proposal, a batch at once or a curator's own items as they are proposed.
 // TODO(rrandiak): labels move to i18n.
 
+import { categoryPathOf, leafCategoriesOf } from "@vera/domain/categories";
+import type { Priority } from "@vera/domain/entities";
+import { priorities, prioritySchema } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,9 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { categoryPathOf, leafCategoriesOf } from "@/domain/categories";
-import type { Priority } from "@/domain/entities";
-import { priorities, prioritySchema } from "@/domain/entities";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 
 const categorySeparator = " / ";

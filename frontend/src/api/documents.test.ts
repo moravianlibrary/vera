@@ -1,17 +1,16 @@
 // The Documents resource end to end: typed API calls against the mock server over HTTP, as the
 // views will make them, for a requester and for a curator.
 
-import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
+import type { DocumentGrouping, DocumentQuery } from "@vera/contract/documents";
 import {
-  findDocument,
   isSameDocumentQuery,
-  listDocuments,
   maximumDocumentSliceSize,
   parseDocumentSearchParams,
   toDocumentSearchParams,
-} from "@/api/documents";
+} from "@vera/contract/documents";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { findDocument, listDocuments } from "@/api/documents";
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";

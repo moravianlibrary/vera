@@ -3,21 +3,23 @@
 // need, and what is refused. Decisions change the mock's state, so each test decides its own
 // documents.
 
+import type { RequestQuery } from "@vera/contract/requests";
+import {
+  isSameRequestQuery,
+  maximumRequestSliceSize,
+  parseRequestSearchParams,
+  toRequestSearchParams,
+} from "@vera/contract/requests";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
-import type { RequestQuery } from "@/api/requests";
 import {
   approveProposal,
   bulkApproveProposals,
   declineProposal,
   findRequest,
-  isSameRequestQuery,
   listRequests,
-  maximumRequestSliceSize,
-  parseRequestSearchParams,
-  toRequestSearchParams,
   withdrawAsk,
 } from "@/api/requests";
 import type { MockUserProfile } from "@/config/env";

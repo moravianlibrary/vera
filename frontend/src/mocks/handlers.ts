@@ -1,9 +1,6 @@
 // MSW handlers: the fake API at the HTTP boundary. They answer as one emulated user, VITE_MOCK_USER
 // in the browser, so components, queries and forms run unchanged against the real API later.
 
-import type { JsonBodyType } from "msw";
-import { HttpResponse, http } from "msw";
-import type { z } from "zod";
 import {
   custodyMembersSchema,
   groupMembersSchema,
@@ -13,19 +10,23 @@ import {
   recordDraftSchema,
   roleDraftSchema,
   userGroupsSchema,
-} from "@/api/access";
-import { categoryDraftSchema, custodyDraftSchema, refineDraftSchema } from "@/api/categories";
+} from "@vera/contract/access";
+import {
+  categoryDraftSchema,
+  custodyDraftSchema,
+  refineDraftSchema,
+} from "@vera/contract/categories";
 import {
   parseDocumentGrouping,
   parseDocumentSearchParams,
   parseDocumentSliceParams,
-} from "@/api/documents";
-import { hookDraftSchema, hookPauseSchema } from "@/api/hooks";
+} from "@vera/contract/documents";
+import { hookDraftSchema, hookPauseSchema } from "@vera/contract/hooks";
 import {
   intentionDraftSchema,
   intentionPreviewRequestSchema,
   intentionTemplateDraftSchema,
-} from "@/api/intentions";
+} from "@vera/contract/intentions";
 import {
   cancellationRequestSchema,
   overruleSchema,
@@ -34,7 +35,7 @@ import {
   recheckSchema,
   reclassificationSchema,
   resumeSchema,
-} from "@/api/iterations";
+} from "@vera/contract/iterations";
 import {
   generationRequestSchema,
   listDraftSchema,
@@ -43,21 +44,33 @@ import {
   parseListSearchParams,
   parseListSliceParams,
   parsePoolSearchParams,
-} from "@/api/lists";
-import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
-import { mixDraftSchema, mixSetChangeSchema, mixSnapshotDraftSchema } from "@/api/mix-catalog";
-import { notificationChoicesSchema } from "@/api/notification-preferences";
-import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
+} from "@vera/contract/lists";
+import { messageSubjectKindSchema, messageSubjectParams } from "@vera/contract/messages";
+import {
+  mixDraftSchema,
+  mixSetChangeSchema,
+  mixSnapshotDraftSchema,
+} from "@vera/contract/mix-catalog";
+import { notificationChoicesSchema } from "@vera/contract/notification-preferences";
+import { instanceDraftSchema, newInstanceSchema } from "@vera/contract/plugins";
 import {
   parseProjectSearchParams,
   projectApprovalSchema,
   projectDraftSchema,
   projectMembersSchema,
   projectRejectionSchema,
-} from "@/api/projects";
-import { bulkPropertyEntrySchema, newPropertySchema, propertyEntrySchema } from "@/api/properties";
-import { proposalDraftSchema, proposalLookupSchema, recordLinkSchema } from "@/api/proposals";
-import { pushSubscriptionSchema } from "@/api/push";
+} from "@vera/contract/projects";
+import {
+  bulkPropertyEntrySchema,
+  newPropertySchema,
+  propertyEntrySchema,
+} from "@vera/contract/properties";
+import {
+  proposalDraftSchema,
+  proposalLookupSchema,
+  recordLinkSchema,
+} from "@vera/contract/proposals";
+import { pushSubscriptionSchema } from "@vera/contract/push";
 import {
   approvalSchema,
   bulkApprovalSchema,
@@ -65,17 +78,17 @@ import {
   parseRequestGrouping,
   parseRequestSearchParams,
   parseRequestSliceParams,
-} from "@/api/requests";
-import type { IterationAction, VerdictAction } from "@/api/routes";
-import { apiRoutes } from "@/api/routes";
+} from "@vera/contract/requests";
+import type { IterationAction, VerdictAction } from "@vera/contract/routes";
+import { apiRoutes } from "@vera/contract/routes";
 import {
   newScheduleSchema,
   pauseRequestSchema,
   scheduleDraftSchema,
   timelineRangeSchema,
-} from "@/api/schedules";
-import { parseRunSearchParams, retentionSchema } from "@/api/tasks";
-import { userSettingsChangeSchema } from "@/api/user-settings";
+} from "@vera/contract/schedules";
+import { parseRunSearchParams, retentionSchema } from "@vera/contract/tasks";
+import { userSettingsChangeSchema } from "@vera/contract/user-settings";
 import {
   acceptanceSchema,
   denialSchema,
@@ -83,7 +96,7 @@ import {
   parseValidationSearchParams,
   parseValidationSliceParams,
   revocationSchema,
-} from "@/api/validations";
+} from "@vera/contract/validations";
 import {
   isSameWatchlistFilter,
   watchlistChangeSchema,
@@ -92,13 +105,16 @@ import {
   watchlistReachRequestSchema,
   watchlistViewerChangeSchema,
   watchlistViewParam,
-} from "@/api/watchlists";
+} from "@vera/contract/watchlists";
+import type { Session } from "@vera/domain/entities";
+import { watchlistViewSchema } from "@vera/domain/entities";
+import { canOpenMyDocuments, hasPermission } from "@vera/domain/permissions";
+import { propertyDraftSchema } from "@vera/domain/properties";
+import type { JsonBodyType } from "msw";
+import { HttpResponse, http } from "msw";
+import type { z } from "zod";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
-import type { Session } from "@/domain/entities";
-import { watchlistViewSchema } from "@/domain/entities";
-import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
-import { propertyDraftSchema } from "@/domain/properties";
 import {
   accessIndex,
   canReadAccess,

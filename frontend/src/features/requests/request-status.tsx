@@ -3,10 +3,10 @@
 // now leaves nothing held apart).
 // TODO(rrandiak): labels move to i18n.
 
+import type { RequestRow } from "@vera/domain/requests";
+import { isBeingChecked } from "@vera/domain/requests";
 import type { Tone } from "@/components/status-badge";
 import { ToneBadge } from "@/components/status-badge";
-import type { RequestRow } from "@/domain/requests";
-import { isBeingChecked } from "@/domain/requests";
 
 const requestStatuses = {
   declined: { tone: "red", label: "Declined" },

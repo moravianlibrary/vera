@@ -1,14 +1,16 @@
+import {
+  isSameIntentionsQuery,
+  parseIntentionsSearchParams,
+  toIntentionsSearchParams,
+} from "@vera/contract/intention-filters";
+import type { IntentionIndex, IntentionRow } from "@vera/contract/intentions";
+import type { Intention } from "@vera/domain/entities";
 import { describe, expect, it } from "vitest";
-import type { IntentionIndex, IntentionRow } from "@/api/intentions";
-import type { Intention } from "@/domain/entities";
 import {
   intentionBoardSectionsOf,
   intentionFacets,
   intentionsView,
-  isSameIntentionsQuery,
   matchingIntentions,
-  parseIntentionsSearchParams,
-  toIntentionsSearchParams,
 } from "@/features/intentions/intentions-board-view";
 
 const intention = (id: string, changes: Partial<Intention> = {}): Intention => ({

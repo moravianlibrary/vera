@@ -20,10 +20,10 @@ import type {
   ReclassificationResult,
   ReleaseResult,
   Resume,
-} from "@/api/iterations";
-import { categoryPathOf } from "@/domain/categories";
-import { followedIterationId } from "@/domain/documents";
-import type { Document, Iteration, Session } from "@/domain/entities";
+} from "@vera/contract/iterations";
+import { categoryPathOf } from "@vera/domain/categories";
+import { followedIterationId } from "@vera/domain/documents";
+import type { Document, Iteration, Session } from "@vera/domain/entities";
 import {
   isCancellable,
   isOverrulable,
@@ -32,10 +32,15 @@ import {
   isResumable,
   progressAfterGates,
   scopeOfIteration,
-} from "@/domain/iterations";
-import type { Permission } from "@/domain/permissions";
-import { can } from "@/domain/permissions";
-import { defectNameOf, isFoundAfterScan, pagesSubject, reviewStateOf } from "@/domain/validations";
+} from "@vera/domain/iterations";
+import type { Permission } from "@vera/domain/permissions";
+import { can } from "@vera/domain/permissions";
+import {
+  defectNameOf,
+  isFoundAfterScan,
+  pagesSubject,
+  reviewStateOf,
+} from "@vera/domain/validations";
 import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";

@@ -24,17 +24,17 @@ import type {
   IntentionTemplateRow,
   MixChoice,
   MixRowView,
-} from "@/api/intentions";
-import { categoryPathOf, isInSubtree, leafCategoriesOf } from "@/domain/categories";
-import { effectivePageCount } from "@/domain/documents";
+} from "@vera/contract/intentions";
+import { categoryPathOf, isInSubtree, leafCategoriesOf } from "@vera/domain/categories";
+import { effectivePageCount } from "@vera/domain/documents";
 import type {
   Distribution,
   Intention,
   IntentionTemplate,
   Iteration,
   Session,
-} from "@/domain/entities";
-import type { CountingData } from "@/domain/intentions";
+} from "@vera/domain/entities";
+import type { CountingData } from "@vera/domain/intentions";
 import {
   catchUpPagesOf,
   countIntention,
@@ -48,10 +48,10 @@ import {
   scopeOfIntention,
   shareWithinOf,
   targetVerdictOf,
-} from "@/domain/intentions";
-import { can } from "@/domain/permissions";
-import { daysUntil } from "@/domain/projects";
-import { dayOf } from "@/lib/value-range";
+} from "@vera/domain/intentions";
+import { can } from "@vera/domain/permissions";
+import { daysUntil } from "@vera/domain/projects";
+import { dayOf } from "@vera/domain/value-range";
 import { database } from "@/mocks/database";
 import { mixTreeOf } from "@/mocks/mixes";
 import type { Outcome, Refusal } from "@/mocks/mutations";

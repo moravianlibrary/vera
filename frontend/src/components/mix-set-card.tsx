@@ -5,13 +5,13 @@
 // is edited on Mixes (ACT-mix-save), which Categories links to as the card's action.
 // TODO(rrandiak): labels move to i18n.
 
+import type { MixTree } from "@vera/contract/mixes";
+import type { Category } from "@vera/domain/entities";
 import type { ReactNode } from "react";
-import type { MixTree } from "@/api/mixes";
 import { mixNameOf } from "@/components/category-tree-values";
 import { DetailCard, FinePrint, Muted } from "@/components/detail-card";
 import { StatusNote } from "@/components/status-note";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
-import type { Category } from "@/domain/entities";
 import { formatPercent } from "@/lib/format-number";
 
 interface MixSetCardProps {

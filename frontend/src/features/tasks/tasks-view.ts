@@ -4,10 +4,10 @@
 // `task.read_own` every run is the person's own. No grouping.
 // TODO(rrandiak): labels move to i18n.
 
-import type { RunQuery } from "@/api/tasks";
-import { isSameRunQuery, parseRunSearchParams, toRunSearchParams } from "@/api/tasks";
+import type { RunQuery } from "@vera/contract/tasks";
+import { isSameRunQuery, parseRunSearchParams, toRunSearchParams } from "@vera/contract/tasks";
+import { runStates, triggerKinds } from "@vera/domain/tasks";
 import { runStateLabels } from "@/components/run-state-badge";
-import { runStates, triggerKinds } from "@/domain/tasks";
 import { triggerLabels } from "@/features/tasks/task-words";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";

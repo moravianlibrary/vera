@@ -5,7 +5,7 @@
 // ones were saved by the administrator (u3): most for everyone who opens their view, Periodicals
 // for the Periodicals Curators group and Page counts for the curator role (filtering.md §4.5).
 
-import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
+import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import type { StoredWatchlist } from "@/mocks/database";
 
 const staffIds = ["u1", "u2", "u3", "u8"] as const;

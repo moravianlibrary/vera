@@ -5,17 +5,17 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { QueryKey } from "@tanstack/react-query";
+import type { Reclassification, ReclassificationResult } from "@vera/contract/iterations";
+import type { Iteration, Priority, Session } from "@vera/domain/entities";
+import { prioritySchema } from "@vera/domain/entities";
+import { scopeOfIteration } from "@vera/domain/iterations";
+import { can } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useId } from "react";
 import { z } from "zod";
-import type { Reclassification, ReclassificationResult } from "@/api/iterations";
 import { reclassifyIteration } from "@/api/iterations";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
-import type { Iteration, Priority, Session } from "@/domain/entities";
-import { prioritySchema } from "@/domain/entities";
-import { scopeOfIteration } from "@/domain/iterations";
-import { can } from "@/domain/permissions";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 

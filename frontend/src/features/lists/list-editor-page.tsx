@@ -4,10 +4,10 @@
 // is a new list an intention's card started (lists-view.ts `generationStartOf`).
 // TODO(rrandiak): labels move to i18n.
 
+import { can, hasPermission } from "@vera/domain/permissions";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { StatusNote } from "@/components/status-note";
-import { can, hasPermission } from "@/domain/permissions";
 import { ListEditor } from "@/features/lists/list-editor";
 import { generationStartOf } from "@/features/lists/lists-view";
 import { useListQuery } from "@/features/lists/use-lists-query";

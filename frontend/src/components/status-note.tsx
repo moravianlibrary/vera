@@ -2,7 +2,7 @@
 // (docs/demos/shared/vera.css § status footnote). Only something worth stopping for gets one.
 
 import type { ReactNode } from "react";
-import type { NoteTone } from "@/domain/status-notes";
+import type { NoteTone } from "@/lib/status-notes";
 import { cn } from "@/lib/utils";
 
 const toneClasses = {

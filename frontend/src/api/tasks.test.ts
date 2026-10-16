@@ -3,6 +3,7 @@
 // run's items and log, and cancel, run again and retention. The mock's clock stands still under
 // tests. The acts change the mock's state, so they come last, each on its own run.
 
+import { parseRunSearchParams, toRunSearchParams } from "@vera/contract/tasks";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
@@ -13,10 +14,8 @@ import {
   getRunLog,
   listRunningRuns,
   listRuns,
-  parseRunSearchParams,
   runAgain,
   saveRetention,
-  toRunSearchParams,
 } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
 import { historicalRuns } from "@/mocks/fixtures/tasks";

@@ -10,10 +10,12 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import type { PhotoReading, ProposalSettings } from "@vera/contract/proposals";
+import type { ProposalLine } from "@vera/domain/proposals";
+import { readIdentifier } from "@vera/domain/proposals";
 import { Camera, ExternalLink, ScanBarcode } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
-import type { PhotoReading, ProposalSettings } from "@/api/proposals";
 import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/api/proposals";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -25,8 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { ProposalLine } from "@/domain/proposals";
-import { readIdentifier } from "@/domain/proposals";
 import { useIdentifierRules } from "@/features/documents/identifier-rules";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";

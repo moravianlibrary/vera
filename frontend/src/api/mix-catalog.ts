@@ -1,35 +1,15 @@
-// Independent mixes: proportions, revisions, snapshots, Primary designation and lifecycle.
+// Calls the mix-catalog endpoints; what they take and answer is in @vera/contract/mix-catalog.
 
+import type {
+  MixDraft,
+  MixRecord,
+  MixSetChange,
+  MixSnapshotDraft,
+} from "@vera/contract/mix-catalog";
+import { mixRecordSchema } from "@vera/contract/mix-catalog";
+import { apiRoutes, mixRoute } from "@vera/contract/routes";
 import { z } from "zod";
 import { getJson, postJson, putJson } from "@/api/http";
-import { apiRoutes, mixRoute } from "@/api/routes";
-import { distributionSchema } from "@/domain/entities";
-
-export const mixRecordSchema = distributionSchema.extend({
-  usageCount: z.number().int().nonnegative(),
-  followers: z.array(z.object({ id: z.string(), name: z.string(), isArchived: z.boolean() })),
-});
-export type MixRecord = z.infer<typeof mixRecordSchema>;
-
-export const mixDraftSchema = z.object({
-  name: z.string().trim().min(1),
-  fromMixId: z.string().nullable(),
-  fromRevision: z.number().int().positive().nullable(),
-});
-export type MixDraft = z.infer<typeof mixDraftSchema>;
-
-export const mixSetChangeSchema = z.object({
-  parentId: z.string().nullable(),
-  shares: z.record(z.string(), z.number().min(0).max(100).nullable()),
-  revision: z.number().int().positive(),
-});
-export type MixSetChange = z.infer<typeof mixSetChangeSchema>;
-
-export const mixSnapshotDraftSchema = z.object({
-  revision: z.number().int().positive(),
-  label: z.string().trim().min(1),
-});
-export type MixSnapshotDraft = z.infer<typeof mixSnapshotDraftSchema>;
 
 export async function listMixes(): Promise<MixRecord[]> {
   return getJson(apiRoutes.mixes, z.array(mixRecordSchema));

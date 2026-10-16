@@ -4,14 +4,8 @@
 // server sent it, already withheld to what the caller may read.
 // TODO(rrandiak): Open in catalog; labels move to i18n.
 
-import { ArrowUpRight } from "lucide-react";
-import type { ReactNode } from "react";
-import { DetailCard, DetailRow, FactGrid, Muted } from "@/components/detail-card";
-import type { Tone } from "@/components/status-badge";
-import { RegistryBadge, ToneBadge } from "@/components/status-badge";
-import { StatusNote } from "@/components/status-note";
-import type { DocumentRecord } from "@/domain/documents";
-import { currentIterationOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
+import type { DocumentRecord } from "@vera/domain/documents";
+import { currentIterationOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
 import type {
   Actor,
   Document,
@@ -19,9 +13,15 @@ import type {
   Request,
   StatusLogEntry,
   User,
-} from "@/domain/entities";
-import type { SourcedValue } from "@/domain/properties";
-import { valuesOf } from "@/domain/properties";
+} from "@vera/domain/entities";
+import type { SourcedValue } from "@vera/domain/properties";
+import { valuesOf } from "@vera/domain/properties";
+import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { DetailCard, DetailRow, FactGrid, Muted } from "@/components/detail-card";
+import type { Tone } from "@/components/status-badge";
+import { RegistryBadge, ToneBadge } from "@/components/status-badge";
+import { StatusNote } from "@/components/status-note";
 import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";

@@ -5,9 +5,23 @@
 // is or was in use, and a type change once records hold values.
 // TODO(rrandiak): labels move to i18n.
 
+import type { NewProperty } from "@vera/contract/properties";
+import type {
+  EnumValue,
+  PropertyDefinition,
+  PropertyDraft,
+  PropertyTypeKind,
+} from "@vera/domain/properties";
+import {
+  mayBeEnteredByHand,
+  propertyDraftSchema,
+  propertyKeySchema,
+  propertySubjects,
+  propertyTypeKinds,
+  propertyVisibilities,
+} from "@vera/domain/properties";
 import { Plus, X } from "lucide-react";
 import { useId, useState } from "react";
-import type { NewProperty } from "@/api/properties";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";
@@ -20,20 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type {
-  EnumValue,
-  PropertyDefinition,
-  PropertyDraft,
-  PropertyTypeKind,
-} from "@/domain/properties";
-import {
-  mayBeEnteredByHand,
-  propertyDraftSchema,
-  propertyKeySchema,
-  propertySubjects,
-  propertyTypeKinds,
-  propertyVisibilities,
-} from "@/domain/properties";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 
 export const typeLabels = {

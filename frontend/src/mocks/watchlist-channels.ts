@@ -3,8 +3,8 @@
 // the email on their account or by a handle read from an identity claim. Each is named by its
 // instance's name. WATCH-channel-off: a person switches one off for every watchlist.
 
-import type { WatchlistChannel } from "@/api/watchlists";
-import { pushChannelId } from "@/api/watchlists";
+import type { WatchlistChannel } from "@vera/contract/watchlists";
+import { pushChannelId } from "@vera/contract/watchlists";
 import { database } from "@/mocks/database";
 import { slackHandles } from "@/mocks/fixtures/message-channels";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";

@@ -3,7 +3,7 @@
 // by public/push-worker.js. The mock has no push service: it registers a stand-in subscription
 // and shows its pushes from the open tab (mocks/browser.ts).
 
-import type { PushSubscriptionBody } from "@/api/push";
+import type { PushSubscriptionBody } from "@vera/contract/push";
 import { getPushDevices, registerPushDevice } from "@/api/push";
 import { env } from "@/config/env";
 

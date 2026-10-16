@@ -1,8 +1,8 @@
 // Every language has the same messages, every permission in the catalog has its line, and the
 // language in use follows UI-language.
 
+import { permissionKeys } from "@vera/domain/permissions";
 import { afterEach, describe, expect, it } from "vitest";
-import { permissionKeys } from "@/domain/permissions";
 import { permissionLineOf } from "@/features/access/access-words";
 import { resources } from "@/i18n";
 import {

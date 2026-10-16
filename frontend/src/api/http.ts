@@ -3,21 +3,10 @@
 // absence (404 on a lookup) is returned as null by `findJson`. A refusal's body is RFC 9457
 // Problem Details (decided 2026-10-06), kept on the ApiError for the caller to word.
 
+import type { Problem } from "@vera/contract/problem";
+import { problemSchema } from "@vera/contract/problem";
 import { z } from "zod";
 import { env } from "@/config/env";
-
-// RFC 9457 Problem Details, with VERA's two extensions: `code`, a stable key a refusal is worded
-// by (and translated by, later), and `errors`, the fields a 422 rejected.
-export const problemSchema = z.object({
-  type: z.string().default("about:blank"),
-  title: z.string().optional(),
-  status: z.number().int().optional(),
-  detail: z.string().optional(),
-  instance: z.string().optional(),
-  code: z.string().optional(),
-  errors: z.array(z.object({ field: z.string(), message: z.string() })).optional(),
-});
-export type Problem = z.infer<typeof problemSchema>;
 
 export class ApiError extends Error {
   readonly status: number;

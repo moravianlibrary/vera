@@ -4,15 +4,15 @@
 // stops when an instance is switched off.
 // TODO(rrandiak): labels move to i18n.
 
-import type { PluginImpact, PluginVersion } from "@/api/plugins";
-import type { Tone } from "@/components/status-badge";
+import type { PluginImpact, PluginVersion } from "@vera/contract/plugins";
 import type {
   Declarations,
   DeclaredName,
   DeclaredNameKind,
   PluginKind,
   PluginTrigger,
-} from "@/domain/plugins";
+} from "@vera/domain/plugins";
+import type { Tone } from "@/components/status-badge";
 import { plural } from "@/lib/plural";
 
 export const pluginKindLabels = {

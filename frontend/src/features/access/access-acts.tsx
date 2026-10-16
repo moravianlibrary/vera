@@ -9,7 +9,7 @@
 // fallback's.
 // TODO(rrandiak): labels move to i18n.
 
-import type { AccessIndex } from "@/api/access";
+import type { AccessIndex } from "@vera/contract/access";
 import type { ViewAction } from "@/components/actions/action-bar";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import {

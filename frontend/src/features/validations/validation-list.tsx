@@ -5,26 +5,26 @@
 // Grouped, a header opens each category or defect.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ValidationGroup, ValidationGrouping } from "@vera/contract/validations";
+import { severalPlugins } from "@vera/contract/validations";
+import { documentIdentifierOf } from "@vera/domain/documents";
+import type { Category } from "@vera/domain/entities";
+import { iterationStatusOf, outstandingDefects, statusFootnoteOf } from "@vera/domain/status";
+import type { ReviewedState, ValidationRow } from "@vera/domain/validations";
+import {
+  acceptedDefectsOf,
+  defectNameOf,
+  deniedDefectsOf,
+  isFoundAfterScan,
+} from "@vera/domain/validations";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
-import type { ValidationGroup, ValidationGrouping } from "@/api/validations";
-import { severalPlugins } from "@/api/validations";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { Muted } from "@/components/detail-card";
 import { GroupHeader } from "@/components/lists/group-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
-import { documentIdentifierOf } from "@/domain/documents";
-import type { Category } from "@/domain/entities";
-import { iterationStatusOf, outstandingDefects, statusFootnoteOf } from "@/domain/status";
-import type { ReviewedState, ValidationRow } from "@/domain/validations";
-import {
-  acceptedDefectsOf,
-  defectNameOf,
-  deniedDefectsOf,
-  isFoundAfterScan,
-} from "@/domain/validations";
 import { validationsView } from "@/features/validations/validations-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatDay } from "@/lib/format-date";

@@ -3,10 +3,17 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type {
+  Hook,
+  HookChannel,
+  HookDraft,
+  HookPreview,
+  HookTestResult,
+} from "@vera/contract/hooks";
+import { hookDraftSchema, hookEventSchema } from "@vera/contract/hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import type { Hook, HookChannel, HookDraft, HookPreview, HookTestResult } from "@/api/hooks";
-import { hookDraftSchema, hookEventSchema, previewHook, sendHookTest } from "@/api/hooks";
+import { previewHook, sendHookTest } from "@/api/hooks";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";

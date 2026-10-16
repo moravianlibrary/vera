@@ -7,13 +7,13 @@
 // TODO(rrandiak): from Preferences → Watchlists (plan.md step 12); labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
+import type { Watchlist, WatchlistAudience } from "@vera/domain/entities";
 import { useId, useState } from "react";
 import { getWatchlistReach } from "@/api/watchlists";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import type { Watchlist, WatchlistAudience } from "@/domain/entities";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useRolesQuery } from "@/hooks/use-reference-query";
 import { plural } from "@/lib/plural";
