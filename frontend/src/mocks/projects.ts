@@ -481,6 +481,7 @@ export function createProject(session: Session, draft: ProjectDraft): Outcome<Pr
     session,
     project,
     crypto.randomUUID(),
+    new Date().toISOString(),
     "Created",
     `${periodText(project, targetPages)} · proposed`,
   );
@@ -535,6 +536,7 @@ export function saveProject(
   replaceProject(saved);
   replaceIntention(intentionFollowing(saved, targetPages, intention));
   const correlationId = crypto.randomUUID();
+  const now = new Date().toISOString();
   const moves = [
     saved.startsOn === project.startsOn
       ? null
@@ -547,7 +549,7 @@ export function saveProject(
       : `target ${targetText(intention.targetPages)} → ${targetText(targetPages)}`,
   ].filter((move) => move !== null);
   if (moves.length > 0) {
-    logProject(session, saved, correlationId, "Dates or target changed", moves.join(" · "));
+    logProject(session, saved, correlationId, now, "Dates or target changed", moves.join(" · "));
   }
 
   if (saved.name !== project.name || saved.description !== project.description) {
@@ -555,6 +557,7 @@ export function saveProject(
       session,
       saved,
       correlationId,
+      now,
       "Details changed",
       saved.name === project.name ? null : `${project.name} → ${saved.name}`,
     );
@@ -597,8 +600,9 @@ export function saveProjectMembers(
   replaceProject(saved);
 
   const correlationId = crypto.randomUUID();
+  const now = new Date().toISOString();
   const log = (event: string, detail: string) =>
-    logProject(session, saved, correlationId, event, detail);
+    logProject(session, saved, correlationId, now, event, detail);
   for (const userId of memberIds.filter((userId) => !project.memberIds.includes(userId))) {
     log("Member added", nameOf(userId));
   }
@@ -693,6 +697,7 @@ export function approveProject(
     session,
     approved,
     correlationId,
+    now,
     "Approved",
     [
       `priority ${approval.priority}`,
@@ -751,7 +756,7 @@ export function rejectProject(
     ...intention,
     archived: intention.archived ?? { actor: { kind: "user", userId: session.user.id }, at: now },
   });
-  logProject(session, rejected, correlationId, "Rejected", rejection.reason);
+  logProject(session, rejected, correlationId, now, "Rejected", rejection.reason);
   return { value: detailOf(rejected) };
 }
 
@@ -777,7 +782,14 @@ export function deleteProject(session: Session, projectId: string): Outcome<null
 
   database.projects.splice(database.projects.indexOf(project), 1);
   database.intentions = database.intentions.filter((candidate) => candidate !== intention);
-  logProject(session, project, crypto.randomUUID(), "Deleted", "it had no proposals");
+  logProject(
+    session,
+    project,
+    crypto.randomUUID(),
+    new Date().toISOString(),
+    "Deleted",
+    "it had no proposals",
+  );
   return { value: null };
 }
 
@@ -804,17 +816,20 @@ function groupNameOf(groupId: string): string {
   return database.groups.find((group) => group.id === groupId)?.name ?? groupId;
 }
 
+// LOG-one-act-one-story: every entry of one act shares its correlation ID and its time, so the
+// log keeps them in the order they were written.
 function logProject(
   session: Session,
   project: Project,
   correlationId: string,
+  at: string,
   event: string,
   detail: string | null,
 ): void {
   writeLog({
     subjectKind: "project",
     subjectId: project.id,
-    at: new Date().toISOString(),
+    at,
     actor: { kind: "user", userId: session.user.id },
     correlationId,
     event,

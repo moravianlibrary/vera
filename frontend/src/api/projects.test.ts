@@ -270,7 +270,12 @@ describe("starting and running a project", () => {
     });
 
     expect(saved.row.project.endsOn).toBe("2027-12-31");
-    expect(saved.log[0]?.event).toBe("Dates or target changed");
+    // LOG-one-act-one-story: one save, one time, the entries in the order they were written.
+    expect(saved.log.slice(0, 2).map((entry) => entry.event)).toEqual([
+      "Dates or target changed",
+      "Details changed",
+    ]);
+    expect(saved.log[1]?.at).toBe(saved.log[0]?.at);
     expect(await statusOf(saveProject("p1", draft))).toBe(403);
   });
 
