@@ -172,8 +172,8 @@ export function createProperty(
   return { value: definitionOf(stored) };
 }
 
-// Values in use would no longer fit: the type, the list and what it is about stay once a record
-// holds a value, and an enum value in use stays.
+// DOC-property-fixed: values in use would no longer fit, so the type, the list and what it is
+// about stay once a record holds a value, and an enum value in use stays.
 function changeRefusal(stored: StoredPropertyDefinition, draft: PropertyDraft): Refusal | null {
   const isTypeChanged =
     stored.type.kind !== draft.type.kind ||

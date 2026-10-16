@@ -98,8 +98,14 @@ A property's type is one of:
 - **enum**, each value with a name in each UI language;
 - a **list** of any of these.
 
-> **Open — [L64](../../ledger.md#l64-changing-a-propertys-type).** Whether a type may change once
-> records hold values; the frontend keeps it.
+#### DOC-property-fixed
+
+Once any record holds a value, a definition's type, its list flag, what it is about and a
+number's unit stay as they are (409), and so does an enum value a record uses. The predefined
+four keep them always. Names, visibility, hand entry and its tier may change at any time, and an
+enum may gain values.
+
+*Why:* a changed type would leave values, filters and scope conditions that no longer read.
 
 #### DOC-property-values
 
@@ -121,7 +127,7 @@ gives hand values decides whether a hand value outranks a plugin's.
 
 A fact the catalog holds, such as the title, cannot be defined for hand entry; the page count
 is the one exception ([DOC-manual-page-count](#doc-manual-page-count)). A value is entered on the
-record pane, or in bulk on a selection in Documents. Entering one reruns the checks when a rule
+record pane, or in bulk on the rows picked with *Select* in Documents. Entering one reruns the checks when a rule
 reads that property. An attempt property's value cannot change once the attempt is scanned
 (409).
 
@@ -140,13 +146,19 @@ absent, and cannot be filtered on
 #### DOC-property-filter
 
 Each type gives its filter on every page that shows the property, saved watchlists included:
-- text, what it contains;
+- text, what it contains, starts with or ends with;
 - a number or a date, a range, as *Pages* and *Asked* are;
 - an enum or yes/no, its values, each with how many records it finds
   ([UI-facets](../ui/pages.md#ui-facets));
 - a list, any of its values.
 
-Every property can also be filtered on having *no value*.
+Every property can also be filtered on having *no value*. A page that already has its own field
+for a property does not offer it twice: the page count is *Pages*, and on Requests the material
+type is *Type*. The title and the shelf mark are offered beside the search, which finds them
+too.
+
+> **Open — [L65](../../ledger.md#l65-text-filters-start-and-end).** Text filters and scope
+> conditions take *contains* only.
 
 The record pane shows every property the person may read, with its sources. A property is a
 column only where a page's view declares it.
@@ -173,7 +185,11 @@ The one in use follows [DOC-property-values](#doc-property-values).
 
 The page count, the material type, the shelf mark and the title are predefined definitions.
 They can be edited but not deleted (409), as the predefined Identifier instances are
-([DOC-identifiers](#doc-identifiers)).
+([DOC-identifiers](#doc-identifiers)). Each holds sourced values as any property does, the
+catalog adapter's among them, and the record pane shows the sources of each.
+
+> **Open — [L66](../../ledger.md#l66-catalog-sources-of-the-predefined-four).** Only the page
+> count shows its sources.
 
 *Why:* counting and generating read the page count, and the pages filter and search on the
 others.

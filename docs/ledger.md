@@ -15,18 +15,24 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-### L64: Changing a property's type
-
-Rules: [DOC-property](reference/model/documents.md#doc-property),
-[DOC-property-types](reference/model/documents.md#doc-property-types).
-
-The reference does not say whether a definition's type, its list flag, what it is about or a
-number's unit may change once records hold values, nor whether an enum value records use may be
-taken out. The frontend and the mock keep all of them once any record holds a value (409
-`property.in_use`, `property.value_in_use`), and always for the predefined four. Names,
-visibility, hand entry and its tier, and new enum values may change at any time. → decision.
+None.
 
 ## Not built yet
+
+### L65: Text filters start and end
+
+Rules: [DOC-property-filter](reference/model/documents.md#doc-property-filter),
+[PLAN-scope](reference/planning/intentions.md#plan-scope).
+
+A text property's filter and scope condition take *contains* only; *starts with* and *ends with*
+are to be added. → frontend.
+
+### L66: Catalog sources of the predefined four
+
+Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-predefined).
+
+The material type, the shelf mark and the title are plain fields of the document in the mock,
+and the record pane shows sources for the page count only. → frontend, then the engine.
 
 ### L36: Pages reference
 
@@ -174,6 +180,15 @@ messages, and the generator follows them. → frontend.
 
 ### Decided, 2026-10-16
 
+- **L64:** a definition's type, list flag, subject and unit stay as they are once any record
+  holds a value, as does an enum value in use; names, visibility, hand entry and new enum values
+  change at any time ([DOC-property-fixed](reference/model/documents.md#doc-property-fixed)).
+  Session F's choices stand too: bulk entry picks rows with *Select* on Documents
+  ([DOC-property-hand](reference/model/documents.md#doc-property-hand)); a page does not offer a
+  property its own field covers
+  ([DOC-property-filter](reference/model/documents.md#doc-property-filter)); and *No hook email*
+  replaces turning off every current hook
+  ([WATCH-hook-preferences](reference/integrations/watchlists.md#watch-hook-preferences)).
 - **L63:** what the properties model left open
   ([DOC-property](reference/model/documents.md#doc-property)): defining needs
   `property.define@any`, admin only, on a *Properties* page; the page count, material type,
