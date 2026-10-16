@@ -28,7 +28,8 @@ we are reorganising who decides proposals."
    ([ACCESS-last-manager](../../reference/access/people.md#access-last-manager)).
 7. He deletes the *19th-century prints* custody, after its impact: how many open proposals it
    holds and how many go to the fallback.
-   → Its proposals are placed again
+   → Its proposals are placed again, and Plugins shows that its rule places nothing until
+   another custody is picked
    ([ACCESS-custody-delete](../../reference/access/custody.md#access-custody-delete)).
    **(engine: [L8](../../ledger.md#l8-placing-again-is-a-run))**
 8. He tries to delete the fallback.

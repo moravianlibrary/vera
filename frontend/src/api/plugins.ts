@@ -76,8 +76,10 @@ export type IdentitySettings = z.infer<typeof identitySettingsSchema>;
 
 export const instanceSettingsSchema = z.discriminatedUnion("kind", [
   identitySettingsSchema,
-  // The request custodies its rule can name; the rule itself is its configuration.
-  z.object({ kind: z.literal("Custody"), custodyNames: z.array(z.string()) }),
+  // ACCESS-custody-by-plugins: the one request custody its condition places into, bound by id so
+  // a rename changes nothing (ACCESS-custody-rename); a deleted one's id stays and places nothing
+  // until another is picked (ACCESS-custody-delete). The condition is its configuration.
+  z.object({ kind: z.literal("Custody"), custodyId: id }),
   // Which the Message… dialog offers first.
   z.object({ kind: z.literal("Message"), order: z.number().int().positive() }),
   // The first suggestion wins (§4.13).

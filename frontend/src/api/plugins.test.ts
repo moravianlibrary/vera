@@ -158,6 +158,29 @@ describe("an instance", () => {
     ).toMatchObject({ status: 403 });
   });
 
+  it("binds a custody rule to one custody, never the fallback (ACCESS-custody-by-plugins)", async () => {
+    signInAs("admin");
+    const draft = (custodyId: string) => ({
+      name: "Moravica project",
+      configuration: { expr: '.request.project == "Moravica"' },
+      linkedCategoryId: null,
+      settings: { kind: "Custody" as const, custodyId },
+    });
+
+    expect(await refusalOf(savePluginInstance("pi35", draft("pc0")))).toMatchObject({
+      status: 422,
+      code: "plugin.no_such_custody",
+    });
+    expect(await refusalOf(savePluginInstance("pi35", draft("pc9")))).toMatchObject({
+      code: "plugin.no_such_custody",
+    });
+    expect((await savePluginInstance("pi35", draft("pc1"))).settings).toEqual({
+      kind: "Custody",
+      custodyId: "pc1",
+    });
+    await savePluginInstance("pi35", draft("pc3"));
+  });
+
   it("keeps a secret that is not sent again", async () => {
     signInAs("admin");
     const saved = await savePluginInstance("pi18", {

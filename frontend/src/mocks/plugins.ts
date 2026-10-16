@@ -195,6 +195,15 @@ function settingsRefusal(
     };
   }
 
+  // ACCESS-custody-by-plugins: a rule picks a custody that exists; the fallback holds only what no
+  // rule placed (ACCESS-fallback).
+  if (settings?.kind === "Custody") {
+    const picked = database.requestCustodies.find((custody) => custody.id === settings.custodyId);
+    return picked === undefined || picked.isFallback
+      ? { status: 422, message: "Pick a request custody", code: "plugin.no_such_custody" }
+      : null;
+  }
+
   if (settings?.kind !== "Identity") {
     return null;
   }
@@ -468,13 +477,10 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       candidate.id !== instance.id &&
       (kind !== "Input" || versionOf(candidate)?.declares.inputMode === inputMode),
   );
-  const names = instance.settings?.kind === "Custody" ? instance.settings.custodyNames : [];
   // PLG-delivery-hooks: what a channel switched off stops.
   const stoppedHooks = hooksUsingChannel(instance.id).filter((hook) => hook.state === "active");
   const custodyIds = new Set(
-    database.requestCustodies
-      .filter((custody) => names.includes(custody.name))
-      .map((custody) => custody.id),
+    instance.settings?.kind === "Custody" ? [instance.settings.custodyId] : [],
   );
   return {
     value: {

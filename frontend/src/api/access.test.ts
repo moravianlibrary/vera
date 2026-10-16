@@ -28,6 +28,7 @@ import {
   unlinkIdentity,
 } from "@/api/access";
 import { ApiError } from "@/api/http";
+import { getPluginIndex } from "@/api/plugins";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
 import { heldRolesOf, managersOf } from "@/domain/access";
@@ -426,6 +427,23 @@ describe("groups and custodies", () => {
     expect(custody).toMatchObject({ openCount: 0, placedByIds: [], isFallback: false });
   });
 
+  it("keeps a renamed custody's rule placing into it (ACCESS-custody-rename)", async () => {
+    signInAs("admin");
+    const countOf = async () =>
+      (await getAccessIndex()).custodies.find((custody) => custody.id === "pc2");
+    const before = await countOf();
+    await saveCustody({
+      custodyId: "pc2",
+      draft: { name: "Prints 1800–1899", description: "Anything published 1800–1899." },
+    });
+
+    expect(await countOf()).toMatchObject({
+      name: "Prints 1800–1899",
+      placedByIds: ["pi34"],
+      openCount: before?.openCount,
+    });
+  });
+
   it("places a deleted custody's proposals in the fallback", async () => {
     signInAs("admin");
     const impact = await getCustodyImpact("pc1");
@@ -441,5 +459,8 @@ describe("groups and custodies", () => {
 
     expect(after.custodies.some((custody) => custody.id === "pc1")).toBe(false);
     expect(countOf(after, "pc0")).toBe(countOf(before, "pc0") + impact.toFallbackCount);
+    // ACCESS-custody-delete: its rule still names it, and places nothing until another is picked.
+    const rule = (await getPluginIndex()).instances.find((instance) => instance.id === "pi25");
+    expect(rule?.settings).toEqual({ kind: "Custody", custodyId: "pc1" });
   });
 });

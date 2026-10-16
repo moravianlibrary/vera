@@ -106,7 +106,7 @@ function custodyRecordOf(
     placedByIds: custody.isFallback
       ? []
       : custodyRules()
-          .filter((rule) => rule.names.includes(custody.name))
+          .filter((rule) => rule.custodyId === custody.id)
           .map(({ instanceId }) => instanceId),
   };
 }

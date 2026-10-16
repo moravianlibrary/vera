@@ -1,7 +1,7 @@
 // Request custodies and where the Custody plugins placed each open proposal, after
 // docs/demos/shared/vera-data.js (proposal-custody.md). Members come directly or through a
-// group. A placement is the plugins' last answer, by custody name; a proposal not listed here is
-// placed by `houseRuleOf`, the mock's stand-in for the jq rule.
+// group. A placement is the plugins' last answer, by the custody each matching rule picked; a
+// proposal not listed here is placed by `houseRuleOf`, the mock's stand-in for the jq rules.
 
 import type { Document, Request, RequestCustody } from "@/domain/entities";
 
@@ -46,28 +46,28 @@ export const requestCustodies: readonly StoredRequestCustody[] = [
 ];
 
 export const custodyPlacements: Readonly<Record<string, readonly string[]>> = {
-  R16: ["Periodicals", "19th-century prints"],
-  R17: ["Periodicals", "19th-century prints"],
-  R18: ["Periodicals", "19th-century prints"],
-  R19: ["Periodicals"],
-  R20: ["Moravica"],
-  R28: ["Periodicals", "19th-century prints"],
-  R29: ["Periodicals", "19th-century prints"],
-  R30: ["Periodicals", "19th-century prints"],
-  R31: ["Periodicals", "19th-century prints"],
-  R32: ["Periodicals", "19th-century prints"],
-  R33: ["Periodicals"],
-  R34: ["Periodicals"],
+  R16: ["pc1", "pc2"],
+  R17: ["pc1", "pc2"],
+  R18: ["pc1", "pc2"],
+  R19: ["pc1"],
+  R20: ["pc3"],
+  R28: ["pc1", "pc2"],
+  R29: ["pc1", "pc2"],
+  R30: ["pc1", "pc2"],
+  R31: ["pc1", "pc2"],
+  R32: ["pc1", "pc2"],
+  R33: ["pc1"],
+  R34: ["pc1"],
   R35: [],
-  R36: ["Periodicals"],
-  R37: ["Periodicals"],
+  R36: ["pc1"],
+  R37: ["pc1"],
 };
 
-// What the house rule answers for a proposal made since: serials by material type, and the
+// The custodies whose rules match a proposal made since: serials by material type, and the
 // Moravica project's proposals.
 export function houseRuleOf(request: Request, document: Document): string[] {
   return [
-    ...(document.type === "Periodical" ? ["Periodicals"] : []),
-    ...(request.projectId === "p3" ? ["Moravica"] : []),
+    ...(document.type === "Periodical" ? ["pc1"] : []),
+    ...(request.projectId === "p3" ? ["pc3"] : []),
   ];
 }

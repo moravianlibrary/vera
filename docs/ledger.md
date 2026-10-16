@@ -17,21 +17,6 @@ Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
-### L31: Plugin policy on the instance
-
-Rules: [ACCESS-custody-by-plugins](reference/access/custody.md#access-custody-by-plugins),
-[ACCESS-custody-rename](reference/access/custody.md#access-custody-rename),
-[ACCESS-custody-delete](reference/access/custody.md#access-custody-delete),
-[PLG-upgrade](reference/integrations/plugins.md#plg-upgrade).
-
-Tiers, copy states and a harvester's agent on the instance are built (see *Done*). Decided on
-2026-10-16 for the rest: each Custody instance is one rule, a condition and one custody picked
-in its editor from those on Users & Groups, bound to it rather than to its name, so a rename
-changes nothing. A deleted custody leaves its rule placing nothing until another is picked.
-Today a rule's expression returns names, which the server reads, and the editor neither shows
-nor picks them (`TODO(rrandiak)` in `features/plugins/instance-editor.tsx`); the mock's *House
-rules* returns three. → frontend, then engine.
-
 ### L22: Properties
 
 Rules: [DOC-page-count](reference/model/documents.md#doc-page-count),
@@ -276,6 +261,15 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L31:** each Custody instance is one rule, its condition the configuration and one request
+  custody picked in its editor from those on Users & Groups, bound by id: a rename keeps it
+  placing, and a deleted custody's rule places nothing until another is picked, which Plugins
+  shows on the instance's row and drawer. The mock's *House rules* became one rule per custody
+  ([ACCESS-custody-by-plugins](reference/access/custody.md#access-custody-by-plugins),
+  [ACCESS-custody-rename](reference/access/custody.md#access-custody-rename),
+  [ACCESS-custody-delete](reference/access/custody.md#access-custody-delete)).
+- **Run history in tests:** the 80 generated runs that fill Tasks for scrolling are set apart
+  from the hand-written runs in the tests, which no longer fail on them.
 - **L58:** the propose dialog's ways in beside typing, pasting and a file: catalog search over
   the enabled Catalog adapters that search, with a record link or ID for those that cannot;
   continuous barcode scanning, a hardware scanner always and the camera while a camera Input

@@ -81,11 +81,9 @@ copy, and a harvester's agent: its name and where what it finds enters. The impl
 declarations are the defaults. Moved to another version, an instance keeps its choices for what
 both declare; what is new takes the new version's default, and what is retired goes.
 
-A Custody rule returns one of the request custodies on Users & Groups, picked in the rule
-editor; it never names one by free text.
-
-> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** The editor does not
-> pick a rule's custody yet ([ACCESS-custody-by-plugins](../access/custody.md#access-custody-by-plugins)).
+A Custody rule places into one of the request custodies on Users & Groups, picked in the rule
+editor; it never names one by free text
+([ACCESS-custody-by-plugins](../access/custody.md#access-custody-by-plugins)).
 
 #### PLG-disable
 

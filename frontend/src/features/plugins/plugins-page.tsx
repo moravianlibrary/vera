@@ -188,11 +188,13 @@ function PluginTable({
   });
   const implementationOf = (instance: PluginInstanceDetail) =>
     index.implementations.find((candidate) => candidate.id === instance.implementationId);
+  const custodyOf = (custodyId: string) =>
+    custodies.find((custody) => custody.id === custodyId)?.name;
   const names: DrawerNames = {
     userOf: labels.users,
     categoryOf: labels.categories,
     roleOf: (roleId) => roles.find((role) => role.id === roleId)?.name ?? roleId,
-    custodyIdOf: (name) => custodies.find((custody) => custody.name === name)?.id,
+    custodyOf,
   };
   const reach = {
     canSeeTasks,
@@ -306,6 +308,7 @@ function PluginTable({
           asOf: index.asOf,
           implementationOf,
           categoryOf: labels.categories,
+          custodyOf,
         }),
         groupBy: groups,
         onOpen: (id) =>

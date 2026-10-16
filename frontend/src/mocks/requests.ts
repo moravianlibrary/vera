@@ -178,16 +178,16 @@ function rowOf(document: Document): RequestRow | null {
   };
 }
 
-// The union of what the Custody plugins answered for each ask; the fallback when it is empty.
-// A name that is no custody is ignored (proposal-custody.md §3).
+// The union of the custodies whose rules matched each ask; the fallback when it is empty. A rule
+// whose custody was deleted places nothing (ACCESS-custody-delete).
 function custodiesOf(asks: readonly Request[], document: Document): string[] {
-  const names = new Set(
+  const picked = new Set(
     asks.flatMap(
       (request) => custodyPlacements[baseIdOf(request.id)] ?? houseRuleOf(request, document),
     ),
   );
   const placed = database.requestCustodies.filter(
-    (custody) => !custody.isFallback && names.has(custody.name),
+    (custody) => !custody.isFallback && picked.has(custody.id),
   );
   if (placed.length > 0) {
     return placed.map(({ id }) => id);

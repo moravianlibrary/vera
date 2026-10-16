@@ -1,8 +1,8 @@
 // Plugins' implementations and instances (docs/demos/shared/vera-data.js `pluginTypes`;
 // plugins.md §1, §4): every instance other records name, in one place, with its configuration,
 // VERA's settings on it and when it last ran. The Identity instances carry the login page's
-// label and order, the default role and the claim mappings (identity.md §1); the Custody rule the
-// custody names it returns; the Message and Classifier instances their order. The two
+// label and order, the default role and the claim mappings (identity.md §1); each Custody rule the
+// custody it picks; the Message and Classifier instances their order. The two
 // classifiers are not in the demo (the kind is new on 2026-10-07). A run still on Tasks says when
 // an instance last ran; `lastRunAt` holds it for those whose runs are not there.
 // Also the packages the mock "reads" when one is uploaded, by file name: the next version of an
@@ -267,7 +267,7 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
     "pt19",
     "JqCustody",
     "Custody",
-    "Evaluates one jq expression over the proposal as JSON; it returns the names of the custodies it belongs in.",
+    "Evaluates one jq condition over the proposal as JSON; when it holds, the proposal is in the custody the instance picks.",
     {
       version: "1.0.0",
       installedAt: "2026-06-23",
@@ -521,12 +521,6 @@ function instance(source: InstanceSource): StoredPluginInstance {
   };
 }
 
-const houseRuleExpression = [
-  'if .document.type == "Periodical" then "Periodicals" else empty end',
-  'if (.record.fields."260".c // "" | test("^18")) then "19th-century prints" else empty end',
-  'if .request.project == "Moravica" then "Moravica" else empty end',
-];
-
 export const pluginInstances: readonly StoredPluginInstance[] = [
   instance({
     id: "pi1",
@@ -642,16 +636,34 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     createdAt: "2026-06-10",
     lastRunAt: june(21, 11, 2),
   }),
+  // ACCESS-custody-by-plugins: one rule per custody, each a condition and the custody it picks.
   instance({
     id: "pi25",
-    name: "House rules",
+    name: "Serials",
     implementationId: "pt19",
-    configuration: { expr: `[ ${houseRuleExpression.join(", ")} ]` },
+    configuration: { expr: '.document.type == "Periodical"' },
     triggers: ["OnProposal"],
-    settings: {
-      kind: "Custody",
-      custodyNames: ["Periodicals", "19th-century prints", "Moravica"],
-    },
+    settings: { kind: "Custody", custodyId: "pc1" },
+    createdAt: "2026-06-23",
+    lastRunAt: june(25, 10, 20),
+  }),
+  instance({
+    id: "pi34",
+    name: "Printed 1800–1899",
+    implementationId: "pt19",
+    configuration: { expr: '.record.fields."260".c // "" | test("^18")' },
+    triggers: ["OnProposal", "OnRecordChange"],
+    settings: { kind: "Custody", custodyId: "pc2" },
+    createdAt: "2026-06-23",
+    lastRunAt: june(25, 10, 20),
+  }),
+  instance({
+    id: "pi35",
+    name: "Moravica project",
+    implementationId: "pt19",
+    configuration: { expr: '.request.project == "Moravica"' },
+    triggers: ["OnProposal"],
+    settings: { kind: "Custody", custodyId: "pc3" },
     createdAt: "2026-06-23",
     lastRunAt: june(25, 10, 20),
   }),

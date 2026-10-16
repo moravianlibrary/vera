@@ -56,8 +56,41 @@ export interface DrawerNames {
   userOf: (userId: string) => string;
   categoryOf: (categoryId: string) => string;
   roleOf: (roleId: string) => string;
-  // A request custody's id, by its name; undefined when there is none.
-  custodyIdOf: (name: string) => string | undefined;
+  // A request custody's name; undefined once it is deleted.
+  custodyOf: (custodyId: string) => string | undefined;
+}
+
+// ACCESS-custody-by-plugins: the one custody its condition places into, by id, so a rename
+// follows; once deleted it places nothing until another is picked (ACCESS-custody-delete).
+function CustodyCard({
+  custodyId,
+  names,
+  reach,
+}: {
+  custodyId: string;
+  names: DrawerNames;
+  reach: DrawerReach;
+}) {
+  const name = names.custodyOf(custodyId);
+  return (
+    <DetailCard title="Places into">
+      <DetailRow>
+        {name === undefined ? (
+          <Muted>Its custody was deleted: it places nothing until another is picked.</Muted>
+        ) : reach.canSeeAccess ? (
+          <Link to={`/access?c=${encodeURIComponent(custodyId)}`} className={linkClass}>
+            {name}
+          </Link>
+        ) : (
+          name
+        )}
+      </DetailRow>
+      <FinePrint>
+        A proposal its condition matches is in this custody; what no rule places lands in the
+        fallback.
+      </FinePrint>
+    </DetailCard>
+  );
 }
 
 // ---------------------------------------------------------------- an implementation
@@ -613,30 +646,7 @@ function SettingsCard({
         </DetailCard>
       );
     case "Custody":
-      return (
-        <DetailCard title="Custodies it places into">
-          {settings.custodyNames.map((name) => {
-            const custodyId = names.custodyIdOf(name);
-            return (
-              <DetailRow key={name}>
-                {reach.canSeeAccess && custodyId !== undefined ? (
-                  <Link to={`/access?c=${encodeURIComponent(custodyId)}`} className={linkClass}>
-                    {name}
-                  </Link>
-                ) : (
-                  <>
-                    {name}
-                    {custodyId === undefined && (
-                      <Muted> · no such custody: what it names lands in the fallback</Muted>
-                    )}
-                  </>
-                )}
-              </DetailRow>
-            );
-          })}
-          <FinePrint>What no rule places lands in the fallback custody.</FinePrint>
-        </DetailCard>
-      );
+      return <CustodyCard custodyId={settings.custodyId} names={names} reach={reach} />;
     case "Message":
     case "Classifier":
       return (

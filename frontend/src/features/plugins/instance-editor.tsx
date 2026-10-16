@@ -4,13 +4,12 @@
 // settings on it sit beside the configuration: an identity's login button, its order, the role a
 // new user gets, *match by email* and the claims it maps to roles (one per line, "claim → role");
 // a message's or a classifier's order. The user id claim is set when the instance is made and
-// shown after. Its policy, from its version's declarations as defaults (PLG-upgrade): the tier of
+// shown after. A custody rule's custody, picked from those on Users & Groups and bound to it by
+// id (ACCESS-custody-by-plugins); its condition is its configuration. Its policy, from its version's declarations as defaults (PLG-upgrade): the tier of
 // each property it supplies, which registry states count as an existing copy
 // (REG-copy-not-gate), and a harvester's agent. When it runs by itself is set on Schedules, once
 // it exists.
-// TODO(rrandiak): a custody rule is a condition and one custody picked here, bound to it
-// (ACCESS-custody-by-plugins, L31); today the server reads names from its expression and the
-// editor neither shows nor picks them. Labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
 import { useId } from "react";
 import { Controller } from "react-hook-form";
@@ -43,7 +42,11 @@ import type { PluginNotice } from "@/features/plugins/plugin-acts";
 import { entryPointText } from "@/features/plugins/plugin-words";
 import { pluginInvalidations } from "@/features/plugins/use-plugins-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { useCategoriesQuery, useRolesQuery } from "@/hooks/use-reference-query";
+import {
+  useCategoriesQuery,
+  useRequestCustodiesQuery,
+  useRolesQuery,
+} from "@/hooks/use-reference-query";
 
 const allCategories = "all";
 const noRole = "none";
@@ -65,6 +68,8 @@ interface InstanceForm {
   defaultRoleId: string;
   matchByEmail: boolean;
   mappings: string;
+  // A custody rule's custody; empty until one is picked.
+  custodyId: string;
   // PLG-upgrade: by property key.
   tiers: Record<string, string>;
   copyStates: string[];
@@ -79,6 +84,7 @@ export const refusalTexts = {
   "plugin.last_identity": "It is the last way to log in; enable another first.",
   "plugin.contract": "Its version was built for a contract VERA does not run.",
   "plugin.policy": "Its tiers, copy states or agent do not fit what its version declares.",
+  "plugin.no_such_custody": "Pick a request custody on Users & Groups.",
   403: "Only those who configure plugins change them.",
 };
 
@@ -94,7 +100,13 @@ function mappingsOf(text: string, roles: readonly NamedRole[]) {
     });
 }
 
-function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly NamedRole[]) {
+function formSchemaOf(
+  version: PluginVersion,
+  isNew: boolean,
+  roles: readonly NamedRole[],
+  // A custody rule's choices; null for any other kind.
+  custodyIds: ReadonlySet<string> | null,
+) {
   return z
     .object({
       name: z.string().trim().min(1, "An instance needs a name: its runs are listed under it."),
@@ -106,6 +118,7 @@ function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly Na
       defaultRoleId: z.string(),
       matchByEmail: z.boolean(),
       mappings: z.string(),
+      custodyId: z.string(),
       tiers: z.record(z.string(), z.string()),
       copyStates: z.array(z.string()),
       agentName: z.string(),
@@ -136,6 +149,14 @@ function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly Na
         }
       }
 
+      if (custodyIds !== null && !custodyIds.has(values.custodyId)) {
+        context.addIssue({
+          code: "custom",
+          path: ["custodyId"],
+          message: "Pick the custody a proposal it matches is in.",
+        });
+      }
+
       if (version.declares.agent !== null && values.agentName.trim() === "") {
         context.addIssue({ code: "custom", path: ["agentName"], message: "Name its agent." });
       }
@@ -156,7 +177,6 @@ function formSchemaOf(version: PluginVersion, isNew: boolean, roles: readonly Na
 function settingsOf(
   kind: PluginImplementation["kind"],
   values: InstanceForm,
-  previous: InstanceSettings | null,
   roles: readonly NamedRole[],
 ): InstanceSettings | null {
   const order = Math.max(1, Number.parseInt(values.order, 10) || 1);
@@ -174,7 +194,7 @@ function settingsOf(
         ),
       };
     case "Custody":
-      return previous?.kind === "Custody" ? previous : { kind, custodyNames: [] };
+      return { kind, custodyId: values.custodyId };
     case "Message":
     case "Classifier":
       return { kind, order };
@@ -219,6 +239,10 @@ export function InstanceEditorDialog({
   const id = useId();
   const { data: roles = [] } = useRolesQuery();
   const { data: categories = [] } = useCategoriesQuery();
+  const isCustody = implementation.kind === "Custody";
+  const { data: custodies = [] } = useRequestCustodiesQuery({ isEnabled: isCustody });
+  // ACCESS-fallback: it holds only what no rule placed, so no rule picks it.
+  const pickable = custodies.filter((custody) => !custody.isFallback);
   const isNew = instance === null;
   const version =
     implementation.versions.find((candidate) =>
@@ -256,7 +280,12 @@ export function InstanceEditorDialog({
       onClose={onClose}
       title={isNew ? `New instance of ${implementation.name}` : `Edit ${instance.name}`}
       description={`The configuration of an instance of ${implementation.name}`}
-      schema={formSchemaOf(version, isNew, roles)}
+      schema={formSchemaOf(
+        version,
+        isNew,
+        roles,
+        isCustody ? new Set(pickable.map((custody) => custody.id)) : null,
+      )}
       defaultValues={{
         name: instance?.name ?? "",
         configuration: Object.fromEntries(
@@ -273,6 +302,12 @@ export function InstanceEditorDialog({
         mappings: (identity?.mappings ?? [])
           .map((mapping) => `${mapping.claim} ${mappingArrow} ${roleName(mapping.roleId)}`)
           .join("\n"),
+        // ACCESS-custody-delete: a deleted custody's rule waits for another to be picked.
+        custodyId:
+          settings?.kind === "Custody" &&
+          pickable.some((custody) => custody.id === settings.custodyId)
+            ? settings.custodyId
+            : "",
         tiers: Object.fromEntries(policy.tiers.map(({ key, tier }) => [key, String(tier)])),
         copyStates: [...policy.copyStates],
         agentName: policy.agent?.name ?? "",
@@ -294,7 +329,7 @@ export function InstanceEditorDialog({
           ),
           linkedCategoryId:
             values.linkedCategoryId === allCategories ? null : values.linkedCategoryId,
-          settings: settingsOf(implementation.kind, values, settings, roles),
+          settings: settingsOf(implementation.kind, values, roles),
           policy: policyOf(version, values),
         });
         if (result.isDone) {
@@ -461,6 +496,36 @@ export function InstanceEditorDialog({
                 Applied at each person's next login: a role holds while its claim does.
               </p>
             </fieldset>
+          )}
+
+          {isCustody && (
+            <>
+              <Field id={`${id}-custody`} label="Places into">
+                <Controller
+                  control={form.control}
+                  name="custodyId"
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id={`${id}-custody`} className="w-full">
+                        <SelectValue placeholder="Pick a request custody" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pickable.map((custody) => (
+                          <SelectItem key={custody.id} value={custody.id}>
+                            {custody.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </Field>
+              <FieldError message={form.formState.errors.custodyId?.message} />
+              <p className="text-xs text-muted-foreground">
+                A proposal its condition matches is in this custody. Renaming the custody changes
+                nothing; what no rule places lands in the fallback.
+              </p>
+            </>
           )}
 
           {hasOrder && (

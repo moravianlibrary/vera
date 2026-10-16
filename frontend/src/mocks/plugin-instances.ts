@@ -78,10 +78,11 @@ export function identityInstances(): IdentityInstance[] {
   });
 }
 
-// The enabled custody rules and the custody names each can return.
-export function custodyRules(): { instanceId: string; names: readonly string[] }[] {
-  return enabledInstancesOf("Custody").map((instance) => ({
-    instanceId: instance.id,
-    names: instance.settings?.kind === "Custody" ? instance.settings.custodyNames : [],
-  }));
+// The enabled custody rules and the custody each picked (ACCESS-custody-by-plugins).
+export function custodyRules(): { instanceId: string; custodyId: string }[] {
+  return enabledInstancesOf("Custody").flatMap((instance) =>
+    instance.settings?.kind === "Custody"
+      ? [{ instanceId: instance.id, custodyId: instance.settings.custodyId }]
+      : [],
+  );
 }

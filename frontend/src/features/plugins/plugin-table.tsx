@@ -125,12 +125,38 @@ interface ColumnsOptions {
   asOf: string;
   implementationOf: (instance: PluginInstanceDetail) => PluginImplementation | undefined;
   categoryOf: (categoryId: string) => string;
+  // A request custody's name; undefined once it is deleted.
+  custodyOf: (custodyId: string) => string | undefined;
+}
+
+// ACCESS-custody-by-plugins: a custody rule names the custody it places into, and says so when
+// that custody was deleted (ACCESS-custody-delete).
+function CustodyLine({
+  instance,
+  custodyOf,
+}: {
+  instance: PluginInstanceDetail;
+  custodyOf: ColumnsOptions["custodyOf"];
+}) {
+  if (instance.settings?.kind !== "Custody") {
+    return null;
+  }
+
+  const name = custodyOf(instance.settings.custodyId);
+  return name === undefined ? (
+    <div className="text-xs text-amber-700 dark:text-amber-400">
+      Its custody was deleted: it places nothing
+    </div>
+  ) : (
+    <div className="text-xs text-muted-foreground">into {name}</div>
+  );
 }
 
 export function instanceColumns({
   asOf,
   implementationOf,
   categoryOf,
+  custodyOf,
 }: ColumnsOptions): PerTier<readonly ColumnDefinition<PluginInstanceDetail>[]> {
   // Indented under its implementation; narrow, with the implementation's name under it.
   const nameColumn = (
@@ -150,6 +176,7 @@ export function instanceColumns({
             Instance
           </div>
           <div className="font-medium">{instance.name}</div>
+          <CustodyLine instance={instance} custodyOf={custodyOf} />
           {(isNarrow || isBehind) && (
             <div className="text-xs text-muted-foreground">
               {isNarrow && implementation?.name}
