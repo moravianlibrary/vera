@@ -1,7 +1,7 @@
 # The engine
 
-> **Draft plan for part 4, 2026-10-14.** Written ahead so it can be refined with the user
-> journeys. Nothing here is built. Its shape was settled on 2026-10-15 (below).
+> **Plan for part 4.** Drafted on 2026-10-14 and settled on 2026-10-15 (below). Step 1, the
+> skeleton, is built (2026-10-16); the later steps are not.
 
 ## What it is for
 
@@ -83,6 +83,10 @@ Development and tests only, under `/_engine`:
 The first seed is the mock's fixtures, converted once, so every page looks as it does today. Each
 user journey names the state it starts from; a seed can be the base plus a few rows.
 
+Seeds are static JSON files in `engine/seeds/`: `base`, and `minimal` for the engine's own tests.
+Seeding functions that generate data at volume come later; what they generate is settled then
+(E6, E13).
+
 ## Tests
 
 | Kind | Runs against | Proves |
@@ -96,8 +100,9 @@ The Java backend later passes the contract and journey tests unchanged.
 ## Order of work
 
 Readers' and curators' acts come first, so the core journey works as early as possible:
-1. **Skeleton:** the server, SQLite, migrations, the seed, the clock, `/_engine`, the contract
-   check, and the dev servers switched to live mode.
+1. **Skeleton** (built 2026-10-16): the server, SQLite, the schema, the seed, the clock,
+   `/_engine`, the contract check, and the dev servers switched to live mode. Its one endpoint is
+   `GET /api/session`.
 2. **Access:** the session, login with fake identities, roles, groups, custodies, Users
    management.
 3. **Asking and deciding:** propose, check, custody placement, Requests, approve and decline,
@@ -127,3 +132,34 @@ Decided on 2026-10-15:
   pass before step 3.
 - **E6. Volume:** a large seed variant for lists and generation at volume. Seeds are later
   reshaped after looking at production databases.
+
+Decided on 2026-10-16, with step 1:
+- **E1, continued.** For the OpenAPI document, the contract gets a table of each endpoint's method
+  and path with the schemas it takes and answers, filled in as the engine's endpoints are built,
+  from step 2.
+- **E7. Workspace:** the repository root is a Bun workspace (`frontend`, `contract`, `domain`,
+  `engine`) with one lockfile and one Biome configuration. A package is imported by module
+  (`@vera/contract/documents`), with no barrel. The category and intention filters are in the
+  contract.
+- **E8. Tests:** one runner, `bun test`. The frontend moves from vitest in a task of its own.
+- **E9. Database:** `engine/.data/vera.sqlite`, not in git, kept across restarts. It is built
+  from the SQL files in `engine/schema/`, one per area, and never migrated: nothing in it is
+  kept, so when the files change the engine rebuilds it from the seed it held. One table per
+  entity, join tables for memberships, a JSON column for a value list such as a role's grants,
+  and order by insertion.
+- **E10. Clock and jobs:** the clock is kept in the database and only moves forward; going back
+  is a reset to a seed. It runs with the wall clock in development and stands still in tests. A
+  job that fails is rolled back and marked failed. The queue never retries one: each kind sets
+  its next attempt by its own rule ([HOOK-retry](../reference/integrations/hooks.md#hook-retry)).
+- **E11. The contract check:** a body that is not JSON is 400; input outside the schema is 422,
+  naming the fields; an answer outside the schema is 500 with code `contract.response`; an
+  unknown path is 404 and a wrong method 405. A 401 carries no code; the other refusals take the
+  codes the mock used.
+- **E12. Dev servers:** each dev server's proxy sends `X-Vera-Dev-Person` with its fixture
+  person's profile, which the seed maps to a user. The engine honours it, and serves `/_engine`,
+  only with `VERA_ENGINE_DEVELOPMENT=1`. The engine runs on port 8080, and the dev servers use it
+  by default; `API_MODE=mock` gives the in-browser mock until step 8.
+- **E13. Seeds:** a seed holds its name, its moment, the dev servers' fixture people, the records
+  by collection and the fakes' data. Each step loads the collections its tables hold. The base
+  seed's converter is not kept; `engine/test/base-sessions.json` records the sessions the mock
+  gave, and a test proves the engine gives the same.
