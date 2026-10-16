@@ -15,6 +15,7 @@ const entrySchema = z.object({
   filterVersion: z.number().int().positive().default(1),
   emailDeliveredAt: z.iso.datetime().nullable().default(null),
   chatDeliveredAt: z.iso.datetime().nullable().default(null),
+  pushDeliveredAt: z.iso.datetime().nullable().default(null),
 });
 export type MockWatchlistEntry = z.infer<typeof entrySchema>;
 const storedSchema = z.array(entrySchema);

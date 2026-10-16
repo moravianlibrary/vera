@@ -47,8 +47,12 @@ export const watchlistViewerSchema = z.object({
   position: z.number().int().nonnegative(),
   email: z.boolean().default(false),
   chat: z.boolean().default(false),
+  // WATCH-delivery: on for every watchlist, pushed once the person allows the site's
+  // notifications in a browser.
+  push: z.boolean().default(true),
   emailSince: z.iso.datetime().nullable().default(null),
   chatSince: z.iso.datetime().nullable().default(null),
+  pushSince: z.iso.datetime().nullable().default(null),
   confirmedFilter: z.string().nullable().default(null),
 });
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;
@@ -57,6 +61,7 @@ export const watchlistViewerChangeSchema = watchlistViewerSchema
     position: true,
     email: true,
     chat: true,
+    push: true,
     confirmedFilter: true,
   })
   .partial();

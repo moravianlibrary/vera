@@ -9,6 +9,7 @@ import { ApiError } from "@/api/http";
 import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
 import { listProjectIndex } from "@/api/projects";
+import { getPushDevices, registerPushDevice } from "@/api/push";
 import { listRuns, parseRunSearchParams } from "@/api/tasks";
 import {
   createWatchlist,
@@ -29,7 +30,13 @@ import {
 import { database } from "@/mocks/database";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
-import { flushWatchlistMail, watchlistMailOutbox } from "@/mocks/watchlist-delivery";
+import { forgetPushDevices } from "@/mocks/push";
+import { changeUserSettings } from "@/mocks/user-settings";
+import {
+  flushWatchlistMail,
+  flushWatchlistPush,
+  watchlistMailOutbox,
+} from "@/mocks/watchlist-delivery";
 
 const server = setupServer();
 
@@ -121,6 +128,60 @@ describe("listWatchlists", () => {
       await deleteWatchlist(watchlist.id);
     }
   });
+  it("pushes what entered to a browser allowed, batched in seconds (WATCH-push)", async () => {
+    signInAs("admin");
+    const watchlist = await createWatchlist({
+      name: "Push entry test",
+      view: "documents",
+      audience: { kind: "personal" },
+      filter: { q: "push-entry-unique" },
+    });
+    const original = database.documents[0];
+    if (original === undefined) return;
+    const pushesFor = (sent: ReturnType<typeof flushWatchlistPush>) =>
+      sent.filter((push) => push.watchlistId === watchlist.id);
+    try {
+      await listWatchlists("documents");
+      const entering = async () => {
+        database.documents[0] = { ...original, title: `${original.title} push-entry-unique` };
+        await listWatchlists("documents");
+      };
+
+      // Nothing is pushed before a browser is allowed.
+      await entering();
+      expect(pushesFor(flushWatchlistPush(new Date(Date.now() + 60_000)))).toEqual([]);
+      database.documents[0] = original;
+      await listWatchlists("documents");
+
+      expect((await getPushDevices()).deviceCount).toBe(0);
+      const devices = await registerPushDevice({
+        endpoint: "https://push.example/browser-1",
+        keys: { p256dh: "key", auth: "secret" },
+      });
+      expect(devices.deviceCount).toBe(1);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      await entering();
+      const enteredAt = Date.now();
+
+      expect(pushesFor(flushWatchlistPush(new Date(enteredAt + 1_000)))).toEqual([]);
+      const [push] = pushesFor(flushWatchlistPush(new Date(enteredAt + 6_000)));
+      expect(push).toMatchObject({ title: "Push entry test", body: database.documents[0]?.title });
+      expect(pushesFor(flushWatchlistPush(new Date(enteredAt + 60_000)))).toEqual([]);
+
+      // Do not send notifications stops push too (WATCH-do-not-send).
+      database.documents[0] = original;
+      await listWatchlists("documents");
+      changeUserSettings("u3", { notifications: { doNotSend: true, hooks: {} } });
+      await entering();
+      expect(pushesFor(flushWatchlistPush(new Date(Date.now() + 60_000)))).toEqual([]);
+    } finally {
+      changeUserSettings("u3", { notifications: { doNotSend: false, hooks: {} } });
+      forgetPushDevices();
+      database.documents[0] = original;
+      await deleteWatchlist(watchlist.id);
+    }
+  });
+
   it("counts entries since opening without treating existing matches as new", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({

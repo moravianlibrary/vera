@@ -59,8 +59,9 @@ they see, personal and system, once they allow the site's notifications in the b
 is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
-> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** There is no browser
-> push yet.
+> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Where the browser's
+> permission is asked waits until the watchlist preferences move under Preferences; until then it
+> is asked on the Watchlists page.
 
 #### WATCH-mail-batch
 
@@ -75,8 +76,6 @@ A push names the watchlist and the records that entered it: the first three by n
 *+N more*. Pushes are batched per person and watchlist, in seconds: the batch is sent once
 nothing new has entered for 5 seconds, and 30 seconds after its first record at most. Entries
 the person opened before it is sent are left out, and if none remain nothing is pushed.
-
-> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Not built yet.
 
 #### WATCH-system-change
 

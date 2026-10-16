@@ -273,8 +273,10 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
     email: false,
     chat: false,
+    push: true,
     emailSince: null,
     chatSince: null,
+    pushSince: null,
     confirmedFilter: null,
   };
   database.watchlistViewers.push({ ...viewer, watchlistId: watchlist.id, userId });
@@ -432,6 +434,7 @@ function newCountOf(session: Session, watchlist: StoredWatchlist, seenAt: string
       filterVersion: version,
       emailDeliveredAt: null,
       chatDeliveredAt: null,
+      pushDeliveredAt: null,
     }));
   if (isBaseline || retained.length !== before.length || added.length > 0) {
     database.watchlistEntries = database.watchlistEntries

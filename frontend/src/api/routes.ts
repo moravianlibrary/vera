@@ -7,6 +7,9 @@ export const apiRoutes = {
   sessionAccount: "/session/account",
   userSettings: "/session/settings",
   notificationHooks: "/session/notification-hooks",
+  // WATCH-push: the browsers this person allowed to be notified in, and the key they subscribe
+  // with.
+  pushDevices: "/session/push-devices",
   notificationPreferences: "/notification-preferences",
   users: "/users",
   categories: "/categories",

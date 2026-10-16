@@ -1,7 +1,11 @@
-// One place to find personal and system saved filters, and each person's delivery choices.
+// One place to find personal and system saved filters, and each person's delivery choices: email
+// and chat off until switched on, browser push on for every watchlist once this browser may
+// notify (WATCH-delivery).
+// TODO(rrandiak): where the browser's permission is asked waits for these preferences moving
+// under Preferences (L60); until then it is asked here, above the watchlists.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import type { WatchlistSummary, WatchlistViewerChange } from "@/api/watchlists";
 import { listWatchlists } from "@/api/watchlists";
@@ -38,6 +42,8 @@ import { useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { useWatchlistMutations, watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import type { PushPermission } from "@/lib/push";
+import { allowPush, pushPermission, registerThisBrowser } from "@/lib/push";
 
 function viewLabel(view: WatchlistView): string {
   if (view === "my-documents") return "My Documents";
@@ -171,6 +177,7 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
           preference. Watchlist badges still update.
         </p>
       )}
+      <PushPermissionLine />
       {error && (
         <p role="alert" className="mt-3 text-sm text-destructive">
           {error}
@@ -307,7 +314,18 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                             />
                             Chat
                           </span>
-                          {(watchlist.viewer.email || watchlist.viewer.chat) &&
+                          <span className="flex items-center gap-2">
+                            <Switch
+                              aria-label={`${watchlist.name} browser notifications`}
+                              checked={watchlist.viewer.push}
+                              disabled={busy}
+                              onCheckedChange={(push) => changeViewer(watchlist, { push })}
+                            />
+                            Browser
+                          </span>
+                          {(watchlist.viewer.email ||
+                            watchlist.viewer.chat ||
+                            watchlist.viewer.push) &&
                             watchlist.viewer.confirmedFilter !==
                               String(watchlist.filterVersion) && (
                               <Button
@@ -445,5 +463,44 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
         </AlertDialogContent>
       </AlertDialog>
     </section>
+  );
+}
+
+// WATCH-delivery: nothing is pushed before the person allows the site's notifications in a
+// browser. Once allowed, this browser is registered again on every visit, so a subscription the
+// server lost is made again.
+function PushPermissionLine() {
+  const [permission, setPermission] = useState<PushPermission>(pushPermission);
+  const [isAsking, setIsAsking] = useState(false);
+  useEffect(() => {
+    if (permission === "granted") {
+      void registerThisBrowser().catch(() => false);
+    }
+  }, [permission]);
+
+  return (
+    <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      {permission === "granted" && "Browser notifications reach this browser."}
+      {permission === "denied" &&
+        "This browser blocks VERA's notifications; allow them in its site settings to be notified here."}
+      {permission === "unsupported" && "This browser cannot show notifications."}
+      {permission === "default" && (
+        <>
+          Browser notifications start once you allow them here.
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={isAsking}
+            onClick={async () => {
+              setIsAsking(true);
+              setPermission(await allowPush().catch(() => pushPermission()));
+              setIsAsking(false);
+            }}
+          >
+            Allow notifications in this browser
+          </Button>
+        </>
+      )}
+    </p>
   );
 }

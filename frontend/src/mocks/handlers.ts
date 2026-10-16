@@ -56,6 +56,7 @@ import {
   projectRejectionSchema,
 } from "@/api/projects";
 import { proposalDraftSchema, proposalLookupSchema, recordLinkSchema } from "@/api/proposals";
+import { pushSubscriptionSchema } from "@/api/push";
 import {
   approvalSchema,
   bulkApprovalSchema,
@@ -244,6 +245,7 @@ import {
   submitProposal,
   submittableProposalItemCount,
 } from "@/mocks/proposals";
+import { pushDevicesOf, registerPushDevice } from "@/mocks/push";
 import {
   approveProposal,
   bulkApproveProposals,
@@ -389,6 +391,16 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.userSettings), () =>
       HttpResponse.json(userSettingsOf(currentSession().user.id)),
     ),
+
+    http.get(route(apiRoutes.pushDevices), () =>
+      HttpResponse.json(pushDevicesOf(currentSession().user.id)),
+    ),
+    http.post(route(apiRoutes.pushDevices), async ({ request }) => {
+      const subscription = pushSubscriptionSchema.safeParse(await request.json());
+      return subscription.success
+        ? HttpResponse.json(registerPushDevice(currentSession().user.id, subscription.data))
+        : invalidResponse(subscription.error);
+    }),
 
     http.get(route(apiRoutes.notificationHooks), () =>
       HttpResponse.json(
@@ -1569,6 +1581,8 @@ export function createHandlers(profile: MockUserProfile) {
           changed.emailSince = new Date().toISOString();
         if (change.data.chat === true && !current.chat)
           changed.chatSince = new Date().toISOString();
+        if (change.data.push === true && !current.push)
+          changed.pushSince = new Date().toISOString();
         const row = database.watchlistViewers.find(
           (candidate) =>
             candidate.userId === session.user.id && candidate.watchlistId === watchlist.id,

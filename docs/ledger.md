@@ -55,15 +55,12 @@ are not written down yet. → docs, from the code.
 ### L60: Browser notifications for watchlists
 
 Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
-[WATCH-push](reference/integrations/watchlists.md#watch-push),
-[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send).
+[WATCH-push](reference/integrations/watchlists.md#watch-push).
 
-Decided on 2026-10-16: browser push is a third watchlist channel, on by default for every
-watchlist, personal and system, once the person allows the site's notifications; each
-notification names the watchlist and the records that entered, batched in seconds. Today there
-is no push, and the watchlist preferences sit on the Watchlists page. Where the browser's
-permission is asked waits until those preferences move under Preferences. → frontend, then
-engine.
+Browser push is built (see *Done*). Left: where the browser's permission is asked, which waits
+until the watchlist preferences move under Preferences; until then a line above the watchlists
+on the Watchlists page asks (`TODO(rrandiak)` in `features/preferences/watchlists-page.tsx`).
+→ frontend, then engine (Web Push with the server's key, sent from the outbox).
 
 ## For the engine
 
@@ -233,6 +230,16 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L60, in part:** browser push as a third watchlist channel, a *Browser* switch on each
+  watchlist, on by default. A browser is registered with the server once the person allows the
+  site's notifications there, and again on each visit while allowed; nothing is pushed before
+  that. Each push names the watchlist and the first three records that entered, the rest as
+  *+N more*, batched per person and watchlist after 5 quiet seconds and at most 30 seconds after
+  the first, without what was opened, and never under *Do not send notifications*. The mock shows
+  the pushes from the open tab; `public/push-worker.js` shows them from a real push
+  ([WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+  [WATCH-push](reference/integrations/watchlists.md#watch-push),
+  [WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send)).
 - **L21:** the Identifier plugin kind, with the built-in Pattern implementation (type, a label
   in each language, a regular expression, normalisation, an optional ISBN-10, ISBN-13 or ISSN
   checksum) and MZK's five predefined instances, editable but not deletable, their order deciding

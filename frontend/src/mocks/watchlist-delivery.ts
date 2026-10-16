@@ -1,10 +1,14 @@
 // A deterministic mock outbox. The real service consumes entry events; MSW reconciles the
 // current matching set when a watchlist is read and flushes due batches opportunistically.
+import type { WatchlistView } from "@/domain/entities";
+import type { PushNotice } from "@/domain/watchlist-push";
+import { isPushDue, pushNoticeOf } from "@/domain/watchlist-push";
 import { database } from "@/mocks/database";
+import { pushAllowedSince } from "@/mocks/push";
 import { sessionOf } from "@/mocks/session";
 import { userSettingsOf } from "@/mocks/user-settings";
-import { visibleWatchlists } from "@/mocks/watchlists";
 import { storeWatchlistEntries } from "@/mocks/watchlist-entries";
+import { visibleWatchlists } from "@/mocks/watchlists";
 
 export interface MockWatchlistMail {
   userId: string;
@@ -120,6 +124,104 @@ export function flushWatchlistChat(now = new Date()): void {
     }
   }
   if (changed) storeWatchlistEntries(database.watchlistEntries);
+}
+
+export interface MockWatchlistPush extends PushNotice {
+  userId: string;
+  watchlistId: string;
+  sentAt: string;
+  url: string;
+}
+
+export const watchlistPushOutbox: MockWatchlistPush[] = [];
+
+// What a push names a record by: its title, name or what ran; its id when nothing names it.
+function recordNameOf(view: WatchlistView, recordId: string): string {
+  const titleOf = (documentId: string | undefined) =>
+    database.documents.find((document) => document.id === documentId)?.title;
+  switch (view) {
+    case "documents":
+    case "my-documents":
+    case "requests":
+      return titleOf(recordId) ?? recordId;
+    case "validations":
+      return (
+        titleOf(database.iterations.find((iteration) => iteration.id === recordId)?.documentId) ??
+        recordId
+      );
+    case "lists":
+      return database.lists.find((list) => list.id === recordId)?.name ?? recordId;
+    case "projects":
+      return database.projects.find((project) => project.id === recordId)?.name ?? recordId;
+    case "categories":
+      return database.categories.find((category) => category.id === recordId)?.name ?? recordId;
+    case "tasks":
+      return database.runs.find((run) => run.id === recordId)?.what ?? recordId;
+    default:
+      return recordId;
+  }
+}
+
+// WATCH-push: per person and watchlist, once the batch is due; only for a person with a browser
+// allowed, and only what entered since then or since they switched push on, and not yet opened.
+// Only for the people named, when some are: reconciling everyone's watchlists every few seconds
+// is more than a tab should do.
+export function flushWatchlistPush(
+  now = new Date(),
+  userIds: readonly string[] | null = null,
+): MockWatchlistPush[] {
+  const sent: MockWatchlistPush[] = [];
+  for (const user of database.users) {
+    if (userIds !== null && !userIds.includes(user.id)) continue;
+    const allowedSince = pushAllowedSince(user.id);
+    const session = sessionOf(user.id);
+    if (
+      allowedSince === null ||
+      session === null ||
+      userSettingsOf(user.id).notifications?.doNotSend
+    )
+      continue;
+    for (const summary of visibleWatchlists(session, null)) {
+      const { viewer } = summary;
+      if (
+        !viewer.push ||
+        (summary.filterVersion > 1 && viewer.confirmedFilter !== String(summary.filterVersion))
+      )
+        continue;
+      const pending = database.watchlistEntries.filter(
+        (entry) =>
+          entry.userId === user.id &&
+          entry.watchlistId === summary.id &&
+          !entry.baseline &&
+          entry.pushDeliveredAt === null &&
+          entry.enteredAt > allowedSince &&
+          (viewer.pushSince === null || entry.enteredAt > viewer.pushSince) &&
+          (viewer.seenAt === null || entry.enteredAt > viewer.seenAt),
+      );
+      if (
+        !isPushDue(
+          pending.map((entry) => new Date(entry.enteredAt)),
+          now,
+        )
+      )
+        continue;
+      for (const entry of pending) entry.pushDeliveredAt = now.toISOString();
+      const push = {
+        userId: user.id,
+        watchlistId: summary.id,
+        sentAt: now.toISOString(),
+        url: `/watchlists?watchlist=${encodeURIComponent(summary.id)}`,
+        ...pushNoticeOf(
+          summary.name,
+          pending.map((entry) => recordNameOf(summary.view, entry.recordId)),
+        ),
+      };
+      watchlistPushOutbox.push(push);
+      sent.push(push);
+    }
+  }
+  if (sent.length > 0) storeWatchlistEntries(database.watchlistEntries);
+  return sent;
 }
 
 export function noteSystemWatchlistChange(
