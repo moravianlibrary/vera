@@ -43,12 +43,14 @@ import type {
 import { scopeOfIteration } from "@/domain/iterations";
 import { can, hasPermission, isWithinScope, scopesOf } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
+import type { PropertyValues } from "@/domain/properties";
 import { isRestricted, validationOf } from "@/domain/status";
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatches, shownBatchIdOf } from "@/mocks/batches";
 import { database } from "@/mocks/database";
+import { publicPropertyKeys } from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 export function queryDocuments(
@@ -196,12 +198,23 @@ function publicRecordOf(record: DocumentRecord, asks: readonly Request[]): Docum
   const requests = asks.map(publicRequestOf);
   const followed = new Set(requests.map(followedIterationId));
   return {
-    document: record.document,
+    document: { ...record.document, properties: publicPropertiesOf(record.document.properties) },
     iterations: record.iterations
       .filter((iteration) => followed.has(iteration.id))
       .map(publicIterationOf),
     requests,
   };
+}
+
+// DOC-property-visibility: a public reader reads the public properties, not who set them.
+export function publicPropertiesOf(properties: readonly PropertyValues[]): PropertyValues[] {
+  const publicKeys = publicPropertyKeys();
+  return properties
+    .filter((values) => publicKeys.has(values.key))
+    .map((values) => ({
+      ...values,
+      sources: values.sources.map((source) => ({ ...source, setBy: null })),
+    }));
 }
 
 function publicRequestOf(request: Request): Request {
@@ -215,6 +228,7 @@ function publicRequestOf(request: Request): Request {
 function publicIterationOf(iteration: Iteration): Iteration {
   return {
     ...withoutIngestError(iteration),
+    properties: publicPropertiesOf(iteration.properties),
     restriction: iteration.restriction && { ...iteration.restriction, internalText: null },
     cancellation: iteration.cancellation && { ...iteration.cancellation, internalText: null },
     defects: iteration.defects.map((defect) => ({ ...defect, internalText: null })),

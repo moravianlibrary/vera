@@ -6,9 +6,11 @@
 // Rows arrive a slice at a time; nearing the end of the loaded rows asks for the next slice.
 // Grouped, a header row spanning every column opens each group; the server sorts by group first,
 // so a group may run on into the next slice but never comes back after another.
-// TODO(rrandiak): render only the visible rows once lists run to thousands loaded; picking
-// several rows (§9.4); ↑ and ↓ moving the selection (§9.9).
+// While rows are being picked (§9.4), a click picks or unpicks a row instead of opening it.
+// TODO(rrandiak): render only the visible rows once lists run to thousands loaded; ↑ and ↓
+// moving the selection (§9.9).
 
+import { Check } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Fragment } from "react";
 import type { ListToolbarProps } from "@/components/lists/list-toolbar";
@@ -47,6 +49,12 @@ export interface ListGroups<Group extends GroupCounts> {
   header: (group: Group) => ReactNode;
 }
 
+// Rows picked for an act over several of them; absent while nothing is being picked.
+export interface RowPicking {
+  readonly pickedIds: ReadonlySet<string>;
+  readonly onToggle: (id: string) => void;
+}
+
 export interface RecordListProps<Row, Group extends GroupCounts, Grouping extends string> {
   rows: readonly Row[] | undefined;
   rowId: (row: Row) => string;
@@ -62,9 +70,24 @@ export interface RecordListProps<Row, Group extends GroupCounts, Grouping extend
   isLoading: boolean;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  picking?: RowPicking;
   loadingText: string;
   emptyText: string;
   loadingMoreText: string;
+}
+
+function PickMark({ isPicked }: { isPicked: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "mr-2 inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border align-[-3px]",
+        isPicked && "border-primary bg-primary text-primary-foreground",
+      )}
+    >
+      {isPicked && <Check className="size-3" />}
+    </span>
+  );
 }
 
 export function RecordList<Row, Group extends GroupCounts, Grouping extends string>({
@@ -80,6 +103,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
   isLoading,
   selectedId,
   onSelect,
+  picking,
   loadingText,
   emptyText,
   loadingMoreText,
@@ -118,7 +142,9 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
 
           {rows.map((row, index) => {
             const id = rowId(row);
-            const isSelected = id === selectedId;
+            const isSelected = picking === undefined && id === selectedId;
+            const isPicked = picking?.pickedIds.has(id) ?? false;
+            const mark = picking === undefined ? null : <PickMark isPicked={isPicked} />;
             const groupStart = groupStarts.get(index);
             return (
               <Fragment key={id}>
@@ -127,8 +153,9 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                 <button
                   type="button"
                   data-slot="record-list-row"
-                  onClick={() => onSelect(id)}
+                  onClick={() => (picking === undefined ? onSelect(id) : picking.onToggle(id))}
                   aria-current={isSelected || undefined}
+                  aria-pressed={picking === undefined ? undefined : isPicked}
                   className={cn(
                     "block w-full border-b px-4 py-3 text-left hover:bg-muted",
                     "@2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid @2xl:items-center @2xl:px-0",
@@ -144,6 +171,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                       </span>
                     )}
                     <span className="mt-0.5 mb-1.5 block text-sm leading-snug font-medium">
+                      {mark}
                       {card.title(row)}
                     </span>
                     {card.meta !== undefined && (
@@ -152,16 +180,22 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                   </span>
 
                   <span className="hidden @2xl:contents">
-                    {columns.map((column) => (
+                    {columns.map((column, columnIndex) => (
                       <span
                         key={column.key}
                         className={cn(
                           "min-w-0 px-2.5 text-[0.8125rem] first:pl-4 last:pr-4 [&_[data-slot=badge]]:rounded-md [&_[data-slot=badge]]:whitespace-normal",
                           hasWhyLine ? "pt-2.5 pb-1" : "py-2.5",
                           column.isNumeric && "text-right tabular-nums",
+                          mark !== null && columnIndex === 0 && "flex items-start",
                         )}
                       >
-                        {column.cell(row)}
+                        {columnIndex === 0 && mark}
+                        {mark !== null && columnIndex === 0 ? (
+                          <span className="min-w-0">{column.cell(row)}</span>
+                        ) : (
+                          column.cell(row)
+                        )}
                       </span>
                     ))}
                   </span>

@@ -1,8 +1,10 @@
 // The strip over a list: what it counts, and how its rows may be grouped
 // (component-interfaces.md §2.2). It sticks to the top of the list's scroll box; the table
 // header sticks under it, so it keeps its height of 2.5rem.
-// TODO(rrandiak): actions over the picked rows (view-rules.md §1.2); labels move to i18n.
+// Acts over the picked rows sit after the count (view-rules.md §1.2).
+// TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import type { ViewGroupingOption } from "@/lib/view-definition";
 
 export interface ListGroupings<Grouping extends string> {
@@ -16,17 +18,22 @@ export interface ListToolbarProps<Grouping extends string> {
   // "34 documents · 41 asks".
   count: string;
   groupings?: ListGroupings<Grouping>;
+  // Picking rows and what is done to the picked ones: Documents' *Select*.
+  actions?: ReactNode;
 }
 
 export function ListToolbar<Grouping extends string>({
   count,
   groupings,
+  actions,
 }: ListToolbarProps<Grouping>) {
   return (
     <div className="sticky top-0 z-20 flex h-10 items-center gap-2 border-b bg-background px-4">
       <span className="text-[0.6875rem] font-bold tracking-wider text-muted-foreground uppercase">
         {count}
       </span>
+
+      {actions}
 
       {groupings !== undefined && groupings.options.length > 0 && (
         <select

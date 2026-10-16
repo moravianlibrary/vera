@@ -48,6 +48,7 @@ import {
   isRescan,
   projectIdsOf,
 } from "@/domain/requests";
+import { PropertiesCard } from "@/features/properties/properties-card";
 import { RequestStatusBadge } from "@/features/requests/request-status";
 import {
   decisionInvalidations,
@@ -130,6 +131,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
         <PlacedCard row={row} projects={projects} custodies={custodies} />
         <CopiesCard record={record} nameOf={nameOf} />
         <CatalogCard document={document} nameOf={nameOf} />
+        <PropertiesCard record={record} audience="staff" nameOf={nameOf} />
         <HistoryCard record={record} log={log} nameOf={nameOf} isPublic={false} />
       </div>
 

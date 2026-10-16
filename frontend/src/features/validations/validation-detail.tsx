@@ -35,6 +35,7 @@ import {
   isFoundAfterScan,
   pagesSubject,
 } from "@/domain/validations";
+import { PropertiesCard } from "@/features/properties/properties-card";
 import { DefectRow, PageCountEntry } from "@/features/validations/defect-card";
 import {
   ForbiddenCard,
@@ -223,6 +224,11 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         {row.review === "Forbidden" && <ForbiddenCard session={session} />}
         <AttemptCard row={row} />
         <CatalogCard document={document} nameOf={nameOf} link={detail.catalogLink} />
+        <PropertiesCard
+          record={{ document, iterations: [iteration], requests: [] }}
+          audience="staff"
+          nameOf={nameOf}
+        />
         <HistoryCard
           record={{ document, iterations: [iteration], requests: [] }}
           log={log}

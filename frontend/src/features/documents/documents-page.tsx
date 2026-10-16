@@ -20,6 +20,7 @@ import { DocumentList } from "@/features/documents/document-list";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
+import { useBulkPropertyEntry } from "@/features/properties/bulk-property-entry";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
@@ -32,6 +33,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
   const documents = useDocumentsQuery(query, grouping, isMy ? "my" : undefined);
   const { data: detail } = useDocumentQuery(selectedId, isMy ? "my" : undefined);
   const { summary } = documents;
+  // DOC-property-hand: a value entered on the picked documents at once.
+  const bulk = useBulkPropertyEntry(session, !isMy);
 
   // Once per search, so a closed record stays closed.
   const autoOpenedSearchRef = useRef<string | null>(null);
@@ -108,6 +111,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
         />
       )}
 
+      {bulk.notice}
+
       <FilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
         key={view.filterReplacements}
@@ -150,6 +155,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             userId={userId}
             selectedId={selectedId}
             onSelect={select}
+            picking={bulk.picking}
+            toolbarActions={bulk.toolbarActions}
           />
         }
         detail={detailPane}
@@ -161,6 +168,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
           }
         }}
       />
+
+      {bulk.dialog}
 
       {canPropose && (
         <ProposeDialog

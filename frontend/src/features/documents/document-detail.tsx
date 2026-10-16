@@ -60,6 +60,7 @@ import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
 import { DocumentActions } from "@/features/documents/document-actions";
 import { RetryFailedButton } from "@/features/documents/document-group-header";
+import { PropertiesCard } from "@/features/properties/properties-card";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useBatchesQuery,
@@ -144,6 +145,7 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
           </>
         )}
         <CatalogCard document={document} nameOf={nameOf} />
+        <PropertiesCard record={record} audience="staff" nameOf={nameOf} />
         <HistoryCard record={record} log={log} nameOf={nameOf} isPublic={false} />
       </div>
     </>
@@ -569,6 +571,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
             <FinePrint>Only you and the curator deciding read this.</FinePrint>
           </DetailCard>
         )}
+        <PropertiesCard record={record} audience="public" nameOf={() => ""} />
         <HistoryCard record={record} log={log} nameOf={() => ""} isPublic />
       </div>
     </>

@@ -53,11 +53,12 @@ import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";
 import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
-import { oncePerCause } from "@/mocks/documents";
+import { oncePerCause, publicPropertiesOf } from "@/mocks/documents";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/request-custodies";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
+import { mayReadStaffProperties } from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
@@ -295,9 +296,25 @@ export function findRequestDetail(session: Session, documentId: string): Request
   }
 
   return {
-    row,
+    row: mayReadStaffProperties(session) ? row : withPublicProperties(row),
     log: logOf(row),
     canDecide: row.decision === "Pending" && isDecidableBy(session, row),
+  };
+}
+
+// DOC-property-visibility: staff properties are read with `iteration.read`, not on Requests alone.
+function withPublicProperties(row: RequestRow): RequestRow {
+  const { document, iterations } = row.record;
+  return {
+    ...row,
+    record: {
+      ...row.record,
+      document: { ...document, properties: publicPropertiesOf(document.properties) },
+      iterations: iterations.map((iteration) => ({
+        ...iteration,
+        properties: publicPropertiesOf(iteration.properties),
+      })),
+    },
   };
 }
 

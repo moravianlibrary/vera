@@ -60,18 +60,17 @@ export function allPropertyDefinitions(): PropertyDefinition[] {
   return database.propertyDefinitions.map(definitionOf);
 }
 
-// DOC-property-visibility: staff properties are read in staff detail only. Whoever defines
-// properties, or gives their permissions, reads every definition.
+// DOC-property-visibility: staff properties are read in staff detail only, with `iteration.read`.
 export function mayReadStaffProperties(session: Session): boolean {
-  return (
-    hasPermission(session, "iteration.read") ||
-    hasPermission(session, "property.define") ||
-    hasPermission(session, "access.manage")
-  );
+  return hasPermission(session, "iteration.read");
 }
 
+// Whoever defines properties, or gives their permissions, reads every definition.
 export function readablePropertyDefinitions(session: Session): PropertyDefinition[] {
-  const readsStaff = mayReadStaffProperties(session);
+  const readsStaff =
+    mayReadStaffProperties(session) ||
+    hasPermission(session, "property.define") ||
+    hasPermission(session, "access.manage");
   return allPropertyDefinitions().filter(
     (definition) => readsStaff || definition.visibility === "public",
   );

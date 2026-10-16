@@ -219,6 +219,7 @@ On the *Properties* page ([DOC-property](../model/documents.md#doc-property)).
 |---|---|---|---|---|
 | `ACT-property-create` | *New property…* | `property.define` | a key never used before, a deleted one included (409 `property.key_taken`); no hand entry for a fact the catalog holds, the page count apart (422) | the definition and its `property.<key>.edit` |
 | `ACT-property-save` | *Edit…* | `property.define` | as create; the key unchanged | — |
+| `ACT-property-enter` | *Enter…* on the record pane, *Enter a property…* on documents picked in Documents | `property.<key>.edit` | defined for hand entry, and no fact the catalog holds (422); an attempt property while its attempt is not scanned (409 `iteration.scanned`) | the hand value at its definition's tier; the checks rerun when a rule reads it; log *Property changed*; hook `document.property_changed` or `iteration.property_changed` |
 | `ACT-property-delete` | *Delete…* | `property.define` | not predefined (409 `property.predefined`) | its values, grants, filters and conditions removed ([DOC-property-delete](../model/documents.md#doc-property-delete)) |
 
 ## Hooks

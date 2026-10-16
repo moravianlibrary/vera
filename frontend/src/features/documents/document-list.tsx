@@ -2,9 +2,10 @@
 // reads, and a header over each batch or project when grouped.
 // TODO(rrandiak): the one-line reason under a row; labels move to i18n.
 
+import type { ReactNode } from "react";
 import type { DocumentGroup, DocumentGrouping } from "@/api/documents";
 import { Muted } from "@/components/detail-card";
-import type { ColumnDefinition } from "@/components/lists/record-list";
+import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,9 @@ interface DocumentListProps {
   userId: string;
   selectedId: string | null;
   onSelect: (documentId: string) => void;
+  picking?: RowPicking;
+  // Picking rows and what is done to the picked ones.
+  toolbarActions?: ReactNode;
 }
 
 export function DocumentList({
@@ -63,6 +67,8 @@ export function DocumentList({
   userId,
   selectedId,
   onSelect,
+  picking,
+  toolbarActions,
 }: DocumentListProps) {
   const isPublic = audience === "public";
   const { data: categories = [] } = useCategoriesQuery({ isEnabled: !isPublic });
@@ -96,6 +102,7 @@ export function DocumentList({
       toolbar={{
         count: total === undefined ? "Documents" : `${total} documents`,
         groupings: { options: groupings, value: grouping, onChange: onGroupingChange },
+        actions: toolbarActions,
       }}
       groups={{
         items: groups,
@@ -113,6 +120,7 @@ export function DocumentList({
       isLoading={isLoading}
       selectedId={selectedId}
       onSelect={onSelect}
+      picking={picking}
       loadingText="Loading documents…"
       emptyText="Nothing matches. Clear a filter to see more."
       loadingMoreText="Loading more documents…"

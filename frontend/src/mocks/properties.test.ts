@@ -96,3 +96,16 @@ describe("properties on the mock server", () => {
     });
   });
 });
+
+describe("entering a property on several documents", () => {
+  it("enters it document by document and says which refused (DOC-property-hand)", async () => {
+    const { enterPropertyValues } = await import("@/mocks/properties");
+    expect(
+      enterPropertyValues(resolveSession("admin"), ["D5", "D12"], "machines", {
+        value: ["bookeye"],
+      }),
+    ).toMatchObject({
+      value: { enteredCount: 1, refusals: [{ documentId: "D12" }] },
+    });
+  });
+});
