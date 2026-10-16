@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { beforeEach, describe, expect, it } from "bun:test";
 import type { Clock } from "./clock";
 import { createClock } from "./clock";
-import { migrate, openDatabase } from "./db";
+import { applySchema, openDatabase, readSchema } from "./db";
 import type { Jobs } from "./jobs";
 import { createJobs } from "./jobs";
 import { createOutbox } from "./outbox";
@@ -22,7 +22,7 @@ function stateOf(id: number) {
 
 beforeEach(() => {
   db = openDatabase(":memory:");
-  migrate(db);
+  applySchema(db, readSchema());
   clock = createClock(db);
   clock.reset(new Date("2026-06-25T08:40:00.000Z"), true);
   jobs = createJobs(db, clock);

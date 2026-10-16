@@ -1,7 +1,7 @@
 -- People and what the session reads of them: users, roles and the ways a person holds them,
 -- identities, groups, categories and custody (ACCESS-role-ways, ACCESS-group, ACCESS-suspend).
 -- Order is kept by rowid, the order rows were written in. Foreign keys are checked at commit,
--- so a seed may name a row before it is written.
+-- so a seed may name a row before it is written, and a table may name one in another file.
 
 CREATE TABLE users (
   id TEXT PRIMARY KEY,

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { dropEverything, migrate, openDatabase, readMigrations } from "./db";
+import { applySchema, dropEverything, openDatabase, readSchema } from "./db";
 
 function tablesOf(db: ReturnType<typeof openDatabase>): string[] {
   return db
@@ -13,35 +13,40 @@ function tablesOf(db: ReturnType<typeof openDatabase>): string[] {
     .map(({ name }) => name);
 }
 
+function schemaDirWith(files: Record<string, string>): string {
+  const dir = mkdtempSync(join(tmpdir(), "vera-schema-"));
+  for (const [name, sql] of Object.entries(files)) {
+    writeFileSync(join(dir, name), sql);
+  }
+  return dir;
+}
+
 describe("the database", () => {
-  it("applies the migrations in order, once", () => {
+  it("is built from every schema file", () => {
     const db = openDatabase(":memory:");
-    const versions = readMigrations().map(({ version }) => version);
-    expect(migrate(db)).toEqual(versions);
-    expect(migrate(db)).toEqual([]);
+    applySchema(db, readSchema());
     expect(tablesOf(db)).toContain("engine_state");
+    expect(tablesOf(db)).toContain("users");
   });
 
-  it("applies only the migrations added since", () => {
-    const dir = mkdtempSync(join(tmpdir(), "vera-migrations-"));
-    writeFileSync(join(dir, "0001_one.sql"), "CREATE TABLE one (id INTEGER);");
-    const db = openDatabase(":memory:");
-    expect(migrate(db, readMigrations(dir))).toEqual([1]);
-    writeFileSync(join(dir, "0002_two.sql"), "CREATE TABLE two (id INTEGER);");
-    expect(migrate(db, readMigrations(dir))).toEqual([2]);
+  it("knows its schema changed by the hash", () => {
+    const dir = schemaDirWith({ "a.sql": "CREATE TABLE one (id INTEGER);" });
+    const before = readSchema(dir).hash;
+    expect(readSchema(dir).hash).toBe(before);
+    writeFileSync(join(dir, "a.sql"), "CREATE TABLE one (id TEXT);");
+    expect(readSchema(dir).hash).not.toBe(before);
   });
 
-  it("rolls a failing migration back whole", () => {
-    const dir = mkdtempSync(join(tmpdir(), "vera-migrations-"));
-    writeFileSync(join(dir, "0001_bad.sql"), "CREATE TABLE half (id INTEGER); NOT SQL;");
+  it("leaves nothing of a schema that fails", () => {
+    const dir = schemaDirWith({ "a.sql": "CREATE TABLE half (id INTEGER);", "b.sql": "NOT SQL;" });
     const db = openDatabase(":memory:");
-    expect(() => migrate(db, readMigrations(dir))).toThrow();
-    expect(tablesOf(db)).toEqual(["schema_migrations"]);
+    expect(() => applySchema(db, readSchema(dir))).toThrow();
+    expect(tablesOf(db)).toEqual([]);
   });
 
   it("drops every table on a reset", () => {
     const db = openDatabase(":memory:");
-    migrate(db);
+    applySchema(db, readSchema());
     dropEverything(db);
     expect(tablesOf(db)).toEqual([]);
   });

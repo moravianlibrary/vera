@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import type { Clock } from "./clock";
 import { ClockError, createClock } from "./clock";
-import { migrate, openDatabase } from "./db";
+import { applySchema, openDatabase, readSchema } from "./db";
 
 const seedMoment = new Date("2026-06-25T08:40:00.000Z");
 let wall = 1_000_000;
@@ -9,7 +9,7 @@ let clock: Clock;
 
 beforeEach(() => {
   const db = openDatabase(":memory:");
-  migrate(db);
+  applySchema(db, readSchema());
   wall = 1_000_000;
   clock = createClock(db, () => wall);
 });

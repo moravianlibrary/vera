@@ -1,5 +1,5 @@
 // Runs the engine on a port: `make engine`. The database file survives restarts; a new one is
-// loaded from the base seed.
+// loaded from the base seed, and one built from other schema files is rebuilt from its seed.
 //   VERA_ENGINE_PORT         default 8080, where the frontend's live mode proxies /api
 //   VERA_ENGINE_DATABASE     default engine/.data/vera.sqlite
 //   VERA_ENGINE_DEVELOPMENT  "1" honours the dev servers' header and serves /_engine

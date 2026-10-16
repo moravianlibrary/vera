@@ -7,7 +7,7 @@ import { sessionEndpoints } from "./access/endpoints";
 import type { Clock } from "./clock";
 import { createClock } from "./clock";
 import { controlPrefix, serveControl } from "./control";
-import { dropEverything, migrate, openDatabase } from "./db";
+import { applySchema, dropEverything, openDatabase, readSchema } from "./db";
 import { apiPrefix, serveApi } from "./http/api";
 import type { Endpoint } from "./http/endpoint";
 import { problem } from "./http/problem";
@@ -25,6 +25,7 @@ export interface EngineOptions {
   // The seed loaded when the database is new.
   seed?: string;
   seedsDir?: string;
+  schemaDir?: string;
   // Tests freeze the clock; development lets it run.
   frozenClock?: boolean;
   wallNow?: () => number;
@@ -37,7 +38,8 @@ export interface Engine {
   outbox: Outbox;
   development: boolean;
   fetch(request: Request): Promise<Response>;
-  // Drops everything and loads the named seed; the clock goes to the seed's moment.
+  // Drops everything, builds the schema and loads the named seed; the clock goes to the seed's
+  // moment.
   reset(seed: string): void;
   close(): void;
 }
@@ -45,10 +47,11 @@ export interface Engine {
 export const endpoints: readonly Endpoint[] = [...sessionEndpoints];
 
 const seedKey = "seed";
+const schemaKey = "schema";
 
 export function createEngine(options: EngineOptions): Engine {
   const db = openDatabase(options.databasePath);
-  migrate(db);
+  const schema = readSchema(options.schemaDir);
   const clock = createClock(db, options.wallNow);
   const jobs = createJobs(db, clock);
   const outbox = createOutbox(db, clock);
@@ -78,10 +81,12 @@ export function createEngine(options: EngineOptions): Engine {
       // Read first: an unknown seed leaves the database as it was.
       const seed = readSeed(name, options.seedsDir ?? seedsDir);
       dropEverything(db);
-      migrate(db);
+      applySchema(db, schema);
       db.transaction(() => {
         loadSeed(db, seed);
-        db.query("INSERT INTO engine_state (key, value) VALUES (?, ?)").run(seedKey, seed.name);
+        const remember = db.query("INSERT INTO engine_state (key, value) VALUES (?, ?)");
+        remember.run(seedKey, seed.name);
+        remember.run(schemaKey, schema.hash);
         clock.reset(new Date(seed.now), frozen);
       })();
     },
@@ -90,12 +95,26 @@ export function createEngine(options: EngineOptions): Engine {
     },
   };
 
-  const loaded = db
-    .query<{ value: string }, [string]>("SELECT value FROM engine_state WHERE key = ?")
-    .get(seedKey);
-  if (loaded === null) {
-    engine.reset(options.seed ?? "base");
+  // A database built from other schema files is rebuilt from the seed it held: nothing in it is
+  // kept, so it needs no migration.
+  const held = stateOf(db, seedKey);
+  if (held === null || stateOf(db, schemaKey) !== schema.hash) {
+    engine.reset(held ?? options.seed ?? "base");
   }
 
   return engine;
+}
+
+// Null on a new database, which has no engine_state yet.
+function stateOf(db: Database, key: string): string | null {
+  const exists = db
+    .query<{ name: string }, []>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'engine_state'",
+    )
+    .get();
+  return exists === null
+    ? null
+    : (db
+        .query<{ value: string }, [string]>("SELECT value FROM engine_state WHERE key = ?")
+        .get(key)?.value ?? null);
 }
