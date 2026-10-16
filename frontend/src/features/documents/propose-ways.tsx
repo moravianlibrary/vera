@@ -3,7 +3,8 @@
 // searched, and below it the record link or ID for those that cannot. Barcode scanning is
 // continuous: a hardware scanner types the code and presses Enter, so a focused field that adds
 // on Enter and waits is the whole of it, and the camera feeds the same loop while an Input
-// plugin reads barcodes. A photo is read and matched to catalog records, and nothing is added
+// plugin reads barcodes: continuously where the browser reads them, otherwise one photo per book
+// that the plugin reads on the server. A photo is read and matched to catalog records, and nothing is added
 // until one is picked. Each way is shown only while its plugin is enabled
 // (PERM-absent-not-disabled); the dialog decides which.
 // TODO(rrandiak): labels move to i18n.
@@ -13,7 +14,7 @@ import { Camera, ExternalLink, ScanBarcode } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { PhotoReading, ProposalSettings } from "@/api/proposals";
-import { readPhoto, readRecordLink, searchCatalogs } from "@/api/proposals";
+import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/api/proposals";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -393,18 +394,19 @@ type BarcodeReaderClass = new () => BarcodeReader;
 const frameInterval = 250;
 
 // The camera feeds the same loop as a scanner. A code held in front of it is added once, until a
-// different one is read.
+// different one is read. Where the browser cannot read it, or the camera does not open, each book
+// is photographed instead (ACT-ways-in).
 function CameraScanner({ onScan }: { onScan: (code: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const onScanRef = useRef(onScan);
   onScanRef.current = onScan;
-  const [problem, setProblem] = useState<string | null>(null);
+  const [isPhotographed, setIsPhotographed] = useState(false);
 
   useEffect(() => {
     const Reader = (globalThis as { BarcodeDetector?: BarcodeReaderClass }).BarcodeDetector;
     const video = videoRef.current;
     if (Reader === undefined || navigator.mediaDevices?.getUserMedia === undefined) {
-      setProblem("This browser cannot read barcodes from the camera. A scanner still works.");
+      setIsPhotographed(true);
       return;
     }
 
@@ -437,7 +439,7 @@ function CameraScanner({ onScan }: { onScan: (code: string) => void }) {
         await video.play();
         void readFrame();
       })
-      .catch(() => setProblem("The camera could not be opened."));
+      .catch(() => setIsPhotographed(true));
     return () => {
       isStopped = true;
       for (const track of stream?.getTracks() ?? []) {
@@ -446,10 +448,64 @@ function CameraScanner({ onScan }: { onScan: (code: string) => void }) {
     };
   }, []);
 
-  return problem === null ? (
-    <video ref={videoRef} muted playsInline className="max-h-56 w-full rounded-md bg-muted" />
+  return isPhotographed ? (
+    <PhotographedBarcodes onScan={onScan} />
   ) : (
-    <p className="text-xs text-tone-amber-foreground">{problem}</p>
+    <video ref={videoRef} muted playsInline className="max-h-56 w-full rounded-md bg-muted" />
+  );
+}
+
+// One photo per book, its barcode read by the plugin on the server; each code goes into the same
+// loop as a scan, and the next photo is a tap away.
+export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isUnread, setIsUnread] = useState(false);
+  const read = useMutation({
+    mutationFn: readBarcode,
+    onSuccess: ({ code }) => {
+      setIsUnread(code === null);
+      if (code !== null) {
+        onScan(code);
+      }
+    },
+  });
+  return (
+    <div className="grid justify-items-start gap-1.5">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        aria-label="Photo of a barcode"
+        onChange={(event) => {
+          const photo = event.target.files?.[0];
+          event.target.value = "";
+          if (photo !== undefined) {
+            read.mutate(photo);
+          }
+        }}
+      />
+      <Button
+        size="sm"
+        onClick={() => inputRef.current?.click()}
+        disabled={read.isPending}
+        autoFocus
+      >
+        <Camera className="size-3.5" /> {read.isPending ? "Reading…" : "Photograph a barcode"}
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        This browser does not read the camera as it goes, so each book takes one photo.
+      </p>
+      {isUnread && (
+        <p className="text-xs text-tone-amber-foreground">
+          No barcode was read on that photo. Take another, closer and straight on.
+        </p>
+      )}
+      {read.isError && (
+        <p className="text-xs text-destructive">The photo could not be read. Take another.</p>
+      )}
+    </div>
   );
 }
 

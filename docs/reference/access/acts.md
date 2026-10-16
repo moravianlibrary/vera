@@ -75,12 +75,9 @@ A way whose plugin is not enabled is absent, not disabled
 ([PERM-absent-not-disabled](permissions.md#perm-absent-not-disabled)).
 
 The camera reads barcodes while the barcode-reading Input plugin is enabled. Where the browser can
-read codes from the camera, scanning stays continuous. Where it cannot, the same way takes one
-photo per book and the plugin reads its code. Either way each code lands in the scan as it is
-read.
-
-> **Open — [L61](../../ledger.md#l61-camera-barcodes-everywhere).** Only the browser reads; a
-> browser that cannot says a scanner still works.
+read codes from the camera, scanning stays continuous. Where it cannot, or the camera does not
+open in the page, the same way takes one photo per book and the plugin reads its code. Either way
+each code lands in the scan as it is read, and a photo with no code read says so.
 
 The catalog ways are one: the searchable catalogs first, then, for each catalog that cannot be
 searched, where to find a record and a field for its link or ID.

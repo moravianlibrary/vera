@@ -304,7 +304,7 @@ import {
   visibleWatchlists,
   watchlistReachOf,
 } from "@/mocks/watchlists";
-import { readPhoto, readRecordLink, searchCatalogs } from "@/mocks/ways-in";
+import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/mocks/ways-in";
 
 const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
@@ -1194,6 +1194,16 @@ export function createHandlers(profile: MockUserProfile) {
       return photo instanceof File
         ? outcomeResponse(readPhoto())
         : problemResponse({ status: 422, message: "Take a photo to read" });
+    }),
+    http.post(route(apiRoutes.proposalBarcode), async ({ request }) => {
+      if (!hasPermission(currentSession(), "request.create")) {
+        return problemResponse({ status: 403, message: "You may not propose" });
+      }
+
+      const photo = (await request.formData()).get("photo");
+      return photo instanceof File
+        ? outcomeResponse(readBarcode(photo))
+        : problemResponse({ status: 422, message: "Photograph a barcode to read" });
     }),
 
     http.get(route(apiRoutes.proposalRateLimit), () => {

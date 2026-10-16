@@ -83,16 +83,6 @@ is no push, and the watchlist preferences sit on the Watchlists page. Where the 
 permission is asked waits until those preferences move under Preferences. → frontend, then
 engine.
 
-### L61: Camera barcodes everywhere
-
-Rules: [ACT-ways-in](reference/access/acts.md#act-ways-in).
-
-Decided on 2026-10-16. The camera reads barcodes while the barcode-reading Input plugin is
-enabled: continuously where the browser can read codes from the camera, otherwise one photo per
-book that the plugin reads on the server, each code landing in the scan as it is read. Built: only
-the browser's reader; Safari, iOS and Firefox are told a scanner still works. → frontend (the
-photo fallback and its endpoint), then engine.
-
 ## For the engine
 
 ### L8: Placing again is a run
@@ -261,6 +251,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L61:** the camera reads barcodes where the browser cannot: one photo per book, its code read
+  by the barcode-reading Input plugin on the server and added like a scan, counted the same; a
+  photo with no code says so. The browser's continuous reader stays where it exists
+  ([ACT-ways-in](reference/access/acts.md#act-ways-in)).
 - **L31:** each Custody instance is one rule, its condition the configuration and one request
   custody picked in its editor from those on Users & Groups, bound by id: a rename keeps it
   placing, and a deleted custody's rule places nothing until another is picked, which Plugins

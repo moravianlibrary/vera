@@ -10,6 +10,7 @@ import {
   checkProposalItems,
   getProposalSettings,
   getRateLimitStatus,
+  readBarcode,
   readPhoto,
   readRecordLink,
   searchCatalogs,
@@ -390,6 +391,29 @@ describe("the ways in (ACT-ways-in)", () => {
       422,
     );
     expect(await statusOf(readRecordLink({ catalogInstanceId: "pi1", link: "MZK01-1" }))).toBe(404);
+  });
+
+  it("reads the barcode on a photo where the browser cannot, while the camera plugin is on", async () => {
+    signInAs("reader");
+    const photo = () => new File(["jpeg"], "barcode.jpg", { type: "image/jpeg" });
+    const first = await readBarcode(photo());
+    const second = await readBarcode(photo());
+
+    expect(first.code).not.toBeNull();
+    expect(second.code).not.toBe(first.code);
+    expect(await readBarcode(new File([], "blank.jpg", { type: "image/jpeg" }))).toEqual({
+      code: null,
+    });
+
+    const instances = database.pluginInstances;
+    database.pluginInstances = instances.map((instance) =>
+      instance.id === "pi12" ? { ...instance, isEnabled: false } : instance,
+    );
+    try {
+      expect(await statusOf(readBarcode(photo()))).toBe(404);
+    } finally {
+      database.pluginInstances = instances;
+    }
   });
 
   it("reads a photo into candidates, each with why it matched", async () => {

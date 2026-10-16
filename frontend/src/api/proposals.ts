@@ -142,6 +142,10 @@ export const photoReadingSchema = z.object({
 });
 export type PhotoReading = z.infer<typeof photoReadingSchema>;
 
+// ACT-ways-in: the code the barcode-reading Input plugin read on one photo, or none.
+export const barcodeReadingSchema = z.object({ code: z.string().nullable() });
+export type BarcodeReading = z.infer<typeof barcodeReadingSchema>;
+
 export async function searchCatalogs(
   query: string,
   catalogId: string | null,
@@ -162,6 +166,13 @@ export async function readPhoto(photo: File): Promise<PhotoReading> {
   const body = new FormData();
   body.set("photo", photo);
   return postForm(apiRoutes.proposalPhoto, body, photoReadingSchema);
+}
+
+// Where the browser cannot read the camera, one photo per book is read on the server.
+export async function readBarcode(photo: File): Promise<BarcodeReading> {
+  const body = new FormData();
+  body.set("photo", photo);
+  return postForm(apiRoutes.proposalBarcode, body, barcodeReadingSchema);
 }
 
 export async function getProposalSettings(): Promise<ProposalSettings> {

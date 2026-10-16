@@ -43,10 +43,11 @@ export const apiRoutes = {
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
   // ACT-ways-in: searching the catalogs that can be searched, reading a record link in one that
-  // cannot, and reading a photo.
+  // cannot, reading a photo, and reading the barcode on a photo where the browser cannot.
   proposalCatalogSearch: "/proposals/catalog-search",
   proposalRecordLink: "/proposals/record-link",
   proposalPhoto: "/proposals/photo",
+  proposalBarcode: "/proposals/barcode",
   proposals: "/proposals",
   // Remaining rate limit count for the current user (checked before submit).
   proposalRateLimit: "/proposals/rate-limit",

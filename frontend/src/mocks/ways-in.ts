@@ -1,8 +1,15 @@
 // The ways in beyond typing, pasting and a file (ACT-ways-in): what the enabled plugins offer the
 // propose dialog, searching the catalogs that can be searched, reading a record link in one that
-// cannot, and reading a photo. A hardware scanner needs no plugin; it types like a keyboard.
+// cannot, reading a photo, and reading the barcode on one. A hardware scanner needs no plugin; it
+// types like a keyboard.
 
-import type { CatalogHit, PhotoReading, ProposalSettings, RecordLink } from "@/api/proposals";
+import type {
+  BarcodeReading,
+  CatalogHit,
+  PhotoReading,
+  ProposalSettings,
+  RecordLink,
+} from "@/api/proposals";
 import type { InputMode } from "@/domain/plugins";
 import { knownCatalogRecords } from "@/mocks/catalog";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
@@ -151,4 +158,22 @@ export function readPhoto(): Outcome<PhotoReading> {
       ],
     },
   };
+}
+
+// The barcodes the catalog knows, each photo reading the next; an empty photo reads none.
+let photographedCount = 0;
+
+export function readBarcode(photo: File): Outcome<BarcodeReading> {
+  if (!hasInput("Camera")) {
+    return { refusal: { status: 404, message: "Nothing reads barcodes here" } };
+  }
+
+  if (photo.size === 0) {
+    return { value: { code: null } };
+  }
+
+  const codes = knownCatalogRecords().flatMap((record) => Object.keys(record.barcodes));
+  const code = codes[photographedCount % codes.length] ?? null;
+  photographedCount += 1;
+  return { value: { code } };
 }
