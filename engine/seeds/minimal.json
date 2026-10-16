@@ -1,0 +1,75 @@
+{
+  "name": "minimal",
+  "now": "2026-06-25T08:40:00.000Z",
+  "devPeople": { "curator": "u1", "reader": "u2", "suspended": "u3", "no-access": "u4" },
+  "collections": {
+    "users": [
+      { "id": "u1", "name": "Curator One", "kind": "person", "email": "curator@example.org" },
+      { "id": "u2", "name": "Reader Two", "kind": "person", "email": "reader@example.org" },
+      { "id": "u3", "name": "Suspended Three", "kind": "person", "email": null },
+      { "id": "u4", "name": "Nobody Four", "kind": "person", "email": null }
+    ],
+    "roles": [
+      {
+        "id": "reader",
+        "name": "Reader",
+        "description": "Asks for documents.",
+        "isShipped": true,
+        "grants": [
+          { "permission": "request.create", "scope": null },
+          { "permission": "request.read_mine", "scope": null }
+        ],
+        "proposalBatchLimit": 10,
+        "proposalDailyLimit": 20
+      },
+      {
+        "id": "curator",
+        "name": "Curator",
+        "description": "Decides requests in custody.",
+        "isShipped": true,
+        "grants": [
+          { "permission": "request.create", "scope": null },
+          { "permission": "iteration.read", "scope": "any" }
+        ],
+        "proposalBatchLimit": null,
+        "proposalDailyLimit": null
+      }
+    ],
+    "userAccess": {
+      "u1": {
+        "handRoleIds": ["curator"],
+        "mappedRoles": [{ "roleId": "reader", "instanceId": "pi1", "claim": "default role" }],
+        "identities": [{ "instanceId": "pi1", "externalId": "curator", "lastLoginAt": null }],
+        "entry": null
+      },
+      "u2": {
+        "handRoleIds": [],
+        "mappedRoles": [{ "roleId": "reader", "instanceId": "pi1", "claim": "default role" }],
+        "identities": [{ "instanceId": "pi1", "externalId": "reader", "lastLoginAt": null }],
+        "entry": null
+      },
+      "u3": {
+        "handRoleIds": ["reader"],
+        "mappedRoles": [],
+        "identities": [],
+        "entry": null,
+        "suspendedAt": "2026-06-01T08:00:00.000Z"
+      }
+    },
+    "categories": [
+      { "id": "c1", "name": "Books", "parentId": null },
+      { "id": "c11", "name": "Old books", "parentId": "c1" },
+      { "id": "c2", "name": "Maps", "parentId": null }
+    ],
+    "groups": [
+      {
+        "id": "g1",
+        "name": "Book curators",
+        "description": "Hold the books.",
+        "memberIds": ["u1"],
+        "categoryIds": ["c1"]
+      }
+    ],
+    "categoryMembers": { "c2": ["u1"] }
+  }
+}
