@@ -19,6 +19,7 @@ What each page is for, its shape, and what can narrow it. Who sees each page is 
 | Schedules | what runs when | a timeline |
 | Users management | users, roles, groups and custodies, and what links them | linked columns |
 | Plugins | kinds, implementations and instances | a grouped table with drawers |
+| Properties | the property definitions ([DOC-property](../model/documents.md#doc-property)) | a table with drawers |
 | Hooks | hooks and their deliveries | a table with drawers |
 | Watchlists | every watchlist the person sees, and notifications | one table per page |
 | Preferences | notifications and personal settings | sections |

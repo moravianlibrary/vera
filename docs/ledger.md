@@ -13,39 +13,7 @@ When the change is made and checked, the entry moves to *Done*.
 
 ## Open questions
 
-Each of these waits for a decision first.
-
-### L63: Properties, what the model leaves open
-
-Rules: [DOC-property](reference/model/documents.md#doc-property),
-[DOC-property-hand](reference/model/documents.md#doc-property-hand),
-[DOC-property-filter](reference/model/documents.md#doc-property-filter),
-[DOC-property-delete](reference/model/documents.md#doc-property-delete),
-[DOC-page-count](reference/model/documents.md#doc-page-count),
-[PERM-property-edit](reference/access/permissions.md#perm-property-edit),
-[PLAN-scope](reference/planning/intentions.md#plan-scope).
-
-The model of [L22](#l22-properties) is written into the reference
-([DEC-0013](decisions/DEC-0013-properties-are-admin-defined.md)). These parts of it were not
-decided:
-1. **Defining:** which permission defines a property, and on which page.
-2. **Predefined:** whether the page count, and the material type, shelf mark and title kept as
-   fixed fields, become predefined definitions that cannot be deleted.
-3. **Hand entry:** whether a fact the catalog owns may be defined for hand entry
-   ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)); where a value is entered and
-   whether in bulk; whether entering one reruns the checks; whether an attempt's value can
-   change after the scan.
-4. **Needs:** what `property.<key>.edit` needs, such as `iteration.read@any`.
-5. **Filters and pages:** the filter of a text property; whether *no value* can be filtered on;
-   which pages show a property, and as a column or only in the record pane.
-6. **Deleting:** whether a system watchlist that loses a condition pauses as a refiltered one
-   does; whether a deleted key can be defined again.
-7. **Counting:** whether an intention's condition reads the value in use now or the value when
-   the item was digitized.
-8. **History:** whether a changed value is logged, and which hook event a change to an attempt
-   property fires (`document.property_changed` is a document's).
-
-→ decision, before L22's frontend.
+Each of these waits for a decision first. None is open now.
 
 ## Not built yet
 
@@ -79,9 +47,11 @@ machine) and intentions scoped by a property:
 
 Written into the reference on 2026-10-16, with
 [DEC-0013](decisions/DEC-0013-properties-are-admin-defined.md) replacing
-[DEC-0003](decisions/DEC-0003-properties-are-not-columns.md); what it leaves open is
-[L63](#l63-properties-what-the-model-leaves-open). → frontend (definitions, values and their
-sources, `property.<key>.edit`, the filters, scope conditions), then engine.
+[DEC-0003](decisions/DEC-0003-properties-are-not-columns.md), and the rest settled with
+L63 ([Done](#decided-2026-10-16)). → frontend (the *Properties* page and
+`property.define`, values and their sources on the record pane and in bulk,
+`property.<key>.edit` needing `iteration.read@any`, the filters, scope conditions, the
+predefined four, `iteration.property_changed`), then engine.
 
 ### L62: Personal channels, and one kind off everywhere
 
@@ -245,6 +215,29 @@ The permission descriptions live in `features/access/access-words.ts`. They move
 messages, and the generator follows them. → frontend.
 
 ## Done
+
+### Decided, 2026-10-16
+
+- **L63:** what the properties model left open
+  ([DOC-property](reference/model/documents.md#doc-property)): defining needs
+  `property.define@any`, admin only, on a *Properties* page; the page count, material type,
+  shelf mark and title are predefined and cannot be deleted
+  ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)); a fact the
+  catalog holds cannot be entered by hand, the page count apart; values are entered on the
+  record pane or in bulk on Documents, rerun the checks when a rule reads the property, and an
+  attempt's value is fixed once scanned
+  ([DOC-property-hand](reference/model/documents.md#doc-property-hand));
+  `property.<key>.edit` needs `iteration.read@any`
+  ([PERM-property-edit](reference/access/permissions.md#perm-property-edit)); text filters by
+  *contains*, *no value* is always offered, the record pane shows every readable property and a
+  column only where a view declares it
+  ([DOC-property-filter](reference/model/documents.md#doc-property-filter)); a system watchlist
+  losing a condition pauses, and a deleted key is never reused
+  ([DOC-property-delete](reference/model/documents.md#doc-property-delete)); a scope condition
+  reads the value on the digitized date
+  ([PLAN-scope](reference/planning/intentions.md#plan-scope)); a change is logged and fires
+  `document.property_changed` or `iteration.property_changed`
+  ([DOC-property-values](reference/model/documents.md#doc-property-values)).
 
 ### Confirmed as built, 2026-10-15
 

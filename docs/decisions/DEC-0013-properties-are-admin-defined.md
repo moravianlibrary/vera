@@ -30,6 +30,7 @@ everything that names it.
 [DOC-property-hand](../reference/model/documents.md#doc-property-hand),
 [DOC-property-filter](../reference/model/documents.md#doc-property-filter),
 [DOC-property-delete](../reference/model/documents.md#doc-property-delete),
+[DOC-property-predefined](../reference/model/documents.md#doc-property-predefined),
 [PERM-property-edit](../reference/access/permissions.md#perm-property-edit),
 [PLAN-scope](../reference/planning/intentions.md#plan-scope). Not built yet
 ([L22](../ledger.md#l22-properties)).

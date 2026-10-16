@@ -77,12 +77,12 @@ Each property has its own permission, `property.<key>.edit`, made with its defin
 accepts `any` only. Reading a property needs no permission of its own: it follows the
 property's visibility ([DOC-property-visibility](../model/documents.md#doc-property-visibility)).
 
-> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** What
-> `property.<key>.edit` needs ([PERM-requires](#perm-requires)), such as `iteration.read@any`, so
-> that a holder can reach every record the grant does.
+`property.<key>.edit` needs `iteration.read@any`
+([PERM-requires](#perm-requires)), so its holder reaches every record the grant does. Defining
+properties is `property.define`, at `any`, in Administration; only `admin` is given it.
 
-> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the catalog below holds only
-> the fixed permissions.
+> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the catalog and the needs
+> above hold neither `property.define` nor the per-property permissions.
 
 #### PERM-absent-not-disabled
 

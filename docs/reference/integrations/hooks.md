@@ -15,7 +15,7 @@ file) to a recipient, with its own batching and retries.
 |---|---|
 | Requests | `request.created` · `request.decided` · `request.held` |
 | Documents | `iteration.ingested` · `iteration.ingest_failed` · `iteration.validated` · `iteration.restricted` · `iteration.cancelled` · `iteration.listed` · `iteration.digitized` · `iteration.published` · `iteration.classified` |
-| Records | `document.relinked` · `document.property_changed` · `document.registry_changed` |
+| Records | `document.relinked` · `document.property_changed` · `iteration.property_changed` · `document.registry_changed` |
 | Lists | `list.created` · `list.dates_changed` · `list.started` · `list.done` · `list.deleted` |
 | Tasks | `task.failed` · `task.finished` |
 
