@@ -326,6 +326,62 @@ describe("switching an instance off", () => {
   });
 });
 
+describe("identifier types (DOC-identifiers)", () => {
+  const isbnDraft = (configuration: Record<string, string>) => ({
+    name: "ISBN",
+    configuration: {
+      type: "isbn",
+      label_en: "ISBN",
+      label_cs: "ISBN",
+      pattern: "97[89]\\d{10}",
+      normalisation: "trim,dropHyphens",
+      checksum: "isbn13",
+      ...configuration,
+    },
+    linkedCategoryId: null,
+    settings: { kind: "Identifier" as const, order: 3 },
+  });
+
+  it("ships MZK's types as predefined instances, edited but never deleted", async () => {
+    signInAs("admin");
+    const identifiers = (await getPluginIndex()).instances.filter(
+      (instance) => instance.kind === "Identifier",
+    );
+
+    expect(identifiers.map(({ name }) => name)).toEqual([
+      "Catalog ID",
+      "NBN",
+      "ISBN",
+      "ISSN",
+      "Barcode",
+    ]);
+    expect(identifiers.every((instance) => instance.isPredefined)).toBe(true);
+    expect(await refusalOf(deletePluginInstance("pi38"))).toMatchObject({
+      status: 409,
+      code: "plugin.predefined",
+    });
+    expect(
+      (await savePluginInstance("pi38", isbnDraft({ label_cs: "ISBN-13" }))).configuration,
+    ).toMatchObject({ label_cs: "ISBN-13" });
+  });
+
+  it("refuses a pattern that is not one, and a second instance of a type", async () => {
+    signInAs("admin");
+
+    expect(
+      await refusalOf(savePluginInstance("pi38", isbnDraft({ pattern: "97[89" }))),
+    ).toMatchObject({ status: 422, code: "plugin.identifier" });
+    expect(
+      await refusalOf(savePluginInstance("pi38", isbnDraft({ checksum: "luhn" }))),
+    ).toMatchObject({ code: "plugin.identifier" });
+    expect(
+      await refusalOf(
+        createPluginInstance({ ...isbnDraft({}), name: "ISBN again", implementationId: "pt31" }),
+      ),
+    ).toMatchObject({ status: 409, code: "plugin.identifier_taken" });
+  });
+});
+
 describe("running and deleting an instance", () => {
   it("runs a kind that runs by itself, as a run on Tasks", async () => {
     signInAs("admin");

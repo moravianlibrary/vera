@@ -151,7 +151,10 @@ export function instanceActionsFor(
           ...(newer === null
             ? []
             : [{ id: "upgrade", label: `Move to v${newer}…`, onSelect: act("upgrade") }]),
-          { id: "delete", label: "Delete…", isDestructive: true, onSelect: act("delete") },
+          // DOC-identifiers: a predefined instance is edited, never deleted.
+          ...(instance.isPredefined
+            ? []
+            : [{ id: "delete", label: "Delete…", isDestructive: true, onSelect: act("delete") }]),
         ]
       : []),
   ];

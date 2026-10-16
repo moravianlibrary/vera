@@ -52,24 +52,6 @@ Rules: [UI-pages](reference/ui/pages.md#ui-pages).
 The columns of each list, what each record pane shows and what each page deliberately leaves out
 are not written down yet. → docs, from the code.
 
-### L21: Identifier plugins
-
-Rules: [DOC-identifiers](reference/model/documents.md#doc-identifiers),
-[DOC-lines](reference/model/documents.md#doc-lines),
-[PLG-kinds](reference/integrations/plugins.md#plg-kinds).
-
-Decided on 2026-10-15: each identifier type is an instance of a new **Identifier** plugin kind,
-which recognises, checks and normalises a value and names the type in each language (*NBN*,
-*ČNB*). One built-in **Pattern** implementation does it with a regular expression, a
-normalisation and an optional checksum (ISBN-10, ISBN-13, ISSN), one instance per type. VERA ships
-predefined Pattern instances with MZK's formats, shown on Plugins as editable but not deletable,
-their order deciding detection; a library configures them or adds its own, such as a shelf-mark
-pattern. Only a check a pattern cannot make needs its own implementation. This replaces moving the formats into each
-installation's configuration; tenancy stays out of scope. The code fixes the types and formats
-in `domain/proposals.ts` (`TODO(Tenancy)`), and the client checks them as typed: the server is to
-send each type's pattern and labels with the propose settings, and a type checked only by plugin
-code is checked with the catalog lookup. → frontend, then engine.
-
 ### L60: Browser notifications for watchlists
 
 Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
@@ -251,6 +233,15 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L21:** the Identifier plugin kind, with the built-in Pattern implementation (type, a label
+  in each language, a regular expression, normalisation, an optional ISBN-10, ISBN-13 or ISSN
+  checksum) and MZK's five predefined instances, editable but not deletable, their order deciding
+  detection. The propose settings carry each type's recogniser and labels, which the dialog reads
+  in place of the types fixed in the code; a type without a recogniser is taken when chosen and
+  checked with the catalog lookup. The mock's ISBN and ISSN now pass their checksums
+  ([DOC-identifiers](reference/model/documents.md#doc-identifiers),
+  [DOC-lines](reference/model/documents.md#doc-lines),
+  [PLG-kinds](reference/integrations/plugins.md#plg-kinds)).
 - **L61:** the camera reads barcodes where the browser cannot: one photo per book, its code read
   by the barcode-reading Input plugin on the server and added like a scan, counted the same; a
   photo with no code says so. The browser's continuous reader stays where it exists

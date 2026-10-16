@@ -649,13 +649,16 @@ function SettingsCard({
       return <CustodyCard custodyId={settings.custodyId} names={names} reach={reach} />;
     case "Message":
     case "Classifier":
+    case "Identifier":
       return (
         <DetailCard title="Order">
           <FactGrid facts={[{ label: "Among its kind", value: settings.order }]} />
           <FinePrint>
             {settings.kind === "Message"
               ? "Message… offers the instances in this order."
-              : "Asked in this order; the first suggestion wins, and the decide form names who made it."}
+              : settings.kind === "Identifier"
+                ? "A pasted value is tried against the identifier types in this order; the first that recognises it gives its type."
+                : "Asked in this order; the first suggestion wins, and the decide form names who made it."}
           </FinePrint>
         </DetailCard>
       );

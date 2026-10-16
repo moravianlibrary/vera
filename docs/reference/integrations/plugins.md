@@ -37,9 +37,6 @@ Several instances of one implementation may run side by side (one catalog adapte
 The kinds are listed, here and on Plugins, in the order a document meets them: login, asks
 arriving, facts, copies, gates, routing, planning, publishing, then communication.
 
-> **Open — [L21](../../ledger.md#l21-identifier-plugins).** The Identifier kind is decided but
-> not built ([DOC-identifiers](../model/documents.md#doc-identifiers)).
-
 #### PLG-declares
 
 Each version declares what it supplies: the rules it checks, the properties and their tiers, the

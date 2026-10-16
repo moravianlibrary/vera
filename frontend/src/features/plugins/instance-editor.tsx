@@ -85,6 +85,9 @@ export const refusalTexts = {
   "plugin.contract": "Its version was built for a contract VERA does not run.",
   "plugin.policy": "Its tiers, copy states or agent do not fit what its version declares.",
   "plugin.no_such_custody": "Pick a request custody on Users & Groups.",
+  "plugin.identifier":
+    "The type, pattern, normalisation (trim, upperCase, dropHyphens) or checksum (isbn10, isbn13, issn) is not one VERA reads.",
+  "plugin.identifier_taken": "Another instance already recognises that identifier type.",
   403: "Only those who configure plugins change them.",
 };
 
@@ -197,6 +200,7 @@ function settingsOf(
       return { kind, custodyId: values.custodyId };
     case "Message":
     case "Classifier":
+    case "Identifier":
       return { kind, order };
     default:
       return null;
@@ -269,6 +273,7 @@ export function InstanceEditorDialog({
   const hasOrder =
     implementation.kind === "Message" ||
     implementation.kind === "Classifier" ||
+    implementation.kind === "Identifier" ||
     implementation.kind === "Identity";
   const configured = new Map(Object.entries(instance?.configuration ?? {}));
   const policy = instance?.policy ?? defaultPolicyOf(version.declares);
@@ -532,7 +537,13 @@ export function InstanceEditorDialog({
             <Field
               id={`${id}-order`}
               label={isIdentity ? "Order on the login page" : "Order"}
-              hint={implementation.kind === "Classifier" ? "the first suggestion wins" : undefined}
+              hint={
+                implementation.kind === "Classifier"
+                  ? "the first suggestion wins"
+                  : implementation.kind === "Identifier"
+                    ? "the first that recognises a value gives its type"
+                    : undefined
+              }
             >
               <Input
                 id={`${id}-order`}

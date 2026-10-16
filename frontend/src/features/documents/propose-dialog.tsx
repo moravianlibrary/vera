@@ -53,16 +53,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { isShownAsBatch } from "@/domain/documents";
 import type { Priority, Session } from "@/domain/entities";
+import type { IdentifierType, IdentifierTypeRule } from "@/domain/identifiers";
+import {
+  identifierLabelOf,
+  identifierTypeSchema,
+  isIdentifierOf,
+  normalisedOf,
+} from "@/domain/identifiers";
 import { hasPermission, proposeActOf } from "@/domain/permissions";
 import { isProjectMember } from "@/domain/projects";
-import type { IdentifierType, ProposalLine } from "@/domain/proposals";
-import {
-  defaultBatchNameOf,
-  identifierTypeSchema,
-  identifierTypes,
-  isIdentifierOf,
-  parseProposalLines,
-} from "@/domain/proposals";
+import type { ProposalLine } from "@/domain/proposals";
+import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@/domain/proposals";
+import { IdentifierRulesContext, useIdentifierRules } from "@/features/documents/identifier-rules";
 import { BarcodeWay, CatalogSearchWay, PhotoWay } from "@/features/documents/propose-ways";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";
@@ -70,20 +72,12 @@ import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
-// DOC-identifiers: the Czech labels name the NBN ČNB.
-const identifierLabels = {
-  catalogId: "Catalog ID",
-  nbn: "NBN",
-  isbn: "ISBN",
-  issn: "ISSN",
-  barcode: "Barcode",
-  shelfMark: "Shelf mark",
-} as const satisfies Record<IdentifierType, string>;
-
 const steps = ["Items", "Details", "Submitted"] as const;
 type Step = (typeof steps)[number];
 
 const autoDetect = "auto";
+
+const noRules: readonly IdentifierTypeRule[] = [];
 
 type Way = "typed" | "catalog" | "pasted" | "file" | "barcode" | "photo";
 const noProject = "none";
@@ -168,6 +162,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
     refetchInterval: 60_000, // Refresh when the library's calendar day changes.
   });
   const limit = settings === undefined ? 0 : (settings.maxAtOnce ?? Number.POSITIVE_INFINITY);
+  const rules = settings?.identifierTypes ?? noRules;
 
   const submit = useMutation({
     mutationFn: submitProposal,
@@ -262,7 +257,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
         unit: picked.unit,
         reason: picked.reason,
       })),
-      `${picked.source} · ${identifierLabels[picked.type]} ${picked.value}`,
+      `${picked.source} · ${identifierLabelOf(rules, picked.type)} ${picked.value}`,
     );
     setItems((current) => current.flatMap((item) => (item.key === key ? added : [item])));
   };
@@ -284,7 +279,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
   };
 
   return (
-    <>
+    <IdentifierRulesContext value={rules}>
       <DialogHeader className="gap-3">
         <DialogTitle>{proposeActOf(session)}</DialogTitle>
         <DialogDescription className="sr-only">
@@ -337,7 +332,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           onDone={onClose}
         />
       )}
-    </>
+    </IdentifierRulesContext>
   );
 }
 
@@ -522,6 +517,7 @@ function ItemsStep({
 }
 
 function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
+  const rules = useIdentifierRules();
   const [type, setType] = useState<IdentifierType>("catalogId");
   const [value, setValue] = useState("");
   const [unit, setUnit] = useState("");
@@ -536,12 +532,7 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
           return;
         }
 
-        onAdd({
-          type: isIdentifierOf(type, trimmed) ? type : null,
-          value: trimmed,
-          unit: unit.trim() || null,
-          reason: null,
-        });
+        onAdd({ ...readIdentifier(rules, trimmed, type), unit: unit.trim() || null, reason: null });
         setValue("");
         setUnit("");
       }}
@@ -582,6 +573,7 @@ function PastedWay({
   canDetectTypes: boolean;
   onAdd: (lines: ProposalLine[]) => void;
 }) {
+  const rules = useIdentifierRules();
   const [text, setText] = useState("");
   const [type, setType] = useState<IdentifierType | null>(canDetectTypes ? null : "catalogId");
 
@@ -610,7 +602,7 @@ function PastedWay({
           variant="outline"
           disabled={text.trim() === ""}
           onClick={() => {
-            onAdd(parseProposalLines(text, type));
+            onAdd(parseProposalLines(text, type, rules));
             setText("");
           }}
         >
@@ -622,6 +614,7 @@ function PastedWay({
 }
 
 function FileWay({ onAdd }: { onAdd: (lines: ProposalLine[], source: string) => void }) {
+  const rules = useIdentifierRules();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUnreadable, setIsUnreadable] = useState(false);
 
@@ -647,7 +640,7 @@ function FileWay({ onAdd }: { onAdd: (lines: ProposalLine[], source: string) => 
           const text = await file.text().catch(() => null);
           setIsUnreadable(text === null);
           if (text !== null) {
-            onAdd(parseProposalLines(text, null), `file · ${file.name}`);
+            onAdd(parseProposalLines(text, null, rules), `file · ${file.name}`);
           }
         }}
       />
@@ -673,6 +666,7 @@ function IdentifierTypeSelect({
   canDetect = false,
   className,
 }: IdentifierTypeSelectProps) {
+  const rules = useIdentifierRules();
   return (
     <Select
       value={value ?? autoDetect}
@@ -690,9 +684,9 @@ function IdentifierTypeSelect({
       </SelectTrigger>
       <SelectContent>
         {canDetect && <SelectItem value={autoDetect}>Detect the type</SelectItem>}
-        {identifierTypes.map((type) => (
+        {rules.map(({ type }) => (
           <SelectItem key={type} value={type}>
-            {identifierLabels[type]}
+            {identifierLabelOf(rules, type)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -709,6 +703,7 @@ interface ItemRowProps {
 }
 
 function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowProps) {
+  const rules = useIdentifierRules();
   const outcome = outcomeOf(item);
   const title = item.check !== null && "title" in item.check ? item.check.title : null;
 
@@ -722,7 +717,7 @@ function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowPro
       <span className="pt-0.5 text-xs text-muted-foreground tabular-nums">{number}</span>
       <span className="min-w-0">
         <span className="font-mono text-xs break-words">
-          {item.type === null ? "?" : identifierLabels[item.type]} · {item.value}
+          {item.type === null ? "?" : identifierLabelOf(rules, item.type)} · {item.value}
           {item.unit !== null && ` · ${item.unit}`}
         </span>{" "}
         <span className="text-xs text-muted-foreground">{item.source}</span>
@@ -884,20 +879,28 @@ function TypeFix({
   item: DraftItem;
   onChange: (patch: Partial<DraftItem>) => void;
 }) {
-  const fitting = identifierTypes.filter((type) => isIdentifierOf(type, item.value));
+  const rules = useIdentifierRules();
+  const fitting = rules
+    .map(({ type }) => type)
+    .filter((type) => isIdentifierOf(rules, type, item.value));
   if (fitting.length === 0) {
     return null;
   }
 
   return (
-    <Select onValueChange={(picked) => onChange({ type: identifierTypeSchema.parse(picked) })}>
+    <Select
+      onValueChange={(picked) => {
+        const type = identifierTypeSchema.parse(picked);
+        onChange({ type, value: normalisedOf(rules, type, item.value) });
+      }}
+    >
       <SelectTrigger size="sm" aria-label="Identifier type" className="h-7 w-32">
         <SelectValue placeholder="type…" />
       </SelectTrigger>
       <SelectContent>
         {fitting.map((type) => (
           <SelectItem key={type} value={type}>
-            {identifierLabels[type]}
+            {identifierLabelOf(rules, type)}
           </SelectItem>
         ))}
       </SelectContent>

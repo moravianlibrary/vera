@@ -84,6 +84,8 @@ export const instanceSettingsSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("Message"), order: z.number().int().positive() }),
   // The first suggestion wins (§4.13).
   z.object({ kind: z.literal("Classifier"), order: z.number().int().positive() }),
+  // DOC-lines: the first that recognises a value gives its type.
+  z.object({ kind: z.literal("Identifier"), order: z.number().int().positive() }),
 ]);
 export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;
 
@@ -103,6 +105,8 @@ export const pluginInstanceDetailSchema = z.object({
   // Its own triggers; when it runs by itself is its schedules.
   triggers: z.array(pluginTriggerSchema),
   settings: instanceSettingsSchema.nullable(),
+  // DOC-identifiers: shipped with VERA; edited, never deleted.
+  isPredefined: z.boolean(),
   // Its tiers, copy states and agent (PLG-upgrade).
   policy: instancePolicySchema,
   createdBy: id,

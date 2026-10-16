@@ -43,6 +43,7 @@ import {
   noDeclarations,
 } from "@/mocks/fixtures/plugins";
 import { hooksUsingChannel } from "@/mocks/hooks";
+import { patternImplementationName, patternRefusal } from "@/mocks/identifiers";
 import { detectPublications } from "@/mocks/links";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import {
@@ -115,6 +116,7 @@ function detailOf(
     linkedCategoryId: instance.linkedCategoryId,
     triggers: [...instance.triggers],
     settings: instance.settings,
+    isPredefined: instance.isPredefined === true,
     policy: policyOf(instance),
     createdBy: instance.createdBy,
     createdAt: instance.createdAt,
@@ -179,7 +181,7 @@ function replaceInstance(instance: StoredPluginInstance): PluginInstanceDetail {
 }
 
 // The kinds whose instances carry VERA's settings.
-const settingsKinds = ["Identity", "Custody", "Message", "Classifier"] as const;
+const settingsKinds = ["Identity", "Custody", "Message", "Classifier", "Identifier"] as const;
 
 function settingsRefusal(
   kind: PluginKind,
@@ -304,7 +306,11 @@ function draftRefusal(
     return { status: 422, message: "No such category", code: "plugin.no_such_category" };
   }
 
-  return settingsRefusal(implementation.kind, draft.settings, existing);
+  const patternProblem =
+    implementation.name === patternImplementationName
+      ? patternRefusal(draft.configuration, existing?.id ?? null)
+      : null;
+  return patternProblem ?? settingsRefusal(implementation.kind, draft.settings, existing);
 }
 
 // ---------------------------------------------------------------- an instance
@@ -512,6 +518,17 @@ export function deleteInstance(session: Session, instanceId: string): Outcome<nu
   const instance = findLive(instanceId);
   if (instance === undefined) {
     return { refusal: noSuchInstance };
+  }
+
+  // DOC-identifiers: a predefined instance is edited, never deleted.
+  if (instance.isPredefined === true) {
+    return {
+      refusal: {
+        status: 409,
+        code: "plugin.predefined",
+        message: "A predefined instance is not deleted",
+      },
+    };
   }
 
   const refusal = lastWayInRefusal(instance);

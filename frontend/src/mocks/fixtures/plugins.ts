@@ -46,6 +46,8 @@ export interface StoredPluginInstance {
   readonly lastRunAt: Date | null;
   // A deleted instance is kept, so the runs it made still name it.
   readonly isDeleted: boolean;
+  // DOC-identifiers: shipped with VERA, so never deleted.
+  readonly isPredefined?: boolean;
 }
 
 // June 2026, in the library's own time.
@@ -396,6 +398,19 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       fields: ["base_url", "since?"],
     },
   ),
+  // DOC-identifiers: built in, one instance per identifier type.
+  implementation(
+    "pt31",
+    "Pattern",
+    "Identifier",
+    "Recognises one identifier type by a regular expression after normalising the value, with an optional checksum, and names the type in each language.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-01-15",
+      triggers: ["OnDemand"],
+      fields: ["type", "label_en", "label_cs", "pattern", "normalisation?", "checksum?"],
+    },
+  ),
   implementation(
     "pt23",
     "MailtoMessage",
@@ -504,6 +519,7 @@ interface InstanceSource {
   readonly createdBy?: string;
   readonly createdAt: string;
   readonly lastRunAt: Date | null;
+  readonly isPredefined?: boolean;
 }
 
 function instance(source: InstanceSource): StoredPluginInstance {
@@ -520,6 +536,67 @@ function instance(source: InstanceSource): StoredPluginInstance {
     isDeleted: false,
   };
 }
+
+// DOC-identifiers: one predefined Pattern instance per type, with MZK's formats.
+const identifierSources: readonly Pick<InstanceSource, "id" | "name" | "configuration">[] = [
+  {
+    id: "pi36",
+    name: "Catalog ID",
+    configuration: {
+      type: "catalogId",
+      label_en: "Catalog ID",
+      label_cs: "Systémové číslo",
+      pattern: "[A-Z]{3,4}\\d{2}-\\d{9}",
+      normalisation: "trim,upperCase",
+    },
+  },
+  {
+    id: "pi37",
+    name: "NBN",
+    configuration: {
+      type: "nbn",
+      label_en: "NBN",
+      label_cs: "ČNB",
+      pattern: "[Cc][Nn][Bb]\\d{9}",
+      normalisation: "trim",
+    },
+  },
+  {
+    id: "pi38",
+    name: "ISBN",
+    configuration: {
+      type: "isbn",
+      label_en: "ISBN",
+      label_cs: "ISBN",
+      pattern: "97[89]\\d{10}",
+      normalisation: "trim,dropHyphens",
+      checksum: "isbn13",
+    },
+  },
+  {
+    id: "pi39",
+    name: "ISSN",
+    configuration: {
+      type: "issn",
+      label_en: "ISSN",
+      label_cs: "ISSN",
+      pattern: "\\d{4}-\\d{3}[\\dX]",
+      normalisation: "trim,upperCase",
+      checksum: "issn",
+    },
+  },
+  {
+    id: "pi40",
+    name: "Barcode",
+    configuration: {
+      type: "barcode",
+      label_en: "Barcode",
+      label_cs: "Čárový kód",
+      pattern: "MZK-\\d{4}-\\d{6}",
+      normalisation: "trim,upperCase",
+    },
+  },
+];
 
 export const pluginInstances: readonly StoredPluginInstance[] = [
   instance({
@@ -883,6 +960,18 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     createdAt: "2026-10-16",
     lastRunAt: null,
   }),
+  // DOC-identifiers: MZK's formats, predefined, their order deciding detection.
+  ...identifierSources.map((source, index) =>
+    instance({
+      ...source,
+      implementationId: "pt31",
+      triggers: ["OnDemand"],
+      settings: { kind: "Identifier", order: index + 1 },
+      createdAt: "2026-01-15",
+      lastRunAt: null,
+      isPredefined: true,
+    }),
+  ),
   instance({
     id: "pi31",
     name: "Material type",

@@ -12,6 +12,7 @@ import { plural } from "@/lib/plural";
 export const pluginKindLabels = {
   Identity: "Identity",
   Input: "Input",
+  Identifier: "Identifier",
   Harvester: "Harvester",
   CatalogAdapter: "Catalog adapter",
   PropertySource: "Property source",
@@ -30,6 +31,7 @@ export const pluginKindLabels = {
 export const pluginKindTones = {
   Identity: "blue",
   Input: "blue",
+  Identifier: "slate",
   Harvester: "amber",
   CatalogAdapter: "blue",
   PropertySource: "green",
@@ -48,6 +50,7 @@ export const pluginKindTones = {
 export const pluginKindJobs = {
   Identity: "a way to log in — the login page is built from these",
   Input: "a way of entering items in the propose dialog",
+  Identifier: "one identifier type — recognises, checks and normalises a value, and names it",
   Harvester: "finds new documents and proposes them",
   CatalogAdapter: "reads catalog records — page counts, material type, units",
   PropertySource: "supplies a value when the catalog has none",
@@ -137,6 +140,8 @@ export function lossText(impact: PluginImpact, instanceName: string): string {
       return "it stops forbidding anything new. What it already forbade stays forbidden until a re-check clears it or an admin overrules it.";
     case "Custody":
       return `the ${plural(impact.openProposalCount, "open proposal")} it places now are placed again without its rule; what nothing else places lands in the fallback.`;
+    case "Identifier":
+      return "its type is no longer recognised as it is typed: it is read only when chosen, and the catalog lookup checks it.";
     case "Input":
       return hasOthers
         ? "another instance still offers this way of entering items."

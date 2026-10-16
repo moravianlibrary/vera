@@ -60,8 +60,9 @@ and resolving one is left to the library's plugins and their configuration.
 
 One VERA serves one library.
 
-> **Open — [L21](../../ledger.md#l21-identifier-plugins).** The types and their formats are
-> MZK's and fixed in the code; the Identifier kind is not built.
+The propose dialog checks a value as it is typed by the recogniser of its type's Pattern
+instance. A type checked only by an implementation's own code, or with no instance enabled, has
+no recogniser there: any value is taken when the type is chosen, and the catalog lookup checks it.
 
 #### DOC-lines
 

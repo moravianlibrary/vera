@@ -13,6 +13,7 @@ import type {
 import type { InputMode } from "@/domain/plugins";
 import { knownCatalogRecords } from "@/mocks/catalog";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
+import { identifierRules } from "@/mocks/identifiers";
 import type { Outcome } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
 
@@ -57,6 +58,7 @@ export function waysInOf(): WaysIn {
       })),
     canScanWithCamera: hasInput("Camera"),
     canReadPhotos: hasInput("Photo"),
+    identifierTypes: identifierRules(),
   };
 }
 

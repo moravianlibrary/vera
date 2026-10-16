@@ -8,7 +8,7 @@ import { recordStatusSchema } from "@/api/documents";
 import { getJson, postForm, postJson } from "@/api/http";
 import { apiRoutes } from "@/api/routes";
 import { batchSchema, prioritySchema } from "@/domain/entities";
-import { identifierTypeSchema } from "@/domain/proposals";
+import { identifierTypeRuleSchema, identifierTypeSchema } from "@/domain/identifiers";
 
 const namedSchema = z.object({ id: z.string(), name: z.string() });
 
@@ -28,6 +28,8 @@ export const proposalSettingsSchema = z.object({
   canScanWithCamera: z.boolean(),
   // An enabled Input instance reads photos and matches them to catalog records.
   canReadPhotos: z.boolean(),
+  // DOC-identifiers: each type by its Identifier instance, in the order that decides detection.
+  identifierTypes: z.array(identifierTypeRuleSchema),
 });
 export type ProposalSettings = z.infer<typeof proposalSettingsSchema>;
 

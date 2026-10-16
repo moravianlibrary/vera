@@ -1,45 +1,10 @@
 // What a proposal is made of before anything is looked up: an identifier of a known type, the
 // volume or issue it names and why it is asked for (view-map.md §1, propose). The format is
-// checked here, synchronously (identifier-types.md); what the identifier resolves to is the
-// catalog's answer, asked of the server.
-// TODO(Tenancy): the catalog ID and barcode patterns are MZK's (view-rules.md §3 rules 2 and 6);
-// the catalog ID also takes the other bases a pasted record link can name.
+// checked here, synchronously, by the rules the server sends for each type (domain/identifiers.ts,
+// DOC-identifiers); what the identifier resolves to is the catalog's answer, asked of the server.
 
-import { z } from "zod";
-
-// DOC-identifiers: the NBN is the type's international name; only the Czech UI calls it ČNB.
-export const identifierTypes = [
-  "catalogId",
-  "nbn",
-  "isbn",
-  "issn",
-  "barcode",
-  "shelfMark",
-] as const;
-export const identifierTypeSchema = z.enum(identifierTypes);
-export type IdentifierType = z.infer<typeof identifierTypeSchema>;
-
-// A shelf mark has no common format (DOC-identifiers): any value may be one, so it is checked by
-// the library's plugins, and never detected.
-const identifierPatterns = {
-  catalogId: /^[A-Z]{3,4}\d{2}-\d{9}$/,
-  nbn: /^cnb\d{9}$/i,
-  isbn: /^97[89][-\d]{10,14}$/,
-  issn: /^\d{4}-\d{3}[\dX]$/,
-  barcode: /^MZK-\d{4}-\d{6}$/,
-  shelfMark: /\S/,
-} as const satisfies Record<IdentifierType, RegExp>;
-
-const detectableTypes = identifierTypes.filter((type) => type !== "shelfMark");
-
-export function isIdentifierOf(type: IdentifierType, value: string): boolean {
-  return identifierPatterns[type].test(value);
-}
-
-// The first type whose format the value has; null when it has none.
-export function detectIdentifierType(value: string): IdentifierType | null {
-  return detectableTypes.find((type) => isIdentifierOf(type, value)) ?? null;
-}
+import type { IdentifierType, IdentifierTypeRule } from "@/domain/identifiers";
+import { detectIdentifierType, isIdentifierOf, normalisedOf } from "@/domain/identifiers";
 
 export interface ProposalLine {
   // Null when the value is not an identifier of the type asked for, or of any type.
@@ -53,10 +18,12 @@ const lineComment = "#";
 
 // One item per line: identifier ; volume or issue ; why. A tab or, failing both, a comma also
 // separates the columns, so a spreadsheet's CSV export reads as it is. With a type chosen every
-// line is read as that type; without one each line's type is detected.
+// line is read as that type; without one each line's type is detected (DOC-lines). A value read
+// as a type is normalised as that type's recogniser says.
 export function parseProposalLines(
   text: string,
   chosenType: IdentifierType | null,
+  rules: readonly IdentifierTypeRule[],
 ): ProposalLine[] {
   return text
     .split(/\r?\n/)
@@ -64,14 +31,27 @@ export function parseProposalLines(
     .filter((line) => line !== "" && !line.startsWith(lineComment))
     .map((line) => {
       const [value = "", unit = "", reason = ""] = columnsOf(line);
-      const type =
-        chosenType === null
-          ? detectIdentifierType(value)
-          : isIdentifierOf(chosenType, value)
-            ? chosenType
-            : null;
-      return { type, value, unit: unit || null, reason: reason || null };
+      return {
+        ...readIdentifier(rules, value, chosenType),
+        unit: unit || null,
+        reason: reason || null,
+      };
     });
+}
+
+// One value read as the chosen type, or as the type detected; normalised once it has a type.
+export function readIdentifier(
+  rules: readonly IdentifierTypeRule[],
+  value: string,
+  chosenType: IdentifierType | null,
+): Pick<ProposalLine, "type" | "value"> {
+  const type =
+    chosenType === null
+      ? detectIdentifierType(rules, value)
+      : isIdentifierOf(rules, chosenType, value)
+        ? chosenType
+        : null;
+  return { type, value: type === null ? value : normalisedOf(rules, type, value) };
 }
 
 function columnsOf(line: string): string[] {

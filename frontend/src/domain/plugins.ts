@@ -9,6 +9,7 @@ import { z } from "zod";
 export const pluginKinds = [
   "Identity",
   "Input",
+  "Identifier",
   "Harvester",
   "CatalogAdapter",
   "PropertySource",

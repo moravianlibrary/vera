@@ -26,7 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ProposalLine } from "@/domain/proposals";
-import { detectIdentifierType } from "@/domain/proposals";
+import { readIdentifier } from "@/domain/proposals";
+import { useIdentifierRules } from "@/features/documents/identifier-rules";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
@@ -258,6 +259,7 @@ export function BarcodeWay({
   canScanWithCamera: boolean;
   onAdd: Add;
 }) {
+  const rules = useIdentifierRules();
   const [mode, setMode] = useState<ScanMode | null>(null);
   const [scanned, setScanned] = useState(0);
   const [last, setLast] = useState<string | null>(null);
@@ -270,7 +272,7 @@ export function BarcodeWay({
     }
 
     onAdd(
-      [{ type: detectIdentifierType(value), value, unit: null, reason: null }],
+      [{ ...readIdentifier(rules, value, null), unit: null, reason: null }],
       mode === "camera" ? "barcode · camera" : "barcode",
     );
     setScanned((count) => count + 1);

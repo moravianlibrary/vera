@@ -361,6 +361,40 @@ describe("the ways in (ACT-ways-in)", () => {
     }
   });
 
+  it("sends each identifier type's rule in the instances' order (DOC-identifiers)", async () => {
+    signInAs("reader");
+    const { identifierTypes } = await getProposalSettings();
+
+    expect(identifierTypes.map(({ type }) => type)).toEqual([
+      "catalogId",
+      "nbn",
+      "isbn",
+      "issn",
+      "barcode",
+      "shelfMark",
+    ]);
+    expect(identifierTypes.find(({ type }) => type === "nbn")?.labels).toEqual({
+      en: "NBN",
+      cs: "ČNB",
+    });
+    expect(identifierTypes.find(({ type }) => type === "isbn")?.recogniser).toMatchObject({
+      checksum: "isbn13",
+    });
+    // No instance recognises a shelf mark: it is read when chosen and the lookup checks it.
+    expect(identifierTypes.at(-1)).toMatchObject({ type: "shelfMark", recogniser: null });
+
+    const instances = database.pluginInstances;
+    database.pluginInstances = instances.map((instance) =>
+      instance.id === "pi38" ? { ...instance, isEnabled: false } : instance,
+    );
+    try {
+      const without = (await getProposalSettings()).identifierTypes;
+      expect(without.find(({ type }) => type === "isbn")?.recogniser).toBeNull();
+    } finally {
+      database.pluginInstances = instances;
+    }
+  });
+
   it("searches the catalogs that can be searched, one or all", async () => {
     signInAs("reader");
     const everywhere = await searchCatalogs("slovácké", null);
