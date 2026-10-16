@@ -36,6 +36,7 @@ import {
 import type { Permission } from "@/domain/permissions";
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
+import { pageCountKey } from "@/domain/properties";
 import { isRestricted, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -51,6 +52,7 @@ import {
 } from "@/mocks/intention-lists";
 import type { Outcome } from "@/mocks/mutations";
 import { replaceIteration, writeLog } from "@/mocks/mutations";
+import { allPropertyDefinitions, propertyFacetsOf, propertyPredicatesOf } from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 const today = () => dayOf(mockToday);
@@ -314,11 +316,20 @@ export function queryPool(
   query: PoolQuery,
   slice: Slice = { cursor: null, limit: listSliceSize },
 ): PoolPage {
-  const matching = database.iterations
+  // DOC-property-filter: the pool is read with `list.read`, which needs `iteration.read`.
+  const properties = allPropertyDefinitions().filter(
+    (definition) => definition.key !== pageCountKey,
+  );
+  const propertyPredicates = propertyPredicatesOf(query.properties, properties);
+  const ready = database.iterations
     .filter(isInPool)
     .flatMap((iteration) => itemOf(iteration) ?? [])
-    .filter((item) => matchesPool(item, query))
-    .toSorted(byPriorityThenAge);
+    .filter((item) => matchesPool(item, query));
+  const matchingAllBut = (key: string | null) =>
+    ready.filter((item) =>
+      propertyPredicates.every((predicate) => predicate.key === key || predicate.matches(item)),
+    );
+  const matching = matchingAllBut(null).toSorted(byPriorityThenAge);
   const { items, nextCursor } = sliceOf(matching, (item) => item.iteration.id, slice);
 
   const inReview = database.iterations.filter(isHeldInReview);
@@ -347,6 +358,7 @@ export function queryPool(
         iteration.listId === null &&
         iteration.cancellation !== null,
     ).length,
+    propertyFacets: propertyFacetsOf(properties, matchingAllBut),
   };
 }
 

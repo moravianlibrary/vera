@@ -5,7 +5,7 @@
 
 import { z } from "zod";
 import type { DayRange, ValueRange } from "@/lib/value-range";
-import { isWithinRange, resolveDayRange } from "@/lib/value-range";
+import { dayPresets, isWithinRange, resolveDayRange } from "@/lib/value-range";
 
 const id = z.string().min(1);
 const timestamp = z.iso.datetime();
@@ -221,7 +221,7 @@ export interface PropertyCondition {
   readonly anyOf?: readonly string[];
 }
 
-export const propertyConditionSchema = z.object({
+export const propertyConditionSchema: z.ZodType<PropertyCondition, PropertyCondition> = z.object({
   key: propertyKeySchema,
   hasNoValue: z.boolean().optional(),
   contains: z.string().optional(),
@@ -229,7 +229,7 @@ export const propertyConditionSchema = z.object({
   dayRange: z
     .union([
       z.object({ from: z.string().optional(), to: z.string().optional() }),
-      z.object({ preset: z.string() }),
+      z.object({ preset: z.enum(dayPresets) }),
     ])
     .optional(),
   anyOf: z.array(z.string()).optional(),

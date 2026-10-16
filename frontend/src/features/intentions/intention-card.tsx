@@ -35,6 +35,8 @@ import {
   verdictBadgeOf,
   worstDriftOf,
 } from "@/features/intentions/intentions-view";
+import { conditionTextOf } from "@/features/properties/scope-conditions-field";
+import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useTier } from "@/hooks/use-tier";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -128,6 +130,7 @@ function IntentionBadges({
 
 function ScopeLine({ row }: { row: IntentionRow }) {
   const { funding } = row.intention;
+  const { data: propertyIndex } = usePropertiesQuery();
   const parts: { key: string; part: ReactNode }[] = [];
   if (funding.kind === "none") {
     parts.push({ key: "funding", part: "Counts work without a project" });
@@ -152,6 +155,14 @@ function ScopeLine({ row }: { row: IntentionRow }) {
 
   if (row.scope !== null) {
     parts.push({ key: "scope", part: `Only ${scopePathOf(row.scope.path)}` });
+  }
+
+  // PLAN-scope: its conditions on properties.
+  for (const condition of row.intention.scopeConditions ?? []) {
+    const definition = propertyIndex?.definitions.find(
+      (candidate) => candidate.key === condition.key,
+    );
+    parts.push({ key: `property-${condition.key}`, part: conditionTextOf(definition, condition) });
   }
 
   if (parts.length === 0) {

@@ -24,7 +24,10 @@ import type {
   ListShape,
 } from "@/api/lists";
 import { createList, saveList } from "@/api/lists";
+import type { PropertyParams } from "@/api/properties";
 import { Muted } from "@/components/detail-card";
+import type { PropertyFilterProps } from "@/components/filters/property-filters";
+import { PropertyFilterControls } from "@/components/filters/property-filters";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { PriorityBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
@@ -44,6 +47,10 @@ import {
   useListShapesQuery,
   usePoolQuery,
 } from "@/features/lists/use-lists-query";
+import {
+  filterablePropertiesOf,
+  usePropertiesQuery,
+} from "@/features/properties/use-properties-query";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { isSameSet, useDraft } from "@/hooks/use-draft";
@@ -112,9 +119,12 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
   );
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [propertyParams, setPropertyParams] = useState<PropertyParams | undefined>(undefined);
+  const { data: propertyIndex } = usePropertiesQuery();
   const poolQuery = {
     search: useDeferredValue(search).trim() || undefined,
     categoryId: categoryId || undefined,
+    properties: propertyParams,
   };
   const pool = usePoolQuery(poolQuery);
   const { data: categories = [] } = useCategoriesQuery();
@@ -363,6 +373,12 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
               categoryId={categoryId}
               onCategoryChange={setCategoryId}
               categories={categories}
+              properties={{
+                definitions: filterablePropertiesOf(propertyIndex?.definitions, false),
+                params: propertyParams,
+                facets: pool.summary?.propertyFacets,
+                onChange: setPropertyParams,
+              }}
             />
           ),
           whyOf: (item) => <PoolWhy item={item} isTakenOff={originalIds.has(item.iteration.id)} />,
@@ -535,6 +551,8 @@ interface PoolFilterProps {
   categoryId: string;
   onCategoryChange: (categoryId: string) => void;
   categories: readonly Category[];
+  // DOC-property-filter: the pool narrowed by its items' properties.
+  properties: PropertyFilterProps;
 }
 
 // The category tree as a filter rather than a third pane (view-map.md §2.4).
@@ -544,6 +562,7 @@ function PoolFilter({
   categoryId,
   onCategoryChange,
   categories,
+  properties,
 }: PoolFilterProps) {
   const tops = categories.filter((category) => category.parentId === null);
   const childrenOf = (parentId: string) =>
@@ -576,6 +595,7 @@ function PoolFilter({
           </optgroup>
         ))}
       </select>
+      <PropertyFilterControls properties={properties} />
     </>
   );
 }

@@ -13,4 +13,4 @@ not add a column to a view.
 **Rejected.** One column per fact, overwritten by whoever wrote last.
 
 **Rules.** [DOC-page-count](../reference/model/documents.md#doc-page-count). Only the page count
-works this way so far ([L22](../ledger.md#l22-properties)).
+works this way so far ([L22](../ledger.md#built-2026-10-16)).

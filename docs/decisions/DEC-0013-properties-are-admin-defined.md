@@ -32,5 +32,5 @@ everything that names it.
 [DOC-property-delete](../reference/model/documents.md#doc-property-delete),
 [DOC-property-predefined](../reference/model/documents.md#doc-property-predefined),
 [PERM-property-edit](../reference/access/permissions.md#perm-property-edit),
-[PLAN-scope](../reference/planning/intentions.md#plan-scope). Not built yet
-([L22](../ledger.md#l22-properties)).
+[PLAN-scope](../reference/planning/intentions.md#plan-scope). Built in the frontend
+([L22](../ledger.md#built-2026-10-16)).

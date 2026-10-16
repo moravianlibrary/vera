@@ -29,6 +29,7 @@ import { distributionOf, overallIntention } from "@/mocks/intentions";
 import { byPriorityThenAge, isHeldInReview, itemOf, topCategoryOf } from "@/mocks/lists";
 import type { Outcome } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
+import { meetsScopeConditions } from "@/mocks/properties";
 
 // A little slack on a category's own goal, so one document just over it is still taken.
 const pageSlack = 50;
@@ -113,7 +114,10 @@ export function generateDraft(
   const fixed = items.filter((item) => memberIds.has(item.iteration.id));
   const available = items
     .filter((item) => isInPool(item.iteration) && !memberIds.has(item.iteration.id))
-    .filter((item) => isInIntentionScope(shapedBy, item.iteration, categories))
+    // PLAN-scope: the pool is narrowed to the intention's whole scope, its conditions included.
+    .filter((item) =>
+      isInIntentionScope(shapedBy, item.iteration, categories, meetsScopeConditions),
+    )
     .filter((item) => item.pages !== null)
     .toSorted(byPriorityThenAge);
   if (shapedBy.distributionId === null) {

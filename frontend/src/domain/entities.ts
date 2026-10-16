@@ -6,7 +6,7 @@
 
 import { z } from "zod";
 import { grantSchema } from "@/domain/permissions";
-import { propertyValuesSchema } from "@/domain/properties";
+import { propertyConditionSchema, propertyValuesSchema } from "@/domain/properties";
 
 const id = z.string().min(1);
 const timestamp = z.iso.datetime();
@@ -145,6 +145,8 @@ export const intentionSchema = z.object({
   projectId: id.nullable(),
   // One category node with its subtree; null is every category.
   scopeCategoryId: id.nullable(),
+  // PLAN-scope: what an item's properties must also meet; absent or empty is nothing more.
+  scopeConditions: z.array(propertyConditionSchema).optional(),
   // The mix it chose, any number of intentions sharing it; null for none (PLAN-mix, PLAN-no-mix).
   distributionId: id.nullable(),
   // Null or absent follows the latest revision; a number pins an immutable one.
@@ -173,6 +175,8 @@ export const intentionTemplateSchema = z.object({
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: id.nullable(),
+  // Each occurrence's scope conditions (PLAN-scope).
+  scopeConditions: z.array(propertyConditionSchema).optional(),
   distributionId: id.nullable(),
   mixRevision: z.number().int().positive().nullable().optional(),
   targetPages: z.number().int().positive().nullable(),

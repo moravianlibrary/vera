@@ -14,6 +14,7 @@ import {
   repeatEverySchema,
 } from "@/domain/entities";
 import { intentionStates, mixFlags, targetVerdicts } from "@/domain/intentions";
+import { propertyConditionSchema } from "@/domain/properties";
 
 const count = z.number().int().nonnegative();
 const pages = z.number().int().nonnegative();
@@ -143,6 +144,8 @@ export type MixChoice = z.infer<typeof mixChoiceSchema>;
 export const intentionScopeSchema = z.object({
   funding: intentionFundingSchema,
   scopeCategoryId: z.string().nullable(),
+  // PLAN-scope: conditions on the items' properties, all of which hold; absent is none.
+  scopeConditions: z.array(propertyConditionSchema).optional(),
   countsFrom: calendarDate,
   endsOn: calendarDate.nullable(),
 });
@@ -228,6 +231,7 @@ export const intentionTemplateDraftSchema = z.object({
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: z.string().nullable(),
+  scopeConditions: z.array(propertyConditionSchema).optional(),
   mix: mixChoiceSchema,
   targetPages: z.number().int().positive().nullable(),
   isArchivingPrevious: z.boolean(),

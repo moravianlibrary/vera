@@ -52,8 +52,13 @@ import { repeatEverySchema } from "@/domain/entities";
 import { mixBand } from "@/domain/intentions";
 import { can } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
+import { propertyConditionSchema } from "@/domain/properties";
 import { columnTitles, everyLabels, shareTextOf } from "@/features/intentions/intentions-view";
 import { intentionInvalidations } from "@/features/intentions/use-intentions-query";
+import {
+  ScopeConditionsField,
+  savedConditionsOf,
+} from "@/features/properties/scope-conditions-field";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery, useProjectsQuery } from "@/hooks/use-reference-query";
@@ -243,6 +248,8 @@ const intentionFormSchema = z
     targetPages: z.string().regex(pagesText, "A target is a number of pages, or none"),
     countsFrom: z.string().min(1, "Say when it starts counting"),
     endsOn: z.string(),
+    // PLAN-scope: conditions on the items' properties.
+    conditions: z.array(propertyConditionSchema),
   })
   .refine((values) => values.endsOn === "" || values.endsOn >= values.countsFrom, {
     message: "It cannot end before it starts counting",
@@ -255,6 +262,7 @@ const draftOf = (values: IntentionForm): IntentionDraft => ({
   description: values.description.trim(),
   funding: fundingOf(values.funding),
   scopeCategoryId: values.scope === allCategories ? null : values.scope,
+  scopeConditions: savedConditionsOf(values.conditions),
   targetPages: pagesOf(values.targetPages),
   countsFrom: values.countsFrom,
   endsOn: values.endsOn === "" ? null : values.endsOn,
@@ -272,6 +280,7 @@ function defaultsOf(source: IntentionSource): IntentionForm {
       targetPages: "",
       countsFrom: "",
       endsOn: "",
+      conditions: [],
     };
   }
 
@@ -291,6 +300,7 @@ function defaultsOf(source: IntentionSource): IntentionForm {
     targetPages: intention.targetPages === null ? "" : String(intention.targetPages),
     countsFrom: isCopy ? "" : intention.countsFrom,
     endsOn: intention.endsOn ?? "",
+    conditions: [...(intention.scopeConditions ?? [])],
   };
 }
 
@@ -465,6 +475,11 @@ function IntentionFields({
             />
           </Field>
         </div>
+        <ScopeConditionsField
+          id={`${id}-conditions`}
+          value={values.conditions}
+          onChange={(conditions) => form.setValue("conditions", conditions, touched)}
+        />
         <p className="text-xs text-muted-foreground">
           Counts {formatCalendarDay(intention.countsFrom)} →{" "}
           {intention.endsOn === null ? "no end" : formatCalendarDay(intention.endsOn)} ·{" "}
@@ -503,6 +518,11 @@ function IntentionFields({
           />
         </Field>
       </div>
+      <ScopeConditionsField
+        id={`${id}-conditions`}
+        value={values.conditions}
+        onChange={(conditions) => form.setValue("conditions", conditions, touched)}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id={`${id}-mix`} label="Mix">
           <MixSelect
@@ -565,6 +585,7 @@ const previewRequestOf = (
         intentionId: edited?.intention.id ?? null,
         funding: draft.funding,
         scopeCategoryId: draft.scopeCategoryId,
+        scopeConditions: draft.scopeConditions,
         countsFrom: draft.countsFrom,
         endsOn: draft.endsOn,
         mix: draft.mix,
@@ -738,6 +759,7 @@ const templateFormSchema = z.object({
   mix: z.string(),
   targetPages: z.string().regex(pagesText, "A target is a number of pages, or none"),
   isArchivingPrevious: z.boolean(),
+  conditions: z.array(propertyConditionSchema),
 });
 type TemplateForm = z.infer<typeof templateFormSchema>;
 
@@ -746,6 +768,7 @@ const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
   every: values.every,
   funding: fundingOf(values.funding),
   scopeCategoryId: values.scope === allCategories ? null : values.scope,
+  scopeConditions: savedConditionsOf(values.conditions),
   mix: mixChoiceOf(values.mix),
   targetPages: pagesOf(values.targetPages),
   isArchivingPrevious: values.isArchivingPrevious,
@@ -804,6 +827,7 @@ export function TemplateFormDialog({
         targetPages:
           template === null || template.targetPages === null ? "" : String(template.targetPages),
         isArchivingPrevious: template?.isArchivingPrevious ?? true,
+        conditions: [...(template?.scopeConditions ?? [])],
       }}
       submitLabel={template === null ? "Create repeat" : "Save"}
       onSubmit={(values) => save.run(templateDraftOf(values))}
@@ -867,6 +891,11 @@ export function TemplateFormDialog({
                 />
               </Field>
             </div>
+            <ScopeConditionsField
+              id={`${id}-conditions`}
+              value={values.conditions}
+              onChange={(conditions) => form.setValue("conditions", conditions, touched)}
+            />
             <Field id={`${id}-mix`} label="Mix" hint="each occurrence keeps this selection">
               <MixSelect
                 id={`${id}-mix`}

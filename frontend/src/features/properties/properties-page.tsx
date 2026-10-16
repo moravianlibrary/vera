@@ -406,6 +406,10 @@ function DeletePropertyDialog({
               : `${watchlist.name} loses its condition on it.`,
             tone: watchlist.isShared ? ("amber" as const) : ("plain" as const),
           })),
+          ...impact.intentionNames.map((name) => ({
+            text: `${name} loses its condition on it, and counts more from then on.`,
+            tone: "amber" as const,
+          })),
           { text: `The key ${definition.key} is never used again.` },
         ];
 

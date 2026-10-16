@@ -13,45 +13,20 @@ When the change is made and checked, the entry moves to *Done*.
 
 ## Open questions
 
-Each of these waits for a decision first. None is open now.
+Each of these waits for a decision first.
 
-## Not built yet
-
-### L22: Properties
+### L64: Changing a property's type
 
 Rules: [DOC-property](reference/model/documents.md#doc-property),
-[DOC-property-values](reference/model/documents.md#doc-property-values),
-[DOC-page-count](reference/model/documents.md#doc-page-count),
-[PERM-property-edit](reference/access/permissions.md#perm-property-edit),
-[PLAN-scope](reference/planning/intentions.md#plan-scope).
+[DOC-property-types](reference/model/documents.md#doc-property-types).
 
-Only the page count has sources and tiers today; material type, shelf mark and title are fixed
-fields. Decided on 2026-10-15, so lists can be built and generated over any filter (size, target
-machine) and intentions scoped by a property:
-- only an **admin** defines a property: a key that never changes, a name in each UI language, a
-  visibility (**public** or **staff**), and a type: text, number with a unit, yes/no, date, enum
-  (each value with a name in each language), or a list of any of these;
-- a property is about the **document** (its size) or about one **attempt** (the machine chosen
-  this time);
-- every value has a source, which is a person entering it or a plugin instance (the catalog
-  adapter included), with a tier, when it was observed and who set it; the highest tier with a
-  value wins, as the page count does now;
-- a definition says whether it may be entered by hand, and the tier a hand value gets, so it
-  decides whether a hand value outranks a plugin's;
-- each property has its own permission, `property.<key>.edit`, made with the definition and
-  accepting `any` only; reading follows the visibility;
-- each type gives its filter on every page that shows the property;
-- an intention's scope may add conditions on properties;
-- deleting a definition removes its values, its grants and every filter and condition that
-  names it.
+The reference does not say whether a definition's type, its list flag, what it is about or a
+number's unit may change once records hold values, nor whether an enum value records use may be
+taken out. The frontend and the mock keep all of them once any record holds a value (409
+`property.in_use`, `property.value_in_use`), and always for the predefined four. Names,
+visibility, hand entry and its tier, and new enum values may change at any time. → decision.
 
-Written into the reference on 2026-10-16, with
-[DEC-0013](decisions/DEC-0013-properties-are-admin-defined.md) replacing
-[DEC-0003](decisions/DEC-0003-properties-are-not-columns.md), and the rest settled with
-L63 ([Done](#decided-2026-10-16)). → frontend (the *Properties* page and
-`property.define`, values and their sources on the record pane and in bulk,
-`property.<key>.edit` needing `iteration.read@any`, the filters, scope conditions, the
-predefined four, `iteration.property_changed`), then engine.
+## Not built yet
 
 ### L62: Personal channels, and one kind off everywhere
 
@@ -270,6 +245,31 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L22:** properties in the frontend. A *Properties* page under Administration, with
+  `property.define@any`, admin only, defines them: key, names in each UI language, what they are
+  about, type and list, visibility, hand entry and its tier. The predefined page count, material
+  type, shelf mark and title are edited, never deleted, and a deleted key is never defined again
+  ([DOC-property](reference/model/documents.md#doc-property),
+  [DOC-property-predefined](reference/model/documents.md#doc-property-predefined)). Each property
+  brings `property.<key>.edit`, at `any` only and needing `iteration.read@any`, under its own
+  heading in the role editor ([PERM-property-edit](reference/access/permissions.md#perm-property-edit)).
+  The record pane on Documents, My Documents, Requests and Documents Validations shows each
+  readable property with every source, its tier, when it was observed and who set it, public
+  ones only in public detail; holders enter a value there or, after *Select* on Documents, on
+  every picked document, refused once an attempt is scanned, rerunning the checks when a rule
+  reads it, logged, and firing `document.property_changed` or `iteration.property_changed`
+  ([DOC-property-values](reference/model/documents.md#doc-property-values),
+  [DOC-property-hand](reference/model/documents.md#doc-property-hand),
+  [DOC-property-visibility](reference/model/documents.md#doc-property-visibility)). Those pages
+  and the list editor's pool filter on each property by its type, with *no value* and facet
+  counts, saved in watchlists as `p.<key>`
+  ([DOC-property-filter](reference/model/documents.md#doc-property-filter)). An intention or a
+  repeat adds conditions on properties to its scope, read on the digitized date for a digitized
+  item, and generating draws only from the whole scope
+  ([PLAN-scope](reference/planning/intentions.md#plan-scope)). Deleting a definition removes its
+  values, grants, filters and conditions, and a system watchlist that loses one pauses
+  ([DOC-property-delete](reference/model/documents.md#doc-property-delete)). The mock keeps the
+  predefined four's values on the document itself.
 - **L60:** decided on 2026-10-16 that the browser's permission is asked on the Watchlists page
   until the watchlist preferences move under Preferences, and that a person added to a system
   watchlist's audience starts with push on, email and chat off

@@ -84,3 +84,12 @@ describe("filtering the other pages on properties", () => {
     expect(Object.keys(requests.propertyFacets)).not.toContain("material_type");
   });
 });
+
+describe("narrowing the list editor's pool on properties", () => {
+  it("offers only what is ready with the value", async () => {
+    const { queryPool } = await import("@/mocks/lists");
+    const pool = queryPool({ properties: { "p.size": "A4" } });
+    expect(pool.items.map((item) => item.document.id).toSorted()).toEqual(["D4", "D47"]);
+    expect(queryPool({}).propertyFacets.size?.values).toContainEqual({ value: "A4", count: 2 });
+  });
+});

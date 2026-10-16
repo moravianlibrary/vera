@@ -7,6 +7,8 @@
 import { z } from "zod";
 import { facetCountsOf } from "@/api/facets";
 import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
+import type { PropertyParams } from "@/api/properties";
+import { propertyFacetsSchema, propertyParamsOf, writePropertyParams } from "@/api/properties";
 import { apiRoutes, digitizationListMemberRoute, digitizationListRoute } from "@/api/routes";
 import {
   digitizationListSchema,
@@ -280,12 +282,15 @@ export type ListDetail = z.infer<typeof listDetailSchema>;
 export interface PoolQuery {
   readonly search?: string;
   readonly categoryId?: string;
+  // DOC-property-filter: a condition per property, as `p.<key>` writes it.
+  readonly properties?: PropertyParams;
 }
 
-export const poolQueryParams = { search: "q", categoryId: "category" } as const satisfies Record<
-  keyof PoolQuery,
-  string
->;
+export const poolQueryParams = {
+  search: "q",
+  categoryId: "category",
+  properties: "p.",
+} as const satisfies Record<keyof PoolQuery, string>;
 
 export function toPoolSearchParams(query: PoolQuery): URLSearchParams {
   const params = new URLSearchParams();
@@ -298,6 +303,7 @@ export function toPoolSearchParams(query: PoolQuery): URLSearchParams {
     params.set(poolQueryParams.categoryId, query.categoryId);
   }
 
+  writePropertyParams(params, query.properties);
   return params;
 }
 
@@ -305,6 +311,7 @@ export function parsePoolSearchParams(params: URLSearchParams): PoolQuery {
   return {
     search: params.get(poolQueryParams.search)?.trim() || undefined,
     categoryId: params.get(poolQueryParams.categoryId) || undefined,
+    properties: propertyParamsOf(params),
   };
 }
 
@@ -320,6 +327,8 @@ export const poolPageSchema = z.object({
   undecidedCount: count,
   // Ready but cancelled: not offered until someone resumes it.
   cancelledCount: count,
+  // The enum and yes/no properties' values among what is ready, by key.
+  propertyFacets: propertyFacetsSchema,
 });
 export type PoolPage = z.infer<typeof poolPageSchema>;
 

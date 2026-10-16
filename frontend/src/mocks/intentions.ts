@@ -55,6 +55,7 @@ import { dayOf } from "@/lib/value-range";
 import { database } from "@/mocks/database";
 import { mixTreeOf } from "@/mocks/mixes";
 import type { Outcome, Refusal } from "@/mocks/mutations";
+import { allPropertyDefinitions, meetsScopeConditions } from "@/mocks/properties";
 import { mockToday } from "@/mocks/today";
 
 const today = () => dayOf(mockToday);
@@ -92,6 +93,7 @@ export function countingData(): CountingData {
     lists: database.lists,
     iterations: database.iterations,
     pagesOf,
+    meetsConditions: meetsScopeConditions,
   };
 }
 
@@ -409,6 +411,13 @@ function scopeRefusal(session: Session, draft: IntentionScope): Refusal | null {
     return { status: 422, message: `No category ${draft.scopeCategoryId}` };
   }
 
+  // PLAN-scope: a condition names a property that exists.
+  const keys = new Set(allPropertyDefinitions().map(({ key }) => key));
+  const unknown = (draft.scopeConditions ?? []).find((condition) => !keys.has(condition.key));
+  if (unknown !== undefined) {
+    return { status: 422, message: `No property ${unknown.key}` };
+  }
+
   const reach = scopeOf({ funding });
   return can(session, "intention.edit", reach)
     ? null
@@ -535,6 +544,7 @@ export function saveIntention(
   const isOverallKept =
     draft.funding.kind === "any" &&
     draft.scopeCategoryId === null &&
+    (draft.scopeConditions ?? []).length === 0 &&
     draft.targetPages === null &&
     draft.endsOn === null;
   if (intention.isOverall && !isOverallKept) {

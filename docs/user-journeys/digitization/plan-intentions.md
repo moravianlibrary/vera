@@ -17,7 +17,6 @@
    condition *Machines include Zeutschel*.
    → It counts only items whose attempt lists Zeutschel
    ([PLAN-scope](../../reference/planning/intentions.md#plan-scope)).
-   **(not built: [L22](../../ledger.md#l22-properties))**
 3. He opens the first one's mix on *Mixes* and edits the proportions.
    → A new revision of the mix; every intention following it changes too
    ([PLAN-mix-revision](../../reference/planning/mixes.md#plan-mix-revision)).

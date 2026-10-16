@@ -38,6 +38,8 @@ export const propertyImpactSchema = z.object({
   valueCount: z.number().int().nonnegative(),
   roleNames: z.array(z.string()),
   watchlists: z.array(z.object({ name: z.string(), isShared: z.boolean() })),
+  // Intentions and repeats whose scope names it; they count more without the condition.
+  intentionNames: z.array(z.string()),
 });
 export type PropertyImpact = z.infer<typeof propertyImpactSchema>;
 

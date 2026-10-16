@@ -15,7 +15,7 @@ import type {
 } from "@/api/properties";
 import { conditionsOf, propertyParamKeyOf } from "@/api/properties";
 import { currentIterationOf } from "@/domain/documents";
-import type { Document, Iteration, Session, Watchlist } from "@/domain/entities";
+import type { Document, Intention, Iteration, Session, Watchlist } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { progressAfterGates } from "@/domain/iterations";
 import { can, hasPermission } from "@/domain/permissions";
@@ -257,8 +257,15 @@ export function propertyImpact(session: Session, key: string): Outcome<PropertyI
         name: watchlist.name,
         isShared: isShared(watchlist),
       })),
+      intentionNames: [...database.intentions, ...database.intentionTemplates]
+        .filter((intention) => namesCondition(intention, key))
+        .map((intention) => ("name" in intention ? intention.name : intention.namePattern)),
     },
   };
+}
+
+function namesCondition(intention: Pick<Intention, "scopeConditions">, key: string): boolean {
+  return (intention.scopeConditions ?? []).some((condition) => condition.key === key);
 }
 
 // A watchlist's filter names a property by its parameters (propertyParamsOf in api/properties).
@@ -329,6 +336,18 @@ export function deleteProperty(session: Session, key: string): Outcome<null> {
     );
     return { ...watchlist, filter, filterVersion: (watchlist.filterVersion ?? 1) + 1 };
   });
+  // An intention that had a condition on it counts more from then on (PLAN-scope).
+  const withoutConditions = <Scoped extends Pick<Intention, "scopeConditions">>(scoped: Scoped) =>
+    namesCondition(scoped, key)
+      ? {
+          ...scoped,
+          scopeConditions: (scoped.scopeConditions ?? []).filter(
+            (condition) => condition.key !== key,
+          ),
+        }
+      : scoped;
+  database.intentions = database.intentions.map(withoutConditions);
+  database.intentionTemplates = database.intentionTemplates.map(withoutConditions);
   return { value: null };
 }
 
@@ -635,4 +654,33 @@ export function filterablePropertiesOf(session: Session, isPublic: boolean): Pro
       (!isPublic || definition.visibility === "public") &&
       (isPublic || mayReadStaffProperties(session) || definition.visibility === "public"),
   );
+}
+
+// PLAN-scope: an item meets every condition its intention's scope adds, a document property on
+// its document and an attempt property on the item, read as it was on the item's digitized date
+// once it is digitized, so a later change does not move what was counted. A condition on a
+// property that no longer exists is gone with it (DOC-property-delete).
+export function meetsScopeConditions(
+  intention: Pick<Intention, "scopeConditions">,
+  iteration: Iteration,
+): boolean {
+  const conditions = intention.scopeConditions ?? [];
+  if (conditions.length === 0) {
+    return true;
+  }
+
+  const document = database.documents.find((candidate) => candidate.id === iteration.documentId);
+  if (document === undefined) {
+    return false;
+  }
+
+  const definitions = allPropertyDefinitions();
+  const at = iteration.digitizedAt ?? undefined;
+  return conditions.every((condition) => {
+    const definition = definitions.find((candidate) => candidate.key === condition.key);
+    return (
+      definition === undefined ||
+      meetsCondition(condition, recordValueOf({ document, iteration }, definition, at), mockToday)
+    );
+  });
 }

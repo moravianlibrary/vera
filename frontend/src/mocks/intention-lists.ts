@@ -234,7 +234,9 @@ export function previewCorrection(
   const distribution = distributionOf(intention);
   const reading = mixReadingOf(intention, distribution, counted, data);
   const pool = database.iterations.filter(
-    (iteration) => isInPool(iteration) && isInIntentionScope(intention, iteration, data.categories),
+    (iteration) =>
+      isInPool(iteration) &&
+      isInIntentionScope(intention, iteration, data.categories, data.meetsConditions),
   );
   const readyPagesOf = (categoryId: string) =>
     pool

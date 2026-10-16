@@ -21,9 +21,6 @@ An item is in an intention's scope when all of these hold:
 Deleting a property removes the conditions that name it
 ([DOC-property-delete](../model/documents.md#doc-property-delete)).
 
-> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: a scope is funding and
-> category only.
-
 A condition reads the value in use now for an item not yet digitized, and the value in use on
 its digitized date ([PLAN-digitized-date](#plan-digitized-date)) for one that is, so a value
 changed later does not move figures already counted.

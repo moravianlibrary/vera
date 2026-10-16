@@ -23,8 +23,8 @@
 4. He starts a *New list* from Monday, with a page target, narrows the pool to the document
    property *Size* A4, and adds items from it.
    → Only A4 items are offered
-   ([DOC-property-filter](../../reference/model/documents.md#doc-property-filter))
-   **(not built: [L22](../../ledger.md#l22-properties))**. The items show *Planned* until Monday
+   ([DOC-property-filter](../../reference/model/documents.md#doc-property-filter)). The items
+   show *Planned* until Monday
    ([LC-ITER-on-list](../../reference/lifecycles/iteration.md#lc-iter-on-list)). A hook on
    `list.created` fires.
 5. Meanwhile someone else lists one of the same items; he saves.

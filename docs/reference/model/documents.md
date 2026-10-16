@@ -88,9 +88,6 @@ defines one, on the *Properties* page under Administration. A definition has:
 - whether it may be **entered by hand**, and the tier a hand value gets
   ([DOC-property-hand](#doc-property-hand)).
 
-> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the page count is the only
-> property with sources and tiers, and material type and the others are fixed fields.
-
 #### DOC-property-types
 
 A property's type is one of:
@@ -100,6 +97,9 @@ A property's type is one of:
 - **date**;
 - **enum**, each value with a name in each UI language;
 - a **list** of any of these.
+
+> **Open — [L64](../../ledger.md#l64-changing-a-propertys-type).** Whether a type may change once
+> records hold values; the frontend keeps it.
 
 #### DOC-property-values
 

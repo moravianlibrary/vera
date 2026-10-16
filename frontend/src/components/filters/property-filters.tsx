@@ -10,7 +10,12 @@ import { useEffect, useId, useState } from "react";
 import type { PropertyFacets, PropertyParams } from "@/api/properties";
 import { conditionsOf, withCondition, withoutCondition } from "@/api/properties";
 import type { FilterField } from "@/components/filters/filter-controls";
-import { byOrderOf, optionsOf } from "@/components/filters/filter-controls";
+import {
+  AddFilterMenu,
+  byOrderOf,
+  FilterChip,
+  optionsOf,
+} from "@/components/filters/filter-controls";
 import { RangeEditor, rangeSummaryOf } from "@/components/filters/range-filter";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -284,4 +289,25 @@ export function usePropertyChips(properties: PropertyFilterProps | undefined) {
       chipDefinitions.some((definition) => definition.key === condition.key),
     ).length,
   };
+}
+
+// The property filters alone, for a filter that is not a view's bar: the list editor's pool.
+export function PropertyFilterControls({ properties }: { properties: PropertyFilterProps }) {
+  const chips = usePropertyChips(properties);
+  const fields = propertyListFieldsOf(properties, false);
+  if (fields.length === 0 && chips.addable.length === 0) {
+    return null;
+  }
+
+  return (
+    <>
+      {fields
+        .filter((field) => field.selected.length > 0)
+        .map((field) => (
+          <FilterChip key={field.key} field={field} />
+        ))}
+      {chips.chips}
+      <AddFilterMenu fields={fields} ranges={chips.addable} onAddRange={chips.add} />
+    </>
+  );
 }

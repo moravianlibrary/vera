@@ -93,6 +93,12 @@ export interface CountingData {
   readonly iterations: readonly Iteration[];
   // The page count in use; null where nobody knows it yet.
   readonly pagesOf: (iteration: Iteration) => number | null;
+  // PLAN-scope: whether an item meets the intention's conditions on properties, as the server
+  // reads them; absent, every item does.
+  readonly meetsConditions?: (
+    intention: Pick<Intention, "scopeConditions">,
+    iteration: Iteration,
+  ) => boolean;
 }
 
 export interface IntentionCount {
@@ -108,10 +114,12 @@ export interface IntentionCount {
   readonly noPagesCount: number;
 }
 
+// PLAN-scope: funding, category, and every condition on a property it adds.
 export function isInIntentionScope(
-  intention: Pick<Intention, "funding" | "scopeCategoryId">,
-  iteration: Pick<Iteration, "projectId" | "categoryId">,
+  intention: Pick<Intention, "funding" | "scopeCategoryId" | "scopeConditions">,
+  iteration: Iteration,
   categories: readonly Category[],
+  meetsConditions: CountingData["meetsConditions"] = undefined,
 ): boolean {
   const { funding } = intention;
   const isFundingMatched =
@@ -122,7 +130,10 @@ export function isInIntentionScope(
   return (
     isFundingMatched &&
     (intention.scopeCategoryId === null ||
-      categoryLineageOf(categories, iteration.categoryId).includes(intention.scopeCategoryId))
+      categoryLineageOf(categories, iteration.categoryId).includes(intention.scopeCategoryId)) &&
+    ((intention.scopeConditions ?? []).length === 0 ||
+      meetsConditions === undefined ||
+      meetsConditions(intention, iteration))
   );
 }
 
@@ -137,7 +148,7 @@ function digitizedOnOf(iteration: Iteration): string | null {
 export function countIntention(intention: Intention, data: CountingData): IntentionCount {
   const { lists, pagesOf } = data;
   const matching = data.iterations.filter((iteration) =>
-    isInIntentionScope(intention, iteration, data.categories),
+    isInIntentionScope(intention, iteration, data.categories, data.meetsConditions),
   );
   const listOf = (iteration: Iteration) => lists.find((list) => list.id === iteration.listId);
   // A deleted list's items stop counting; a cancelled item too, unless it was delivered.
@@ -559,13 +570,13 @@ export function countsTowardsOf(
   intentions: readonly Intention[],
   members: readonly Iteration[],
   startsOn: string,
-  data: Pick<CountingData, "categories" | "pagesOf">,
+  data: Pick<CountingData, "categories" | "pagesOf" | "meetsConditions">,
 ): CountsTowards[] {
   return intentions
     .filter((intention) => intention.archived === null && isInWindow(intention, startsOn))
     .flatMap((intention) => {
       const matching = members.filter((iteration) =>
-        isInIntentionScope(intention, iteration, data.categories),
+        isInIntentionScope(intention, iteration, data.categories, data.meetsConditions),
       );
       return matching.length === 0
         ? []
