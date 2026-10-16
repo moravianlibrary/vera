@@ -41,7 +41,8 @@ arriving, facts, copies, gates, routing, planning, publishing, then communicatio
 
 Each version declares what it supplies: the rules it checks, the properties and their tiers, the
 registry states it reports, the identifier types it resolves, its agent and where its proposals
-enter, its generator class, its channel interface, its input mode or its login entry. It also
+enter, its generator class, its channel interface and whether and how it reaches a person (by
+the account's email, or by a handle from an identity claim), its input mode or its login entry. It also
 declares the configuration keys it needs and the triggers it accepts.
 
 #### PLG-triggers

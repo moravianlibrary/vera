@@ -53,11 +53,20 @@ with ten new records adds one. Badges cannot be switched off.
 
 #### WATCH-delivery
 
-Each person decides, per watchlist and per channel (email, chat, browser push), whether to be
-told. Email and chat are off until they switch them on. Browser push is on for every watchlist
+Each person decides, per watchlist and per channel, whether to be told. The channels are browser
+push and every enabled Delivery channel instance that can reach a person
+([PLG-declares](plugins.md#plg-declares)): by the email on their account, or by their handle in a
+chat, read from an identity claim. Each is named by its instance's name, *MZK SMTP* or *MZK
+Slack*, even when it is the only one of its kind. A person the channel cannot reach, with no
+such claim, is told so beside its switch.
+
+Every channel but browser push is off until they switch it on. Browser push is on for every watchlist
 they see, personal and system, once they allow the site's notifications in the browser; nothing
 is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
+
+> **Open — [L62](../../ledger.md#l62-personal-channels-and-one-kind-off-everywhere).** The
+> watchlist channels are a fixed *Email* and *Chat* until the channels follow the instances.
 
 The browser's permission is asked on the Watchlists page, above the watchlists, and moves with
 the watchlist preferences when they move under Preferences.
@@ -85,7 +94,7 @@ When a system watchlist changes:
 | renamed | continue | none |
 | filter changed | paused until each recipient confirms; current matches are a new baseline | the change, with a link to review |
 | someone removed from the audience | stop for them, their settings kept | they lost access |
-| someone added | email and chat start off; push starts on | none |
+| someone added | push starts on, every other channel off | none |
 | removed | stop | it was removed |
 
 #### WATCH-hook-preferences
@@ -97,23 +106,23 @@ follows its own default.
 
 #### WATCH-do-not-send
 
-*Do not send notifications* stops every optional notification, hook mail, watchlist mail and push
-alike, and keeps the individual choices for when it is cleared.
+*Do not send notifications* stops every optional notification, hook mail and every watchlist
+channel alike, and keeps the individual choices for when it is cleared.
 
 #### WATCH-channel-off
 
 Beside *Do not send notifications*, each person can switch one kind of notification off
 everywhere, on *Preferences → Notifications*:
-- *No watchlist email*;
-- *No hook email*;
-- *No watchlist chat*;
-- *No browser notifications*.
+- for watchlists, each channel of [WATCH-delivery](#watch-delivery) by its name, browser push
+  included;
+- *No hook email*, since hooks reach people by email only
+  ([HOOK-recipient](hooks.md#hook-recipient)).
 
 Each stops its kind for every watchlist or hook, those that come later included, and keeps the
 individual choices for when it is cleared. A watchlist or hook whose own switch is on says that
 its kind is off for all. *Do not send notifications* still stops everything.
 
-> **Open — [L62](../../ledger.md#l62-one-kind-off-everywhere).** Not built yet.
+> **Open — [L62](../../ledger.md#l62-personal-channels-and-one-kind-off-everywhere).** Not built yet.
 
 #### WATCH-manage-link
 

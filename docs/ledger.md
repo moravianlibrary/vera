@@ -45,18 +45,24 @@ machine) and intentions scoped by a property:
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
 
-### L62: One kind off everywhere
+### L62: Personal channels, and one kind off everywhere
 
-Rules: [WATCH-channel-off](reference/integrations/watchlists.md#watch-channel-off),
+Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+[WATCH-channel-off](reference/integrations/watchlists.md#watch-channel-off),
+[PLG-declares](reference/integrations/plugins.md#plg-declares),
 [WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send),
 [WATCH-hook-preferences](reference/integrations/watchlists.md#watch-hook-preferences).
 
-Decided on 2026-10-16: beside *Do not send notifications*, four switches each turn one kind off
-everywhere (watchlist email, hook email, watchlist chat, browser notifications), keeping the
-individual choices for when cleared; a watchlist or hook switched on says its kind is off for
-all. Today only *Do not send notifications* and the per-watchlist and per-hook switches exist.
-→ frontend (user settings, Preferences → Notifications, the Watchlists page, the mock's
-outboxes), then engine.
+Decided on 2026-10-16: a watchlist's channels are browser push and every enabled Delivery
+channel instance that can reach a person, by the account's email or a handle from an identity
+claim, as its implementation declares; each is named by its instance's name, even the only one
+of its kind. Beside *Do not send notifications*, each of these channels can be switched off for
+every watchlist, and *No hook email* switches off every hook, keeping the individual choices
+for when cleared; a watchlist or hook switched on says its kind is off for all. Today the
+watchlist channels are a fixed *Email* and *Chat*, and only *Do not send notifications* and the
+per-watchlist and per-hook switches exist. → frontend (the declaration, viewer choices by
+channel, user settings, Preferences → Notifications, the Watchlists page, the mock's outboxes),
+then engine.
 
 ### L36: Pages reference
 
