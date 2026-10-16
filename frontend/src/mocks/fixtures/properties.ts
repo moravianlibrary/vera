@@ -1,9 +1,11 @@
 // The property definitions the mock starts with (DOC-property): the four predefined ones
 // (DOC-property-predefined) and two an admin defined, a document's Size and the Machines an
-// attempt is scanned on, with the values entered by hand so far. The predefined four keep their
-// values on the document itself: the title, material type and shelf mark as the catalog adapter
-// read them, and the page count with its sources (DOC-page-count).
+// attempt is scanned on, with the values entered by hand so far. The title, material type and
+// shelf mark hold the catalog adapter's values as any property holds its sources, and stay on the
+// document as the catalog record shows them; the page count keeps its own sources
+// (DOC-page-count).
 
+import type { Document } from "@/domain/entities";
 import type { Grant } from "@/domain/permissions";
 import type { PropertyDefinition, PropertyValues } from "@/domain/properties";
 import { editPermissionOf } from "@/domain/properties";
@@ -122,6 +124,33 @@ const byHand = (value: PropertyValues["sources"][number]["value"], setBy: string
   observedAt: at,
   setBy,
 });
+
+// DOC-property-predefined: what the catalog adapter read, as MZK Aleph at the tier its version
+// declares.
+const catalogAdapter = { kind: "plugin" as const, instanceId: "pi1", instanceName: "MZK Aleph" };
+const catalogTier = 50;
+
+export function catalogPropertyValuesOf(
+  document: Pick<Document, "title" | "type" | "shelfMark">,
+  observedAt: string,
+): PropertyValues[] {
+  const read = (key: string, value: string | null): PropertyValues[] =>
+    value === null
+      ? []
+      : [
+          {
+            key,
+            sources: [
+              { source: catalogAdapter, tier: catalogTier, value, observedAt, setBy: null },
+            ],
+          },
+        ];
+  return [
+    ...read("title", document.title),
+    ...read("material_type", document.type),
+    ...read("shelf_mark", document.shelfMark),
+  ];
+}
 
 // Document properties by document, beyond the predefined four.
 export const documentPropertyValues: Readonly<Record<string, readonly PropertyValues[]>> = {

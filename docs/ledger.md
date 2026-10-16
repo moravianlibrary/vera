@@ -19,13 +19,6 @@ None.
 
 ## Not built yet
 
-### L66: Catalog sources of the predefined four
-
-Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-predefined).
-
-The material type, the shelf mark and the title are plain fields of the document in the mock,
-and the record pane shows sources for the page count only. → frontend, then the engine.
-
 ### L36: Pages reference
 
 Rules: [UI-pages](reference/ui/pages.md#ui-pages).
@@ -233,6 +226,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L66:** the title, material type and shelf mark hold the catalog adapter's values as sourced
+  values, *MZK Aleph* at tier 50, beside the document's own fields; the record pane's *Catalog
+  record* card names each one's source, tier and when it was observed, in one row when they were
+  read together ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)).
 - **L65:** a text property's filter and scope condition choose *Contains*, *Starts with* or
   *Ends with*, written `p.<key>`, `p.<key>.starts` and `p.<key>.ends` in a page's URL
   ([DOC-property-filter](reference/model/documents.md#doc-property-filter),

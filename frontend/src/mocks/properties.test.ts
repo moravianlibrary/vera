@@ -109,3 +109,20 @@ describe("entering a property on several documents", () => {
     });
   });
 });
+
+describe("the predefined four's sources (DOC-property-predefined)", () => {
+  it("holds what the catalog adapter read as sourced values", () => {
+    const document = database.documents.find((candidate) => candidate.id === "D1");
+    const titles = document?.properties.find((values) => values.key === "title");
+    expect(titles?.sources).toEqual([
+      expect.objectContaining({
+        source: { kind: "plugin", instanceId: "pi1", instanceName: "MZK Aleph" },
+        tier: 50,
+        value: document?.title,
+      }),
+    ]);
+    expect(document?.properties.map((values) => values.key)).toEqual(
+      expect.arrayContaining(["material_type", "shelf_mark", "size"]),
+    );
+  });
+});

@@ -4,7 +4,7 @@
 // values became 09:00 UTC.
 
 import type { Document } from "@/domain/entities";
-import { documentPropertyValues } from "@/mocks/fixtures/properties";
+import { catalogPropertyValuesOf, documentPropertyValues } from "@/mocks/fixtures/properties";
 
 const catalogDocuments: readonly Omit<Document, "properties">[] = [
   {
@@ -1619,7 +1619,16 @@ const catalogDocuments: readonly Omit<Document, "properties">[] = [
   },
 ];
 
+// When the catalog adapter read a record: with its page count, or when the mock's catalog was
+// first loaded.
+const catalogReadAt = (document: (typeof catalogDocuments)[number]) =>
+  document.pageSources.find((source) => source.source === "catalog")?.observedAt ??
+  "2026-03-01T09:00:00Z";
+
 export const documents: readonly Document[] = catalogDocuments.map((document) => ({
   ...document,
-  properties: [...(documentPropertyValues[document.id] ?? [])],
+  properties: [
+    ...catalogPropertyValuesOf(document, catalogReadAt(document)),
+    ...(documentPropertyValues[document.id] ?? []),
+  ],
 }));

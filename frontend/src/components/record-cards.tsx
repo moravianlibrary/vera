@@ -20,6 +20,8 @@ import type {
   StatusLogEntry,
   User,
 } from "@/domain/entities";
+import type { SourcedValue } from "@/domain/properties";
+import { valuesOf } from "@/domain/properties";
 import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
@@ -220,6 +222,39 @@ const unitTypeLabels = {
   barcode: "barcode",
 } as const satisfies Record<NonNullable<Document["unit"]>["type"], string>;
 
+// The title, type and shelf mark come from the catalog adapter, each with its sources
+// (DOC-property-predefined); one row says it for all three when they were read together.
+const catalogFactLabels = [
+  ["material_type", "Type"],
+  ["shelf_mark", "Shelf mark"],
+  ["title", "Title"],
+] as const;
+
+function catalogFactSourcesOf(document: Document) {
+  const rows = new Map<string, { what: string[]; name: string; source: SourcedValue }>();
+  for (const [key, label] of catalogFactLabels) {
+    for (const source of valuesOf(document.properties, key)?.sources ?? []) {
+      const name = source.source.kind === "hand" ? "By hand" : source.source.instanceName;
+      const rowKey = `${name}|${source.tier}|${source.observedAt}`;
+      const row = rows.get(rowKey) ?? { what: [], name, source };
+      row.what.push(label);
+      rows.set(rowKey, row);
+    }
+  }
+
+  return [...rows.entries()].map(([key, row]) => ({ ...row, key, what: joinWords(row.what) }));
+}
+
+// "Type", "Type and title", "Type, shelf mark and title".
+function joinWords(words: readonly string[]): string {
+  const [first = "", ...rest] = words.map((word, index) =>
+    index === 0 ? word : word.toLocaleLowerCase(),
+  );
+  return rest.length === 0
+    ? first
+    : `${[first, ...rest.slice(0, -1)].join(", ")} and ${rest[rest.length - 1]}`;
+}
+
 export function CatalogCard({
   document,
   nameOf,
@@ -232,6 +267,7 @@ export function CatalogCard({
 }) {
   const inUse = effectivePageCount(document);
   const pageSources = document.pageSources.toSorted((first, second) => second.tier - first.tier);
+  const catalogSources = catalogFactSourcesOf(document);
 
   return (
     <DetailCard
@@ -292,6 +328,22 @@ export function CatalogCard({
           ))
         )}
       </div>
+      {catalogSources.length > 0 && (
+        <div className="mt-3.5">
+          {catalogSources.map((row) => (
+            <DetailRow key={row.key}>
+              {row.what} — {row.name}{" "}
+              <Muted>
+                {joinDetails([
+                  `tier ${row.source.tier}`,
+                  `observed ${formatDay(row.source.observedAt)}`,
+                  row.source.setBy === null ? null : nameOf(row.source.setBy),
+                ])}
+              </Muted>
+            </DetailRow>
+          ))}
+        </div>
+      )}
     </DetailCard>
   );
 }

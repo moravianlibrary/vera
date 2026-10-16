@@ -36,6 +36,7 @@ import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
+import { catalogPropertyValuesOf } from "@/mocks/fixtures/properties";
 import { waysInOf } from "@/mocks/ways-in";
 
 // The mock library's calendar day is Prague time. Both proposal limits belong to roles.
@@ -485,16 +486,19 @@ function existingCopiesOf(record: DocumentRecord, now: string): ExistingCopy[] {
 
 function createDocument(catalogId: string, unit: string | null): Document {
   const record = knownCatalogRecords().find((candidate) => candidate.catalogId === catalogId);
+  const read = {
+    title: record?.title ?? catalogId,
+    type: record?.type ?? "Monograph",
+    shelfMark: null,
+  };
   const document: Document = {
     id: `D-${crypto.randomUUID()}`,
     catalogId,
     unit: unit === null ? null : { type: unitTypeOf(unit), value: unit },
-    title: record?.title ?? catalogId,
-    type: record?.type ?? "Monograph",
-    shelfMark: null,
+    ...read,
     pageSources: [],
     registryRecords: [],
-    properties: [],
+    properties: catalogPropertyValuesOf(read, new Date().toISOString()),
   };
   database.documents.push(document);
   return document;

@@ -185,9 +185,6 @@ They can be edited but not deleted (409), as the predefined Identifier instances
 ([DOC-identifiers](#doc-identifiers)). Each holds sourced values as any property does, the
 catalog adapter's among them, and the record pane shows the sources of each.
 
-> **Open — [L66](../../ledger.md#l66-catalog-sources-of-the-predefined-four).** Only the page
-> count shows its sources.
-
 *Why:* counting and generating read the page count, and the pages filter and search on the
 others.
 

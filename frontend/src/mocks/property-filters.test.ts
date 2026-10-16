@@ -101,7 +101,11 @@ describe("filtering the other pages on properties", () => {
     const validations = queryValidations(admin, { properties: { "p.size": "A3" } });
     expect(validations.items.map((row) => row.document.id)).toEqual(["D3"]);
     const requests = queryRequests(admin, { properties: { "p.size.none": "1" } });
-    expect(requests.items.every((row) => row.record.document.properties.length === 0)).toBe(true);
+    expect(
+      requests.items.every(
+        (row) => !row.record.document.properties.some((values) => values.key === "size"),
+      ),
+    ).toBe(true);
     expect(Object.keys(requests.propertyFacets)).not.toContain("material_type");
   });
 });
