@@ -76,13 +76,14 @@ export interface RecordListProps<Row, Group extends GroupCounts, Grouping extend
   loadingMoreText: string;
 }
 
-function PickMark({ isPicked }: { isPicked: boolean }) {
+function PickMark({ isPicked, className }: { isPicked: boolean; className?: string }) {
   return (
     <span
       aria-hidden
       className={cn(
-        "mr-2 inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border align-[-3px]",
+        "inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border bg-background",
         isPicked && "border-primary bg-primary text-primary-foreground",
+        className,
       )}
     >
       {isPicked && <Check className="size-3" />}
@@ -111,7 +112,13 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
   const sentinelRef = useLoadMore(paging.hasMore, paging.isLoadingMore, paging.onLoadMore);
   const groupStarts = groups === undefined ? new Map<number, Group>() : groupStartsOf(groups);
   const hasWhyLine = whyOf !== undefined;
-  const tracks = { "--record-list-tracks": columns.map((column) => column.track).join(" ") };
+  // While picking, the mark has a track of its own, so the columns keep their place under
+  // their headers.
+  const tracks = {
+    "--record-list-tracks": [...(picking === undefined ? [] : ["2.25rem"]), ...columns]
+      .map((column) => (typeof column === "string" ? column : column.track))
+      .join(" "),
+  };
 
   return (
     <>
@@ -130,6 +137,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
             aria-hidden
             className="sticky top-10 z-10 hidden border-b bg-muted text-[0.6875rem] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase @2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid"
           >
+            {picking !== undefined && <span />}
             {columns.map((column) => (
               <span
                 key={column.key}
@@ -144,7 +152,6 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
             const id = rowId(row);
             const isSelected = picking === undefined && id === selectedId;
             const isPicked = picking?.pickedIds.has(id) ?? false;
-            const mark = picking === undefined ? null : <PickMark isPicked={isPicked} />;
             const groupStart = groupStarts.get(index);
             return (
               <Fragment key={id}>
@@ -170,9 +177,9 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                         {card.eyebrow(row)}
                       </span>
                     )}
-                    <span className="mt-0.5 mb-1.5 block text-sm leading-snug font-medium">
-                      {mark}
-                      {card.title(row)}
+                    <span className="mt-0.5 mb-1.5 flex items-start gap-2 text-sm leading-snug font-medium">
+                      {picking !== undefined && <PickMark isPicked={isPicked} className="mt-px" />}
+                      <span className="min-w-0">{card.title(row)}</span>
                     </span>
                     {card.meta !== undefined && (
                       <span className="flex flex-wrap items-center gap-1.5">{card.meta(row)}</span>
@@ -180,22 +187,26 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                   </span>
 
                   <span className="hidden @2xl:contents">
-                    {columns.map((column, columnIndex) => (
+                    {picking !== undefined && (
+                      <span
+                        className={cn(
+                          "flex justify-end pl-4",
+                          hasWhyLine ? "pt-2.5 pb-1" : "py-2.5",
+                        )}
+                      >
+                        <PickMark isPicked={isPicked} />
+                      </span>
+                    )}
+                    {columns.map((column) => (
                       <span
                         key={column.key}
                         className={cn(
                           "min-w-0 px-2.5 text-[0.8125rem] first:pl-4 last:pr-4 [&_[data-slot=badge]]:rounded-md [&_[data-slot=badge]]:whitespace-normal",
                           hasWhyLine ? "pt-2.5 pb-1" : "py-2.5",
                           column.isNumeric && "text-right tabular-nums",
-                          mark !== null && columnIndex === 0 && "flex items-start",
                         )}
                       >
-                        {columnIndex === 0 && mark}
-                        {mark !== null && columnIndex === 0 ? (
-                          <span className="min-w-0">{column.cell(row)}</span>
-                        ) : (
-                          column.cell(row)
-                        )}
+                        {column.cell(row)}
                       </span>
                     ))}
                   </span>
