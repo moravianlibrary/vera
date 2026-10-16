@@ -24,10 +24,7 @@ import {
   propertyEditRequires,
 } from "../../frontend/src/domain/permissions.ts";
 import { editPermissionOf } from "../../frontend/src/domain/properties.ts";
-import {
-  permissionLines,
-  propertyEditLine,
-} from "../../frontend/src/features/access/access-words.ts";
+import { permissionLineOf } from "../../frontend/src/features/access/access-words.ts";
 import { navigationEntries, visibleNavigation } from "../../frontend/src/components/layout/navigation.ts";
 import { roles } from "../../frontend/src/mocks/fixtures/access.ts";
 import { accessView } from "../../frontend/src/features/access/access-view.ts";
@@ -85,11 +82,11 @@ function permissionCatalogTable(): string {
           .filter((permission) => permissionCatalog[permission].group === group)
           .map(
             (permission) =>
-              `| \`${permission}\` | ${acceptedText(permissionCatalog[permission])} | ${permissionLines[permission]} |`,
+              `| \`${permission}\` | ${acceptedText(permissionCatalog[permission])} | ${permissionLineOf(permission)} |`,
           ),
         ...(propertyEditEntry.group === group
           ? [
-              `| \`${propertyEditKey}\` | ${acceptedText(propertyEditEntry)} | ${propertyEditLine}, one per property |`,
+              `| \`${propertyEditKey}\` | ${acceptedText(propertyEditEntry)} | ${permissionLineOf(editPermissionOf("key"))}, one per property |`,
             ]
           : []),
       ];

@@ -15,6 +15,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { env } from "@/config/env";
 import { useAppearance } from "@/hooks/use-appearance";
+import { useAppliedLanguage } from "@/hooks/use-language";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 export function AppShell() {
   const { data: session, error } = useSessionQuery();
   useAppearance();
+  useAppliedLanguage();
   const { data: userSettings } = useUserSettingsQuery();
   const sidebar = useSidebarPreference();
   const tier = useTier();

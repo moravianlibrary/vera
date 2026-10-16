@@ -8,6 +8,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import type { AccessIndex } from "@/api/access";
 import { ToneBadge } from "@/components/status-badge";
@@ -277,6 +278,8 @@ interface PermissionRow {
 
 // Grouped as the catalogue groups them, in as many columns as the room takes.
 function PermissionTable({ rows }: { rows: readonly PermissionRow[] }) {
+  // The permission lines are messages: say them again when the language changes.
+  useTranslation();
   const sorted = rows.toSorted((first, second) =>
     byCatalogOrder(first.permission, second.permission),
   );

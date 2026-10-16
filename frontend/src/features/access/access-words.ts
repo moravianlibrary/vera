@@ -6,8 +6,8 @@
 
 import type { RoleWay, Via } from "@/domain/access";
 import type { Watchlist } from "@/domain/entities";
-import type { GrantScope, Permission, StaticPermission } from "@/domain/permissions";
-import { isStaticPermission, permissionKeys } from "@/domain/permissions";
+import type { GrantScope, Permission } from "@/domain/permissions";
+import { isStaticPermission } from "@/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
@@ -20,21 +20,16 @@ import { i18n } from "@/i18n";
 import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
 import { isRangeField } from "@/lib/view-definition";
 
-// The line each permission reads as, from the access messages.
-export const permissionLines = Object.fromEntries(
-  permissionKeys.map((permission) => [permission, i18n.t(`permission.${permission}.line`)]),
-) as Record<StaticPermission, string>;
-
-// PERM-property-edit: a property's own permission reads as what it lets one enter.
-export const propertyEditLine = i18n.t("permission.property_edit.line");
-
+// The line each permission reads as, from the access messages in the language in use. A
+// component that shows one calls useTranslation, so it says it again when the language changes.
 export function permissionLineOf(permission: Permission, propertyName?: string): string {
   if (isStaticPermission(permission)) {
-    return permissionLines[permission];
+    return i18n.t(`permission.${permission}.line`);
   }
 
+  // PERM-property-edit: a property's own permission reads as what it lets one enter.
   return propertyName === undefined
-    ? propertyEditLine
+    ? i18n.t("permission.property_edit.line")
     : i18n.t("permission.property_edit.line_named", { name: propertyName });
 }
 

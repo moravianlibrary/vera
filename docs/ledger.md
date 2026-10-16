@@ -19,18 +19,7 @@ None.
 
 ## Not built yet
 
-### L68: Interface language
-
-Rules: [UI-language](reference/ui/navigation.md#ui-language),
-[ACCESS-login-page](reference/access/people.md#access-login-page).
-
-The interface speaks English only; i18next is set up, and the Czech messages are a copy of the
-English until [L37](#l37-czech-terms).
-
-Decided on 2026-10-16: the browser's language first, on first access, and English when the
-browser prefers neither; pickable on the login page; then in the user menu. The language is the
-person's, kept from their first login and the same in any browser, and a pick on the login page
-replaces it. → frontend.
+None.
 
 ## For the engine
 
@@ -55,9 +44,12 @@ Rules: [ACCESS-first-login](reference/access/people.md#access-first-login),
 [ACCESS-mapping-at-login](reference/access/people.md#access-mapping-at-login),
 [ACCESS-login-page](reference/access/people.md#access-login-page).
 
+Also: [UI-language](reference/ui/navigation.md#ui-language).
+
 The mock signs in a fixed person per dev server. The engine runs a real login against fake
 Identity providers: first login, default role, match by email, mappings at each login. The
-frontend needs the login page. → engine, then frontend.
+frontend needs the login page, whose language pick calls `pickLoginLanguage` in
+`frontend/src/i18n/language.ts`. → engine, then frontend.
 
 ### L7: Access and planning changes are not logged
 
@@ -237,6 +229,10 @@ is published (*Digitization*, *Progress*…), in Czech first
 
 ### Built, 2026-10-16
 
+- **L68:** the interface speaks the browser's language on first access, or English; the
+  person's language is saved at their first login, the same in any browser, and changed in the
+  user menu ([UI-language](reference/ui/navigation.md#ui-language)). A pick on the login page
+  replaces it once the login page exists ([L4](#l4-logging-in)).
 - **L12:** the permission lines are i18n messages, one file per language in
   `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
   English one ([the catalog](reference/access/permissions.md#the-catalog)). The Czech file is a

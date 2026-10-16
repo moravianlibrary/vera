@@ -7,6 +7,7 @@ import { getJson, patchJson } from "@/api/http";
 import { apiRoutes } from "@/api/routes";
 import { categoryTreeValues } from "@/domain/categories";
 import { watchlistViewSchema } from "@/domain/entities";
+import { languages } from "@/i18n/language";
 
 export const userSettingsSchema = z.object({
   // Per view, the watchlist last opened there, null for "All". A view never opened is absent.
@@ -14,6 +15,8 @@ export const userSettingsSchema = z.object({
   // Absent until picked once.
   categoryTreeValue: z.enum(categoryTreeValues).optional(),
   appearance: z.enum(["system", "light", "dark"]).optional(),
+  // UI-language: absent until the first login saves the one in use.
+  language: z.enum(languages).optional(),
   dateFormat: z.enum(["local", "iso"]).optional(),
   density: z.enum(["comfortable", "compact"]).optional(),
   // A missing entry follows the most recently opened tab. Null fixes the view to All.

@@ -2,9 +2,11 @@
 // locales/, flat keys such as "permission.<key>.line". Built in English; the Czech files start as
 // copies of the English ones until the Czech terms are settled.
 // Initialised on import, synchronously, so plain functions, the tests and the docs generator read
-// messages without waiting.
+// messages without waiting. It starts in English, which the tests and the generated tables read;
+// the shell switches it to the language in use (UI-language).
 
 import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
 import csAccess from "@/i18n/locales/cs/access.json";
 import enAccess from "@/i18n/locales/en/access.json";
 
@@ -15,7 +17,7 @@ export const resources = {
 
 export const i18n = i18next.createInstance();
 
-i18n.init({
+i18n.use(initReactI18next).init({
   resources,
   lng: "en",
   fallbackLng: "en",

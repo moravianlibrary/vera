@@ -6,6 +6,7 @@
 // After a rule at the foot comes what is running, while anything is (§6).
 // User options live in a dropdown at the foot; labels move to i18n.
 
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronsRight,
   LogOut,
@@ -16,7 +17,6 @@ import {
   Sun,
   UserRound,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { logout } from "@/api/session";
@@ -36,8 +36,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Session } from "@/domain/entities";
 import { useAppearance } from "@/hooks/use-appearance";
-import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { useLanguage } from "@/hooks/use-language";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import type { Language } from "@/i18n/language";
+import { languageNames, languages } from "@/i18n/language";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -66,6 +69,7 @@ export function Sidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const { appearance, setAppearance } = useAppearance();
+  const { language, setLanguage } = useLanguage();
   const [menuError, setMenuError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const entries = session === undefined ? [] : visibleNavigation(session);
@@ -238,6 +242,24 @@ export function Sidebar({
               <DropdownMenuRadioItem value="dark">
                 <Moon /> Dark
               </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Language</DropdownMenuLabel>
+            {/* UI-language: each language named in itself. */}
+            <DropdownMenuRadioGroup
+              value={language}
+              onValueChange={(value) => {
+                setMenuError("");
+                void setLanguage(value as Language).catch(() =>
+                  setMenuError("Could not save the language."),
+                );
+              }}
+            >
+              {languages.map((candidate) => (
+                <DropdownMenuRadioItem key={candidate} value={candidate} lang={candidate}>
+                  {languageNames[candidate]}
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
             {menuError && (

@@ -10,6 +10,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import type { AccessIndex, RoleDraft } from "@/api/access";
 import { createRole, deleteRole, saveRole } from "@/api/access";
 import type { Consequence } from "@/components/dialogs/consequence-dialog";
@@ -248,6 +249,8 @@ function RoleFields({
   properties: AccessIndex["properties"];
   onChange: (next: RoleDraft) => void;
 }) {
+  // The permission lines are messages: say them again when the language changes.
+  useTranslation();
   const nameOfPermission = new Map<Permission, string>(
     properties.map((property) => [editPermissionOf(property.key), property.name]),
   );

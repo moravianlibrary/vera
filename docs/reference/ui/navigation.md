@@ -45,8 +45,8 @@ The language is the person's: their first login keeps the one in use, it is the 
 browser they log in from, and they change it in the user menu. A pick on the login page
 replaces the language they hold.
 
-> **Open — [L68](../../ledger.md#l68-interface-language).** The interface speaks English only;
-> the browser's language, the login page's pick and the user menu's are not built yet.
+> **Open — [L4](../../ledger.md#l4-logging-in).** There is no login page yet, so no pick there;
+> the browser's language, the person's own and the user menu's are built.
 
 #### UI-record-links
 
