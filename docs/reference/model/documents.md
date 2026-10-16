@@ -157,9 +157,6 @@ for a property does not offer it twice: the page count is *Pages*, and on Reques
 type is *Type*. The title and the shelf mark are offered beside the search, which finds them
 too.
 
-> **Open — [L65](../../ledger.md#l65-text-filters-start-and-end).** Text filters and scope
-> conditions take *contains* only.
-
 The record pane shows every property the person may read, with its sources. A property is a
 column only where a page's view declares it.
 

@@ -1,7 +1,8 @@
 // A view's filters on properties (DOC-property-filter), on the same bar as its own fields. An enum
 // or yes/no property, a list of them included, is a field of values like any other, each with
 // how many records it finds, and *No value*. A text, number or date property is a chip of its
-// own, reading "any" until it is given what it contains or a range; it too takes *No value*.
+// own, reading "any" until it is given a range, or text it contains, starts with or ends with; it
+// too takes *No value*.
 // Each property the person may read is offered under "+ Add filter".
 // TODO(rrandiak): labels move to i18n.
 
@@ -21,8 +22,24 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { PropertyCondition, PropertyDefinition } from "@/domain/properties";
-import { enumValueNameOf, propertyNameOf, yesNoValues } from "@/domain/properties";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { PropertyCondition, PropertyDefinition, TextMatch } from "@/domain/properties";
+import {
+  enumValueNameOf,
+  propertyNameOf,
+  textConditionOf,
+  textMatches,
+  textMatchLabels,
+  textSummaryOf,
+  withTextCondition,
+  yesNoValues,
+} from "@/domain/properties";
 import { cn } from "@/lib/utils";
 import type { DayRange, ValueRange } from "@/lib/value-range";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
@@ -110,7 +127,7 @@ function summaryOf(definition: PropertyDefinition, condition: PropertyCondition 
   }
 
   const parts = [
-    condition.contains === undefined ? null : `contains “${condition.contains}”`,
+    textSummaryOf(condition),
     condition.numberRange === undefined
       ? null
       : rangeSummaryOf(rangeFieldOf(definition), condition.numberRange),
@@ -139,7 +156,8 @@ export function PropertyChip({
 }: PropertyChipProps) {
   const id = useId();
   const [isOpen, setIsOpen] = useState(false);
-  const [text, setText] = useState(condition?.contains ?? "");
+  const [text, setText] = useState(() => textConditionOf(condition).text);
+  const [match, setMatch] = useState<TextMatch>(() => textConditionOf(condition).match);
   const summary = summaryOf(definition, condition);
   const label = propertyNameOf(definition);
   const key = definition.key;
@@ -176,19 +194,31 @@ export function PropertyChip({
                 className="grid gap-2"
                 onSubmit={(event) => {
                   event.preventDefault();
-                  onChange({
-                    key,
-                    hasNoValue: hasNoValue || undefined,
-                    contains: text.trim() || undefined,
-                  });
+                  onChange(
+                    withTextCondition(
+                      { key, hasNoValue: hasNoValue || undefined },
+                      match,
+                      text.trim(),
+                    ),
+                  );
                   setIsOpen(false);
                 }}
               >
-                <label htmlFor={`${id}-text`} className="text-xs font-medium text-muted-foreground">
-                  Contains
-                </label>
+                <Select value={match} onValueChange={(value) => setMatch(value as TextMatch)}>
+                  <SelectTrigger aria-label={`How ${label} matches`} size="sm" className="w-fit">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {textMatches.map((candidate) => (
+                      <SelectItem key={candidate} value={candidate}>
+                        {textMatchLabels[candidate]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Input
                   id={`${id}-text`}
+                  aria-label={`${label} ${textMatchLabels[match].toLocaleLowerCase()}`}
                   className="h-8"
                   value={text}
                   onChange={(event) => setText(event.target.value)}

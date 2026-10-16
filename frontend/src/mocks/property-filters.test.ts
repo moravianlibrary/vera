@@ -28,6 +28,14 @@ describe("property conditions in a URL", () => {
     });
   });
 
+  it("writes what a text starts or ends with beside what it contains", () => {
+    const condition = { key: "title", startsWith: "Lidové", endsWith: "noviny" };
+    const params = withCondition(undefined, condition);
+    expect(params).toEqual({ "p.title.starts": "Lidové", "p.title.ends": "noviny" });
+    expect(conditionsOf(params, allPropertyDefinitions())).toEqual([condition]);
+    expect(withCondition(params, { key: "title" })).toBeUndefined();
+  });
+
   it("names the same filter however its values are ordered", () => {
     expect(
       isSameDocumentQuery(
@@ -62,6 +70,19 @@ describe("filtering Documents on properties", () => {
       page.items.every((record) => record.document.title.toLowerCase().includes("brněn")),
     ).toBe(true);
     expect(page.total).toBeGreaterThan(0);
+  });
+
+  it("filters text on what it starts or ends with", () => {
+    const starts = queryDocuments(admin, { properties: { "p.title.starts": "lidové" } });
+    expect(starts.total).toBeGreaterThan(0);
+    expect(
+      starts.items.every((record) => record.document.title.toLowerCase().startsWith("lidové")),
+    ).toBe(true);
+    const ends = queryDocuments(admin, { properties: { "p.title.ends": "noviny" } });
+    expect(ends.total).toBeGreaterThan(0);
+    expect(
+      ends.items.every((record) => record.document.title.toLowerCase().endsWith("noviny")),
+    ).toBe(true);
   });
 
   it("reads only public properties in public detail", () => {

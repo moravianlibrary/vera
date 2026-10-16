@@ -9,8 +9,10 @@ import {
   isValueOf,
   meetsCondition,
   propertyKeyOfPermission,
+  textSummaryOf,
   valueInUseAt,
   valueInUseOf,
+  withTextCondition,
 } from "@/domain/properties";
 
 const machines: PropertyDefinition = {
@@ -81,8 +83,19 @@ describe("property conditions (DOC-property-filter)", () => {
     );
   });
 
-  it("matches text that contains the words, a range, and no value", () => {
+  it("matches text that contains, starts or ends with the words, a range, and no value", () => {
     expect(meetsCondition({ key: "title", contains: "NOVINY" }, "Lidové noviny", today)).toBe(true);
+    expect(meetsCondition({ key: "title", startsWith: "lidové " }, "Lidové noviny", today)).toBe(
+      true,
+    );
+    expect(meetsCondition({ key: "title", startsWith: "noviny" }, "Lidové noviny", today)).toBe(
+      false,
+    );
+    expect(meetsCondition({ key: "title", endsWith: "Noviny" }, "Lidové noviny", today)).toBe(true);
+    expect(
+      withTextCondition({ key: "title", contains: "x", hasNoValue: true }, "endsWith", "a b "),
+    ).toEqual({ key: "title", hasNoValue: true, endsWith: "a b " });
+    expect(textSummaryOf({ key: "title", startsWith: "Lidové" })).toBe("starts with “Lidové”");
     expect(meetsCondition({ key: "pages", numberRange: { from: 100 } }, 320, today)).toBe(true);
     expect(meetsCondition({ key: "pages", numberRange: { to: 99 } }, 320, today)).toBe(false);
     expect(meetsCondition({ key: "size", hasNoValue: true }, null, today)).toBe(true);

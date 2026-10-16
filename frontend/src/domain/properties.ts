@@ -208,13 +208,15 @@ function isScalarOf(type: PropertyType, scalar: ScalarValue): boolean {
 
 // ---------------------------------------------------------------- conditions
 
-// DOC-property-filter, by type: text, what it contains; a number or a date, a range; an enum or
-// yes/no, its values; a list, any of its values. Every one can also ask for *no value*; with
-// both, either matches.
+// DOC-property-filter, by type: text, what it contains, starts with or ends with; a number or a
+// date, a range; an enum or yes/no, its values; a list, any of its values. Every one can also ask
+// for *no value*; with both, either matches.
 export interface PropertyCondition {
   readonly key: string;
   readonly hasNoValue?: boolean;
   readonly contains?: string;
+  readonly startsWith?: string;
+  readonly endsWith?: string;
   readonly numberRange?: ValueRange<number>;
   readonly dayRange?: DayRange;
   // Enum values, or `Yes` and `No`.
@@ -225,6 +227,8 @@ export const propertyConditionSchema: z.ZodType<PropertyCondition, PropertyCondi
   key: propertyKeySchema,
   hasNoValue: z.boolean().optional(),
   contains: z.string().optional(),
+  startsWith: z.string().optional(),
+  endsWith: z.string().optional(),
   numberRange: z.object({ from: z.number().optional(), to: z.number().optional() }).optional(),
   dayRange: z
     .union([
@@ -237,6 +241,43 @@ export const propertyConditionSchema: z.ZodType<PropertyCondition, PropertyCondi
 
 export const yesNoValues = ["Yes", "No"] as const;
 
+// How a text condition matches, and the field each way is kept in.
+export const textMatches = ["contains", "startsWith", "endsWith"] as const;
+export type TextMatch = (typeof textMatches)[number];
+
+export const textMatchLabels = {
+  contains: "Contains",
+  startsWith: "Starts with",
+  endsWith: "Ends with",
+} as const satisfies Record<TextMatch, string>;
+
+const hasText = (text: string | undefined) => text !== undefined && text.trim() !== "";
+
+// The way a text condition matches and what it matches; *contains* when it asks for no text.
+export function textConditionOf(condition: PropertyCondition | undefined): {
+  match: TextMatch;
+  text: string;
+} {
+  const match = textMatches.find((candidate) => hasText(condition?.[candidate])) ?? "contains";
+  return { match, text: condition?.[match] ?? "" };
+}
+
+// The condition asking for the text one way, and no other; as written, so typing keeps its spaces.
+export function withTextCondition(
+  condition: PropertyCondition,
+  match: TextMatch,
+  text: string,
+): PropertyCondition {
+  const { contains: _contains, startsWith: _startsWith, endsWith: _endsWith, ...rest } = condition;
+  return text.trim() === "" ? rest : { ...rest, [match]: text };
+}
+
+// "contains “noviny”", "starts with “Lidové”".
+export function textSummaryOf(condition: PropertyCondition): string | null {
+  const { match, text } = textConditionOf(condition);
+  return hasText(text) ? `${textMatchLabels[match].toLocaleLowerCase()} “${text.trim()}”` : null;
+}
+
 // The facet value of a scalar: an enum's value, or `Yes` and `No`.
 export function facetValueOf(scalar: ScalarValue): string {
   return typeof scalar === "boolean" ? (scalar ? "Yes" : "No") : String(scalar);
@@ -246,7 +287,7 @@ export function facetValueOf(scalar: ScalarValue): string {
 export function isActiveCondition(condition: PropertyCondition): boolean {
   return (
     condition.hasNoValue === true ||
-    (condition.contains !== undefined && condition.contains.trim() !== "") ||
+    textMatches.some((match) => hasText(condition[match])) ||
     condition.numberRange !== undefined ||
     condition.dayRange !== undefined ||
     (condition.anyOf !== undefined && condition.anyOf.length > 0)
@@ -264,13 +305,24 @@ export function meetsCondition(
   }
 
   const scalars = scalarsOf(value);
+  const textAsk = (match: TextMatch) => {
+    const text = condition[match];
+    if (text === undefined || !hasText(text)) {
+      return null;
+    }
+
+    const wanted = text.trim().toLocaleLowerCase();
+    return (scalar: ScalarValue) => {
+      const written = String(scalar).toLocaleLowerCase();
+      return match === "contains"
+        ? written.includes(wanted)
+        : match === "startsWith"
+          ? written.startsWith(wanted)
+          : written.endsWith(wanted);
+    };
+  };
   const asks = [
-    condition.contains === undefined || condition.contains.trim() === ""
-      ? null
-      : (scalar: ScalarValue) =>
-          String(scalar)
-            .toLocaleLowerCase()
-            .includes((condition.contains ?? "").trim().toLocaleLowerCase()),
+    ...textMatches.map(textAsk),
     condition.numberRange === undefined
       ? null
       : (scalar: ScalarValue) =>

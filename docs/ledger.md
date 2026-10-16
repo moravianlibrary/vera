@@ -19,14 +19,6 @@ None.
 
 ## Not built yet
 
-### L65: Text filters start and end
-
-Rules: [DOC-property-filter](reference/model/documents.md#doc-property-filter),
-[PLAN-scope](reference/planning/intentions.md#plan-scope).
-
-A text property's filter and scope condition take *contains* only; *starts with* and *ends with*
-are to be added. → frontend.
-
 ### L66: Catalog sources of the predefined four
 
 Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-predefined).
@@ -241,6 +233,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L65:** a text property's filter and scope condition choose *Contains*, *Starts with* or
+  *Ends with*, written `p.<key>`, `p.<key>.starts` and `p.<key>.ends` in a page's URL
+  ([DOC-property-filter](reference/model/documents.md#doc-property-filter),
+  [PLAN-scope](reference/planning/intentions.md#plan-scope)).
 - **L62:** a watchlist's channels are browser push and every enabled Delivery channel instance
   whose version declares how it reaches a person, by the account's email or by a handle from an
   identity claim (*MZK SMTP*, *Mailgun — requesters*, *MZK Slack* by `slack_id`, *MZK Teams* by

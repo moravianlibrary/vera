@@ -1,9 +1,12 @@
 // An intention's conditions on properties (PLAN-scope): each takes what the property's filter
-// takes (DOC-property-filter) — some of an enum's or yes/no's values, what a text contains, a
-// range of numbers or days — and may also take *no value*. All of them hold for an item in scope.
+// takes (DOC-property-filter) — some of an enum's or yes/no's values, what a text contains,
+// starts with or ends with, a range of numbers or days — and may also take *no value*. All of
+// them hold for an item in scope.
 // TODO(rrandiak): labels move to i18n.
 
 import { Plus, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -14,16 +17,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PropertyCondition, PropertyDefinition } from "@/domain/properties";
+import type { PropertyCondition, PropertyDefinition, TextMatch } from "@/domain/properties";
 import {
   enumValueNameOf,
   isActiveCondition,
   propertyNameOf,
+  textConditionOf,
+  textMatches,
+  textMatchLabels,
+  textSummaryOf,
+  withTextCondition,
   yesNoValues,
 } from "@/domain/properties";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 
-// "Machines: Zeutschel", "Size: A4 or no value", "Width: 20–40 cm".
+// "Machines: Zeutschel", "Size: A4 or no value", "Width: 20–40 cm", "Note: starts with “Rare”".
 export function conditionTextOf(
   definition: PropertyDefinition | undefined,
   condition: PropertyCondition,
@@ -42,7 +50,7 @@ export function conditionTextOf(
     condition.anyOf === undefined || condition.anyOf.length === 0
       ? null
       : condition.anyOf.map((value) => enumValueNameOf(definition, value)).join(", "),
-    condition.contains === undefined ? null : `contains “${condition.contains}”`,
+    textSummaryOf(condition),
     condition.numberRange === undefined
       ? null
       : `${range(condition.numberRange.from, condition.numberRange.to)}${
@@ -194,18 +202,9 @@ function ConditionInput({
 
   if (type.kind === "text") {
     return (
-      <div className="grid gap-1.5">
-        <Input
-          aria-label={`${propertyNameOf(definition)} contains`}
-          placeholder="Contains…"
-          className="h-8"
-          value={condition.contains ?? ""}
-          onChange={(event) =>
-            onChange({ ...condition, contains: event.target.value || undefined })
-          }
-        />
+      <TextConditionInput definition={definition} condition={condition} onChange={onChange}>
         {noValue}
-      </div>
+      </TextConditionInput>
     );
   }
 
@@ -249,6 +248,55 @@ function ConditionInput({
         {unit}
       </div>
       {noValue}
+    </div>
+  );
+}
+
+// The way chosen is kept while the text is empty, so the first letter goes where it was meant.
+function TextConditionInput({
+  definition,
+  condition,
+  onChange,
+  children,
+}: {
+  definition: PropertyDefinition;
+  condition: PropertyCondition;
+  onChange: (condition: PropertyCondition) => void;
+  children: ReactNode;
+}) {
+  const written = textConditionOf(condition);
+  const [chosen, setChosen] = useState<TextMatch>(written.match);
+  const match = written.text === "" ? chosen : written.match;
+  const name = propertyNameOf(definition);
+  return (
+    <div className="grid gap-1.5">
+      <div className="flex items-center gap-2">
+        <Select
+          value={match}
+          onValueChange={(value) => {
+            setChosen(value as TextMatch);
+            onChange(withTextCondition(condition, value as TextMatch, written.text));
+          }}
+        >
+          <SelectTrigger aria-label={`How ${name} matches`} size="sm" className="w-fit shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {textMatches.map((candidate) => (
+              <SelectItem key={candidate} value={candidate}>
+                {textMatchLabels[candidate]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          aria-label={`${name} ${textMatchLabels[match].toLocaleLowerCase()}`}
+          className="h-8"
+          value={written.text}
+          onChange={(event) => onChange(withTextCondition(condition, match, event.target.value))}
+        />
+      </div>
+      {children}
     </div>
   );
 }

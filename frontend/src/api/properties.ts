@@ -1,7 +1,8 @@
 // The Properties resource (DOC-property): the definitions the caller may read, defining them with
 // `property.define`, what deleting one would remove, and entering a value by hand with
 // `property.<key>.edit`, on one record or on a selection (DOC-property-hand). A property filter is
-// written in a page's URL as `p.<key>` and `p.<key>.none` (DOC-property-filter).
+// written in a page's URL as `p.<key>`, with `.starts`, `.ends` or `.none` after it for some
+// (DOC-property-filter).
 
 import { z } from "zod";
 import { facetCountsOf } from "@/api/facets";
@@ -145,11 +146,14 @@ export type PropertyFacets = z.infer<typeof propertyFacetsSchema>;
 
 // ---------------------------------------------------------------- conditions in a URL
 
-// `p.size=A4,A5`, `p.title=noviny`, `p.pages=100..499`, `p.scanned=last-30-days`, and
-// `p.size.none=1` for *no value*. The key says which property; its definition says how the value
+// `p.size=A4,A5`, `p.title=noviny`, `p.pages=100..499`, `p.scanned=last-30-days`,
+// `p.title.starts=Lidové` and `p.title.ends=noviny` for text, and `p.size.none=1` for *no value*. The key says which property; its definition says how the value
 // reads, so a condition is parsed once the definitions are known.
 const conditionPrefix = "p.";
 const noValueSuffix = ".none";
+const startsSuffix = ".starts";
+const endsSuffix = ".ends";
+const suffixes = [noValueSuffix, startsSuffix, endsSuffix];
 const noValue = "1";
 const listSeparator = ",";
 
@@ -159,7 +163,8 @@ export function propertyParamKeyOf(param: string): string | null {
   }
 
   const rest = param.slice(conditionPrefix.length);
-  const key = rest.endsWith(noValueSuffix) ? rest.slice(0, -noValueSuffix.length) : rest;
+  const suffix = suffixes.find((candidate) => rest.endsWith(candidate));
+  const key = suffix === undefined ? rest : rest.slice(0, -suffix.length);
   return propertyKeySchema.safeParse(key).success ? key : null;
 }
 
@@ -190,6 +195,14 @@ export function conditionParamsOf(condition: PropertyCondition): Record<string, 
     params[`${param}${noValueSuffix}`] = noValue;
   }
 
+  if (condition.startsWith?.trim()) {
+    params[`${param}${startsSuffix}`] = condition.startsWith.trim();
+  }
+
+  if (condition.endsWith?.trim()) {
+    params[`${param}${endsSuffix}`] = condition.endsWith.trim();
+  }
+
   const value =
     condition.contains?.trim() ||
     formatRange(condition.numberRange) ||
@@ -216,10 +229,15 @@ export function conditionsOf(
     const param = `${conditionPrefix}${definition.key}`;
     const raw = propertyParams?.[param];
     const hasNoValue = propertyParams?.[`${param}${noValueSuffix}`] === noValue;
+    const startsWith = propertyParams?.[`${param}${startsSuffix}`]?.trim();
+    const endsWith = propertyParams?.[`${param}${endsSuffix}`]?.trim();
+    const isText = definition.type.kind === "text";
     const condition: PropertyCondition = {
       key: definition.key,
       ...(hasNoValue ? { hasNoValue } : {}),
       ...(raw === undefined ? {} : conditionValueOf(definition, raw)),
+      ...(isText && startsWith ? { startsWith } : {}),
+      ...(isText && endsWith ? { endsWith } : {}),
     };
     return hasNoValue || Object.keys(condition).length > 1 ? [condition] : [];
   });
