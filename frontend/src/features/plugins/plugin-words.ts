@@ -6,7 +6,13 @@
 
 import type { PluginImpact, PluginVersion } from "@/api/plugins";
 import type { Tone } from "@/components/status-badge";
-import type { DeclaredName, DeclaredNameKind, PluginKind, PluginTrigger } from "@/domain/plugins";
+import type {
+  Declarations,
+  DeclaredName,
+  DeclaredNameKind,
+  PluginKind,
+  PluginTrigger,
+} from "@/domain/plugins";
 import { plural } from "@/lib/plural";
 
 export const pluginKindLabels = {
@@ -112,6 +118,9 @@ export function suppliesOf(version: PluginVersion): string[] {
     ...(declares.channelInterface === null
       ? []
       : [`${declares.channelInterface.toLowerCase()} interface`]),
+    ...(declares.personReach === undefined || declares.personReach === null
+      ? []
+      : [`reaches a person ${personReachText(declares.personReach)}`]),
     ...(declares.inputMode === null ? [] : [`${declares.inputMode.toLowerCase()} input`]),
     ...(declares.loginEntry === null
       ? []
@@ -176,4 +185,9 @@ export function lossText(impact: PluginImpact, instanceName: string): string {
 // "rule R11 extent matches what was delivered", "registry state Revision".
 export function declaredNameText(name: DeclaredName): string {
   return `${declaredNameKindLabels[name.kind]} ${name.name}${name.label === null ? "" : ` ${name.label}`}`;
+}
+
+// "by the account's email", "by the slack_id claim".
+export function personReachText(reach: NonNullable<Declarations["personReach"]>): string {
+  return reach.by === "email" ? "by the account's email" : `by the ${reach.claim} claim`;
 }

@@ -65,9 +65,6 @@ they see, personal and system, once they allow the site's notifications in the b
 is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
-> **Open — [L62](../../ledger.md#l62-personal-channels-and-one-kind-off-everywhere).** The
-> watchlist channels are a fixed *Email* and *Chat* until the channels follow the instances.
-
 The browser's permission is asked on the Watchlists page, above the watchlists, and moves with
 the watchlist preferences when they move under Preferences.
 
@@ -121,8 +118,6 @@ everywhere, on *Preferences → Notifications*:
 Each stops its kind for every watchlist or hook, those that come later included, and keeps the
 individual choices for when it is cleared. A watchlist or hook whose own switch is on says that
 its kind is off for all. *Do not send notifications* still stops everything.
-
-> **Open — [L62](../../ledger.md#l62-personal-channels-and-one-kind-off-everywhere).** Not built yet.
 
 #### WATCH-manage-link
 

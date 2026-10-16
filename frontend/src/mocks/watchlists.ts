@@ -71,7 +71,8 @@ export function visibleWatchlists(
       createdBy: watchlist.ownerId,
       subscriberCount: database.watchlistViewers.filter(
         (candidate) =>
-          candidate.watchlistId === watchlist.id && (candidate.email || candidate.chat),
+          candidate.watchlistId === watchlist.id &&
+          Object.values(candidate.channels).some((channel) => channel.isOn),
       ).length,
       filterVersion: watchlist.filterVersion ?? 1,
       isEditable: canChange(session, watchlist.audience),
@@ -279,12 +280,10 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
   const viewer: WatchlistViewer = {
     seenAt: null,
     position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
-    email: false,
-    chat: false,
     push: true,
-    emailSince: null,
-    chatSince: null,
     pushSince: null,
+    // WATCH-delivery: every channel but browser push is off until switched on.
+    channels: {},
     confirmedFilter: null,
   };
   database.watchlistViewers.push({ ...viewer, watchlistId: watchlist.id, userId });
@@ -440,8 +439,7 @@ function newCountOf(session: Session, watchlist: StoredWatchlist, seenAt: string
       enteredAt,
       baseline: isBaseline,
       filterVersion: version,
-      emailDeliveredAt: null,
-      chatDeliveredAt: null,
+      deliveredAt: {},
       pushDeliveredAt: null,
     }));
   if (isBaseline || retained.length !== before.length || added.length > 0) {

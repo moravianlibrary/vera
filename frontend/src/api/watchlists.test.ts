@@ -33,8 +33,10 @@ import { createHandlers } from "@/mocks/handlers";
 import { forgetPushDevices } from "@/mocks/push";
 import { changeUserSettings } from "@/mocks/user-settings";
 import {
+  flushWatchlistChat,
   flushWatchlistMail,
   flushWatchlistPush,
+  watchlistChatOutbox,
   watchlistMailOutbox,
 } from "@/mocks/watchlist-delivery";
 
@@ -97,7 +99,7 @@ describe("listWatchlists", () => {
     if (original === undefined || second === undefined) return;
     try {
       await listWatchlists("documents");
-      await updateWatchlistViewer(watchlist.id, { email: true });
+      await updateWatchlistViewer(watchlist.id, { channels: { pi16: true } });
       database.documents[0] = { ...original, title: `${original.title} mail-entry-unique` };
       await listWatchlists("documents");
       const future = new Date(Date.now() + 16 * 60_000);
@@ -125,6 +127,38 @@ describe("listWatchlists", () => {
     } finally {
       database.documents[0] = original;
       database.documents[1] = second;
+      await deleteWatchlist(watchlist.id);
+    }
+  });
+  it("sends each channel instance its own, and nothing while it is off for all (WATCH-channel-off)", async () => {
+    signInAs("admin");
+    const watchlist = await createWatchlist({
+      name: "Chat entry test",
+      view: "documents",
+      audience: { kind: "personal" },
+      filter: { q: "chat-entry-unique" },
+    });
+    const original = database.documents[0];
+    if (original === undefined) return;
+    try {
+      await listWatchlists("documents");
+      await updateWatchlistViewer(watchlist.id, { channels: { pi18: true } });
+      changeUserSettings("u3", {
+        notifications: { doNotSend: false, hooks: {}, channelsOff: ["pi18"] },
+      });
+      database.documents[0] = { ...original, title: `${original.title} chat-entry-unique` };
+      await listWatchlists("documents");
+      const sentTo = () =>
+        watchlistChatOutbox
+          .filter((chat) => chat.watchlistId === watchlist.id)
+          .map((chat) => chat.channelId);
+      flushWatchlistChat();
+      expect(sentTo()).toEqual([]);
+      changeUserSettings("u3", { notifications: { doNotSend: false, hooks: {}, channelsOff: [] } });
+      flushWatchlistChat();
+      expect(sentTo()).toEqual(["pi18"]);
+    } finally {
+      database.documents[0] = original;
       await deleteWatchlist(watchlist.id);
     }
   });

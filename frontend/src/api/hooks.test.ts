@@ -191,4 +191,28 @@ describe("Hooks", () => {
       });
     }
   });
+
+  it("suppresses every hook's email under No hook email (WATCH-channel-off)", async () => {
+    signInAs("admin");
+    const original = userSettingsOf("u5").notifications;
+    const fixture = hookDeliveries.find((row) => row.id === "HD-22");
+    if (fixture === undefined) return;
+    const delivery = { ...fixture, id: "HD-NO-HOOK-EMAIL", state: "waiting" as const };
+    database.hookDeliveries.push(delivery);
+    try {
+      changeUserSettings("u5", {
+        notifications: { doNotSend: false, hooks: { "H-02": true }, noHookEmail: true },
+      });
+      const result = await sendHookNow("H-02");
+      expect(result.find((row) => row.id === delivery.id)?.state).toBe("suppressed");
+    } finally {
+      database.hookDeliveries.splice(
+        database.hookDeliveries.findIndex((row) => row.id === delivery.id),
+        1,
+      );
+      changeUserSettings("u5", {
+        notifications: original ?? { doNotSend: false, hooks: { "H-02": true } },
+      });
+    }
+  });
 });

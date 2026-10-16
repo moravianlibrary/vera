@@ -35,6 +35,7 @@ import {
 import {
   entryPointText,
   generatorClassText,
+  personReachText,
   suppliesOf,
   triggerLabels,
 } from "@/features/plugins/plugin-words";
@@ -298,6 +299,10 @@ function declaredFacts(version: PluginVersion): Fact[] {
     ...(declares.channelInterface === null
       ? []
       : [{ label: "Interface", value: declares.channelInterface.toLowerCase() }]),
+    // PLG-declares: how it reaches a person, which makes it a watchlist channel.
+    ...(declares.personReach === undefined || declares.personReach === null
+      ? []
+      : [{ label: "Reaches a person", value: personReachText(declares.personReach) }]),
     ...(declares.inputMode === null
       ? []
       : [{ label: "Way in", value: declares.inputMode.toLowerCase() }]),

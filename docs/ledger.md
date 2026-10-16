@@ -28,25 +28,6 @@ visibility, hand entry and its tier, and new enum values may change at any time.
 
 ## Not built yet
 
-### L62: Personal channels, and one kind off everywhere
-
-Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
-[WATCH-channel-off](reference/integrations/watchlists.md#watch-channel-off),
-[PLG-declares](reference/integrations/plugins.md#plg-declares),
-[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send),
-[WATCH-hook-preferences](reference/integrations/watchlists.md#watch-hook-preferences).
-
-Decided on 2026-10-16: a watchlist's channels are browser push and every enabled Delivery
-channel instance that can reach a person, by the account's email or a handle from an identity
-claim, as its implementation declares; each is named by its instance's name, even the only one
-of its kind. Beside *Do not send notifications*, each of these channels can be switched off for
-every watchlist, and *No hook email* switches off every hook, keeping the individual choices
-for when cleared; a watchlist or hook switched on says its kind is off for all. Today the
-watchlist channels are a fixed *Email* and *Chat*, and only *Do not send notifications* and the
-per-watchlist and per-hook switches exist. → frontend (the declaration, viewer choices by
-channel, user settings, Preferences → Notifications, the Watchlists page, the mock's outboxes),
-then engine.
-
 ### L36: Pages reference
 
 Rules: [UI-pages](reference/ui/pages.md#ui-pages).
@@ -245,6 +226,18 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L62:** a watchlist's channels are browser push and every enabled Delivery channel instance
+  whose version declares how it reaches a person, by the account's email or by a handle from an
+  identity claim (*MZK SMTP*, *Mailgun — requesters*, *MZK Slack* by `slack_id`, *MZK Teams* by
+  `teams_upn`), each named by its instance and off until switched on; one that cannot reach the
+  person says why beside its switch. Preferences → Notifications has, beside *Do not send
+  notifications*, *No …* for browser push and each channel, and *No hook email* in place of
+  turning off every current hook; a watchlist or hook switched on says when its kind is off for
+  all. The Plugins drawer shows the declaration, and the mock's outboxes send per instance
+  ([WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+  [WATCH-channel-off](reference/integrations/watchlists.md#watch-channel-off),
+  [PLG-declares](reference/integrations/plugins.md#plg-declares),
+  [WATCH-hook-preferences](reference/integrations/watchlists.md#watch-hook-preferences)).
 - **L22:** properties in the frontend. A *Properties* page under Administration, with
   `property.define@any`, admin only, defines them: key, names in each UI language, what they are
   about, type and list, visibility, hand entry and its tier. The predefined page count, material

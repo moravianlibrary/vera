@@ -298,6 +298,7 @@ import {
   queryValidations,
   revokeAcceptance,
 } from "@/mocks/validations";
+import { watchlistChannelsOf } from "@/mocks/watchlist-channels";
 import {
   flushWatchlistChat,
   flushWatchlistMail,
@@ -394,6 +395,15 @@ export function createHandlers(profile: MockUserProfile) {
       window.sessionStorage.setItem(signedOutKey, "1");
       return new HttpResponse(null, { status: 204 });
     }),
+
+    // WATCH-delivery: the channels a watchlist can reach this person through, besides push.
+    http.get(route(apiRoutes.watchlistChannels), () =>
+      HttpResponse.json(
+        watchlistChannelsOf(currentSession().user.id).map(
+          ({ interface: _interface, ...channel }) => channel,
+        ),
+      ),
+    ),
 
     http.get(route(apiRoutes.sessionAccount), () =>
       HttpResponse.json(accessUserOf(currentSession().user)),
@@ -1628,13 +1638,26 @@ export function createHandlers(profile: MockUserProfile) {
           (row) => row.userId === session.user.id && row.watchlistId === watchlist.id,
         );
         const current = viewer ?? viewerOf(session.user.id, watchlist);
-        const changed = { ...current, ...change.data };
-        if (change.data.email === true && !current.email)
-          changed.emailSince = new Date().toISOString();
-        if (change.data.chat === true && !current.chat)
-          changed.chatSince = new Date().toISOString();
-        if (change.data.push === true && !current.push)
-          changed.pushSince = new Date().toISOString();
+        const now = new Date().toISOString();
+        // A channel switched on starts from now: what matched before is a baseline.
+        const channels = Object.fromEntries(
+          Object.entries(change.data.channels ?? {}).map(([channelId, isOn]) => [
+            channelId,
+            {
+              isOn,
+              since:
+                isOn && current.channels[channelId]?.isOn !== true
+                  ? now
+                  : (current.channels[channelId]?.since ?? null),
+            },
+          ]),
+        );
+        const changed = {
+          ...current,
+          ...change.data,
+          channels: { ...current.channels, ...channels },
+        };
+        if (change.data.push === true && !current.push) changed.pushSince = now;
         const row = database.watchlistViewers.find(
           (candidate) =>
             candidate.userId === session.user.id && candidate.watchlistId === watchlist.id,

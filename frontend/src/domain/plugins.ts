@@ -83,6 +83,15 @@ export const declarationsSchema = z.object({
   agent: z.object({ name: z.string(), entryPoint: z.enum(entryPoints) }).nullable(),
   generatorClass: generatorClassSchema.nullable(),
   channelInterface: z.enum(channelInterfaces).nullable(),
+  // PLG-declares: how a Delivery channel reaches a person, by the account's email or by a handle
+  // read from an identity claim; absent or null, it reaches no person (WATCH-delivery).
+  personReach: z
+    .discriminatedUnion("by", [
+      z.object({ by: z.literal("email") }),
+      z.object({ by: z.literal("claim"), claim: z.string().min(1) }),
+    ])
+    .nullable()
+    .optional(),
   inputMode: z.enum(inputModes).nullable(),
   loginEntry: z.enum(loginEntries).nullable(),
 });

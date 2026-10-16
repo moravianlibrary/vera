@@ -41,31 +41,59 @@ export const watchlistChangeSchema = watchlistDraftSchema
   .partial();
 export type WatchlistChange = z.infer<typeof watchlistChangeSchema>;
 
+// WATCH-delivery: every enabled Delivery channel instance that can reach a person, named by the
+// instance's name even when it is the only one of its kind; browser push is VERA's own.
+export const pushChannelId = "push";
+
+export const watchlistChannelSchema = z.object({
+  // The instance's id.
+  id: z.string(),
+  name: z.string(),
+  // How it reaches the person (PLG-declares): the account's email, or a handle from a claim.
+  reach: z.discriminatedUnion("by", [
+    z.object({ by: z.literal("email") }),
+    z.object({ by: z.literal("claim"), claim: z.string() }),
+  ]),
+  // Whether it can reach this person: an email on the account, or the claim at their last login.
+  canReach: z.boolean(),
+});
+export type WatchlistChannel = z.infer<typeof watchlistChannelSchema>;
+
+// One channel on one watchlist: off until switched on, and what entered since then.
+export const viewerChannelSchema = z.object({
+  isOn: z.boolean(),
+  since: z.iso.datetime().nullable(),
+});
+
 // What is the person's own about a watchlist they see (filtering.md §5 `watchlist_viewer`).
 export const watchlistViewerSchema = z.object({
   seenAt: z.iso.datetime().nullable(),
   position: z.number().int().nonnegative(),
-  email: z.boolean().default(false),
-  chat: z.boolean().default(false),
   // WATCH-delivery: on for every watchlist, pushed once the person allows the site's
   // notifications in a browser.
   push: z.boolean().default(true),
-  emailSince: z.iso.datetime().nullable().default(null),
-  chatSince: z.iso.datetime().nullable().default(null),
   pushSince: z.iso.datetime().nullable().default(null),
+  // By channel instance id; a channel absent here is off.
+  channels: z.record(z.string(), viewerChannelSchema).default({}),
   confirmedFilter: z.string().nullable().default(null),
 });
 export type WatchlistViewer = z.infer<typeof watchlistViewerSchema>;
 export const watchlistViewerChangeSchema = watchlistViewerSchema
   .pick({
     position: true,
-    email: true,
-    chat: true,
     push: true,
     confirmedFilter: true,
   })
+  .extend({
+    // The channels it switches, by instance id; the others stay as they are.
+    channels: z.record(z.string(), z.boolean()),
+  })
   .partial();
 export type WatchlistViewerChange = z.infer<typeof watchlistViewerChangeSchema>;
+
+export function isChannelOn(viewer: WatchlistViewer, channelId: string): boolean {
+  return viewer.channels[channelId]?.isOn === true;
+}
 
 export const watchlistSummarySchema = watchlistSchema.extend({
   itemCount: z.number().int().nonnegative(),
@@ -149,6 +177,10 @@ const filterComparers = {
 // True when the two filters of the view select the same records, however they are written.
 export function isSameWatchlistFilter(view: WatchlistView, first: Filter, second: Filter): boolean {
   return filterComparers[view](first, second);
+}
+
+export async function listWatchlistChannels(): Promise<WatchlistChannel[]> {
+  return getJson(apiRoutes.watchlistChannels, z.array(watchlistChannelSchema));
 }
 
 // Shared first, then the caller's own, each oldest first. Every view's when no view is named.

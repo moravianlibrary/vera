@@ -13,8 +13,8 @@ const entrySchema = z.object({
   enteredAt: z.string(),
   baseline: z.boolean(),
   filterVersion: z.number().int().positive().default(1),
-  emailDeliveredAt: z.iso.datetime().nullable().default(null),
-  chatDeliveredAt: z.iso.datetime().nullable().default(null),
+  // By channel instance id: when it was sent there.
+  deliveredAt: z.record(z.string(), z.iso.datetime()).default({}),
   pushDeliveredAt: z.iso.datetime().nullable().default(null),
 });
 export type MockWatchlistEntry = z.infer<typeof entrySchema>;

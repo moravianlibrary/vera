@@ -3,11 +3,10 @@ import { useState } from "react";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { getNotificationHooks } from "@/api/hooks";
 import { getAccount } from "@/api/session";
-import { listWatchlists } from "@/api/watchlists";
+import { listWatchlists, pushChannelId } from "@/api/watchlists";
 import { TabLink, TabStrip } from "@/components/filters/tab-strip";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -26,6 +25,11 @@ import {
   permissionGroups,
   propertyOfPermission,
 } from "@/domain/permissions";
+import {
+  pushChannelName,
+  unreachableTextOf,
+  useWatchlistChannelsQuery,
+} from "@/features/preferences/watchlist-channels";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
@@ -101,8 +105,8 @@ function NotificationsPreferences() {
       <div>
         <h2 className="text-lg font-semibold">Notifications</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Choose which automatic Hook emails reach you. Watchlist delivery is set on each watchlist
-          in the Watchlists page.
+          Choose which automatic Hook emails reach you, and switch one kind of notification off
+          everywhere. Watchlist delivery is set on each watchlist in the Watchlists page.
         </p>
       </div>
       {error && (
@@ -125,25 +129,13 @@ function NotificationsPreferences() {
           onCheckedChange={(doNotSend) => void save({ ...choices, doNotSend })}
         />
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-semibold">Hook emails</h3>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={update.isPending || hooks.length === 0}
-          onClick={() =>
-            void save({
-              ...choices,
-              hooks: {
-                ...choices.hooks,
-                ...Object.fromEntries(hooks.map((hook) => [hook.id, false])),
-              },
-            })
-          }
-        >
-          Turn off all current Hook emails
-        </Button>
-      </div>
+      <OffEverywhere
+        channelsOff={choices.channelsOff ?? []}
+        noHookEmail={choices.noHookEmail === true}
+        isSaving={update.isPending}
+        onChange={(change) => void save({ ...choices, ...change })}
+      />
+      <h3 className="font-semibold">Hook emails</h3>
       {isPending && <p className="text-sm text-muted-foreground">Loading Hook emails…</p>}
       {isError && (
         <p role="alert" className="text-sm text-destructive">
@@ -170,18 +162,95 @@ function NotificationsPreferences() {
                 {hook.defaultEnabled ? "On by default" : "Off by default"}
               </p>
             </div>
-            <Switch
-              aria-label={`${hook.label} email`}
-              checked={choices.hooks[hook.id] ?? hook.defaultEnabled}
-              disabled={update.isPending}
-              onCheckedChange={(enabled) =>
-                void save({ ...choices, hooks: { ...choices.hooks, [hook.id]: enabled } })
-              }
-            />
+            <span className="flex shrink-0 items-center gap-2">
+              {choices.noHookEmail === true && (choices.hooks[hook.id] ?? hook.defaultEnabled) && (
+                <span className="text-xs text-tone-amber-foreground">
+                  Hook email is off for all
+                </span>
+              )}
+              <Switch
+                aria-label={`${hook.label} email`}
+                checked={choices.hooks[hook.id] ?? hook.defaultEnabled}
+                disabled={update.isPending}
+                onCheckedChange={(enabled) =>
+                  void save({ ...choices, hooks: { ...choices.hooks, [hook.id]: enabled } })
+                }
+              />
+            </span>
           </div>
         ))}
       </div>
     </section>
+  );
+}
+
+// WATCH-channel-off: beside *Do not send notifications*, one kind off for every watchlist or hook,
+// those that come later included; the individual choices stay for when it is cleared.
+function OffEverywhere({
+  channelsOff,
+  noHookEmail,
+  isSaving,
+  onChange,
+}: {
+  channelsOff: readonly string[];
+  noHookEmail: boolean;
+  isSaving: boolean;
+  onChange: (change: { channelsOff?: string[]; noHookEmail?: boolean }) => void;
+}) {
+  const { data: channels = [] } = useWatchlistChannelsQuery();
+  const toggle = (channelId: string, isOff: boolean) =>
+    onChange({
+      channelsOff: isOff
+        ? [...channelsOff.filter((id) => id !== channelId), channelId]
+        : channelsOff.filter((id) => id !== channelId),
+    });
+  const rows = [
+    { id: pushChannelId, name: pushChannelName, note: "Every watchlist's browser push." },
+    ...channels.map((channel) => ({
+      id: channel.id,
+      name: channel.name,
+      note: unreachableTextOf(channel) ?? `Every watchlist's ${channel.name}.`,
+    })),
+  ];
+
+  return (
+    <div className="rounded-lg border bg-background">
+      <h3 className="border-b px-4 py-2.5 font-semibold">Off everywhere</h3>
+      <div className="divide-y">
+        {rows.map((row) => (
+          <div key={row.id} className="flex items-center justify-between gap-4 px-4 py-3">
+            <div>
+              <p className="font-medium">No {row.name}</p>
+              <p className="text-xs text-muted-foreground">{row.note}</p>
+            </div>
+            <Switch
+              aria-label={`No ${row.name} for any watchlist`}
+              checked={channelsOff.includes(row.id)}
+              disabled={isSaving}
+              onCheckedChange={(isOff) => toggle(row.id, isOff)}
+            />
+          </div>
+        ))}
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div>
+            <p className="font-medium">No hook email</p>
+            <p className="text-xs text-muted-foreground">
+              Every hook addressed to you, those added later included. Hooks reach you by email
+              only.
+            </p>
+          </div>
+          <Switch
+            aria-label="No hook email"
+            checked={noHookEmail}
+            disabled={isSaving}
+            onCheckedChange={(isOff) => onChange({ noHookEmail: isOff })}
+          />
+        </div>
+      </div>
+      <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">
+        Your choices on each watchlist and hook stay for when you switch these back.
+      </p>
+    </div>
   );
 }
 

@@ -54,6 +54,8 @@ export function changeUserSettings(userId: string, change: UserSettingsChange): 
           notifications: {
             doNotSend: change.notifications.doNotSend ?? current.notifications?.doNotSend ?? false,
             hooks: { ...current.notifications?.hooks, ...change.notifications.hooks },
+            channelsOff: change.notifications.channelsOff ?? current.notifications?.channelsOff,
+            noHookEmail: change.notifications.noHookEmail ?? current.notifications?.noHookEmail,
           },
         }),
   };

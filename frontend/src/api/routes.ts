@@ -10,6 +10,8 @@ export const apiRoutes = {
   // WATCH-push: the browsers this person allowed to be notified in, and the key they subscribe
   // with.
   pushDevices: "/session/push-devices",
+  // WATCH-delivery: the Delivery channel instances that can reach this person.
+  watchlistChannels: "/session/watchlist-channels",
   notificationPreferences: "/notification-preferences",
   users: "/users",
   categories: "/categories",

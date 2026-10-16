@@ -1,12 +1,14 @@
-// One place to find personal and system saved filters, and each person's delivery choices: email
-// and chat off until switched on, browser push on for every watchlist once this browser may
-// notify (WATCH-delivery), whose permission is asked here and moves with these preferences.
+// One place to find personal and system saved filters, and each person's delivery choices: each
+// Delivery channel instance that can reach them off until switched on, named by the instance,
+// browser push on for every watchlist once this browser may notify (WATCH-delivery), whose
+// permission is asked here and moves with these preferences. A switch that is on says so when
+// its channel is off for every watchlist (WATCH-channel-off).
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import type { WatchlistSummary, WatchlistViewerChange } from "@/api/watchlists";
-import { listWatchlists } from "@/api/watchlists";
+import { isChannelOn, listWatchlists } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { navigationEntries } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -35,6 +37,13 @@ import {
 import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
 import { isShared, watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import {
+  isOffForAll,
+  isPushOffForAll,
+  pushChannelName,
+  unreachableTextOf,
+  useWatchlistChannelsQuery,
+} from "@/features/preferences/watchlist-channels";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -76,6 +85,7 @@ export function WatchlistsPage() {
 function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
+  const { data: channels = [] } = useWatchlistChannelsQuery();
   const canShare = session !== undefined && hasPermission(session, "watchlist.manage_system");
   const { data: users = [] } = useUsersQuery({ isEnabled: canShare });
   const queryClient = useQueryClient();
@@ -280,38 +290,36 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                     <TableCell className="align-top whitespace-normal">
                       {visibleIds.has(watchlist.id) && (
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                          <span className="flex items-center gap-2">
-                            <Switch
-                              aria-label={`${watchlist.name} email notifications`}
-                              checked={watchlist.viewer.email}
-                              disabled={busy}
-                              onCheckedChange={(email) =>
-                                changeViewer(watchlist, {
-                                  email,
-                                  ...(email
-                                    ? { confirmedFilter: String(watchlist.filterVersion) }
-                                    : {}),
-                                })
-                              }
-                            />
-                            Email
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <Switch
-                              aria-label={`${watchlist.name} chat notifications`}
-                              checked={watchlist.viewer.chat}
-                              disabled={busy}
-                              onCheckedChange={(chat) =>
-                                changeViewer(watchlist, {
-                                  chat,
-                                  ...(chat
-                                    ? { confirmedFilter: String(watchlist.filterVersion) }
-                                    : {}),
-                                })
-                              }
-                            />
-                            Chat
-                          </span>
+                          {channels.map((channel) => {
+                            const isOn = isChannelOn(watchlist.viewer, channel.id);
+                            const why = unreachableTextOf(channel);
+                            return (
+                              <span key={channel.id} className="flex items-center gap-2">
+                                <Switch
+                                  aria-label={`${watchlist.name} ${channel.name} notifications`}
+                                  checked={isOn}
+                                  disabled={busy || (why !== null && !isOn)}
+                                  onCheckedChange={(isChecked) =>
+                                    changeViewer(watchlist, {
+                                      channels: { [channel.id]: isChecked },
+                                      ...(isChecked
+                                        ? { confirmedFilter: String(watchlist.filterVersion) }
+                                        : {}),
+                                    })
+                                  }
+                                />
+                                {channel.name}
+                                {why !== null && (
+                                  <span className="text-muted-foreground">{why}</span>
+                                )}
+                                {why === null && isOn && isOffForAll(userSettings, channel.id) && (
+                                  <span className="text-tone-amber-foreground">
+                                    Off for all watchlists
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })}
                           <span className="flex items-center gap-2">
                             <Switch
                               aria-label={`${watchlist.name} browser notifications`}
@@ -319,10 +327,16 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                               disabled={busy}
                               onCheckedChange={(push) => changeViewer(watchlist, { push })}
                             />
-                            Browser
+                            {pushChannelName}
+                            {watchlist.viewer.push && isPushOffForAll(userSettings) && (
+                              <span className="text-tone-amber-foreground">
+                                Off for all watchlists
+                              </span>
+                            )}
                           </span>
-                          {(watchlist.viewer.email ||
-                            watchlist.viewer.chat ||
+                          {(Object.values(watchlist.viewer.channels).some(
+                            (channel) => channel.isOn,
+                          ) ||
                             watchlist.viewer.push) &&
                             watchlist.viewer.confirmedFilter !==
                               String(watchlist.filterVersion) && (

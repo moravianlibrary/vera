@@ -18,10 +18,10 @@ import { retryAtOf, sendAtOf } from "@/domain/hooks";
 import { hasPermission } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 import type { Outcome, Refusal } from "@/mocks/mutations";
+import { issueNotificationToken } from "@/mocks/notification-tokens";
 import { implementationOf, kindOf, liveInstances } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
 import { userSettingsOf } from "@/mocks/user-settings";
-import { issueNotificationToken } from "@/mocks/notification-tokens";
 
 const retentionDays = 30;
 const forbidden: Refusal = { status: 403, message: "You may not configure hooks" };
@@ -124,8 +124,10 @@ function attemptDelivery(delivery: HookDelivery, now: Date): HookDelivery {
     }
     recipientUserId = recipient.id;
     const settings = userSettingsOf(recipient.id).notifications;
+    // WATCH-channel-off: *No hook email* stops every hook, those added later included.
     if (
       settings?.doNotSend ||
+      settings?.noHookEmail === true ||
       settings?.hooks[hook.id] === false ||
       (settings?.hooks[hook.id] === undefined && !hook.recipientPreference.defaultEnabled)
     ) {

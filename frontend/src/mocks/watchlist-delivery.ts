@@ -1,17 +1,24 @@
 // A deterministic mock outbox. The real service consumes entry events; MSW reconciles the
 // current matching set when a watchlist is read and flushes due batches opportunistically.
+import type { WatchlistSummary } from "@/api/watchlists";
 import type { WatchlistView } from "@/domain/entities";
 import type { PushNotice } from "@/domain/watchlist-push";
 import { isPushDue, pushNoticeOf } from "@/domain/watchlist-push";
 import { database } from "@/mocks/database";
 import { pushAllowedSince } from "@/mocks/push";
 import { sessionOf } from "@/mocks/session";
-import { userSettingsOf } from "@/mocks/user-settings";
+import {
+  isChannelOffForAll,
+  isPushOffForAll,
+  watchlistChannelsOf,
+} from "@/mocks/watchlist-channels";
 import { storeWatchlistEntries } from "@/mocks/watchlist-entries";
 import { visibleWatchlists } from "@/mocks/watchlists";
 
 export interface MockWatchlistMail {
   userId: string;
+  // The Delivery channel instance it went through (WATCH-delivery).
+  channelId: string;
   sentAt: string;
   records: { view: string; recordId: string; watchlistIds: string[] }[];
   manageUrl: string;
@@ -22,13 +29,14 @@ export interface MockWatchlistNotice {
   watchlistId: string;
   at: string;
   reason: "filter_changed" | "audience_removed" | "removed";
-  channel: "email" | "chat";
+  channelId: string;
 }
 
 export const watchlistMailOutbox: MockWatchlistMail[] = [];
 export const watchlistNoticeOutbox: MockWatchlistNotice[] = [];
 export const watchlistChatOutbox: {
   userId: string;
+  channelId: string;
   watchlistId: string;
   view: string;
   recordId: string;
@@ -37,90 +45,112 @@ export const watchlistChatOutbox: {
 }[] = [];
 const batchMilliseconds = 15 * 60_000;
 
+// The entries a channel owes a person: not yet sent there, after it was switched on for the
+// watchlist, not opened, and not held by a changed filter they have not confirmed.
+function owedEntries(
+  userId: string,
+  channelId: string,
+  eligible: ReadonlyMap<string, WatchlistSummary>,
+) {
+  return database.watchlistEntries.filter((entry) => {
+    if (entry.userId !== userId || entry.baseline || entry.deliveredAt[channelId] !== undefined)
+      return false;
+    const summary = eligible.get(entry.watchlistId);
+    const switched = summary?.viewer.channels[channelId];
+    return (
+      summary !== undefined &&
+      switched?.isOn === true &&
+      !(
+        summary.filterVersion > 1 &&
+        summary.viewer.confirmedFilter !== String(summary.filterVersion)
+      ) &&
+      (switched.since === null || entry.enteredAt > switched.since) &&
+      (summary.viewer.seenAt === null || entry.enteredAt > summary.viewer.seenAt)
+    );
+  });
+}
+
+// The channels that reach the person and are not off for every watchlist (WATCH-channel-off).
+function liveChannelsOf(userId: string, interfaceName: string) {
+  return watchlistChannelsOf(userId).filter(
+    (channel) =>
+      channel.canReach &&
+      channel.interface === interfaceName &&
+      !isChannelOffForAll(userId, channel.id),
+  );
+}
+
+// WATCH-mail-batch: per person and email channel, across their watchlists, once the oldest
+// entry waited 15 minutes; a record once, grouped by watchlist.
 export function flushWatchlistMail(now = new Date()): MockWatchlistMail[] {
   const sent: MockWatchlistMail[] = [];
   for (const user of database.users) {
     const session = sessionOf(user.id);
-    if (session === null || userSettingsOf(user.id).notifications?.doNotSend) continue;
+    if (session === null) continue;
     // Reconcile current membership and access at send time, including a changed audience.
-    const visible = visibleWatchlists(session, null);
-    const eligible = new Map(visible.map((summary) => [summary.id, summary]));
-    const pending = database.watchlistEntries.filter((entry) => {
-      if (entry.userId !== user.id || entry.baseline || entry.emailDeliveredAt !== null)
-        return false;
-      const summary = eligible.get(entry.watchlistId);
-      if (
-        summary === undefined ||
-        !summary.viewer.email ||
-        (summary.filterVersion > 1 &&
-          summary.viewer.confirmedFilter !== String(summary.filterVersion)) ||
-        (summary.viewer.emailSince !== null && entry.enteredAt <= summary.viewer.emailSince) ||
-        (summary.viewer.seenAt !== null && entry.enteredAt <= summary.viewer.seenAt)
-      )
-        return false;
-      return true;
-    });
-    if (pending.length === 0) continue;
-    const oldest = Math.min(...pending.map((entry) => Date.parse(entry.enteredAt)));
-    if (now.getTime() - oldest < batchMilliseconds) continue;
-    const records = new Map<string, MockWatchlistMail["records"][number]>();
-    for (const entry of pending) {
-      const summary = eligible.get(entry.watchlistId);
-      if (summary === undefined) continue;
-      const key = `${summary.view}:${entry.recordId}`;
-      const record = records.get(key) ?? {
-        view: summary.view,
-        recordId: entry.recordId,
-        watchlistIds: [],
+    const eligible = new Map(
+      visibleWatchlists(session, null).map((summary) => [summary.id, summary]),
+    );
+    for (const channel of liveChannelsOf(user.id, "Email")) {
+      const pending = owedEntries(user.id, channel.id, eligible);
+      if (pending.length === 0) continue;
+      const oldest = Math.min(...pending.map((entry) => Date.parse(entry.enteredAt)));
+      if (now.getTime() - oldest < batchMilliseconds) continue;
+      const records = new Map<string, MockWatchlistMail["records"][number]>();
+      for (const entry of pending) {
+        const summary = eligible.get(entry.watchlistId);
+        if (summary === undefined) continue;
+        const key = `${summary.view}:${entry.recordId}`;
+        const record = records.get(key) ?? {
+          view: summary.view,
+          recordId: entry.recordId,
+          watchlistIds: [],
+        };
+        record.watchlistIds.push(entry.watchlistId);
+        records.set(key, record);
+        entry.deliveredAt = { ...entry.deliveredAt, [channel.id]: now.toISOString() };
+      }
+      if (records.size === 0) continue;
+      const mail = {
+        userId: user.id,
+        channelId: channel.id,
+        sentAt: now.toISOString(),
+        records: [...records.values()],
+        manageUrl: "/watchlists",
       };
-      record.watchlistIds.push(entry.watchlistId);
-      records.set(key, record);
-      entry.emailDeliveredAt = now.toISOString();
+      watchlistMailOutbox.push(mail);
+      sent.push(mail);
     }
-    if (records.size === 0) continue;
-    const mail = {
-      userId: user.id,
-      sentAt: now.toISOString(),
-      records: [...records.values()],
-      manageUrl: "/watchlists",
-    };
-    watchlistMailOutbox.push(mail);
-    sent.push(mail);
   }
   if (sent.length > 0) storeWatchlistEntries(database.watchlistEntries);
   return sent;
 }
 
+// A chat channel says each record as it enters.
 export function flushWatchlistChat(now = new Date()): void {
   let changed = false;
   for (const user of database.users) {
     const session = sessionOf(user.id);
-    if (session === null || userSettingsOf(user.id).notifications?.doNotSend) continue;
+    if (session === null) continue;
     const visible = new Map(
       visibleWatchlists(session, null).map((summary) => [summary.id, summary]),
     );
-    for (const entry of database.watchlistEntries) {
-      if (entry.userId !== user.id || entry.baseline || entry.chatDeliveredAt !== null) continue;
-      const summary = visible.get(entry.watchlistId);
-      if (
-        summary === undefined ||
-        !summary.viewer.chat ||
-        (summary.filterVersion > 1 &&
-          summary.viewer.confirmedFilter !== String(summary.filterVersion)) ||
-        (summary.viewer.chatSince !== null && entry.enteredAt <= summary.viewer.chatSince) ||
-        (summary.viewer.seenAt !== null && entry.enteredAt <= summary.viewer.seenAt)
-      )
-        continue;
-      watchlistChatOutbox.push({
-        userId: user.id,
-        watchlistId: entry.watchlistId,
-        view: summary.view,
-        recordId: entry.recordId,
-        sentAt: now.toISOString(),
-        manageUrl: `/watchlists?watchlist=${encodeURIComponent(entry.watchlistId)}`,
-      });
-      entry.chatDeliveredAt = now.toISOString();
-      changed = true;
+    for (const channel of liveChannelsOf(user.id, "Chat")) {
+      for (const entry of owedEntries(user.id, channel.id, visible)) {
+        const summary = visible.get(entry.watchlistId);
+        if (summary === undefined) continue;
+        watchlistChatOutbox.push({
+          userId: user.id,
+          channelId: channel.id,
+          watchlistId: entry.watchlistId,
+          view: summary.view,
+          recordId: entry.recordId,
+          sentAt: now.toISOString(),
+          manageUrl: `/watchlists?watchlist=${encodeURIComponent(entry.watchlistId)}`,
+        });
+        entry.deliveredAt = { ...entry.deliveredAt, [channel.id]: now.toISOString() };
+        changed = true;
+      }
     }
   }
   if (changed) storeWatchlistEntries(database.watchlistEntries);
@@ -175,12 +205,8 @@ export function flushWatchlistPush(
     if (userIds !== null && !userIds.includes(user.id)) continue;
     const allowedSince = pushAllowedSince(user.id);
     const session = sessionOf(user.id);
-    if (
-      allowedSince === null ||
-      session === null ||
-      userSettingsOf(user.id).notifications?.doNotSend
-    )
-      continue;
+    // WATCH-channel-off: browser push off for every watchlist, or nothing sent at all.
+    if (allowedSince === null || session === null || isPushOffForAll(user.id)) continue;
     for (const summary of visibleWatchlists(session, null)) {
       const { viewer } = summary;
       if (
@@ -231,13 +257,16 @@ export function noteSystemWatchlistChange(
 ): void {
   const at = new Date().toISOString();
   for (const userId of userIds) {
-    if (userSettingsOf(userId).notifications?.doNotSend) continue;
     const viewer = database.watchlistViewers.find(
       (row) => row.watchlistId === watchlistId && row.userId === userId,
     );
-    if (viewer?.email)
-      watchlistNoticeOutbox.push({ userId, watchlistId, at, reason, channel: "email" });
-    if (viewer?.chat)
-      watchlistNoticeOutbox.push({ userId, watchlistId, at, reason, channel: "chat" });
+    for (const channel of watchlistChannelsOf(userId)) {
+      if (
+        channel.canReach &&
+        viewer?.channels[channel.id]?.isOn === true &&
+        !isChannelOffForAll(userId, channel.id)
+      )
+        watchlistNoticeOutbox.push({ userId, watchlistId, at, reason, channelId: channel.id });
+    }
   }
 }

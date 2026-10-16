@@ -23,6 +23,11 @@ export const userSettingsSchema = z.object({
       doNotSend: z.boolean(),
       // Keyed by stable Hook ID. Missing follows that Hook's explicit default.
       hooks: z.record(z.string(), z.boolean()),
+      // WATCH-channel-off: the watchlist channels switched off for every watchlist, by instance
+      // id, browser push as `push`.
+      channelsOff: z.array(z.string()).optional(),
+      // WATCH-channel-off: every hook's email, since hooks reach people by email only.
+      noHookEmail: z.boolean().optional(),
     })
     .optional(),
 });
