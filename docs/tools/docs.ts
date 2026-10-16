@@ -444,7 +444,7 @@ function sourceFiles(directory: string): string[] {
 // The structure and the reference's own README name example IDs that are not rules.
 const examples = [join(docs, "structure.md"), join(docs, "reference/README.md")];
 // The code: the frontend and the packages it shares with the engine.
-const codeFiles = ["frontend/src", "contract/src", "domain/src"].flatMap((dir) =>
+const codeFiles = ["frontend/src", "contract/src", "domain/src", "engine/src"].flatMap((dir) =>
   sourceFiles(join(root, dir)),
 );
 const citing = [...codeFiles, ...newDocs.filter((file) => !examples.includes(file))];

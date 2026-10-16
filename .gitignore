@@ -12,3 +12,4 @@ frontend/.env.*
 .frontend.log
 .dev-roles/
 plans/
+engine/.data/

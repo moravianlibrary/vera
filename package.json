@@ -4,7 +4,8 @@
   "workspaces": [
     "frontend",
     "contract",
-    "domain"
+    "domain",
+    "engine"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.0"

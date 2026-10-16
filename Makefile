@@ -134,6 +134,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd frontend && bun run typecheck
 	cd contract && bun run typecheck
 	cd domain && bun run typecheck
+	cd engine && bun run typecheck
 
 check: format-check lint typecheck version-check docs-check ## Run the project checks
 
@@ -147,6 +148,7 @@ test: ## Run the frontend tests and the shared packages' tests
 	cd frontend && bun run test
 	cd contract && bun test
 	cd domain && bun test
+	cd engine && bun test
 
 version-check: ## Ensure package version matches VERSION
 	@test "$$(node -p "require('./frontend/package.json').version")" = "$$(cat VERSION)" || { echo "frontend/package.json and VERSION differ"; exit 1; }
