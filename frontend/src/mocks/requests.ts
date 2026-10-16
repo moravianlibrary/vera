@@ -665,6 +665,7 @@ function approveRow(
     digitizedAt: null,
     publishedLink: null,
     scanDpi: null,
+    properties: [],
   };
   database.iterations.push(iteration);
 

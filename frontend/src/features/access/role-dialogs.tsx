@@ -33,19 +33,21 @@ import {
   roleChangeReachOf,
   roleNameOf,
 } from "@/domain/access";
-import type { CatalogScope, Grant, Permission, PermissionEntry } from "@/domain/permissions";
+import type { CatalogScope, Grant, Permission } from "@/domain/permissions";
 import {
+  byCatalogOrder,
+  catalogEntryOf,
   grantScopeOf,
   isSelfScoped,
   missingRequirementsOf,
-  permissionCatalog,
   permissionGroups,
   permissionKeys,
   withRequirements,
 } from "@/domain/permissions";
+import { editPermissionOf } from "@/domain/properties";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import type { AccessNames } from "@/features/access/access-records";
-import { permissionLines, scopeLabelOf, waysShortText } from "@/features/access/access-words";
+import { permissionLineOf, scopeLabelOf, waysShortText } from "@/features/access/access-words";
 import { accessInvalidations, useRoleImpactQuery } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { plural } from "@/lib/plural";
@@ -183,7 +185,12 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       entries={[stored]}
       renderEntries={([draft], onChange) =>
         draft === undefined ? null : (
-          <RoleFields id={id} draft={draft} onChange={(next) => onChange([next])} />
+          <RoleFields
+            id={id}
+            draft={draft}
+            properties={index.properties}
+            onChange={(next) => onChange([next])}
+          />
         )
       }
       summaryOf={([draft]) =>
@@ -232,12 +239,22 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
 function RoleFields({
   id,
   draft,
+  properties,
   onChange,
 }: {
   id: string;
   draft: RoleDraft;
+  // Each brings its own permission, under Properties (PERM-property-edit).
+  properties: AccessIndex["properties"];
   onChange: (next: RoleDraft) => void;
 }) {
+  const nameOfPermission = new Map<Permission, string>(
+    properties.map((property) => [editPermissionOf(property.key), property.name]),
+  );
+  const catalog: Permission[] = [
+    ...permissionKeys,
+    ...properties.map((property) => editPermissionOf(property.key)),
+  ];
   const scopeOf = (permission: Permission) =>
     draft.grants.find((grant) => grant.permission === permission)?.scope;
   // Ticking a permission ticks what it needs too (PERM-requires); unticking a need is left to
@@ -249,10 +266,7 @@ function RoleFields({
       grants: (scope === undefined
         ? grants
         : withRequirements([...grants, { permission, scope }])
-      ).toSorted(
-        (first, second) =>
-          permissionKeys.indexOf(first.permission) - permissionKeys.indexOf(second.permission),
-      ),
+      ).toSorted((first, second) => byCatalogOrder(first.permission, second.permission)),
     });
   };
 
@@ -342,13 +356,14 @@ function RoleFields({
         {permissionGroups.map((group) => (
           <div key={group} className="mb-3 break-inside-avoid">
             <h4 className="border-b pb-1 text-xs font-semibold">{group}</h4>
-            {permissionKeys
-              .filter((permission) => permissionCatalog[permission].group === group)
+            {catalog
+              .filter((permission) => catalogEntryOf(permission).group === group)
               .map((permission) => (
                 <PermissionRow
                   key={permission}
                   id={`${id}-${permission}`}
                   permission={permission}
+                  line={permissionLineOf(permission, nameOfPermission.get(permission))}
                   scope={scopeOf(permission)}
                   onChange={(scope) => setScope(permission, scope)}
                 />
@@ -363,21 +378,23 @@ function RoleFields({
 function PermissionRow({
   id,
   permission,
+  line,
   scope,
   onChange,
 }: {
   id: string;
   permission: Permission;
+  line: string;
   // Undefined when not granted.
   scope: Grant["scope"] | undefined;
   onChange: (scope: Grant["scope"] | undefined) => void;
 }) {
-  const { scopes } = permissionCatalog[permission] as PermissionEntry;
+  const { scopes } = catalogEntryOf(permission);
   return (
     <div className="flex items-center justify-between gap-3 border-b py-1.5">
       <label htmlFor={id} className="min-w-0 text-xs">
         <span className="block font-mono text-[0.6875rem]">{permission}</span>
-        <span className="block text-muted-foreground">{permissionLines[permission]}</span>
+        <span className="block text-muted-foreground">{line}</span>
       </label>
       {isSelfScoped(permission) ? (
         <span className="flex shrink-0 items-center gap-1.5 text-xs">

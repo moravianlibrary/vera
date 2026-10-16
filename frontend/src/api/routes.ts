@@ -72,6 +72,8 @@ export const apiRoutes = {
   taskRetention: "/tasks/retention",
   schedules: "/schedules",
   hooks: "/hooks",
+  // DOC-property: the definitions, written on the Properties page.
+  properties: "/properties",
   hookPreview: "/hooks/preview",
   // Users & Groups, the page: every user, role, group and request custody with what links them.
   access: "/access",

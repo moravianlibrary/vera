@@ -4,8 +4,9 @@
 // values became 09:00 UTC.
 
 import type { Iteration } from "@/domain/entities";
+import { iterationPropertyValues } from "@/mocks/fixtures/properties";
 
-export const iterations: readonly Iteration[] = [
+const attempts: readonly Omit<Iteration, "properties">[] = [
   {
     id: "IT1",
     documentId: "D1",
@@ -1059,3 +1060,8 @@ export const iterations: readonly Iteration[] = [
     scanDpi: null,
   },
 ];
+
+export const iterations: readonly Iteration[] = attempts.map((iteration) => ({
+  ...iteration,
+  properties: [...(iterationPropertyValues[iteration.id] ?? [])],
+}));

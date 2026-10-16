@@ -21,9 +21,10 @@ import { watchlistViewSchema } from "@/domain/entities";
 import type { Grant, Permission } from "@/domain/permissions";
 import {
   canOpenMyDocuments,
+  catalogEntryOf,
   hasPermission,
-  permissionCatalog,
   permissionGroups,
+  propertyOfPermission,
 } from "@/domain/permissions";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -440,7 +441,7 @@ function AccountPreferences() {
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     {permissionGroups.map((group) => {
                       const grants = session.grants.filter(
-                        (grant) => permissionCatalog[grant.permission].group === group,
+                        (grant) => catalogEntryOf(grant.permission).group === group,
                       );
                       return grants.length === 0 ? null : (
                         <div key={group} className="rounded-md border p-3">
@@ -504,8 +505,11 @@ function permissionLabel(permission: Permission): string {
     "request.read_payload": "View ingest payloads",
     "plugin.upload_code": "Upload plugin code",
     "watchlist.manage_system": "Manage system watchlists",
+    "property.define": "Define properties",
   };
   if (special[permission]) return special[permission];
+  const propertyKey = propertyOfPermission(permission);
+  if (propertyKey !== null) return `Enter ${propertyKey} by hand`;
   const [subject, action = ""] = permission.split(".");
   const verbs: Record<string, string> = {
     read: "View",

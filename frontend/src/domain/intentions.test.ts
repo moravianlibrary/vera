@@ -73,6 +73,7 @@ const iteration = (
   digitizedAt: null,
   publishedLink: null,
   scanDpi: null,
+  properties: [],
   ...overrides,
 });
 

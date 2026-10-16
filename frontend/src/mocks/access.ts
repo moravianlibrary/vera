@@ -26,11 +26,13 @@ import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@/
 import type { Session } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@/domain/permissions";
+import { propertyNameOf } from "@/domain/properties";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
+import { allPropertyDefinitions } from "@/mocks/properties";
 import { openProposalPlacements, openProposalRows } from "@/mocks/requests";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
@@ -62,6 +64,10 @@ function openProposalCountsByCustody(): Map<string, number> {
 export function accessIndex(): AccessIndex {
   const openCounts = openProposalCountsByCustody();
   return {
+    properties: allPropertyDefinitions().map((definition) => ({
+      key: definition.key,
+      name: propertyNameOf(definition),
+    })),
     asOf: mockNow().toISOString(),
     users: database.users.map(accessUserOf),
     roles: database.roles,

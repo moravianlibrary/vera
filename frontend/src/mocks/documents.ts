@@ -545,7 +545,9 @@ function byOwnLatestAsk(userId: string) {
 // Staff read the whole story, less an ingest error they may not read; a requester reads what
 // happened in plain words, not who did it or why.
 function logOf(record: DocumentRecord, session: Session, audience: Audience): StatusLogEntry[] {
-  const subjects = new Set([...record.iterations, ...record.requests].map((entry) => entry.id));
+  const subjects = new Set(
+    [record.document, ...record.iterations, ...record.requests].map((entry) => entry.id),
+  );
   const entries = database.statusLog
     .filter((entry) => subjects.has(entry.subjectId))
     .toSorted((first, second) => second.at.localeCompare(first.at));

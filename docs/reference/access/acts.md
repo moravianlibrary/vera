@@ -211,6 +211,16 @@ retrying it is the same right.
 | `ACT-instance-upgrade` | *Move to v…* | `plugin.configure` | a newer installed version whose contract VERA runs (409) | the instance's version |
 | `ACT-plugin-upload` | *Upload plugin code…* | `plugin.upload_code` | a package with a descriptor, for this implementation, of a version not yet installed (422, 409) | a new implementation or version; no instance moves |
 
+## Properties
+
+On the *Properties* page ([DOC-property](../model/documents.md#doc-property)).
+
+| ID | Act | Needs | Allowed when | Writes |
+|---|---|---|---|---|
+| `ACT-property-create` | *New property…* | `property.define` | a key never used before, a deleted one included (409 `property.key_taken`); no hand entry for a fact the catalog holds, the page count apart (422) | the definition and its `property.<key>.edit` |
+| `ACT-property-save` | *Edit…* | `property.define` | as create; the key unchanged | — |
+| `ACT-property-delete` | *Delete…* | `property.define` | not predefined (409 `property.predefined`) | its values, grants, filters and conditions removed ([DOC-property-delete](../model/documents.md#doc-property-delete)) |
+
 ## Hooks
 
 | ID | Act | Needs | Allowed when | Writes |

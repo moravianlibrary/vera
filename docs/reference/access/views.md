@@ -62,6 +62,7 @@ empty cell means the entry is absent.
 | Schedules | `/schedules` | `task.read` |  |  |  |  |  | Schedules |
 | Users management | `/access` | `access.read` |  |  |  |  |  | Users management |
 | Plugins | `/plugins` | `plugin.read` |  |  |  |  |  | Plugins |
+| Properties | `/properties` | `property.define` |  |  |  |  |  | Properties |
 | Hooks | `/hooks` | `hook.read` |  |  |  |  |  | Hooks |
 | Watchlists | `/watchlists` | `watch` · `watchlist.manage_system` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
 <!-- /generated:sidebar -->

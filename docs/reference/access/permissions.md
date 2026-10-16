@@ -68,6 +68,7 @@ Nothing reads implicitly: deciding projects shows them only through `project.rea
 | `plugin.upload_code` | `plugin.configure` |
 | `hook.configure` | `hook.read` |
 | `access.manage` | `access.read` |
+| `property.<key>.edit` | `iteration.read@any` |
 <!-- /generated:permission-requires -->
 
 #### PERM-property-edit
@@ -80,9 +81,6 @@ property's visibility ([DOC-property-visibility](../model/documents.md#doc-prope
 `property.<key>.edit` needs `iteration.read@any`
 ([PERM-requires](#perm-requires)), so its holder reaches every record the grant does. Defining
 properties is `property.define`, at `any`, in Administration; only `admin` is given it.
-
-> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the catalog and the needs
-> above hold neither `property.define` nor the per-property permissions.
 
 #### PERM-absent-not-disabled
 
@@ -99,8 +97,8 @@ scope included, and refuses with 403.
 ## The catalog
 
 `own` is the holder's own records; a permission offering only `own` is self-scoped. The headings
-are the groups the role editor shows. Besides these, each property adds its
-`property.<key>.edit` ([PERM-property-edit](#perm-property-edit)).
+are the groups the role editor shows. Each property adds its own `property.<key>.edit` under
+*Properties* ([PERM-property-edit](#perm-property-edit)).
 
 <!-- generated:permission-catalog -->
 ### Requests
@@ -167,6 +165,12 @@ are the groups the role editor shows. Besides these, each property adds its
 | `watch` | own | save watchlists over what I can read |
 | `watchlist.manage_system` | `any` | create, change and remove system watchlists, and set who sees them |
 
+### Properties
+
+| Permission | Scopes | What it lets you do |
+|---|---|---|
+| `property.<key>.edit` | `any` | enter its value by hand, one per property |
+
 ### Administration
 
 | Permission | Scopes | What it lets you do |
@@ -181,6 +185,7 @@ are the groups the role editor shows. Besides these, each property adds its
 | `plugin.run` | `any` | run a plugin now |
 | `hook.read` | `any` | see hooks |
 | `hook.configure` | `any` | edit hooks |
+| `property.define` | `any` | define properties, on the Properties page |
 | `access.read` | `any` | see users, groups and roles |
 | `access.manage` | `any` | change them, roles included |
 <!-- /generated:permission-catalog -->

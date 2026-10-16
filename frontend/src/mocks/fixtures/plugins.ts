@@ -131,6 +131,8 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
         properties: [
           { key: "page_count", tier: 50 },
           { key: "material_type", tier: 50 },
+          { key: "shelf_mark", tier: 50 },
+          { key: "title", tier: 50 },
           { key: "unit_enumeration", tier: 50 },
         ],
         identifierTypes: ["NBN", "ISSN", "ISBN", "Shelf mark"],
@@ -234,7 +236,7 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
         rules: [
           { code: "R03", label: "title well-formed" },
           { code: "R07", label: "publication year resolvable" },
-          { code: "R11", label: "extent matches what was delivered" },
+          { code: "R11", label: "extent matches what was delivered", reads: ["page_count"] },
         ],
       },
       fields: ["severity", "rules"],

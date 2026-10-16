@@ -11,17 +11,23 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "
 import { dirname, join, relative, resolve } from "node:path";
 import type { Role } from "../../frontend/src/domain/access.ts";
 import type {
-  Permission,
   PermissionEntry,
   Requirement,
+  StaticPermission,
 } from "../../frontend/src/domain/permissions.ts";
 import {
+  catalogEntryOf,
   permissionCatalog,
   permissionGroups,
   permissionKeys,
   permissionRequires,
+  propertyEditRequires,
 } from "../../frontend/src/domain/permissions.ts";
-import { permissionLines } from "../../frontend/src/features/access/access-words.ts";
+import { editPermissionOf } from "../../frontend/src/domain/properties.ts";
+import {
+  permissionLines,
+  propertyEditLine,
+} from "../../frontend/src/features/access/access-words.ts";
 import { navigationEntries, visibleNavigation } from "../../frontend/src/components/layout/navigation.ts";
 import { roles } from "../../frontend/src/mocks/fixtures/access.ts";
 import { accessView } from "../../frontend/src/features/access/access-view.ts";
@@ -44,17 +50,29 @@ const isCheck = process.argv.includes("--check");
 
 // ---------------------------------------------------------------- generated blocks
 
+// Each property's own permission, one row for them all (PERM-property-edit).
+const propertyEditKey = "property.<key>.edit";
+const propertyEditEntry = catalogEntryOf(editPermissionOf("key"));
+
+const acceptedText = ({ scopes }: PermissionEntry) =>
+  scopes.map((scope) => (scope === "own" ? "own" : `\`${scope}\``)).join(" · ");
+
 function permissionCatalogTable(): string {
   return permissionGroups
     .map((group) => {
-      const rows = permissionKeys
-        .filter((permission) => permissionCatalog[permission].group === group)
-        .map((permission) => {
-          const { scopes } = permissionCatalog[permission] as PermissionEntry;
-          const accepted =
-            scopes.map((scope) => (scope === "own" ? "own" : `\`${scope}\``)).join(" · ");
-          return `| \`${permission}\` | ${accepted} | ${permissionLines[permission]} |`;
-        });
+      const rows = [
+        ...permissionKeys
+          .filter((permission) => permissionCatalog[permission].group === group)
+          .map(
+            (permission) =>
+              `| \`${permission}\` | ${acceptedText(permissionCatalog[permission])} | ${permissionLines[permission]} |`,
+          ),
+        ...(propertyEditEntry.group === group
+          ? [
+              `| \`${propertyEditKey}\` | ${acceptedText(propertyEditEntry)} | ${propertyEditLine}, one per property |`,
+            ]
+          : []),
+      ];
       return [
         `### ${group}`,
         "",
@@ -70,14 +88,18 @@ function permissionCatalogTable(): string {
 function permissionRequiresTable(): string {
   const needText = ({ permission, at }: Requirement) =>
     at === "any" ? `\`${permission}@any\`` : at === "held" ? `\`${permission}\` (any scope)` : `\`${permission}\``;
-  const rows = new Map<string, Permission[]>();
+  const rows = new Map<string, string[]>();
+  const add = (permission: string, needs: readonly Requirement[]) => {
+    const text = needs.map(needText).join(", ");
+    rows.set(text, [...(rows.get(text) ?? []), permission]);
+  };
   for (const permission of permissionKeys) {
     const needs = permissionRequires[permission];
     if (needs !== undefined) {
-      const text = needs.map(needText).join(", ");
-      rows.set(text, [...(rows.get(text) ?? []), permission]);
+      add(permission, needs);
     }
   }
+  add(propertyEditKey, propertyEditRequires);
   return [
     "| Permission | Needs |",
     "|---|---|",
@@ -88,7 +110,7 @@ function permissionRequiresTable(): string {
   ].join("\n");
 }
 
-function scopeCell(role: Role, permission: Permission): string {
+function scopeCell(role: Role, permission: StaticPermission): string {
   const grant = role.grants.find((candidate) => candidate.permission === permission);
   if (grant === undefined) {
     return "";
@@ -100,8 +122,12 @@ function scopeCell(role: Role, permission: Permission): string {
 function roleGrantsTable(): string {
   const header = `| Permission | ${roles.map((role) => `\`${role.name}\``).join(" | ")} |`;
   const rule = `|---|${roles.map(() => "---").join("|")}|`;
+  // A shipped role holds no property's permission: properties are defined after it ships.
   const rows = permissionGroups.flatMap((group) => [
     `| **${group}** |${roles.map(() => " ").join("|")}|`,
+    ...(propertyEditEntry.group === group
+      ? [`| \`${propertyEditKey}\` | ${roles.map(() => "").join(" | ")} |`]
+      : []),
     ...permissionKeys
       .filter((permission) => permissionCatalog[permission].group === group)
       .map(

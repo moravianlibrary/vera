@@ -27,6 +27,7 @@ import { PreferencesPage } from "@/features/preferences/preferences-page";
 import { WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
+import { PropertiesPage } from "@/features/properties/properties-page";
 import { RequestsPage } from "@/features/requests/requests-page";
 import { SchedulesPage } from "@/features/tasks/schedules-page";
 import { TasksPage } from "@/features/tasks/tasks-page";
@@ -73,6 +74,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <AccessPage />;
     case "plugins":
       return <PluginsPage />;
+    case "properties":
+      return <PropertiesPage />;
     case "hooks":
       return <HooksPage />;
     case "watchlists":

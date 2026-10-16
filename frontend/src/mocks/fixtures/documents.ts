@@ -4,8 +4,9 @@
 // values became 09:00 UTC.
 
 import type { Document } from "@/domain/entities";
+import { documentPropertyValues } from "@/mocks/fixtures/properties";
 
-export const documents: readonly Document[] = [
+const catalogDocuments: readonly Omit<Document, "properties">[] = [
   {
     id: "D1",
     catalogId: "MZK01-001284756",
@@ -1617,3 +1618,8 @@ export const documents: readonly Document[] = [
     ],
   },
 ];
+
+export const documents: readonly Document[] = catalogDocuments.map((document) => ({
+  ...document,
+  properties: [...(documentPropertyValues[document.id] ?? [])],
+}));

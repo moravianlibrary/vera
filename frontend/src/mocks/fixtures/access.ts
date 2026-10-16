@@ -493,6 +493,10 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
         scope: "any",
       },
       {
+        permission: "property.define",
+        scope: "any",
+      },
+      {
         permission: "access.read",
         scope: "any",
       },

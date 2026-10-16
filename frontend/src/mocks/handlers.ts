@@ -55,6 +55,7 @@ import {
   projectMembersSchema,
   projectRejectionSchema,
 } from "@/api/projects";
+import { bulkPropertyEntrySchema, newPropertySchema, propertyEntrySchema } from "@/api/properties";
 import { proposalDraftSchema, proposalLookupSchema, recordLinkSchema } from "@/api/proposals";
 import { pushSubscriptionSchema } from "@/api/push";
 import {
@@ -97,6 +98,7 @@ import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { canOpenMyDocuments, hasPermission } from "@/domain/permissions";
+import { propertyDraftSchema } from "@/domain/properties";
 import {
   accessIndex,
   canReadAccess,
@@ -235,6 +237,15 @@ import {
   saveProject,
   saveProjectMembers,
 } from "@/mocks/projects";
+import {
+  createProperty,
+  deleteProperty,
+  enterPropertyValue,
+  enterPropertyValues,
+  propertyImpact,
+  propertyIndex,
+  saveProperty,
+} from "@/mocks/properties";
 import {
   canSubmitRateLimited,
   checkItem,
@@ -450,6 +461,47 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
+
+    // DOC-property: the definitions the caller reads, and those who define them write them.
+    http.get(route(apiRoutes.properties), () => HttpResponse.json(propertyIndex(currentSession()))),
+    accessWrite("post", apiRoutes.properties, newPropertySchema, (session, _id, property) =>
+      createProperty(session, property.key, property.draft),
+    ),
+    accessWrite("put", `${apiRoutes.properties}/:id`, propertyDraftSchema, saveProperty),
+    http.get(route(`${apiRoutes.properties}/:id/impact`), ({ params }) =>
+      outcomeResponse(propertyImpact(currentSession(), String(params.id))),
+    ),
+    accessDelete(`${apiRoutes.properties}/:id`, deleteProperty),
+    // DOC-property-hand: one record's value, or the same value on a selection.
+    http.put(
+      route(`${apiRoutes.documents}/:documentId/properties/:key`),
+      async ({ params, request }) => {
+        const body = propertyEntrySchema.safeParse(await request.json());
+        if (!body.success) {
+          return invalidResponse(body.error);
+        }
+
+        return outcomeResponse(
+          enterPropertyValue(
+            currentSession(),
+            String(params.documentId),
+            String(params.key),
+            body.data,
+          ),
+        );
+      },
+    ),
+    http.post(route(`${apiRoutes.documents}/properties/:key`), async ({ params, request }) => {
+      const body = bulkPropertyEntrySchema.safeParse(await request.json());
+      if (!body.success) {
+        return invalidResponse(body.error);
+      }
+
+      const { documentIds, ...entry } = body.data;
+      return outcomeResponse(
+        enterPropertyValues(currentSession(), documentIds, String(params.key), entry),
+      );
+    }),
 
     http.get(route(apiRoutes.hooks), () =>
       canReadHooks(currentSession())

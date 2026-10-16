@@ -55,6 +55,8 @@ export const accessIndexSchema = z.object({
   proposals: z.array(accessProposalSchema),
   projects: z.array(projectMembershipSchema),
   sharedWatchlists: z.array(sharedWatchlistSchema),
+  // Every property, each bringing its own permission to the role editor (PERM-property-edit).
+  properties: z.array(z.object({ key: z.string(), name: z.string() })),
 });
 export type AccessIndex = z.infer<typeof accessIndexSchema>;
 

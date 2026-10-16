@@ -128,6 +128,8 @@ Grants, by scope; an empty cell is not granted.
 | **Watchlists** | | | | | | |
 | `watch` | own | own | own | own | own | own |
 | `watchlist.manage_system` |  |  |  |  |  | any |
+| **Properties** | | | | | | |
+| `property.<key>.edit` |  |  |  |  |  |  |
 | **Administration** | | | | | | |
 | `task.read_own` |  |  |  | own | own | own |
 | `task.read` |  |  |  |  |  | any |
@@ -139,6 +141,7 @@ Grants, by scope; an empty cell is not granted.
 | `plugin.run` |  |  |  |  |  | any |
 | `hook.read` |  |  |  |  |  | any |
 | `hook.configure` |  |  |  |  |  | any |
+| `property.define` |  |  |  |  |  | any |
 | `access.read` |  |  |  |  |  | any |
 | `access.manage` |  |  |  |  |  | any |
 <!-- /generated:role-grants -->

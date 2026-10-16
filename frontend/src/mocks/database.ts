@@ -15,6 +15,8 @@ import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
 import { pluginImplementations, pluginInstances } from "@/mocks/fixtures/plugins";
 import { projects } from "@/mocks/fixtures/projects";
+import type { StoredPropertyDefinition } from "@/mocks/fixtures/properties";
+import { propertyDefinitions, propertyGrants } from "@/mocks/fixtures/properties";
 import { requestCustodies } from "@/mocks/fixtures/request-custodies";
 import { requests } from "@/mocks/fixtures/requests";
 import { statusLog } from "@/mocks/fixtures/status-log";
@@ -42,7 +44,10 @@ export const database = {
   // People and agents; Users & Groups adds local accounts.
   users: [...users],
   // Roles, how each person holds them, and the groups: written by Users & Groups.
-  roles: [...roles],
+  roles: roles.map((role) => ({
+    ...role,
+    grants: [...role.grants, ...(propertyGrants[role.id] ?? [])],
+  })),
   userAccess: { ...userAccess },
   categories: [...categories],
   // Category custody: groups carry theirs, and people hold it directly by category; both are
@@ -79,6 +84,9 @@ export const database = {
   pluginUploads: [] as StoredUpload[],
   runs: [...runs],
   schedules: [...schedules],
+  // Written by the Properties page; a deleted key is kept so it is never defined again.
+  propertyDefinitions: [...propertyDefinitions] as StoredPropertyDefinition[],
+  deletedPropertyKeys: [] as string[],
   // Changed by Keep runs for… on Tasks.
   taskRetention: { ...retention },
 };

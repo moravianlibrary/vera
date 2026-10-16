@@ -90,6 +90,14 @@ export const navigationEntries: readonly NavigationEntry[] = [
     requires: ["access.read"],
   },
   { id: "plugins", path: "/plugins", rail: "Pl", label: "Plugins", requires: ["plugin.read"] },
+  // DOC-property: defined by an admin only.
+  {
+    id: "properties",
+    path: "/properties",
+    rail: "Pr",
+    label: "Properties",
+    requires: ["property.define"],
+  },
   { id: "hooks", path: "/hooks", rail: "Ho", label: "Hooks", requires: ["hook.read"] },
   {
     id: "watchlists",

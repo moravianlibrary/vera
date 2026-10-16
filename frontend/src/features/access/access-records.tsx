@@ -36,11 +36,11 @@ import {
   requestReachOf,
 } from "@/domain/access";
 import type { GrantScope, Permission } from "@/domain/permissions";
-import { catalogOrderOf, permissionCatalog, permissionGroups } from "@/domain/permissions";
+import { byCatalogOrder, catalogEntryOf, permissionGroups } from "@/domain/permissions";
 import type { AccessSelection, AccessSelectionKind } from "@/features/access/access-view";
 import {
   confersText,
-  permissionLines,
+  permissionLineOf,
   scopeLabelOf,
   viaText,
   waysShortText,
@@ -277,13 +277,13 @@ interface PermissionRow {
 
 // Grouped as the catalogue groups them, in as many columns as the room takes.
 function PermissionTable({ rows }: { rows: readonly PermissionRow[] }) {
-  const sorted = rows.toSorted(
-    (first, second) => catalogOrderOf(first.permission) - catalogOrderOf(second.permission),
+  const sorted = rows.toSorted((first, second) =>
+    byCatalogOrder(first.permission, second.permission),
   );
   return (
     <div className="gap-8 @3xl:columns-2 @6xl:columns-3">
       {permissionGroups.map((group) => {
-        const inGroup = sorted.filter((row) => permissionCatalog[row.permission].group === group);
+        const inGroup = sorted.filter((row) => catalogEntryOf(row.permission).group === group);
         if (inGroup.length === 0) {
           return null;
         }
@@ -294,7 +294,7 @@ function PermissionTable({ rows }: { rows: readonly PermissionRow[] }) {
             {inGroup.map((row) => (
               <div
                 key={row.permission}
-                title={permissionLines[row.permission]}
+                title={permissionLineOf(row.permission)}
                 className="flex flex-wrap items-baseline gap-1.5 border-b py-0.5 text-xs"
               >
                 <span className="font-mono text-[0.6875rem]">{row.permission}</span>

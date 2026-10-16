@@ -3,7 +3,11 @@
 // views ask these helpers whether an entry or action exists; a missing grant hides it.
 
 import { z } from "zod";
+import type { PropertyEditPermission } from "@/domain/properties";
+import { propertyKeyOfPermission } from "@/domain/properties";
 
+// The fixed permissions. Each property brings one more, `property.<key>.edit`, made with its
+// definition (PERM-property-edit).
 export const permissionKeys = [
   "request.create",
   "request.read_mine",
@@ -54,12 +58,23 @@ export const permissionKeys = [
   "plugin.run",
   "hook.read",
   "hook.configure",
+  "property.define",
   "access.read",
   "access.manage",
 ] as const;
 
-export const permissionSchema = z.enum(permissionKeys);
-export type Permission = z.infer<typeof permissionSchema>;
+export type StaticPermission = (typeof permissionKeys)[number];
+export type Permission = StaticPermission | PropertyEditPermission;
+
+export const staticPermissionSchema = z.enum(permissionKeys);
+export const permissionSchema: z.ZodType<Permission> = z.union([
+  staticPermissionSchema,
+  z.templateLiteral(["property.", z.string().regex(/^[a-z][a-z0-9_]*$/), ".edit"]),
+]);
+
+export function isStaticPermission(permission: string): permission is StaticPermission {
+  return (permissionKeys as readonly string[]).includes(permission);
+}
 
 // `null` is a self-scoped grant: it reaches only the holder's own records.
 export const grantScopeSchema = z.enum(["custody", "project", "managed", "any"]).nullable();
@@ -205,6 +220,8 @@ export const permissionGroups = [
   "Planning",
   "Categories",
   "Watchlists",
+  // PERM-property-edit: every property's own permission, under its own heading.
+  "Properties",
   "Administration",
 ] as const;
 export type PermissionGroup = (typeof permissionGroups)[number];
@@ -280,19 +297,26 @@ export const permissionCatalog = {
   "plugin.run": { group: "Administration", scopes: anyOnly },
   "hook.read": { group: "Administration", scopes: anyOnly },
   "hook.configure": { group: "Administration", scopes: anyOnly },
+  "property.define": { group: "Administration", scopes: anyOnly },
   "access.read": { group: "Administration", scopes: anyOnly },
   "access.manage": { group: "Administration", scopes: anyOnly },
-} as const satisfies Record<Permission, PermissionEntry>;
+} as const satisfies Record<StaticPermission, PermissionEntry>;
+
+// PERM-property-edit: accepted at `any` only.
+const propertyEditEntry: PermissionEntry = { group: "Properties", scopes: anyOnly };
+
+export function catalogEntryOf(permission: Permission): PermissionEntry {
+  return isStaticPermission(permission) ? permissionCatalog[permission] : propertyEditEntry;
+}
 
 // Whether the permission takes the grant's scope, `null` being `own`.
 export function isAcceptedGrant({ permission, scope }: Grant): boolean {
-  const { scopes } = permissionCatalog[permission] as PermissionEntry;
-  return scopes.includes(scope ?? "own");
+  return catalogEntryOf(permission).scopes.includes(scope ?? "own");
 }
 
 // A permission that reaches only the holder's own records and takes no scope to choose.
 export function isSelfScoped(permission: Permission): boolean {
-  const { scopes } = permissionCatalog[permission] as PermissionEntry;
+  const { scopes } = catalogEntryOf(permission);
   return scopes.length === 1 && scopes[0] === "own";
 }
 
@@ -313,7 +337,7 @@ const needsAtAny = (...permissions: Permission[]): Requirement[] =>
 const readsIterations = needs("iteration.read");
 const readsProjects = needs("project.read");
 
-export const permissionRequires: Partial<Record<Permission, readonly Requirement[]>> = {
+export const permissionRequires: Partial<Record<StaticPermission, readonly Requirement[]>> = {
   "request.create": needs("request.read_mine"),
   "request.withdraw_own": needs("request.read_mine"),
   "request.decide": needs("request.read"),
@@ -359,6 +383,15 @@ export const permissionRequires: Partial<Record<Permission, readonly Requirement
   "access.manage": needs("access.read"),
 };
 
+// PERM-property-edit: its holder reaches every record the grant does.
+export const propertyEditRequires: readonly Requirement[] = needsAtAny("iteration.read");
+
+export function requirementsOf(permission: Permission): readonly Requirement[] {
+  return isStaticPermission(permission)
+    ? (permissionRequires[permission] ?? [])
+    : propertyEditRequires;
+}
+
 // Whether a grant at `held` reaches everything one at `scope` does: `any` covers every scope,
 // `project` covers `managed`, as a project's manager is on it, and every scope covers `own`.
 export function coversScope(held: GrantScope, scope: GrantScope): boolean {
@@ -372,7 +405,7 @@ export function coversScope(held: GrantScope, scope: GrantScope): boolean {
 
 // The scope a requirement of a grant at `scope` must be held at, the narrowest that does.
 export function requiredScopeOf(requirement: Requirement, scope: GrantScope): GrantScope {
-  const { scopes } = permissionCatalog[requirement.permission] as PermissionEntry;
+  const { scopes } = catalogEntryOf(requirement.permission);
   if (isSelfScoped(requirement.permission)) {
     return null;
   }
@@ -408,7 +441,7 @@ export function missingRequirementsOf(grants: readonly Grant[]): MissingRequirem
   const heldScopeOf = (permission: Permission) =>
     grants.find((grant) => grant.permission === permission)?.scope;
   return grants.flatMap((grant) =>
-    (permissionRequires[grant.permission] ?? [])
+    requirementsOf(grant.permission)
       .filter(
         (requirement) => !meets(requirement, grant.scope, heldScopeOf(requirement.permission)),
       )
@@ -438,11 +471,20 @@ export function withRequirements(grants: readonly Grant[]): Grant[] {
   }
 }
 
-// The catalogue's order: by heading, then as the heading lists them.
+// The catalogue's order: by heading, then as the heading lists them; properties by key.
 export function catalogOrderOf(permission: Permission): number {
-  const entry = permissionCatalog[permission];
+  const entry = catalogEntryOf(permission);
   return (
     permissionGroups.indexOf(entry.group) * permissionKeys.length +
-    Object.keys(permissionCatalog).indexOf(permission)
+    (isStaticPermission(permission) ? permissionKeys.indexOf(permission) : 0)
   );
+}
+
+export function byCatalogOrder(first: Permission, second: Permission): number {
+  return catalogOrderOf(first) - catalogOrderOf(second) || first.localeCompare(second);
+}
+
+// The property a permission edits, or null for a fixed one.
+export function propertyOfPermission(permission: Permission): string | null {
+  return isStaticPermission(permission) ? null : propertyKeyOfPermission(permission);
 }

@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import { grantSchema } from "@/domain/permissions";
+import { propertyValuesSchema } from "@/domain/properties";
 
 const id = z.string().min(1);
 const timestamp = z.iso.datetime();
@@ -283,6 +284,9 @@ export const documentSchema = z.object({
   shelfMark: z.string().nullable(),
   pageSources: z.array(pageSourceSchema),
   registryRecords: z.array(registryRecordSchema),
+  // Document properties beyond the predefined four, each with every source (DOC-property-values),
+  // withheld to those the caller may read (DOC-property-visibility).
+  properties: z.array(propertyValuesSchema),
 });
 export type Document = z.infer<typeof documentSchema>;
 
@@ -372,6 +376,8 @@ export const iterationSchema = z.object({
   digitizedAt: timestamp.nullable(),
   publishedLink: z.url().nullable(),
   scanDpi: z.number().int().positive().nullable(),
+  // Attempt properties: what was chosen for this scan (DOC-property).
+  properties: z.array(propertyValuesSchema),
 });
 export type Iteration = z.infer<typeof iterationSchema>;
 
@@ -449,7 +455,8 @@ export type Decision = Request["decision"];
 // Causes, never derivations (status-log.md). One log across entities.
 export const statusLogEntrySchema = z.object({
   id,
-  subjectKind: z.enum(["iteration", "request", "list", "project"]),
+  // A document property's change is the document's own (DOC-property-values).
+  subjectKind: z.enum(["document", "iteration", "request", "list", "project"]),
   subjectId: id,
   at: timestamp,
   actor: actorSchema,

@@ -443,6 +443,7 @@ function approve(
     digitizedAt: null,
     publishedLink: null,
     scanDpi: null,
+    properties: [],
   };
   database.iterations.push(iteration);
   database.requests.push({
@@ -493,6 +494,7 @@ function createDocument(catalogId: string, unit: string | null): Document {
     shelfMark: null,
     pageSources: [],
     registryRecords: [],
+    properties: [],
   };
   database.documents.push(document);
   return document;

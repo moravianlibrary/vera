@@ -75,7 +75,11 @@ export const declarationsSchema = z.object({
   rawStates: z.array(
     z.object({ raw: z.string(), state: z.string().nullable(), isExistingCopy: z.boolean() }),
   ),
-  rules: z.array(z.object({ code: z.string(), label: z.string() })),
+  // What each rule checks, and the properties it reads: entering one by hand runs the checks
+  // again (DOC-property-hand).
+  rules: z.array(
+    z.object({ code: z.string(), label: z.string(), reads: z.array(z.string()).optional() }),
+  ),
   agent: z.object({ name: z.string(), entryPoint: z.enum(entryPoints) }).nullable(),
   generatorClass: generatorClassSchema.nullable(),
   channelInterface: z.enum(channelInterfaces).nullable(),

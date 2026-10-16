@@ -6,7 +6,8 @@
 
 import type { RoleWay, Via } from "@/domain/access";
 import type { Watchlist } from "@/domain/entities";
-import type { GrantScope, Permission } from "@/domain/permissions";
+import type { GrantScope, Permission, StaticPermission } from "@/domain/permissions";
+import { isStaticPermission } from "@/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
@@ -68,9 +69,21 @@ export const permissionLines = {
   "plugin.run": "run a plugin now",
   "hook.read": "see hooks",
   "hook.configure": "edit hooks",
+  "property.define": "define properties, on the Properties page",
   "access.read": "see users, groups and roles",
   "access.manage": "change them, roles included",
-} as const satisfies Record<Permission, string>;
+} as const satisfies Record<StaticPermission, string>;
+
+// PERM-property-edit: a property's own permission reads as what it lets one enter.
+export const propertyEditLine = "enter its value by hand";
+
+export function permissionLineOf(permission: Permission, propertyName?: string): string {
+  if (isStaticPermission(permission)) {
+    return permissionLines[permission];
+  }
+
+  return propertyName === undefined ? propertyEditLine : `enter ${propertyName} by hand`;
+}
 
 // A self-scoped grant reads "own": it acts on the holder's own records and has no scope to choose.
 export function scopeLabelOf(scope: GrantScope): string {
