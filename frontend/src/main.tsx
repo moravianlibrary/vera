@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { App } from "@/app";
 import { env } from "@/config/env";
 import "@/globals.css";
+import "@/i18n";
 
 async function prepareApp() {
   if (import.meta.env.DEV && env.VITE_API_MODE === "mock") {

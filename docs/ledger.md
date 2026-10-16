@@ -161,13 +161,6 @@ Also decided on 2026-10-15: *Documents* is to be named for its stage, the approv
 is published (*Digitization*, *Progress*…), in Czech first
 ([VIEW-own-label](reference/access/views.md#view-own-label)).
 
-### L12: Permission descriptions
-
-Rules: [the catalog](reference/access/permissions.md#the-catalog).
-
-The permission descriptions live in `features/access/access-words.ts`. They move to i18n
-messages, and the generator follows them. → frontend.
-
 ## Done
 
 ### Decided, 2026-10-16
@@ -233,6 +226,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L12:** the permission lines are i18n messages, one file per language in
+  `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
+  English one ([the catalog](reference/access/permissions.md#the-catalog)). The Czech file is a
+  copy of the English until the Czech terms are settled ([L37](#l37-czech-terms)).
 - **L67, in the mock:** a recheck records the title, material type and shelf mark again as
   the catalog adapter's reading, with the recheck's time
   ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)); reading the

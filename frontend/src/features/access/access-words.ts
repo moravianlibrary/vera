@@ -2,12 +2,12 @@
 // for each permission, how a role reaches a person, and how a responsibility does, with its
 // provenance (permissions.md §6): "mapped by MZK Keycloak from group mzk-staff", "via Periodicals
 // Curators".
-// TODO(rrandiak): labels move to i18n.
+// TODO(rrandiak): the labels other than the permission lines move to i18n.
 
 import type { RoleWay, Via } from "@/domain/access";
 import type { Watchlist } from "@/domain/entities";
 import type { GrantScope, Permission, StaticPermission } from "@/domain/permissions";
-import { isStaticPermission } from "@/domain/permissions";
+import { isStaticPermission, permissionKeys } from "@/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
@@ -16,73 +16,26 @@ import { projectsView } from "@/features/projects/projects-view";
 import { requestsView } from "@/features/requests/requests-view";
 import { tasksView } from "@/features/tasks/tasks-view";
 import { validationsView } from "@/features/validations/validations-view";
+import { i18n } from "@/i18n";
 import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
 import { isRangeField } from "@/lib/view-definition";
 
-export const permissionLines = {
-  "request.create": "raise a proposal",
-  "request.read_mine": "My Documents: what I asked for, or my projects did, in public detail",
-  "request.withdraw_own": "take back my own ask",
-  "request.read": "other people's requests",
-  "request.decide": "approve or decline a proposal, rescans included; custody is request custody",
-  "iteration.read": "other people's documents",
-  "iteration.recheck": "read the record from the catalog again and rerun the checks",
-  "iteration.classify": "category and priority, after approval",
-  "validation.approve": "accept the outstanding defects",
-  "validation.deny": "refuse, with a reason",
-  "validation.revoke": "take an approval back",
-  "restriction.overrule": "lift a restriction; never custody",
-  "iteration.cancel": "stop work, with a reason",
-  "iteration.resume": "restart stopped work",
-  "iteration.publish": "set the link where the scan is available",
-  "request.read_ingest": "ingest detail: batch, failure text",
-  "request.retry": "ingest again",
-  "request.read_payload": "raw responses",
-  "list.read": "see digitization lists",
-  "list.create": "build a list, generators included",
-  "list.edit": "membership and dates",
-  "list.delete": "return a list's members to the pool",
-  "intention.read": "see intentions",
-  "intention.edit": "create and edit intentions, and their mix",
-  "mix.read": "see mixes and their revisions",
-  "mix.edit": "create mixes and edit their proportions",
-  "mix.manage": "archive mixes and choose the Primary mix",
-  "intention.repeat": "repeating intentions",
-  "project.read": "see projects",
-  "project.create": "start a project; it starts Proposed",
-  "project.edit": "edit a project",
-  "project.manage_members": "who is on a project, and its manager",
-  "project.decide": "approve or reject a project",
-  "project.delete": "delete a project with no proposals",
-  "category.read": "see the tree",
-  "category.edit": "rename, move, refine",
-  "category.grant_custody": "bring somebody onto a branch",
-  watch: "save watchlists over what I can read",
-  "watchlist.manage_system": "create, change and remove system watchlists, and set who sees them",
-  "task.read_own": "the tasks I started, and cancelling them",
-  "task.read": "everybody's tasks, and Schedules",
-  "task.cancel": "cancel somebody else's run",
-  "task.schedule": "edit schedules and retention",
-  "plugin.read": "see plugins",
-  "plugin.configure": "configure instances",
-  "plugin.upload_code": "install plugin code",
-  "plugin.run": "run a plugin now",
-  "hook.read": "see hooks",
-  "hook.configure": "edit hooks",
-  "property.define": "define properties, on the Properties page",
-  "access.read": "see users, groups and roles",
-  "access.manage": "change them, roles included",
-} as const satisfies Record<StaticPermission, string>;
+// The line each permission reads as, from the access messages.
+export const permissionLines = Object.fromEntries(
+  permissionKeys.map((permission) => [permission, i18n.t(`permission.${permission}.line`)]),
+) as Record<StaticPermission, string>;
 
 // PERM-property-edit: a property's own permission reads as what it lets one enter.
-export const propertyEditLine = "enter its value by hand";
+export const propertyEditLine = i18n.t("permission.property_edit.line");
 
 export function permissionLineOf(permission: Permission, propertyName?: string): string {
   if (isStaticPermission(permission)) {
     return permissionLines[permission];
   }
 
-  return propertyName === undefined ? propertyEditLine : `enter ${propertyName} by hand`;
+  return propertyName === undefined
+    ? propertyEditLine
+    : i18n.t("permission.property_edit.line_named", { name: propertyName });
 }
 
 // A self-scoped grant reads "own": it acts on the holder's own records and has no scope to choose.
