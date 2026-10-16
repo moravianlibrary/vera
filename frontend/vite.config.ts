@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8080",
           changeOrigin: true,
+          // Development only: names this dev server's fixture person to the engine, which
+          // honours it only in development (docs/develop/engine.md, Dev servers and signing in).
+          headers:
+            env.VITE_API_MODE === "live" && env.VITE_MOCK_USER
+              ? { "X-Vera-Dev-Person": env.VITE_MOCK_USER }
+              : {},
         },
       },
     },

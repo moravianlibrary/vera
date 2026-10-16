@@ -13,3 +13,5 @@ frontend/.env.*
 .dev-roles/
 plans/
 engine/.data/
+.engine.pid
+.engine.log
