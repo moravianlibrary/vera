@@ -63,6 +63,85 @@ The filter fields and groupings of each page, as the code declares them:
 | Hooks | no | Channel (on the bar) · State (on the bar) | — |
 <!-- /generated:page-filters -->
 
-> **Open — [L36](../../ledger.md#l36-pages-reference).** This page is a first cut. The columns of
-> each list, what each record pane shows, and what each page deliberately leaves out (the old
-> `view-catalog.md`) are still to be written down from the code.
+## Lists
+
+#### UI-columns
+
+A page's list shows the columns its code declares, below. A list of records turns each row into a
+card when it is narrower than 42rem, whatever the tier. A table declared per tier shows the set
+of its tier ([UI-tiers](tiers.md#ui-tiers)); a tier it does not declare takes its neighbour's
+towards notebook ([UI-notebook-first](tiers.md#ui-notebook-first)). A property is never a column
+of its own accord ([DOC-property-filter](../model/documents.md#doc-property-filter)).
+
+<!-- generated:page-columns -->
+| List | Columns |
+|---|---|
+| Documents | Document · Status · Priority · Pages · Askers · Existing copy; a card per row when the list is narrow |
+| My Documents | Document · Status · Copy · Asked; a card per row when the list is narrow |
+| Requests | Document · Status · Askers · Pages · Asked · Existing copy; a card per row when the list is narrow |
+| Documents Validations | Document · Status · Defects · Priority · Category · Since; a card per row when the list is narrow |
+| Digitization Lists | List · State · Runs · Items · Pages · Delivered; a card per row when the list is narrow |
+| List editor, pool and members | Document · Category · Priority · Pages; a card per row when the list is narrow |
+| Projects, ended | large, notebook: Project · Period · Target · Planned · Delivered · Result<br>small: Project · Target · Planned · Delivered · Result<br>phone: Project · Target · Delivered · Result |
+| Projects, rejected | large, notebook: Project · Period · Reason · Decided<br>small, phone: Project · Reason |
+| Tasks, finished runs | large: What · Plugin · Trigger · Started · Took · State · Result<br>notebook: What · Trigger · Started · Took · Result<br>small, phone: What · Result |
+| Schedules | large: What · Plugin · Runs · If still running · Last run · Next<br>notebook: What · Runs · Last run · Next<br>small, phone: What · Next |
+| Plugins, instances | large: Instance · Configuration · Linked to · Runs · Last run<br>notebook: Instance · Configuration · Runs · Last run<br>small: Instance · Runs<br>phone: Instance |
+| Properties | Property · Type · About · Visibility · Entered; a card per row when the list is narrow |
+| Hooks | Hook · Fires on · 7 days · State; a card per row when the list is narrow |
+<!-- /generated:page-columns -->
+
+Projects shows its proposed and active projects as cards, and a table for the ended and the
+rejected. Intentions is a board of cards, Categories a tree, Users management linked columns.
+
+## Record panes
+
+#### UI-record-pane
+
+A selected record opens beside its list ([UI-pane](tiers.md#ui-pane)): its heading, with its
+acts beside it, a note on what stands out, its facts, then its cards in this order. What the
+person may not read is absent, a card included
+([PERM-absent-not-disabled](../access/permissions.md#perm-absent-not-disabled)).
+
+| Page | Cards |
+|---|---|
+| Documents | Asked by · Existing copies · for the current attempt, Defects, Adding, Digitization and Earlier iterations · Catalog record · Properties · History |
+| My Documents | Status, Asked and Read it as tiles · Why I asked · Properties, the public ones · What has happened |
+| Requests | Decide · Asked by · Placed in · Existing copies · Catalog record · Properties · History |
+| Documents Validations | Defects, as outstanding, denied and accepted · Forbidden, when it is · This attempt · Catalog record, with *Open in the catalog* · Properties · History |
+| Digitization Lists | its state and figures as tiles · On this list · Counts towards · Mix · History |
+| Categories | its figures as tiles · the shares of its children, or of the top level, in the selected mix · Needs attention, on *All categories* · Documents here, on a leaf · Custody |
+| Tasks | a run, in a drawer: Run · What it changed · Items · Log |
+| Plugins | an implementation, in a drawer: what it declares and supplies, its versions and instances; an instance: its configuration, what it supplies, when it runs, the hooks sending through it |
+| Properties | a definition, in a drawer: Definition · its values, for an enum |
+| Hooks | a hook: Subscription · What it sends · Deliveries |
+| Users management | a user, role, group or custody, each with where it comes from ([ACCESS-provenance](../access/people.md#access-provenance)) |
+| Projects | its own page: Against the target · About · Members · Proposals · Lists · What it funded |
+| Intentions | the card itself, opened in place |
+| Mixes | a mix: Definition · Where used · Revisions and snapshots |
+
+The Catalog record card gives the page count with each of its sources
+([DOC-page-count](../model/documents.md#doc-page-count)), and the source of the title, type and
+shelf mark ([DOC-property-predefined](../model/documents.md#doc-property-predefined)).
+
+## What a page leaves out
+
+#### UI-not-here
+
+Each page leaves out what another page owns, so two pages never disagree about it:
+
+| Page | Not here | Instead |
+|---|---|---|
+| Documents | deciding an ask | Requests ([VIEW-requests](../access/views.md#view-requests)) |
+| Documents | ruling on a defect | Documents Validations ([VIEW-validations](../access/views.md#view-validations)) |
+| Documents, Documents Validations | repairing a catalog fact other than the page count | the catalog, read again with *Recheck* ([DOC-manual-page-count](../model/documents.md#doc-manual-page-count)) |
+| Documents | building a list | the list editor ([VIEW-lists](../access/views.md#view-lists)) |
+| My Documents | staff properties, the internal half of a reason, who did a step | staff detail ([DOC-property-visibility](../model/documents.md#doc-property-visibility), [ACT-reason-two-texts](../access/acts.md#act-reason-two-texts), [LOG-public](../model/log.md#log-public)) |
+| Requests | an approved request | Documents ([VIEW-requests](../access/views.md#view-requests)) |
+| Digitization Lists | what a list counts towards, as a stored link | worked out from its members and its start ([REL-list-provenance](../model/relationships.md#rel-list-provenance)) |
+| Projects | a target or a mix of the project's own | its intention ([LC-PROJ-own-intention](../lifecycles/project.md#lc-proj-own-intention)) |
+| Users management | granting category custody | Categories ([ACCESS-grant-custody](../access/custody.md#access-grant-custody)) |
+| Users management | project membership | the project ([ACCESS-project-members](../access/custody.md#access-project-members)) |
+| Users management | system watchlists | Watchlists ([VIEW-watchlists](../access/views.md#view-watchlists)) |
+| Plugins | editing a schedule | Schedules ([ACT-schedule-save](../access/acts.md#tasks-and-schedules)) |
+| Hooks | a person's watchlist notifications | Watchlists and Preferences ([WATCH-delivery](../integrations/watchlists.md#watch-delivery)) |

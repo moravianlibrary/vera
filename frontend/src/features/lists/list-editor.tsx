@@ -278,7 +278,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
   };
 
   const leafOf = (id: string) => categories.find((category) => category.id === id)?.name ?? id;
-  const columns = columnsOf(leafOf);
+  const columns = listEditorColumns(leafOf);
   const card = {
     eyebrow: (item: ListItem) => (
       <>
@@ -415,7 +415,9 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
   );
 }
 
-function columnsOf(leafOf: (categoryId: string) => string): ColumnDefinition<ListItem>[] {
+export function listEditorColumns(
+  leafOf: (categoryId: string) => string,
+): ColumnDefinition<ListItem>[] {
   return [
     {
       key: "document",

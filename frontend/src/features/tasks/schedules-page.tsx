@@ -328,7 +328,7 @@ interface ScheduleColumnsOptions {
 }
 
 // The demo's columns per tier (component-interfaces.md §2.4).
-function scheduleColumns({
+export function scheduleColumns({
   asOf,
   acts,
 }: ScheduleColumnsOptions): PerTier<readonly ColumnDefinition<ScheduleRow>[]> {

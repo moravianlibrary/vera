@@ -73,7 +73,7 @@ export function DocumentList({
   const isPublic = audience === "public";
   const { data: categories = [] } = useCategoriesQuery({ isEnabled: !isPublic });
   const { data: users = [] } = useUsersQuery({ isEnabled: grouping === "batch" });
-  const columns = isPublic ? publicColumns(userId) : staffColumns(categories);
+  const columns = isPublic ? publicDocumentColumns(userId) : staffDocumentColumns(categories);
   const statusOf = (record: DocumentRecord) => (
     <StatusCell record={record} isPublic={isPublic} userId={userId} />
   );
@@ -131,7 +131,9 @@ export function DocumentList({
 // ---------------------------------------------------------------- columns
 
 // Staff read the machinery; a requester is not shown it.
-function staffColumns(categories: readonly Category[]): ColumnDefinition<DocumentRecord>[] {
+export function staffDocumentColumns(
+  categories: readonly Category[],
+): ColumnDefinition<DocumentRecord>[] {
   return [
     {
       key: "document",
@@ -183,7 +185,7 @@ function staffColumns(categories: readonly Category[]): ColumnDefinition<Documen
   ];
 }
 
-function publicColumns(userId: string): ColumnDefinition<DocumentRecord>[] {
+export function publicDocumentColumns(userId: string): ColumnDefinition<DocumentRecord>[] {
   return [
     {
       key: "document",

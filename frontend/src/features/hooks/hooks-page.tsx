@@ -28,6 +28,7 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { GroupHeader } from "@/components/lists/group-header";
+import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
@@ -57,6 +58,60 @@ type Confirmation = { kind: "discard"; delivery: HookDelivery } | { kind: "delet
 type Notice = { title: string; detail: string; tone: "green" | "red" };
 
 const localPaging = { hasMore: false, isLoadingMore: false, onLoadMore: () => {} };
+
+// Each hook: where it sends and to whom, what it fires on, its last seven days and its state.
+export function hookColumns(index: HookIndex | undefined): ColumnDefinition<Hook>[] {
+  return [
+    {
+      key: "hook",
+      header: "Hook",
+      track: "minmax(11rem,1.5fr)",
+      cell: (hook) => (
+        <>
+          <strong className="block font-medium">{hook.name}</strong>
+          <span className="text-xs text-muted-foreground">
+            {index?.channels.find((channel) => channel.id === hook.channelId)?.name ??
+              "Channel unavailable"}{" "}
+            · {hook.recipient}
+          </span>
+        </>
+      ),
+    },
+    {
+      key: "event",
+      header: "Fires on",
+      track: "minmax(8rem,1fr)",
+      cell: (hook) => (
+        <>
+          <span className="font-mono text-xs">{hook.event}</span>
+          {hook.filter && (
+            <span className="block text-xs text-muted-foreground">{hook.filter}</span>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "week",
+      header: "7 days",
+      track: "max-content",
+      cell: (hook) => <ActivityBars values={index ? activityOf(index, hook.id) : []} />,
+    },
+    {
+      key: "state",
+      header: "State",
+      track: "max-content",
+      cell: (hook) => (
+        <span
+          className={
+            hook.state === "active" ? "text-tone-green-foreground" : "text-muted-foreground"
+          }
+        >
+          {hook.state === "active" ? "Active" : "Paused"}
+        </span>
+      ),
+    },
+  ];
+}
 
 export function HooksPage() {
   const view = useViewUrlState(hooksView, "h");
@@ -167,58 +222,7 @@ export function HooksPage() {
                 />
               ),
             }}
-            columns={[
-              {
-                key: "hook",
-                header: "Hook",
-                track: "minmax(11rem,1.5fr)",
-                cell: (hook) => (
-                  <>
-                    <strong className="block font-medium">{hook.name}</strong>
-                    <span className="text-xs text-muted-foreground">
-                      {index?.channels.find((channel) => channel.id === hook.channelId)?.name ??
-                        "Channel unavailable"}{" "}
-                      · {hook.recipient}
-                    </span>
-                  </>
-                ),
-              },
-              {
-                key: "event",
-                header: "Fires on",
-                track: "minmax(8rem,1fr)",
-                cell: (hook) => (
-                  <>
-                    <span className="font-mono text-xs">{hook.event}</span>
-                    {hook.filter && (
-                      <span className="block text-xs text-muted-foreground">{hook.filter}</span>
-                    )}
-                  </>
-                ),
-              },
-              {
-                key: "week",
-                header: "7 days",
-                track: "max-content",
-                cell: (hook) => <ActivityBars values={index ? activityOf(index, hook.id) : []} />,
-              },
-              {
-                key: "state",
-                header: "State",
-                track: "max-content",
-                cell: (hook) => (
-                  <span
-                    className={
-                      hook.state === "active"
-                        ? "text-tone-green-foreground"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {hook.state === "active" ? "Active" : "Paused"}
-                  </span>
-                ),
-              },
-            ]}
+            columns={hookColumns(index)}
             card={{
               eyebrow: (hook) => hook.event,
               title: (hook) => hook.name,

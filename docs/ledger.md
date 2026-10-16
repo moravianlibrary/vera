@@ -19,12 +19,7 @@ None.
 
 ## Not built yet
 
-### L36: Pages reference
-
-Rules: [UI-pages](reference/ui/pages.md#ui-pages).
-
-The columns of each list, what each record pane shows and what each page deliberately leaves out
-are not written down yet. → docs, from the code.
+None.
 
 ## For the engine
 
@@ -226,6 +221,10 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L36:** the pages reference names each list's columns, generated from the code per tier
+  ([UI-columns](reference/ui/pages.md#ui-columns)), the cards of each record pane in order
+  ([UI-record-pane](reference/ui/pages.md#ui-record-pane)), and what each page leaves to
+  another ([UI-not-here](reference/ui/pages.md#ui-not-here)).
 - **L66:** the title, material type and shelf mark hold the catalog adapter's values as sourced
   values, *MZK Aleph* at tier 50, beside the document's own fields; the record pane's *Catalog
   record* card names each one's source, tier and when it was observed, in one row when they were

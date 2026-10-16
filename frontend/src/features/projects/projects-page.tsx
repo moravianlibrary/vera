@@ -84,25 +84,14 @@ const result: ColumnDefinition<ProjectRow> = {
   },
 };
 
-const endedColumns = {
+export const endedProjectColumns = {
   notebook: [nameColumn, periodColumn, target, planned, delivered, result],
   small: [nameColumn, target, planned, delivered, result],
   phone: [nameColumn, target, delivered, result],
 };
 
-export function ProjectsPage() {
-  const view = useViewUrlState(projectsView);
-  const navigate = useNavigate();
-  const [isStarting, setIsStarting] = useState(false);
-  const { data: session } = useSessionQuery();
-  const { data: index, error } = useProjectIndexQuery(view.query);
-  const { data: users = [] } = useUsersQuery();
-
-  if (session === undefined) {
-    return null;
-  }
-
-  const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
+// A rejected project says who rejected it, when and why.
+export function rejectedProjectColumns(nameOf: (userId: string) => string) {
   const decided: ColumnDefinition<ProjectRow> = {
     key: "decided",
     header: "Decided",
@@ -123,6 +112,26 @@ export function ProjectsPage() {
         <span className="text-muted-foreground">{row.project.reason}</span>
       ) : null,
   };
+
+  return {
+    notebook: [nameColumn, periodColumn, reason, decided],
+    small: [nameColumn, reason],
+  };
+}
+
+export function ProjectsPage() {
+  const view = useViewUrlState(projectsView);
+  const navigate = useNavigate();
+  const [isStarting, setIsStarting] = useState(false);
+  const { data: session } = useSessionQuery();
+  const { data: index, error } = useProjectIndexQuery(view.query);
+  const { data: users = [] } = useUsersQuery();
+
+  if (session === undefined) {
+    return null;
+  }
+
+  const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const seesEvery = scopesOf(session, "project.read").includes("any");
 
   return (
@@ -181,10 +190,7 @@ export function ProjectsPage() {
             seesEvery={seesEvery}
             session={session}
             nameOf={nameOf}
-            rejectedColumns={{
-              notebook: [nameColumn, periodColumn, reason, decided],
-              small: [nameColumn, reason],
-            }}
+            rejectedColumns={rejectedProjectColumns(nameOf)}
             onOpen={(projectId) => navigate(`/projects/${encodeURIComponent(projectId)}`)}
           />
         )}
@@ -256,7 +262,7 @@ function ProjectBoard({
       isHeadingHidden,
       isOpen: isOpen("ended"),
       onOpenChange: (open) => setOpen("ended", open),
-      presentation: { table: endedColumns },
+      presentation: { table: endedProjectColumns },
     },
     {
       id: "rejected",

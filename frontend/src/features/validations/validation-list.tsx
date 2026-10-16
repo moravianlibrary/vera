@@ -75,7 +75,7 @@ export function ValidationList({
       rows={items}
       rowId={(row) => row.iteration.id}
       total={total}
-      columns={columnsOf(leafOf)}
+      columns={validationColumns(leafOf)}
       card={{
         eyebrow: (row) => (
           <>
@@ -162,7 +162,9 @@ function emptyTextOf(reviews: readonly ReviewedState[] | undefined): string {
   return "Nothing in your custody matches.";
 }
 
-function columnsOf(leafOf: (categoryId: string) => string): ColumnDefinition<ValidationRow>[] {
+export function validationColumns(
+  leafOf: (categoryId: string) => string,
+): ColumnDefinition<ValidationRow>[] {
   return [
     {
       key: "document",

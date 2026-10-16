@@ -22,6 +22,7 @@ import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
+import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
@@ -69,6 +70,46 @@ function handTextOf(definition: PropertyDefinition): string {
 }
 
 type Editing = { kind: "new" } | { kind: "edit"; definition: PropertyDefinition };
+
+// Each definition: its name and key, its type, what it is about, its visibility and how it is
+// entered.
+export const propertyColumns: ColumnDefinition<PropertyDefinition>[] = [
+  {
+    key: "property",
+    header: "Property",
+    track: "minmax(10rem,1.4fr)",
+    cell: (definition) => (
+      <>
+        <strong className="block font-medium">{propertyNameOf(definition)}</strong>
+        <span className="font-mono text-xs text-muted-foreground">{definition.key}</span>
+      </>
+    ),
+  },
+  {
+    key: "type",
+    header: "Type",
+    track: "minmax(8rem,1fr)",
+    cell: (definition) => typeTextOf(definition),
+  },
+  {
+    key: "about",
+    header: "About",
+    track: "max-content",
+    cell: (definition) => subjectLabels[definition.about],
+  },
+  {
+    key: "visibility",
+    header: "Visibility",
+    track: "max-content",
+    cell: (definition) => visibilityLabels[definition.visibility],
+  },
+  {
+    key: "hand",
+    header: "Entered",
+    track: "max-content",
+    cell: (definition) => handTextOf(definition),
+  },
+];
 
 export function PropertiesPage() {
   const [params, setParams] = useSearchParams();
@@ -149,45 +190,7 @@ export function PropertiesPage() {
             rowId={(definition) => definition.key}
             total={index === undefined ? undefined : definitions.length}
             toolbar={{ count: plural(definitions.length, "property", "properties") }}
-            columns={[
-              {
-                key: "property",
-                header: "Property",
-                track: "minmax(10rem,1.4fr)",
-                cell: (definition) => (
-                  <>
-                    <strong className="block font-medium">{propertyNameOf(definition)}</strong>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {definition.key}
-                    </span>
-                  </>
-                ),
-              },
-              {
-                key: "type",
-                header: "Type",
-                track: "minmax(8rem,1fr)",
-                cell: (definition) => typeTextOf(definition),
-              },
-              {
-                key: "about",
-                header: "About",
-                track: "max-content",
-                cell: (definition) => subjectLabels[definition.about],
-              },
-              {
-                key: "visibility",
-                header: "Visibility",
-                track: "max-content",
-                cell: (definition) => visibilityLabels[definition.visibility],
-              },
-              {
-                key: "hand",
-                header: "Entered",
-                track: "max-content",
-                cell: (definition) => handTextOf(definition),
-              },
-            ]}
+            columns={propertyColumns}
             card={{
               eyebrow: (definition) => definition.key,
               title: (definition) => propertyNameOf(definition),

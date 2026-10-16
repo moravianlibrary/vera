@@ -42,6 +42,26 @@ import { requestsView } from "../../frontend/src/features/requests/requests-view
 import { tasksView } from "../../frontend/src/features/tasks/tasks-view.ts";
 import { validationsView } from "../../frontend/src/features/validations/validations-view.ts";
 import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
+import type { ColumnDefinition } from "../../frontend/src/components/lists/record-list.tsx";
+import {
+  publicDocumentColumns,
+  staffDocumentColumns,
+} from "../../frontend/src/features/documents/document-list.tsx";
+import { hookColumns } from "../../frontend/src/features/hooks/hooks-page.tsx";
+import { listEditorColumns } from "../../frontend/src/features/lists/list-editor.tsx";
+import { listColumns } from "../../frontend/src/features/lists/list-rows.tsx";
+import { instanceColumns } from "../../frontend/src/features/plugins/plugin-table.tsx";
+import {
+  endedProjectColumns,
+  rejectedProjectColumns,
+} from "../../frontend/src/features/projects/projects-page.tsx";
+import { propertyColumns } from "../../frontend/src/features/properties/properties-page.tsx";
+import { requestColumns } from "../../frontend/src/features/requests/request-list.tsx";
+import { runColumns } from "../../frontend/src/features/tasks/run-parts.tsx";
+import { scheduleColumns } from "../../frontend/src/features/tasks/schedules-page.tsx";
+import { validationColumns } from "../../frontend/src/features/validations/validation-list.tsx";
+import type { PerTier } from "../../frontend/src/hooks/use-tier.ts";
+import { tiers, valueForTier } from "../../frontend/src/hooks/use-tier.ts";
 
 
 const root = resolve(import.meta.dir, "../..");
@@ -214,7 +234,70 @@ function pageFiltersTable(): string {
   ].join("\n");
 }
 
+// Each page's list columns, as its code declares them: one set for a list that turns each row into
+// a card when it is narrow, or a set per tier.
+type ColumnSet = readonly Pick<ColumnDefinition<never>, "header">[];
+const nobody = () => "";
+const pageColumns: readonly (readonly [string, ColumnSet | PerTier<ColumnSet>])[] = [
+  ["Documents", staffDocumentColumns([])],
+  ["My Documents", publicDocumentColumns("")],
+  ["Requests", requestColumns({ users: [], projects: [], custodies: [] })],
+  ["Documents Validations", validationColumns(nobody)],
+  ["Digitization Lists", listColumns],
+  ["List editor, pool and members", listEditorColumns(nobody)],
+  ["Projects, ended", endedProjectColumns],
+  ["Projects, rejected", rejectedProjectColumns(nobody)],
+  ["Tasks, finished runs", runColumns({ asOf: "", nameOf: nobody, onOpen: () => {} })],
+  ["Schedules", scheduleColumns({ asOf: "", acts: {} })],
+  [
+    "Plugins, instances",
+    instanceColumns({
+      asOf: "",
+      implementationOf: () => undefined,
+      categoryOf: nobody,
+      custodyOf: () => undefined,
+    }),
+  ],
+  ["Properties", propertyColumns],
+  ["Hooks", hookColumns(undefined)],
+];
+
+const headersText = (columns: ColumnSet) =>
+  columns
+    .map(({ header }) => header)
+    .filter((header): header is string => typeof header === "string" && header !== "")
+    .join(" · ");
+
+function columnsText(columns: ColumnSet | PerTier<ColumnSet>): string {
+  if (Array.isArray(columns)) {
+    return `${headersText(columns as ColumnSet)}; a card per row when the list is narrow`;
+  }
+
+  // Tiers that show the same columns share a line, widest first.
+  const lines: { tiers: string[]; text: string }[] = [];
+  for (const tier of tiers.toReversed()) {
+    const text = headersText(valueForTier(columns as PerTier<ColumnSet>, tier));
+    const last = lines.at(-1);
+    if (last?.text === text) {
+      last.tiers.push(tier);
+    } else {
+      lines.push({ tiers: [tier], text });
+    }
+  }
+
+  return lines.map((line) => `${line.tiers.join(", ")}: ${line.text}`).join("<br>");
+}
+
+function pageColumnsTable(): string {
+  return [
+    "| List | Columns |",
+    "|---|---|",
+    ...pageColumns.map(([page, columns]) => `| ${page} | ${columnsText(columns)} |`),
+  ].join("\n");
+}
+
 const generators: Record<string, () => string> = {
+  "page-columns": pageColumnsTable,
   "page-filters": pageFiltersTable,
   sidebar: sidebarTable,
   "permission-catalog": permissionCatalogTable,

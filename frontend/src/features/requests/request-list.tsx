@@ -79,7 +79,7 @@ export function RequestList({
       rows={items}
       rowId={(row) => row.record.document.id}
       total={total}
-      columns={columnsOf(references)}
+      columns={requestColumns(references)}
       card={{
         eyebrow: (row) => (
           <>
@@ -135,7 +135,7 @@ export function RequestList({
   );
 }
 
-function columnsOf(references: RequestReferences): ColumnDefinition<RequestRow>[] {
+export function requestColumns(references: RequestReferences): ColumnDefinition<RequestRow>[] {
   return [
     {
       key: "document",

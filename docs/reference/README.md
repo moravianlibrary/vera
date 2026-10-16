@@ -59,3 +59,4 @@ twice, when code or docs cite an ID nobody defined, or when a relative link poin
 | `role-grants`, `role-limits` | the shipped roles in `frontend/src/mocks/fixtures/access.ts` |
 | `sidebar` | `frontend/src/components/layout/navigation.ts`, with each shipped role's grants |
 | `page-filters` | each page's view definition in `frontend/src/features/*/…-view.ts` |
+| `page-columns` | each list's exported column definitions in `frontend/src/features/*/` (`staffDocumentColumns`, `requestColumns`, `runColumns` and the rest) |

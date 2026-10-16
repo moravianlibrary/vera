@@ -52,7 +52,7 @@ export function ListRows({
       rows={rows}
       rowId={(row) => row.list.id}
       total={total}
-      columns={columns}
+      columns={listColumns}
       card={{
         title: (row) => row.list.name,
         meta: (row) => (
@@ -77,7 +77,7 @@ export function ListRows({
   );
 }
 
-const columns: ColumnDefinition<ListRow>[] = [
+export const listColumns: ColumnDefinition<ListRow>[] = [
   {
     key: "list",
     header: "List",
