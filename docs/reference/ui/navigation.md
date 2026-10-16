@@ -34,7 +34,17 @@ The user menu sits at the foot of the sidebar. It holds:
 - *Account & access*, which shows their roles and what they reach;
 - *Preferences*;
 - the appearance: light, dark or system;
+- the language ([UI-language](#ui-language));
 - *Log out*.
+
+#### UI-language
+
+The interface speaks Czech or English. On a person's first access it speaks the browser's
+language. The login page lets them pick the other, and after logging in they change it in the
+user menu.
+
+> **Open — [L68](../../ledger.md#l68-interface-language).** The interface speaks English only;
+> the browser's language, the login page's pick and the user menu's are not built yet.
 
 #### UI-record-links
 

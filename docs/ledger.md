@@ -15,7 +15,24 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-None.
+### L68: Interface language
+
+Rules: [UI-language](reference/ui/navigation.md#ui-language),
+[ACCESS-login-page](reference/access/people.md#access-login-page).
+
+The interface speaks English only; i18next is set up, and the Czech messages are a copy of the
+English until [L37](#l37-czech-terms).
+
+Decided on 2026-10-16: the browser's language first, on first access; pickable on the login
+page; then in the user menu.
+
+Still to decide:
+1. A browser that prefers neither Czech nor English: which of the two it gets.
+2. Whether the language is the person's, kept from their first login and the same in any
+   browser, or the browser's own.
+3. Whether a pick on the login page by a person who already has a language replaces it.
+
+→ decision, then frontend.
 
 ## Not built yet
 

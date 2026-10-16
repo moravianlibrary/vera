@@ -70,7 +70,8 @@ an admin to give a role ([PERM-self-scoped](permissions.md#perm-self-scoped)).
 
 The login page shows one entry per enabled Identity instance, in their order. An instance that
 logs in with a form (local accounts) shows a form; any other shows a button that redirects.
-With a single redirecting instance there is no login page.
+With a single redirecting instance there is no login page. The login page also offers the
+interface language ([UI-language](../ui/navigation.md#ui-language)).
 
 #### ACCESS-last-identity
 
