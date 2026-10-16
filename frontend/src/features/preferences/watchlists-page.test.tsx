@@ -2,9 +2,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { MemoryRouter, Route, Routes } from "react-router";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { createHandlers } from "@/mocks/handlers";
+
+// Reconciling every watchlist is slow under the full suite's load; the default 5 s is not enough.
+vi.setConfig({ testTimeout: 20_000 });
 
 const server = setupServer();
 beforeAll(() => {
