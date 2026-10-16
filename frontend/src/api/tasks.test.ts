@@ -19,6 +19,7 @@ import {
   toRunSearchParams,
 } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
+import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -43,6 +44,11 @@ async function refusalOf(
 }
 
 const idsOf = (runs: readonly { id: string }[]) => runs.map((run) => run.id);
+
+// The runs written by hand, without the generated history that fills Tasks for scrolling.
+const historyIds = new Set(historicalRuns.map((run) => run.id));
+const handIdsOf = (runs: readonly { id: string }[]) =>
+  idsOf(runs).filter((id) => !historyIds.has(id));
 
 describe("the query in the URL", () => {
   it("reads back what it wrote and drops what it does not know", () => {
@@ -75,7 +81,7 @@ describe("listRuns", () => {
     const index = await listRuns({});
 
     expect(idsOf(index.running)).toEqual(["T-9916", "T-9915"]);
-    expect(idsOf(index.finished)).toEqual([
+    expect(handIdsOf(index.finished)).toEqual([
       "T-9912",
       "T-9914",
       "T-9909",
@@ -137,10 +143,10 @@ describe("listRuns", () => {
     const failed = await listRuns({ states: ["Failed"] });
     const kramerius = await listRuns({ instanceIds: ["pi4"] });
 
-    expect(idsOf(failed.finished)).toEqual(["T-9897"]);
+    expect(handIdsOf(failed.finished)).toEqual(["T-9897"]);
     expect(failed.running).toEqual([]);
     expect(idsOf(kramerius.running)).toEqual(["T-9916"]);
-    expect(idsOf(kramerius.finished)).toEqual(["T-9914", "T-9884"]);
+    expect(handIdsOf(kramerius.finished)).toEqual(["T-9914", "T-9884"]);
     expect(idsOf((await listRuns({ states: ["Running"] })).running)).toEqual(["T-9916", "T-9915"]);
     expect((await listRuns({ states: ["Running"] })).finished).toEqual([]);
     expect(
@@ -152,7 +158,7 @@ describe("listRuns", () => {
     signInAs("admin");
     const { facets } = await listRuns({ triggers: ["manual"] });
 
-    expect(facets.triggers).toContainEqual({ value: "schedule", count: 6 });
+    expect(facets.triggers).toContainEqual({ value: "schedule", count: 6 + historicalRuns.length });
     expect(facets.startedBy).toEqual(
       expect.arrayContaining([
         { value: "u8", count: 2 },
@@ -165,7 +171,7 @@ describe("listRuns", () => {
   it("searches what ran and its number", async () => {
     signInAs("admin");
 
-    expect(idsOf((await listRuns({ search: "aleph" })).finished)).toEqual(["T-9912"]);
+    expect(handIdsOf((await listRuns({ search: "aleph" })).finished)).toEqual(["T-9912"]);
     expect(idsOf((await listRuns({ search: "9897" })).finished)).toEqual(["T-9897"]);
   });
 

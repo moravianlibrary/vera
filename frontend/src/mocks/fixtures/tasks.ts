@@ -180,8 +180,9 @@ const historicalSources = [
   { scheduleId: "s4", instanceId: "pi9", what: "Catalog validity — nightly sweep" },
 ] as const;
 
-// Enough retained history to exercise long scrolling and incremental rendering on Tasks.
-const historicalRuns: readonly StoredRun[] = Array.from({ length: 80 }, (_, index) => {
+// Enough retained history to exercise long scrolling and incremental rendering on Tasks. Tests
+// set it apart from the runs written by hand.
+export const historicalRuns: readonly StoredRun[] = Array.from({ length: 80 }, (_, index) => {
   const source = historicalSources[
     index % historicalSources.length
   ] as (typeof historicalSources)[number];

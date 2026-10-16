@@ -18,6 +18,7 @@ import {
 } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
+import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -84,7 +85,9 @@ describe("listSchedules", () => {
     const index = await listSchedules("day");
 
     expect(rowOf(index, "s2")?.lastRun).toMatchObject({ id: "T-9916", state: "Running" });
-    expect(rowOf(index, "s2")?.runCount).toBe(2);
+    // Two runs by hand, and the generated history.
+    const history = historicalRuns.filter((run) => run.instanceId === "pi4").length;
+    expect(rowOf(index, "s2")?.runCount).toBe(2 + history);
     expect(new Date(rowOf(index, "s1")?.nextAt ?? "")).toEqual(new Date(2026, 5, 25, 10, 45));
     expect(rowOf(index, "s7")).toMatchObject({ nextAt: null, window: { runCount: 0 } });
     expect(rowOf(index, "s7")?.pause?.reason).toBe("VKOL is migrating its catalog until 1 July.");

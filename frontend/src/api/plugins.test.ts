@@ -27,6 +27,7 @@ import { listSchedules } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
 import { pluginKinds } from "@/domain/plugins";
+import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -262,7 +263,9 @@ describe("switching an instance off", () => {
     });
     expect(await getPluginImpact("pi23")).toMatchObject({ kind: "Identity", userCount: 1 });
     expect((await getPluginImpact("pi25")).openProposalCount).toBeGreaterThan(0);
-    expect(await getPluginImpact("pi1")).toMatchObject({ scheduleCount: 1, runCount: 2 });
+    // Two runs by hand, and the generated history.
+    const history = historicalRuns.filter((run) => run.instanceId === "pi1").length;
+    expect(await getPluginImpact("pi1")).toMatchObject({ scheduleCount: 1, runCount: 2 + history });
   });
 
   it("names the active hooks a delivery channel stops (PLG-delivery-hooks)", async () => {
