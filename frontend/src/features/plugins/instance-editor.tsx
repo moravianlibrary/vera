@@ -8,9 +8,9 @@
 // each property it supplies, which registry states count as an existing copy
 // (REG-copy-not-gate), and a harvester's agent. When it runs by itself is set on Schedules, once
 // it exists.
-// TODO(rrandiak): the custody names a custody rule returns are read from its expression by the
-// server; the editor neither shows nor edits them, until it is settled whether a rule names a
-// custody or picks one (L31). Labels move to i18n.
+// TODO(rrandiak): a custody rule is a condition and one custody picked here, bound to it
+// (ACCESS-custody-by-plugins, L31); today the server reads names from its expression and the
+// editor neither shows nor picks them. Labels move to i18n.
 
 import { useId } from "react";
 import { Controller } from "react-hook-form";

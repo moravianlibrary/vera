@@ -74,6 +74,9 @@ item is checked as it lands, so the list says what submitting will do.
 A way whose plugin is not enabled is absent, not disabled
 ([PERM-absent-not-disabled](permissions.md#perm-absent-not-disabled)).
 
+While the barcode-reading Input plugin is enabled, the browser reads the camera's codes. A browser
+that cannot read them says so, and a scanner still works.
+
 The catalog ways are one: the searchable catalogs first, then, for each catalog that cannot be
 searched, where to find a record and a field for its link or ID.
 

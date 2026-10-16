@@ -84,11 +84,8 @@ both declare; what is new takes the new version's default, and what is retired g
 A Custody rule returns one of the request custodies on Users & Groups, picked in the rule
 editor; it never names one by free text.
 
-> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** The editor neither shows
-> nor edits the custodies a rule returns: the server reads their names from its expression.
-> Whether a rule picks a custody or names one
-> ([ACCESS-custody-by-plugins](../access/custody.md#access-custody-by-plugins),
-> [ACCESS-custody-rename](../access/custody.md#access-custody-rename)) waits for a decision.
+> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** The editor does not
+> pick a rule's custody yet ([ACCESS-custody-by-plugins](../access/custody.md#access-custody-by-plugins)).
 
 #### PLG-disable
 

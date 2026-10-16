@@ -48,8 +48,11 @@ with neither reaches nothing, and Users & Groups says so.
 #### ACCESS-custody-by-plugins
 
 Which custodies a proposal is in is always the Custody plugins' answer and is never set by hand.
-Each enabled Custody instance returns a list of custody names for a proposal; the proposal is in
-the union of the names returned by all instances. A name that is not a custody is ignored.
+Each enabled Custody instance is one rule: a condition over the proposal, and one request custody
+picked from those on Users & Groups. The proposal is in every custody whose rule matches it.
+
+> **Open — [L31](../../ledger.md#l31-plugin-policy-on-the-instance).** A rule still returns
+> custody names from its expression, and the editor does not pick the custody.
 
 *Why:* *why is this proposal here* is then always a rule that can be read. To move a proposal,
 change the rule.
@@ -79,14 +82,15 @@ or in and out of the fallback, as facts arrive. Decided proposals are never plac
 
 #### ACCESS-custody-delete
 
-A custody other than the fallback can be deleted even while a rule still names it. Its open
+A custody other than the fallback can be deleted even while a rule still picks it; that rule
+then places nothing until another custody is picked. Its open
 proposals are placed again; those it alone held land in the fallback. The impact is shown first:
 how many open proposals it holds, how many go to the fallback, and which rules name it.
 
 #### ACCESS-custody-rename
 
-Renaming a custody stops the rules that return its old name from placing proposals in it, until
-those rules are changed.
+A rule is bound to the custody it picked, not to its name. Renaming a custody changes nothing about
+what is placed in it.
 
 #### ACCESS-custody-ends
 

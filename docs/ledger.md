@@ -19,17 +19,18 @@ Each of these waits for a decision first. None is open now.
 
 ### L31: Plugin policy on the instance
 
-Rules: [PLG-upgrade](reference/integrations/plugins.md#plg-upgrade),
-[ACCESS-custody-by-plugins](reference/access/custody.md#access-custody-by-plugins),
-[ACCESS-custody-rename](reference/access/custody.md#access-custody-rename).
+Rules: [ACCESS-custody-by-plugins](reference/access/custody.md#access-custody-by-plugins),
+[ACCESS-custody-rename](reference/access/custody.md#access-custody-rename),
+[ACCESS-custody-delete](reference/access/custody.md#access-custody-delete),
+[PLG-upgrade](reference/integrations/plugins.md#plg-upgrade).
 
-Decided on 2026-10-15. Tiers, copy states and a harvester's agent on the instance are built
-(see *Done*). Left: a Custody rule returns one of the custodies on Users & Groups, picked in the
-rule editor. Today the server reads the names from the rule's expression and the editor neither
-shows nor edits them (`TODO(rrandiak)` in `features/plugins/instance-editor.tsx`). The reference
-also says a rule returns names and that a rename stops it placing; whether a rule picks a custody
-(bound to it, rename-safe) or names one waits for a **decision**. → decision, then frontend and
-engine.
+Tiers, copy states and a harvester's agent on the instance are built (see *Done*). Decided on
+2026-10-16 for the rest: each Custody instance is one rule, a condition and one custody picked
+in its editor from those on Users & Groups, bound to it rather than to its name, so a rename
+changes nothing. A deleted custody leaves its rule placing nothing until another is picked.
+Today a rule's expression returns names, which the server reads, and the editor neither shows
+nor picks them (`TODO(rrandiak)` in `features/plugins/instance-editor.tsx`); the mock's *House
+rules* returns three. → frontend, then engine.
 
 ### L22: Properties
 
