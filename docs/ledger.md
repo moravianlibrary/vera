@@ -141,8 +141,10 @@ Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-prede
 
 Decided on 2026-10-16. A recheck records a fresh catalog reading of the title, material type and
 shelf mark. The mock records the values the document already holds, with the recheck's time, in
-place of the catalog adapter's earlier reading; the engine reads them from the adapter, and a
-changed value replaces the document's own field. → engine.
+place of the catalog adapter's earlier reading; the engine reads them from the adapter. Also
+decided on 2026-10-16: a changed value replaces the document's own field, as the catalog is the
+authority ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)), and the *Rechecked*
+entry names the earlier value. → engine.
 
 ## For part 5 (writing and i18n)
 

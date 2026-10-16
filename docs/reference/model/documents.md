@@ -186,10 +186,11 @@ They can be edited but not deleted (409), as the predefined Identifier instances
 catalog adapter's among them, and the record pane shows the sources of each. A recheck
 (ACT-recheck in [Iterations](../access/acts.md#iterations)) reads the title, material type and
 shelf mark from the catalog again and records that reading with its own time, in place of the
-adapter's earlier one.
+adapter's earlier one. A value the catalog now reads differently replaces the one VERA held,
+and the *Rechecked* log entry names the earlier value.
 
 > **Open — [L67](../../ledger.md#l67-recheck-reads-the-catalog).** The mock records the values
-> VERA already holds; the engine reads them from the catalog adapter.
+> VERA already holds, so nothing changes; the engine reads them from the catalog adapter.
 
 *Why:* counting and generating read the page count, and the pages filter and search on the
 others.
