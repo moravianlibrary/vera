@@ -40,8 +40,10 @@ The user menu sits at the foot of the sidebar. It holds:
 #### UI-language
 
 The interface speaks Czech or English. On a person's first access it speaks the browser's
-language. The login page lets them pick the other, and after logging in they change it in the
-user menu.
+language, or English when the browser prefers neither. The login page lets them pick the other.
+The language is the person's: their first login keeps the one in use, it is the same in any
+browser they log in from, and they change it in the user menu. A pick on the login page
+replaces the language they hold.
 
 > **Open — [L68](../../ledger.md#l68-interface-language).** The interface speaks English only;
 > the browser's language, the login page's pick and the user menu's are not built yet.
