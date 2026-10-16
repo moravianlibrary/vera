@@ -91,13 +91,29 @@ When a system watchlist changes:
 #### WATCH-hook-preferences
 
 A hook addressed to users carries a preference with a label and a declared default. Each person
-can switch such hooks off one by one or all at once on *Preferences → Notifications*. A hook
-added later follows its own default.
+can switch such hooks off one by one, or all at once with *No hook email*
+([WATCH-channel-off](#watch-channel-off)), on *Preferences → Notifications*. A hook added later
+follows its own default.
 
 #### WATCH-do-not-send
 
 *Do not send notifications* stops every optional notification, hook mail, watchlist mail and push
 alike, and keeps the individual choices for when it is cleared.
+
+#### WATCH-channel-off
+
+Beside *Do not send notifications*, each person can switch one kind of notification off
+everywhere, on *Preferences → Notifications*:
+- *No watchlist email*;
+- *No hook email*;
+- *No watchlist chat*;
+- *No browser notifications*.
+
+Each stops its kind for every watchlist or hook, those that come later included, and keeps the
+individual choices for when it is cleared. A watchlist or hook whose own switch is on says that
+its kind is off for all. *Do not send notifications* still stops everything.
+
+> **Open — [L62](../../ledger.md#l62-one-kind-off-everywhere).** Not built yet.
 
 #### WATCH-manage-link
 

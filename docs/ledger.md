@@ -45,6 +45,19 @@ machine) and intentions scoped by a property:
 This replaces [DEC-0003](decisions/DEC-0003-properties-are-not-columns.md) with a new record.
 → docs (reference and the decision record, before the engine), then frontend and engine.
 
+### L62: One kind off everywhere
+
+Rules: [WATCH-channel-off](reference/integrations/watchlists.md#watch-channel-off),
+[WATCH-do-not-send](reference/integrations/watchlists.md#watch-do-not-send),
+[WATCH-hook-preferences](reference/integrations/watchlists.md#watch-hook-preferences).
+
+Decided on 2026-10-16: beside *Do not send notifications*, four switches each turn one kind off
+everywhere (watchlist email, hook email, watchlist chat, browser notifications), keeping the
+individual choices for when cleared; a watchlist or hook switched on says its kind is off for
+all. Today only *Do not send notifications* and the per-watchlist and per-hook switches exist.
+→ frontend (user settings, Preferences → Notifications, the Watchlists page, the mock's
+outboxes), then engine.
+
 ### L36: Pages reference
 
 Rules: [UI-pages](reference/ui/pages.md#ui-pages).
