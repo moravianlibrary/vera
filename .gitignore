@@ -11,3 +11,4 @@ frontend/.env.*
 .frontend.pid
 .frontend.log
 .dev-roles/
+plans/
