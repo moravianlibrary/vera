@@ -10,12 +10,23 @@ counts towards every intention whose scope it matches.
 
 #### PLAN-scope
 
-An item is in an intention's scope when both hold:
+An item is in an intention's scope when all of these hold:
 - **funding** matches: *any*, or *none* (no project), or one named project;
-- **category** matches: the scope is one node and everything below it, or the whole tree.
+- **category** matches: the scope is one node and everything below it, or the whole tree;
+- every **condition on a property** it adds holds, if it adds any (*machines include
+  Zeutschel*): a document property on the item's document, an attempt property on the item. A
+  condition takes what the property's filter takes
+  ([DOC-property-filter](../model/documents.md#doc-property-filter)).
 
-> **Open — [L22](../../ledger.md#l22-properties).** A scope may also add conditions on document
-> and attempt properties (*machines include Zeutschel*), once properties are built.
+Deleting a property removes the conditions that name it
+([DOC-property-delete](../model/documents.md#doc-property-delete)).
+
+> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: a scope is funding and
+> category only.
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Whether a
+> condition reads the value in use now, so a value changed later moves figures already counted,
+> or the value when the item was digitized.
 
 #### PLAN-counting
 

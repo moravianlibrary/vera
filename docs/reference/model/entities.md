@@ -17,7 +17,8 @@ unit ([DOC-identity](documents.md#doc-identity)). It is the only concept a reade
 It holds what is true of the thing whatever happens to it:
 - title and type (Periodical, Monograph, Manuscript, Map);
 - shelf mark;
-- page counts from each source ([DOC-page-count](documents.md#doc-page-count));
+- its properties, each value from each source, the page count among them
+  ([DOC-property](documents.md#doc-property));
 - what each registry says about it ([REG-evidence](../integrations/registries.md#reg-evidence)).
 
 #### ENT-iteration
@@ -30,7 +31,8 @@ iteration:
 - the project that funds it;
 - the list it is on;
 - its restriction, defects, verdicts and cancellation;
-- its progress, and its scan and publication.
+- its progress, and its scan and publication;
+- its attempt properties ([DOC-property](documents.md#doc-property)).
 
 The last attempt is the document's **current** one. Every view that seems to list documents
 lists their current iterations.

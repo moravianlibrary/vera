@@ -25,6 +25,10 @@ these terms (in `develop/i18n.md`, part 5).
 | pool | zásobník | what a list can take | [LC-LIST-pool](reference/lifecycles/list.md#lc-list-pool) |
 | ingest | příjem | reading the record and running the checks after approval | [LC-ITER-ingest](reference/lifecycles/iteration.md#lc-iter-ingest) |
 | page count | počet stran | pages, from the highest-tier source | [DOC-page-count](reference/model/documents.md#doc-page-count) |
+| property | vlastnost | an admin-defined fact about a document or one attempt | [DOC-property](reference/model/documents.md#doc-property) |
+| source | zdroj | who gave a property's value: a person or a plugin instance | [DOC-property-values](reference/model/documents.md#doc-property-values) |
+| tier | úroveň | a source's rank; the highest with a value is in use | [DOC-property-values](reference/model/documents.md#doc-property-values) |
+| public, staff property | veřejná, interní vlastnost | read by everyone who reads the record, or in staff detail only | [DOC-property-visibility](reference/model/documents.md#doc-property-visibility) |
 
 ## Status
 
@@ -52,6 +56,7 @@ these terms (in `develop/i18n.md`, part 5).
 | share | podíl | one category's percentage in a mix | [PLAN-mix-sets](reference/planning/mixes.md#plan-mix-sets) |
 | Primary mix | hlavní rozložení | the mix offered by default | [PLAN-mix-primary](reference/planning/mixes.md#plan-mix-primary) |
 | intention | záměr | a scope and an objective | [ENT-intention](reference/model/entities.md#ent-intention) |
+| intention's scope | rozsah záměru | its funding, its category and any conditions on properties | [PLAN-scope](reference/planning/intentions.md#plan-scope) |
 | Overall | celkový záměr | the intention that counts everything | [PLAN-overall](reference/planning/intentions.md#plan-overall) |
 | repeat | opakování | makes one intention per period | [ENT-repeat](reference/model/entities.md#ent-repeat) |
 | planned, delivered, output | naplánováno, dodáno, výstup | what an intention counts | [PLAN-counting](reference/planning/intentions.md#plan-counting) |

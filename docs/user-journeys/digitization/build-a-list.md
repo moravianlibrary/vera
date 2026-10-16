@@ -5,7 +5,7 @@
 **Goal.** "Put together what the scanners do from Monday, and close last month's list."
 
 **Starting state.**
-- Ready items in the pool.
+- Ready items in the pool, some of them A4 by the document property *Size*.
 - A running list past its end date, not yet marked Done, with one item that turned out
   impossible to scan.
 - An item on another list that a validation rule stopped after it was listed.
@@ -20,8 +20,11 @@
 3. He marks the list *Done…*, after the impact: how many move to Digitized and what is blocked.
    → Every open member is Digitized; the list is fixed
    ([LC-LIST-done](../../reference/lifecycles/list.md#lc-list-done)).
-4. He starts a *New list* from Monday, with a page target, and adds items from the pool.
-   → The items show *Planned* until Monday
+4. He starts a *New list* from Monday, with a page target, narrows the pool to the document
+   property *Size* A4, and adds items from it.
+   → Only A4 items are offered
+   ([DOC-property-filter](../../reference/model/documents.md#doc-property-filter))
+   **(not built: [L22](../../ledger.md#l22-properties))**. The items show *Planned* until Monday
    ([LC-ITER-on-list](../../reference/lifecycles/iteration.md#lc-iter-on-list)). A hook on
    `list.created` fires.
 5. Meanwhile someone else lists one of the same items; he saves.

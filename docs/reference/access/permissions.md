@@ -70,6 +70,20 @@ Nothing reads implicitly: deciding projects shows them only through `project.rea
 | `access.manage` | `access.read` |
 <!-- /generated:permission-requires -->
 
+#### PERM-property-edit
+
+Each property has its own permission, `property.<key>.edit`, made with its definition
+([DOC-property](../model/documents.md#doc-property)) and removed from every role with it. It
+accepts `any` only. Reading a property needs no permission of its own: it follows the
+property's visibility ([DOC-property-visibility](../model/documents.md#doc-property-visibility)).
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** What
+> `property.<key>.edit` needs ([PERM-requires](#perm-requires)), such as `iteration.read@any`, so
+> that a holder can reach every record the grant does.
+
+> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the catalog below holds only
+> the fixed permissions.
+
 #### PERM-absent-not-disabled
 
 An act whose permission the person lacks is absent from the page, never shown disabled. A field
@@ -85,7 +99,8 @@ scope included, and refuses with 403.
 ## The catalog
 
 `own` is the holder's own records; a permission offering only `own` is self-scoped. The headings
-are the groups the role editor shows.
+are the groups the role editor shows. Besides these, each property adds its
+`property.<key>.edit` ([PERM-property-edit](#perm-property-edit)).
 
 <!-- generated:permission-catalog -->
 ### Requests

@@ -74,29 +74,111 @@ recognises it. A type without a recogniser is read only when chosen.
 
 ## Properties
 
+#### DOC-property
+
+A **property** is a fact VERA keeps about a document or about one attempt, beyond what
+identifies it. Only an admin defines one. A definition has:
+- a **key**, which never changes;
+- a **name** in each UI language;
+- a **visibility**, public or staff ([DOC-property-visibility](#doc-property-visibility));
+- a **type** ([DOC-property-types](#doc-property-types));
+- what it is **about**: the document, true whatever attempt is made (its size), or one
+  **attempt**, held by that iteration as its category is (the machine chosen this time);
+- whether it may be **entered by hand**, and the tier a hand value gets
+  ([DOC-property-hand](#doc-property-hand)).
+
+> **Open — [L22](../../ledger.md#l22-properties).** Not built yet: the page count is the only
+> property with sources and tiers, and material type and the others are fixed fields.
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Which permission
+> defines a property, and on which page.
+
+#### DOC-property-types
+
+A property's type is one of:
+- **text**;
+- **number**, with a unit;
+- **yes/no**;
+- **date**;
+- **enum**, each value with a name in each UI language;
+- a **list** of any of these.
+
+#### DOC-property-values
+
+Every value has a **source**: a person entering it by hand, or a plugin instance, the catalog
+adapter included. Each value keeps its source's tier, when it was observed and who set it. The
+value in use is the one from the highest tier that has a value, and every source stays visible.
+A plugin instance's tier is set on the instance
+([PLG-upgrade](../integrations/plugins.md#plg-upgrade)).
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Whether a changed
+> value is logged, and which hook event a change to an attempt property fires
+> (`document.property_changed` is a document's).
+
+#### DOC-property-hand
+
+A property that may be entered by hand needs `property.<key>.edit`
+([PERM-property-edit](../access/permissions.md#perm-property-edit)). The tier its definition
+gives hand values decides whether a hand value outranks a plugin's.
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Whether a fact the
+> catalog owns may be defined for hand entry
+> ([DEC-0006](../../decisions/DEC-0006-vera-does-not-fix-records.md)); where a value is entered
+> and whether in bulk; whether entering one reruns the checks, as the page count does; and
+> whether an attempt's value can change after the scan.
+
+#### DOC-property-visibility
+
+A **public** property is read wherever its record is, My Documents included. A **staff**
+property is read only in staff detail, on Documents and the pages that need `iteration.read`
+([VIEW-own-label](../access/views.md#view-own-label)). A property a person may not read is
+absent, and cannot be filtered on
+([PERM-absent-not-disabled](../access/permissions.md#perm-absent-not-disabled)).
+
+#### DOC-property-filter
+
+Each type gives its filter on every page that shows the property, saved watchlists included:
+- a number or a date, a range, as *Pages* and *Asked* are;
+- an enum or yes/no, its values, each with how many records it finds
+  ([UI-facets](../ui/pages.md#ui-facets));
+- a list, any of its values.
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** The filter of a
+> text property; whether *no value* can be filtered on; which pages show a property, and as a
+> column or only in the record pane.
+
+#### DOC-property-delete
+
+Deleting a definition removes its values, its permission from every role, and every filter,
+watchlist filter and intention scope condition that names it. An intention that had a condition
+on it counts more from then on ([PLAN-scope](../planning/intentions.md#plan-scope)).
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Whether a system
+> watchlist whose filter loses a condition pauses as any refiltered one does
+> ([WATCH-system-change](../integrations/watchlists.md#watch-system-change)), and whether a
+> deleted key can be defined again.
+
 #### DOC-page-count
 
-A page count can come from several sources, each with a tier:
+The page count is a number property of the document. Its sources are:
 - **manual**, entered in VERA (tier 100);
-- the **catalog**;
+- the **catalog adapter**;
 - a **predictor** plugin.
 
-The page count in use is the one from the highest tier that has a value. Every source stays
-visible with when it was observed and who set it.
+The one in use follows [DOC-property-values](#doc-property-values).
+
+> **Open — [L63](../../ledger.md#l63-properties-what-the-model-leaves-open).** Whether the page
+> count, and the material type, shelf mark and title VERA keeps as fixed fields, become
+> predefined definitions that cannot be deleted, as the predefined Identifier instances are.
 
 #### DOC-manual-page-count
 
-A counted page count is the one value entered in VERA. Entering it runs the checks again
-([ACT-page-count](../access/acts.md#iterations)). Every other fact is repaired in the catalog,
-and VERA reads it again with *Recheck*.
+A counted page count is entered in VERA, and entering it runs the checks again
+([ACT-page-count](../access/acts.md#iterations)). A defect in any other fact the catalog holds
+is repaired in the catalog, and VERA reads it again with *Recheck*.
 
 *Why:* VERA does not fix records. A defect points to the catalog record, and a recheck reads
 the repaired record.
-
-> **Open — [L22](../../ledger.md#l22-properties).** Admin-defined, typed properties of a
-> document or an attempt, entered by hand or by plugins, are decided but not built. The page
-> count is the only property with sources and tiers; material type and the others are fixed
-> fields.
 
 ## Existing copies
 

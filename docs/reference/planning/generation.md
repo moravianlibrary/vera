@@ -16,7 +16,8 @@ The result is a draft to edit, never saved by itself.
 #### PLAN-generate-pool
 
 The generator chooses only from the pool ([LC-LIST-pool](../lifecycles/list.md#lc-list-pool)),
-narrowed to the shaping intention's funding and subtree. Items with no page count are left out.
+narrowed to the shaping intention's scope ([PLAN-scope](intentions.md#plan-scope)). Items with
+no page count are left out.
 Members already on the draft stay; the generator tops up.
 
 #### PLAN-generate-mix

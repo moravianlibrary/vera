@@ -1,5 +1,7 @@
 # DEC-0003: Properties are plugin-supplied facts, not columns
 
+**Superseded** by [DEC-0013](DEC-0013-properties-are-admin-defined.md).
+
 **Context.** Facts about a document (page count, material type) come from several sources that
 disagree: the catalog, a predictor, a person counting. A column holds one value and forgets
 where it came from.
