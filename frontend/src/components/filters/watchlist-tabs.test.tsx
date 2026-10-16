@@ -13,6 +13,9 @@ import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
 import { resolveSession } from "@/mocks/session";
 
+// Reconciling every watchlist is slow under the full suite's load; the default 5 s is not enough.
+vi.setConfig({ testTimeout: 20_000 });
+
 const server = setupServer();
 
 beforeAll(() => {

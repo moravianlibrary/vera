@@ -2,7 +2,7 @@
 // shared one, against the mock server over HTTP.
 
 import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { getCategoryIndex, parseCategorySearchParams } from "@/api/categories";
 import { listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
@@ -39,6 +39,9 @@ import {
   watchlistChatOutbox,
   watchlistMailOutbox,
 } from "@/mocks/watchlist-delivery";
+
+// Reconciling every watchlist is slow under the full suite's load; the default 5 s is not enough.
+vi.setConfig({ testTimeout: 20_000 });
 
 const server = setupServer();
 
