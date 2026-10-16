@@ -37,8 +37,9 @@ upper-cased, hyphens dropped) and an optional checksum (ISBN-10, ISBN-13, ISSN).
 Pattern instance per type below is configured with MZK's formats. A library changes their
 configuration and order, or adds an instance, such as a pattern for its shelf marks; only a
 check a pattern cannot make, such as looking a shelf mark up in a local register, needs an
-implementation of its own. The predefined instances show on Plugins like any other and can be
-edited, but not deleted:
+implementation of its own. An instance recognises one of the types below and no other: a
+document stores its identifiers by these types. The predefined instances show on Plugins like
+any other and can be edited, but not deleted:
 
 | Type | Format |
 |---|---|

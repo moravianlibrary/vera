@@ -1,8 +1,6 @@
 // One place to find personal and system saved filters, and each person's delivery choices: email
 // and chat off until switched on, browser push on for every watchlist once this browser may
-// notify (WATCH-delivery).
-// TODO(rrandiak): where the browser's permission is asked waits for these preferences moving
-// under Preferences (L60); until then it is asked here, above the watchlists.
+// notify (WATCH-delivery), whose permission is asked here and moves with these preferences.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";

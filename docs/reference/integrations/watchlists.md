@@ -59,9 +59,8 @@ they see, personal and system, once they allow the site's notifications in the b
 is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
-> **Open — [L60](../../ledger.md#l60-browser-notifications-for-watchlists).** Where the browser's
-> permission is asked waits until the watchlist preferences move under Preferences; until then it
-> is asked on the Watchlists page.
+The browser's permission is asked on the Watchlists page, above the watchlists, and moves with
+the watchlist preferences when they move under Preferences.
 
 #### WATCH-mail-batch
 
@@ -86,7 +85,7 @@ When a system watchlist changes:
 | renamed | continue | none |
 | filter changed | paused until each recipient confirms; current matches are a new baseline | the change, with a link to review |
 | someone removed from the audience | stop for them, their settings kept | they lost access |
-| someone added | start off | none |
+| someone added | email and chat start off; push starts on | none |
 | removed | stop | it was removed |
 
 #### WATCH-hook-preferences

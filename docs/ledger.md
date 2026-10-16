@@ -52,16 +52,6 @@ Rules: [UI-pages](reference/ui/pages.md#ui-pages).
 The columns of each list, what each record pane shows and what each page deliberately leaves out
 are not written down yet. → docs, from the code.
 
-### L60: Browser notifications for watchlists
-
-Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
-[WATCH-push](reference/integrations/watchlists.md#watch-push).
-
-Browser push is built (see *Done*). Left: where the browser's permission is asked, which waits
-until the watchlist preferences move under Preferences; until then a line above the watchlists
-on the Watchlists page asks (`TODO(rrandiak)` in `features/preferences/watchlists-page.tsx`).
-→ frontend, then engine (Web Push with the server's key, sent from the outbox).
-
 ## For the engine
 
 ### L8: Placing again is a run
@@ -230,6 +220,13 @@ messages, and the generator follows them. → frontend.
 
 ### Built, 2026-10-16
 
+- **L60:** decided on 2026-10-16 that the browser's permission is asked on the Watchlists page
+  until the watchlist preferences move under Preferences, and that a person added to a system
+  watchlist's audience starts with push on, email and chat off
+  ([WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
+  [WATCH-system-change](reference/integrations/watchlists.md#watch-system-change)).
+- **L21:** decided on 2026-10-16 that an Identifier instance recognises one of the six document
+  identifier types and no other ([DOC-identifiers](reference/model/documents.md#doc-identifiers)).
 - **L60, in part:** browser push as a third watchlist channel, a *Browser* switch on each
   watchlist, on by default. A browser is registered with the server once the person allows the
   site's notifications there, and again on each visit while allowed; nothing is pushed before
