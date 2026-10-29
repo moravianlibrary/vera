@@ -1,5 +1,10 @@
 # Frontend continuation guide
 
+**Run detail over any page (2026-10-29):** the sidebar's running-run links and run links on
+Schedules and Plugins keep the current page and set `?run=` there. `GlobalRunDrawer` in the app
+shell renders the same `RunDrawer` and acts as Tasks; Tasks keeps its own drawer for its list.
+The shared frame is `DetailDrawer`. See [UI-running](../docs/reference/ui/navigation.md#ui-running).
+
 **Watchlists and Preferences handoff (2026-10-29):** `/watchlists` is now the
 system watchlist administration page, visible only with `watchlist.manage_system`.
 Personal and eligible system watchlists, their order, delivery choices and browser

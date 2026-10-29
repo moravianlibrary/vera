@@ -14,6 +14,7 @@ import { OpenNavigationContext } from "@/components/layout/navigation-button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { env } from "@/config/env";
+import { GlobalRunDrawer } from "@/features/tasks/global-run-drawer";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useAppliedLanguage } from "@/hooks/use-language";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -121,6 +122,7 @@ export function AppShell() {
           />
         </SheetContent>
       </Sheet>
+      <GlobalRunDrawer />
     </div>
   );
 }

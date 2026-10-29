@@ -8,6 +8,7 @@ import type { Session } from "@vera/domain/entities";
 import { hasAnyPermission } from "@vera/domain/permissions";
 import { Link } from "react-router";
 import { percentOf, RunProgress } from "@/components/visualizations/run-progress";
+import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
 import { useRunningRunsQuery } from "@/hooks/use-running-runs-query";
 
 interface RunningTasksPanelProps {
@@ -61,8 +62,8 @@ export function RunningTasksPanel({
       <ul className="mt-2 grid gap-2">
         {runs.map((run) => (
           <li key={run.id} className="min-w-0">
-            <Link
-              to={`/tasks?run=${encodeURIComponent(run.id)}`}
+            <RunOverlayLink
+              runId={run.id}
               onClick={onNavigate}
               className="group grid min-w-0 gap-1"
               title={run.what}
@@ -81,7 +82,7 @@ export function RunningTasksPanel({
                 errors={run.errorCount}
                 form="sidebar"
               />
-            </Link>
+            </RunOverlayLink>
           </li>
         ))}
       </ul>

@@ -39,6 +39,7 @@ import {
   suppliesOf,
   triggerLabels,
 } from "@/features/plugins/plugin-words";
+import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
 import { cadenceText } from "@/lib/format-cadence";
 import { formatCalendarDay } from "@/lib/format-date";
 import { agoText, shortDayOf } from "@/lib/format-moment";
@@ -534,9 +535,9 @@ function RecentRunsCard({
         instance.recentRuns.map((run) => (
           <DetailRow key={run.id} aside={<RunStateBadge run={run} />}>
             {reach.canSeeTasks ? (
-              <Link to={`/tasks?run=${encodeURIComponent(run.id)}`} className={linkClass}>
+              <RunOverlayLink runId={run.id} className={linkClass}>
                 {run.what}
-              </Link>
+              </RunOverlayLink>
             ) : (
               run.what
             )}

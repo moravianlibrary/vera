@@ -25,7 +25,10 @@ phone the sidebar is a sheet, always expanded.
 
 #### UI-running
 
-While any run is going, the sidebar foot shows what is running, with a link to Tasks.
+While any run is going, the sidebar foot shows what is running. Its heading links to Tasks; each
+run opens its detail drawer over the current page. The same behavior applies to run links from
+Schedules and Plugins. The current page remains behind the drawer, with `?run=` naming the open
+run in its URL. A direct `/tasks?run=` link still opens that run on Tasks.
 
 #### UI-user-menu
 
@@ -52,10 +55,11 @@ replaces the language they hold.
 
 #### UI-record-links
 
-A link from one page to a record on another lands on that record, opened. The URL names it:
+A link to a record opens it. Most go to that record's page; a run opens over the current page.
+The URL names the selection:
 - `?id=` on list pages;
 - `?i=` for a plugin instance and `?impl=` for an implementation;
-- `?run=` on Tasks;
+- `?run=` for a run drawer on the current page;
 - `?s=` on Schedules.
 
 A filter, a grouping and an open watchlist are in the URL too, so a link reproduces the view.

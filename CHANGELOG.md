@@ -6,6 +6,8 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Running task links in the sidebar, Schedules and Plugins open the run drawer over the current
+  page instead of navigating to Tasks. The current URL names the run for direct linking.
 - System watchlists have their own administration page. Each person's watchlists, order and
   delivery choices are now under Preferences → Watchlists. The profile menu links directly to
   all four Preferences tabs; language and appearance are set in Display.

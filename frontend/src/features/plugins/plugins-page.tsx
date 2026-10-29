@@ -16,7 +16,7 @@ import type { Session } from "@vera/domain/entities";
 import { hasPermission } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { enablePluginInstance, runPluginInstance } from "@/api/plugins";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -48,6 +48,7 @@ import {
   shownPluginsOf,
 } from "@/features/plugins/plugins-view";
 import { pluginInvalidations, usePluginsQuery } from "@/features/plugins/use-plugins-query";
+import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useRequestCustodiesQuery, useRolesQuery } from "@/hooks/use-reference-query";
@@ -255,12 +256,12 @@ function PluginTable({
         {notice.runId !== undefined && (
           <>
             {" "}
-            <Link
-              to={`/tasks?run=${encodeURIComponent(notice.runId)}`}
+            <RunOverlayLink
+              runId={notice.runId}
               className="text-primary underline-offset-2 hover:underline"
             >
               Open the run
-            </Link>
+            </RunOverlayLink>
           </>
         )}
       </NoticeLine>

@@ -111,7 +111,7 @@ person may not read is absent, a card included
 | Documents Validations | Defects, as outstanding, denied and accepted · Forbidden, when it is · This attempt · Catalog record, with *Open in the catalog* · Properties · History |
 | Digitization Lists | its state and figures as tiles · On this list · Counts towards · Mix · History |
 | Categories | its figures as tiles · the shares of its children, or of the top level, in the selected mix · Needs attention, on *All categories* · Documents here, on a leaf · Custody |
-| Tasks | a run, in a drawer: Run · What it changed · Items · Log |
+| Tasks | a run, in a drawer that may open over any page: Run · What it changed · Items · Log |
 | Plugins | an implementation, in a drawer: what it declares and supplies, its versions and instances; an instance: its configuration, what it supplies, when it runs, the hooks sending through it |
 | Properties | a definition, in a drawer: Definition · its values, for an enum |
 | Hooks | a hook: Subscription · What it sends · Deliveries |

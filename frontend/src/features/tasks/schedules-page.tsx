@@ -10,7 +10,7 @@ import type { ScheduleIndex, ScheduleRow, TimelineRange } from "@vera/contract/s
 import { timelineRanges } from "@vera/contract/schedules";
 import { hasPermission } from "@vera/domain/permissions";
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { resumeSchedule, runScheduleNow } from "@/api/schedules";
 import { DataTable } from "@/components/data-table";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import type { TimelineLane } from "@/components/visualizations/timeline";
 import { Timeline } from "@/components/visualizations/timeline";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
+import { RunOverlayLink, useOpenRunOverlay } from "@/features/tasks/run-overlay-link";
 import type { NameOf, ShownNotice } from "@/features/tasks/run-parts";
 import { NoticeLine, Sub } from "@/features/tasks/run-parts";
 import {
@@ -54,7 +55,7 @@ type OpenDialog =
 
 export function SchedulesPage() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
+  const openRun = useOpenRunOverlay();
   const range = rangeOf(params);
   const focusedId = params.get(focusedScheduleParam);
   const { data: session } = useSessionQuery();
@@ -150,11 +151,7 @@ export function SchedulesPage() {
       <PageContent className="@container !p-0">
         {notice !== null && (
           <div className="px-4 pt-4 sm:px-6">
-            <NoticeLine
-              notice={notice}
-              onOpenRun={(runId) => navigate(`/tasks?run=${encodeURIComponent(runId)}`)}
-              onDismiss={() => setNotice(null)}
-            />
+            <NoticeLine notice={notice} onOpenRun={openRun} onDismiss={() => setNotice(null)} />
           </div>
         )}
         {index !== undefined && (
@@ -316,10 +313,10 @@ function LastRun({ schedule, asOf }: { schedule: ScheduleRow; asOf: string }) {
   }
 
   return (
-    <Link to={`/tasks?run=${encodeURIComponent(lastRun.id)}`} className="whitespace-nowrap">
+    <RunOverlayLink runId={lastRun.id} className="whitespace-nowrap">
       <RunStateBadge run={lastRun} />{" "}
       <span className="text-muted-foreground">{agoText(lastRun.startedAt, asOf)}</span>
-    </Link>
+    </RunOverlayLink>
   );
 }
 
