@@ -3,6 +3,7 @@
 // fit, and its handler. The handler answers a value, which the contract check proves against
 // `response`, or a Response, which is a refusal and goes out as it is.
 
+import type { EndpointSpec } from "@vera/contract/endpoints";
 import type { z } from "zod";
 import type { Engine } from "../engine";
 
@@ -48,4 +49,14 @@ export function endpoint<
   Value = undefined,
 >(definition: Endpoint<Params, Query, Body, Value>): Endpoint {
   return definition as unknown as Endpoint;
+}
+
+// An endpoint of the contract's table (E1), served by this handler: the table gives everything
+// but the handler, so the engine cannot answer otherwise than the table says.
+export function implement<Params, Query, Body, Value>(
+  spec: EndpointSpec<Params, Query, Body, Value>,
+  handle: Endpoint<Params, Query, Body, Value>["handle"],
+): Endpoint {
+  const { method, path, params, query, body, response } = spec;
+  return endpoint({ method, path, params, query, body, response, handle });
 }
