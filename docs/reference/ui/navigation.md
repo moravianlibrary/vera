@@ -44,6 +44,15 @@ Preferences is one page with four addressable tabs at `/preferences/:section`.
 *Display* holds appearance, language, density, dates and opening choices. *Account* shows
 identities, roles and access. The user menu offers the same four destinations as the page.
 
+#### UI-preferences
+
+A person's preferences (the Display choices, the watchlists they last opened, their notification
+choices) are theirs alone. They are kept on the server, apart from the user record, so they
+follow the person to any browser they log in from, and nobody else reads or changes them. A
+change sends only what changed; it is merged into what is kept, key by key, and leaves the other
+preferences as they were. Only what a person may choose before logging in, such as the
+appearance and the language on the login page, is kept in the browser until they log in.
+
 #### UI-language
 
 The interface speaks Czech or English. On a person's first access it speaks the browser's

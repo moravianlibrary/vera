@@ -518,7 +518,7 @@ describe("access acts", () => {
     engine.close();
   });
 
-  it("settings: merges lastOpenedWatchlists by key and preserves unrelated settings", async () => {
+  it("UI-preferences: merges lastOpenedWatchlists by key and preserves unrelated settings", async () => {
     const engine = testEngine("base");
     const first = await call(engine, "PATCH", api(apiRoutes.userSettings), {
       as: "u3",
