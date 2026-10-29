@@ -43,3 +43,29 @@ export type UserSettings = z.infer<typeof userSettingsSchema>;
 export const userSettingsChangeSchema = userSettingsSchema.partial();
 
 export type UserSettingsChange = z.infer<typeof userSettingsChangeSchema>;
+
+export function settingsAfter(current: UserSettings, change: UserSettingsChange): UserSettings {
+  return {
+    ...current,
+    ...change,
+    lastOpenedWatchlists: { ...current.lastOpenedWatchlists, ...change.lastOpenedWatchlists },
+    ...(change.fixedOpeningWatchlists === undefined
+      ? {}
+      : {
+          fixedOpeningWatchlists: {
+            ...current.fixedOpeningWatchlists,
+            ...change.fixedOpeningWatchlists,
+          },
+        }),
+    ...(change.notifications === undefined
+      ? {}
+      : {
+          notifications: {
+            doNotSend: change.notifications.doNotSend ?? current.notifications?.doNotSend ?? false,
+            hooks: { ...current.notifications?.hooks, ...change.notifications.hooks },
+            channelsOff: change.notifications.channelsOff ?? current.notifications?.channelsOff,
+            noHookEmail: change.notifications.noHookEmail ?? current.notifications?.noHookEmail,
+          },
+        }),
+  };
+}

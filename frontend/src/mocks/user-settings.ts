@@ -3,7 +3,7 @@
 // storage. Where there is no storage they last as long as the page.
 
 import type { UserSettings, UserSettingsChange } from "@vera/contract/user-settings";
-import { userSettingsSchema } from "@vera/contract/user-settings";
+import { settingsAfter, userSettingsSchema } from "@vera/contract/user-settings";
 import { z } from "zod";
 
 const storageKey = "vera.mock.user-settings";
@@ -36,29 +36,7 @@ export function userSettingsOf(userId: string): UserSettings {
 
 export function changeUserSettings(userId: string, change: UserSettingsChange): UserSettings {
   const current = userSettingsOf(userId);
-  const changed = {
-    ...current,
-    ...change,
-    lastOpenedWatchlists: { ...current.lastOpenedWatchlists, ...change.lastOpenedWatchlists },
-    ...(change.fixedOpeningWatchlists === undefined
-      ? {}
-      : {
-          fixedOpeningWatchlists: {
-            ...current.fixedOpeningWatchlists,
-            ...change.fixedOpeningWatchlists,
-          },
-        }),
-    ...(change.notifications === undefined
-      ? {}
-      : {
-          notifications: {
-            doNotSend: change.notifications.doNotSend ?? current.notifications?.doNotSend ?? false,
-            hooks: { ...current.notifications?.hooks, ...change.notifications.hooks },
-            channelsOff: change.notifications.channelsOff ?? current.notifications?.channelsOff,
-            noHookEmail: change.notifications.noHookEmail ?? current.notifications?.noHookEmail,
-          },
-        }),
-  };
+  const changed = settingsAfter(current, change);
   settingsByUser.set(userId, changed);
   store();
   return changed;

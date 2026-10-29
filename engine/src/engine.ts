@@ -2,8 +2,14 @@
 // development only, the control endpoints under /_engine.
 
 import type { Database } from "bun:sqlite";
+import { accountEndpoints } from "./access/account";
 import { callingOf } from "./access/caller";
+import { custodyEndpoints } from "./access/custodies";
 import { sessionEndpoints } from "./access/endpoints";
+import { groupEndpoints } from "./access/groups";
+import { accessIndexEndpoint } from "./access/index";
+import { roleEndpoints } from "./access/roles";
+import { userEndpoints } from "./access/users";
 import type { Clock } from "./clock";
 import { createClock } from "./clock";
 import { controlPrefix, serveControl } from "./control";
@@ -45,7 +51,16 @@ export interface Engine {
   close(): void;
 }
 
-export const endpoints: readonly Endpoint[] = [...loginEndpoints, ...sessionEndpoints];
+export const endpoints: readonly Endpoint[] = [
+  ...loginEndpoints,
+  ...sessionEndpoints,
+  accessIndexEndpoint,
+  ...roleEndpoints,
+  ...userEndpoints,
+  ...groupEndpoints,
+  ...custodyEndpoints,
+  ...accountEndpoints,
+];
 
 const seedKey = "seed";
 const schemaKey = "schema";

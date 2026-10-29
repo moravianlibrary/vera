@@ -10881,6 +10881,40 @@
             ]
           }
         ]
+      },
+      {
+        "id": "pt32",
+        "descriptorId": "cz.mzk.vera.entry-link",
+        "name": "EntryLink",
+        "kind": "Input",
+        "description": "Lets an outside portal link into Propose with an item filled in (ACT-entry-link).",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-10-29",
+            "installedBy": "u3",
+            "triggers": ["OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": [
+              {
+                "key": "allowed_origins",
+                "isSecret": false,
+                "isRequired": true
+              }
+            ]
+          }
+        ]
       }
     ],
     "pluginInstances": [
@@ -11328,8 +11362,9 @@
         "name": "Local accounts",
         "implementationId": "pt22",
         "configuration": {
-          "signup": "off",
-          "password_min": "12"
+          "signup": "on",
+          "password_min": "12",
+          "mail_channel": "pi16"
         },
         "triggers": ["OnLogin"],
         "settings": {
@@ -11337,7 +11372,7 @@
           "label": "Log in with a VERA account",
           "order": 3,
           "userIdClaim": "username",
-          "defaultRoleId": null,
+          "defaultRoleId": "reader",
           "matchByEmail": false,
           "mappings": []
         },
@@ -11750,6 +11785,23 @@
         "version": "1.1.0",
         "isEnabled": true,
         "linkedCategoryId": null,
+        "createdBy": "u3",
+        "isDeleted": false
+      },
+      {
+        "id": "pi43",
+        "name": "Tlačítko digitalizovat",
+        "implementationId": "pt32",
+        "configuration": {
+          "allowed_origins": "https://www.mzk.cz https://tlacitko.osdd.mzk.cz"
+        },
+        "triggers": ["OnDemand"],
+        "createdAt": "2026-10-29",
+        "lastRunAt": null,
+        "version": "1.0.0",
+        "isEnabled": true,
+        "linkedCategoryId": null,
+        "settings": null,
         "createdBy": "u3",
         "isDeleted": false
       }

@@ -41,6 +41,18 @@ export const seedSchema = z.object({
     categories: z.array(categorySchema),
     groups: z.array(accessGroupSchema),
     categoryMembers: z.record(id, z.array(id)),
+    requestCustodies: z
+      .array(
+        z.object({
+          id,
+          name: z.string(),
+          description: z.string(),
+          isFallback: z.boolean(),
+          memberIds: z.array(id),
+          groupIds: z.array(id),
+        }),
+      )
+      .optional(),
     pluginImplementations: z
       .array(
         z.looseObject({ id, name: z.string(), kind: z.string(), versions: z.array(z.unknown()) }),
@@ -171,6 +183,21 @@ export function loadSeed(db: Database, seed: Seed): void {
     for (const userId of userIds) {
       insertCategoryMember.run(categoryId, userId);
     }
+  }
+
+  const insertCustody = db.query(
+    "INSERT INTO request_custodies (id, name, description, is_fallback) VALUES (?, ?, ?, ?)",
+  );
+  const insertCustodyMember = db.query(
+    "INSERT INTO request_custody_members (custody_id, user_id) VALUES (?, ?)",
+  );
+  const insertCustodyGroup = db.query(
+    "INSERT INTO request_custody_groups (custody_id, group_id) VALUES (?, ?)",
+  );
+  for (const custody of seed.collections.requestCustodies ?? []) {
+    insertCustody.run(custody.id, custody.name, custody.description, custody.isFallback ? 1 : 0);
+    for (const userId of custody.memberIds) insertCustodyMember.run(custody.id, userId);
+    for (const groupId of custody.groupIds) insertCustodyGroup.run(custody.id, groupId);
   }
 
   const insertImplementation = db.query(

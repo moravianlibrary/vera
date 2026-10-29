@@ -819,7 +819,7 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
       label: "Log in with MZK account",
       order: 1,
       userIdClaim: "preferred_username",
-      defaultRoleId: "reader",
+      defaultRoleId: null,
       matchByEmail: false,
       mappings: [
         { claim: "group mzk-staff", roleId: "staff" },
