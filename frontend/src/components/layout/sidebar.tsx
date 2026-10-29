@@ -7,17 +7,15 @@
 // User options live in a dropdown at the foot; labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import type { Language } from "@vera/contract/user-settings";
-import { languages } from "@vera/contract/user-settings";
 import type { Session } from "@vera/domain/entities";
+import { hasAnyPermission } from "@vera/domain/permissions";
 import {
+  Bell,
+  Bookmark,
   ChevronsRight,
   LogOut,
-  Monitor,
-  Moon,
-  Settings2,
   ShieldCheck,
-  Sun,
+  SlidersHorizontal,
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -32,16 +30,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppearance } from "@/hooks/use-appearance";
-import { useLanguage } from "@/hooks/use-language";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
-import { languageNames } from "@/i18n/language";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -69,15 +62,14 @@ export function Sidebar({
 }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { appearance, setAppearance } = useAppearance();
-  const { language, setLanguage } = useLanguage();
   const [menuError, setMenuError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const entries = session === undefined ? [] : visibleNavigation(session);
   const { data: watchlists = [] } = useQuery({
     queryKey: [...watchlistsQueryKey, "visible"],
     queryFn: () => listWatchlists(),
-    enabled: entries.some((entry) => entry.id === "watchlists"),
+    enabled:
+      session !== undefined && hasAnyPermission(session, ["watch", "watchlist.manage_system"]),
     refetchInterval: 60_000,
   });
   const changedByView = new Map<string, number>();
@@ -207,61 +199,23 @@ export function Sidebar({
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => {
-                navigate("/preferences/account");
-                onMenuNavigate?.();
-              }}
-            >
-              <ShieldCheck /> Account &amp; access
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() => {
-                navigate("/preferences/notifications");
-                onMenuNavigate?.();
-              }}
-            >
-              <Settings2 /> Preferences
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={appearance}
-              onValueChange={(value) => {
-                setMenuError("");
-                void setAppearance(value as typeof appearance).catch(() =>
-                  setMenuError("Could not save appearance."),
-                );
-              }}
-            >
-              <DropdownMenuRadioItem value="system">
-                <Monitor /> System
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="light">
-                <Sun /> Light
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">
-                <Moon /> Dark
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Language</DropdownMenuLabel>
-            {/* UI-language: each language named in itself. */}
-            <DropdownMenuRadioGroup
-              value={language}
-              onValueChange={(value) => {
-                setMenuError("");
-                void setLanguage(value as Language).catch(() =>
-                  setMenuError("Could not save the language."),
-                );
-              }}
-            >
-              {languages.map((candidate) => (
-                <DropdownMenuRadioItem key={candidate} value={candidate} lang={candidate}>
-                  {languageNames[candidate]}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
+            <DropdownMenuLabel>Preferences</DropdownMenuLabel>
+            {[
+              { path: "/preferences/watchlists", label: "Watchlists", Icon: Bookmark },
+              { path: "/preferences/notifications", label: "Notifications", Icon: Bell },
+              { path: "/preferences/display", label: "Display", Icon: SlidersHorizontal },
+              { path: "/preferences/account", label: "Account", Icon: ShieldCheck },
+            ].map(({ path, label, Icon }) => (
+              <DropdownMenuItem
+                key={path}
+                onSelect={() => {
+                  navigate(path);
+                  onMenuNavigate?.();
+                }}
+              >
+                <Icon /> {label}
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuSeparator />
             {menuError && (
               <p role="alert" className="px-2 py-1 text-xs text-destructive">

@@ -73,22 +73,34 @@ export function WatchlistsPage() {
 
   return (
     <>
-      <PageHeader title="Watchlists" />
+      <PageHeader title="System watchlists" />
       <PageContent className="bg-muted/20">
         <div className="mx-auto max-w-6xl">
-          <WatchlistDirectory selectedId={params.get("watchlist")} />
+          <WatchlistDirectory selectedId={params.get("watchlist")} mode="system" />
         </div>
       </PageContent>
     </>
   );
 }
 
-function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
+export function WatchlistPreferences() {
+  const [params] = useSearchParams();
+  return <WatchlistDirectory selectedId={params.get("watchlist")} mode="preferences" />;
+}
+
+function WatchlistDirectory({
+  selectedId,
+  mode,
+}: {
+  selectedId: string | null;
+  mode: "system" | "preferences";
+}) {
+  const isSystem = mode === "system";
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
   const { data: channels = [] } = useWatchlistChannelsQuery();
   const canShare = session !== undefined && hasPermission(session, "watchlist.manage_system");
-  const { data: users = [] } = useUsersQuery({ isEnabled: canShare });
+  const { data: users = [] } = useUsersQuery({ isEnabled: canShare && isSystem });
   const queryClient = useQueryClient();
   const {
     data: visibleWatchlists = [],
@@ -98,15 +110,16 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
     queryKey: [...watchlistsQueryKey, "visible"],
     queryFn: () => listWatchlists(),
   });
-  const { data: managedSystem = [] } = useQuery({
+  const {
+    data: managedSystem = [],
+    isPending: systemPending,
+    isError: systemError,
+  } = useQuery({
     queryKey: [...watchlistsQueryKey, "manage-system"],
     queryFn: () => listWatchlists(undefined, "manage-system"),
-    enabled: canShare,
+    enabled: canShare && isSystem,
   });
-  const watchlists = [
-    ...visibleWatchlists,
-    ...managedSystem.filter((item) => !visibleWatchlists.some((visible) => visible.id === item.id)),
-  ];
+  const watchlists = isSystem ? managedSystem : visibleWatchlists;
   const visibleIds = new Set(visibleWatchlists.map(({ id }) => id));
   const { create, update, remove, updateViewer } = useWatchlistMutations();
   const [editing, setEditing] = useState<string | null>(null);
@@ -172,12 +185,15 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
 
   return (
     <section>
-      <h2 className="text-lg font-semibold">Watchlists</h2>
+      <h2 className="text-lg font-semibold">
+        {isSystem ? "System watchlist definitions" : "Your watchlists"}
+      </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Personal and system saved searches, grouped by the view they open. Open one to change its
-        filter.
+        {isSystem
+          ? "Shared saved searches, grouped by source view. Open one to change its filter, or manage its audience here."
+          : "Personal watchlists and system watchlists you can use. Open one to change its filter; delivery choices here are yours alone."}
       </p>
-      {userSettings?.notifications?.doNotSend && (
+      {!isSystem && userSettings?.notifications?.doNotSend && (
         <p className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
           External notifications are paused by your{" "}
           <Link to="/preferences/notifications" className="underline">
@@ -186,35 +202,44 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
           preference. Watchlist badges still update.
         </p>
       )}
-      <PushPermissionLine />
+      {!isSystem && <PushPermissionLine />}
       {error && (
         <p role="alert" className="mt-3 text-sm text-destructive">
           {error}
         </p>
       )}
-      {isPending && <p className="mt-5 text-sm text-muted-foreground">Loading watchlists…</p>}
-      {isError && (
+      {(isSystem ? systemPending : isPending) && (
+        <p className="mt-5 text-sm text-muted-foreground">Loading watchlists…</p>
+      )}
+      {(isSystem ? systemError : isError) && (
         <p role="alert" className="mt-5 text-sm text-destructive">
           Could not load watchlists.
         </p>
       )}
-      {!isPending && !isError && groups.length === 0 && (
+      {!(isSystem ? systemPending || systemError : isPending || isError) && groups.length === 0 && (
         <p className="mt-5 text-sm text-muted-foreground">
-          No watchlists yet. Save one from a view’s filter bar.
+          {isSystem
+            ? "No system watchlists yet. Create one from a source view’s filter bar."
+            : "No watchlists yet. Save one from a view’s filter bar."}
         </p>
       )}
       <div className="mt-5 space-y-6">
         {groups.map(({ view, entries }) => (
           <div key={view} className="overflow-hidden rounded-lg border bg-background">
             <h3 className="border-b bg-muted px-4 py-2 text-sm font-semibold">{viewLabel(view)}</h3>
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[44%] pl-4">Watchlist</TableHead>
-                  <TableHead className="w-[25%]">Delivery</TableHead>
-                  <TableHead className="w-[31%] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
+            <Table
+              className="table-fixed"
+              aria-label={isSystem ? `${viewLabel(view)} system watchlists` : undefined}
+            >
+              {!isSystem && (
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[44%] pl-4">Watchlist</TableHead>
+                    <TableHead className="w-[25%]">Delivery</TableHead>
+                    <TableHead className="w-[31%] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+              )}
               <TableBody>
                 {entries.map((watchlist, index) => (
                   <TableRow
@@ -222,7 +247,13 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                     id={`watchlist-${watchlist.id}`}
                     className={selectedId === watchlist.id ? "bg-accent/40" : ""}
                   >
-                    <TableCell className="min-w-0 break-words py-3 pl-4 align-top whitespace-normal">
+                    <TableCell
+                      className={
+                        isSystem
+                          ? "w-[70%] min-w-0 break-words py-3 pl-4 align-top whitespace-normal"
+                          : "min-w-0 break-words py-3 pl-4 align-top whitespace-normal"
+                      }
+                    >
                       {editing === watchlist.id ? (
                         <form
                           onSubmit={async (event) => {
@@ -281,107 +312,121 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                             {" · "}
                             {watchlist.itemCount} items
                             {watchlist.newCount > 0 ? ` · ${watchlist.newCount} new` : ""}
-                            {isShared(watchlist) && canShare
+                            {isSystem
                               ? ` · Created by ${users.find((user) => user.id === watchlist.createdBy)?.name ?? watchlist.createdBy} · ${watchlist.subscriberCount} subscribers`
                               : ""}
                           </p>
                         </>
                       )}
                     </TableCell>
-                    <TableCell className="align-top whitespace-normal">
-                      {visibleIds.has(watchlist.id) && (
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-                          {channels.map((channel) => {
-                            const isOn = isChannelOn(watchlist.viewer, channel.id);
-                            const why = unreachableTextOf(channel);
-                            return (
-                              <span key={channel.id} className="flex items-center gap-2">
-                                <Switch
-                                  aria-label={`${watchlist.name} ${channel.name} notifications`}
-                                  checked={isOn}
-                                  disabled={busy || (why !== null && !isOn)}
-                                  onCheckedChange={(isChecked) =>
+                    {!isSystem && (
+                      <TableCell className="align-top whitespace-normal">
+                        {visibleIds.has(watchlist.id) && (
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+                            {channels.map((channel) => {
+                              const isOn = isChannelOn(watchlist.viewer, channel.id);
+                              const why = unreachableTextOf(channel);
+                              return (
+                                <span key={channel.id} className="flex items-center gap-2">
+                                  <Switch
+                                    aria-label={`${watchlist.name} ${channel.name} notifications`}
+                                    checked={isOn}
+                                    disabled={busy || (why !== null && !isOn)}
+                                    onCheckedChange={(isChecked) =>
+                                      changeViewer(watchlist, {
+                                        channels: { [channel.id]: isChecked },
+                                        ...(isChecked
+                                          ? { confirmedFilter: String(watchlist.filterVersion) }
+                                          : {}),
+                                      })
+                                    }
+                                  />
+                                  {channel.name}
+                                  {why !== null && (
+                                    <span className="text-muted-foreground">{why}</span>
+                                  )}
+                                  {why === null &&
+                                    isOn &&
+                                    isOffForAll(userSettings, channel.id) && (
+                                      <span className="text-tone-amber-foreground">
+                                        Off for all watchlists
+                                      </span>
+                                    )}
+                                </span>
+                              );
+                            })}
+                            <span className="flex items-center gap-2">
+                              <Switch
+                                aria-label={`${watchlist.name} browser notifications`}
+                                checked={watchlist.viewer.push}
+                                disabled={busy}
+                                onCheckedChange={(push) => changeViewer(watchlist, { push })}
+                              />
+                              {pushChannelName}
+                              {watchlist.viewer.push && isPushOffForAll(userSettings) && (
+                                <span className="text-tone-amber-foreground">
+                                  Off for all watchlists
+                                </span>
+                              )}
+                            </span>
+                            {(Object.values(watchlist.viewer.channels).some(
+                              (channel) => channel.isOn,
+                            ) ||
+                              watchlist.viewer.push) &&
+                              watchlist.viewer.confirmedFilter !==
+                                String(watchlist.filterVersion) && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={busy}
+                                  onClick={() =>
                                     changeViewer(watchlist, {
-                                      channels: { [channel.id]: isChecked },
-                                      ...(isChecked
-                                        ? { confirmedFilter: String(watchlist.filterVersion) }
-                                        : {}),
+                                      confirmedFilter: String(watchlist.filterVersion),
                                     })
                                   }
-                                />
-                                {channel.name}
-                                {why !== null && (
-                                  <span className="text-muted-foreground">{why}</span>
-                                )}
-                                {why === null && isOn && isOffForAll(userSettings, channel.id) && (
-                                  <span className="text-tone-amber-foreground">
-                                    Off for all watchlists
-                                  </span>
-                                )}
-                              </span>
-                            );
-                          })}
-                          <span className="flex items-center gap-2">
-                            <Switch
-                              aria-label={`${watchlist.name} browser notifications`}
-                              checked={watchlist.viewer.push}
-                              disabled={busy}
-                              onCheckedChange={(push) => changeViewer(watchlist, { push })}
-                            />
-                            {pushChannelName}
-                            {watchlist.viewer.push && isPushOffForAll(userSettings) && (
-                              <span className="text-tone-amber-foreground">
-                                Off for all watchlists
-                              </span>
-                            )}
-                          </span>
-                          {(Object.values(watchlist.viewer.channels).some(
-                            (channel) => channel.isOn,
-                          ) ||
-                            watchlist.viewer.push) &&
-                            watchlist.viewer.confirmedFilter !==
-                              String(watchlist.filterVersion) && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={() =>
-                                  changeViewer(watchlist, {
-                                    confirmedFilter: String(watchlist.filterVersion),
-                                  })
-                                }
-                              >
-                                Review changed filter and resume
-                              </Button>
-                            )}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="align-top whitespace-normal text-right">
+                                >
+                                  Review changed filter and resume
+                                </Button>
+                              )}
+                          </div>
+                        )}
+                      </TableCell>
+                    )}
+                    <TableCell
+                      className={
+                        isSystem
+                          ? "w-[30%] align-top whitespace-normal text-right"
+                          : "align-top whitespace-normal text-right"
+                      }
+                    >
                       <div className="flex flex-wrap justify-end gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Move ${watchlist.name} up`}
-                          title="Move up"
-                          disabled={busy || index === 0 || !visibleIds.has(watchlist.id)}
-                          onClick={() => move(entries, index, -1)}
-                        >
-                          <ArrowUp />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          aria-label={`Move ${watchlist.name} down`}
-                          title="Move down"
-                          disabled={
-                            busy || index === entries.length - 1 || !visibleIds.has(watchlist.id)
-                          }
-                          onClick={() => move(entries, index, 1)}
-                        >
-                          <ArrowDown />
-                        </Button>
-                        {watchlist.isEditable && canShare && (
+                        {!isSystem && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Move ${watchlist.name} up`}
+                            title="Move up"
+                            disabled={busy || index === 0 || !visibleIds.has(watchlist.id)}
+                            onClick={() => move(entries, index, -1)}
+                          >
+                            <ArrowUp />
+                          </Button>
+                        )}
+                        {!isSystem && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Move ${watchlist.name} down`}
+                            title="Move down"
+                            disabled={
+                              busy || index === entries.length - 1 || !visibleIds.has(watchlist.id)
+                            }
+                            onClick={() => move(entries, index, 1)}
+                          >
+                            <ArrowDown />
+                          </Button>
+                        )}
+                        {isSystem && watchlist.isEditable && canShare && (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -393,7 +438,7 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                             <Share2 />
                           </Button>
                         )}
-                        {watchlist.isEditable && (
+                        {watchlist.isEditable && (isSystem || !isShared(watchlist)) && (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -408,7 +453,7 @@ function WatchlistDirectory({ selectedId }: { selectedId: string | null }) {
                             <Pencil />
                           </Button>
                         )}
-                        {watchlist.isEditable && (
+                        {watchlist.isEditable && (isSystem || !isShared(watchlist)) && (
                           <Button
                             size="icon"
                             variant="ghost"

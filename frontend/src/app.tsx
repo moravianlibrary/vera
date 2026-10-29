@@ -123,9 +123,8 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "preferences", element: <Navigate to="/preferences/notifications" replace /> },
+      { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
       { path: "preferences/:section", element: <PreferencesPage /> },
-      { path: "preferences/watchlists", element: <Navigate to="/watchlists" replace /> },
       ...navigationEntries.map((entry) => ({
         path: entry.path.slice(1),
         element: (

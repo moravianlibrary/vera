@@ -103,8 +103,8 @@ export const navigationEntries: readonly NavigationEntry[] = [
     id: "watchlists",
     path: "/watchlists",
     rail: "WL",
-    label: "Watchlists",
-    requires: ["watch", "watchlist.manage_system"],
+    label: "System watchlists",
+    requires: ["watchlist.manage_system"],
   },
 ];
 

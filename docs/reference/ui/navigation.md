@@ -31,22 +31,24 @@ While any run is going, the sidebar foot shows what is running, with a link to T
 
 The user menu sits at the foot of the sidebar. It holds:
 - the person's name;
-- *Account & access*, which shows their roles and what they reach;
-- *Preferences*;
-- the appearance: light, dark or system;
-- the language ([UI-language](#ui-language));
+- direct links to the four Preferences tabs: *Watchlists*, *Notifications*, *Display* and
+  *Account*;
 - *Log out*.
+
+Preferences is one page with four addressable tabs at `/preferences/:section`.
+*Display* holds appearance, language, density, dates and opening choices. *Account* shows
+identities, roles and access. The user menu offers the same four destinations as the page.
 
 #### UI-language
 
 The interface speaks Czech or English. On a person's first access it speaks the browser's
 language, or English when the browser prefers neither. The login page lets them pick the other.
 The language is the person's: their first login keeps the one in use, it is the same in any
-browser they log in from, and they change it in the user menu. A pick on the login page
+browser they log in from, and they change it in Preferences → Display. A pick on the login page
 replaces the language they hold.
 
 > **Open — [L4](../../ledger.md#l4-logging-in).** There is no login page yet, so no pick there;
-> the browser's language, the person's own and the user menu's are built.
+> the browser's language, the person's own and the Display choice are built.
 
 #### UI-record-links
 

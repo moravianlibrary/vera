@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { languages } from "@vera/contract/user-settings";
 import { pushChannelId } from "@vera/contract/watchlists";
 import type { WatchlistView } from "@vera/domain/entities";
 import { watchlistViewSchema } from "@vera/domain/entities";
@@ -31,13 +32,16 @@ import {
   unreachableTextOf,
   useWatchlistChannelsQuery,
 } from "@/features/preferences/watchlist-channels";
+import { WatchlistPreferences } from "@/features/preferences/watchlists-page";
 import { useAppearance } from "@/hooks/use-appearance";
+import { useLanguage } from "@/hooks/use-language";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { languageNames } from "@/i18n/language";
 
-const sections = ["notifications", "display", "account"] as const;
+const sections = ["watchlists", "notifications", "display", "account"] as const;
 type Section = (typeof sections)[number];
 
 function viewLabel(view: WatchlistView): string {
@@ -47,9 +51,9 @@ function viewLabel(view: WatchlistView): string {
 
 export function PreferencesPage() {
   const { section } = useParams();
-  if (section === undefined) return <Navigate to="/preferences/notifications" replace />;
+  if (section === undefined) return <Navigate to="/preferences/watchlists" replace />;
   if (!sections.includes(section as Section))
-    return <Navigate to="/preferences/notifications" replace />;
+    return <Navigate to="/preferences/watchlists" replace />;
 
   return (
     <>
@@ -67,7 +71,8 @@ export function PreferencesPage() {
         ))}
       </TabStrip>
       <PageContent className="bg-muted/20">
-        <div className="mx-auto max-w-4xl">
+        <div className={section === "watchlists" ? "mx-auto max-w-6xl" : "mx-auto max-w-4xl"}>
+          {section === "watchlists" && <WatchlistPreferences />}
           {section === "notifications" && <NotificationsPreferences />}
           {section === "display" && <DisplayPreferences />}
           {section === "account" && <AccountPreferences />}
@@ -107,7 +112,7 @@ function NotificationsPreferences() {
         <h2 className="text-lg font-semibold">Notifications</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Choose which automatic Hook emails reach you, and switch one kind of notification off
-          everywhere. Watchlist delivery is set on each watchlist in the Watchlists page.
+          everywhere. Watchlist delivery is set on each watchlist in Preferences → Watchlists.
         </p>
       </div>
       {error && (
@@ -259,6 +264,7 @@ function DisplayPreferences() {
   const { data: settings, isPending } = useUserSettingsQuery();
   const update = useUserSettingsMutation();
   const { appearance } = useAppearance();
+  const { language } = useLanguage();
   const sidebar = useSidebarPreference();
   const { data: watchlists = [] } = useQuery({
     queryKey: watchlistsQueryKey,
@@ -306,6 +312,13 @@ function DisplayPreferences() {
           value={appearance}
           options={["system", "light", "dark"]}
           onChange={(value) => save({ appearance: value as typeof appearance })}
+        />
+        <Choice
+          label="Language"
+          value={language}
+          options={[...languages]}
+          labels={languageNames}
+          onChange={(value) => save({ language: value as typeof language })}
         />
         <Choice
           label="List density"

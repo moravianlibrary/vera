@@ -33,3 +33,10 @@ describe("Documents and My Documents (VIEW-own-label)", () => {
     expect(canOpenNavigationEntry(resolveSession("no-access"), "my-documents")).toBe(false);
   });
 });
+
+describe("System watchlists navigation (VIEW-watchlists)", () => {
+  it("limits the management page to permission holders", () => {
+    expect(canOpenNavigationEntry(resolveSession("admin"), "watchlists")).toBe(true);
+    expect(canOpenNavigationEntry(resolveSession("reader"), "watchlists")).toBe(false);
+  });
+});

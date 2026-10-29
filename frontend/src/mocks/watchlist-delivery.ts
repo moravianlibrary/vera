@@ -116,7 +116,7 @@ export function flushWatchlistMail(now = new Date()): MockWatchlistMail[] {
         channelId: channel.id,
         sentAt: now.toISOString(),
         records: [...records.values()],
-        manageUrl: "/watchlists",
+        manageUrl: "/preferences/watchlists",
       };
       watchlistMailOutbox.push(mail);
       sent.push(mail);
@@ -146,7 +146,7 @@ export function flushWatchlistChat(now = new Date()): void {
           view: summary.view,
           recordId: entry.recordId,
           sentAt: now.toISOString(),
-          manageUrl: `/watchlists?watchlist=${encodeURIComponent(entry.watchlistId)}`,
+          manageUrl: `/preferences/watchlists?watchlist=${encodeURIComponent(entry.watchlistId)}`,
         });
         entry.deliveredAt = { ...entry.deliveredAt, [channel.id]: now.toISOString() };
         changed = true;
@@ -236,7 +236,7 @@ export function flushWatchlistPush(
         userId: user.id,
         watchlistId: summary.id,
         sentAt: now.toISOString(),
-        url: `/watchlists?watchlist=${encodeURIComponent(summary.id)}`,
+        url: `/preferences/watchlists?watchlist=${encodeURIComponent(summary.id)}`,
         ...pushNoticeOf(
           summary.name,
           pending.map((entry) => recordNameOf(summary.view, entry.recordId)),

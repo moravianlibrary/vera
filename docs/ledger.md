@@ -231,7 +231,7 @@ is published (*Digitization*, *Progress*…), in Czech first
 
 - **L68:** the interface speaks the browser's language on first access, or English; the
   person's language is saved at their first login, the same in any browser, and changed in the
-  user menu ([UI-language](reference/ui/navigation.md#ui-language)). A pick on the login page
+  Display preferences ([UI-language](reference/ui/navigation.md#ui-language)). A pick on the login page
   replaces it once the login page exists ([L4](#l4-logging-in)).
 - **L12:** the permission lines are i18n messages, one file per language in
   `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
@@ -290,8 +290,8 @@ is published (*Digitization*, *Progress*…), in Czech first
   values, grants, filters and conditions, and a system watchlist that loses one pauses
   ([DOC-property-delete](reference/model/documents.md#doc-property-delete)). The mock keeps the
   predefined four's values on the document itself.
-- **L60:** decided on 2026-10-16 that the browser's permission is asked on the Watchlists page
-  until the watchlist preferences move under Preferences, and that a person added to a system
+- **L60:** the browser's permission is asked on Preferences → Watchlists after the person's
+  watchlists moved there. A person added to a system
   watchlist's audience starts with push on, email and chat off
   ([WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
   [WATCH-system-change](reference/integrations/watchlists.md#watch-system-change)).

@@ -64,7 +64,7 @@ empty cell means the entry is absent.
 | Plugins | `/plugins` | `plugin.read` |  |  |  |  |  | Plugins |
 | Properties | `/properties` | `property.define` |  |  |  |  |  | Properties |
 | Hooks | `/hooks` | `hook.read` |  |  |  |  |  | Hooks |
-| Watchlists | `/watchlists` | `watch` · `watchlist.manage_system` | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists | Watchlists |
+| System watchlists | `/watchlists` | `watchlist.manage_system` |  |  |  |  |  | System watchlists |
 <!-- /generated:sidebar -->
 
 ## What a page shows, by what you hold
@@ -148,6 +148,8 @@ On Plugins, a delivery channel lists the hooks that send through it only to a pe
 
 #### VIEW-watchlists
 
-The Watchlists entry shows with `watch` or `watchlist.manage_system`. A watchlist over a page
-appears only to people who can open that page
+The *System watchlists* entry at `/watchlists` shows only with
+`watchlist.manage_system`. It manages system definitions and their audiences;
+the person's own watchlists and delivery choices are on
+`/preferences/watchlists`. A watchlist over a page appears only to people who can open that page
 ([WATCH-audience](../integrations/watchlists.md#watch-audience)).

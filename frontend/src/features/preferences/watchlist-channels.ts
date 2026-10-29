@@ -1,5 +1,5 @@
 // The channels a watchlist reaches the person through (WATCH-delivery), shared by the Watchlists
-// page and Preferences → Notifications: browser push, then each Delivery channel instance that can
+// preferences and Preferences → Notifications: browser push, then each Delivery channel instance that can
 // reach them, named by the instance's name. WATCH-channel-off: each one off for every watchlist.
 // TODO(rrandiak): labels move to i18n.
 

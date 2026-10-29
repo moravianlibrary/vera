@@ -144,4 +144,4 @@ Each page leaves out what another page owns, so two pages never disagree about i
 | Users management | project membership | the project ([ACCESS-project-members](../access/custody.md#access-project-members)) |
 | Users management | system watchlists | Watchlists ([VIEW-watchlists](../access/views.md#view-watchlists)) |
 | Plugins | editing a schedule | Schedules ([ACT-schedule-save](../access/acts.md#tasks-and-schedules)) |
-| Hooks | a person's watchlist notifications | Watchlists and Preferences ([WATCH-delivery](../integrations/watchlists.md#watch-delivery)) |
+| Hooks | a person's watchlist notifications | Preferences → Watchlists ([WATCH-delivery](../integrations/watchlists.md#watch-delivery)) |

@@ -39,6 +39,17 @@ function open(section: string) {
 }
 
 describe("Preferences", () => {
+  it("offers the four addressable sections and language under Display", async () => {
+    open("display");
+    for (const section of ["watchlists", "notifications", "display", "account"]) {
+      expect(screen.getByRole("link", { name: section })).toHaveAttribute(
+        "href",
+        `/preferences/${section}`,
+      );
+    }
+    expect(await screen.findByText("Language")).toBeInTheDocument();
+  });
+
   it("shows the signed-in person's account details", async () => {
     open("account");
     expect(await screen.findByText("Sign-in identities")).toBeInTheDocument();
