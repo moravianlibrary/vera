@@ -24,7 +24,7 @@ export function SystemPage({ title, text, actions, children, isInShell }: System
       )}
     >
       <div className="w-full max-w-sm text-center">
-        <Logo className="mx-auto size-10 text-primary" />
+        <Logo className="mx-auto size-10 text-foreground" markClassName="fill-background" />
         <h1 className="mt-5 text-xl font-semibold">{title}</h1>
         {text !== undefined && <p className="mt-2 text-sm text-muted-foreground">{text}</p>}
         {children}
