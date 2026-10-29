@@ -313,16 +313,15 @@ describe("switching an instance off", () => {
 
   it("never switches off the last way to log in", async () => {
     signInAs("admin");
-    await disablePluginInstance("pi23");
-    await disablePluginInstance("pi24");
+    const others = ["pi23", "pi24", "pi41", "pi42"];
+    for (const instanceId of others) await disablePluginInstance(instanceId);
 
     expect(await refusalOf(disablePluginInstance("pi22"))).toMatchObject({
       status: 409,
       code: "plugin.last_identity",
     });
     expect(await refusalOf(deletePluginInstance("pi22"))).toMatchObject({ status: 409 });
-    await enablePluginInstance("pi23");
-    await enablePluginInstance("pi24");
+    for (const instanceId of others) await enablePluginInstance(instanceId);
   });
 });
 

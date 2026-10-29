@@ -8,12 +8,12 @@
 // TODO(rrandiak): phone gestures (component-interfaces.md §8.1); labels move to i18n.
 
 import { useLayoutEffect, useState } from "react";
-import { Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { ApiError } from "@/api/http";
 import { OpenNavigationContext } from "@/components/layout/navigation-button";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { env } from "@/config/env";
+import { ServiceUnavailablePage } from "@/features/system/service-unavailable-page";
 import { GlobalRunDrawer } from "@/features/tasks/global-run-drawer";
 import { useAppearance } from "@/hooks/use-appearance";
 import { useAppliedLanguage } from "@/hooks/use-language";
@@ -22,10 +22,12 @@ import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useTier } from "@/hooks/use-tier";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
+import { loginPathFor } from "@/lib/return-to";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {
-  const { data: session, error } = useSessionQuery();
+  const { data: session, error, refetch } = useSessionQuery();
+  const location = useLocation();
   useAppearance();
   useAppliedLanguage();
   const { data: userSettings } = useUserSettingsQuery();
@@ -60,26 +62,11 @@ export function AppShell() {
   };
 
   if (error instanceof ApiError && error.status === 401) {
-    return (
-      <div className="grid min-h-svh place-items-center bg-background px-4 text-center">
-        <div>
-          <h1 className="text-xl font-semibold">Signed out</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Your VERA session has ended.</p>
-          {env.VITE_API_MODE === "mock" && (
-            <button
-              type="button"
-              className="mt-5 rounded-lg border px-4 py-2 text-sm hover:bg-muted"
-              onClick={() => {
-                window.sessionStorage.removeItem(`vera.mock.signed-out.${env.VITE_MOCK_USER}`);
-                window.location.reload();
-              }}
-            >
-              Start a new mock session
-            </button>
-          )}
-        </div>
-      </div>
-    );
+    return <Navigate to={loginPathFor(location)} replace />;
+  }
+
+  if (error !== null) {
+    return <ServiceUnavailablePage onRetry={() => void refetch()} />;
   }
 
   return (

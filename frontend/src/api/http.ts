@@ -47,6 +47,18 @@ export async function postJson<T>(path: string, body: unknown, schema: z.ZodType
   return sendJson("POST", path, body, schema);
 }
 
+// A POST that answers 204 with no body (a login).
+export async function postNoContent(path: string, body: unknown): Promise<void> {
+  const response = await fetch(apiUrl(path), {
+    method: "POST",
+    headers: { ...jsonHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw await failureOf("POST", path, response);
+  }
+}
+
 export async function patchJson<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
   return sendJson("PATCH", path, body, schema);
 }

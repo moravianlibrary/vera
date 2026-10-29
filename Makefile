@@ -24,7 +24,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -45,6 +45,10 @@ frontend-user: ## Set the frontend fake user (make frontend-user MOCK_USER=reade
 	@test -n "$(MOCK_USER)" || { echo "Usage: make frontend-user MOCK_USER=reader"; exit 1; }
 	@case "$(MOCK_USER)" in admin|curator|digitization|staff|reader|no-access|project-user) ;; *) echo "Unknown fake user: $(MOCK_USER). Run 'make frontend-users'."; exit 1 ;; esac
 	cd frontend && bun -e 'const user = Bun.argv[1]; const file = Bun.file(".env.local"); let text = await file.exists() ? await file.text() : await Bun.file(".env.example").text(); if (/^VITE_MOCK_USER=/m.test(text)) text = text.replace(/^VITE_MOCK_USER=.*$$/m, "VITE_MOCK_USER=" + user); else text = text.trimEnd() + "\nVITE_MOCK_USER=" + user + "\n"; await Bun.write(".env.local", text); console.log("Frontend fake user set to " + user + ". Restart the dev server to apply it.");' "$(MOCK_USER)"
+
+frontend-fault: ## Make the mock fail on purpose (make frontend-fault MOCK_FAULT=data; none ends it)
+	@case "$(MOCK_FAULT)" in none|unavailable|data|slow) ;; *) echo "Usage: make frontend-fault MOCK_FAULT=none|unavailable|data|slow"; exit 1 ;; esac
+	cd frontend && bun -e 'const fault = Bun.argv[1]; const file = Bun.file(".env.local"); let text = await file.exists() ? await file.text() : await Bun.file(".env.example").text(); if (/^VITE_MOCK_FAULT=/m.test(text)) text = text.replace(/^VITE_MOCK_FAULT=.*$$/m, "VITE_MOCK_FAULT=" + fault); else text = text.trimEnd() + "\nVITE_MOCK_FAULT=" + fault + "\n"; await Bun.write(".env.local", text); console.log("Mock fault set to " + fault + ". Restart the dev server to apply it.");' "$(MOCK_FAULT)"
 
 # The engine in the foreground; Ctrl-C stops it. Its database is engine/.data/vera.sqlite.
 engine: ## Run the engine in the foreground (ENGINE_PORT=8080)

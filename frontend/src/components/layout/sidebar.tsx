@@ -227,7 +227,7 @@ export function Sidebar({
                 setIsLoggingOut(true);
                 try {
                   await logout();
-                  window.location.assign("/");
+                  window.location.assign("/signed-out");
                 } catch {
                   setMenuError("Could not sign out. Try again.");
                   setIsLoggingOut(false);

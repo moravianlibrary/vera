@@ -101,6 +101,8 @@ describe("getAccessIndex", () => {
       "MZK Keycloak",
       "eduID.cz",
       "Local accounts",
+      "Google",
+      "Seznam",
     ]);
     expect(identityInstances[1]).toMatchObject({ defaultRoleId: "reader" });
   });

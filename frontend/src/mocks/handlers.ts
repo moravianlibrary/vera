@@ -45,6 +45,7 @@ import {
   parseListSliceParams,
   parsePoolSearchParams,
 } from "@vera/contract/lists";
+import { localLoginSchema } from "@vera/contract/login";
 import { messageSubjectKindSchema, messageSubjectParams } from "@vera/contract/messages";
 import {
   mixDraftSchema,
@@ -400,6 +401,12 @@ export function createHandlers(profile: MockUserProfile) {
         : new HttpResponse(null, { status: 204 });
     });
 
+  const enabledIdentity = (instanceId: string) =>
+    database.pluginInstances.find(
+      (instance) =>
+        instance.id === instanceId && instance.isEnabled && instance.settings?.kind === "Identity",
+    );
+
   return [
     // A suspended person's login is refused (ACCESS-suspend).
     http.get(route(apiRoutes.session), () =>
@@ -410,6 +417,50 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     http.delete(route(apiRoutes.sessionLogout), () => {
       window.sessionStorage.setItem(signedOutKey, "1");
+      return new HttpResponse(null, { status: 204 });
+    }),
+    // ACCESS-login-page: the enabled Identity instances, in their order. Local accounts (pt22)
+    // log in with a form; the others redirect.
+    http.get(route(apiRoutes.login), () =>
+      HttpResponse.json(
+        database.pluginInstances
+          .flatMap((instance) =>
+            instance.isEnabled && instance.settings?.kind === "Identity"
+              ? [{ instance, order: instance.settings.order, label: instance.settings.label }]
+              : [],
+          )
+          .sort((first, second) => first.order - second.order)
+          .map(({ instance, label }) => ({
+            instanceId: instance.id,
+            label,
+            entry: instance.implementationId === "pt22" ? "form" : "redirect",
+          })),
+      ),
+    ),
+    // The mock signs in its one profile through any form instance with a password typed; it
+    // checks no password, as it has none to check.
+    http.post(route(`${apiRoutes.login}/:instanceId`), async ({ params, request }) => {
+      const instance = enabledIdentity(String(params.instanceId));
+      if (instance === undefined || instance.implementationId !== "pt22") {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      const credentials = localLoginSchema.safeParse(await request.json());
+      if (!credentials.success) {
+        return new HttpResponse(null, { status: 401 });
+      }
+
+      window.sessionStorage.removeItem(signedOutKey);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    // Mock only: stands in for a provider's redirect and its callback.
+    http.post(route(`${apiRoutes.login}/:instanceId/mock`), ({ params }) => {
+      const instance = enabledIdentity(String(params.instanceId));
+      if (instance === undefined || instance.implementationId === "pt22") {
+        return new HttpResponse(null, { status: 404 });
+      }
+
+      window.sessionStorage.removeItem(signedOutKey);
       return new HttpResponse(null, { status: 204 });
     }),
 

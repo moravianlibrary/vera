@@ -29,6 +29,12 @@ import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { PropertiesPage } from "@/features/properties/properties-page";
 import { RequestsPage } from "@/features/requests/requests-page";
+import { CrashPage } from "@/features/system/crash-page";
+import { ForbiddenPage } from "@/features/system/forbidden-page";
+import { LoginPage } from "@/features/system/login-page";
+import { NoAccessPage } from "@/features/system/no-access-page";
+import { NotFoundPage } from "@/features/system/not-found-page";
+import { SignedOutPage } from "@/features/system/signed-out-page";
 import { SchedulesPage } from "@/features/tasks/schedules-page";
 import { TasksPage } from "@/features/tasks/tasks-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
@@ -85,17 +91,6 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
   }
 }
 
-function NoAccess() {
-  return (
-    <div className="mx-auto max-w-xl px-4 py-20 text-center">
-      <h1 className="text-lg font-semibold">No access yet</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        An administrator has not given this account a role.
-      </p>
-    </div>
-  );
-}
-
 // Sends `/` and unknown paths to the first entry the session holds.
 function Landing() {
   const { data: session } = useSessionQuery();
@@ -104,7 +99,7 @@ function Landing() {
   }
 
   const [first] = visibleNavigation(session);
-  return first === undefined ? <NoAccess /> : <Navigate to={first.path} replace />;
+  return first === undefined ? <NoAccessPage /> : <Navigate to={first.path} replace />;
 }
 
 function Gate({ entryId, children }: { entryId: string; children: React.ReactNode }) {
@@ -113,14 +108,23 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
     return null;
   }
 
-  return canOpenNavigationEntry(session, entryId) ? children : <Navigate to="/" replace />;
+  return canOpenNavigationEntry(session, entryId) ? (
+    children
+  ) : (
+    <ForbiddenPage
+      page={navigationEntries.find((entry) => entry.id === entryId)?.label ?? entryId}
+    />
+  );
 }
 
 const router = createBrowserRouter([
+  { path: "/login", element: <LoginPage />, errorElement: <CrashPage /> },
+  { path: "/signed-out", element: <SignedOutPage /> },
   { path: "/email-notifications/:token", element: <EmailNotificationsPage /> },
   {
     path: "/",
     element: <AppShell />,
+    errorElement: <CrashPage />,
     children: [
       { index: true, element: <Landing /> },
       { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
@@ -168,7 +172,7 @@ const router = createBrowserRouter([
           </Gate>
         ),
       },
-      { path: "*", element: <Navigate to="/" replace /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
 ]);
