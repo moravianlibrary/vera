@@ -1,0 +1,19 @@
+# VERA's chart. Today it holds only the observability stack (DEC-0017, OBS-pipeline); the
+# application's own components join it when the backend exists.
+
+observability:
+  enabled: true
+
+# Values for the ClickStack chart (hyperdxio/helm-charts, clickstack).
+clickstack:
+  hyperdx:
+    # HyperDX does not report its own usage to its makers.
+    usageStatsEnabled: false
+
+# Exposes HyperDX and the OpenTelemetry collector as LoadBalancer services, for a local k3d
+# cluster whose load balancer maps them to localhost. Off outside a local cluster.
+localAccess:
+  enabled: false
+  hyperdxPort: 8300
+  otlpGrpcPort: 4317
+  otlpHttpPort: 4318

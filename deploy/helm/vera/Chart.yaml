@@ -1,0 +1,12 @@
+apiVersion: v2
+name: vera
+description: VERA, the Moravian Library's digitization planner. For now it holds the observability stack (DEC-0017); the application's components join it when the backend exists.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  # HyperDX, ClickHouse and the OpenTelemetry collector (OBS-pipeline).
+  - name: clickstack
+    version: 1.1.1
+    repository: https://hyperdxio.github.io/helm-charts
+    condition: observability.enabled

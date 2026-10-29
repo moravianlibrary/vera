@@ -1,0 +1,41 @@
+{{- /* HyperDX and the OpenTelemetry collector on a local cluster's load balancer (values.yaml, localAccess). */ -}}
+{{- if and .Values.observability.enabled .Values.localAccess.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-local-hyperdx
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: clickstack
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: {{ .Release.Name }}-clickstack
+  ports:
+    - name: app
+      port: {{ .Values.localAccess.hyperdxPort }}
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-local-otel
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: clickstack
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: {{ .Values.localAccess.otlpGrpcPort }}
+      targetPort: 4317
+    - name: otlp-http
+      port: {{ .Values.localAccess.otlpHttpPort }}
+      targetPort: 4318
+{{- end }}

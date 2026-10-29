@@ -24,7 +24,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check obs-cluster obs-up obs-status obs-down obs-cluster-delete
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -210,3 +210,27 @@ set-version: ## Set VERSION and frontend package version (VERSION=x.y.z)
 	cd frontend && bun -e 'const p = await Bun.file("package.json").json(); p.version = "$(VERSION)"; await Bun.write("package.json", JSON.stringify(p, null, 2) + "\n")'
 
 open-client: dev-frontend ## Start the client
+
+# The observability stack (DEC-0017) in a local k3d cluster of its own: HyperDX on
+# http://localhost:8300, OpenTelemetry on localhost:4317 (gRPC) and :4318 (HTTP).
+K3D_CLUSTER ?= vera
+OBS_CONTEXT = k3d-$(K3D_CLUSTER)
+
+obs-cluster: ## Create the local k3d cluster for the observability stack, if it is missing
+	@k3d cluster list $(K3D_CLUSTER) >/dev/null 2>&1 || k3d cluster create $(K3D_CLUSTER) \
+		-p "8300:8300@loadbalancer" -p "4317:4317@loadbalancer" -p "4318:4318@loadbalancer" --wait
+	@k3d cluster start $(K3D_CLUSTER) >/dev/null 2>&1 || true
+
+obs-up: obs-cluster ## Install or upgrade the local observability stack (HyperDX on http://localhost:8300)
+	helm dependency build deploy/helm/vera
+	helm upgrade --install vera deploy/helm/vera -f deploy/helm/vera/values-local.yaml \
+		--namespace vera --create-namespace --kube-context $(OBS_CONTEXT) --wait --timeout 15m
+
+obs-status: ## Show the local observability stack's pods and services
+	kubectl --context $(OBS_CONTEXT) -n vera get pods,svc
+
+obs-down: ## Uninstall the local observability stack; the cluster and its volumes stay
+	helm uninstall vera --namespace vera --kube-context $(OBS_CONTEXT)
+
+obs-cluster-delete: ## Delete the local k3d cluster, with everything it recorded
+	k3d cluster delete $(K3D_CLUSTER)

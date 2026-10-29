@@ -1,0 +1,18 @@
+# A local k3d cluster (make obs-up): HyperDX on http://localhost:8300, OTLP on localhost:4317
+# (gRPC) and localhost:4318 (HTTP). Small volumes; k3d's local-path storage.
+
+clickstack:
+  global:
+    storageClassName: local-path
+  hyperdx:
+    frontendUrl: "http://localhost:8300"
+  clickhouse:
+    persistence:
+      dataSize: 5Gi
+      logSize: 1Gi
+  mongodb:
+    persistence:
+      dataSize: 1Gi
+
+localAccess:
+  enabled: true
