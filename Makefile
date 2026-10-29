@@ -115,10 +115,15 @@ dev-frontend-stop: ## Stop the background frontend dev server
 	rm -f $(FRONTEND_PID)
 
 # Shell helpers for the per-user servers, the same pid-and-start-time scheme as above:
-# `port_of <user>` prints the user's port, `is_running <pidfile>` checks the pid file is live.
+# `port_of <user>` prints the user's port; `host_of <user>` prints the loopback address the user's
+# server listens on. Each has its own, so each browser window keeps its own session cookie (cookies
+# are per host, not per port). `is_running <pidfile>` checks the pid file is live.
 roles-shell = \
 	port_of() { i=1; for user in $(MOCK_USERS); do \
 		if [ "$$user" = "$$1" ]; then echo $$(($(ROLES_BASE_PORT) + i)); return; fi; \
+		i=$$((i + 1)); done; }; \
+	host_of() { i=1; for user in $(MOCK_USERS); do \
+		if [ "$$user" = "$$1" ]; then echo "127.0.0.$$i"; return; fi; \
 		i=$$((i + 1)); done; }; \
 	is_running() { test -f "$$1" && \
 		test "$$(ps -o lstart= -p "$$(head -n 1 "$$1")" 2>/dev/null)" = "$$(tail -n 1 "$$1")"; }
@@ -127,17 +132,18 @@ dev-roles: frontend-env $(engine-for-api) ## Run a background dev server per fak
 	@$(roles-shell); mkdir -p $(ROLES_DIR); \
 	for role in $(ROLES); do \
 		port=$$(port_of "$$role"); \
+		host=$$(host_of "$$role"); \
 		if [ -z "$$port" ]; then echo "Unknown fake user: $$role. Run 'make frontend-users'."; exit 1; fi; \
 		pidfile=$(ROLES_DIR)/$$role.pid; log=$(ROLES_DIR)/$$role.log; \
-		if is_running "$$pidfile"; then echo "$$role already running on http://localhost:$$port/"; continue; fi; \
+		if is_running "$$pidfile"; then echo "$$role already running on http://$$host:$$port/"; continue; fi; \
 		rm -f "$$pidfile"; \
 		( cd frontend && VITE_MOCK_USER="$$role" $(api-env) setsid sh -c \
-			'{ echo $$$$; ps -o lstart= -p $$$$; } > "$$0.tmp" && mv "$$0.tmp" "$$0" && exec bun run dev --port "$$1" --strictPort' \
-			"../$$pidfile" "$$port" > "../$$log" 2>&1 < /dev/null & ); \
+			'{ echo $$$$; ps -o lstart= -p $$$$; } > "$$0.tmp" && mv "$$0.tmp" "$$0" && exec bun run dev --host "$$2" --port "$$1" --strictPort' \
+			"../$$pidfile" "$$port" "$$host" > "../$$log" 2>&1 < /dev/null & ); \
 		while ! test -f "$$pidfile"; do sleep 0.1; done; \
 		tries=0; while ! grep -q "Local:" "$$log" && is_running "$$pidfile" && [ $$tries -lt 100 ]; do \
 			sleep 0.1; tries=$$((tries + 1)); done; \
-		if grep -q "Local:" "$$log"; then echo "$$role on http://localhost:$$port/"; \
+		if grep -q "Local:" "$$log"; then echo "$$role on http://$$host:$$port/"; \
 		else echo "$$role did not start, see $$log"; fi; \
 	done
 
@@ -154,7 +160,7 @@ dev-roles-stop: ## Stop the per-user dev servers (ROLES="admin reader" for some)
 dev-roles-status: ## Show which per-user dev servers run, and where
 	@$(roles-shell); \
 	for role in $(MOCK_USERS); do \
-		if is_running "$(ROLES_DIR)/$$role.pid"; then echo "  $$role	http://localhost:$$(port_of "$$role")/"; \
+		if is_running "$(ROLES_DIR)/$$role.pid"; then echo "  $$role	http://$$(host_of "$$role"):$$(port_of "$$role")/"; \
 		else echo "  $$role	stopped"; fi; \
 	done
 
@@ -162,7 +168,7 @@ dev-roles-open: ## Open every running per-user dev server in the browser
 	@$(roles-shell); opened=0; \
 	for role in $(ROLES); do \
 		if is_running "$(ROLES_DIR)/$$role.pid"; then \
-			$(OPEN) "http://localhost:$$(port_of "$$role")/" > /dev/null 2>&1 & opened=1; fi; \
+			$(OPEN) "http://$$(host_of "$$role"):$$(port_of "$$role")/" > /dev/null 2>&1 & opened=1; fi; \
 	done; \
 	if [ $$opened -eq 0 ]; then echo "No per-user dev server is running. Start them with 'make dev-roles'."; fi
 
