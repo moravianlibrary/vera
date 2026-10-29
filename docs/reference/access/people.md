@@ -73,6 +73,12 @@ logs in with a form (local accounts) shows a form; any other shows a button that
 With a single redirecting instance there is no login page. The login page also offers the
 interface language ([UI-language](../ui/navigation.md#ui-language)).
 
+#### ACCESS-login-return
+
+A person sent to log in from a page of VERA comes back to that page, its address included, once
+logged in, through any instance. Only a path within VERA is kept; an address elsewhere is
+dropped and the person lands on their first destination.
+
 #### ACCESS-last-identity
 
 The last enabled Identity instance cannot be disabled or deleted.

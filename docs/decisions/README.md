@@ -18,6 +18,8 @@ decision record keeps the *why*; the rules it led to are in the [reference](../r
 | [DEC-0011](DEC-0011-registry-states-are-evidence.md) | Registry states are evidence, not status |
 | [DEC-0012](DEC-0012-relationships-that-do-not-exist.md) | Some relationships deliberately do not exist |
 | [DEC-0013](DEC-0013-properties-are-admin-defined.md) | Properties are defined by an admin, typed, and sourced |
+| [DEC-0014](DEC-0014-several-publication-links.md) | An iteration may be published in several places |
+| [DEC-0015](DEC-0015-public-requests-by-entry-link.md) | The public asks through entry links, with Google or Seznam |
 
 A new record takes the next number as its ID, `DEC-NNNN`, and its file is named
 `DEC-NNNN-title.md`. Cite a decision by its ID, as you would a rule. A record is never edited to

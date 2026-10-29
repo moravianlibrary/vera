@@ -17,7 +17,7 @@ stateDiagram-v2
   Planned --> Ready: taken off, or its list deleted
   InProgress --> Ready: taken off, or its list deleted
   InProgress --> Digitized: its list marked Done
-  Digitized --> Published: link set
+  Digitized --> Published: first link set
 ```
 
 #### LC-ITER-ingest
@@ -73,5 +73,20 @@ The earlier iteration is history and takes no further acts.
 
 #### LC-ITER-published
 
-Setting the link where the scan can be read makes it **Published**. Changing the link later is
-logged as such.
+The first link where the scan can be read makes it **Published**. It stays Published while it
+holds any link ([DEC-0014](../../decisions/DEC-0014-several-publication-links.md)).
+
+#### LC-ITER-links
+
+An iteration holds a set of links, each with where it is (the Link or Publication detector
+instance that made it canonical, or *web address*), who set it and when. The same canonical
+address is held once.
+- **Primary:** the first link set is primary until someone makes another one primary. Wherever
+  one link is shown or sent, it is the primary one.
+- **People** add, replace, remove and make primary. The last link cannot be removed; a wrong one
+  is replaced.
+- **A Publication detector** only adds. It never removes or replaces a link a person set, and
+  finding an address already held changes nothing.
+
+> **Open — [L69](../../ledger.md#l69-several-publication-links).** Not built: the frontend and
+> mock hold one link.

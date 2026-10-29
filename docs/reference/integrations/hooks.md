@@ -14,7 +14,7 @@ file) to a recipient, with its own batching and retries.
 | Group | Events |
 |---|---|
 | Requests | `request.created` · `request.decided` · `request.held` |
-| Documents | `iteration.ingested` · `iteration.ingest_failed` · `iteration.validated` · `iteration.restricted` · `iteration.cancelled` · `iteration.listed` · `iteration.digitized` · `iteration.published` · `iteration.classified` |
+| Documents | `iteration.ingested` · `iteration.ingest_failed` · `iteration.validated` · `iteration.restricted` · `iteration.cancelled` · `iteration.listed` · `iteration.digitized` · `iteration.published` · `iteration.link_added` · `iteration.link_changed` · `iteration.classified` |
 | Records | `document.relinked` · `document.property_changed` · `iteration.property_changed` · `document.registry_changed` |
 | Lists | `list.created` · `list.dates_changed` · `list.started` · `list.done` · `list.deleted` |
 | Tasks | `task.failed` · `task.finished` |
@@ -145,7 +145,7 @@ text the act took, if it took one.
 Next to `subject`, the event carries what a receiver needs without calling back:
 - an iteration, request or document event: the document (catalog ID, unit, title, type, shelf
   mark, identifiers, page count and its other properties) and the iteration's category, priority,
-  project, list and link;
+  project, list, `link` (the primary one) and `links` (every link, each with where it is);
 - a list event: the list, and every document on it, each as above, so a delivery plugin can
   turn it into what staff need (a pick list of what to fetch from the stacks);
 - a task event: the run, its plugin instance, trigger and public error.

@@ -82,6 +82,33 @@ each code lands in the scan as it is read, and a photo with no code read says so
 The catalog ways are one: the searchable catalogs first, then, for each catalog that cannot be
 searched, where to find a record and a field for its link or ID.
 
+#### ACT-entry-link
+
+An outside portal links to `/ask` to open *Propose…* with one item filled in
+([DEC-0015](../../decisions/DEC-0015-public-requests-by-entry-link.md)):
+
+| Parameter | Meaning |
+|---|---|
+| `record` | the catalog record's ID or link, read as *Record link* reads it; or |
+| `identifier` and `type` | one identifier of a type, read as *Type it* reads it |
+| `unit` | the volume or issue, optional |
+| `reason` | the public reason, optional, at most the reason field's length |
+| `source` | the key of an enabled `EntryLink` Input instance, optional |
+| `return` | where *Back to …* goes after submitting, optional |
+
+- The item lands and is checked like any other ([LC-REQ-check](../lifecycles/request.md#lc-req-check)),
+  so a *mine*, *in VERA* or *which unit?* answer shows before anything is sent. The person
+  confirms with *Propose*; the link alone submits nothing.
+- A person signed out logs in first and comes back to the same link
+  ([ACCESS-login-return](people.md#access-login-return)). One without `request.create` sees
+  *You have no access yet*.
+- The submission's batch keeps the source when `source` names an enabled instance; an unknown or
+  disabled one is ignored, and the item still lands.
+- *Back to …*, named after the source, shows only when `return` is on an origin that source's
+  instance allows. Otherwise there is no way back, and never a redirect to an address the link
+  carried.
+- Anything the parameters cannot read lands as an item that says why, as a typed one would.
+
 ## Request review
 
 | ID | Act | Needs | Allowed when | Writes |
@@ -103,7 +130,10 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
 | `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |
-| `ACT-publish` | *Set link…* | `iteration.publish` | digitized (409); a web address, or a PID or viewer's address a Link instance reads, which it makes canonical (422); a new link (422) | progress Published; log *Published* or *Link changed*; hook `iteration.published` |
+| `ACT-publish` | *Add link…* | `iteration.publish` | digitized (409); a web address, or a PID or viewer's address a Link instance reads, which it makes canonical (422); not already held (422) | the link added ([LC-ITER-links](../lifecycles/iteration.md#lc-iter-links)), primary if it is the first; the first makes progress Published; log *Published* or *Link added*; hook `iteration.published` for the first, `iteration.link_added` after |
+| `ACT-link-replace` | *Replace link…* | `iteration.publish` | the link is held (404); the new one read as for *Add link…* (422) and not already held (422) | the address replaced in place, primary kept; log *Link changed* from what to what; hook `iteration.link_changed` |
+| `ACT-link-primary` | *Make primary* | `iteration.publish` | the link is held and not primary (409) | it becomes primary; log *Primary link changed*; hook `iteration.link_changed` |
+| `ACT-link-remove` | *Remove link…* | `iteration.publish` | the link is held (404); not the last (409) | removed, and if it was primary the oldest remaining one becomes primary; log *Link removed*; hook `iteration.link_changed` |
 | `ACT-overrule` | *Overrule restriction…* | `restriction.overrule` | a restriction stands and is not overruled (409) | the overrule with a staff note, beside the rule's finding; gates move progress; log *Restriction overruled* |
 
 *Cancel…* at `custody` covers an item already on a list: the curator is responsible for it, the

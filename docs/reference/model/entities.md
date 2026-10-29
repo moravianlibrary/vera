@@ -50,7 +50,9 @@ produces its iteration and the others follow it ([LC-REQ-one-iteration](../lifec
 A **batch** is one submission of requests, by a person or by an agent's harvest: its name, who
 submitted it and when. The person may name it; a batch nobody named is named by when it was
 submitted, in the library's time (`2026-10-15 14:32`). How each item came in is not kept, since one batch
-mixes the ways in ([ACT-ways-in](../access/acts.md#act-ways-in)). It is what an administrator
+mixes the ways in ([ACT-ways-in](../access/acts.md#act-ways-in)); a batch that started from an
+entry link keeps its source, the `EntryLink` instance
+([ACT-entry-link](../access/acts.md#act-entry-link)). It is what an administrator
 retries and what a decider can approve together. Every submission is a batch, one item included; a batch is shown as one only when it
 holds two items or more.
 

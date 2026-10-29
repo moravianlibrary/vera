@@ -29,8 +29,8 @@ Several instances of one implementation may run side by side (one catalog adapte
 | Custody | places proposals in request custodies |
 | Classifier | suggests the category a proposal is approved into |
 | List generator | drafts a digitization list for an intention |
-| Link | turns a PID or a viewer's address pasted into *Set link…* into the canonical link |
-| Publication detector | finds where a digitized item was published and sets its link, as its agent |
+| Link | turns a PID or a viewer's address pasted into *Add link…* into the canonical link, and names where it is |
+| Publication detector | finds where a digitized item was published and adds the link, as its agent; never removes one |
 | Message | where a message act hands a conversation to |
 | Delivery channel | where a hook sends: email, chat, webhook, file |
 

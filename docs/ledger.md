@@ -149,6 +149,36 @@ decided on 2026-10-16: a changed value replaces the document's own field, as the
 authority ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)), and the *Rechecked*
 entry names the earlier value. → engine.
 
+### L69: Several publication links
+
+Rules: [LC-ITER-links](reference/lifecycles/iteration.md#lc-iter-links),
+[the iteration acts](reference/access/acts.md#iterations),
+[HOOK-subject-data](reference/integrations/hooks.md#hook-subject-data).
+
+Decided on 2026-10-29 ([DEC-0014](decisions/DEC-0014-several-publication-links.md)). The
+contract and mock hold one `publishedLink` per iteration and one *Set link…* act. They need a
+set of links with where each is, who set it, when and which is primary; the four acts; and the
+two new hook events. The record shows every link, primary first; a list or table shows the
+primary one with a count of the others. → engine, then frontend.
+
+### L70: Entry links
+
+Rules: [ACT-entry-link](reference/access/acts.md#act-entry-link),
+[ENT-batch](reference/model/entities.md#ent-batch),
+[ACCESS-login-return](reference/access/people.md#access-login-return).
+
+Decided on 2026-10-29 ([DEC-0015](decisions/DEC-0015-public-requests-by-entry-link.md)). VERA
+takes over Tlačítko digitalizovat. Needs:
+- `/ask` in the frontend, opening *Propose…* over the reader's start page with the item landed;
+- the `EntryLink` Input implementation (configuration: name, allowed return origins);
+- the batch's `source`, shown on the batch and filterable on Requests;
+- the return to the page after login, which waits on the login page ([L4](#l4-logging-in));
+- Google and Seznam as Identity instances in the engine's fakes
+  ([plugin-catalog.md](develop/plugin-catalog.md)).
+
+Not settled: which portal hosts the button, and so the first instance's return origin. Old
+requests from the mini app are moved by hand, not imported. → engine, then frontend.
+
 ## For part 5 (writing and i18n)
 
 ### L37: Czech terms
