@@ -44,3 +44,5 @@ export function sessionCookieOf(response: Response): string | null {
   const match = /(?:^|,\s*)vera_session=([^;,]*)/.exec(cookie);
   return match?.[1] || null;
 }
+
+export const cookieOf = sessionCookieOf;

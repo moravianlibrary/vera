@@ -5,7 +5,8 @@
 // It grows with the engine, a step at a time.
 
 import { sessionSchema } from "@vera/domain/entities";
-import type { z } from "zod";
+import { z } from "zod";
+import { localLoginSchema, loginEntrySchema } from "./login";
 import { apiRoutes } from "./routes";
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -19,6 +20,8 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   body?: z.ZodType<Body>;
   // Absent for an endpoint that answers 204 with no body.
   response?: z.ZodType<Value>;
+  redirects?: boolean;
+  public?: boolean;
   // The codes of the refusals it may answer (ACT-refusal), besides each status's own.
   codes: readonly string[];
 }
@@ -31,6 +34,43 @@ function spec<Params = undefined, Query = undefined, Body = undefined, Value = u
 }
 
 export const endpoints = {
+  loginEntries: spec({
+    method: "GET",
+    path: apiRoutes.login,
+    summary: "Enabled ways to log in.",
+    response: z.array(loginEntrySchema),
+    codes: [],
+    public: true,
+  }),
+  loginForm: spec({
+    method: "POST",
+    path: `${apiRoutes.login}/:instanceId`,
+    summary: "Logs in with a local account.",
+    params: z.object({ instanceId: z.string() }),
+    body: localLoginSchema,
+    codes: ["access.suspended"],
+    public: true,
+  }),
+  loginStart: spec({
+    method: "GET",
+    path: `${apiRoutes.login}/:instanceId`,
+    summary: "Starts a provider login.",
+    params: z.object({ instanceId: z.string() }),
+    query: z.object({ returnTo: z.string().optional() }),
+    codes: [],
+    redirects: true,
+    public: true,
+  }),
+  loginCallback: spec({
+    method: "GET",
+    path: `${apiRoutes.login}/:instanceId/callback`,
+    summary: "Completes a provider login.",
+    params: z.object({ instanceId: z.string() }),
+    query: z.object({ flow: z.string(), code: z.string() }),
+    codes: ["access.suspended", "login.expired"],
+    redirects: true,
+    public: true,
+  }),
   session: spec({
     method: "GET",
     path: apiRoutes.session,

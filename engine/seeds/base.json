@@ -11350,6 +11350,52 @@
         "isDeleted": false
       },
       {
+        "id": "pi41",
+        "name": "Google",
+        "implementationId": "pt20",
+        "configuration": {
+          "issuer": "accounts.google.com",
+          "client": "vera-mzk",
+          "client_secret": "g-7c2e"
+        },
+        "triggers": ["OnLogin"],
+        "settings": {
+          "kind": "Identity",
+          "label": "Log in with Google",
+          "order": 4,
+          "userIdClaim": "sub",
+          "defaultRoleId": "reader",
+          "matchByEmail": true,
+          "mappings": []
+        },
+        "isEnabled": true,
+        "createdAt": "2026-10-29",
+        "lastRunAt": null
+      },
+      {
+        "id": "pi42",
+        "name": "Seznam",
+        "implementationId": "pt20",
+        "configuration": {
+          "issuer": "login.szn.cz",
+          "client": "vera-mzk",
+          "client_secret": "s-41b9"
+        },
+        "triggers": ["OnLogin"],
+        "settings": {
+          "kind": "Identity",
+          "label": "Log in with Seznam",
+          "order": 5,
+          "userIdClaim": "sub",
+          "defaultRoleId": "reader",
+          "matchByEmail": false,
+          "mappings": []
+        },
+        "isEnabled": true,
+        "createdAt": "2026-10-29",
+        "lastRunAt": null
+      },
+      {
         "id": "pi26",
         "name": "Email",
         "implementationId": "pt23",
@@ -15464,6 +15510,100 @@
       "u8": "knovotna",
       "u9": "rsimek"
     },
-    "slackWorkspace": "mzk"
+    "slackWorkspace": "mzk",
+    "identityAccounts": {
+      "pi22": [
+        {
+          "externalId": "jnovakova",
+          "name": "Jana Nováková",
+          "email": "jana.novakova@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-curators"]
+        },
+        {
+          "externalId": "msvoboda",
+          "name": "Martin Svoboda",
+          "email": "martin.svoboda@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-digitization"]
+        },
+        {
+          "externalId": "pdvorak",
+          "name": "Petr Dvořák",
+          "email": "petr.dvorak@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-staff"]
+        },
+        {
+          "externalId": "ehorakova",
+          "name": "Eva Horáková",
+          "email": "eva.horakova@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-staff"]
+        },
+        {
+          "externalId": "knovotna",
+          "name": "Kateřina Novotná",
+          "email": "katerina.novotna@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-staff"]
+        },
+        {
+          "externalId": "rsimek",
+          "name": "Radek Šimek",
+          "email": "radek.simek@mzk.cz",
+          "emailVerified": true,
+          "claims": ["group mzk-staff"]
+        },
+        {
+          "externalId": "bez.skupiny",
+          "name": "Bez Skupiny",
+          "email": "bez.skupiny@mzk.cz",
+          "emailVerified": true,
+          "claims": []
+        }
+      ],
+      "pi23": [
+        {
+          "externalId": "marek@muni.cz",
+          "name": "Tomáš Marek",
+          "email": "tomas.marek@muni.cz",
+          "emailVerified": true,
+          "claims": []
+        },
+        {
+          "externalId": "nova.ctenarka@muni.cz",
+          "name": "Nová Čtenářka",
+          "email": "nova.ctenarka@muni.cz",
+          "emailVerified": true,
+          "claims": []
+        },
+        {
+          "externalId": "eduid-u1",
+          "name": "Jana Nováková",
+          "email": "JANA.NOVAKOVA@MZK.CZ",
+          "emailVerified": true,
+          "claims": []
+        }
+      ],
+      "pi41": [
+        {
+          "externalId": "google-1001",
+          "name": "Anna Veřejná",
+          "email": "anna.verejna@gmail.com",
+          "emailVerified": true,
+          "claims": []
+        }
+      ],
+      "pi42": [
+        {
+          "externalId": "seznam-2002",
+          "name": "Petr Čtenář",
+          "email": "petr.ctenar@seznam.cz",
+          "emailVerified": true,
+          "claims": []
+        }
+      ]
+    }
   }
 }

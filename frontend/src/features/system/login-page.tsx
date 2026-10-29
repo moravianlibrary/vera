@@ -1,6 +1,7 @@
 // The login system page: ordered Identity entries, return path and UI-language pick (ACCESS-login-page).
 
 import { useQuery } from "@tanstack/react-query";
+import { safeReturnTo } from "@vera/contract/return-to";
 import { languages } from "@vera/contract/user-settings";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
@@ -12,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { i18n } from "@/i18n";
 import { languageNames, pickLoginLanguage } from "@/i18n/language";
-import { safeReturnTo } from "@/lib/return-to";
 import { SystemDivider, SystemPage } from "./system-page";
 
 export function LoginPage() {

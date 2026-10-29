@@ -1,4 +1,6 @@
 // System page: local account sign-up (ACCESS-sign-up).
+
+import { safeReturnTo } from "@vera/contract/return-to";
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
@@ -7,7 +9,6 @@ import { listMockSystemMail, sendVerificationAgain, signUp } from "@/api/sign-up
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { env } from "@/config/env";
-import { safeReturnTo } from "@/lib/return-to";
 import { SystemPage } from "./system-page";
 
 function MockMail({ email }: { email: string }) {

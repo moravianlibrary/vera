@@ -11,6 +11,7 @@ import { applySchema, dropEverything, openDatabase, readSchema } from "./db";
 import { apiPrefix, serveApi } from "./http/api";
 import type { Endpoint } from "./http/endpoint";
 import { problem } from "./http/problem";
+import { loginEndpoints } from "./identity/endpoints";
 import type { Jobs } from "./jobs";
 import { createJobs } from "./jobs";
 import type { Outbox } from "./outbox";
@@ -44,7 +45,7 @@ export interface Engine {
   close(): void;
 }
 
-export const endpoints: readonly Endpoint[] = [...sessionEndpoints];
+export const endpoints: readonly Endpoint[] = [...loginEndpoints, ...sessionEndpoints];
 
 const seedKey = "seed";
 const schemaKey = "schema";

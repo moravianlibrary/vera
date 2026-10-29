@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { loginPathFor, safeReturnTo } from "@/lib/return-to";
+import { describe, expect, it } from "bun:test";
+import { loginPathFor, safeReturnTo } from "./return-to";
 
 describe("safeReturnTo", () => {
   it("keeps a VERA path and its query", () => {

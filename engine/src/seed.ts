@@ -41,6 +41,27 @@ export const seedSchema = z.object({
     categories: z.array(categorySchema),
     groups: z.array(accessGroupSchema),
     categoryMembers: z.record(id, z.array(id)),
+    pluginImplementations: z
+      .array(
+        z.looseObject({ id, name: z.string(), kind: z.string(), versions: z.array(z.unknown()) }),
+      )
+      .optional(),
+    pluginInstances: z
+      .array(
+        z.looseObject({
+          id,
+          name: z.string(),
+          implementationId: id,
+          configuration: z.record(z.string(), z.unknown()),
+          settings: z.unknown().nullable().optional(),
+          triggers: z.array(z.string()),
+          isEnabled: z.boolean(),
+          isDeleted: z.boolean().optional(),
+          createdAt: z.string(),
+          lastRunAt: z.string().nullable().optional(),
+        }),
+      )
+      .optional(),
   }),
   // Data the fake plugins answer from: the catalog's records and the like.
   fakes: z.record(z.string(), z.unknown()).optional(),
@@ -149,6 +170,63 @@ export function loadSeed(db: Database, seed: Seed): void {
   for (const [categoryId, userIds] of Object.entries(categoryMembers)) {
     for (const userId of userIds) {
       insertCategoryMember.run(categoryId, userId);
+    }
+  }
+
+  const insertImplementation = db.query(
+    "INSERT INTO plugin_implementations (id, name, kind, versions) VALUES (?, ?, ?, ?)",
+  );
+  for (const implementation of seed.collections.pluginImplementations ?? []) {
+    insertImplementation.run(
+      implementation.id,
+      implementation.name,
+      implementation.kind,
+      JSON.stringify(implementation.versions),
+    );
+  }
+  const insertInstance = db.query(
+    `INSERT INTO plugin_instances (id, name, implementation_id, configuration, settings, triggers, is_enabled, is_deleted, created_at, last_run_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  for (const instance of seed.collections.pluginInstances ?? []) {
+    insertInstance.run(
+      instance.id,
+      instance.name,
+      instance.implementationId,
+      JSON.stringify(instance.configuration),
+      instance.settings == null ? null : JSON.stringify(instance.settings),
+      JSON.stringify(instance.triggers),
+      instance.isEnabled ? 1 : 0,
+      instance.isDeleted ? 1 : 0,
+      instance.createdAt,
+      instance.lastRunAt ?? null,
+    );
+  }
+  const identityAccounts = seed.fakes?.identityAccounts as
+    | Record<
+        string,
+        {
+          externalId: string;
+          name: string;
+          email: string | null;
+          emailVerified: boolean;
+          claims: string[];
+        }[]
+      >
+    | undefined;
+  const insertFake = db.query(
+    "INSERT INTO fake_identity_accounts (instance_id, external_id, name, email, email_verified, claims) VALUES (?, ?, ?, ?, ?, ?)",
+  );
+  for (const [instanceId, accounts] of Object.entries(identityAccounts ?? {})) {
+    for (const account of accounts) {
+      insertFake.run(
+        instanceId,
+        account.externalId,
+        account.name,
+        account.email,
+        account.emailVerified ? 1 : 0,
+        JSON.stringify(account.claims),
+      );
     }
   }
 }

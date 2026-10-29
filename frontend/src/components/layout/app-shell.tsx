@@ -7,6 +7,7 @@
 // the root size.
 // TODO(rrandiak): phone gestures (component-interfaces.md §8.1); labels move to i18n.
 
+import { loginPathFor } from "@vera/contract/return-to";
 import { useLayoutEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { ApiError } from "@/api/http";
@@ -22,7 +23,6 @@ import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useTier } from "@/hooks/use-tier";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
-import { loginPathFor } from "@/lib/return-to";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {

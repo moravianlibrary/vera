@@ -8,6 +8,7 @@ import { ClockError } from "./clock";
 import type { Engine } from "./engine";
 import { matchPath } from "./http/match";
 import { fieldErrorsOf, problem } from "./http/problem";
+import { identityInstance } from "./identity/instances";
 import { outboxChannels } from "./outbox";
 import { SeedNotFound } from "./seed";
 
@@ -43,6 +44,43 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
     request.method === method && matchPath(pattern, path) !== null;
 
   try {
+    const identityPage = matchPath("/identity/:instanceId", path);
+    if (request.method === "GET" && identityPage !== null) {
+      const instanceId = identityPage.instanceId;
+      if (instanceId === undefined) return problem(404, "There is no enabled Identity instance.");
+      const instance = identityInstance(engine, instanceId);
+      if (instance === null) return problem(404, "There is no enabled Identity instance.");
+      const flow = url.searchParams.get("flow") ?? "";
+      const accounts = engine.db
+        .query<
+          { external_id: string; name: string; email: string | null; claims: string },
+          [string]
+        >(
+          "SELECT external_id, name, email, claims FROM fake_identity_accounts WHERE instance_id = ? ORDER BY rowid",
+        )
+        .all(instance.id);
+      const escapeHtml = (value: string) =>
+        value.replace(
+          /[&<>"']/g,
+          (char) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+              char as "&" | "<" | ">" | '"' | "'"
+            ] ?? char,
+        );
+      const rows = accounts
+        .map((account) => {
+          const href = `/api/login/${encodeURIComponent(instance.id)}/callback?flow=${encodeURIComponent(flow)}&code=${encodeURIComponent(account.external_id)}`;
+          return `<li><a href="${escapeHtml(href)}">${escapeHtml(account.name)}</a> — ${escapeHtml(account.email ?? "")} — ${escapeHtml(JSON.parse(account.claims).join(", "))}</li>`;
+        })
+        .join("");
+      return new Response(
+        `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(instance.settings.label)}</title></head><body><h1>${escapeHtml(instance.settings.label)}</h1><ul>${rows}</ul></body></html>`,
+        {
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        },
+      );
+    }
+
     if (is("POST", "/reset")) {
       const change = resetSchema.safeParse(await bodyOf(request));
       if (!change.success) {

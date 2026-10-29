@@ -1,6 +1,6 @@
 // ACCESS-sign-up, ACCESS-verify-email and ACCESS-password-reset in the in-memory mock.
 import type { PasswordReset, SignUp } from "@vera/contract/login";
-import { safeReturnTo } from "@/lib/return-to";
+import { safeReturnTo } from "@vera/contract/return-to";
 import { addLocalAccountUser } from "@/mocks/access";
 import { database } from "@/mocks/database";
 import type { Outcome } from "@/mocks/mutations";
