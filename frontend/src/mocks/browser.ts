@@ -22,7 +22,14 @@ window.setInterval(() => {
   const userId = resolveSession(env.VITE_MOCK_USER).user.id;
   for (const push of flushWatchlistPush(new Date(), [userId])) {
     if ("Notification" in window && Notification.permission === "granted") {
-      new Notification(push.title, { body: push.body, tag: `watchlist-${push.watchlistId}` });
+      const notification = new Notification(push.title, {
+        body: push.body,
+        tag: `watchlist-${push.watchlistId}`,
+      });
+      notification.onclick = () => {
+        notification.close();
+        window.location.assign(push.url);
+      };
     }
   }
 }, pushQuietMilliseconds);

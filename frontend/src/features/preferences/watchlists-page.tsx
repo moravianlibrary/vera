@@ -120,6 +120,14 @@ function WatchlistDirectory({
     enabled: canShare && isSystem,
   });
   const watchlists = isSystem ? managedSystem : visibleWatchlists;
+  const selectedWatchlist = watchlists.find((watchlist) => watchlist.id === selectedId);
+  useEffect(() => {
+    if (selectedWatchlist !== undefined) {
+      document
+        .getElementById(`watchlist-${selectedWatchlist.id}`)
+        ?.scrollIntoView?.({ block: "center" });
+    }
+  }, [selectedWatchlist]);
   const visibleIds = new Set(visibleWatchlists.map(({ id }) => id));
   const { create, update, remove, updateViewer } = useWatchlistMutations();
   const [editing, setEditing] = useState<string | null>(null);

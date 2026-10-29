@@ -85,6 +85,7 @@ A push names the watchlist and the records that entered it: the first three by n
 *+N more*. Pushes are batched per person and watchlist, in seconds: the batch is sent once
 nothing new has entered for 5 seconds, and 30 seconds after its first record at most. Entries
 the person opened before it is sent are left out, and if none remain nothing is pushed.
+Clicking a push opens Preferences → Watchlists with that watchlist selected.
 
 #### WATCH-system-change
 
