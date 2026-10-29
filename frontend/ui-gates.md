@@ -73,7 +73,7 @@ by `bun run check:ui` once session U1 of `closure-plan.md` lands; until then the
   | `text-base` | 1rem | dialog titles |
   | `text-lg` / `text-xl` | — | page titles, system pages |
 
-  No `text-[…]`. **(check)** Do not shrink type to make a layout fit.
+  No `text-[…]`. A new step is also registered in `frontend/src/lib/utils.ts`, or cn() drops it. **(check)** Do not shrink type to make a layout fit.
 - **G-STYLE-3** Radius: `rounded-xs` (0.25rem) small marks, checkboxes and key caps,
   `rounded-md` controls, `rounded-lg` cards, panels and popovers, `rounded-full` pills, dots and
   avatars. Edge-only radii (`rounded-l`, `rounded-t`) are allowed for joined segments. No bare
