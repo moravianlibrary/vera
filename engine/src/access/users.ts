@@ -7,7 +7,7 @@ import { problem } from "../http/problem";
 import { accessUser, groupsOf, requireManage } from "./index";
 import { rolesOf } from "./session";
 
-function nextUserId(engine: Engine) {
+export function nextUserId(engine: Engine) {
   const ids = engine.db
     .query<{ id: string }, []>("SELECT id FROM users")
     .all()

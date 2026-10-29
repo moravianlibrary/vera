@@ -26,7 +26,15 @@ import {
   roleImpactSchema,
   userGroupsSchema,
 } from "./access";
-import { localLoginSchema, loginEntrySchema } from "./login";
+import {
+  emailOnlySchema,
+  localLoginSchema,
+  loginEntrySchema,
+  passwordResetSchema,
+  signUpSchema,
+  tokenSchema,
+  verifiedSchema,
+} from "./login";
 import { apiRoutes } from "./routes";
 import { userSettingsChangeSchema, userSettingsSchema } from "./user-settings";
 
@@ -90,6 +98,50 @@ export const endpoints = {
     query: z.object({ flow: z.string(), code: z.string() }),
     codes: ["access.suspended", "login.expired"],
     redirects: true,
+    public: true,
+  }),
+  signUp: spec({
+    method: "POST",
+    path: `${apiRoutes.signUp}/:instanceId`,
+    summary: "Starts a local account sign-up.",
+    params: z.object({ instanceId: z.string() }),
+    body: signUpSchema,
+    codes: ["access.password_short", "access.username_taken"],
+    public: true,
+  }),
+  confirmEmail: spec({
+    method: "POST",
+    path: `${apiRoutes.emailVerification}/confirm`,
+    summary: "Verifies an email and creates a local account.",
+    body: tokenSchema,
+    response: verifiedSchema,
+    codes: ["access.link_expired"],
+    public: true,
+  }),
+  sendVerificationAgain: spec({
+    method: "POST",
+    path: `${apiRoutes.emailVerification}/:instanceId`,
+    summary: "Sends another email verification link.",
+    params: z.object({ instanceId: z.string() }),
+    body: emailOnlySchema,
+    codes: [],
+    public: true,
+  }),
+  resetPassword: spec({
+    method: "POST",
+    path: `${apiRoutes.passwordReset}/confirm`,
+    summary: "Sets a new local account password.",
+    body: passwordResetSchema,
+    codes: ["access.link_expired", "access.password_short"],
+    public: true,
+  }),
+  requestPasswordReset: spec({
+    method: "POST",
+    path: `${apiRoutes.passwordReset}/:instanceId`,
+    summary: "Sends a local account password reset link.",
+    params: z.object({ instanceId: z.string() }),
+    body: emailOnlySchema,
+    codes: [],
     public: true,
   }),
   session: spec({

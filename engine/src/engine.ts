@@ -18,6 +18,7 @@ import { apiPrefix, serveApi } from "./http/api";
 import type { Endpoint } from "./http/endpoint";
 import { problem } from "./http/problem";
 import { loginEndpoints } from "./identity/endpoints";
+import { registerSignUpJobs, signUpEndpoints } from "./identity/sign-up";
 import type { Jobs } from "./jobs";
 import { createJobs } from "./jobs";
 import type { Outbox } from "./outbox";
@@ -53,6 +54,7 @@ export interface Engine {
 
 export const endpoints: readonly Endpoint[] = [
   ...loginEndpoints,
+  ...signUpEndpoints,
   ...sessionEndpoints,
   accessIndexEndpoint,
   ...roleEndpoints,
@@ -108,6 +110,8 @@ export function createEngine(options: EngineOptions): Engine {
       db.close();
     },
   };
+
+  registerSignUpJobs(engine);
 
   // A database built from other schema files is rebuilt from the seed it held: nothing in it is
   // kept, so it needs no migration.

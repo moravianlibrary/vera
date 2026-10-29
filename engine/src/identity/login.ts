@@ -1,5 +1,32 @@
+import { nextUserId } from "../access/users";
 import type { Engine } from "../engine";
 import type { IdentityInstance, ProvidedIdentity } from "./plugin";
+
+export function createLinkedPerson(
+  engine: Engine,
+  instance: IdentityInstance,
+  identity: { externalId: string; name: string; email: string | null },
+  now: string,
+): string {
+  const userId = nextUserId(engine);
+  engine.db
+    .query(
+      "INSERT INTO users (id, name, kind, email, entry, suspended_at) VALUES (?, ?, 'person', ?, NULL, NULL)",
+    )
+    .run(userId, identity.name, identity.email);
+  engine.db
+    .query(
+      "INSERT INTO user_identities (user_id, instance_id, external_id, last_login_at) VALUES (?, ?, ?, ?)",
+    )
+    .run(userId, instance.id, identity.externalId, now);
+  if (instance.settings.defaultRoleId !== null)
+    engine.db
+      .query(
+        "INSERT INTO user_mapped_roles (user_id, role_id, instance_id, claim) VALUES (?, ?, ?, 'default role')",
+      )
+      .run(userId, instance.settings.defaultRoleId, instance.id);
+  return userId;
+}
 
 export function logIn(
   engine: Engine,
@@ -44,28 +71,7 @@ export function logIn(
           .run(linked.user_id, instance.id, identity.externalId, now);
     }
     if (linked === null) {
-      const ids = engine.db
-        .query<{ id: string }, []>("SELECT id FROM users WHERE id GLOB 'u[0-9]*'")
-        .all();
-      const next = ids.reduce((max, row) => Math.max(max, Number(row.id.slice(1)) || 0), 0) + 1;
-      const userId = `u${next}`;
-      engine.db
-        .query(
-          "INSERT INTO users (id, name, kind, email, entry, suspended_at) VALUES (?, ?, 'person', ?, NULL, NULL)",
-        )
-        .run(userId, identity.name, identity.email);
-      engine.db
-        .query(
-          "INSERT INTO user_identities (user_id, instance_id, external_id, last_login_at) VALUES (?, ?, ?, ?)",
-        )
-        .run(userId, instance.id, identity.externalId, now);
-      if (instance.settings.defaultRoleId !== null)
-        engine.db
-          .query(
-            "INSERT INTO user_mapped_roles (user_id, role_id, instance_id, claim) VALUES (?, ?, ?, 'default role')",
-          )
-          .run(userId, instance.settings.defaultRoleId, instance.id);
-      linked = { user_id: userId };
+      linked = { user_id: createLinkedPerson(engine, instance, identity, now) };
     }
     const userId = linked.user_id;
     engine.db

@@ -40,3 +40,26 @@ CREATE TABLE fake_identity_accounts (
   claims TEXT NOT NULL,
   PRIMARY KEY (instance_id, external_id)
 );
+
+-- ACCESS-sign-up: an account waiting for its email; its token only as SHA-256. The password is
+-- kept hashed here until the email is verified, then moves to local_passwords.
+CREATE TABLE pending_sign_ups (
+  token_hash TEXT PRIMARY KEY,
+  instance_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  username TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  return_to TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  used_at TEXT
+);
+
+-- ACCESS-password-reset: a link good for an hour and once.
+CREATE TABLE password_resets (
+  token_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  instance_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  used_at TEXT
+);
