@@ -333,6 +333,7 @@ export function intentionFor(session: Session, intentionId: string): Outcome<Int
 }
 
 export function replaceIntention(intention: Intention): void {
+  if (intention.distributionId !== null) database.mixUsedIds.add(intention.distributionId);
   const index = database.intentions.findIndex((candidate) => candidate.id === intention.id);
   database.intentions.splice(index, 1, intention);
 }
@@ -499,6 +500,7 @@ export function createIntention(session: Session, draft: IntentionDraft): Outcom
 
   const intention = { ...created, ...mix.value };
   database.intentions.push(intention);
+  if (intention.distributionId !== null) database.mixUsedIds.add(intention.distributionId);
   return { value: rowOf(intention) };
 }
 
@@ -726,6 +728,7 @@ export function createIntentionTemplate(
     createdBy: session.user.id,
   };
   database.intentionTemplates.push(template);
+  if (template.distributionId !== null) database.mixUsedIds.add(template.distributionId);
   return { value: templateRowOf(template) };
 }
 
@@ -755,5 +758,6 @@ export function saveIntentionTemplate(
   database.intentionTemplates = database.intentionTemplates.map((candidate) =>
     candidate.id === templateId ? saved : candidate,
   );
+  if (saved.distributionId !== null) database.mixUsedIds.add(saved.distributionId);
   return { value: templateRowOf(saved) };
 }

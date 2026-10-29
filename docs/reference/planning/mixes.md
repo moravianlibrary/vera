@@ -34,6 +34,12 @@ chosen. It has to be replaced before it can be archived.
 An archived mix is no longer offered for new selections and cannot be edited. Intentions and
 repeats that followed it keep its final revision, pinned. To change it, make an editable copy.
 
+#### PLAN-mix-remove
+
+A mix may be permanently removed only while it is not Primary and has never been selected by an
+intention or repeat, or used as generated-list provenance. Deleting the intention does not make
+its mix removable. A removed mix's ID is never reused.
+
 #### PLAN-mix-within-scope
 
 An intention reads its mix inside its own scope: the scope's node counts as 100%, and its

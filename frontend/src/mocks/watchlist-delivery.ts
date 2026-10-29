@@ -185,6 +185,8 @@ function recordNameOf(view: WatchlistView, recordId: string): string {
       return database.projects.find((project) => project.id === recordId)?.name ?? recordId;
     case "categories":
       return database.categories.find((category) => category.id === recordId)?.name ?? recordId;
+    case "mixes":
+      return database.distributions.find((mix) => mix.id === recordId)?.name ?? recordId;
     case "tasks":
       return database.runs.find((run) => run.id === recordId)?.what ?? recordId;
     default:

@@ -43,6 +43,7 @@ import {
 import { hookColumns } from "../../frontend/src/features/hooks/hooks-page.tsx";
 import { hooksView } from "../../frontend/src/features/hooks/hooks-view.ts";
 import { intentionsView } from "../../frontend/src/features/intentions/intentions-board-view.ts";
+import { mixesView } from "../../frontend/src/features/intentions/mixes-view.ts";
 import { listEditorColumns } from "../../frontend/src/features/lists/list-editor.tsx";
 import { listColumns } from "../../frontend/src/features/lists/list-rows.tsx";
 import { listsView } from "../../frontend/src/features/lists/lists-view.ts";
@@ -209,6 +210,7 @@ const pageViews = [
   ["Digitization Lists", listsView],
   ["Projects", projectsView],
   ["Categories", categoriesView],
+  ["Category mixes", mixesView],
   ["Intentions", intentionsView],
   ["Tasks", tasksView],
   ["Users management", accessView],

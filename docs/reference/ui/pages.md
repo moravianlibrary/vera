@@ -56,6 +56,7 @@ The filter fields and groupings of each page, as the code declares them:
 | Digitization Lists | `lists` | State (on the bar) · Needs attention · Runs (range) | — |
 | Projects | `projects` | Decision (on the bar) · Period (on the bar) · Pace · Project dates (range) · Time elapsed (range) · Delivered (range) | — |
 | Categories | `categories` | Kind (on the bar) · Custody · Needs attention · Documents (range) · Ready pages (range) | — |
+| Category mixes | `mixes` | State (on the bar) · Primary · Proportions · Used by intentions (range) | — |
 | Intentions | `intentions` | Type (on the bar) · State (on the bar) · Pace / attention (on the bar) · Repeat every · Mix · Project · Counting start (range) · Counting end (range) · Planned (range) · Delivered (range) · Time elapsed (range) | — |
 | Tasks | `tasks` | State (on the bar) · Trigger (on the bar) · Plugin · Started by · Started (range) | — |
 | Users management | no | Show (on the bar) | — |

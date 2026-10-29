@@ -6,8 +6,8 @@ Saved filters, what is new in them, and how people are told. The acts are in
 #### WATCH-model
 
 A watchlist is a saved filter over one page: Documents, My Documents, Requests, Documents
-Validations, Digitization Lists, Projects, Categories, Intentions or Tasks. Opening it shows
-every record that matches now. Grouping is presentation and is never part of it.
+Validations, Digitization Lists, Projects, Categories, Category mixes, Intentions or Tasks. Opening
+it shows every record that matches now. Grouping is presentation and is never part of it.
 
 #### WATCH-personal-system
 

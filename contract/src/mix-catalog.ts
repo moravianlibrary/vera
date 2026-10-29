@@ -4,6 +4,7 @@ import { distributionSchema } from "@vera/domain/entities";
 import { z } from "zod";
 
 export const mixRecordSchema = distributionSchema.extend({
+  everUsed: z.boolean(),
   usageCount: z.number().int().nonnegative(),
   followers: z.array(z.object({ id: z.string(), name: z.string(), isArchived: z.boolean() })),
 });

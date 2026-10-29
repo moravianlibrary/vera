@@ -177,6 +177,7 @@ The Categories tree picker selects a mix to display.
 | `ACT-mix-snapshot` | *Label revision…* | `mix.edit` | the revision has no label yet (409) | *(no log)* |
 | `ACT-mix-primary` | *Make Primary* | `mix.manage` | not archived (409) | *(no log)* |
 | `ACT-mix-archive` | *Archive* | `mix.manage` | not the Primary mix (409) | *(no log)* |
+| `ACT-mix-delete` | *Delete…* | `mix.manage` | not Primary and never used by an intention, repeat or generated list (409) | removes the mix and its revisions *(no log)* |
 
 ## Watchlists
 

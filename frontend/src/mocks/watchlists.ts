@@ -12,6 +12,7 @@ import { matchingCategoryIds } from "@vera/contract/category-filters";
 import { documentQueryParams, parseDocumentSearchParams } from "@vera/contract/documents";
 import { parseIntentionsSearchParams } from "@vera/contract/intention-filters";
 import { parseListSearchParams } from "@vera/contract/lists";
+import { matchingMixes, parseMixSearchParams } from "@vera/contract/mix-filters";
 import { parseProjectSearchParams } from "@vera/contract/projects";
 import { propertyParamKeyOf } from "@vera/contract/properties";
 import { parseRequestSearchParams } from "@vera/contract/requests";
@@ -35,6 +36,7 @@ import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
+import { listMixRecords } from "@/mocks/mix-catalog";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
 import { publicPropertyKeys } from "@/mocks/properties";
 import { canReadRequests, queryRequests } from "@/mocks/requests";
@@ -185,6 +187,8 @@ export function canOpenView(session: Session, view: WatchlistView): boolean {
       return canReadProjects(session);
     case "categories":
       return canReadCategories(session);
+    case "mixes":
+      return hasPermission(session, "mix.read");
     case "intentions":
       return canReadIntentions(session);
     case "tasks":
@@ -297,6 +301,15 @@ export function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistV
 
 // ---------------------------------------------------------------- what matches
 
+function matchingMixIds(session: Session, filter: URLSearchParams): string[] {
+  const result = listMixRecords(session);
+  return "refusal" in result
+    ? []
+    : matchingMixes(result.value, database.categories, parseMixSearchParams(filter)).map(
+        (mix) => mix.id,
+      );
+}
+
 const counters = {
   documents: (session, filter) =>
     queryDocuments(session, parseDocumentSearchParams(filter), { cursor: null, limit: 1 }).total,
@@ -336,6 +349,7 @@ const counters = {
           parseCategorySearchParams(filter),
         ).size
       : 0,
+  mixes: (session, filter) => matchingMixIds(session, filter).length,
   intentions: (session, filter) => {
     if (!canReadIntentions(session)) return 0;
     const matching = matchingIntentions(
@@ -401,6 +415,8 @@ function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
             ),
           ]
         : [];
+    case "mixes":
+      return matchingMixIds(session, filter);
     case "intentions": {
       if (!canReadIntentions(session)) return [];
       const matching = matchingIntentions(

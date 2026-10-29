@@ -5,11 +5,13 @@ import {
   archiveIntention,
   createIntention,
   createIntentionTemplate,
+  deleteIntention,
   listIntentionIndex,
 } from "@/api/intentions";
 import {
   archiveMix,
   createMix,
+  deleteMix,
   getMix,
   listMixes,
   makePrimaryMix,
@@ -155,4 +157,37 @@ it("allows a repeat with no target and no mix", async () => {
   });
   expect(template.template.distributionId).toBeNull();
   expect(template.template.targetPages).toBeNull();
+});
+
+it("PLAN-mix-remove: deletes only a mix never used, even after intention deletion", async () => {
+  server.use(...createHandlers("admin"));
+  const unused = await createMix({
+    name: `Unused ${crypto.randomUUID()}`,
+    fromMixId: null,
+    fromRevision: null,
+  });
+  expect(unused.everUsed).toBe(false);
+  await deleteMix(unused.id);
+  expect(await statusOf(getMix(unused.id))).toBe(404);
+
+  const used = await createMix({
+    name: `Used ${crypto.randomUUID()}`,
+    fromMixId: null,
+    fromRevision: null,
+  });
+  const intention = await createIntention({
+    name: `Use mix ${crypto.randomUUID()}`,
+    description: "",
+    funding: { kind: "any" },
+    scopeCategoryId: null,
+    countsFrom: "2026-07-01",
+    endsOn: null,
+    targetPages: null,
+    mix: { kind: "use", mixId: used.id, revision: null },
+  });
+  expect((await getMix(used.id)).everUsed).toBe(true);
+  expect(await statusOf(deleteMix(used.id))).toBe(409);
+  await deleteIntention(intention.intention.id);
+  expect((await getMix(used.id)).usageCount).toBe(0);
+  expect(await statusOf(deleteMix(used.id))).toBe(409);
 });

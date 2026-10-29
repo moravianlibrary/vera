@@ -9,7 +9,7 @@ import type {
 import { mixRecordSchema } from "@vera/contract/mix-catalog";
 import { apiRoutes, mixRoute } from "@vera/contract/routes";
 import { z } from "zod";
-import { getJson, postJson, putJson } from "@/api/http";
+import { deleteResource, getJson, postJson, putJson } from "@/api/http";
 
 export async function listMixes(): Promise<MixRecord[]> {
   return getJson(apiRoutes.mixes, z.array(mixRecordSchema));
@@ -37,4 +37,8 @@ export async function makePrimaryMix(mixId: string): Promise<MixRecord> {
 
 export async function archiveMix(mixId: string): Promise<MixRecord> {
   return postJson(`${mixRoute(mixId)}/archive`, {}, mixRecordSchema);
+}
+
+export async function deleteMix(mixId: string): Promise<void> {
+  return deleteResource(mixRoute(mixId));
 }

@@ -4,6 +4,7 @@
 import { parseCategorySearchParams } from "@vera/contract/categories";
 import { matchingCategoryIds } from "@vera/contract/category-filters";
 import { parseIntentionsSearchParams } from "@vera/contract/intention-filters";
+import { matchingMixes, parseMixSearchParams } from "@vera/contract/mix-filters";
 import { parseRunSearchParams } from "@vera/contract/tasks";
 import { isShared } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
@@ -13,6 +14,7 @@ import { listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
+import { listMixes } from "@/api/mix-catalog";
 import { listProjectIndex } from "@/api/projects";
 import { getPushDevices, registerPushDevice } from "@/api/push";
 import { listRuns } from "@/api/tasks";
@@ -297,6 +299,36 @@ describe("listWatchlists", () => {
           parseCategorySearchParams(new URLSearchParams(watchlist.filter)),
         ).size,
       );
+    }
+  });
+  it("counts Category mixes watchlists with intention and allocation filters", async () => {
+    signInAs("admin");
+    const filter = {
+      state: "Active",
+      primary: "Other",
+      proportions: "Unallocated",
+      intentions: "1..",
+    };
+    const saved = await createWatchlist({
+      name: `Mix filter ${crypto.randomUUID()}`,
+      view: "mixes",
+      audience: { kind: "personal" },
+      filter,
+    });
+    try {
+      const expected = matchingMixes(
+        await listMixes(),
+        categories,
+        parseMixSearchParams(new URLSearchParams(filter)),
+      ).length;
+      const listed = await listWatchlists("mixes");
+      expect(listed.find((item) => item.id === saved.id)?.itemCount).toBe(expected);
+
+      signInAs("reader");
+      expect(await listWatchlists("mixes")).toEqual([]);
+    } finally {
+      signInAs("admin");
+      await deleteWatchlist(saved.id);
     }
   });
   it("counts the shared Projects tabs over each reader's reach", async () => {

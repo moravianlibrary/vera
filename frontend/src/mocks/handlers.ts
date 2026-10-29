@@ -211,6 +211,7 @@ import { messageChannels, prepareMessage } from "@/mocks/messages";
 import {
   archiveMixRecord,
   createMixRecord,
+  deleteMixRecord,
   getMixRecord,
   listMixRecords,
   makeMixPrimary,
@@ -861,6 +862,9 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     http.post(route(`${apiRoutes.mixes}/:mixId/archive`), ({ params }) =>
       outcomeResponse(archiveMixRecord(currentSession(), String(params.mixId))),
+    ),
+    http.delete(route(`${apiRoutes.mixes}/:mixId`), ({ params }) =>
+      outcomeResponse(deleteMixRecord(currentSession(), String(params.mixId))),
     ),
 
     http.post(route(apiRoutes.intentionPreview), async ({ request }) => {

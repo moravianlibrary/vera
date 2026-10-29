@@ -13,6 +13,7 @@ import { isSameCategoryQuery, parseCategorySearchParams } from "./categories";
 import { isSameDocumentQuery, parseDocumentSearchParams } from "./documents";
 import { isSameIntentionsQuery, parseIntentionsSearchParams } from "./intention-filters";
 import { isSameListQuery, parseListSearchParams } from "./lists";
+import { isSameMixQuery, parseMixSearchParams } from "./mix-filters";
 import { isSameProjectQuery, parseProjectSearchParams } from "./projects";
 import { isSameRequestQuery, parseRequestSearchParams } from "./requests";
 import { isSameRunQuery, parseRunSearchParams } from "./tasks";
@@ -166,6 +167,11 @@ const filterComparers = {
     isSameCategoryQuery(
       parseCategorySearchParams(new URLSearchParams(first)),
       parseCategorySearchParams(new URLSearchParams(second)),
+    ),
+  mixes: (first, second) =>
+    isSameMixQuery(
+      parseMixSearchParams(new URLSearchParams(first)),
+      parseMixSearchParams(new URLSearchParams(second)),
     ),
   intentions: (first, second) =>
     isSameIntentionsQuery(

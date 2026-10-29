@@ -36,6 +36,7 @@ function recordOf(session: Session, mix: Distribution): MixRecord {
     shares: mix.shares,
     revision: mix.revision,
     revisions: mix.revisions,
+    everUsed: database.mixUsedIds.has(mix.id),
     usageCount: followers.length,
     followers,
   };
@@ -74,10 +75,10 @@ export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixR
 
   const shares = { ...(revision?.shares ?? source?.shares ?? {}) };
   const mix: Distribution = {
-    id: nextId(
-      "d",
-      database.distributions.map((candidate) => candidate.id),
-    ),
+    id: nextId("d", [
+      ...database.distributions.map((candidate) => candidate.id),
+      ...database.deletedMixIds,
+    ]),
     name: draft.name,
     isPrimary: false,
     archivedAt: null,
@@ -210,4 +211,31 @@ export function archiveMixRecord(session: Session, mixId: string): Outcome<MixRe
     candidate.id === mixId ? saved : candidate,
   );
   return { value: recordOf(session, saved) };
+}
+
+export function deleteMixRecord(session: Session, mixId: string): Outcome<null> {
+  // ACT-mix-delete, PLAN-mix-remove
+  if (!can(session, "mix.manage")) return { refusal: noManage };
+  const mix = findMix(mixId);
+  if (mix === undefined) return { refusal: notFound };
+  if (mix.isPrimary)
+    return {
+      refusal: { status: 409, message: "Choose a new Primary mix before removing this one" },
+    };
+  if (
+    database.mixUsedIds.has(mixId) ||
+    database.intentions.some((intention) => intention.distributionId === mixId) ||
+    database.intentionTemplates.some((template) => template.distributionId === mixId) ||
+    database.lists.some((list) => list.generated?.mixId === mixId)
+  ) {
+    return {
+      refusal: {
+        status: 409,
+        message: "A mix that has been used cannot be removed; archive it instead",
+      },
+    };
+  }
+  database.distributions = database.distributions.filter((candidate) => candidate.id !== mixId);
+  database.deletedMixIds.add(mixId);
+  return { value: null };
 }

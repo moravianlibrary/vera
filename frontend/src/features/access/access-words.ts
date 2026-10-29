@@ -11,6 +11,7 @@ import { isStaticPermission } from "@vera/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
+import { mixesView } from "@/features/intentions/mixes-view";
 import { listsView } from "@/features/lists/lists-view";
 import { projectsView } from "@/features/projects/projects-view";
 import { requestsView } from "@/features/requests/requests-view";
@@ -99,6 +100,8 @@ export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filt
       return summaryIn(projectsView, params);
     case "categories":
       return summaryIn(categoriesView, params);
+    case "mixes":
+      return summaryIn(mixesView, params);
     case "intentions":
       return summaryIn(intentionsView, params);
     case "tasks":

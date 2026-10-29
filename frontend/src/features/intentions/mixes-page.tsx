@@ -3,13 +3,21 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MixRecord } from "@vera/contract/mix-catalog";
+import {
+  hasUnallocatedProportions,
+  matchingMixes,
+  mixPrimaries,
+  mixProportions,
+  mixStates,
+} from "@vera/contract/mix-filters";
 import { categoryPathOf, searchedCategoriesOf } from "@vera/domain/categories";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import {
   archiveMix,
   createMix,
+  deleteMix,
   getMix,
   listMixes,
   makePrimaryMix,
@@ -19,6 +27,8 @@ import {
 import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
+import { FilterBar } from "@/components/filters/filter-bar";
+import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tree } from "@/components/tree";
@@ -32,16 +42,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { mixesView } from "@/features/intentions/mixes-view";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 const mixQueryKey = ["mixes"] as const;
-type Editor = "new" | "copy" | "snapshot" | "archive" | "set" | null;
+type Editor = "new" | "copy" | "snapshot" | "archive" | "delete" | "set" | null;
 
 export function MixesPage() {
   const { mixId } = useParams();
+  const view = useViewUrlState(mixesView, "mixId");
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { data: session } = useSessionQuery();
   const { data: categories = [] } = useCategoriesQuery();
@@ -52,8 +67,6 @@ export function MixesPage() {
     enabled: mixId !== undefined,
   });
   const current = selected ?? mixes.find((mix) => mix.id === mixId) ?? null;
-  const [search, setSearch] = useState("");
-  const [state, setState] = useState("active");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categorySearch, setCategorySearch] = useState("");
   const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<ReadonlySet<string>>(new Set());
@@ -62,10 +75,16 @@ export function MixesPage() {
   const [label, setLabel] = useState("");
   const [revision, setRevision] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const invalidates = [mixQueryKey, ["intentions"], ["reference", "categories"]];
+  const invalidates = [
+    mixQueryKey,
+    ["intentions"],
+    ["reference", "categories"],
+    watchlistsQueryKey,
+  ];
   const create = useActionMutation({ call: createMix, invalidates });
   const primary = useActionMutation({ call: makePrimaryMix, invalidates });
   const archive = useActionMutation({ call: archiveMix, invalidates });
+  const remove = useActionMutation({ call: deleteMix, invalidates });
   const snapshot = useActionMutation({
     call: (draft: { mixId: string; revision: number; label: string }) =>
       snapshotMix(draft.mixId, draft),
@@ -81,11 +100,21 @@ export function MixesPage() {
     invalidates,
   });
 
-  const filtered = mixes.filter(
-    (mix) =>
-      mix.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) &&
-      (state === "all" || (state === "active" ? mix.archivedAt === null : mix.archivedAt !== null)),
-  );
+  const filtered = matchingMixes(mixes, categories, view.query);
+  const facets = {
+    states: mixStates.map((value) => ({
+      value,
+      count: matchingMixes(mixes, categories, { ...view.query, states: [value] }).length,
+    })),
+    primaries: mixPrimaries.map((value) => ({
+      value,
+      count: matchingMixes(mixes, categories, { ...view.query, primaries: [value] }).length,
+    })),
+    proportions: mixProportions.map((value) => ({
+      value,
+      count: matchingMixes(mixes, categories, { ...view.query, proportions: [value] }).length,
+    })),
+  };
   const mayEdit = session !== undefined && can(session, "mix.edit");
   const mayManage = session !== undefined && can(session, "mix.manage");
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
@@ -124,16 +153,7 @@ export function MixesPage() {
       ? null
       : path.reduce((share, category) => (share * mix.shares[category.id]) / 100, 100);
   };
-  const complete = (mix: MixRecord) => {
-    const parentIds = [null, ...categories.map((category) => category.id)];
-    return parentIds.every((parentId) => {
-      const siblings = categories.filter((category) => category.parentId === parentId);
-      return (
-        siblings.length === 0 ||
-        siblings.reduce((sum, category) => sum + (mix.shares[category.id] ?? 0), 0) === 100
-      );
-    });
-  };
+  const complete = (mix: MixRecord) => !hasUnallocatedProportions(mix, categories);
   const act = async (
     run: () => Promise<{ isDone: boolean; value?: MixRecord; refusal?: { message: string } }>,
   ) => {
@@ -154,7 +174,17 @@ export function MixesPage() {
         fromRevision: editor === "copy" ? revision : null,
       }),
     );
-    if (result.isDone && result.value) navigate(`/mixes/${result.value.id}`);
+    if (result.isDone && result.value)
+      navigate({ pathname: `/mixes/${result.value.id}`, search: location.search });
+  };
+  const removeCurrent = async () => {
+    if (current === null) return;
+    const result = await remove.run(current.id);
+    if (result.isDone) {
+      setMessage(null);
+      setEditor(null);
+      navigate({ pathname: "/mixes", search: location.search });
+    } else setMessage(result.refusal.message);
   };
 
   return (
@@ -177,6 +207,26 @@ export function MixesPage() {
             : []),
         ]}
       />
+      {session !== undefined && can(session, "watch") && (
+        <WatchlistTabs
+          view="mixes"
+          filter={view.filter}
+          openedId={view.watchlistId}
+          canShare={can(session, "watchlist.manage_system")}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
+        />
+      )}
+      <FilterBar
+        key={view.filterReplacements}
+        fields={mixesView.fields}
+        query={view.query}
+        facets={facets}
+        onQueryChange={view.setQuery}
+        searchLabel="Search category mixes"
+        searchPlaceholder="Search category mixes"
+      />
       <MasterDetail
         masterWidth="tree"
         master={
@@ -189,30 +239,11 @@ export function MixesPage() {
                 {message}
               </p>
             )}
-            <div className="sticky top-0 z-10 flex flex-wrap gap-2 border-b bg-background px-4 py-3">
-              <Input
-                aria-label="Search mixes"
-                placeholder="Search mixes"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="min-w-0 flex-1"
-              />
-              <Select value={state} onValueChange={setState}>
-                <SelectTrigger aria-label="Mix state">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                  <SelectItem value="all">All</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div>
               {filtered.map((mix) => (
                 <Link
                   key={mix.id}
-                  to={`/mixes/${mix.id}`}
+                  to={{ pathname: `/mixes/${mix.id}`, search: location.search }}
                   onClick={() => {
                     setRevision(null);
                     setSelectedCategoryId(null);
@@ -281,6 +312,19 @@ export function MixesPage() {
                           Archive
                         </Button>
                       </>
+                    )}
+                    {mayManage && !current.isPrimary && !current.everUsed && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive"
+                        onClick={() => {
+                          setMessage(null);
+                          setEditor("delete");
+                        }}
+                      >
+                        Delete…
+                      </Button>
                     )}
                   </div>
                 )}
@@ -464,7 +508,7 @@ export function MixesPage() {
         detailTitle={current?.name ?? "Mix details"}
         detailOpen={mixId !== undefined && current !== null}
         onDetailOpenChange={(open) => {
-          if (!open) navigate("/mixes");
+          if (!open) navigate({ pathname: "/mixes", search: location.search });
         }}
       />
       {current !== null && editor === "set" && (
@@ -634,6 +678,26 @@ export function MixesPage() {
             This mix will no longer be offered for new selections. {current.usageCount} visible
             intentions currently use it.
           </p>
+        </DialogShell>
+      )}
+      {current !== null && editor === "delete" && (
+        <DialogShell
+          isOpen
+          onClose={() => setEditor(null)}
+          title={`Delete ${current.name}?`}
+          description="This permanently removes the unused mix and its revisions."
+          primary={{
+            label: "Delete mix",
+            isDestructive: true,
+            isPending: remove.isPending,
+            onSelect: () => void removeCurrent(),
+          }}
+        >
+          {message !== null && (
+            <p role="alert" className="text-sm text-destructive">
+              {message}
+            </p>
+          )}
         </DialogShell>
       )}
     </>

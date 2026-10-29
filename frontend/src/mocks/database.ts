@@ -62,6 +62,18 @@ export const database = {
   archivedIntentionMixes: {} as Record<string, MixTree>,
   archivedIntentionCategories: {} as Record<string, Category[]>,
   distributions: [...distributions],
+  // A mix may be removed only before any intention or repeat has ever selected it. Keep the
+  // history when an intention is later deleted, and never reuse a removed mix's id.
+  mixUsedIds: new Set<string>([
+    ...intentions.flatMap((intention) =>
+      intention.distributionId === null ? [] : [intention.distributionId],
+    ),
+    ...intentionTemplates.flatMap((template) =>
+      template.distributionId === null ? [] : [template.distributionId],
+    ),
+    ...lists.flatMap((list) => (list.generated?.mixId == null ? [] : [list.generated.mixId])),
+  ]),
+  deletedMixIds: new Set<string>(),
   intentionTemplates: [...intentionTemplates],
   lists: [...lists],
   batches: [...batches],

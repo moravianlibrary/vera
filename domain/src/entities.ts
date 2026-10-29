@@ -482,6 +482,7 @@ export const watchlistViewSchema = z.enum([
   "lists",
   "projects",
   "categories",
+  "mixes",
   "intentions",
   "tasks",
 ]);

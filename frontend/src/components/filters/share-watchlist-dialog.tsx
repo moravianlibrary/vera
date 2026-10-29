@@ -34,6 +34,7 @@ export const viewLabels = {
   lists: "Digitization Lists",
   projects: "Projects",
   categories: "Categories",
+  mixes: "Category mixes",
   intentions: "Intentions",
   tasks: "Tasks",
 } as const satisfies Record<Watchlist["view"], string>;
