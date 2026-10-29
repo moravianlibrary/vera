@@ -33,7 +33,6 @@ export const seedSchema = z.object({
   name: z.string().min(1),
   extends: z.string().optional(),
   now: z.iso.datetime(),
-  devPeople: z.record(z.string().min(1), id),
   // Collections a step does not load yet pass through unread.
   collections: z.looseObject({
     users: z.array(userSchema),
@@ -151,10 +150,5 @@ export function loadSeed(db: Database, seed: Seed): void {
     for (const userId of userIds) {
       insertCategoryMember.run(categoryId, userId);
     }
-  }
-
-  const insertDevPerson = db.query("INSERT INTO dev_people (profile, user_id) VALUES (?, ?)");
-  for (const [profile, userId] of Object.entries(seed.devPeople)) {
-    insertDevPerson.run(profile, userId);
   }
 }

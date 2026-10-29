@@ -9,7 +9,7 @@ import { endpoint } from "./endpoint";
 import { matchPath } from "./match";
 
 const engine = testEngine();
-const noCaller = () => null;
+const noCaller = () => ({ caller: null, cookie: null });
 
 const endpoints = [
   endpoint({

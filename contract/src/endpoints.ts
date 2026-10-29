@@ -38,6 +38,12 @@ export const endpoints = {
     response: sessionSchema,
     codes: [],
   }),
+  logout: spec({
+    method: "DELETE",
+    path: apiRoutes.sessionLogout,
+    summary: "Ends the caller's session; the cookie is cleared.",
+    codes: [],
+  }),
 };
 
 export type EndpointName = keyof typeof endpoints;

@@ -2,6 +2,7 @@
 
 import { beforeEach, describe, expect, it } from "bun:test";
 import { call, testEngine } from "../test/engine";
+import { openSession } from "./access/sessions";
 import type { Engine } from "./engine";
 
 let engine: Engine;
@@ -12,17 +13,19 @@ beforeEach(() => {
 
 describe("/_engine", () => {
   it("resets to a seed: its records and its moment", async () => {
-    engine.db.query("DELETE FROM dev_people").run();
+    openSession(engine, "u1", null);
     engine.clock.advance(60_000);
     const response = await call(engine, "POST", "/_engine/reset", { body: { seed: "minimal" } });
     expect(await response.json()).toEqual({ seed: "minimal", now: "2026-06-25T08:40:00.000Z" });
-    expect((await call(engine, "GET", "/api/session", { as: "curator" })).status).toBe(200);
+    expect(engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM sessions").get()?.n).toBe(
+      0,
+    );
   });
 
   it("refuses a seed that does not exist, and keeps the database", async () => {
     const response = await call(engine, "POST", "/_engine/reset", { body: { seed: "../etc" } });
     expect(response.status).toBe(404);
-    expect((await call(engine, "GET", "/api/session", { as: "curator" })).status).toBe(200);
+    expect((await call(engine, "GET", "/api/session", { as: "u1" })).status).toBe(200);
   });
 
   it("moves the clock forward and runs what is due", async () => {

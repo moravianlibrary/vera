@@ -11,6 +11,8 @@ export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface Caller {
   userId: string;
+  // The SHA-256 of the session's token, to end it.
+  tokenHash: string;
 }
 
 export interface Context<Params, Query, Body> {

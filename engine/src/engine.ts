@@ -2,7 +2,7 @@
 // development only, the control endpoints under /_engine.
 
 import type { Database } from "bun:sqlite";
-import { callerOf } from "./access/caller";
+import { callingOf } from "./access/caller";
 import { sessionEndpoints } from "./access/endpoints";
 import type { Clock } from "./clock";
 import { createClock } from "./clock";
@@ -20,7 +20,7 @@ import { loadSeed, readSeed, seedsDir } from "./seed";
 export interface EngineOptions {
   // ":memory:" for a test.
   databasePath: string;
-  // Honours the dev servers' header and serves /_engine.
+  // Serves /_engine and leaves cookies without Secure.
   development: boolean;
   // The seed loaded when the database is new.
   seed?: string;
@@ -66,9 +66,7 @@ export function createEngine(options: EngineOptions): Engine {
     async fetch(request) {
       const { pathname } = new URL(request.url);
       if (pathname === apiPrefix || pathname.startsWith(`${apiPrefix}/`)) {
-        return serveApi(request, endpoints, engine, (incoming) =>
-          callerOf(db, incoming, options.development),
-        );
+        return serveApi(request, endpoints, engine, (incoming) => callingOf(engine, incoming));
       }
 
       if (options.development && pathname.startsWith(`${controlPrefix}/`)) {

@@ -2,15 +2,6 @@
   "name": "base",
   "extends": "installation",
   "now": "2026-06-25T08:40:00.000Z",
-  "devPeople": {
-    "admin": "u3",
-    "curator": "u8",
-    "digitization": "u2",
-    "staff": "u4",
-    "reader": "u5",
-    "no-access": "u10",
-    "project-user": "u9"
-  },
   "collections": {
     "users": [
       {

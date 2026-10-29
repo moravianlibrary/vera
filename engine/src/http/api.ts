@@ -5,14 +5,15 @@
 // goes out as a 500, with the issues, so a test fails on it.
 
 import { z } from "zod";
+import type { Calling } from "../access/caller";
 import type { Engine } from "../engine";
-import type { Caller, Endpoint } from "./endpoint";
+import type { Endpoint } from "./endpoint";
 import { matchPath } from "./match";
 import { fieldErrorsOf, problem } from "./problem";
 
 export const apiPrefix = "/api";
 
-export type CallerResolver = (request: Request) => Caller | null;
+export type CallerResolver = (request: Request) => Calling;
 
 export async function serveApi(
   request: Request,
@@ -21,29 +22,30 @@ export async function serveApi(
   callerOf: CallerResolver,
 ): Promise<Response> {
   const url = new URL(request.url);
+  const calling = callerOf(request);
   const path = url.pathname.slice(apiPrefix.length) || "/";
   const matching = endpoints.flatMap((candidate) => {
     const params = matchPath(candidate.path, path);
     return params === null ? [] : [{ endpoint: candidate, params }];
   });
   if (matching.length === 0) {
-    return problem(404, `No endpoint answers ${path}.`);
+    return withCookie(problem(404, `No endpoint answers ${path}.`), calling.cookie);
   }
 
   const found = matching.find(({ endpoint }) => endpoint.method === request.method);
   if (found === undefined) {
-    return problem(405, `${path} does not answer ${request.method}.`);
+    return withCookie(problem(405, `${path} does not answer ${request.method}.`), calling.cookie);
   }
 
   const { endpoint, params: rawParams } = found;
   const params = parseInput(endpoint.params, rawParams);
   if (params instanceof Response) {
-    return params;
+    return withCookie(params, calling.cookie);
   }
 
   const query = parseInput(endpoint.query, Object.fromEntries(url.searchParams));
   if (query instanceof Response) {
-    return query;
+    return withCookie(query, calling.cookie);
   }
 
   let rawBody: unknown;
@@ -51,13 +53,13 @@ export async function serveApi(
     try {
       rawBody = await request.json();
     } catch {
-      return problem(400, "The body is not JSON.");
+      return withCookie(problem(400, "The body is not JSON."), calling.cookie);
     }
   }
 
   const body = parseInput(endpoint.body, rawBody);
   if (body instanceof Response) {
-    return body;
+    return withCookie(body, calling.cookie);
   }
 
   try {
@@ -65,18 +67,24 @@ export async function serveApi(
       params,
       query,
       body,
-      caller: callerOf(request),
+      caller: calling.caller,
       engine,
       request,
     });
     if (answer instanceof Response) {
-      return answer;
+      return withCookie(answer, calling.cookie);
     }
 
-    return checkedAnswer(endpoint, request.method, path, answer.status ?? 200, answer.body);
+    return withCookie(
+      checkedAnswer(endpoint, request.method, path, answer.status ?? 200, answer.body),
+      calling.cookie,
+    );
   } catch (error) {
     console.error(`${request.method} ${path} failed`, error);
-    return problem(500, error instanceof Error ? error.message : String(error));
+    return withCookie(
+      problem(500, error instanceof Error ? error.message : String(error)),
+      calling.cookie,
+    );
   }
 }
 
@@ -116,4 +124,20 @@ function checkedAnswer(
   // The answer as sent is what the client parses: the unparsed value, so that a schema's
   // defaults and transforms are not applied twice.
   return Response.json(body, { status });
+}
+
+// The session's cookie on the answer, unless the handler set its own (login, logout). A new
+// Response, since an answer's headers may not be changed.
+function withCookie(response: Response, cookie: string | null): Response {
+  if (cookie === null || response.headers.has("Set-Cookie")) {
+    return response;
+  }
+
+  const headers = new Headers(response.headers);
+  headers.append("Set-Cookie", cookie);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }

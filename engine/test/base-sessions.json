@@ -1,5 +1,5 @@
 {
-  "admin": {
+  "u3": {
     "user": {
       "id": "u3",
       "name": "Petr Dvořák",
@@ -228,7 +228,7 @@
     "custodyCategoryIds": [],
     "groupIds": []
   },
-  "curator": {
+  "u8": {
     "user": {
       "id": "u8",
       "name": "Kateřina Novotná",
@@ -349,7 +349,7 @@
     "custodyCategoryIds": ["c2", "c4"],
     "groupIds": ["g1"]
   },
-  "digitization": {
+  "u2": {
     "user": {
       "id": "u2",
       "name": "Martin Svoboda",
@@ -510,7 +510,7 @@
     "custodyCategoryIds": [],
     "groupIds": ["g2"]
   },
-  "staff": {
+  "u4": {
     "user": {
       "id": "u4",
       "name": "Eva Horáková",
@@ -539,7 +539,7 @@
     "custodyCategoryIds": [],
     "groupIds": ["g3"]
   },
-  "reader": {
+  "u5": {
     "user": {
       "id": "u5",
       "name": "Tomáš Marek",
@@ -568,7 +568,7 @@
     "custodyCategoryIds": [],
     "groupIds": []
   },
-  "no-access": {
+  "u10": {
     "user": {
       "id": "u10",
       "name": "Adam Kolář",
@@ -580,7 +580,7 @@
     "custodyCategoryIds": [],
     "groupIds": []
   },
-  "project-user": {
+  "u9": {
     "user": {
       "id": "u9",
       "name": "Radek Šimek",

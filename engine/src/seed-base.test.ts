@@ -15,9 +15,9 @@ describe("the base seed", () => {
     expect(engine.clock.now().toISOString()).toBe("2026-06-25T08:40:00.000Z");
   });
 
-  for (const [profile, session] of Object.entries(expected)) {
-    it(`signs ${profile} in as the mock did`, async () => {
-      const response = await call(engine, "GET", "/api/session", { as: profile });
+  for (const [userId, session] of Object.entries(expected)) {
+    it(`signs ${userId} in as the mock did`, async () => {
+      const response = await call(engine, "GET", "/api/session", { as: userId });
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual(session);
     });

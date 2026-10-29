@@ -1,20 +1,28 @@
-// Who is calling. Until login is built (step 2, L4), only development knows anyone: each dev
-// server's proxy names its fixture person in a header, which the engine honours only in
-// development (docs/develop/engine.md, Dev servers and signing in).
+// Who is calling: the person of the session the request carries (handoff decision 2), and the
+// cookie the answer must carry back: the same session's, reissued so it slides, or a clearing
+// one when the request carried a session that is gone.
 
-import type { Database } from "bun:sqlite";
+import type { Engine } from "../engine";
 import type { Caller } from "../http/endpoint";
+import { clearedSessionCookie, sessionCookie, sessionOf, tokenOf } from "./sessions";
 
-export const devPersonHeader = "X-Vera-Dev-Person";
+export interface Calling {
+  caller: Caller | null;
+  // A Set-Cookie value for the answer; null when it needs none.
+  cookie: string | null;
+}
 
-export function callerOf(db: Database, request: Request, development: boolean): Caller | null {
-  const profile = request.headers.get(devPersonHeader);
-  if (!development || profile === null) {
-    return null;
+export function callingOf(engine: Engine, request: Request): Calling {
+  const session = sessionOf(engine, request);
+  if (session !== null) {
+    return {
+      caller: { userId: session.userId, tokenHash: session.tokenHash },
+      cookie: sessionCookie(session.token, engine.development),
+    };
   }
 
-  const row = db
-    .query<{ user_id: string }, [string]>("SELECT user_id FROM dev_people WHERE profile = ?")
-    .get(profile);
-  return row === null ? null : { userId: row.user_id };
+  return {
+    caller: null,
+    cookie: tokenOf(request) === null ? null : clearedSessionCookie(engine.development),
+  };
 }

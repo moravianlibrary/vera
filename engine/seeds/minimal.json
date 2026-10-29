@@ -1,7 +1,6 @@
 {
   "name": "minimal",
   "now": "2026-06-25T08:40:00.000Z",
-  "devPeople": { "curator": "u1", "reader": "u2", "suspended": "u3", "no-access": "u4" },
   "collections": {
     "users": [
       { "id": "u1", "name": "Curator One", "kind": "person", "email": "curator@example.org" },

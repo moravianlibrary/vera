@@ -3,6 +3,7 @@
 // engine's own, not VERA's API, so their shapes are here and not in the contract.
 
 import { z } from "zod";
+import { openSession, sessionCookie } from "./access/sessions";
 import { ClockError } from "./clock";
 import type { Engine } from "./engine";
 import { matchPath } from "./http/match";
@@ -31,6 +32,7 @@ const clockSchema = z
   });
 
 const outboxQuerySchema = z.object({ channel: z.enum(outboxChannels).optional() });
+const openSessionSchema = z.object({ userId: z.string().min(1) });
 
 const minute = 60 * 1000;
 
@@ -49,6 +51,32 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
 
       engine.reset(change.data.seed);
       return Response.json({ seed: change.data.seed, now: engine.clock.now().toISOString() });
+    }
+
+    if (is("POST", "/sessions")) {
+      const input = openSessionSchema.safeParse(await bodyOf(request));
+      if (!input.success) {
+        return invalid(input.error);
+      }
+      const user = engine.db
+        .query<{ kind: string; suspended_at: string | null }, [string]>(
+          "SELECT kind, suspended_at FROM users WHERE id = ?",
+        )
+        .get(input.data.userId);
+      if (user === null) {
+        return problem(404, `There is no user named ${input.data.userId}.`);
+      }
+      if (user.kind === "agent") {
+        return problem(422, "An agent cannot sign in.");
+      }
+      if (user.suspended_at !== null) {
+        return problem(403, "This user is suspended.", { code: "access.suspended" });
+      }
+      const token = openSession(engine, input.data.userId, null);
+      return Response.json(
+        { userId: input.data.userId },
+        { status: 200, headers: { "Set-Cookie": sessionCookie(token, engine.development) } },
+      );
     }
 
     if (is("POST", "/clock")) {

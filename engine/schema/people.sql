@@ -77,9 +77,3 @@ CREATE TABLE category_members (
   PRIMARY KEY (category_id, user_id)
 );
 
--- Development only: the fixture person each dev server signs in as, by the name its header
--- carries.
-CREATE TABLE dev_people (
-  profile TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users (id) DEFERRABLE INITIALLY DEFERRED
-);
