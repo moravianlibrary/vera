@@ -148,7 +148,7 @@ export function SchedulesPage() {
             : []
         }
       />
-      <PageContent className="@container !pt-0 !pb-0">
+      <PageContent isFlushVertical className="@container">
         {notice !== null && (
           <div className="pt-4">
             <NoticeLine notice={notice} onOpenRun={openRun} onDismiss={() => setNotice(null)} />

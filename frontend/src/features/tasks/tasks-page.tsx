@@ -124,7 +124,8 @@ export function TasksPage() {
         index.schedules !== null &&
         canOpenNavigationEntry(session, "schedules") && <NextRunsStrip index={index} />}
       <PageContent
-        className="@container !pt-0 !pb-0"
+        isFlushVertical
+        className="@container"
         onScroll={(event) => {
           const scroller = event.currentTarget;
           const running = runningRef.current;

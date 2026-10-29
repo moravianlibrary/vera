@@ -28,7 +28,7 @@ export const lists: readonly DigitizationList[] = [
       mixRevision: 2,
       pages: 4000,
       allocation: null,
-      generator: "PriorityFirst 1.2.0",
+      generator: "PriorityThenMix 1.2.0",
       at: "2026-06-22T09:00:00Z",
     },
     createdBy: "u2",

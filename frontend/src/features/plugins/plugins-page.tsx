@@ -103,7 +103,7 @@ export function PluginsPage() {
         searchLabel="Search plugins and instances"
         searchPlaceholder="Search plugins and instances…"
       />
-      <PageContent className="@container !pt-0 !pb-0">
+      <PageContent isFlushVertical className="@container">
         {index !== undefined && (
           <PluginTable
             index={index}

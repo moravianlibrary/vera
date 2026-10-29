@@ -1574,7 +1574,7 @@
           "mixRevision": 2,
           "pages": 4000,
           "allocation": null,
-          "generator": "PriorityFirst 1.2.0",
+          "generator": "PriorityThenMix 1.2.0",
           "at": "2026-06-22T09:00:00Z"
         },
         "createdBy": "u2",
@@ -8861,7 +8861,7 @@
           "userId": "u2"
         },
         "correlationId": "k20",
-        "event": "Generated — PriorityFirst 1.2.0",
+        "event": "Generated — PriorityThenMix 1.2.0",
         "detail": "pages 4 000 · Periodicals only · 3 picked · 1 460 pp short: the rest of Periodicals was still in review"
       },
       {
@@ -10352,7 +10352,7 @@
       {
         "id": "pt11",
         "descriptorId": "cz.mzk.vera.priority-first",
-        "name": "PriorityFirst",
+        "name": "PriorityThenMix",
         "kind": "ListGenerator",
         "description": "Fills each category to its share, highest priority first, then the oldest ask. Deterministic.",
         "versions": [

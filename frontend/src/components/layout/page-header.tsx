@@ -75,14 +75,20 @@ export function PageHeader({
 interface PageContentProps {
   children: ReactNode;
   className?: string;
+  // The page draws its own top and bottom edges (a table that starts at the header).
+  isFlushVertical?: boolean;
   onScroll?: UIEventHandler<HTMLDivElement>;
 }
 
 // The scrolling body of a view that is not split into master and detail.
-export function PageContent({ children, className, onScroll }: PageContentProps) {
+export function PageContent({ children, className, isFlushVertical, onScroll }: PageContentProps) {
   return (
     <div
-      className={cn("min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6", className)}
+      className={cn(
+        "min-h-0 flex-1 overflow-y-auto px-4 sm:px-6",
+        !isFlushVertical && "py-5",
+        className,
+      )}
       onScroll={onScroll}
     >
       {children}

@@ -353,7 +353,7 @@ export const listGeneratorSchema = z.object({
   id: z.string(),
   // The instance: "Priority, then age".
   name: z.string(),
-  // The plugin and its version: "PriorityFirst", "1.2.0".
+  // The plugin and its version: "PriorityThenMix", "1.2.0".
   plugin: z.string(),
   version: z.string(),
   generatorClass: generatorClassSchema,

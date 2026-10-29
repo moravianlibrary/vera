@@ -268,7 +268,7 @@ export const statusLog: readonly StatusLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k20",
-    event: "Generated — PriorityFirst 1.2.0",
+    event: "Generated — PriorityThenMix 1.2.0",
     detail:
       "pages 4 000 · Periodicals only · 3 picked · 1 460 pp short: the rest of Periodicals was still in review",
   },

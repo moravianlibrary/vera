@@ -323,7 +323,7 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   ),
   implementation(
     "pt11",
-    "PriorityFirst",
+    "PriorityThenMix",
     "ListGenerator",
     "Fills each category to its share, highest priority first, then the oldest ask. Deterministic.",
     {

@@ -13,7 +13,8 @@
       "!**/dist",
       "!**/coverage",
       "!docs/demos",
-      "!docs/design"
+      "!docs/design",
+      "!frontend/public/mockServiceWorker.js"
     ]
   },
   "formatter": {

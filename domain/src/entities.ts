@@ -197,7 +197,7 @@ export const listGenerationSchema = z.object({
   pages: z.number().int().nonnegative(),
   // A correcting run's pages per category, accepted before generating; none when the mix decided.
   allocation: z.record(z.string(), z.number().int().nonnegative()).nullable(),
-  // Plugin and version: "PriorityFirst 1.2.0".
+  // Plugin and version: "PriorityThenMix 1.2.0".
   generator: z.string(),
   at: timestamp,
 });

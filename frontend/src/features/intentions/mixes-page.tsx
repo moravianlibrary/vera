@@ -25,6 +25,7 @@ import {
   snapshotMix,
 } from "@/api/mix-catalog";
 import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
+import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -177,16 +178,6 @@ export function MixesPage() {
     if (result.isDone && result.value)
       navigate({ pathname: `/mixes/${result.value.id}`, search: location.search });
   };
-  const removeCurrent = async () => {
-    if (current === null) return;
-    const result = await remove.run(current.id);
-    if (result.isDone) {
-      setMessage(null);
-      setEditor(null);
-      navigate({ pathname: "/mixes", search: location.search });
-    } else setMessage(result.refusal.message);
-  };
-
   return (
     <>
       <PageHeader
@@ -316,8 +307,7 @@ export function MixesPage() {
                     {mayManage && !current.isPrimary && !current.everUsed && (
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="text-destructive"
+                        variant="destructive"
                         onClick={() => {
                           setMessage(null);
                           setEditor("delete");
@@ -680,25 +670,23 @@ export function MixesPage() {
           </p>
         </DialogShell>
       )}
-      {current !== null && editor === "delete" && (
-        <DialogShell
-          isOpen
+      {current !== null && (
+        <ConsequenceDialog
+          isOpen={editor === "delete"}
           onClose={() => setEditor(null)}
           title={`Delete ${current.name}?`}
           description="This permanently removes the unused mix and its revisions."
-          primary={{
-            label: "Delete mix",
-            isDestructive: true,
-            isPending: remove.isPending,
-            onSelect: () => void removeCurrent(),
+          consequences={[
+            { text: "No intention, repeat or list has used it, so nothing else changes." },
+          ]}
+          confirmLabel="Delete mix"
+          isDestructive
+          onConfirm={async () => {
+            const result = await remove.run(current.id);
+            if (result.isDone) navigate({ pathname: "/mixes", search: location.search });
+            return result;
           }}
-        >
-          {message !== null && (
-            <p role="alert" className="text-sm text-destructive">
-              {message}
-            </p>
-          )}
-        </DialogShell>
+        />
       )}
     </>
   );

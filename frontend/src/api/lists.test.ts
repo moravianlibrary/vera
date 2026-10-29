@@ -340,7 +340,7 @@ describe("generating a draft", () => {
     const generators = await listGenerators();
 
     expect(generators.map((generator) => [generator.plugin, generator.generatorClass])).toEqual([
-      ["PriorityFirst", "RuleBased"],
+      ["PriorityThenMix", "RuleBased"],
       ["ShelfAdvisor", "AiBased"],
     ]);
 
@@ -366,7 +366,10 @@ describe("generating a draft", () => {
     expect(draft.picks.length).toBeGreaterThan(0);
     expect(draft.picks.every(({ item }) => poolIds.has(item.iteration.id))).toBe(true);
     expect(draft.picks.every(({ reason }) => reason.includes("priority · asked"))).toBe(true);
-    expect(draft.provenance).toMatchObject({ intentionId: "i4", generator: "PriorityFirst 1.2.0" });
+    expect(draft.provenance).toMatchObject({
+      intentionId: "i4",
+      generator: "PriorityThenMix 1.2.0",
+    });
     expect(after.total).toBe(pool.total);
   });
 
@@ -443,8 +446,8 @@ describe("generating a draft", () => {
       generated: draft.provenance,
     });
 
-    expect(detail.row.list.generated?.generator).toBe("PriorityFirst 1.2.0");
-    expect(detail.log.map((entry) => entry.event)).toContain("Generated — PriorityFirst 1.2.0");
+    expect(detail.row.list.generated?.generator).toBe("PriorityThenMix 1.2.0");
+    expect(detail.log.map((entry) => entry.event)).toContain("Generated — PriorityThenMix 1.2.0");
   });
 });
 
