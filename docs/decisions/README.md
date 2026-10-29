@@ -21,6 +21,7 @@ decision record keeps the *why*; the rules it led to are in the [reference](../r
 | [DEC-0014](DEC-0014-several-publication-links.md) | An iteration may be published in several places |
 | [DEC-0015](DEC-0015-public-requests-by-entry-link.md) | The public asks through entry links, with Google or Seznam |
 | [DEC-0016](DEC-0016-local-sign-up.md) | A person may create their own local account |
+| [DEC-0017](DEC-0017-observability.md) | VERA is observed through OpenTelemetry, into ClickHouse, read in HyperDX |
 
 A new record takes the next number as its ID, `DEC-NNNN`, and its file is named
 `DEC-NNNN-title.md`. Cite a decision by its ID, as you would a rule. A record is never edited to

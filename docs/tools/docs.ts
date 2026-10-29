@@ -397,6 +397,7 @@ const prefixes = [
   "HOOK",
   "MSG",
   "WATCH",
+  "OBS",
   "UI",
 ];
 const idPattern = `(?:${prefixes.join("|")})-[a-z0-9]+(?:-[a-z0-9]+)*`;

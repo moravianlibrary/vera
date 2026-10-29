@@ -193,6 +193,24 @@ Decided on 2026-10-29 ([DEC-0016](decisions/DEC-0016-local-sign-up.md)). Needs:
 
 → frontend with the mock, then engine.
 
+### L72: Observability
+
+Rules: [OBS-pipeline](reference/integrations/observability.md#obs-pipeline) and the rules after
+it.
+
+Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
+- the client: an OpenTelemetry web module, a no-op without `VITE_OTEL_ENDPOINT`, recording page
+  views by route template, acts, errors with the crash reference, slow answers and web vitals,
+  and sending the trace context with each API call; the user id only for a role beyond reader;
+- the engine: the same streams from its HTTP boundary, jobs and fake plugins, behind an endpoint
+  setting, so the simulation fills HyperDX;
+- a local stack for development (collector, ClickHouse, HyperDX) in a compose file, and its
+  production counterpart beside the deployment;
+- the Java application and its workers: the OpenTelemetry Java agent and structured logs, when
+  the backend is built.
+
+→ frontend and engine, then deployment.
+
 ## For part 5 (writing and i18n)
 
 ### L37: Czech terms
