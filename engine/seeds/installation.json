@@ -1,0 +1,612 @@
+{
+  "name": "installation",
+  "now": "2026-06-25T08:40:00.000Z",
+  "devPeople": {},
+  "collections": {
+    "users": [],
+    "roles": [
+      {
+        "id": "reader",
+        "proposalBatchLimit": 10,
+        "proposalDailyLimit": 100,
+        "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": null
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          }
+        ],
+        "name": "reader",
+        "isShipped": true
+      },
+      {
+        "id": "staff",
+        "proposalBatchLimit": 10,
+        "proposalDailyLimit": 300,
+        "description": "Library staff: the reader grants with a higher daily proposal limit.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": null
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          }
+        ],
+        "name": "staff",
+        "isShipped": true
+      },
+      {
+        "id": "project-user",
+        "proposalBatchLimit": 10,
+        "proposalDailyLimit": 300,
+        "description": "Starts projects and runs those they manage; follows the documents and intentions of the projects they are on.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": "project"
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          },
+          {
+            "permission": "project.read",
+            "scope": "project"
+          },
+          {
+            "permission": "project.create",
+            "scope": "any"
+          },
+          {
+            "permission": "project.edit",
+            "scope": "managed"
+          },
+          {
+            "permission": "project.manage_members",
+            "scope": "managed"
+          },
+          {
+            "permission": "project.delete",
+            "scope": "managed"
+          },
+          {
+            "permission": "intention.read",
+            "scope": "project"
+          }
+        ],
+        "name": "project-user",
+        "isShipped": true
+      },
+      {
+        "id": "curator",
+        "proposalBatchLimit": null,
+        "proposalDailyLimit": null,
+        "description": "Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": null
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          },
+          {
+            "permission": "task.read_own",
+            "scope": null
+          },
+          {
+            "permission": "project.create",
+            "scope": "any"
+          },
+          {
+            "permission": "project.read",
+            "scope": "any"
+          },
+          {
+            "permission": "project.edit",
+            "scope": "managed"
+          },
+          {
+            "permission": "project.manage_members",
+            "scope": "managed"
+          },
+          {
+            "permission": "project.delete",
+            "scope": "managed"
+          },
+          {
+            "permission": "iteration.read",
+            "scope": "any"
+          },
+          {
+            "permission": "request.read",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.recheck",
+            "scope": "custody"
+          },
+          {
+            "permission": "category.read",
+            "scope": "any"
+          },
+          {
+            "permission": "request.decide",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.approve",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.deny",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.revoke",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.classify",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.cancel",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.resume",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.publish",
+            "scope": "custody"
+          },
+          {
+            "permission": "request.read_ingest",
+            "scope": "custody"
+          },
+          {
+            "permission": "request.retry",
+            "scope": "custody"
+          },
+          {
+            "permission": "category.edit",
+            "scope": "custody"
+          },
+          {
+            "permission": "category.grant_custody",
+            "scope": "custody"
+          },
+          {
+            "permission": "project.decide",
+            "scope": "any"
+          }
+        ],
+        "name": "curator",
+        "isShipped": true
+      },
+      {
+        "id": "dig-curator",
+        "proposalBatchLimit": null,
+        "proposalDailyLimit": null,
+        "description": "Plans the work: lists, intentions, projects.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": null
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          },
+          {
+            "permission": "task.read_own",
+            "scope": null
+          },
+          {
+            "permission": "iteration.read",
+            "scope": "any"
+          },
+          {
+            "permission": "request.read",
+            "scope": "any"
+          },
+          {
+            "permission": "category.read",
+            "scope": "any"
+          },
+          {
+            "permission": "list.read",
+            "scope": "any"
+          },
+          {
+            "permission": "list.create",
+            "scope": "any"
+          },
+          {
+            "permission": "list.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "list.delete",
+            "scope": "any"
+          },
+          {
+            "permission": "intention.read",
+            "scope": "any"
+          },
+          {
+            "permission": "intention.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "mix.read",
+            "scope": "any"
+          },
+          {
+            "permission": "mix.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "request.decide",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.approve",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.deny",
+            "scope": "custody"
+          },
+          {
+            "permission": "validation.revoke",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.recheck",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.classify",
+            "scope": "custody"
+          },
+          {
+            "permission": "iteration.publish",
+            "scope": "custody"
+          },
+          {
+            "permission": "request.read_ingest",
+            "scope": "custody"
+          },
+          {
+            "permission": "request.retry",
+            "scope": "custody"
+          },
+          {
+            "permission": "category.edit",
+            "scope": "custody"
+          },
+          {
+            "permission": "category.grant_custody",
+            "scope": "custody"
+          },
+          {
+            "permission": "project.decide",
+            "scope": "any"
+          },
+          {
+            "permission": "project.read",
+            "scope": "any"
+          },
+          {
+            "permission": "project.create",
+            "scope": "any"
+          },
+          {
+            "permission": "project.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "project.manage_members",
+            "scope": "any"
+          },
+          {
+            "permission": "project.delete",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.cancel",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.resume",
+            "scope": "any"
+          }
+        ],
+        "name": "dig-curator",
+        "isShipped": true
+      },
+      {
+        "id": "admin",
+        "proposalBatchLimit": null,
+        "proposalDailyLimit": null,
+        "description": "Everything, at any scope.",
+        "grants": [
+          {
+            "permission": "request.create",
+            "scope": null
+          },
+          {
+            "permission": "request.read_mine",
+            "scope": null
+          },
+          {
+            "permission": "request.withdraw_own",
+            "scope": null
+          },
+          {
+            "permission": "request.read",
+            "scope": "any"
+          },
+          {
+            "permission": "request.decide",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.read",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.recheck",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.classify",
+            "scope": "any"
+          },
+          {
+            "permission": "validation.approve",
+            "scope": "any"
+          },
+          {
+            "permission": "validation.deny",
+            "scope": "any"
+          },
+          {
+            "permission": "validation.revoke",
+            "scope": "any"
+          },
+          {
+            "permission": "restriction.overrule",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.cancel",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.resume",
+            "scope": "any"
+          },
+          {
+            "permission": "iteration.publish",
+            "scope": "any"
+          },
+          {
+            "permission": "watch",
+            "scope": null
+          },
+          {
+            "permission": "watchlist.manage_system",
+            "scope": "any"
+          },
+          {
+            "permission": "request.read_ingest",
+            "scope": "any"
+          },
+          {
+            "permission": "request.retry",
+            "scope": "any"
+          },
+          {
+            "permission": "request.read_payload",
+            "scope": "any"
+          },
+          {
+            "permission": "list.read",
+            "scope": "any"
+          },
+          {
+            "permission": "list.create",
+            "scope": "any"
+          },
+          {
+            "permission": "list.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "list.delete",
+            "scope": "any"
+          },
+          {
+            "permission": "intention.read",
+            "scope": "any"
+          },
+          {
+            "permission": "intention.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "mix.read",
+            "scope": "any"
+          },
+          {
+            "permission": "mix.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "mix.manage",
+            "scope": "any"
+          },
+          {
+            "permission": "intention.repeat",
+            "scope": "any"
+          },
+          {
+            "permission": "project.read",
+            "scope": "any"
+          },
+          {
+            "permission": "project.create",
+            "scope": "any"
+          },
+          {
+            "permission": "project.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "project.manage_members",
+            "scope": "any"
+          },
+          {
+            "permission": "project.delete",
+            "scope": "any"
+          },
+          {
+            "permission": "project.decide",
+            "scope": "any"
+          },
+          {
+            "permission": "category.read",
+            "scope": "any"
+          },
+          {
+            "permission": "category.edit",
+            "scope": "any"
+          },
+          {
+            "permission": "category.grant_custody",
+            "scope": "any"
+          },
+          {
+            "permission": "task.read_own",
+            "scope": null
+          },
+          {
+            "permission": "task.read",
+            "scope": "any"
+          },
+          {
+            "permission": "task.cancel",
+            "scope": "any"
+          },
+          {
+            "permission": "task.schedule",
+            "scope": "any"
+          },
+          {
+            "permission": "plugin.read",
+            "scope": "any"
+          },
+          {
+            "permission": "plugin.configure",
+            "scope": "any"
+          },
+          {
+            "permission": "plugin.upload_code",
+            "scope": "any"
+          },
+          {
+            "permission": "plugin.run",
+            "scope": "any"
+          },
+          {
+            "permission": "hook.read",
+            "scope": "any"
+          },
+          {
+            "permission": "hook.configure",
+            "scope": "any"
+          },
+          {
+            "permission": "property.define",
+            "scope": "any"
+          },
+          {
+            "permission": "access.read",
+            "scope": "any"
+          },
+          {
+            "permission": "access.manage",
+            "scope": "any"
+          }
+        ],
+        "name": "admin",
+        "isShipped": true
+      }
+    ],
+    "userAccess": {},
+    "categories": [],
+    "groups": [],
+    "categoryMembers": {},
+    "requestCustodies": [
+      {
+        "id": "pc0",
+        "name": "Fallback",
+        "description": "What no Custody rule placed.",
+        "isFallback": true,
+        "memberIds": [],
+        "groupIds": []
+      }
+    ]
+  }
+}

@@ -14,6 +14,7 @@ import {
 } from "@vera/domain/access";
 import { categorySchema, userSchema } from "@vera/domain/entities";
 import { z } from "zod";
+import { extendSeed } from "./seed-extends";
 
 export const seedsDir = join(import.meta.dir, "..", "seeds");
 
@@ -30,6 +31,7 @@ const userAccessSchema = z.object({
 
 export const seedSchema = z.object({
   name: z.string().min(1),
+  extends: z.string().optional(),
   now: z.iso.datetime(),
   devPeople: z.record(z.string().min(1), id),
   // Collections a step does not load yet pass through unread.
@@ -56,7 +58,18 @@ export function readSeed(name: string, dir: string = seedsDir): Seed {
     throw new SeedNotFound(`There is no seed named ${name}.`);
   }
 
-  return seedSchema.parse(JSON.parse(readFileSync(path, "utf8")));
+  const raw = JSON.parse(readFileSync(path, "utf8"));
+  // A seed extends at most one other, which may not extend in turn (installation extends
+  // nothing); a chain would hide where a record came from.
+  if (typeof raw.extends === "string") {
+    const parent = JSON.parse(readFileSync(join(dir, `${raw.extends}.json`), "utf8"));
+    if (parent.extends !== undefined) {
+      throw new Error(`${raw.extends} extends another seed; only one level is allowed.`);
+    }
+    return seedSchema.parse(extendSeed(parent, raw));
+  }
+
+  return seedSchema.parse(raw);
 }
 
 // Writes the collections step 1's tables hold. The caller runs it in a transaction.

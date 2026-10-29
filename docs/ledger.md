@@ -68,13 +68,6 @@ The daily limit counts against the browser's clock rather than the mock's, and i
 on reload. The engine counts accepted items from stored requests against its own clock. →
 engine.
 
-### L11: The shipped roles
-
-Rules: [ROLE-shipped](reference/access/roles.md#role-shipped).
-
-The shipped roles live in a mock fixture (`mocks/fixtures/access.ts`). They move to the engine's
-installation seed, and `docs/tools/docs.ts` then reads them from there. → engine.
-
 ### L23: Event codes
 
 Rules: [LOG-public](reference/model/log.md#log-public).
@@ -216,6 +209,13 @@ is published (*Digitization*, *Progress*…), in Czech first
 ([VIEW-own-label](reference/access/views.md#view-own-label)).
 
 ## Done
+
+### Built, 2026-10-29
+
+- **L11:** the shipped roles and the fallback custody are the engine's installation seed
+  (`engine/seeds/installation.json`), which `base.json` extends; `docs/tools/docs.ts` reads the
+  roles there, and a frontend test keeps the mock's fixture equal to it
+  ([ROLE-shipped](reference/access/roles.md#role-shipped)).
 
 ### Decided, 2026-10-16
 

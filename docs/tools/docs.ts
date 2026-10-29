@@ -9,7 +9,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import type { Role } from "../../domain/src/access.ts";
+import { type Role, roleSchema } from "../../domain/src/access.ts";
 import type {
   PermissionEntry,
   Requirement,
@@ -65,7 +65,14 @@ import { validationsView } from "../../frontend/src/features/validations/validat
 import type { PerTier } from "../../frontend/src/hooks/use-tier.ts";
 import { tiers, valueForTier } from "../../frontend/src/hooks/use-tier.ts";
 import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
-import { roles } from "../../frontend/src/mocks/fixtures/access.ts";
+
+// L11: the shipped roles are what the engine installs, not a mock fixture.
+const roles = roleSchema
+  .array()
+  .parse(
+    JSON.parse(readFileSync(join(import.meta.dir, "../../engine/seeds/installation.json"), "utf8"))
+      .collections.roles,
+  );
 
 const root = resolve(import.meta.dir, "../..");
 const docs = join(root, "docs");
