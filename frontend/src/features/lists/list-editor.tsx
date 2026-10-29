@@ -426,7 +426,7 @@ export function listEditorColumns(
       cell: (item) => (
         <>
           <span className="block leading-snug font-medium">{item.document.title}</span>
-          <span className="mt-0.5 block truncate font-mono text-[0.6875rem] text-muted-foreground">
+          <span className="mt-0.5 block truncate font-mono text-caption text-muted-foreground">
             {documentIdentifierOf(item.document)}
           </span>
         </>

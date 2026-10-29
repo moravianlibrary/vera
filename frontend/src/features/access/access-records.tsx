@@ -143,7 +143,7 @@ function Part({
 }) {
   return (
     <div className="mt-4">
-      <h3 className="mb-1.5 text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
+      <h3 className="mb-1.5 text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
         {title}
         {aside !== undefined && (
           <span className="font-normal tracking-normal normal-case"> · {aside}</span>
@@ -156,7 +156,7 @@ function Part({
 
 function Row({ aside, children }: { aside?: ReactNode; children: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b py-1.5 text-[0.8125rem] last:border-b-0">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b py-1.5 text-ui last:border-b-0">
       <div className="min-w-0">{children}</div>
       {aside !== undefined && <div className="ml-auto min-w-0 text-right">{aside}</div>}
     </div>
@@ -200,7 +200,7 @@ function RecordLink({
 
 export function AgentBadge() {
   return (
-    <ToneBadge tone="purple" className="px-1.5 py-0 text-[0.625rem]">
+    <ToneBadge tone="purple" className="px-1.5 py-0 text-2xs">
       agent
     </ToneBadge>
   );
@@ -209,7 +209,7 @@ export function AgentBadge() {
 // ACCESS-suspend.
 export function SuspendedBadge() {
   return (
-    <ToneBadge tone="red" className="px-1.5 py-0 text-[0.625rem]">
+    <ToneBadge tone="red" className="px-1.5 py-0 text-2xs">
       suspended
     </ToneBadge>
   );
@@ -217,7 +217,7 @@ export function SuspendedBadge() {
 
 function HandTag() {
   return (
-    <span className="rounded-full bg-tone-purple px-2 py-px text-[0.6875rem] text-tone-purple-foreground">
+    <span className="rounded-full bg-tone-purple px-2 py-px text-caption text-tone-purple-foreground">
       by hand
     </span>
   );
@@ -260,7 +260,7 @@ function ScopePill({ scope }: { scope: GrantScope }) {
   return (
     <span
       className={cn(
-        "rounded-full px-1.5 text-[0.625rem]",
+        "rounded-full px-1.5 text-2xs",
         scope === null ? "bg-muted text-muted-foreground" : scopeTones[scope],
       )}
     >
@@ -300,11 +300,9 @@ function PermissionTable({ rows }: { rows: readonly PermissionRow[] }) {
                 title={permissionLineOf(row.permission)}
                 className="flex flex-wrap items-baseline gap-1.5 border-b py-0.5 text-xs"
               >
-                <span className="font-mono text-[0.6875rem]">{row.permission}</span>
+                <span className="font-mono text-caption">{row.permission}</span>
                 <ScopePill scope={row.scope} />
-                {row.from !== undefined && (
-                  <span className="ml-auto text-[0.6875rem]">{row.from}</span>
-                )}
+                {row.from !== undefined && <span className="ml-auto text-caption">{row.from}</span>}
               </div>
             ))}
           </div>
@@ -604,7 +602,7 @@ export function RoleRecord({
     <RecordFrame
       title={role.name}
       badge={
-        <ToneBadge tone={role.isShipped ? "slate" : "blue"} className="px-1.5 py-0 text-[0.625rem]">
+        <ToneBadge tone={role.isShipped ? "slate" : "blue"} className="px-1.5 py-0 text-2xs">
           {role.isShipped ? "shipped" : "custom"}
         </ToneBadge>
       }
@@ -795,7 +793,7 @@ export function CustodyRecordView({
       title={custody.name}
       badge={
         custody.isFallback ? (
-          <ToneBadge tone="amber" className="px-1.5 py-0 text-[0.625rem]">
+          <ToneBadge tone="amber" className="px-1.5 py-0 text-2xs">
             fallback
           </ToneBadge>
         ) : undefined

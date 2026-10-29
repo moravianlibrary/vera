@@ -783,7 +783,7 @@ function ItemOutcome({
       return (
         <>
           <ToneBadge tone="blue">In VERA</ToneBadge>
-          <StatusBadge status={check.status} className="px-1.5 py-0 text-[0.6875rem]" />
+          <StatusBadge status={check.status} className="px-1.5 py-0 text-caption" />
           <Muted>· ask for this too</Muted>
         </>
       );

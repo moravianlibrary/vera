@@ -227,7 +227,7 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
           >
             <div
               className={cn(
-                "z-10 hidden border-b bg-muted text-[0.6875rem] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase @2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid @2xl:items-center",
+                "z-10 hidden border-b bg-muted text-caption font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase @2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid @2xl:items-center",
                 !isStacked && "sticky top-0",
               )}
             >
@@ -298,7 +298,7 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
                       <span
                         key={column.key}
                         className={cn(
-                          "hidden min-w-0 px-2.5 text-[0.8125rem] @2xl:block",
+                          "hidden min-w-0 px-2.5 text-ui @2xl:block",
                           column.isNumeric && "text-right tabular-nums",
                         )}
                       >
@@ -321,7 +321,7 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
                     </span>
 
                     {why !== undefined && why !== null && (
-                      <span className="hidden pb-2 text-xs leading-snug text-muted-foreground @2xl:col-span-full @2xl:-mt-1 @2xl:block @2xl:px-4 @2xl:pl-[3.25rem]">
+                      <span className="hidden pb-2 text-xs leading-snug text-muted-foreground @2xl:col-span-full @2xl:-mt-1 @2xl:block @2xl:px-4 @2xl:pl-13">
                         {why}
                       </span>
                     )}

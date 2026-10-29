@@ -84,8 +84,8 @@ export const listColumns: ColumnDefinition<ListRow>[] = [
     track: "minmax(10rem,1fr)",
     cell: (row) => (
       <>
-        <span className="block text-[0.8125rem] leading-snug font-medium">{row.list.name}</span>
-        <span className="mt-0.5 block truncate font-mono text-[0.6875rem] text-muted-foreground">
+        <span className="block text-ui leading-snug font-medium">{row.list.name}</span>
+        <span className="mt-0.5 block truncate font-mono text-caption text-muted-foreground">
           {row.list.id}
         </span>
       </>

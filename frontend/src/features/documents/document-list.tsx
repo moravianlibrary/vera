@@ -242,8 +242,8 @@ function DocumentCell({ record, categories }: DocumentCellProps) {
 
   return (
     <>
-      <span className="block text-[0.8125rem] leading-snug font-medium">{document.title}</span>
-      <span className="mt-0.5 block truncate text-[0.6875rem] text-muted-foreground">
+      <span className="block text-ui leading-snug font-medium">{document.title}</span>
+      <span className="mt-0.5 block truncate text-caption text-muted-foreground">
         <span className="font-mono">{documentIdentifierOf(document)}</span>
         {categoryName !== null && ` · ${categoryName}`}
       </span>

@@ -122,7 +122,7 @@ export function CatalogSearchWay({
                       </span>
                     )}{" "}
                     {catalogs.length > 1 && (
-                      <ToneBadge tone="slate" className="px-1.5 py-0 text-[0.625rem]">
+                      <ToneBadge tone="slate" className="px-1.5 py-0 text-2xs">
                         {hit.catalog.name}
                       </ToneBadge>
                     )}

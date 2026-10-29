@@ -263,7 +263,7 @@ function WatchlistTab({
         </span>
         {displayedNewCount > 0 && (
           <span
-            className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-primary"
+            className="rounded-full bg-primary/10 px-1.5 py-0.5 text-caption font-semibold tabular-nums text-primary"
             title={`${displayedNewCount} new in ${watchlist.name}`}
           >
             +{displayedNewCount}
@@ -385,7 +385,7 @@ function CurrentSearchPopover({
           type="button"
           data-watchlist-tab="current"
           aria-current="page"
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 border-primary px-3 text-[0.8125rem] font-medium whitespace-nowrap text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 border-primary px-3 text-ui font-medium whitespace-nowrap text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           Current search
           <ChevronDown className="size-3.5" />

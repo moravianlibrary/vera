@@ -454,7 +454,7 @@ function useDecisionDryRun(projectId: string, isOpen: boolean) {
 
 function DocumentList({ documents }: { documents: readonly DecidedDocument[] }) {
   return (
-    <ul className="mt-1 grid list-disc gap-1 pl-4.5 text-[0.8125rem]">
+    <ul className="mt-1 grid list-disc gap-1 pl-4.5 text-ui">
       {documents.map((document) => (
         <li key={document.documentId}>{document.title}</li>
       ))}
@@ -579,7 +579,7 @@ export function RejectDialog({ isOpen, onClose, row }: DecisionDialogProps) {
         dryRun.pending.length > 0 && (
           <div>
             <p className="text-sm font-medium">Its proposals</p>
-            <ul className="mt-1 grid list-disc gap-1 pl-4.5 text-[0.8125rem]">
+            <ul className="mt-1 grid list-disc gap-1 pl-4.5 text-ui">
               {dryRun.pending.map((document) => (
                 <li key={document.documentId}>
                   {document.title}{" "}

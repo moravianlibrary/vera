@@ -30,7 +30,7 @@ export function StatusNote({ tone, title, children, className }: StatusNoteProps
         className,
       )}
     >
-      <span aria-hidden className="shrink-0 text-[0.625rem] leading-[1.125rem]">
+      <span aria-hidden className="shrink-0 text-2xs leading-4.5">
         ▼
       </span>
       <p>

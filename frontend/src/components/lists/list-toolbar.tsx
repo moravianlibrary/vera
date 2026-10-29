@@ -29,7 +29,7 @@ export function ListToolbar<Grouping extends string>({
 }: ListToolbarProps<Grouping>) {
   return (
     <div className="sticky top-0 z-20 flex h-10 items-center gap-2 border-b bg-background px-4">
-      <span className="text-[0.6875rem] font-bold tracking-wider text-muted-foreground uppercase">
+      <span className="text-caption font-bold tracking-wider text-muted-foreground uppercase">
         {count}
       </span>
 

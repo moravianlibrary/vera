@@ -84,13 +84,13 @@ export function StatTiles({ stats }: { stats: readonly Stat[] }) {
     <div className="grid gap-3.5 @sm:grid-cols-2 @xl:grid-cols-3">
       {stats.map((stat) => (
         <div key={stat.label} className="min-w-0 rounded-lg border bg-card px-4 py-3.5">
-          <div className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
             {stat.label}
           </div>
           <div
             className={cn(
               "mt-1.5 tabular-nums",
-              stat.isText ? "text-[0.9375rem] font-semibold" : "text-2xl font-bold",
+              stat.isText ? "text-title font-semibold" : "text-2xl font-bold",
             )}
           >
             {stat.value}

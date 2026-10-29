@@ -10,6 +10,7 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
+    "check:ui": "bun tools/check-ui-gates.ts",
     "typecheck": "tsc -b --pretty",
     "test": "vitest run",
     "test:watch": "vitest"

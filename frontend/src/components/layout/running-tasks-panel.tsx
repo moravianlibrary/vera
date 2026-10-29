@@ -42,7 +42,7 @@ export function RunningTasksPanel({
         aria-label={countText}
         className="mb-2 flex h-9 items-center justify-center rounded-md hover:bg-sidebar-accent"
       >
-        <span className="grid size-5 place-items-center rounded-full bg-chart-3 text-[0.625rem] font-bold text-white tabular-nums">
+        <span className="grid size-5 place-items-center rounded-full bg-chart-3 text-2xs font-bold text-primary-foreground tabular-nums">
           {runs.length}
         </span>
       </Link>

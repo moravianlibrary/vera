@@ -93,7 +93,7 @@ export function Sub({ children }: { children: ReactNode }) {
 
 export function SectionTitle({ title, count }: { title: string; count?: number }) {
   return (
-    <h2 className="mt-3 mb-2.5 text-[0.6875rem] font-semibold tracking-wider text-muted-foreground uppercase">
+    <h2 className="mt-3 mb-2.5 text-caption font-semibold tracking-wider text-muted-foreground uppercase">
       {title}
       {count !== undefined && <span className="font-normal normal-case"> · {count}</span>}
     </h2>

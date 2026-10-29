@@ -203,7 +203,7 @@ export function TasksPage() {
             tableSection={{
               header: (
                 <div className="sticky top-0 z-20 grid h-10 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-y bg-background">
-                  <h2 className="min-w-0 truncate text-[0.6875rem] font-semibold tracking-wider text-muted-foreground uppercase">
+                  <h2 className="min-w-0 truncate text-caption font-semibold tracking-wider text-muted-foreground uppercase">
                     Finished{" "}
                     <span className="font-normal normal-case">· {index.finished.length}</span>
                   </h2>

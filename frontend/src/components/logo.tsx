@@ -10,7 +10,7 @@ interface LogoProps {
 }
 
 // Decorative: it always sits beside the "VERA" wordmark, which names it.
-export function Logo({ className, markClassName = "fill-white" }: LogoProps) {
+export function Logo({ className, markClassName = "fill-sidebar-primary" }: LogoProps) {
   return (
     <svg viewBox="0 0 625 625" className={className} aria-hidden="true">
       <g transform="translate(0 625) scale(0.1 -0.1)">

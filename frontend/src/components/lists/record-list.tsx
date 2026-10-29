@@ -81,7 +81,7 @@ function PickMark({ isPicked, className }: { isPicked: boolean; className?: stri
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border bg-background",
+        "inline-flex size-4 shrink-0 items-center justify-center rounded-xs border bg-background",
         isPicked && "border-primary bg-primary text-primary-foreground",
         className,
       )}
@@ -135,7 +135,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
         >
           <div
             aria-hidden
-            className="sticky top-10 z-10 hidden border-b bg-muted text-[0.6875rem] font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase @2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid"
+            className="sticky top-10 z-10 hidden border-b bg-muted text-caption font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase @2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid"
           >
             {picking !== undefined && <span />}
             {columns.map((column) => (
@@ -167,8 +167,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                     "block w-full border-b px-4 py-3 text-left hover:bg-muted",
                     "@2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid @2xl:items-center @2xl:px-0",
                     hasWhyLine ? "@2xl:pt-0 @2xl:pb-2.5" : "@2xl:py-0",
-                    isSelected &&
-                      "bg-primary/8 shadow-[inset_3px_0_0_var(--primary)] hover:bg-primary/12",
+                    isSelected && "bg-primary/8 shadow-mark hover:bg-primary/12",
                   )}
                 >
                   <span className="block @2xl:hidden">
@@ -201,7 +200,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                       <span
                         key={column.key}
                         className={cn(
-                          "min-w-0 px-2.5 text-[0.8125rem] first:pl-4 last:pr-4 [&_[data-slot=badge]]:rounded-md [&_[data-slot=badge]]:whitespace-normal",
+                          "min-w-0 px-2.5 text-ui first:pl-4 last:pr-4 [&_[data-slot=badge]]:rounded-md [&_[data-slot=badge]]:whitespace-normal",
                           hasWhyLine ? "pt-2.5 pb-1" : "py-2.5",
                           column.isNumeric && "text-right tabular-nums",
                         )}

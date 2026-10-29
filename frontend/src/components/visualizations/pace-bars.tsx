@@ -40,11 +40,9 @@ export function PaceBars({
   );
 
   return (
-    <div
-      className={cn("@container grid gap-2", density === "detail" ? "text-[0.8125rem]" : "text-xs")}
-    >
+    <div className={cn("@container grid gap-2", density === "detail" ? "text-ui" : "text-xs")}>
       {timeElapsed !== null && (
-        <PaceBar label="Time" fill={timeElapsed} tone="bg-neutral-400" density={density}>
+        <PaceBar label="Time" fill={timeElapsed} tone="bg-muted-foreground" density={density}>
           {timeLabel}
         </PaceBar>
       )}
@@ -103,7 +101,7 @@ function PaceBar({ label, fill, mark = null, tone, density, children }: PaceBarP
       <div
         className={cn(
           "relative rounded-full bg-secondary",
-          density === "detail" ? "h-2.5" : "h-[0.4375rem]",
+          density === "detail" ? "h-2.5" : "h-1.75",
         )}
       >
         <div
@@ -112,7 +110,7 @@ function PaceBar({ label, fill, mark = null, tone, density, children }: PaceBarP
         />
         {mark !== null && (
           <b
-            className="absolute -top-[0.1875rem] -bottom-[0.1875rem] -ml-px w-0.5 rounded-[1px] bg-foreground"
+            className="absolute -top-0.75 -bottom-0.75 -ml-px w-0.5 rounded-full bg-foreground"
             style={{ left: `${Math.min(100, Math.max(0, mark * 100))}%` }}
             title="Where it would be by today at an even pace"
           />

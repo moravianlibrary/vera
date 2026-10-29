@@ -8,7 +8,7 @@
 import { mixBand } from "@vera/domain/intentions";
 import { cn } from "@/lib/utils";
 
-const shareTones = ["bg-chart-5", "bg-chart-3", "bg-chart-2", "bg-chart-1", "bg-blue-200"];
+const shareTones = ["bg-chart-5", "bg-chart-3", "bg-chart-2", "bg-chart-1", "bg-tone-blue"];
 
 // The colour a category is drawn in, by its place among the categories of the mix.
 export const shareToneOf = (index: number) => shareTones[index % shareTones.length];

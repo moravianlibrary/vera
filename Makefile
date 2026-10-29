@@ -24,7 +24,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint typecheck check test version-check set-version open-client docs docs-check
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -174,13 +174,16 @@ format-check: ## Check frontend formatting
 lint: ## Lint frontend source files
 	cd frontend && bun run lint
 
+ui-check: ## Check the frontend against the UI gates (frontend/ui-gates.md)
+	cd frontend && bun run check:ui
+
 typecheck: ## Type-check the frontend and the shared packages
 	cd frontend && bun run typecheck
 	cd contract && bun run typecheck
 	cd domain && bun run typecheck
 	cd engine && bun run typecheck
 
-check: format-check lint typecheck version-check docs-check ## Run the project checks
+check: format-check lint ui-check typecheck version-check docs-check ## Run the project checks
 
 docs: ## Rewrite the generated blocks in the reference from the code
 	cd frontend && bun ../docs/tools/docs.ts

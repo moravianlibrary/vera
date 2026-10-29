@@ -396,7 +396,7 @@ function PermissionRow({
   return (
     <div className="flex items-center justify-between gap-3 border-b py-1.5">
       <label htmlFor={id} className="min-w-0 text-xs">
-        <span className="block font-mono text-[0.6875rem]">{permission}</span>
+        <span className="block font-mono text-caption">{permission}</span>
         <span className="block text-muted-foreground">{line}</span>
       </label>
       {isSelfScoped(permission) ? (

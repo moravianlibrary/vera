@@ -66,8 +66,7 @@ export function IntentionCard({ row, repeatEvery, isOpen, actions, mixLink }: In
       title={intention.name}
       className={cn(
         "gap-2.5",
-        intention.isOverall &&
-          "border-tone-purple-foreground shadow-[inset_3px_0_0_var(--color-tone-purple-foreground)]",
+        intention.isOverall && "border-tone-purple-foreground shadow-mark-purple",
       )}
       badges={<IntentionBadges row={row} repeatEvery={repeatEvery} />}
       meta={
@@ -79,7 +78,7 @@ export function IntentionCard({ row, repeatEvery, isOpen, actions, mixLink }: In
       body={
         <>
           {intention.description !== "" && (
-            <p className="text-[0.8125rem] text-muted-foreground">{intention.description}</p>
+            <p className="text-ui text-muted-foreground">{intention.description}</p>
           )}
           {isTracking ? (
             <TrackingBody row={row} isOpen={isOpen} />
@@ -200,7 +199,7 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
         evenPace={row.evenPace}
       />
       {row.pagesPerWeekNeeded !== null && intention.endsOn !== null && (
-        <p className="text-[0.8125rem] text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           Needs{" "}
           <b className="font-semibold text-foreground">
             {formatCount(row.pagesPerWeekNeeded)} pp/week
@@ -209,7 +208,7 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
         </p>
       )}
       {isOpenEndedShort && (
-        <p className="text-[0.8125rem] text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           <b className="font-semibold text-foreground">
             {formatCount(target - row.deliveredPages)} pp
           </b>{" "}
@@ -242,7 +241,7 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
         {row.lists.length === 0 ? (
           <Fine>None yet.</Fine>
         ) : (
-          <ul className="grid gap-1 text-[0.8125rem]">
+          <ul className="grid gap-1 text-ui">
             {row.lists.map((list) => (
               <li key={list.id} className="flex flex-wrap justify-between gap-x-3">
                 <span>
@@ -325,7 +324,7 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
   const basis = outputBasisOf(row);
   return (
     <>
-      <p className="text-[0.8125rem] text-muted-foreground">
+      <p className="text-ui text-muted-foreground">
         {basis ?? (
           <>
             {outputSinceOf(row)} ·{" "}
@@ -352,13 +351,13 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
       ) : (
         row.outputPages > 0 &&
         row.mix !== null && (
-          <p className="text-[0.8125rem] text-tone-green-foreground">
+          <p className="text-ui text-tone-green-foreground">
             Every category within {bandText} points.
           </p>
         )
       )}
       {row.unallocated > 0.5 && (
-        <p className="text-[0.8125rem] text-tone-amber-foreground">
+        <p className="text-ui text-tone-amber-foreground">
           {Math.round(row.unallocated)}% of the mix is unallocated
         </p>
       )}
@@ -388,7 +387,7 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
 function OutOfBandDetail({ row }: { row: IntentionRow }) {
   const worst = worstDriftOf(row.mixRows);
   return (
-    <p className="text-[0.8125rem] text-tone-red-foreground">
+    <p className="text-ui text-tone-red-foreground">
       {plural(row.outOfBandCount, "category", "categories")} out of the {bandText} band
       {worst !== null && worst.drift !== null && (
         <>
@@ -417,7 +416,7 @@ function DriftLine({
   }
 
   return (
-    <p className={cn("text-xs font-semibold", isIndented && "pl-[5.5rem]")}>
+    <p className={cn("text-xs font-semibold", isIndented && "pl-22")}>
       {off.map((mixRow, index) => (
         <span key={mixRow.categoryId}>
           {index > 0 && <span className="font-normal text-muted-foreground"> · </span>}
@@ -592,7 +591,7 @@ function Expansion({
   children: ReactNode;
 }) {
   return (
-    <details open={isOpen} className="group text-[0.8125rem]">
+    <details open={isOpen} className="group text-ui">
       <summary className="cursor-pointer py-0.5 font-medium text-muted-foreground hover:text-foreground">
         {label}
       </summary>

@@ -537,7 +537,7 @@ function RepeatLine({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg border border-dashed px-3 py-2 text-[0.8125rem]",
+        "flex items-center gap-3 rounded-lg border border-dashed px-3 py-2 text-ui",
         isFocused && "outline-2 outline-offset-2 outline-ring",
       )}
     >

@@ -104,7 +104,7 @@ export function MixMeters({
             {!isCompact && (
               <span
                 className={cn(
-                  "text-[0.6875rem] text-muted-foreground",
+                  "text-caption text-muted-foreground",
                   row.share === null && "text-tone-amber-foreground",
                 )}
               >

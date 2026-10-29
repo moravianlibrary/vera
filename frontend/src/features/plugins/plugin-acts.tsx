@@ -532,7 +532,7 @@ function ReadingView({ reading }: { reading: UploadReading }) {
           : `A new version of ${reading.name}, now at v${reading.currentVersion}. No instance moves with it: each is moved on its own, after the same comparison.`}
       </p>
       {difference !== null && (
-        <ul className="grid gap-1 text-[0.8125rem]">
+        <ul className="grid gap-1 text-ui">
           {difference.added.length +
             difference.retired.length +
             difference.configAdded.length +

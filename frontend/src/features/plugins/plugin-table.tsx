@@ -31,7 +31,7 @@ import { agoText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
-const smallBadge = "px-1.5 py-0 text-[0.625rem]";
+const smallBadge = "px-1.5 py-0 text-2xs";
 
 export function KindBadge({ kind, className }: { kind: PluginKind; className?: string }) {
   return (
@@ -59,7 +59,7 @@ export function SupplyChips({ items }: { items: readonly string[] }) {
       {items.map((item) => (
         <span
           key={item}
-          className="rounded border bg-background px-1.5 py-px text-[0.6875rem] text-muted-foreground"
+          className="rounded-xs border bg-background px-1.5 py-px text-caption text-muted-foreground"
         >
           {item}
         </span>
@@ -144,7 +144,7 @@ function CustodyLine({
 
   const name = custodyOf(instance.settings.custodyId);
   return name === undefined ? (
-    <div className="text-xs text-amber-700 dark:text-amber-400">
+    <div className="text-xs text-tone-amber-foreground">
       Its custody was deleted: it places nothing
     </div>
   ) : (
@@ -172,7 +172,7 @@ export function instanceColumns({
         implementation !== undefined && implementation.versions[0]?.version !== instance.version;
       return (
         <div className={indent}>
-          <div className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
+          <div className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
             Instance
           </div>
           <div className="font-medium">{instance.name}</div>
@@ -193,7 +193,7 @@ export function instanceColumns({
     header: "Configuration",
     track: "minmax(12rem,2fr)",
     cell: (instance) => (
-      <span className="font-mono text-[0.6875rem] break-all text-muted-foreground">
+      <span className="font-mono text-caption break-all text-muted-foreground">
         {configurationText(instance)}
       </span>
     ),
@@ -261,7 +261,7 @@ export function useInstanceGroups({
         const kind = kindOf(key);
         return kind === undefined ? null : (
           <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
+            <span className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
               Type
             </span>
             <KindBadge kind={kind} className="border-foreground/20" />
@@ -318,7 +318,7 @@ function ImplementationHeader({
   return (
     <div className={cn("flex items-start gap-3", isPhone ? "pl-1" : "pl-5")}>
       <div className="min-w-0 flex-1">
-        <div className="mb-0.5 text-[0.625rem] font-semibold tracking-wider text-foreground uppercase">
+        <div className="mb-0.5 text-2xs font-semibold tracking-wider text-foreground uppercase">
           Plugin
         </div>
         <div className={cn("flex flex-wrap items-baseline gap-x-2", !isPhone && "mb-1")}>

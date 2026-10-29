@@ -48,7 +48,7 @@ export function MixSetCard({
       action={action}
     >
       <table className="w-full text-sm">
-        <thead className="text-[0.6875rem] tracking-wide text-muted-foreground uppercase">
+        <thead className="text-caption tracking-wide text-muted-foreground uppercase">
           <tr className="border-b">
             <th className="py-1.5 text-left font-semibold">Category</th>
             <th className="text-right font-semibold">

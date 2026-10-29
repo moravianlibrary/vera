@@ -126,7 +126,7 @@ export function ImplementationDrawer({
 }: ImplementationDrawerProps) {
   const [newest] = implementation.versions;
   return (
-    <div className="grid gap-4 text-[0.8125rem]">
+    <div className="grid gap-4 text-ui">
       {notice}
       <p>{implementation.description}</p>
       {newest !== undefined && <Contract version={newest} />}
@@ -211,7 +211,7 @@ function Contract({ version }: { version: PluginVersion }) {
       )}
       {declares.rawStates.length > 0 && (
         <DetailCard title="Registry mapping">
-          <table className="w-full text-[0.8125rem]">
+          <table className="w-full text-ui">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
                 <th className="py-1 font-medium">Raw</th>
@@ -374,7 +374,7 @@ export function InstanceDrawer({
     ...instance.secretsSet.map((key) => [key, "•••"] as const),
   ];
   return (
-    <div className="grid gap-4 text-[0.8125rem]">
+    <div className="grid gap-4 text-ui">
       {notice}
       {!instance.isEnabled && (
         <StatusNote tone="slate" title="Disabled">
@@ -383,7 +383,7 @@ export function InstanceDrawer({
       )}
 
       <DetailCard title="Configuration">
-        <pre className="mb-3 overflow-x-auto rounded-md bg-muted px-3 py-2.5 font-mono text-[0.6875rem] leading-relaxed whitespace-pre-wrap">
+        <pre className="mb-3 overflow-x-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap">
           {configuration.length === 0
             ? "—"
             : configuration.map(([key, value]) => `${key} = ${value}`).join("\n")}

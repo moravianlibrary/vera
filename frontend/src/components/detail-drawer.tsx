@@ -23,11 +23,11 @@ export function DetailDrawer({ open, onClose, title, subtitle, children }: Detai
       <DrawerPrimitive.Portal>
         <DrawerPrimitive.Content
           onInteractOutside={(event) => event.preventDefault()}
-          className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l bg-background shadow-xl outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:animate-in data-[state=open]:slide-in-from-right sm:w-[28rem]"
+          className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l bg-background shadow-xl outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:animate-in data-[state=open]:slide-in-from-right sm:w-112"
         >
           <div className="flex items-start gap-3 border-b px-5 py-3.5">
             <div className="min-w-0 flex-1">
-              <DrawerPrimitive.Title className="text-[0.9375rem] font-semibold leading-snug">
+              <DrawerPrimitive.Title className="text-title font-semibold leading-snug">
                 {title}
               </DrawerPrimitive.Title>
               <DrawerPrimitive.Description className="mt-0.5 text-xs text-muted-foreground">

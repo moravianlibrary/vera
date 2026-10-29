@@ -202,7 +202,7 @@ export function Tree<Node>({
                 type="button"
                 tabIndex={-1}
                 aria-label={row.isExpanded ? "Collapse" : "Expand"}
-                className="grid size-5 shrink-0 place-items-center rounded text-muted-foreground hover:bg-background hover:text-foreground"
+                className="grid size-5 shrink-0 place-items-center rounded-xs text-muted-foreground hover:bg-background hover:text-foreground"
                 onClick={(event) => {
                   event.stopPropagation();
                   toggle(row.key);
@@ -236,7 +236,7 @@ export function Tree<Node>({
                 ⚠
               </span>
             )}
-            <span className="shrink-0 text-right text-[0.8125rem] tabular-nums">
+            <span className="shrink-0 text-right text-ui tabular-nums">
               {isRoot ? virtualRoot?.value : value?.(node)}
             </span>
           </div>

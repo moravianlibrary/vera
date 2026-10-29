@@ -245,7 +245,7 @@ export function MixesPage() {
                   <span className="block font-medium">
                     {mix.name}{" "}
                     {mix.isPrimary && (
-                      <span className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                      <span className="ml-2 rounded-xs bg-primary/10 px-2 py-0.5 text-xs text-primary">
                         Primary
                       </span>
                     )}

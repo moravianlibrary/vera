@@ -50,7 +50,7 @@ export function ProjectCard({ row, nameOf, actions }: ProjectCardProps) {
       body={
         <>
           {project.description !== "" && (
-            <p className="-mt-1 text-[0.8125rem] text-muted-foreground">{project.description}</p>
+            <p className="-mt-1 text-ui text-muted-foreground">{project.description}</p>
           )}
           <PaceBars
             target={row.intention.targetPages ?? 0}

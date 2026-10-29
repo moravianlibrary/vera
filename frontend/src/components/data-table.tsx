@@ -178,7 +178,7 @@ export function DataTable<Row>({
             key={id}
             data-focused={id === focusedId || undefined}
             className={cn(
-              "scroll-mt-4 rounded-lg border border-l-4 border-l-transparent bg-card px-3.5 py-3 text-[0.8125rem]",
+              "scroll-mt-4 rounded-lg border border-l-4 border-l-transparent bg-card px-3.5 py-3 text-ui",
               onOpen !== undefined && "cursor-pointer hover:bg-muted",
               id === focusedId && "border-l-primary bg-primary/8 hover:bg-primary/12",
             )}
@@ -314,7 +314,7 @@ export function DataTable<Row>({
         stickyHeader ? "overflow-visible" : "overflow-hidden",
       )}
     >
-      <table className="w-full border-collapse text-[0.8125rem]">
+      <table className="w-full border-collapse text-ui">
         <thead
           className={stickyHeader ? cn("sticky top-0 z-10", stickyHeaderClassName) : undefined}
         >

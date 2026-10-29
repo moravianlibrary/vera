@@ -86,7 +86,7 @@ export function Sidebar({
       className={cn(
         "flex h-full flex-col overflow-hidden bg-sidebar py-3 text-sidebar-foreground transition-[width] duration-200",
         isShowingLabels ? "w-66" : "w-14",
-        isPeeking && "shadow-[8px_0_24px_rgb(15_23_42/0.28)]",
+        isPeeking && "shadow-peek",
         className,
       )}
     >
@@ -137,7 +137,7 @@ export function Sidebar({
                 )
               }
             >
-              <span className="relative grid size-7 shrink-0 place-items-center text-[0.6875rem] font-bold">
+              <span className="relative grid size-7 shrink-0 place-items-center text-caption font-bold">
                 {entry.rail}
                 {badgeCount > 0 && !isShowingLabels && (
                   <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />

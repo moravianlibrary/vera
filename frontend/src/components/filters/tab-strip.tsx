@@ -26,7 +26,7 @@ export function TabStrip({
 
 function tabClassName(selected: boolean, className?: string) {
   return cn(
-    "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-[0.8125rem] whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+    "inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 px-3 text-ui whitespace-nowrap outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
     selected
       ? "border-primary font-medium text-foreground"
       : "border-transparent text-muted-foreground hover:text-foreground",

@@ -85,7 +85,7 @@ export function RunDrawer({
   ];
 
   return (
-    <div className="grid gap-4 text-[0.8125rem]">
+    <div className="grid gap-4 text-ui">
       <div className="grid gap-2">
         <div className="flex items-center gap-2">
           <RunStateBadge run={run} />
@@ -142,7 +142,7 @@ export function RunDrawer({
       {run.itemCount > 1 && <ItemsCard detail={detail} />}
 
       <DetailCard title="Log">
-        <pre className="max-h-72 overflow-auto rounded-md bg-muted px-3 py-2.5 font-mono text-[0.6875rem] leading-relaxed whitespace-pre-wrap">
+        <pre className="max-h-72 overflow-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap">
           {detail.log.map((line) => (
             <div
               key={`${line.at}-${line.text}`}

@@ -98,7 +98,7 @@ export function Timeline({ span, now, end, lanes }: TimelineProps) {
   return (
     <div className="grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-xs @2xl:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
       <div />
-      <div className="relative h-5 border-b text-[0.6875rem] text-muted-foreground">
+      <div className="relative h-5 border-b text-caption text-muted-foreground">
         <span className="absolute left-0 font-medium text-foreground">
           now {clockFormat.format(now)}
         </span>
@@ -136,7 +136,7 @@ function TimelineRow({
   const band = (text: string, className?: string) => (
     <div
       className={cn(
-        "absolute inset-x-0 top-1/2 flex h-4 -translate-y-1/2 items-center rounded-sm bg-tone-blue px-2 text-[0.625rem] text-tone-blue-foreground",
+        "absolute inset-x-0 top-1/2 flex h-4 -translate-y-1/2 items-center rounded-sm bg-tone-blue px-2 text-2xs text-tone-blue-foreground",
         className,
       )}
     >
@@ -158,7 +158,7 @@ function TimelineRow({
         ) : isDense ? (
           band(lane.bandText)
         ) : lane.runsAt.length === 0 ? (
-          <span className="absolute inset-y-0 left-2 flex items-center text-[0.6875rem] text-muted-foreground">
+          <span className="absolute inset-y-0 left-2 flex items-center text-caption text-muted-foreground">
             {lane.emptyText}
           </span>
         ) : (

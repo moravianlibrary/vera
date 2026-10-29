@@ -193,14 +193,14 @@ function Section<Kind extends string>({
             aria-pressed={isSelected}
             onClick={() => onSelect({ kind: section.kind, id: item.id })}
             className={cn(
-              "relative z-[2] flex min-w-0 items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left outline-none transition-opacity hover:border-foreground/30 focus-visible:ring-[3px] focus-visible:ring-ring/50",
+              "relative z-2 flex min-w-0 items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left outline-none transition-opacity hover:border-foreground/30 focus-visible:ring-[3px] focus-visible:ring-ring/50",
               isSelected && "border-chart-2 bg-tone-blue ring-1 ring-chart-2",
               tag !== undefined && !isSelected && "border-chart-2/50",
               isDimmed && "opacity-45",
             )}
           >
             <span className="min-w-0 flex-1">
-              <span className="flex min-w-0 items-center gap-1.5 text-[0.8125rem] font-medium">
+              <span className="flex min-w-0 items-center gap-1.5 text-ui font-medium">
                 <span className="truncate">{item.title}</span>
                 {item.badge}
               </span>
@@ -209,7 +209,7 @@ function Section<Kind extends string>({
             {tag !== undefined && (
               <span
                 className={cn(
-                  "max-w-[55%] shrink-0 truncate rounded-full px-2 py-px text-[0.6875rem]",
+                  "max-w-[55%] shrink-0 truncate rounded-full px-2 py-px text-caption",
                   tag.isDirect
                     ? "bg-tone-purple text-tone-purple-foreground"
                     : "bg-tone-blue text-tone-blue-foreground",
@@ -305,7 +305,7 @@ function LinedColumns({
     <div ref={wrapperRef} className="relative">
       <svg
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-[1] size-full overflow-visible"
+        className="pointer-events-none absolute inset-0 z-1 size-full overflow-visible"
       >
         {paths.map((path) => (
           <path

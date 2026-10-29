@@ -196,7 +196,7 @@ function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
           <b className="font-bold">{project.name}</b>{" "}
           <Badge
             className={cn(
-              "ml-1 border-foreground/20 px-1.5 py-0 text-[0.625rem]",
+              "ml-1 border-foreground/20 px-1.5 py-0 text-2xs",
               projectStateTones[project.state],
             )}
           >

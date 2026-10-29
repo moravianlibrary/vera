@@ -143,10 +143,10 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
       track: "minmax(9rem,1fr)",
       cell: (row) => (
         <>
-          <span className="block text-[0.8125rem] leading-snug font-medium">
+          <span className="block text-ui leading-snug font-medium">
             {row.record.document.title}
           </span>
-          <span className="mt-0.5 block truncate text-[0.6875rem] text-muted-foreground">
+          <span className="mt-0.5 block truncate text-caption text-muted-foreground">
             <span className="font-mono">{documentIdentifierOf(row.record.document)}</span> ·{" "}
             {custodyNamesOf(row, references.custodies)}
           </span>

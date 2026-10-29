@@ -22,7 +22,7 @@ const toneVariants = cva("border-transparent", {
       red: "bg-tone-red text-tone-red-foreground",
       purple: "bg-tone-purple text-tone-purple-foreground",
       // Forbidden: the one verdict nothing downstream can discharge.
-      dark: "bg-black text-white",
+      dark: "bg-foreground text-background",
     },
   },
 });
@@ -38,7 +38,7 @@ interface ToneBadgeProps {
 // A small badge in a status tone, for a tag that is not itself a status: "originated", "in use".
 export function ToneBadge({ tone, className, children }: ToneBadgeProps) {
   return (
-    <Badge className={cn(toneVariants({ tone }), "px-1.5 py-0 text-[0.6875rem]", className)}>
+    <Badge className={cn(toneVariants({ tone }), "px-1.5 py-0 text-caption", className)}>
       {children}
     </Badge>
   );
@@ -136,7 +136,7 @@ export function StatusWithFootnote({ status, footnote }: StatusWithFootnoteProps
     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
       <StatusBadge status={status} />
       {footnote !== null && (
-        <span className="text-[0.6875rem] text-muted-foreground">· {footnoteLabels[footnote]}</span>
+        <span className="text-caption text-muted-foreground">· {footnoteLabels[footnote]}</span>
       )}
     </span>
   );

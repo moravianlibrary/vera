@@ -21,7 +21,7 @@ export function StepIndicator({ steps, currentIndex }: StepIndicatorProps) {
           >
             <span
               className={cn(
-                "grid size-5 place-items-center rounded-full border text-[0.6875rem]",
+                "grid size-5 place-items-center rounded-full border text-caption",
                 index === currentIndex && "border-primary bg-primary text-primary-foreground",
                 index < currentIndex && "border-transparent bg-muted",
               )}

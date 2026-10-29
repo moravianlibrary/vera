@@ -133,6 +133,17 @@ html[data-density="compact"] [data-slot="record-list-row"] > span > span {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* The type steps between Tailwind's (ui-gates.md G-STYLE-2). No line height: each sits in the
+     line height of what holds it, as the literal sizes did. */
+  --text-2xs: 0.625rem;
+  --text-caption: 0.6875rem;
+  --text-ui: 0.8125rem;
+  --text-title: 0.9375rem;
+  --radius-xs: 0.25rem;
+  /* The selected row's or card's edge, and the sidebar opened over the content. */
+  --shadow-mark: inset 3px 0 0 var(--primary);
+  --shadow-mark-purple: inset 3px 0 0 var(--tone-purple-foreground);
+  --shadow-peek: 8px 0 24px rgb(15 23 42 / 0.28);
 }
 
 @layer base {
@@ -188,4 +199,16 @@ html[data-density="compact"] [data-slot="record-list-row"] > span > span {
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #262626;
   --sidebar-ring: #737373;
+  --tone-blue: #172554;
+  --tone-blue-foreground: #60a5fa;
+  --tone-red: #450a0a;
+  --tone-red-foreground: #f87171;
+  --tone-green: #052e16;
+  --tone-green-foreground: #4ade80;
+  --tone-amber: #451a03;
+  --tone-amber-foreground: #fbbf24;
+  --tone-purple: #3b0764;
+  --tone-purple-foreground: #c084fc;
+  --tone-slate: #262626;
+  --tone-slate-foreground: #a3a3a3;
 }

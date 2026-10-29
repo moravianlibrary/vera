@@ -380,7 +380,7 @@ export function IntentionFormDialog({
               <FieldError message={form.formState.errors.name?.message} />
             </>
           ) : (
-            <p className="rounded-md bg-tone-blue px-3 py-2 text-[0.8125rem] text-tone-blue-foreground">
+            <p className="rounded-md bg-tone-blue px-3 py-2 text-ui text-tone-blue-foreground">
               <b className="font-semibold">{ownProject.name}&apos;s own intention.</b> Its name,
               project scope, window and target are the project&apos;s:{" "}
               <Link

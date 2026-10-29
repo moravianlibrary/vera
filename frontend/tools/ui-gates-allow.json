@@ -1,0 +1,74 @@
+[
+  {
+    "gate": "G-COMP-1",
+    "file": "features/documents/document-group-header.tsx",
+    "count": 1,
+    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
+  },
+  {
+    "gate": "G-COMP-1",
+    "file": "features/documents/document-list.tsx",
+    "count": 1,
+    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
+  },
+  {
+    "gate": "G-COMP-1",
+    "file": "features/documents/propose-dialog.tsx",
+    "count": 2,
+    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/documents/propose-dialog.tsx",
+    "count": 1,
+    "reason": "U4: shadcn Select, Input or Textarea"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/documents/propose-ways.tsx",
+    "count": 2,
+    "reason": "U4: shadcn Select, Input or Textarea"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/hooks/hook-editor.tsx",
+    "count": 7,
+    "reason": "U4: shadcn Select and Input"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/intentions/intention-dialogs.tsx",
+    "count": 2,
+    "reason": "U4: DataTable or FactGrid"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/lists/list-editor.tsx",
+    "count": 3,
+    "reason": "U4: shadcn Select, Input or Textarea"
+  },
+  {
+    "gate": "G-COMP-1",
+    "file": "features/preferences/watchlists-page.tsx",
+    "count": 3,
+    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
+  },
+  {
+    "gate": "G-COMP-2",
+    "file": "features/plugins/plugin-drawers.tsx",
+    "count": 1,
+    "reason": "U4: DataTable or FactGrid"
+  },
+  {
+    "gate": "G-COMP-5",
+    "file": "features/intentions/use-intention-section-preferences.ts",
+    "count": 2,
+    "reason": "U4: one useSectionPreferences hook"
+  },
+  {
+    "gate": "G-COMP-5",
+    "file": "features/projects/use-project-section-preferences.ts",
+    "count": 2,
+    "reason": "U4: one useSectionPreferences hook"
+  }
+]
