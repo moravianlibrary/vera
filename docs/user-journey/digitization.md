@@ -49,7 +49,7 @@ flowchart TD
 
     A["List generator"] --> B["Select intention"]:::user
     B --> C["Intentions determine:<br/>- What items to count<br/>- Distribution mix<br/>- Target pages"]:::sys
-    C --> D["Generator runs<br/>(e.g., PriorityFirst 1.2.0)"]:::sys
+    C --> D["Generator runs<br/>(e.g., PriorityThenMix 1.2.0)"]:::sys
     D --> E["Draft with allocations<br/>by category"]:::sys
 
     E --> F["Review & adjust"]:::user

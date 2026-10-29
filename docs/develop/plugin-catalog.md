@@ -1,0 +1,116 @@
+# Plugin catalog
+
+The implementations VERA ships for production, by kind, in the order of
+[PLG-kinds](../reference/integrations/plugins.md#plg-kinds). Agreed on 2026-10-29. The engine
+builds a fake of each one it needs ([engine.md](engine.md)); the real ones come with the backend.
+
+## Identity
+
+| Implementation | Instances | Notes |
+|---|---|---|
+| `LocalAccounts` | Local accounts | form login; staff without a library account |
+| `OidcIdentity` | MZK Keycloak · **Google** · **Seznam** | Keycloak for staff and library readers (it can broker eduID). Google and Seznam are the public's way in ([DEC-0015](../decisions/DEC-0015-public-requests-by-entry-link.md)): default role *reader*. Verify that Seznam's login speaks OpenID Connect (discovery and an ID token with a verified email); if it is plain OAuth 2.0, `OidcIdentity` needs a profile-endpoint mode rather than a second implementation |
+
+*Match by email* only for an instance whose email claim is verified.
+
+## Input
+
+| Implementation | Notes |
+|---|---|
+| `BarcodeReader` | camera or photo barcodes; must keep up with a hardware scanner's ≈ 4 s cadence ([prod-profile.md](prod-profile.md)) |
+| `CoverRecognition` | covers in stacks, several books and several stacks per photo |
+| `ShelfMarkRecognition` | shelf marks on spines |
+| `CatalogCardRecognition` | catalog cards |
+| `EntryLink` | one instance per outside portal that links into VERA ([ACT-entry-link](../reference/access/acts.md#act-entry-link)); first instance: Tlačítko digitalizovat |
+
+The recognition inputs return, per item recognised: the catalog record and unit when found, the
+identifiers matched with their types, and the evidence, a crop of the photo per item.
+
+## Identifier
+
+`Pattern`: one instance per identifier type (MZK sysno, barcode, shelf mark, ČNB). ISBN and ISSN
+need a checksum, which a pattern cannot check: a `Pattern` option for the check digit, or an
+`IsbnIssn` implementation.
+
+## Harvester
+
+| Implementation | Finds |
+|---|---|
+| `DnntoFromCatalog` | MZK records that could get the DNNTO licence if digitized |
+| `DnntoFromSdnnt` | documents with DNNTO in SDNNT that no library has digitized |
+| `PeriodicalGaps` | missing volumes of periodicals partly digitized in Kramerius (*Kontinuita*, 2 101 documents in the old VERA) |
+| `SftpFile` | new files in an SFTP directory (CSV or TXT, the propose dialog's columns); each file one batch, then moved aside |
+| `GoogleSheet` | new rows of a Google Sheet, through a service account; remembers the last row read |
+
+A harvester proposes as its agent. A file or a sheet filled by other people is the harvester's
+ask, not theirs: someone who should be the requester and be told the outcome comes in through
+an entry link instead.
+
+## Catalog adapter
+
+| Implementation | Notes |
+|---|---|
+| `AlephOaiCatalogAdapter` | MZK Aleph, live |
+| `XmlDumpCatalogAdapter` | a downloaded catalog dump, refreshed on schedule; the reading's date is the dump's |
+
+## Property source
+
+| Implementation | Notes |
+|---|---|
+| `MarcExtentPageCount` | page count parsed from 300 $a; the old catalog counts were off by ~22 % |
+| `SiblingVolumePageCount` | periodicals: the median of the title's volumes already digitized |
+| `PageCountPredictor` | fallback only, low tier: the old one was off by 187 % |
+| `ShelfMarkToSize` | size from the shelf mark's prefix |
+| `JqProperty` | any property by a jq expression over the record |
+
+## Registry
+
+`KrameriusRegistry` (one instance per Kramerius: MZK, NDK, ČDK) · `RdczRegistry`.
+
+## Validation
+
+| Implementation | Notes |
+|---|---|
+| `MarcComparator` | a client of the separate MARC comparator application: asks its API to validate a record against SKC and ČNB and maps the answer to defects. The application keeps its own catalog data; VERA keeps none for it. Most differences in prod: 300, 260, 264, 008, 020, 250, 015 |
+| `FieldsCompleteness` | required fields per issuance type; a periodical volume needs its year (235 failures in the old VERA) |
+
+## Restriction
+
+`ForbiddenByRecordValue`: a field or subfield value that forbids digitizing.
+
+## Custody
+
+`JqCustody`.
+
+## Classifier
+
+`MaterialType` · `PlaceOfPublication`. Worth trying later: a classifier trained on past
+approvals (17 000 labelled documents in the old VERA).
+
+## List generator
+
+`PriorityThenMix`: fills by priority first, then by the intention's mix proportions (the old
+VERA's generator, there called *PriorityFirst*) · `ShelfAdvisor`.
+
+## Link
+
+`KrameriusLink`: a PID or viewer address to the canonical link, naming which Kramerius. An
+iteration may hold several links ([DEC-0014](../decisions/DEC-0014-several-publication-links.md)).
+
+## Publication detector
+
+`Kramerius72XPublicationDetector`.
+
+## Message
+
+`MailtoMessage` · `SlackMessage`.
+
+## Delivery channel
+
+| Implementation | Notes |
+|---|---|
+| `HttpWebhook` | |
+| `SlackNotifier` | |
+| `SftpDrop` | |
+| `SmtpMailer` | password or OAuth2 (XOAUTH2) login |
+| `GmailAccountMailer` | the Gmail API with an OAuth2 client from Google Cloud Console; send-only scope |
