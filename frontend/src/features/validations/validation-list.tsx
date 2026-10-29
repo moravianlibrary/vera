@@ -24,6 +24,7 @@ import { Muted } from "@/components/detail-card";
 import { GroupHeader } from "@/components/lists/group-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
 import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
 import { validationsView } from "@/features/validations/validations-view";
 import type { PagedList } from "@/hooks/use-paged-list";
@@ -39,6 +40,7 @@ interface ValidationListProps {
   total: number | undefined;
   outstandingTotal: number | undefined;
   isLoading: boolean;
+  failure?: QueryFailure;
   paging: PagedList;
   categories: readonly Category[];
   // The review states the filter keeps, which the empty line speaks of.
@@ -55,6 +57,7 @@ export function ValidationList({
   total,
   outstandingTotal,
   isLoading,
+  failure,
   paging,
   categories,
   reviews,
@@ -115,6 +118,7 @@ export function ValidationList({
       }}
       paging={paging}
       isLoading={isLoading}
+      failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
       loadingText="Loading what waits for review…"

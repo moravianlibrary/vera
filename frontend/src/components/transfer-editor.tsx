@@ -12,6 +12,8 @@ import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { LeaveGuard } from "@/components/leave-guard";
 import type { CardDefinition, ColumnDefinition } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
+import { QueryError } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Draft } from "@/hooks/use-draft";
@@ -40,6 +42,8 @@ export interface TransferPane<Item> {
   // Below the rows: "12 more in Periodicals are waiting in review".
   footnote?: ReactNode;
   emptyText: ReactNode;
+  // Set when the pane's rows could not load: shown in place of the empty text.
+  failure?: QueryFailure;
   // What the pane shows changes: its picks are forgotten.
   resetKey?: unknown;
   paging?: PagedList;
@@ -216,8 +220,13 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
       </div>
 
       <div className={cn(!isStacked && "min-h-0 flex-1 overflow-y-auto")}>
-        {pane.items !== undefined && items.length === 0 && (
-          <div className="p-4 text-sm text-muted-foreground">{pane.emptyText}</div>
+        {pane.failure !== undefined ? (
+          <QueryError failure={pane.failure} />
+        ) : (
+          pane.items !== undefined &&
+          items.length === 0 && (
+            <div className="p-4 text-sm text-muted-foreground">{pane.emptyText}</div>
+          )
         )}
 
         {items.length > 0 && (

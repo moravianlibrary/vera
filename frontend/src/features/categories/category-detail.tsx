@@ -27,6 +27,7 @@ import type { Stat } from "@/components/detail-card";
 import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components/detail-card";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { MixSetCard } from "@/components/mix-set-card";
+import { failureOf, QueryState } from "@/components/query-state";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
@@ -401,13 +402,14 @@ function DocumentsHereCard({
   canList,
 }: DocumentsHereCardProps) {
   const query = { categoryIds: [category.id] };
-  const { data: page } = useQuery({
+  const documentsQuery = useQuery({
     queryKey: [...documentsQueryKey, "list", query, "preview"],
     queryFn:
       canList && documentCount > 0
         ? () => listDocuments(query, { limit: documentPreviewSize })
         : skipToken,
   });
+  const { data: page } = documentsQuery;
   const action =
     documentsHref === null ? undefined : (
       <Button asChild size="sm" variant="outline">
@@ -427,20 +429,28 @@ function DocumentsHereCard({
   const rest = documentCount - (page?.items.length ?? 0);
   return (
     <DetailCard title={`Documents here — ${documentCount}`} action={action}>
-      {page?.items.map((record) => {
-        const iteration = currentIterationOf(record);
-        return (
-          <DetailRow
-            key={record.document.id}
-            aside={
-              iteration === null ? undefined : <StatusBadge status={iterationStatusOf(iteration)} />
-            }
-          >
-            {record.document.title}
-          </DetailRow>
-        );
-      })}
-      {page !== undefined && rest > 0 && <FinePrint>and {rest} more.</FinePrint>}
+      <QueryState
+        isLoading={documentsQuery.isLoading}
+        failure={failureOf(documentsQuery, "Could not load these documents.")}
+        loadingText="Loading documents…"
+      >
+        {page?.items.map((record) => {
+          const iteration = currentIterationOf(record);
+          return (
+            <DetailRow
+              key={record.document.id}
+              aside={
+                iteration === null ? undefined : (
+                  <StatusBadge status={iterationStatusOf(iteration)} />
+                )
+              }
+            >
+              {record.document.title}
+            </DetailRow>
+          );
+        })}
+        {page !== undefined && rest > 0 && <FinePrint>and {rest} more.</FinePrint>}
+      </QueryState>
       <FinePrint>
         Documents sit on leaves only, so a category under {category.name} means moving these{" "}
         {documentCount} into it — that is <b className="font-semibold">Refine</b>.

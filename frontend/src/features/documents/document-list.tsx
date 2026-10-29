@@ -21,6 +21,7 @@ import type { ReactNode } from "react";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
 import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
@@ -37,6 +38,7 @@ interface DocumentListProps {
   groups: readonly DocumentGroup[];
   total: number | undefined;
   isLoading: boolean;
+  failure?: QueryFailure;
   paging: PagedList;
   // The groupings the caller may pick; none hides the picker.
   groupings: readonly ViewGroupingOption<DocumentGrouping>[];
@@ -58,6 +60,7 @@ export function DocumentList({
   groups,
   total,
   isLoading,
+  failure,
   paging,
   groupings,
   grouping,
@@ -118,6 +121,7 @@ export function DocumentList({
       }}
       paging={paging}
       isLoading={isLoading}
+      failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
       picking={picking}

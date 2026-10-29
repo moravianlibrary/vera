@@ -13,6 +13,7 @@ import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { failureOf } from "@/components/query-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
@@ -35,7 +36,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
   const [isProposing, setIsProposing] = useState(false);
   const { data: session } = useSessionQuery();
   const documents = useDocumentsQuery(query, grouping, isMy ? "my" : undefined);
-  const { data: detail } = useDocumentQuery(selectedId, isMy ? "my" : undefined);
+  const documentQuery = useDocumentQuery(selectedId, isMy ? "my" : undefined);
+  const { data: detail } = documentQuery;
   const { summary } = documents;
   // DOC-property-hand: a value entered on the picked documents at once.
   const bulk = useBulkPropertyEntry(session, !isMy);
@@ -76,7 +78,12 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
 
   const detailPane = (
     <Pane
-      state={paneStateOf(selectedId, detail, "This document is not within your reach")}
+      state={paneStateOf(
+        selectedId,
+        detail,
+        "This document is not within your reach",
+        failureOf(documentQuery, "Could not load this document."),
+      )}
       emptyIcon={BookOpen}
       emptyText="Select a document"
       render={(ready) => <DocumentDetailPane detail={ready} session={session} />}
@@ -157,6 +164,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             groups={documents.slices?.flatMap((slice) => slice.groups) ?? []}
             total={summary?.total}
             isLoading={documents.isLoading}
+            failure={failureOf(documents, "Could not load documents.")}
             paging={documents.paging}
             groupings={groupings}
             grouping={grouping}

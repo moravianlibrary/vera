@@ -207,6 +207,7 @@ export interface TransferEditorProps<Item> {
 export interface TransferPane<Item> {
   title: string;
   items: readonly Item[] | undefined;
+  failure?: QueryFailure;  // shown in place of the empty text when rows could not load
   columns: readonly ColumnDefinition<Item>[];
   // A head action, e.g. "Generate…" on the target; absent without a generator.
   action?: ViewAction;

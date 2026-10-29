@@ -24,6 +24,7 @@ import { Fragment } from "react";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
 import { ToneBadge } from "@/components/status-badge";
 import { RequestGroupHeader } from "@/features/requests/request-group-header";
 import { RequestStatusBadge } from "@/features/requests/request-status";
@@ -45,6 +46,7 @@ interface RequestListProps {
   total: number | undefined;
   askTotal: number | undefined;
   isLoading: boolean;
+  failure?: QueryFailure;
   paging: PagedList;
   grouping: RequestGrouping | null;
   onGroupingChange: (grouping: RequestGrouping | null) => void;
@@ -61,6 +63,7 @@ export function RequestList({
   total,
   askTotal,
   isLoading,
+  failure,
   paging,
   grouping,
   onGroupingChange,
@@ -126,6 +129,7 @@ export function RequestList({
       }}
       paging={paging}
       isLoading={isLoading}
+      failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
       loadingText="Loading requests…"

@@ -16,6 +16,7 @@ import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { failureOf } from "@/components/query-state";
 import {
   filterablePropertiesOf,
   usePropertiesQuery,
@@ -39,7 +40,8 @@ export function ValidationsPage() {
   const [left, setLeft] = useState<LeftOutcome | null>(null);
   const { data: session } = useSessionQuery();
   const validations = useValidationsQuery(query, grouping);
-  const { data: detail } = useValidationQuery(selectedId);
+  const validationQuery = useValidationQuery(selectedId);
+  const { data: detail } = validationQuery;
   const { data: categories = [] } = useCategoriesQuery();
   const { summary } = validations;
 
@@ -53,7 +55,12 @@ export function ValidationsPage() {
   const paneState: PaneState<ValidationDetail> =
     detail === null && left?.iterationId === selectedId
       ? { kind: "outcome", outcome: left }
-      : paneStateOf(selectedId, detail, "This item no longer waits here");
+      : paneStateOf(
+          selectedId,
+          detail,
+          "This item no longer waits here",
+          failureOf(validationQuery, "Could not load this validation."),
+        );
   const detailPane = (
     <Pane
       state={paneState}
@@ -113,6 +120,7 @@ export function ValidationsPage() {
             total={summary?.total}
             outstandingTotal={summary?.outstandingTotal}
             isLoading={validations.isLoading}
+            failure={failureOf(validations, "Could not load validations.")}
             paging={validations.paging}
             categories={categories}
             reviews={query.reviews}

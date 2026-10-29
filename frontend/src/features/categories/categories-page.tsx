@@ -27,6 +27,7 @@ import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { MixPicker } from "@/components/mix-picker";
+import { QueryState } from "@/components/query-state";
 import {
   categoriesUrlStateOf,
   categoriesView,
@@ -45,8 +46,20 @@ export function CategoriesPage() {
   const view = useViewUrlState(categoriesView, "c");
   const url = categoriesUrlStateOf(params);
   const { data: session } = useSessionQuery();
-  const { data: categories } = useCategoriesQuery();
-  const { data: index } = useCategoryIndexQuery(view.query.mixId);
+  const categoriesQuery = useCategoriesQuery();
+  const categories = categoriesQuery.data;
+  const indexQuery = useCategoryIndexQuery(view.query.mixId);
+  const index = indexQuery.data;
+  const categoriesFailure =
+    categoriesQuery.isError || indexQuery.isError
+      ? {
+          text: "Could not load categories.",
+          onRetry: () => {
+            void categoriesQuery.refetch();
+            void indexQuery.refetch();
+          },
+        }
+      : undefined;
   const { data: mixes = [] } = useQuery({
     queryKey: ["mixes"],
     queryFn: listMixes,
@@ -55,8 +68,23 @@ export function CategoriesPage() {
   const [isRootOpen, setIsRootOpen] = useState(false);
   const [notice, setNotice] = useState<CategoryNotice | null>(null);
 
-  if (session === undefined || categories === undefined || index === undefined) {
-    return <PageHeader title="Categories" />;
+  if (session === undefined) {
+    return null;
+  }
+
+  if (categories === undefined || index === undefined) {
+    return (
+      <>
+        <PageHeader title="Categories" />
+        <QueryState
+          isLoading={categoriesQuery.isLoading || indexQuery.isLoading}
+          failure={categoriesFailure}
+          loadingText="Loading categories…"
+        >
+          {null}
+        </QueryState>
+      </>
+    );
   }
 
   const matches = matchingCategoryIds(categories, index, view.query);
@@ -133,26 +161,34 @@ export function CategoriesPage() {
       <MasterDetail
         masterWidth="tree"
         master={
-          <CategoryTree
-            categories={categories}
-            toolbar={
-              index.mix !== null ? (
-                <MixPicker
-                  id="categories-mix"
-                  mixes={mixes}
-                  value={selectedMixId ?? ""}
-                  onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
-                />
-              ) : undefined
-            }
-            visibleIds={visibleIds}
-            matchingIds={matches}
-            counts={index}
-            mix={index.mix}
-            offered={index.mix === null ? countTreeValues : ["share", "whole", ...countTreeValues]}
-            selectedId={categoryId}
-            onSelect={select}
-          />
+          <QueryState
+            isLoading={false}
+            failure={categoriesFailure}
+            loadingText="Loading categories…"
+          >
+            <CategoryTree
+              categories={categories}
+              toolbar={
+                index.mix !== null ? (
+                  <MixPicker
+                    id="categories-mix"
+                    mixes={mixes}
+                    value={selectedMixId ?? ""}
+                    onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
+                  />
+                ) : undefined
+              }
+              visibleIds={visibleIds}
+              matchingIds={matches}
+              counts={index}
+              mix={index.mix}
+              offered={
+                index.mix === null ? countTreeValues : ["share", "whole", ...countTreeValues]
+              }
+              selectedId={categoryId}
+              onSelect={select}
+            />
+          </QueryState>
         }
         detail={
           isRefining ? (

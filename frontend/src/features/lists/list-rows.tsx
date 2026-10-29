@@ -12,6 +12,7 @@ import { Fragment } from "react";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
 import { ListStateBadge } from "@/components/status-badge";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatShortCalendarDay } from "@/lib/format-date";
@@ -33,6 +34,7 @@ interface ListRowsProps {
   count: string;
   total: number | undefined;
   isLoading: boolean;
+  failure?: QueryFailure;
   paging: PagedList;
   selectedId: string | null;
   onSelect: (listId: string) => void;
@@ -43,6 +45,7 @@ export function ListRows({
   count,
   total,
   isLoading,
+  failure,
   paging,
   selectedId,
   onSelect,
@@ -68,6 +71,7 @@ export function ListRows({
       toolbar={{ count }}
       paging={paging}
       isLoading={isLoading}
+      failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
       loadingText="Loading lists…"

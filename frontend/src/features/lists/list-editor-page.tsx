@@ -7,6 +7,7 @@
 import { can, hasPermission } from "@vera/domain/permissions";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { failureOf, QueryState } from "@/components/query-state";
 import { StatusNote } from "@/components/status-note";
 import { ListEditor } from "@/features/lists/list-editor";
 import { generationStartOf } from "@/features/lists/lists-view";
@@ -16,7 +17,8 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 export function ListEditorPage() {
   const { listId = null } = useParams();
   const { data: session } = useSessionQuery();
-  const { data: detail } = useListQuery(listId);
+  const listQuery = useListQuery(listId);
+  const { data: detail } = listQuery;
   const [params] = useSearchParams();
 
   if (session === undefined) {
@@ -42,7 +44,20 @@ export function ListEditorPage() {
   }
 
   if (detail === undefined) {
-    return <PageHeader title="Edit list" />;
+    return (
+      <>
+        <PageHeader title="Edit list" />
+        {listId !== null && (
+          <QueryState
+            isLoading={listQuery.isLoading}
+            failure={failureOf(listQuery, "Could not load this list.")}
+            loadingText="Loading the list…"
+          >
+            {null}
+          </QueryState>
+        )}
+      </>
+    );
   }
 
   if (detail === null || detail.row.state === "Done") {

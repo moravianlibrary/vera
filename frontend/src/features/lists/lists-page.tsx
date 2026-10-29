@@ -12,6 +12,7 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { failureOf } from "@/components/query-state";
 import { ListDetailPane } from "@/features/lists/list-detail";
 import { ListRows } from "@/features/lists/list-rows";
 import { listsView } from "@/features/lists/lists-view";
@@ -26,7 +27,8 @@ export function ListsPage() {
   const { query, selectedId, select } = view;
   const { data: session } = useSessionQuery();
   const lists = useListsQuery(query);
-  const { data: detail } = useListQuery(selectedId);
+  const listQuery = useListQuery(selectedId);
+  const { data: detail } = listQuery;
   const canBuild =
     session !== undefined &&
     (hasPermission(session, "list.create") || hasPermission(session, "list.edit"));
@@ -88,6 +90,7 @@ export function ListsPage() {
             count={count}
             total={total}
             isLoading={lists.isLoading}
+            failure={failureOf(lists, "Could not load lists.")}
             paging={lists.paging}
             selectedId={selectedId}
             onSelect={select}
@@ -95,7 +98,12 @@ export function ListsPage() {
         }
         detail={
           <Pane
-            state={paneStateOf(selectedId, detail, "This list is gone")}
+            state={paneStateOf(
+              selectedId,
+              detail,
+              "This list is gone",
+              failureOf(listQuery, "Could not load this list."),
+            )}
             emptyIcon={ListChecks}
             emptyText="Select a list"
             render={(ready) => (

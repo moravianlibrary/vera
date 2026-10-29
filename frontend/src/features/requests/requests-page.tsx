@@ -15,6 +15,7 @@ import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { failureOf } from "@/components/query-state";
 import {
   filterablePropertiesOf,
   usePropertiesQuery,
@@ -43,7 +44,8 @@ export function RequestsPage() {
   const [bulkGroup, setBulkGroup] = useState<BatchGroup | null>(null);
   const { data: session } = useSessionQuery();
   const proposals = useRequestsQuery(query, grouping);
-  const { data: detail } = useRequestQuery(selectedId);
+  const requestQuery = useRequestQuery(selectedId);
+  const { data: detail } = requestQuery;
   const { data: users = [] } = useUsersQuery();
   const { data: projects = [] } = useProjectsQuery();
   const { data: custodies = [] } = useRequestCustodiesQuery();
@@ -75,7 +77,12 @@ export function RequestsPage() {
                   },
           },
         }
-      : paneStateOf(selectedId, detail, "This request is no longer within your reach");
+      : paneStateOf(
+          selectedId,
+          detail,
+          "This request is no longer within your reach",
+          failureOf(requestQuery, "Could not load this request."),
+        );
   const detailPane = (
     <Pane
       state={paneState}
@@ -128,6 +135,7 @@ export function RequestsPage() {
             total={summary?.total}
             askTotal={summary?.askTotal}
             isLoading={proposals.isLoading}
+            failure={failureOf(proposals, "Could not load requests.")}
             paging={proposals.paging}
             grouping={grouping}
             onGroupingChange={view.setGrouping}

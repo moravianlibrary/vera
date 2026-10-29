@@ -32,6 +32,7 @@ import { Muted } from "@/components/detail-card";
 import type { PropertyFilterProps } from "@/components/filters/property-filters";
 import { PropertyFilterControls } from "@/components/filters/property-filters";
 import type { ColumnDefinition } from "@/components/lists/record-list";
+import { failureOf } from "@/components/query-state";
 import { PriorityBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { TransferEditor } from "@/components/transfer-editor";
@@ -387,6 +388,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
               <PoolFootnote pool={pool.summary} categoryName={leafOf} />
             ),
           emptyText: "Nothing ready matches.",
+          failure: failureOf(pool, "Could not load what is ready to list."),
           resetKey: poolQuery,
           paging: pool.paging,
         }}
