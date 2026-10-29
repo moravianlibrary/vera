@@ -167,8 +167,8 @@ At `custody` that is the person's own subtree; the top level needs `any`.
 
 ### Mixes
 
-Mixes are managed from the Categories mix picker. Someone who can read mixes but cannot open
-Categories reaches them on the Mixes page ([VIEW-mixes-entry](views.md#view-mixes-entry)).
+Mixes are managed on the Category mixes page ([VIEW-mixes-entry](views.md#view-mixes-entry)).
+The Categories tree picker selects a mix to display.
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|

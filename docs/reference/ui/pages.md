@@ -14,7 +14,7 @@ What each page is for, its shape, and what can narrow it. Who sees each page is 
 | Projects | projects and how they stand | cards for proposed and active projects, tables for ended and rejected ones; each project has its own page |
 | Categories | the tree, its custody and the selected mix | a tree with a record pane |
 | Intentions | intentions and repeats, by state | a board; each intention's mix has its own page |
-| Mixes | mixes and their revisions | a list with a mix page |
+| Category mixes | mixes and their revisions | a list with a mix detail pane |
 | Tasks | runs, running and past | a list with a record pane |
 | Schedules | what runs when | a timeline |
 | Users management | users, roles, groups and custodies, and what links them | linked columns |
@@ -118,7 +118,7 @@ person may not read is absent, a card included
 | Users management | a user, role, group or custody, each with where it comes from ([ACCESS-provenance](../access/people.md#access-provenance)) |
 | Projects | its own page: Against the target · About · Members · Proposals · Lists · What it funded |
 | Intentions | the card itself, opened in place |
-| Mixes | a mix: Definition · Where used · Revisions and snapshots |
+| Category mixes | a mix: Definition · Where used · Revisions and snapshots |
 
 The Catalog record card gives the page count with each of its sources
 ([DOC-page-count](../model/documents.md#doc-page-count)), and the source of the title, type and

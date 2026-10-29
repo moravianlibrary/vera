@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { canOpenNavigationEntry, visibleNavigation } from "@/components/layout/navigation";
 import { resolveSession } from "@/mocks/session";
 
-describe("Mixes navigation", () => {
-  it("opens Mixes from Categories while keeping direct links available", () => {
+describe("Category mixes navigation (VIEW-mixes-entry)", () => {
+  it("has its own entry whenever mix.read is granted", () => {
     const admin = resolveSession("admin");
     expect(visibleNavigation(admin).map((entry) => entry.id)).toContain("categories");
-    expect(visibleNavigation(admin).map((entry) => entry.id)).not.toContain("mixes");
+    expect(visibleNavigation(admin).map((entry) => entry.id)).toContain("mixes");
+    expect(visibleNavigation(admin).find((entry) => entry.id === "mixes")?.visibleLabel).toBe(
+      "Category mixes",
+    );
     expect(canOpenNavigationEntry(admin, "mixes")).toBe(true);
 
     const mixOnly = {

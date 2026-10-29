@@ -64,6 +64,7 @@ export const navigationEntries: readonly NavigationEntry[] = [
     label: "Categories",
     requires: ["category.read"],
   },
+  { id: "mixes", path: "/mixes", rail: "Mx", label: "Category mixes", requires: ["mix.read"] },
   {
     id: "intentions",
     path: "/intentions",
@@ -71,7 +72,6 @@ export const navigationEntries: readonly NavigationEntry[] = [
     label: "Intentions",
     requires: ["intention.read"],
   },
-  { id: "mixes", path: "/mixes", rail: "Mx", label: "Mixes", requires: ["mix.read"] },
   {
     id: "tasks",
     path: "/tasks",
@@ -113,14 +113,9 @@ export interface VisibleNavigationEntry extends NavigationEntry {
 }
 
 export function visibleNavigation(session: Session): VisibleNavigationEntry[] {
-  const hasCategories = hasAnyPermission(session, ["category.read"]);
-  return (
-    navigationEntries
-      .filter((entry) => hasAnyPermission(session, entry.requires))
-      // Mix management is reached from the Categories mix picker when that page is available.
-      .filter((entry) => entry.id !== "mixes" || !hasCategories)
-      .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }))
-  );
+  return navigationEntries
+    .filter((entry) => hasAnyPermission(session, entry.requires))
+    .map((entry) => ({ ...entry, visibleLabel: labelFor(entry, session) }));
 }
 
 // A nested page may stay addressable even when it has no separate sidebar row.

@@ -19,8 +19,8 @@ import {
 import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
-import { PageContent, PageHeader } from "@/components/layout/page-header";
-import { allMixesValue, MixPicker } from "@/components/mix-picker";
+import { MasterDetail } from "@/components/layout/master-detail";
+import { PageHeader } from "@/components/layout/page-header";
 import { Tree } from "@/components/tree";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,37 +160,20 @@ export function MixesPage() {
   return (
     <>
       <PageHeader
-        title={current === null ? "Mixes" : current.name}
-        back={{
-          label: "Back to Categories",
-          href:
-            current === null || current.archivedAt !== null
-              ? "/categories"
-              : `/categories?mix=${encodeURIComponent(current.id)}`,
-        }}
-        control={
-          <MixPicker
-            id="managed-mix"
-            mixes={mixes}
-            value={mixId ?? allMixesValue}
-            includeAll
-            includeArchived
-            onValueChange={(value) =>
-              navigate(value === allMixesValue ? "/mixes" : `/mixes/${encodeURIComponent(value)}`)
-            }
-          />
-        }
-        breadcrumb={
-          current === null
-            ? undefined
-            : {
-                label: "Mixes",
-                href: "/mixes",
-                detail: current.archivedAt === null ? `Revision ${current.revision}` : "Archived",
+        title="Category mixes"
+        back={
+          session !== undefined && can(session, "category.read")
+            ? {
+                label: "Back to Categories",
+                href:
+                  current === null || current.archivedAt !== null
+                    ? "/categories"
+                    : `/categories?mix=${encodeURIComponent(current.id)}`,
               }
+            : undefined
         }
         actions={[
-          ...(mayEdit && current === null
+          ...(mayEdit
             ? [
                 {
                   id: "new",
@@ -202,49 +185,27 @@ export function MixesPage() {
                 },
               ]
             : []),
-          ...(mayEdit && current !== null
-            ? [
-                {
-                  id: "copy",
-                  label: "Create editable copy",
-                  onSelect: () => {
-                    setName(`${current.name} copy`);
-                    setRevision((selected) => selected ?? current.revision);
-                    setEditor("copy");
-                  },
-                },
-              ]
-            : []),
-          ...(mayManage && current !== null && current.archivedAt === null && !current.isPrimary
-            ? [
-                {
-                  id: "primary",
-                  label: "Make Primary",
-                  onSelect: () => void act(() => primary.run(current.id)),
-                },
-                { id: "archive", label: "Archive", onSelect: () => setEditor("archive") },
-              ]
-            : []),
         ]}
       />
-      <PageContent className="space-y-5">
-        {message !== null && (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
-          >
-            {message}
-          </p>
-        )}
-        {current === null ? (
-          <>
+      <MasterDetail
+        masterWidth="tree"
+        master={
+          <div className="space-y-3 p-4">
+            {current === null && message !== null && (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
+              >
+                {message}
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               <Input
                 aria-label="Search mixes"
                 placeholder="Search mixes"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                className="max-w-sm"
+                className="min-w-0 flex-1"
               />
               <Select value={state} onValueChange={setState}>
                 <SelectTrigger aria-label="Mix state">
@@ -262,10 +223,14 @@ export function MixesPage() {
                 <Link
                   key={mix.id}
                   to={`/mixes/${mix.id}`}
-                  onClick={() => setRevision(null)}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-card p-4 hover:bg-muted/40"
+                  onClick={() => {
+                    setRevision(null);
+                    setSelectedCategoryId(null);
+                  }}
+                  aria-current={mix.id === current?.id ? "true" : undefined}
+                  className={`rounded-lg border p-3 hover:bg-muted/40 ${mix.id === current?.id ? "border-primary bg-primary/5" : "bg-card"}`}
                 >
-                  <span className="font-medium">
+                  <span className="block font-medium">
                     {mix.name}{" "}
                     {mix.isPrimary && (
                       <span className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs text-primary">
@@ -273,7 +238,7 @@ export function MixesPage() {
                       </span>
                     )}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="mt-1 block text-xs text-muted-foreground">
                     {mix.archivedAt === null ? `Revision ${mix.revision}` : "Archived"} ·{" "}
                     {mix.usageCount} intentions ·{" "}
                     {complete(mix) ? "Complete" : "Has unallocated shares"}
@@ -284,10 +249,60 @@ export function MixesPage() {
             {filtered.length === 0 && (
               <p className="text-sm text-muted-foreground">No mixes match this search.</p>
             )}
-          </>
-        ) : (
-          <div className="grid gap-5 xl:grid-cols-[minmax(16rem,0.85fr)_minmax(25rem,1.5fr)]">
+          </div>
+        }
+        detail={
+          current === null ? (
+            <p className="text-sm text-muted-foreground">
+              Select a mix to see its definition and proportions.
+            </p>
+          ) : (
             <div className="space-y-5">
+              <div>
+                <h2 className="text-lg font-semibold">{current.name}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {current.archivedAt === null ? `Revision ${current.revision}` : "Archived"}
+                </p>
+                {(mayEdit || mayManage) && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {mayEdit && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setName(`${current.name} copy`);
+                          setRevision((selected) => selected ?? current.revision);
+                          setEditor("copy");
+                        }}
+                      >
+                        Create editable copy
+                      </Button>
+                    )}
+                    {mayManage && current.archivedAt === null && !current.isPrimary && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void act(() => primary.run(current.id))}
+                        >
+                          Make Primary
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditor("archive")}>
+                          Archive
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              {message !== null && (
+                <p
+                  role="alert"
+                  className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
+                >
+                  {message}
+                </p>
+              )}
               <DetailCard title="Definition">
                 <p>
                   {current.isPrimary
@@ -359,8 +374,6 @@ export function MixesPage() {
                   Choose a revision, then Create editable copy to start another mix from it.
                 </FinePrint>
               </DetailCard>
-            </div>
-            <div className="space-y-5">
               <div className="overflow-hidden rounded-lg border bg-card">
                 <div className="border-b px-4 py-3">
                   <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
@@ -456,9 +469,14 @@ export function MixesPage() {
                 </FinePrint>
               </DetailCard>
             </div>
-          </div>
-        )}
-      </PageContent>
+          )
+        }
+        detailTitle={current?.name ?? "Mix details"}
+        detailOpen={mixId !== undefined && current !== null}
+        onDetailOpenChange={(open) => {
+          if (!open) navigate("/mixes");
+        }}
+      />
       {current !== null && editor === "set" && (
         <SetEditorDialog<{ id: string; name: string; share: number | null }>
           key={`${current.id}:${categoryId ?? "root"}:${current.revision}`}

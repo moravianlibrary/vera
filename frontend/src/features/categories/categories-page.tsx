@@ -18,7 +18,7 @@ import {
 import { scopeOfCategory } from "@vera/domain/categories";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 import { listMixes } from "@/api/mix-catalog";
 import { CategoryTree } from "@/components/category-tree";
 import { countTreeValues } from "@/components/category-tree-values";
@@ -27,7 +27,6 @@ import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { MixPicker } from "@/components/mix-picker";
-import { Button } from "@/components/ui/button";
 import {
   categoriesUrlStateOf,
   categoriesView,
@@ -105,34 +104,7 @@ export function CategoriesPage() {
 
   return (
     <>
-      <PageHeader
-        title="Categories"
-        control={
-          index.mix !== null ? (
-            <div className="flex items-center gap-2">
-              <MixPicker
-                id="categories-mix"
-                mixes={mixes}
-                value={selectedMixId ?? ""}
-                onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
-              />
-              {can(session, "mix.read") && (
-                <Button asChild size="sm" variant="outline" className="shrink-0">
-                  <Link
-                    to={
-                      selectedMixId === undefined
-                        ? "/mixes"
-                        : `/mixes/${encodeURIComponent(selectedMixId)}`
-                    }
-                  >
-                    {can(session, "mix.edit") ? "Manage mixes" : "View mixes"}
-                  </Link>
-                </Button>
-              )}
-            </div>
-          ) : undefined
-        }
-      />
+      <PageHeader title="Categories" />
       {can(session, "watch") && (
         <WatchlistTabs
           view="categories"
@@ -163,6 +135,16 @@ export function CategoriesPage() {
         master={
           <CategoryTree
             categories={categories}
+            toolbar={
+              index.mix !== null ? (
+                <MixPicker
+                  id="categories-mix"
+                  mixes={mixes}
+                  value={selectedMixId ?? ""}
+                  onValueChange={(value) => view.setQuery({ ...view.query, mixId: value })}
+                />
+              ) : undefined
+            }
             visibleIds={visibleIds}
             matchingIds={matches}
             counts={index}

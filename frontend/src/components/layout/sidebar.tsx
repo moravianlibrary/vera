@@ -19,7 +19,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { logout } from "@/api/session";
 import { listWatchlists } from "@/api/watchlists";
 import { visibleNavigation } from "@/components/layout/navigation";
@@ -60,7 +60,6 @@ export function Sidebar({
   onUserMenuOpenChange,
   className,
 }: SidebarProps) {
-  const location = useLocation();
   const navigate = useNavigate();
   const [menuError, setMenuError] = useState("");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -132,7 +131,7 @@ export function Sidebar({
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
-                  isActive || (entry.id === "categories" && location.pathname.startsWith("/mixes"))
+                  isActive
                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                     : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )

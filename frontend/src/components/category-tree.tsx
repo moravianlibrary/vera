@@ -34,6 +34,7 @@ export interface CategoryCounts {
 
 interface CategoryTreeProps {
   categories: readonly Category[];
+  toolbar?: ReactNode;
   // A filtered Categories view supplies the matching nodes and their ancestors; Mix pages
   // retain this tree's own search.
   visibleIds?: ReadonlySet<string>;
@@ -49,6 +50,7 @@ interface CategoryTreeProps {
 
 export function CategoryTree({
   categories,
+  toolbar,
   visibleIds,
   matchingIds,
   counts,
@@ -90,6 +92,7 @@ export function CategoryTree({
   return (
     <div>
       <div className="sticky top-0 z-10 grid gap-2 border-b bg-background px-4 py-3">
+        {toolbar}
         {visibleIds === undefined && (
           <Input
             type="search"

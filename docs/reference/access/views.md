@@ -23,8 +23,9 @@ Someone holding both has both entries. **Tasks** becomes *My Tasks* without `tas
 
 #### VIEW-mixes-entry
 
-*Mixes* has its own entry only for a person who cannot open Categories; everyone else reaches
-mixes from the Categories mix picker. The page stays at `/mixes` for anyone holding `mix.read`.
+*Category mixes* has its own entry for anyone holding `mix.read`. It opens `/mixes` to manage
+mixes and their revisions. The picker above *Show* in the Categories tree selects which mix the
+tree displays.
 
 #### VIEW-gate
 
@@ -56,8 +57,8 @@ empty cell means the entry is absent.
 | Digitization Lists | `/lists` | `list.read` |  |  |  |  | Digitization Lists | Digitization Lists |
 | Projects | `/projects` | `project.read` |  |  | Projects | Projects | Projects | Projects |
 | Categories | `/categories` | `category.read` |  |  |  | Categories | Categories | Categories |
+| Category mixes | `/mixes` | `mix.read` |  |  |  |  | Category mixes | Category mixes |
 | Intentions | `/intentions` | `intention.read` |  |  | Intentions |  | Intentions | Intentions |
-| Mixes | `/mixes` | `mix.read` |  |  |  |  |  |  |
 | Tasks | `/tasks` | `task.read_own` · `task.read` |  |  |  | My Tasks | My Tasks | Tasks |
 | Schedules | `/schedules` | `task.read` |  |  |  |  |  | Schedules |
 | Users management | `/access` | `access.read` |  |  |  |  |  | Users management |
