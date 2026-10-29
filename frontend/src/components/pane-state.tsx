@@ -8,6 +8,8 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
+import type { QueryFailure } from "@/components/query-state";
+import { QueryError } from "@/components/query-state";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 
@@ -26,23 +28,25 @@ export interface Outcome {
 export type PaneState<Detail> =
   | { kind: "none" }
   | { kind: "loading" }
+  | { kind: "error"; failure: QueryFailure }
   | { kind: "gone"; text: string }
   | { kind: "outcome"; outcome: Outcome }
   | { kind: "ready"; detail: Detail };
 
-// The state of a pane over a lookup: undefined while it loads, null once the record is not (or
-// no longer) within the view.
+// The state of a pane over a lookup: undefined while it loads, a failed lookup, with Try again;
+// null once the record is not (or no longer) within the view.
 export function paneStateOf<Detail>(
   selectedId: string | null,
   detail: Detail | null | undefined,
   goneText: string,
+  failure?: QueryFailure,
 ): PaneState<Detail> {
   if (selectedId === null) {
     return { kind: "none" };
   }
 
   if (detail === undefined) {
-    return { kind: "loading" };
+    return failure === undefined ? { kind: "loading" } : { kind: "error", failure };
   }
 
   return detail === null ? { kind: "gone", text: goneText } : { kind: "ready", detail };
@@ -62,6 +66,12 @@ export function Pane<Detail>({ state, emptyIcon, emptyText, render }: PaneProps<
       return <PaneMessage icon={emptyIcon} text={emptyText} />;
     case "loading":
       return null;
+    case "error":
+      return (
+        <div className="grid h-full place-items-center">
+          <QueryError failure={state.failure} />
+        </div>
+      );
     case "gone":
       return <PaneMessage icon={emptyIcon} text={state.text} />;
     case "outcome":

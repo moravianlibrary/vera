@@ -33,6 +33,7 @@ import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
+import { failureOf } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HookEditor } from "@/features/hooks/hook-editor";
@@ -197,14 +198,6 @@ export function HooksPage() {
         searchLabel="Search hooks"
         searchPlaceholder="Search hooks, events and recipients…"
       />
-      {isError && (
-        <div role="alert" className="border-b px-4 py-3 text-sm text-destructive">
-          Hooks could not be loaded.{" "}
-          <Button size="sm" variant="outline" onClick={() => void refetch()}>
-            Try again
-          </Button>
-        </div>
-      )}
       <MasterDetail
         master={
           <RecordList
@@ -252,6 +245,7 @@ export function HooksPage() {
             onSelect={view.select}
             loadingText="Loading hooks…"
             emptyText="No hooks match these filters."
+            failure={failureOf({ isError, refetch }, "Could not load hooks.")}
             loadingMoreText="Loading more hooks…"
           />
         }

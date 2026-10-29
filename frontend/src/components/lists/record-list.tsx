@@ -15,6 +15,8 @@ import type { CSSProperties, ReactNode } from "react";
 import { Fragment } from "react";
 import type { ListToolbarProps } from "@/components/lists/list-toolbar";
 import { ListToolbar } from "@/components/lists/list-toolbar";
+import type { QueryFailure } from "@/components/query-state";
+import { QueryError } from "@/components/query-state";
 import { useLoadMore } from "@/hooks/use-load-more";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { cn } from "@/lib/utils";
@@ -73,6 +75,8 @@ export interface RecordListProps<Row, Group extends GroupCounts, Grouping extend
   picking?: RowPicking;
   loadingText: string;
   emptyText: string;
+  // Set when the list could not load: shown instead of the loading and empty lines.
+  failure?: QueryFailure;
   loadingMoreText: string;
 }
 
@@ -107,6 +111,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
   picking,
   loadingText,
   emptyText,
+  failure,
   loadingMoreText,
 }: RecordListProps<Row, Group, Grouping>) {
   const sentinelRef = useLoadMore(paging.hasMore, paging.isLoadingMore, paging.onLoadMore);
@@ -124,9 +129,17 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
     <>
       <ListToolbar {...toolbar} />
 
-      {isLoading && <p className="p-4 text-sm text-muted-foreground">{loadingText}</p>}
+      {failure !== undefined && <QueryError failure={failure} />}
 
-      {total === 0 && <p className="p-4 text-sm text-muted-foreground">{emptyText}</p>}
+      {failure === undefined && isLoading && (
+        <p role="status" className="p-4 text-sm text-muted-foreground">
+          {loadingText}
+        </p>
+      )}
+
+      {failure === undefined && total === 0 && (
+        <p className="p-4 text-sm text-muted-foreground">{emptyText}</p>
+      )}
 
       {rows.length > 0 && (
         <div

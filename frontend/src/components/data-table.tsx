@@ -14,7 +14,10 @@
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Fragment, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ColumnDefinition } from "@/components/lists/record-list";
+import type { QueryFailure } from "@/components/query-state";
+import { QueryError } from "@/components/query-state";
 import type { PerTier } from "@/hooks/use-tier";
 import { useTier, valueForTier } from "@/hooks/use-tier";
 import { cn } from "@/lib/utils";
@@ -42,6 +45,10 @@ export interface DataTableProps<Row> {
   columns: PerTier<readonly ColumnDefinition<Row>[]>;
   onOpen?: (id: string) => void;
   emptyText: string;
+  // While true and no rows have come yet, the loading line shows instead of emptyText.
+  isLoading?: boolean;
+  loadingText?: string;
+  failure?: QueryFailure;
   // A row, or an openable group, the URL points at, marked.
   focusedId?: string | null;
   // Under its row, across every column; null for none.
@@ -96,6 +103,9 @@ export function DataTable<Row>({
   columns,
   onOpen,
   emptyText,
+  isLoading = false,
+  loadingText,
+  failure,
   focusedId = null,
   noteOf,
   cardOf,
@@ -104,6 +114,7 @@ export function DataTable<Row>({
   stickyHeaderClassName,
   flush = false,
 }: DataTableProps<Row>) {
+  const { t } = useTranslation("system");
   const tier = useTier();
   const shown = valueForTier(columns, tier);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -111,9 +122,16 @@ export function DataTable<Row>({
   const isGrouped = groupBy.length > 0;
 
   if (isGrouped ? groups.length === 0 : rows.length === 0) {
+    if (failure !== undefined) {
+      return <QueryError failure={failure} className={cn(!flush && "px-0")} />;
+    }
+
     return (
-      <p className={cn("text-sm text-muted-foreground", flush && "px-4 py-5 sm:px-6")}>
-        {emptyText}
+      <p
+        role={isLoading ? "status" : undefined}
+        className={cn("text-sm text-muted-foreground", flush && "px-4 py-5 sm:px-6")}
+      >
+        {isLoading ? (loadingText ?? t("query.loading")) : emptyText}
       </p>
     );
   }

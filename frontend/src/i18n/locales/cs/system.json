@@ -27,5 +27,6 @@
   "crash.copied": "Copied",
   "crash.reference": "Reference {{id}}",
   "action.tryAgain": "Try again",
+  "query.loading": "Loading…",
   "action.start": "Go to the start page"
 }

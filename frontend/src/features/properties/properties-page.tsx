@@ -29,7 +29,7 @@ import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Pane, paneStateOf } from "@/components/pane-state";
-import { Button } from "@/components/ui/button";
+import { failureOf } from "@/components/query-state";
 import {
   PropertyEditor,
   propertyRefusalTexts,
@@ -175,14 +175,6 @@ export function PropertiesPage() {
           {notice.detail}
         </NoticeLine>
       )}
-      {isError && (
-        <div role="alert" className="border-b px-4 py-3 text-sm text-destructive">
-          Properties could not be loaded.{" "}
-          <Button size="sm" variant="outline" onClick={() => void refetch()}>
-            Try again
-          </Button>
-        </div>
-      )}
       <MasterDetail
         master={
           <RecordList
@@ -208,6 +200,7 @@ export function PropertiesPage() {
             onSelect={select}
             loadingText="Loading properties…"
             emptyText="No properties are defined."
+            failure={failureOf({ isError, refetch }, "Could not load properties.")}
             loadingMoreText="Loading more properties…"
           />
         }

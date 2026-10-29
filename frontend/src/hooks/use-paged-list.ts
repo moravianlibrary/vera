@@ -26,6 +26,9 @@ export interface PagedListResult<Page extends Slice<unknown>> {
   items: Page["items"][number][] | undefined;
   paging: PagedList;
   isLoading: boolean;
+  // The first slice could not load; a failed later slice keeps the rows already shown.
+  isError: boolean;
+  refetch: () => void;
   // True while the rows on screen are the previous query's.
   isPlaceholderData: boolean;
 }
@@ -55,6 +58,8 @@ export function usePagedList<Page extends Slice<unknown>>(
     items: slices?.flatMap((slice) => slice.items),
     paging: { hasMore: list.hasNextPage, isLoadingMore: list.isFetchingNextPage, onLoadMore },
     isLoading: list.isLoading,
+    isError: list.isError && slices === undefined,
+    refetch: () => void list.refetch(),
     isPlaceholderData: list.isPlaceholderData,
   };
 }
