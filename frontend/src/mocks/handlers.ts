@@ -1524,7 +1524,27 @@ export function createHandlers(profile: MockUserProfile) {
         return forbidden();
       }
 
-      const duplicate = findDuplicateWatchlist(session, { ...draft.data, id: null });
+      const source = draft.data.copyOf ? findVisibleWatchlist(session, draft.data.copyOf) : null;
+      if (draft.data.copyOf !== undefined) {
+        if (
+          draft.data.audience.kind !== "personal" ||
+          source === null ||
+          source.audience.kind === "personal" ||
+          source.view !== draft.data.view ||
+          !isSameWatchlistFilter(source.view, source.filter, draft.data.filter)
+        ) {
+          return problemResponse({
+            status: 422,
+            message: "Choose a visible system watchlist to copy",
+          });
+        }
+      }
+
+      const duplicate = findDuplicateWatchlist(
+        session,
+        { ...draft.data, id: null },
+        source !== null,
+      );
       if (
         duplicate !== null &&
         !(
@@ -1536,12 +1556,17 @@ export function createHandlers(profile: MockUserProfile) {
         return alreadySaved(duplicate);
       }
 
+      const { copyOf: _copyOf, ...watchlistData } = draft.data;
       const watchlist = {
-        ...draft.data,
+        ...watchlistData,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
-      database.watchlists.push({ ...watchlist, ownerId: session.user.id });
+      database.watchlists.push({
+        ...watchlist,
+        ownerId: session.user.id,
+        copiedFrom: source?.id,
+      });
       return HttpResponse.json(watchlist, { status: 201 });
     }),
 
@@ -1613,7 +1638,12 @@ export function createHandlers(profile: MockUserProfile) {
             ? (watchlist.filterVersion ?? 1)
             : (watchlist.filterVersion ?? 1) + 1,
       };
-      const duplicate = findDuplicateWatchlist(session, changed);
+      const source = watchlist.copiedFrom
+        ? database.watchlists.find((item) => item.id === watchlist.copiedFrom)
+        : undefined;
+      const keepsSourceFilter =
+        source !== undefined && isSameWatchlistFilter(changed.view, changed.filter, source.filter);
+      const duplicate = findDuplicateWatchlist(session, changed, keepsSourceFilter);
       if (duplicate !== null) {
         return alreadySaved(duplicate);
       }

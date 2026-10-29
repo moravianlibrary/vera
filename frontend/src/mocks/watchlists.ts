@@ -108,11 +108,13 @@ export function findChangeableWatchlist(
 export function findDuplicateWatchlist(
   session: Session,
   candidate: Pick<StoredWatchlist, "view" | "filter"> & { id: string | null },
+  personalOnly = false,
 ): StoredWatchlist | null {
   return (
     database.watchlists.find(
       (watchlist) =>
         watchlist.id !== candidate.id &&
+        (!personalOnly || watchlist.audience.kind === "personal") &&
         watchlist.view === candidate.view &&
         isVisible(session, watchlist) &&
         isSameWatchlistFilter(watchlist.view, watchlist.filter, candidate.filter),
@@ -156,7 +158,11 @@ export function isValidWatchlistFilter(
   );
 }
 
-export function publicWatchlistOf({ ownerId: _ownerId, ...watchlist }: StoredWatchlist): Watchlist {
+export function publicWatchlistOf({
+  ownerId: _ownerId,
+  copiedFrom: _copiedFrom,
+  ...watchlist
+}: StoredWatchlist): Watchlist {
   return watchlist;
 }
 

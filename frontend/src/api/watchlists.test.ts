@@ -118,7 +118,7 @@ describe("listWatchlists", () => {
           .flatMap((mail) => mail.records)
           .some((record) => record.watchlistIds.includes(watchlist.id)),
       ).toBe(false);
-      expect(watchlistMailOutbox.at(-1)?.manageUrl).toBe("/watchlists");
+      expect(watchlistMailOutbox.at(-1)?.manageUrl).toBe("/preferences/watchlists");
       database.documents[1] = { ...second, title: `${second.title} mail-entry-unique` };
       await listWatchlists("documents");
       await markWatchlistSeen(watchlist.id);
@@ -514,6 +514,34 @@ describe("saving a filter twice", () => {
         }),
       ),
     ).toBe(409);
+  });
+
+  it("saves one personal copy of a visible system watchlist without changing the source", async () => {
+    signInAs("curator");
+    const source = (await listWatchlists("documents")).find(
+      (row) => isShared(row) && row.filter.decision === "Pending",
+    );
+    if (!source) throw new Error("Expected the Pending system watchlist");
+    const draft = {
+      name: "My pending copy",
+      view: source.view,
+      filter: source.filter,
+      audience: { kind: "personal" as const },
+      copyOf: source.id,
+    };
+    const copy = await createWatchlist(draft);
+    try {
+      expect(copy.audience.kind).toBe("personal");
+      expect(copy.id).not.toBe(source.id);
+      expect((await updateWatchlist(copy.id, { name: "My pending copy renamed" })).name).toBe(
+        "My pending copy renamed",
+      );
+      expect(await statusOf(createWatchlist(draft))).toBe(409);
+      expect(await statusOf(createWatchlist({ ...draft, copyOf: "not-a-watchlist" }))).toBe(422);
+      expect((await listWatchlists("documents")).some((row) => row.id === source.id)).toBe(true);
+    } finally {
+      await deleteWatchlist(copy.id);
+    }
   });
 
   it("publishes a system copy while the caller keeps their personal watchlist", async () => {

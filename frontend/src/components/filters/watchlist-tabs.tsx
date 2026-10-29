@@ -8,56 +8,14 @@ import type { WatchlistSummary } from "@vera/contract/watchlists";
 import { isSameWatchlistFilter } from "@vera/contract/watchlists";
 import type { Watchlist, WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
-import { Building2, ChevronDown, CircleAlert } from "lucide-react";
-import type { FormEvent, ReactNode } from "react";
-import { useCallback, useEffect, useEffectEvent, useId, useRef, useState } from "react";
-import { ApiError } from "@/api/http";
-import { createWatchlist, updateWatchlist } from "@/api/watchlists";
-import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
+import { Building2, ChevronDown } from "lucide-react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { TabButton, TabStrip } from "@/components/filters/tab-strip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { WatchlistEditorPopover } from "@/components/filters/watchlist-editor-popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useRememberedWatchlist } from "@/hooks/use-remembered-watchlist";
-import {
-  useWatchlistMutations,
-  useWatchlistsQuery,
-  watchlistsQueryKey,
-} from "@/hooks/use-watchlists-query";
+import { useWatchlistMutations, useWatchlistsQuery } from "@/hooks/use-watchlists-query";
 
 type Filter = Watchlist["filter"];
 const newBadgeHoldMs = 2_500;
@@ -197,8 +155,18 @@ export function WatchlistTabs({
     onOpen(created);
   };
 
-  const updateExisting = async (watchlistId: string) => {
-    const saved = await update.mutateAsync({ watchlistId, change: { filter } });
+  const updateExisting = async (
+    watchlist: WatchlistSummary,
+    name: string,
+    audience: WatchlistAudience,
+  ) => {
+    const saved =
+      watchlist.audience.kind === "personal" && audience.kind !== "personal"
+        ? await create.mutateAsync({ name, view, audience, filter })
+        : await update.mutateAsync({
+            watchlistId: watchlist.id,
+            change: { name, audience, filter },
+          });
     onOpen(saved);
   };
 
@@ -216,6 +184,7 @@ export function WatchlistTabs({
           isOpen={watchlist.id === open?.id}
           canShare={canShare}
           onOpen={() => onOpen(watchlist, watchlist.newCount)}
+          onSaved={(saved) => onOpen(saved)}
           onDeleted={() => {
             if (watchlist.id === open?.id || watchlist.id === openedId) {
               onDetach();
@@ -226,13 +195,11 @@ export function WatchlistTabs({
 
       {isFiltered && open === undefined && (
         <CurrentSearchPopover
+          view={view}
+          filter={filter}
           canShare={canShare}
           editable={editable}
           preferredUpdateId={preferredUpdateId}
-          isSaving={create.isPending}
-          saveError={create.error}
-          isUpdating={update.isPending}
-          updateError={update.error}
           onOpen={() => {
             create.reset();
             update.reset();
@@ -269,39 +236,22 @@ interface WatchlistTabProps {
   canShare: boolean;
   // Opens the watchlist as saved.
   onOpen: () => void;
+  onSaved: (watchlist: Watchlist) => void;
   onDeleted: () => void;
 }
 
-// Only the open tab shows its menu, so the row stays a row of names.
+// Only the open tab shows its editor trigger, so the row stays a row of names.
 function WatchlistTab({
   watchlist,
   displayedNewCount,
   isOpen,
   canShare,
   onOpen,
+  onSaved,
   onDeleted,
 }: WatchlistTabProps) {
-  const [dialog, setDialog] = useState<"rename" | "share" | "delete" | null>(null);
-  const share = useActionMutation({
-    call: (audience: WatchlistAudience) =>
-      isShared(watchlist)
-        ? updateWatchlist(watchlist.id, { audience })
-        : createWatchlist({
-            name: watchlist.name,
-            view: watchlist.view,
-            filter: watchlist.filter,
-            audience,
-          }),
-    invalidates: [watchlistsQueryKey],
-    refusalTexts: {
-      403: "Only watchlist managers can create system watchlists or change audiences.",
-    },
-  });
-  const { update, remove } = useWatchlistMutations();
+  const { create, update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
-  const isShareable = canShare && isEditable;
-  // A refused rename shows in its dialog; a refused delete shows beside the tab.
-  const failure = dialog === "rename" ? null : remove.error;
 
   return (
     <span className="inline-flex shrink-0 items-center">
@@ -322,118 +272,62 @@ function WatchlistTab({
         )}
       </Tab>
 
-      {isOpen && isEditable && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={`${watchlist.name} options`}
-            className="-ml-2 grid size-6 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            <ChevronDown className="size-3.5" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem className="text-xs" onSelect={() => setDialog("rename")}>
-              Rename
-            </DropdownMenuItem>
-            {isShareable && (
-              <DropdownMenuItem className="text-xs" onSelect={() => setDialog("share")}>
-                {isShared(watchlist) ? "Change audience…" : "Create system watchlist…"}
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              variant="destructive"
-              className="text-xs"
-              onSelect={() => setDialog("delete")}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      {failure !== null && <Refusal error={failure} />}
-
-      <RenameWatchlistDialog
-        isOpen={dialog === "rename"}
-        name={watchlist.name}
-        isSaving={update.isPending}
-        error={update.error}
-        onClose={() => {
-          setDialog(null);
-          update.reset();
-        }}
-        onRename={async (name) => {
-          await update.mutateAsync({ watchlistId: watchlist.id, change: { name } });
-          setDialog(null);
-        }}
-      />
-
-      {dialog === "share" && (
-        <ShareWatchlistDialog
-          isOpen
-          onClose={() => setDialog(null)}
+      {isOpen && (isEditable || isShared(watchlist)) && (
+        <WatchlistEditorPopover
+          view={watchlist.view}
+          filter={watchlist.filter}
           watchlist={watchlist}
-          mode={isShared(watchlist) ? "audience" : "publish"}
-          onSave={share.run}
+          canShare={canShare}
+          onSave={async (name, audience) => {
+            const saved =
+              watchlist.audience.kind === "personal" && audience.kind !== "personal"
+                ? await create.mutateAsync({
+                    name,
+                    view: watchlist.view,
+                    filter: watchlist.filter,
+                    audience,
+                  })
+                : await update.mutateAsync({
+                    watchlistId: watchlist.id,
+                    change: { name, audience },
+                  });
+            onSaved(saved);
+          }}
+          onCopy={
+            isShared(watchlist)
+              ? async (name) => {
+                  const saved = await create.mutateAsync({
+                    name,
+                    view: watchlist.view,
+                    filter: watchlist.filter,
+                    audience: { kind: "personal" },
+                    copyOf: watchlist.id,
+                  });
+                  onSaved(saved);
+                }
+              : undefined
+          }
+          onDelete={
+            isEditable
+              ? async () => {
+                  await remove.mutateAsync(watchlist.id);
+                  onDeleted();
+                }
+              : undefined
+          }
+          trigger={
+            <button
+              type="button"
+              aria-label={`${watchlist.name} options`}
+              className="-ml-2 grid size-6 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <ChevronDown className="size-3.5" />
+            </button>
+          }
         />
       )}
-
-      <AlertDialog
-        open={dialog === "delete"}
-        onOpenChange={(isDialogOpen) => setDialog(isDialogOpen ? "delete" : null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{watchlist.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The saved filter goes
-              {isShared(watchlist) ? ", for everyone who sees it" : ""}; the documents it matched
-              stay where they are.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep it</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                await remove.mutateAsync(watchlist.id);
-                onDeleted();
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </span>
   );
-}
-
-// What the server refused, kept beside the tab until the next try.
-function Refusal({ error }: { error: Error }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span role="img" aria-label={refusalOf(error)} className="inline-flex">
-          <CircleAlert className="size-3.5 text-destructive" />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{refusalOf(error)}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-const forbiddenStatus = 403;
-const conflictStatus = 409;
-
-function refusalOf(error: Error): string {
-  if (error instanceof ApiError && error.status === conflictStatus) {
-    return "The filter is already saved as another watchlist.";
-  }
-
-  if (error instanceof ApiError && error.status === forbiddenStatus) {
-    return "Only watchlist managers can change system watchlists.";
-  }
-
-  return "The watchlist could not be saved. Try again.";
 }
 
 function SystemMark() {
@@ -449,62 +343,44 @@ function SystemMark() {
   );
 }
 
-// ---------------------------------------------------------------- naming
-
-// A new watchlist is the caller's own or everyone's; groups and roles are chosen with Share….
-const newAudiences = ["personal", "everyone"] as const;
-type NewAudience = (typeof newAudiences)[number];
-
-const newAudienceLabels = {
-  personal: "Only me",
-  everyone: "Everyone",
-} as const satisfies Record<NewAudience, string>;
-
+// Both saved tabs and Current search open the same editor popover.
 interface CurrentSearchPopoverProps {
+  view: WatchlistView;
+  filter: Filter;
   canShare: boolean;
   editable: WatchlistSummary[];
   preferredUpdateId: string | null;
-  isSaving: boolean;
-  saveError: Error | null;
-  isUpdating: boolean;
-  updateError: Error | null;
-  // Clears what the last try was refused.
   onOpen: () => void;
   onSave: (name: string, audience: WatchlistAudience) => Promise<void>;
-  onUpdate: (watchlistId: string) => Promise<void>;
+  onUpdate: (
+    watchlist: WatchlistSummary,
+    name: string,
+    audience: WatchlistAudience,
+  ) => Promise<void>;
 }
 
 function CurrentSearchPopover({
+  view,
+  filter,
   canShare,
   editable,
   preferredUpdateId,
-  isSaving,
-  saveError,
-  isUpdating,
-  updateError,
   onOpen,
   onSave,
   onUpdate,
 }: CurrentSearchPopoverProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scope, setScope] = useState<NewAudience>("personal");
-  const [targetId, setTargetId] = useState(preferredUpdateId ?? "");
-  const scopeId = useId();
-  const targetLabelId = useId();
-
   return (
-    <Popover
-      open={isOpen}
-      onOpenChange={(isPopoverOpen) => {
-        setIsOpen(isPopoverOpen);
-        setScope("personal");
-        if (isPopoverOpen) {
-          setTargetId(preferredUpdateId ?? "");
-        }
-        onOpen();
-      }}
-    >
-      <PopoverTrigger asChild>
+    <WatchlistEditorPopover
+      view={view}
+      filter={filter}
+      watchlist={null}
+      canShare={canShare}
+      editable={editable}
+      preferredUpdateId={preferredUpdateId}
+      onOpen={onOpen}
+      onSave={onSave}
+      onUpdate={(selected) => onUpdate(selected, selected.name, selected.audience)}
+      trigger={
         <button
           type="button"
           data-watchlist-tab="current"
@@ -514,193 +390,7 @@ function CurrentSearchPopover({
           Current search
           <ChevronDown className="size-3.5" />
         </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 space-y-4 p-3">
-        <NameForm
-          label="Save this filter as a watchlist"
-          submitLabel="Save new watchlist"
-          isSaving={isSaving}
-          error={saveError}
-          onSubmit={async (name) => {
-            await onSave(name, { kind: scope });
-            setIsOpen(false);
-          }}
-        >
-          {canShare && (
-            <RadioGroup
-              aria-label="Who sees it"
-              value={scope}
-              onValueChange={(value) => {
-                const picked = newAudiences.find((option) => option === value);
-                if (picked !== undefined) {
-                  setScope(picked);
-                }
-              }}
-              className="flex gap-4"
-            >
-              {newAudiences.map((option) => (
-                <div key={option} className="flex items-center gap-1.5">
-                  <RadioGroupItem id={`${scopeId}-${option}`} value={option} />
-                  <Label htmlFor={`${scopeId}-${option}`} className="text-xs font-normal">
-                    {newAudienceLabels[option]}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          )}
-        </NameForm>
-        {editable.length > 0 && (
-          <div className="grid gap-2 border-t pt-3">
-            <Label id={targetLabelId} className="text-xs font-medium">
-              Update an existing watchlist
-            </Label>
-            <Select value={targetId} onValueChange={setTargetId}>
-              <SelectTrigger aria-labelledby={targetLabelId} className="w-full">
-                <SelectValue placeholder="Choose a watchlist" />
-              </SelectTrigger>
-              <SelectContent>
-                {editable.map((watchlist) => (
-                  <SelectItem key={watchlist.id} value={watchlist.id}>
-                    {watchlist.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {(() => {
-              const selected = editable.find((watchlist) => watchlist.id === targetId);
-              return selected !== undefined && isShared(selected) ? (
-                <p className="text-xs text-muted-foreground">
-                  {selected.subscriberCount} subscriber{selected.subscriberCount === 1 ? "" : "s"}{" "}
-                  will be notified and must confirm the changed filter before delivery resumes.
-                </p>
-              ) : null;
-            })()}
-            {updateError !== null && (
-              <p className="text-xs text-destructive">{refusalOf(updateError)}</p>
-            )}
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={targetId === "" || isUpdating}
-                onClick={() => {
-                  onUpdate(targetId)
-                    .then(() => setIsOpen(false))
-                    .catch(() => undefined);
-                }}
-              >
-                Update watchlist
-              </Button>
-            </div>
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+      }
+    />
   );
-}
-
-interface RenameWatchlistDialogProps {
-  isOpen: boolean;
-  name: string;
-  isSaving: boolean;
-  error: Error | null;
-  onClose: () => void;
-  onRename: (name: string) => Promise<void>;
-}
-
-function RenameWatchlistDialog({
-  isOpen,
-  name,
-  isSaving,
-  error,
-  onClose,
-  onRename,
-}: RenameWatchlistDialogProps) {
-  return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(isDialogOpen) => {
-        if (!isDialogOpen) {
-          onClose();
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Rename the watchlist</DialogTitle>
-        </DialogHeader>
-        <NameForm
-          label="Name"
-          initialName={name}
-          submitLabel="Rename"
-          isSaving={isSaving}
-          error={error}
-          onSubmit={onRename}
-          footer={DialogFooter}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-interface NameFormProps {
-  label: string;
-  initialName?: string;
-  submitLabel: string;
-  isSaving: boolean;
-  // What the server refused on the last try.
-  error: Error | null;
-  onSubmit: (name: string) => Promise<void>;
-  footer?: (props: { children: ReactNode }) => ReactNode;
-  // More fields, between the name and the button.
-  children?: ReactNode;
-}
-
-function NameForm({
-  label,
-  initialName = "",
-  submitLabel,
-  isSaving,
-  error,
-  onSubmit,
-  footer: Footer = PlainFooter,
-  children,
-}: NameFormProps) {
-  const [name, setName] = useState(initialName);
-  const trimmed = name.trim();
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (trimmed === "" || isSaving) {
-      return;
-    }
-
-    // A refusal stays in the mutation and shows below; the form stays open for another try.
-    onSubmit(trimmed).catch(() => undefined);
-  };
-
-  return (
-    <form onSubmit={submit} className="grid gap-3">
-      <Input
-        aria-label={label}
-        placeholder="Watchlist name"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        className="h-8"
-        autoFocus
-      />
-      {children}
-      {error !== null && <p className="text-xs text-destructive">{refusalOf(error)}</p>}
-      <Footer>
-        <Button type="submit" size="sm" disabled={trimmed === "" || isSaving}>
-          {submitLabel}
-        </Button>
-      </Footer>
-    </form>
-  );
-}
-
-function PlainFooter({ children }: { children: ReactNode }) {
-  return <div className="flex justify-end">{children}</div>;
 }

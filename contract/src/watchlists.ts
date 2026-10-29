@@ -3,7 +3,7 @@
 // whether the caller may change it, and the caller's own row for it (seen, place, delivery),
 // since those are each person's even on a shared one. Two watchlists on one view with the same
 // filter are the same watchlist, whatever their names or audiences, and the server keeps only one
-// of them among those a caller sees; sharing one that reaches somebody who keeps the same filter
+// of them among those a caller sees, except an explicit personal copy of a system one; sharing one that reaches somebody who keeps the same filter
 // warns instead (decided 2026-10-06), which is what the reach says before it is saved.
 
 import type { Watchlist, WatchlistView } from "@vera/domain/entities";
@@ -26,12 +26,12 @@ const audienceSchema = watchlistAudienceSchema.refine(
 
 export const watchlistDraftSchema = watchlistSchema
   .pick({ name: true, view: true, filter: true })
-  .extend({ audience: audienceSchema });
+  .extend({ audience: audienceSchema, copyOf: z.string().optional() });
 
 export type WatchlistDraft = z.infer<typeof watchlistDraftSchema>;
 
-// An audience change shares a personal watchlist, changes who a shared one reaches, or takes it
-// back as the caller's own.
+// An audience change updates who a system watchlist reaches. Changing between personal and
+// system requires creating a separate copy.
 export const watchlistChangeSchema = watchlistDraftSchema
   .pick({ name: true, audience: true, filter: true })
   .partial();

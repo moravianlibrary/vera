@@ -38,13 +38,15 @@ each recipient's own requests.
 #### WATCH-no-duplicates
 
 A person cannot save a watchlist with the same filter on the same page as one they already see.
-The one exception: a manager may publish a system copy of their own personal one.
+Two explicit copies are exceptions: a manager may publish a system copy of their own personal
+watchlist, and a person may save a personal copy of a visible system watchlist. A second personal
+copy of the same filter is refused. Copying leaves the source watchlist and its recipients intact.
 
 #### WATCH-new
 
 A record is **new** in a watchlist when it starts matching, since the person last opened that
 watchlist. Leaving does not count; leaving and coming back is new again. Opening the watchlist
-marks its entries seen; opening the Watchlists page or receiving an email does not.
+marks its entries seen; opening Preferences → Watchlists or receiving an email does not.
 
 #### WATCH-badge
 
@@ -65,8 +67,10 @@ they see, personal and system, once they allow the site's notifications in the b
 is pushed before that. They are told when a record **enters** the filter, not when one in it
 changes. What matched when they switched it on is a baseline, not a burst.
 
-The browser's permission is asked on the Watchlists page, above the watchlists, and moves with
-the watchlist preferences when they move under Preferences.
+The browser's permission is asked on Preferences → Watchlists, above the person's watchlists.
+The person's choices for every visible personal or system watchlist are there; system definition
+and audience management are on the separate System watchlists page
+([VIEW-watchlists](../access/views.md#view-watchlists)).
 
 #### WATCH-mail-batch
 

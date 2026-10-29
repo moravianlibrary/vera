@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Changed
+
+- System watchlists have their own administration page. Each person's watchlists, order and
+  delivery choices are now under Preferences → Watchlists. The profile menu links directly to
+  all four Preferences tabs; language and appearance are set in Display.
+- Creating a system watchlist from a current filter can target selected groups and roles as well
+  as everyone. Watchlist notification links now open the recipient's Preferences page.
+
 ### Added
 
 - Categories now has saved watchlist tabs and filters for kind, custody, mix gaps, document

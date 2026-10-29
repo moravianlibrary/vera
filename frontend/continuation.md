@@ -1,5 +1,20 @@
 # Frontend continuation guide
 
+**Watchlists and Preferences handoff (2026-10-29):** `/watchlists` is now the
+system watchlist administration page, visible only with `watchlist.manage_system`.
+Personal and eligible system watchlists, their order, delivery choices and browser
+permission are at `/preferences/watchlists`. Preferences has four addressable tabs:
+Watchlists, Notifications, Display and Account. The profile menu links directly to
+all four. Language and appearance are in Display. The older handoff below describes
+the previous layout; follow `docs/reference/access/views.md` and
+`docs/reference/ui/navigation.md` for the current rules.
+Creating a watchlist from Current search now offers Only me, Everyone and selected groups and
+roles to a system watchlist manager.
+Creating and editing from a saved tab use the same popover editor. The saved tab's chevron opens
+it directly, with Delete and its inline confirmation inside the popover.
+System watchlists also offer Save a personal copy in that popover, including to viewers who cannot
+edit the system definition. The shared audience choices are labeled System watchlist.
+
 **Documents perspectives handoff (2026-10-14):** `/documents` is the staff
 view for `iteration.read`; `/my-documents` is the requester view for
 `request.read_own`. The sidebar keeps one Documents entry. People with both
@@ -78,7 +93,7 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
   The `.v2` redesign remains deferred.
 - Saved watchlist tabs now follow the full live search and filter on Documents, Proposals,
   Validations, Lists and Projects. A matching saved tab becomes active automatically; an
-  unmatched filter shows `Current search` at the end of the tabs. Its menu saves a new
+  unmatched filter shows `Current search` at the end of the tabs. Its popover saves a new
   watchlist or updates a chosen editable one, preferring the watchlist that the search
   originated from. The tab strip scrolls the active tab into view after watchlists load.
   Project dates also offers this, last and next calendar week or month as relative presets;

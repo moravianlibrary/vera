@@ -1,10 +1,9 @@
-// Who sees a watchlist (filtering.md §4.5; component-interfaces.md §6.6 *Share watchlist…*): its
+// WATCH-audience: who sees a watchlist, shared by creation and audience editing: its
 // owner alone, everyone who opens the view, or the members of some groups and the holders of some
 // roles. Before it is saved it says, from the server, how many people the audience reaches, how
 // many in it cannot open the view, and how many of the reached already keep the same filter as
-// their own, which warns rather than refuses (decided 2026-10-06). Opened from a watchlist's tab
-// and from its record on Users & Groups, under `watchlist.manage_system`.
-// TODO(rrandiak): from Preferences → Watchlists (plan.md step 12); labels move to i18n.
+// their own. Only `watchlist.manage_system` may save a system audience.
+// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { Watchlist, WatchlistAudience } from "@vera/domain/entities";
@@ -18,10 +17,11 @@ import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useRolesQuery } from "@/hooks/use-reference-query";
 import { plural } from "@/lib/plural";
 
-const audienceKinds = ["everyone", "some"] as const;
+const audienceKinds = ["personal", "everyone", "some"] as const;
 type AudienceKind = (typeof audienceKinds)[number];
 
 const audienceLabels = {
+  personal: "Only me",
   everyone: "Everyone who opens the view",
   some: "Some groups and roles",
 } as const satisfies Record<AudienceKind, string>;
@@ -38,6 +38,122 @@ export const viewLabels = {
   tasks: "Tasks",
 } as const satisfies Record<Watchlist["view"], string>;
 
+export function isEmptyWatchlistAudience(audience: WatchlistAudience): boolean {
+  return audience.kind === "some" && audience.groupIds.length + audience.roleIds.length === 0;
+}
+
+export function WatchlistAudiencePicker({
+  audience,
+  onChange,
+  view,
+  allowPersonal = false,
+}: {
+  audience: WatchlistAudience;
+  onChange: (audience: WatchlistAudience) => void;
+  view: Watchlist["view"];
+  allowPersonal?: boolean;
+}) {
+  const id = useId();
+  const { data: groups = [] } = useGroupsQuery();
+  const { data: roles = [] } = useRolesQuery();
+  const picked: { groupIds: readonly string[]; roleIds: readonly string[] } =
+    audience.kind === "some" ? audience : { groupIds: [], roleIds: [] };
+
+  const choose = (kind: AudienceKind) =>
+    onChange(
+      kind === "some"
+        ? { kind, groupIds: [...picked.groupIds], roleIds: [...picked.roleIds] }
+        : { kind },
+    );
+  const toggle = (field: "groupIds" | "roleIds", recordId: string) => {
+    const toggled = picked[field].includes(recordId)
+      ? picked[field].filter((other) => other !== recordId)
+      : [...picked[field], recordId];
+    onChange({
+      kind: "some",
+      groupIds: field === "groupIds" ? toggled : [...picked.groupIds],
+      roleIds: field === "roleIds" ? toggled : [...picked.roleIds],
+    });
+  };
+
+  return (
+    <div className="grid gap-4">
+      <RadioGroup
+        aria-label="Who sees it"
+        value={audience.kind}
+        onValueChange={(value) => {
+          const kind = audienceKinds.find((candidate) => candidate === value);
+          if (kind !== undefined && (kind !== "personal" || allowPersonal)) choose(kind);
+        }}
+        className="grid gap-2"
+      >
+        {audienceKinds
+          .filter((kind) => allowPersonal || kind !== "personal")
+          .map((kind) => (
+            <div key={kind} className="flex items-center gap-2">
+              <RadioGroupItem id={`${id}-${kind}`} value={kind} />
+              <Label htmlFor={`${id}-${kind}`} className="grid gap-0.5 font-normal">
+                <span>
+                  {kind === "everyone"
+                    ? `Everyone who opens ${viewLabels[view]}`
+                    : audienceLabels[kind]}
+                </span>
+                {kind !== "personal" && (
+                  <span className="text-xs text-muted-foreground">System watchlist</span>
+                )}
+              </Label>
+            </div>
+          ))}
+      </RadioGroup>
+
+      {audience.kind === "some" && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <fieldset className="grid content-start gap-1.5">
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">Groups</legend>
+            {groups.map((group) => (
+              <label
+                key={group.id}
+                htmlFor={`${id}-group-${group.id}`}
+                className="flex items-center gap-2 text-sm"
+              >
+                <Checkbox
+                  id={`${id}-group-${group.id}`}
+                  checked={picked.groupIds.includes(group.id)}
+                  onCheckedChange={() => toggle("groupIds", group.id)}
+                />
+                {group.name}
+                <span className="text-xs text-muted-foreground">
+                  {plural(group.peopleCount, "person", "people")}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="grid content-start gap-1.5">
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">Roles</legend>
+            {roles.map((role) => (
+              <label
+                key={role.id}
+                htmlFor={`${id}-role-${role.id}`}
+                className="flex items-center gap-2 text-sm"
+              >
+                <Checkbox
+                  id={`${id}-role-${role.id}`}
+                  checked={picked.roleIds.includes(role.id)}
+                  onCheckedChange={() => toggle("roleIds", role.id)}
+                />
+                {role.name}
+              </label>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              Holders by hand or mapped by an identity provider, alike.
+            </p>
+          </fieldset>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface ShareWatchlistDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -53,17 +169,12 @@ export function ShareWatchlistDialog({
   mode = "audience",
   onSave,
 }: ShareWatchlistDialogProps) {
-  const id = useId();
-  const { data: groups = [] } = useGroupsQuery();
-  const { data: roles = [] } = useRolesQuery();
   const [audience, setAudience] = useState<WatchlistAudience>(
     watchlist.audience.kind === "personal" ? { kind: "everyone" } : watchlist.audience,
   );
   const [isPending, setIsPending] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
-  const picked: { groupIds: readonly string[]; roleIds: readonly string[] } =
-    audience.kind === "some" ? audience : { groupIds: [], roleIds: [] };
-  const isEmpty = audience.kind === "some" && picked.groupIds.length + picked.roleIds.length === 0;
+  const isEmpty = isEmptyWatchlistAudience(audience);
   const { data: reach } = useQuery({
     queryKey: ["watchlists", "reach", watchlist.id, audience],
     queryFn: () =>
@@ -75,23 +186,6 @@ export function ShareWatchlistDialog({
       }),
     enabled: isOpen && audience.kind !== "personal" && !isEmpty,
   });
-
-  const choose = (kind: AudienceKind) =>
-    setAudience(
-      kind === "some"
-        ? { kind, groupIds: [...picked.groupIds], roleIds: [...picked.roleIds] }
-        : { kind },
-    );
-  const toggle = (field: "groupIds" | "roleIds", recordId: string) => {
-    const toggled = picked[field].includes(recordId)
-      ? picked[field].filter((other) => other !== recordId)
-      : [...picked[field], recordId];
-    setAudience({
-      kind: "some",
-      groupIds: field === "groupIds" ? toggled : [...picked.groupIds],
-      roleIds: field === "roleIds" ? toggled : [...picked.roleIds],
-    });
-  };
 
   const close = () => {
     setAudience(watchlist.audience.kind === "personal" ? { kind: "everyone" } : watchlist.audience);
@@ -131,73 +225,7 @@ export function ShareWatchlistDialog({
       }}
     >
       <div className="grid gap-4">
-        <RadioGroup
-          aria-label="Who sees it"
-          value={audience.kind}
-          onValueChange={(value) => {
-            const kind = audienceKinds.find((candidate) => candidate === value);
-            if (kind !== undefined) {
-              choose(kind);
-            }
-          }}
-          className="grid gap-2"
-        >
-          {audienceKinds.map((kind) => (
-            <div key={kind} className="flex items-center gap-2">
-              <RadioGroupItem id={`${id}-${kind}`} value={kind} />
-              <Label htmlFor={`${id}-${kind}`} className="font-normal">
-                {kind === "everyone"
-                  ? `Everyone who opens ${viewLabels[watchlist.view]}`
-                  : audienceLabels[kind]}
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-
-        {audience.kind === "some" && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <fieldset className="grid content-start gap-1.5">
-              <legend className="mb-1 text-xs font-semibold text-muted-foreground">Groups</legend>
-              {groups.map((group) => (
-                <label
-                  key={group.id}
-                  htmlFor={`${id}-group-${group.id}`}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <Checkbox
-                    id={`${id}-group-${group.id}`}
-                    checked={picked.groupIds.includes(group.id)}
-                    onCheckedChange={() => toggle("groupIds", group.id)}
-                  />
-                  {group.name}
-                  <span className="text-xs text-muted-foreground">
-                    {plural(group.peopleCount, "person", "people")}
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-            <fieldset className="grid content-start gap-1.5">
-              <legend className="mb-1 text-xs font-semibold text-muted-foreground">Roles</legend>
-              {roles.map((role) => (
-                <label
-                  key={role.id}
-                  htmlFor={`${id}-role-${role.id}`}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <Checkbox
-                    id={`${id}-role-${role.id}`}
-                    checked={picked.roleIds.includes(role.id)}
-                    onCheckedChange={() => toggle("roleIds", role.id)}
-                  />
-                  {role.name}
-                </label>
-              ))}
-              <p className="text-xs text-muted-foreground">
-                Holders by hand or mapped by an identity provider, alike.
-              </p>
-            </fieldset>
-          </div>
-        )}
+        <WatchlistAudiencePicker audience={audience} onChange={setAudience} view={watchlist.view} />
 
         <ReachLine
           audience={audience}

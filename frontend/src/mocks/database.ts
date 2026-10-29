@@ -33,6 +33,7 @@ import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 export interface StoredWatchlist extends Watchlist {
   readonly ownerId: string;
   readonly filterVersion?: number;
+  readonly copiedFrom?: string;
 }
 
 const records = withCopies(
