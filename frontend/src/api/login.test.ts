@@ -18,11 +18,41 @@ describe("mock login", () => {
   it("lists enabled identity entries in order", async () => {
     server.use(...createHandlers("reader"));
     expect(await listLoginEntries()).toEqual([
-      { instanceId: "pi22", label: "Log in with MZK account", entry: "redirect" },
-      { instanceId: "pi23", label: "Log in with eduID", entry: "redirect" },
-      { instanceId: "pi24", label: "Log in with a VERA account", entry: "form" },
-      { instanceId: "pi41", label: "Log in with Google", entry: "redirect" },
-      { instanceId: "pi42", label: "Log in with Seznam", entry: "redirect" },
+      {
+        instanceId: "pi22",
+        label: "Log in with MZK account",
+        entry: "redirect",
+        canSignUp: false,
+        canResetPassword: false,
+      },
+      {
+        instanceId: "pi23",
+        label: "Log in with eduID",
+        entry: "redirect",
+        canSignUp: false,
+        canResetPassword: false,
+      },
+      {
+        instanceId: "pi24",
+        label: "Log in with a VERA account",
+        entry: "form",
+        canSignUp: true,
+        canResetPassword: true,
+      },
+      {
+        instanceId: "pi41",
+        label: "Log in with Google",
+        entry: "redirect",
+        canSignUp: false,
+        canResetPassword: false,
+      },
+      {
+        instanceId: "pi42",
+        label: "Log in with Seznam",
+        entry: "redirect",
+        canSignUp: false,
+        canResetPassword: false,
+      },
     ]);
   });
 

@@ -31,10 +31,14 @@ import { PropertiesPage } from "@/features/properties/properties-page";
 import { RequestsPage } from "@/features/requests/requests-page";
 import { CrashPage } from "@/features/system/crash-page";
 import { ForbiddenPage } from "@/features/system/forbidden-page";
+import { ForgotPasswordPage } from "@/features/system/forgot-password-page";
 import { LoginPage } from "@/features/system/login-page";
 import { NoAccessPage } from "@/features/system/no-access-page";
 import { NotFoundPage } from "@/features/system/not-found-page";
+import { ResetPasswordPage } from "@/features/system/reset-password-page";
+import { SignUpPage } from "@/features/system/sign-up-page";
 import { SignedOutPage } from "@/features/system/signed-out-page";
+import { VerifyEmailPage } from "@/features/system/verify-email-page";
 import { SchedulesPage } from "@/features/tasks/schedules-page";
 import { TasksPage } from "@/features/tasks/tasks-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
@@ -119,6 +123,10 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
 
 const router = createBrowserRouter([
   { path: "/login", element: <LoginPage />, errorElement: <CrashPage /> },
+  { path: "/signup", element: <SignUpPage />, errorElement: <CrashPage /> },
+  { path: "/verify-email/:token", element: <VerifyEmailPage />, errorElement: <CrashPage /> },
+  { path: "/forgot-password", element: <ForgotPasswordPage />, errorElement: <CrashPage /> },
+  { path: "/reset-password/:token", element: <ResetPasswordPage />, errorElement: <CrashPage /> },
   { path: "/signed-out", element: <SignedOutPage /> },
   { path: "/email-notifications/:token", element: <EmailNotificationsPage /> },
   {

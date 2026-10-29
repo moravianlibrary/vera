@@ -319,6 +319,30 @@ function findUser(userId: string): AccessUser | null {
   return user === undefined ? null : accessUserOf(user);
 }
 
+export function addLocalAccountUser(
+  name: string,
+  email: string,
+  instanceId: string,
+  username: string,
+  roleIds: string[],
+): AccessUser {
+  const id = nextIdOf(
+    "u",
+    database.users.map((user) => user.id),
+  );
+  database.users = [...database.users, { id, name, kind: "person", email: email || null }];
+  database.userAccess = {
+    ...database.userAccess,
+    [id]: {
+      handRoleIds: [...new Set(roleIds)],
+      mappedRoles: [],
+      identities: [{ instanceId, externalId: username, lastLoginAt: null }],
+      entry: null,
+    },
+  };
+  return findUser(id) as AccessUser;
+}
+
 export function setHandRoles(
   session: Session,
   userId: string,
@@ -558,24 +582,15 @@ export function createLocalAccount(session: Session, account: LocalAccount): Out
     return { refusal: unknownRecord("role") };
   }
 
-  const id = nextIdOf(
-    "u",
-    database.users.map((user) => user.id),
-  );
-  database.users = [
-    ...database.users,
-    { id, name: account.name, kind: "person", email: account.email === "" ? null : account.email },
-  ];
-  database.userAccess = {
-    ...database.userAccess,
-    [id]: {
-      handRoleIds: [...new Set(account.roleIds)],
-      mappedRoles: [],
-      identities: [{ instanceId: local.id, externalId: account.username, lastLoginAt: null }],
-      entry: null,
-    },
+  return {
+    value: addLocalAccountUser(
+      account.name,
+      account.email,
+      local.id,
+      account.username,
+      account.roleIds,
+    ),
   };
-  return { value: findUser(id) as AccessUser };
 }
 
 // ---------------------------------------------------------------- groups

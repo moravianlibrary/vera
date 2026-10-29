@@ -9,6 +9,7 @@ const problemsOf = {
   403: { code: "forbidden", title: "Forbidden" },
   404: { code: "not_found", title: "Not found" },
   409: { code: "conflict", title: "Conflict" },
+  410: { code: "gone", title: "Gone" },
   422: { code: "invalid", title: "Not accepted" },
   429: { code: "rate_limited", title: "Too many requests" },
 } as const satisfies Record<Refusal["status"], { code: string; title: string }>;

@@ -5,7 +5,7 @@ import { languages } from "@vera/contract/user-settings";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { ApiError } from "@/api/http";
 import { listLoginEntries, loginWithForm, startRedirectLogin } from "@/api/login";
 import { Button } from "@/components/ui/button";
@@ -109,6 +109,22 @@ export function LoginPage() {
                   <p className="text-sm text-destructive" role="alert">
                     {formError}
                   </p>
+                )}
+                {entry.canSignUp && (
+                  <Link
+                    className="text-sm underline-offset-4 hover:underline"
+                    to={`/signup?instance=${encodeURIComponent(entry.instanceId)}&returnTo=${encodeURIComponent(returnTo)}`}
+                  >
+                    {t("signUp.link")}
+                  </Link>
+                )}
+                {entry.canResetPassword && (
+                  <Link
+                    className="text-sm underline-offset-4 hover:underline"
+                    to={`/forgot-password?instance=${encodeURIComponent(entry.instanceId)}`}
+                  >
+                    {t("forgot.link")}
+                  </Link>
                 )}
               </form>
             ) : (

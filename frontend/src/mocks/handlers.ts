@@ -45,7 +45,13 @@ import {
   parseListSliceParams,
   parsePoolSearchParams,
 } from "@vera/contract/lists";
-import { localLoginSchema } from "@vera/contract/login";
+import {
+  emailOnlySchema,
+  localLoginSchema,
+  passwordResetSchema,
+  signUpSchema,
+  tokenSchema,
+} from "@vera/contract/login";
 import { messageSubjectKindSchema, messageSubjectParams } from "@vera/contract/messages";
 import {
   mixDraftSchema,
@@ -298,6 +304,13 @@ import {
 } from "@/mocks/schedules";
 import { accessUserOf, isSuspendedUser, resolveSession } from "@/mocks/session";
 import {
+  confirmEmail,
+  requestPasswordReset,
+  resetPassword,
+  sendVerificationAgain,
+  signUp,
+} from "@/mocks/sign-up";
+import {
   cancelRun,
   canReadRuns,
   findRunDetail,
@@ -434,6 +447,13 @@ export function createHandlers(profile: MockUserProfile) {
             instanceId: instance.id,
             label,
             entry: instance.implementationId === "pt22" ? "form" : "redirect",
+            canSignUp:
+              instance.implementationId === "pt22" &&
+              instance.configuration.signup === "on" &&
+              instance.configuration.mail_channel !== undefined,
+            canResetPassword:
+              instance.implementationId === "pt22" &&
+              instance.configuration.mail_channel !== undefined,
           })),
       ),
     ),
@@ -463,6 +483,47 @@ export function createHandlers(profile: MockUserProfile) {
       window.sessionStorage.removeItem(signedOutKey);
       return new HttpResponse(null, { status: 204 });
     }),
+
+    http.post(route(`${apiRoutes.signUp}/:instanceId`), async ({ params, request }) => {
+      const parsed = signUpSchema.safeParse(await request.json());
+      if (!parsed.success) return invalidResponse(parsed.error);
+      const result = signUp(String(params.instanceId), parsed.data);
+      return "refusal" in result
+        ? problemResponse(result.refusal)
+        : new HttpResponse(null, { status: 202 });
+    }),
+    // A confirm route before its :instanceId sibling, which would take "confirm" as an id.
+    http.post(route(`${apiRoutes.emailVerification}/confirm`), async ({ request }) => {
+      const parsed = tokenSchema.safeParse(await request.json());
+      if (!parsed.success) return invalidResponse(parsed.error);
+      const result = confirmEmail(parsed.data.token);
+      return "refusal" in result
+        ? problemResponse(result.refusal)
+        : HttpResponse.json(result.value);
+    }),
+    http.post(route(`${apiRoutes.emailVerification}/:instanceId`), async ({ params, request }) => {
+      const parsed = emailOnlySchema.safeParse(await request.json());
+      if (!parsed.success) return invalidResponse(parsed.error);
+      sendVerificationAgain(String(params.instanceId), parsed.data.email);
+      return new HttpResponse(null, { status: 202 });
+    }),
+    http.post(route(`${apiRoutes.passwordReset}/confirm`), async ({ request }) => {
+      const parsed = passwordResetSchema.safeParse(await request.json());
+      if (!parsed.success) return invalidResponse(parsed.error);
+      const result = resetPassword(parsed.data);
+      return "refusal" in result
+        ? problemResponse(result.refusal)
+        : new HttpResponse(null, { status: 204 });
+    }),
+    http.post(route(`${apiRoutes.passwordReset}/:instanceId`), async ({ params, request }) => {
+      const parsed = emailOnlySchema.safeParse(await request.json());
+      if (!parsed.success) return invalidResponse(parsed.error);
+      requestPasswordReset(String(params.instanceId), parsed.data.email);
+      return new HttpResponse(null, { status: 202 });
+    }),
+    http.get(route("/_mock/system-mail"), () =>
+      HttpResponse.json([...database.systemMail].toReversed()),
+    ),
 
     // WATCH-delivery: the channels a watchlist can reach this person through, besides push.
     http.get(route(apiRoutes.watchlistChannels), () =>

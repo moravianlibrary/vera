@@ -24,6 +24,7 @@ import { retention, runs, schedules } from "@/mocks/fixtures/tasks";
 import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import type { StoredUpload } from "@/mocks/plugins";
+import type { MockSystemMail, PasswordResetToken, PendingSignUp } from "@/mocks/sign-up";
 import { withCopies } from "@/mocks/volume";
 import { readWatchlistBaselines, readWatchlistEntries } from "@/mocks/watchlist-entries";
 import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
@@ -100,6 +101,9 @@ export const database = {
   // Written by the Properties page; a deleted key is kept so it is never defined again.
   propertyDefinitions: [...propertyDefinitions] as StoredPropertyDefinition[],
   deletedPropertyKeys: [] as string[],
+  pendingSignUps: [] as PendingSignUp[],
+  passwordResets: [] as PasswordResetToken[],
+  systemMail: [] as MockSystemMail[],
   // Changed by Keep runs for… on Tasks.
   taskRetention: { ...retention },
 };

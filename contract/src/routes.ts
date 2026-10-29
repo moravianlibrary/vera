@@ -4,6 +4,9 @@
 export const apiRoutes = {
   session: "/session",
   login: "/login",
+  signUp: "/signup",
+  emailVerification: "/email-verification",
+  passwordReset: "/password-reset",
   sessionLogout: "/session/logout",
   sessionAccount: "/session/account",
   userSettings: "/session/settings",
