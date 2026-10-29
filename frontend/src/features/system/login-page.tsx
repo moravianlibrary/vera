@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { i18n } from "@/i18n";
 import { languageNames, pickLoginLanguage } from "@/i18n/language";
 import { safeReturnTo } from "@/lib/return-to";
-import { SystemPage } from "./system-page";
+import { SystemDivider, SystemPage } from "./system-page";
 
 export function LoginPage() {
   const { t } = useTranslation("system");
@@ -64,6 +64,10 @@ export function LoginPage() {
     }
   };
 
+  const showsEntries = entries !== undefined && !onlyRedirect && !entriesQuery.isError;
+  const providers = entries?.filter((entry) => entry.entry === "redirect") ?? [];
+  const forms = entries?.filter((entry) => entry.entry === "form") ?? [];
+
   return (
     <SystemPage
       title={t("login.title")}
@@ -73,90 +77,113 @@ export function LoginPage() {
           <Button onClick={() => void entriesQuery.refetch()}>{t("action.tryAgain")}</Button>
         ) : undefined
       }
-    >
-      {entries !== undefined && !onlyRedirect && !entriesQuery.isError && (
-        <div className="mt-6 grid gap-3 text-left">
-          {entries.map((entry) =>
-            entry.entry === "form" ? (
-              <form
-                key={entry.instanceId}
-                className="grid gap-3"
-                onSubmit={(event) => void submitForm(event, entry.instanceId)}
+      footer={
+        <>
+          <div className="flex items-center gap-1">
+            <span>{t("login.language")}</span>
+            {languages.map((language) => (
+              <Button
+                key={language}
+                size="sm"
+                variant="ghost"
+                aria-pressed={i18n.resolvedLanguage === language}
+                className="aria-pressed:text-foreground aria-pressed:font-medium"
+                onClick={() => {
+                  pickLoginLanguage(language);
+                  void i18n.changeLanguage(language);
+                }}
               >
-                <label className="grid gap-1 text-sm" htmlFor={`${entry.instanceId}-username`}>
-                  {t("login.username")}
-                  <Input
-                    id={`${entry.instanceId}-username`}
-                    autoComplete="username"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                  />
-                </label>
-                <label className="grid gap-1 text-sm" htmlFor={`${entry.instanceId}-password`}>
-                  {t("login.password")}
-                  <Input
-                    id={`${entry.instanceId}-password`}
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                  />
-                </label>
-                <Button className="w-full" type="submit" disabled={pendingInstance !== null}>
-                  {pendingInstance === entry.instanceId ? t("login.submit") : entry.label}
+                {languageNames[language]}
+              </Button>
+            ))}
+          </div>
+        </>
+      }
+    >
+      {showsEntries && (
+        <div className="mt-6">
+          {providers.length > 0 && (
+            <div className="grid gap-2">
+              {providers.map((entry) => (
+                <Button
+                  key={entry.instanceId}
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => void startRedirectLogin(entry.instanceId, returnTo)}
+                >
+                  {entry.label}
                 </Button>
-                {formError !== "" && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {formError}
-                  </p>
-                )}
-                {entry.canSignUp && (
+              ))}
+            </div>
+          )}
+          {providers.length > 0 && forms.length > 0 && (
+            <SystemDivider>{t("login.or")}</SystemDivider>
+          )}
+          {forms.map((entry) => (
+            <form
+              key={entry.instanceId}
+              className="grid gap-3 rounded-lg border bg-muted/40 p-4"
+              onSubmit={(event) => void submitForm(event, entry.instanceId)}
+            >
+              <h2 className="text-sm font-semibold">{entry.label}</h2>
+              <div className="grid gap-1.5">
+                <label className="text-sm" htmlFor={`${entry.instanceId}-username`}>
+                  {t("login.username")}
+                </label>
+                <Input
+                  id={`${entry.instanceId}-username`}
+                  autoComplete="username"
+                  className="bg-background"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <label className="text-sm" htmlFor={`${entry.instanceId}-password`}>
+                    {t("login.password")}
+                  </label>
+                  {entry.canResetPassword && (
+                    <Link
+                      className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                      to={`/forgot-password?instance=${encodeURIComponent(entry.instanceId)}`}
+                    >
+                      {t("forgot.link")}
+                    </Link>
+                  )}
+                </div>
+                <Input
+                  id={`${entry.instanceId}-password`}
+                  type="password"
+                  autoComplete="current-password"
+                  className="bg-background"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </div>
+              {formError !== "" && (
+                <p className="text-sm text-destructive" role="alert">
+                  {formError}
+                </p>
+              )}
+              <Button className="w-full" type="submit" disabled={pendingInstance !== null}>
+                {t("login.submit")}
+              </Button>
+              {entry.canSignUp && (
+                <p className="text-center text-sm text-muted-foreground">
+                  {t("signUp.prompt")}{" "}
                   <Link
-                    className="text-sm underline-offset-4 hover:underline"
+                    className="font-medium text-foreground underline-offset-4 hover:underline"
                     to={`/signup?instance=${encodeURIComponent(entry.instanceId)}&returnTo=${encodeURIComponent(returnTo)}`}
                   >
                     {t("signUp.link")}
                   </Link>
-                )}
-                {entry.canResetPassword && (
-                  <Link
-                    className="text-sm underline-offset-4 hover:underline"
-                    to={`/forgot-password?instance=${encodeURIComponent(entry.instanceId)}`}
-                  >
-                    {t("forgot.link")}
-                  </Link>
-                )}
-              </form>
-            ) : (
-              <Button
-                key={entry.instanceId}
-                className="w-full"
-                variant="outline"
-                onClick={() => void startRedirectLogin(entry.instanceId, returnTo)}
-              >
-                {entry.label}
-              </Button>
-            ),
-          )}
+                </p>
+              )}
+            </form>
+          ))}
         </div>
       )}
-      <div className="mt-6 flex items-center justify-center gap-2 text-sm">
-        <span>{t("login.language")}</span>
-        {languages.map((language) => (
-          <Button
-            key={language}
-            size="sm"
-            variant="ghost"
-            aria-pressed={i18n.resolvedLanguage === language}
-            onClick={() => {
-              pickLoginLanguage(language);
-              void i18n.changeLanguage(language);
-            }}
-          >
-            {languageNames[language]}
-          </Button>
-        ))}
-      </div>
     </SystemPage>
   );
 }

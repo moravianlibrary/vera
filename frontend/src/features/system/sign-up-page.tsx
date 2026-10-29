@@ -78,12 +78,22 @@ export function SignUpPage() {
     <SystemPage
       title={t(sent ? "checkEmail.title" : "signUp.title")}
       text={sent ? t("checkEmail.text", { email }) : undefined}
+      footer={
+        <p>
+          <Link
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            to={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+          >
+            {t("signUp.haveAccount")}
+          </Link>
+        </p>
+      }
     >
       {sent ? (
         <>
-          <p className="mt-2 text-sm text-muted-foreground">{t("checkEmail.text", { email })}</p>
           <Button
-            className="mt-4"
+            className="mt-6 w-full"
+            variant="outline"
             disabled={pending}
             onClick={async () => {
               setPending(true);
@@ -97,7 +107,7 @@ export function SignUpPage() {
           <MockMail email={email} />
         </>
       ) : (
-        <form className="mt-6 grid gap-3 text-left" onSubmit={(event) => void submit(event)}>
+        <form className="mt-6 grid gap-4" onSubmit={(event) => void submit(event)}>
           {(
             [
               ["name", name, setName],
@@ -106,8 +116,10 @@ export function SignUpPage() {
               ["password", password, setPassword],
             ] as const
           ).map(([field, value, change]) => (
-            <label key={field} className="grid gap-1 text-sm" htmlFor={`signup-${field}`}>
-              {t(`signUp.${field}`)}
+            <div key={field} className="grid gap-1.5">
+              <label className="text-sm" htmlFor={`signup-${field}`}>
+                {t(`signUp.${field}`)}
+              </label>
               <Input
                 id={`signup-${field}`}
                 type={field === "password" ? "password" : field === "email" ? "email" : "text"}
@@ -116,11 +128,11 @@ export function SignUpPage() {
                 onChange={(event) => change(event.target.value)}
               />
               {field === "password" && (
-                <span className="text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {t("signUp.passwordHint", { count: 12 })}
                 </span>
               )}
-            </label>
+            </div>
           ))}
           {/* ACCESS-sign-up: a field people never see or fill; a script that fills it is ignored. */}
           <Input
@@ -132,20 +144,14 @@ export function SignUpPage() {
             value={website}
             onChange={(event) => setWebsite(event.target.value)}
           />
-          <Button type="submit" disabled={pending}>
-            {t("signUp.submit")}
-          </Button>
           {error && (
             <p className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
-          <Link
-            className="text-sm underline-offset-4 hover:underline"
-            to={`/login?returnTo=${encodeURIComponent(returnTo)}`}
-          >
-            {t("signUp.haveAccount")}
-          </Link>
+          <Button className="w-full" type="submit" disabled={pending}>
+            {t("signUp.submit")}
+          </Button>
         </form>
       )}
     </SystemPage>

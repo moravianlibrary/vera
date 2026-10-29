@@ -58,5 +58,11 @@
   "reset.submit": "Set the password",
   "reset.done": "Your password is set.",
   "reset.expired": "This link has expired or was already used.",
-  "action.login": "Go to log in"
+  "action.login": "Go to log in",
+  "login.or": "or",
+  "signUp.prompt": "No account yet?",
+  "appearance.label": "Appearance",
+  "appearance.system": "System",
+  "appearance.light": "Light",
+  "appearance.dark": "Dark"
 }
