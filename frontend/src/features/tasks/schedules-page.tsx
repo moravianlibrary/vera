@@ -148,9 +148,9 @@ export function SchedulesPage() {
             : []
         }
       />
-      <PageContent className="@container !p-0">
+      <PageContent className="@container !pt-0 !pb-0">
         {notice !== null && (
-          <div className="px-4 pt-4 sm:px-6">
+          <div className="pt-4">
             <NoticeLine notice={notice} onOpenRun={openRun} onDismiss={() => setNotice(null)} />
           </div>
         )}
@@ -175,7 +175,7 @@ export function SchedulesPage() {
                 <ScheduleCard schedule={schedule} asOf={index.asOf} nameOf={nameOf} acts={acts} />
               )}
             />
-            <p className="px-4 py-3 text-xs leading-relaxed text-muted-foreground sm:px-6">
+            <p className="py-3 text-xs leading-relaxed text-muted-foreground">
               A schedule is set here and only here; a plugin instance shows its schedules and links
               back. Inputs and list generators have none: they run when somebody uses them.
               Intention repeats are listed so everything that happens by itself is in one place;
@@ -457,7 +457,7 @@ function ScheduleTimeline({
   }));
 
   return (
-    <section className="px-4 py-5 sm:px-6">
+    <section className="py-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">{rangeTitles[range]}</h2>
         <fieldset className="flex rounded-md border p-0.5">

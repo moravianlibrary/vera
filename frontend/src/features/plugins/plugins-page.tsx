@@ -103,7 +103,7 @@ export function PluginsPage() {
         searchLabel="Search plugins and instances"
         searchPlaceholder="Search plugins and instances…"
       />
-      <PageContent className="@container !p-0">
+      <PageContent className="@container !pt-0 !pb-0">
         {index !== undefined && (
           <PluginTable
             index={index}
@@ -295,11 +295,9 @@ function PluginTable({
       drawer={drawer.body}
       above={
         <>
-          {selection === null && noticeLine !== null && (
-            <div className="px-4 pt-4 sm:px-6">{noticeLine}</div>
-          )}
+          {selection === null && noticeLine !== null && <div className="pt-4">{noticeLine}</div>}
           {isFiltered && shown.instances.length > 0 && (
-            <p className="px-4 py-3 text-xs text-muted-foreground sm:px-6">
+            <p className="py-3 text-xs text-muted-foreground">
               {plural(shown.instances.length, "matching instance")}
             </p>
           )}
