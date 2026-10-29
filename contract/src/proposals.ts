@@ -144,7 +144,8 @@ export const proposalSettingsSchema = z.object({
   canDetectTypes: z.boolean(),
   // The enabled Catalog adapters that can be searched from here.
   searchCatalogs: z.array(namedSchema),
-  // Those that cannot, whose record link or ID is read instead; where to find a record there.
+  // Every enabled Catalog adapter, searchable or not, whose record link or ID is read; where to
+  // find a record there.
   linkCatalogs: z.array(namedSchema.extend({ opacUrl: z.url().nullable() })),
   // An enabled Input instance reads barcodes from the camera; a hardware scanner needs none.
   canScanWithCamera: z.boolean(),

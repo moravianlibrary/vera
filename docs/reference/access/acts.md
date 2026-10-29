@@ -65,7 +65,7 @@ item is checked as it lands, so the list says what submitting will do.
 |---|---|---|
 | Type it | one identifier of a chosen type, a volume or issue, a reason | — |
 | Catalog search | searches the catalogs that can be searched, and adds a result | a Catalog adapter that searches |
-| Record link | the link to, or the ID of, a record in a catalog that cannot be searched, found there | a Catalog adapter that reads it |
+| Record link | the link to, or the ID of, a record in any catalog, searchable or not, found there | a Catalog adapter that reads it |
 | Paste list | one item per line: identifier, volume or issue, reason; each line read as the chosen type, or detected | detecting: an Input plugin that detects types |
 | File upload | a CSV or TXT file with the same columns | — |
 | Barcode scan | continuous: each scan is added as it arrives, with nothing to click. A hardware scanner types like a keyboard; the camera reads codes too | the camera: an Input plugin that reads barcodes |
@@ -79,8 +79,9 @@ read codes from the camera, scanning stays continuous. Where it cannot, or the c
 open in the page, the same way takes one photo per book and the plugin reads its code. Either way
 each code lands in the scan as it is read, and a photo with no code read says so.
 
-The catalog ways are one: the searchable catalogs first, then, for each catalog that cannot be
-searched, where to find a record and a field for its link or ID.
+The catalog ways are one: the search over the catalogs that can be searched, then a field for a
+record's link or ID in any catalog, with where to find a record in each. A link already copied
+from a searchable catalog needs no search.
 
 #### ACT-entry-link
 

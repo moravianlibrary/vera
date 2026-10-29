@@ -49,13 +49,11 @@ export function waysInOf(): WaysIn {
   return {
     canDetectTypes: hasInput("Text"),
     searchCatalogs: adapters.filter(isSearchable).map(({ id, name }) => ({ id, name })),
-    linkCatalogs: adapters
-      .filter((instance) => !isSearchable(instance))
-      .map((instance) => ({
-        id: instance.id,
-        name: instance.name,
-        opacUrl: catalogOf(instance)?.opacUrl ?? null,
-      })),
+    linkCatalogs: adapters.map((instance) => ({
+      id: instance.id,
+      name: instance.name,
+      opacUrl: catalogOf(instance)?.opacUrl ?? null,
+    })),
     canScanWithCamera: hasInput("Camera"),
     canReadPhotos: hasInput("Photo"),
     identifierTypes: identifierRules(),
@@ -100,7 +98,7 @@ export function searchCatalogs(query: string, catalogId: string | null): Catalog
 // `…/Record/NKC01-002345678`.
 export function readRecordLink(link: RecordLink): Outcome<{ catalogId: string }> {
   const instance = enabledInstancesOf("CatalogAdapter").find(
-    (candidate) => candidate.id === link.catalogInstanceId && !isSearchable(candidate),
+    (candidate) => candidate.id === link.catalogInstanceId,
   );
   const base = instance === undefined ? undefined : catalogOf(instance)?.base;
   if (base === undefined) {

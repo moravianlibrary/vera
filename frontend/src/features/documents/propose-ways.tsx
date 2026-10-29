@@ -1,6 +1,7 @@
 // The propose dialog's ways in beyond typing, pasting and a file (ACT-ways-in;
 // docs/demos/shared/page-documents.js `wayPanel`). Catalog search over the catalogs that can be
-// searched, and below it the record link or ID for those that cannot. Barcode scanning is
+// searched, and below it the record link or ID for any catalog (a link already copied needs no
+// search). Barcode scanning is
 // continuous: a hardware scanner types the code and presses Enter, so a focused field that adds
 // on Enter and waits is the whole of it, and the camera feeds the same loop while an Input
 // plugin reads barcodes: continuously where the browser reads them, otherwise one photo per book
@@ -149,8 +150,8 @@ export function CatalogSearchWay({
   );
 }
 
-// A catalog that cannot be searched from here: the person finds the record there and pastes its
-// link or ID, which the catalog adapter reads.
+// A record's link or ID in any catalog: the person found it there, or already has it, and pastes
+// it; the catalog adapter reads it.
 function RecordLinkWay({
   catalogs,
   hasSearch,
@@ -181,7 +182,7 @@ function RecordLinkWay({
   return (
     <div className={cn("grid gap-2", hasSearch && "border-t pt-3")}>
       <b className="text-xs font-semibold">
-        {hasSearch ? "Not searchable from here" : "From a catalog that cannot be searched here"}
+        {hasSearch ? "Or paste a record's link or ID" : "Paste a record's link or ID"}
       </b>
       {catalogs.map((each) => (
         <div key={each.id} className="flex flex-wrap items-center gap-2 text-sm">

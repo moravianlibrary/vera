@@ -341,7 +341,11 @@ describe("the ways in (ACT-ways-in)", () => {
       canReadPhotos: true,
     });
     expect(settings.searchCatalogs.map(({ name }) => name)).toEqual(["MZK Aleph", "VKOL Aleph"]);
-    expect(settings.linkCatalogs.map(({ name }) => name)).toEqual(["NKP Aleph"]);
+    expect(settings.linkCatalogs.map(({ name }) => name)).toEqual([
+      "MZK Aleph",
+      "NKP Aleph",
+      "VKOL Aleph",
+    ]);
 
     const instances = database.pluginInstances;
     database.pluginInstances = instances.map((instance) =>
@@ -354,8 +358,10 @@ describe("the ways in (ACT-ways-in)", () => {
         canDetectTypes: false,
         canScanWithCamera: false,
         canReadPhotos: false,
-        linkCatalogs: [],
       });
+      expect((await getProposalSettings()).linkCatalogs.map(({ name }) => name)).not.toContain(
+        "NKP Aleph",
+      );
     } finally {
       database.pluginInstances = instances;
     }
@@ -409,7 +415,7 @@ describe("the ways in (ACT-ways-in)", () => {
     expect(await searchCatalogs("zlatá praha", null)).toEqual([]);
   });
 
-  it("reads a record link or ID in a catalog that cannot be searched", async () => {
+  it("reads a record link or ID in any catalog, searchable or not", async () => {
     signInAs("reader");
 
     expect(
@@ -424,7 +430,12 @@ describe("the ways in (ACT-ways-in)", () => {
     expect(await statusOf(readRecordLink({ catalogInstanceId: "pi2", link: "Zlatá Praha" }))).toBe(
       422,
     );
-    expect(await statusOf(readRecordLink({ catalogInstanceId: "pi1", link: "MZK01-1" }))).toBe(404);
+    expect(await readRecordLink({ catalogInstanceId: "pi1", link: "MZK01-001234567" })).toEqual({
+      catalogId: "MZK01-001234567",
+    });
+    expect(await statusOf(readRecordLink({ catalogInstanceId: "pi99", link: "MZK01-1" }))).toBe(
+      404,
+    );
   });
 
   it("reads the barcode on a photo where the browser cannot, while the camera plugin is on", async () => {
