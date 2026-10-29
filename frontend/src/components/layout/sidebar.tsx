@@ -14,8 +14,11 @@ import {
   Bookmark,
   ChevronsRight,
   LogOut,
+  Monitor,
+  Moon,
   ShieldCheck,
   SlidersHorizontal,
+  Sun,
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -30,9 +33,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { Appearance } from "@/hooks/use-appearance";
+import { useAppearance } from "@/hooks/use-appearance";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
@@ -62,6 +69,7 @@ export function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate();
   const [menuError, setMenuError] = useState("");
+  const { appearance, setAppearance } = useAppearance();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const entries = session === undefined ? [] : visibleNavigation(session);
   const { data: watchlists = [] } = useQuery({
@@ -216,6 +224,28 @@ export function Sidebar({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
+            <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+            {/* The same choice as Preferences → Display (UI-user-menu); the menu stays open. */}
+            <DropdownMenuRadioGroup
+              value={appearance}
+              onValueChange={(value) => {
+                setMenuError("");
+                setAppearance(value as Appearance).catch(() =>
+                  setMenuError("Could not change the appearance. Try again."),
+                );
+              }}
+            >
+              {appearanceChoices.map(({ value, label, Icon }) => (
+                <DropdownMenuRadioItem
+                  key={value}
+                  value={value}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  <Icon /> {label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
             {menuError && (
               <p role="alert" className="px-2 py-1 text-xs text-destructive">
                 {menuError}
@@ -242,3 +272,9 @@ export function Sidebar({
     </div>
   );
 }
+
+const appearanceChoices = [
+  { value: "system", label: "System", Icon: Monitor },
+  { value: "light", label: "Light", Icon: Sun },
+  { value: "dark", label: "Dark", Icon: Moon },
+] as const satisfies readonly { value: Appearance; label: string; Icon: typeof Sun }[];

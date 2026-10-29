@@ -36,6 +36,8 @@ The user menu sits at the foot of the sidebar. It holds:
 - the person's name;
 - direct links to the four Preferences tabs: *Watchlists*, *Notifications*, *Display* and
   *Account*;
+- *Appearance*: System, Light or Dark, the same choice as *Display*'s, which the menu applies at
+  once and stays open for;
 - *Log out*.
 
 Preferences is one page with four addressable tabs at `/preferences/:section`.
