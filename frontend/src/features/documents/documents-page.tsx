@@ -8,6 +8,7 @@
 import { hasPermission, proposeActOf } from "@vera/domain/permissions";
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -19,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentList } from "@/features/documents/document-list";
 import { documentsView, myDocumentsView } from "@/features/documents/documents-view";
+import { entryAskOf } from "@/features/documents/entry-link";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useBulkPropertyEntry } from "@/features/properties/bulk-property-entry";
@@ -34,6 +36,12 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
   const view = useViewUrlState(isMy ? myDocumentsView : documentsView);
   const { query, selectedId, grouping, select } = view;
   const [isProposing, setIsProposing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawAsk = searchParams.get("ask");
+  const ask = rawAsk === null ? undefined : entryAskOf(new URLSearchParams(rawAsk));
+  useEffect(() => {
+    if (rawAsk !== null) setIsProposing(true);
+  }, [rawAsk]);
   const { data: session } = useSessionQuery();
   const documents = useDocumentsQuery(query, grouping, isMy ? "my" : undefined);
   const documentQuery = useDocumentQuery(selectedId, isMy ? "my" : undefined);
@@ -192,8 +200,16 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
 
       {canPropose && (
         <ProposeDialog
-          isOpen={isProposing}
-          onOpenChange={setIsProposing}
+          isOpen={isProposing || ask !== undefined}
+          ask={ask}
+          onOpenChange={(isOpen) => {
+            setIsProposing(isOpen);
+            if (!isOpen && rawAsk !== null) {
+              const next = new URLSearchParams(searchParams);
+              next.delete("ask");
+              setSearchParams(next, { replace: true });
+            }
+          }}
           session={session}
           viewTitle={title}
         />

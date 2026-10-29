@@ -54,6 +54,13 @@ export function waysInOf(): WaysIn {
       name: instance.name,
       opacUrl: catalogOf(instance)?.opacUrl ?? null,
     })),
+    entrySources: enabledInstancesOf("Input")
+      .filter((instance) => implementationOf(instance)?.name === "EntryLink")
+      .map(({ id, name, configuration }) => ({
+        id,
+        name,
+        allowedOrigins: (configuration.allowed_origins ?? "").split(/\s+/).filter(Boolean),
+      })),
     canScanWithCamera: hasInput("Camera"),
     canReadPhotos: hasInput("Photo"),
     identifierTypes: identifierRules(),

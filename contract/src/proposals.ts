@@ -76,6 +76,7 @@ export const proposalDraftSchema = z.object({
   batchName: z.string().nullable(),
   // Approve the new items with no copy at once; `request.decide` (LC-REQ-approve-now).
   approval: z.object({ categoryId: z.string(), priority: prioritySchema }).nullable(),
+  entrySourceId: z.string().nullable().default(null),
 });
 
 export type ProposalDraft = z.infer<typeof proposalDraftSchema>;
@@ -147,6 +148,10 @@ export const proposalSettingsSchema = z.object({
   // Every enabled Catalog adapter, searchable or not, whose record link or ID is read; where to
   // find a record there.
   linkCatalogs: z.array(namedSchema.extend({ opacUrl: z.url().nullable() })),
+  // Enabled EntryLink instances and the origins *Back to …* may return to (ACT-entry-link).
+  entrySources: z.array(
+    z.object({ id: z.string(), name: z.string(), allowedOrigins: z.array(z.string()) }),
+  ),
   // An enabled Input instance reads barcodes from the camera; a hardware scanner needs none.
   canScanWithCamera: z.boolean(),
   // An enabled Input instance reads photos and matches them to catalog records.

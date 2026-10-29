@@ -4,11 +4,15 @@
 import type { Batch } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 
-export type StoredBatch = Omit<Batch, "size">;
+export type StoredBatch = Omit<Batch, "size" | "source"> & { source?: Batch["source"] };
 
 export function servedBatches(): Batch[] {
   const sizes = batchSizes();
-  return database.batches.map((batch) => ({ ...batch, size: sizes.get(batch.id) ?? 0 }));
+  return database.batches.map((batch) => ({
+    ...batch,
+    source: batch.source ?? null,
+    size: sizes.get(batch.id) ?? 0,
+  }));
 }
 
 export function servedBatchOf(batchId: string): Batch | null {

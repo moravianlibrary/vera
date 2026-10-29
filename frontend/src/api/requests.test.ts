@@ -102,6 +102,31 @@ describe("the query", () => {
 });
 
 describe("listRequests", () => {
+  it("filters requests by their batch source", async () => {
+    signInAs("admin");
+    const batchesBefore = [...database.batches];
+    const documentsBefore = [...database.documents];
+    const requestsBefore = [...database.requests];
+    harvest("B-SOURCE", 1);
+    database.batches = database.batches.map((batch) =>
+      batch.id === "B-SOURCE"
+        ? { ...batch, source: { instanceId: "pi43", name: "Tlačítko digitalizovat" } }
+        : batch,
+    );
+    try {
+      const all = await listRequests({}, { limit: 200 });
+      const filtered = await listRequests({ sources: ["pi43"] }, { limit: 200 });
+      expect(filtered.items.length).toBeGreaterThan(0);
+      expect(filtered.items.length).toBeLessThan(all.items.length);
+      expect(filtered.items.some(({ record }) => record.document.id === "D25.9001")).toBe(true);
+      expect(toRequestSearchParams({ sources: ["pi43"] }).get("source")).toBe("pi43");
+    } finally {
+      database.batches = batchesBefore;
+      database.documents = documentsBefore;
+      database.requests = requestsBefore;
+    }
+  });
+
   it("shows an admin every open proposal, the fallback's included, one row per document", async () => {
     signInAs("admin");
 

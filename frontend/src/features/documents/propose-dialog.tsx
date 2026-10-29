@@ -32,11 +32,12 @@ import type { ProposalLine } from "@vera/domain/proposals";
 import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@vera/domain/proposals";
 import { Check, FileUp, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import {
   checkProposalItems,
   getProposalSettings,
   getRateLimitStatus,
+  readRecordLink,
   submitProposal,
 } from "@/api/proposals";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
@@ -64,6 +65,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { allowedReturn, type EntryAsk, entryReasonLimit } from "@/features/documents/entry-link";
 import { IdentifierRulesContext, useIdentifierRules } from "@/features/documents/identifier-rules";
 import { BarcodeWay, CatalogSearchWay, PhotoWay } from "@/features/documents/propose-ways";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
@@ -119,9 +121,16 @@ interface ProposeDialogProps {
   session: Session;
   // What the caller's Documents view is called, where the proposed items show from now on.
   viewTitle: string;
+  ask?: EntryAsk;
 }
 
-export function ProposeDialog({ isOpen, onOpenChange, session, viewTitle }: ProposeDialogProps) {
+export function ProposeDialog({
+  isOpen,
+  onOpenChange,
+  session,
+  viewTitle,
+  ask,
+}: ProposeDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] sm:max-w-3xl">
@@ -130,6 +139,7 @@ export function ProposeDialog({ isOpen, onOpenChange, session, viewTitle }: Prop
           <ProposeFlow
             session={session}
             viewTitle={viewTitle}
+            ask={ask}
             onClose={() => onOpenChange(false)}
           />
         )}
@@ -142,9 +152,10 @@ interface ProposeFlowProps {
   session: Session;
   viewTitle: string;
   onClose: () => void;
+  ask?: EntryAsk;
 }
 
-function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
+function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
   const [step, setStep] = useState<Step>("Items");
   const [items, setItems] = useState<DraftItem[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -163,6 +174,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
   });
   const limit = settings === undefined ? 0 : (settings.maxAtOnce ?? Number.POSITIVE_INFINITY);
   const rules = settings?.identifierTypes ?? noRules;
+  const askLanded = useRef(false);
 
   const submit = useMutation({
     mutationFn: submitProposal,
@@ -241,6 +253,54 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
     const added = admit(items, lines, source);
     setItems((current) => [...current, ...added]);
   };
+  const addFromAsk = useEffectEvent(add);
+
+  useEffect(() => {
+    if (ask === undefined || askLanded.current || settings === undefined) return;
+    askLanded.current = true;
+    if (ask.record === null && ask.identifier === null) {
+      setNotice("This link names no item to propose. Add one below.");
+      return;
+    }
+    if (ask.record !== null) {
+      const catalog = settings.linkCatalogs[0];
+      if (catalog === undefined) {
+        setNotice("This link's record cannot be read here. Add an item below.");
+        return;
+      }
+      void readRecordLink({ catalogInstanceId: catalog.id, link: ask.record })
+        .then(({ catalogId }) => {
+          addFromAsk(
+            [{ type: "catalogId", value: catalogId, unit: ask.unit, reason: null }],
+            `record link · ${catalog.name}`,
+          );
+        })
+        .catch(() => setNotice(`${catalog.name} could not read this record. Add an item below.`));
+      return;
+    }
+    const parsedType = identifierTypeSchema.safeParse(ask.identifier?.type);
+    if (ask.identifier === null) {
+      setNotice("This link's identifier type cannot be read. Add an item below.");
+      return;
+    }
+    if (!parsedType.success) {
+      addFromAsk(
+        [{ type: null, value: ask.identifier.value, unit: ask.unit, reason: null }],
+        "Type it",
+      );
+      return;
+    }
+    addFromAsk(
+      [
+        {
+          ...readIdentifier(rules, ask.identifier.value, parsedType.data),
+          unit: ask.unit,
+          reason: null,
+        },
+      ],
+      "Type it",
+    );
+  }, [ask, settings, rules]);
 
   // DOC-records: each record picked of an identifier's several is its own item, in its place.
   const pickRecords = (key: string, catalogIds: string[]) => {
@@ -310,6 +370,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           isSubmitting={submit.isPending}
           isFailed={submit.isError}
           rateLimit={rateLimit}
+          initialReason={ask?.reason ?? ""}
           onBack={() => setStep("Items")}
           onSubmit={(details) => {
             const accepted = items.flatMap(({ type, value, check, reason, source }) =>
@@ -319,6 +380,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
             );
             submit.mutate({
               ...details,
+              entrySourceId: ask?.sourceId ?? null,
               items: accepted.map(({ source: _source, ...item }) => item),
             });
           }}
@@ -330,6 +392,8 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
           skipped={items.filter((item) => outcomeOf(item) === "skip")}
           viewTitle={viewTitle}
           onDone={onClose}
+          ask={ask}
+          entrySources={settings?.entrySources ?? []}
         />
       )}
     </IdentifierRulesContext>
@@ -922,6 +986,7 @@ interface DetailsStepProps {
   isSubmitting: boolean;
   isFailed: boolean;
   rateLimit: RateLimitStatus | undefined;
+  initialReason: string;
   onBack: () => void;
   onSubmit: (details: Details) => void;
 }
@@ -932,6 +997,7 @@ function DetailsStep({
   isSubmitting,
   isFailed,
   rateLimit,
+  initialReason,
   onBack,
   onSubmit,
 }: DetailsStepProps) {
@@ -950,7 +1016,7 @@ function DetailsStep({
 
   // Empty unless the person names it; the server names it by when it came in (ENT-batch).
   const [batchName, setBatchName] = useState("");
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState(initialReason.slice(0, entryReasonLimit));
   const [projectId, setProjectId] = useState<string>(noProject);
   const [isApprovedNow, setIsApprovedNow] = useState(true);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -981,6 +1047,7 @@ function DetailsStep({
             id={`${fieldId}-reason`}
             rows={3}
             value={reason}
+            maxLength={entryReasonLimit}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Research, exhibition, a reader's request…"
           />
@@ -1099,9 +1166,13 @@ interface ReportStepProps {
   skipped: DraftItem[];
   viewTitle: string;
   onDone: () => void;
+  ask?: EntryAsk;
+  entrySources: ProposalSettings["entrySources"];
 }
 
-function ReportStep({ report, skipped, viewTitle, onDone }: ReportStepProps) {
+function ReportStep({ report, skipped, viewTitle, onDone, ask, entrySources }: ReportStepProps) {
+  const source = entrySources.find((entry) => entry.id === ask?.sourceId);
+  const returnTo = allowedReturn(ask?.returnTo ?? null, source?.allowedOrigins ?? []);
   const skippedValues = [
     ...skipped.map((item) => [item.value, item.unit]),
     ...report.skipped.map((item) => [item.value, item.unit]),
@@ -1153,6 +1224,11 @@ function ReportStep({ report, skipped, viewTitle, onDone }: ReportStepProps) {
       </div>
 
       <DialogFooter>
+        {source !== undefined && returnTo !== null && (
+          <Button variant="outline" asChild>
+            <a href={returnTo}>Back to {source.name}</a>
+          </Button>
+        )}
         <Button onClick={onDone}>Done</Button>
       </DialogFooter>
     </>

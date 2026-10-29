@@ -227,6 +227,7 @@ const listFields = [
   "existingCopies",
   "askerIds",
   "batchIds",
+  "sources",
   "askerCounts",
   "afterProjectApproval",
 ] as const satisfies readonly RequestListField[];
@@ -242,6 +243,11 @@ const fieldValues: FieldValues = {
   },
   askerIds: askerIdsOf,
   batchIds: shownBatchIdsOf,
+  sources: (row) =>
+    batchIdsOf(row).flatMap((batchId) => {
+      const source = database.batches.find((batch) => batch.id === batchId)?.source;
+      return source === null || source === undefined ? [] : [source.instanceId];
+    }),
   askerCounts: (row) => [askerCountOf(row)],
   afterProjectApproval: (row) => [answerOf(isAfterProjectApproval(row))],
 };

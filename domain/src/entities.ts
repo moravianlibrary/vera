@@ -227,6 +227,9 @@ export const batchSchema = z.object({
   // How many requests the submission made: one item is a batch too, shown as one only from two
   // (ENT-batch).
   size: z.number().int().positive(),
+  // The outside portal the submission started from, an EntryLink Input instance (ENT-batch,
+  // ACT-entry-link); null for every other submission.
+  source: z.object({ instanceId: id, name: z.string() }).nullable().default(null),
 });
 export type Batch = z.infer<typeof batchSchema>;
 

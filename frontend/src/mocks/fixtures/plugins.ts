@@ -506,6 +506,19 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
     "Suggests a leaf by material type: periodicals and maps; a monograph needs its period.",
     { version: "1.1.0", installedAt: "2026-10-07", triggers: ["OnProposal"], fields: ["table"] },
   ),
+  implementation(
+    "pt32",
+    "EntryLink",
+    "Input",
+    "Lets an outside portal link into Propose with an item filled in (ACT-entry-link).",
+    {
+      version: "1.0.0",
+      installedAt: "2026-10-29",
+      triggers: ["OnDemand"],
+      fields: ["allowed_origins"],
+      declares: { inputMode: null },
+    },
+  ),
 ];
 
 // ---------------------------------------------------------------- instances
@@ -1019,6 +1032,17 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     settings: { kind: "Classifier", order: 2 },
     createdAt: "2026-10-07",
     lastRunAt: june(24, 15, 10),
+  }),
+  instance({
+    id: "pi43",
+    name: "Tlačítko digitalizovat",
+    implementationId: "pt32",
+    configuration: {
+      allowed_origins: "https://www.mzk.cz https://tlacitko.osdd.mzk.cz",
+    },
+    triggers: ["OnDemand"],
+    createdAt: "2026-10-29",
+    lastRunAt: null,
   }),
 ];
 

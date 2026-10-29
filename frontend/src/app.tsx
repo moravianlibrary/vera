@@ -14,6 +14,7 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AccessPage } from "@/features/access/access-page";
 import { CategoriesPage } from "@/features/categories/categories-page";
+import { AskRoute } from "@/features/documents/ask-route";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { HooksPage } from "@/features/hooks/hooks-page";
 import { IntentionsPage } from "@/features/intentions/intentions-page";
@@ -137,6 +138,7 @@ const router = createBrowserRouter([
       { index: true, element: <Landing /> },
       { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
       { path: "preferences/:section", element: <PreferencesPage /> },
+      { path: "ask", element: <AskRoute /> },
       ...navigationEntries.map((entry) => ({
         path: entry.path.slice(1),
         element: (

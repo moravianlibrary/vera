@@ -61,7 +61,11 @@ function BatchHeader({ group, users, onBulkApprove }: BatchHeaderProps) {
       }
       meta={
         <>
-          <UserName user={submitter} fallback={batch.submittedBy} /> · {group.askCount} asked
+          <UserName user={submitter} fallback={batch.submittedBy} />
+          {batch.source !== null && (
+            <span className="text-muted-foreground"> · from {batch.source.name}</span>
+          )}
+          {` · ${group.askCount} asked`}
           {group.elsewhereCount > 0 && (
             <>
               {" · "}

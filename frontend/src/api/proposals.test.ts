@@ -56,6 +56,7 @@ function draftOf(items: ProposalItem[], overrides: Partial<ProposalDraft> = {}):
     projectId: null,
     batchName: null,
     approval: null,
+    entrySourceId: null,
     ...overrides,
   };
 }
@@ -331,6 +332,15 @@ describe("submitProposal", () => {
 });
 
 describe("the ways in (ACT-ways-in)", () => {
+  it("lists pi43 and its allowed return origins in the proposal settings", async () => {
+    signInAs("reader");
+    expect((await getProposalSettings()).entrySources).toContainEqual({
+      id: "pi43",
+      name: "Tlačítko digitalizovat",
+      allowedOrigins: ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"],
+    });
+  });
+
   it("offers each way while its plugin is enabled (PERM-absent-not-disabled)", async () => {
     signInAs("reader");
     const settings = await getProposalSettings();
@@ -346,6 +356,11 @@ describe("the ways in (ACT-ways-in)", () => {
       "NKP Aleph",
       "VKOL Aleph",
     ]);
+    expect(settings.entrySources).toContainEqual({
+      id: "pi43",
+      name: "Tlačítko digitalizovat",
+      allowedOrigins: ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"],
+    });
 
     const instances = database.pluginInstances;
     database.pluginInstances = instances.map((instance) =>
@@ -365,6 +380,26 @@ describe("the ways in (ACT-ways-in)", () => {
     } finally {
       database.pluginInstances = instances;
     }
+  });
+
+  it("keeps the enabled EntryLink source on a proposal batch", async () => {
+    signInAs("staff");
+    const report = await submitProposal(
+      draftOf([catalogItem("MZK01-001622010", "1890")], { entrySourceId: "pi43" }),
+    );
+    expect(report.batch?.source).toEqual({
+      instanceId: "pi43",
+      name: "Tlačítko digitalizovat",
+    });
+  });
+
+  it("ignores an unknown EntryLink source and still lands the item", async () => {
+    signInAs("staff");
+    const report = await submitProposal(
+      draftOf([catalogItem("MZK01-001277001", "1936–1938")], { entrySourceId: "pi99" }),
+    );
+    expect(report.batch?.source).toBeNull();
+    expect(report.proposed + report.joined).toBeGreaterThan(0);
   });
 
   it("sends each identifier type's rule in the instances' order (DOC-identifiers)", async () => {

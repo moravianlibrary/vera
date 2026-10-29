@@ -514,6 +514,10 @@ function createBatch(session: Session, draft: ProposalDraft, now: string): Store
     name: draft.batchName ?? defaultBatchNameOf(new Date(now)),
     submittedBy: session.user.id,
     submittedAt: now,
+    source: (() => {
+      const source = waysInOf().entrySources.find((entry) => entry.id === draft.entrySourceId);
+      return source === undefined ? null : { instanceId: source.id, name: source.name };
+    })(),
   };
   database.batches.push(batch);
   return batch;

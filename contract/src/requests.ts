@@ -49,6 +49,7 @@ export interface RequestQuery {
   readonly existingCopies?: readonly ExistingCopyState[];
   readonly askerIds?: readonly string[];
   readonly batchIds?: readonly string[];
+  readonly sources?: readonly string[];
   readonly askerCounts?: readonly AskerCount[];
   readonly afterProjectApproval?: readonly Answer[];
   // Advanced, a range rather than values (filtering.md §6): the day any of the row's asks was
@@ -76,6 +77,7 @@ export const requestQueryParams = {
   existingCopies: "copy",
   askerIds: "asker",
   batchIds: "batch",
+  sources: "source",
   askerCounts: "askers",
   afterProjectApproval: "after",
   asked: "asked",
@@ -92,6 +94,7 @@ const requestFieldSchemas = {
   existingCopies: existingCopyStateSchema,
   askerIds: idValueSchema,
   batchIds: idValueSchema,
+  sources: idValueSchema,
   askerCounts: askerCountSchema,
   afterProjectApproval: answerSchema,
 } as const satisfies Record<RequestListField, z.ZodType<string>>;
@@ -253,6 +256,7 @@ export const requestPageSchema = z.object({
     existingCopies: facetCountsOf(existingCopyStateSchema),
     askerIds: facetCountsOf(z.string()),
     batchIds: facetCountsOf(z.string()),
+    sources: facetCountsOf(z.string()),
     askerCounts: facetCountsOf(askerCountSchema),
     afterProjectApproval: facetCountsOf(answerSchema),
   } satisfies Record<RequestListField, z.ZodType>),

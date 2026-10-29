@@ -4,10 +4,12 @@
 // `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // TODO(rrandiak): labels move to i18n.
 
+import { useQuery } from "@tanstack/react-query";
 import type { RequestDetail, RequestGroup } from "@vera/contract/requests";
 import { hasPermission } from "@vera/domain/permissions";
 import { Inbox } from "lucide-react";
 import { useState } from "react";
+import { getProposalSettings } from "@/api/proposals";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -33,6 +35,7 @@ import {
 } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { vocabulary } from "@/lib/view-definition";
 
 type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
@@ -49,6 +52,11 @@ export function RequestsPage() {
   const { data: users = [] } = useUsersQuery();
   const { data: projects = [] } = useProjectsQuery();
   const { data: custodies = [] } = useRequestCustodiesQuery();
+  const { data: proposalSettings } = useQuery({
+    queryKey: ["proposals", "settings"],
+    queryFn: getProposalSettings,
+    staleTime: 60_000,
+  });
   const { summary } = proposals;
 
   if (session === undefined) {
@@ -57,6 +65,18 @@ export function RequestsPage() {
 
   const title =
     visibleNavigation(session).find((entry) => entry.id === "requests")?.visibleLabel ?? "";
+  const sourceField = proposalSettings?.entrySources.length
+    ? [
+        {
+          key: "sources" as const,
+          label: "Source",
+          field: vocabulary(
+            proposalSettings.entrySources.map(({ id }) => id),
+            Object.fromEntries(proposalSettings.entrySources.map(({ id, name }) => [id, name])),
+          ),
+        },
+      ]
+    : [];
 
   const documentsEntry = visibleNavigation(session).find((entry) => entry.id === "documents");
   const paneState: PaneState<RequestDetail> =
@@ -113,7 +133,7 @@ export function RequestsPage() {
       <FilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
         key={view.filterReplacements}
-        fields={requestsView.fields}
+        fields={[...requestsView.fields, ...sourceField]}
         query={query}
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
