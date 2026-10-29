@@ -15,6 +15,7 @@ import { resumeSchedule, runScheduleNow } from "@/api/schedules";
 import { DataTable } from "@/components/data-table";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
+import { failureOf, QueryState } from "@/components/query-state";
 import { RunStateBadge } from "@/components/run-state-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,8 @@ export function SchedulesPage() {
   const range = rangeOf(params);
   const focusedId = params.get(focusedScheduleParam);
   const { data: session } = useSessionQuery();
-  const { data: index } = useSchedulesQuery(range);
+  const schedulesQuery = useSchedulesQuery(range);
+  const { data: index } = schedulesQuery;
   const { users: nameOf } = useReferenceLabels(["users"]);
   const [notice, setNotice] = useState<ShownNotice | null>(null);
   const [dialog, setDialog] = useState<OpenDialog | null>(null);
@@ -154,7 +156,15 @@ export function SchedulesPage() {
             <NoticeLine notice={notice} onOpenRun={openRun} onDismiss={() => setNotice(null)} />
           </div>
         )}
-        {index !== undefined && (
+        {index === undefined ? (
+          <QueryState
+            isLoading={schedulesQuery.isLoading}
+            failure={failureOf(schedulesQuery, "Could not load schedules.")}
+            loadingText="Loading schedules…"
+          >
+            <span />
+          </QueryState>
+        ) : (
           <>
             <ScheduleTimeline
               index={index}
@@ -167,6 +177,9 @@ export function SchedulesPage() {
               rowId={(schedule) => schedule.id}
               columns={scheduleColumns({ asOf: index.asOf, acts })}
               focusedId={focusedId}
+              isLoading={schedulesQuery.isLoading}
+              loadingText="Loading schedules…"
+              failure={failureOf(schedulesQuery, "Could not load schedules.")}
               emptyText="Nothing runs by itself."
               noteOf={(schedule) =>
                 schedule.pause === null ? null : <PauseNote schedule={schedule} nameOf={nameOf} />

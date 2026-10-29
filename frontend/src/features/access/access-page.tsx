@@ -19,6 +19,7 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
+import { failureOf } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import type { AccessDialog } from "@/features/access/access-acts";
 import {
@@ -290,7 +291,8 @@ function fieldsFor(
 
 export function AccessPage() {
   const [params, setParams] = useSearchParams();
-  const { data: index } = useAccessQuery();
+  const accessQuery = useAccessQuery();
+  const { data: index } = accessQuery;
   const { data: session } = useSessionQuery();
   const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const [dialog, setDialog] = useState<AccessDialog | null>(null);
@@ -681,7 +683,15 @@ export function AccessPage() {
               </NoticeLine>
             )}
             {!index ? (
-              <p className="px-4 py-5 text-sm text-muted-foreground">Loading users management…</p>
+              <DataTable<Row>
+                rows={[]}
+                rowId={(row) => row.id}
+                columns={{ notebook: columns }}
+                emptyText="No records match this search."
+                isLoading={accessQuery.isLoading}
+                loadingText="Loading users and roles…"
+                failure={failureOf(accessQuery, "Could not load users and roles.")}
+              />
             ) : (
               <>
                 <div className="flex items-center justify-between border-b px-4 py-2 text-xs text-muted-foreground sm:px-6">

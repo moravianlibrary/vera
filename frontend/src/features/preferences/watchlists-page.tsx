@@ -16,6 +16,7 @@ import { listWatchlists } from "@/api/watchlists";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { navigationEntries } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { failureOf, QueryError } from "@/components/query-state";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -102,23 +103,17 @@ function WatchlistDirectory({
   const canShare = session !== undefined && hasPermission(session, "watchlist.manage_system");
   const { data: users = [] } = useUsersQuery({ isEnabled: canShare && isSystem });
   const queryClient = useQueryClient();
-  const {
-    data: visibleWatchlists = [],
-    isPending,
-    isError,
-  } = useQuery({
+  const visibleQuery = useQuery({
     queryKey: [...watchlistsQueryKey, "visible"],
     queryFn: () => listWatchlists(),
   });
-  const {
-    data: managedSystem = [],
-    isPending: systemPending,
-    isError: systemError,
-  } = useQuery({
+  const { data: visibleWatchlists = [], isPending, isError } = visibleQuery;
+  const systemQuery = useQuery({
     queryKey: [...watchlistsQueryKey, "manage-system"],
     queryFn: () => listWatchlists(undefined, "manage-system"),
     enabled: canShare && isSystem,
   });
+  const { data: managedSystem = [], isPending: systemPending, isError: systemError } = systemQuery;
   const watchlists = isSystem ? managedSystem : visibleWatchlists;
   const selectedWatchlist = watchlists.find((watchlist) => watchlist.id === selectedId);
   useEffect(() => {
@@ -220,9 +215,15 @@ function WatchlistDirectory({
         <p className="mt-5 text-sm text-muted-foreground">Loading watchlists…</p>
       )}
       {(isSystem ? systemError : isError) && (
-        <p role="alert" className="mt-5 text-sm text-destructive">
-          Could not load watchlists.
-        </p>
+        <QueryError
+          failure={
+            failureOf(isSystem ? systemQuery : visibleQuery, "Could not load watchlists.") ?? {
+              text: "Could not load watchlists.",
+              onRetry: () => void (isSystem ? systemQuery : visibleQuery).refetch(),
+            }
+          }
+          className="mt-5"
+        />
       )}
       {!(isSystem ? systemPending || systemError : isPending || isError) && groups.length === 0 && (
         <p className="mt-5 text-sm text-muted-foreground">

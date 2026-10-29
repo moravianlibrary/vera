@@ -15,6 +15,7 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { canOpenNavigationEntry, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { failureOf } from "@/components/query-state";
 import { TableWithDrawer } from "@/components/table-with-drawer";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import { CancelRunDialog, RetentionDialog } from "@/features/tasks/run-dialogs";
@@ -43,7 +44,8 @@ export function TasksPage() {
   const view = useViewUrlState(tasksView, runParam);
   const { query, selectedId: openRunId, select } = view;
   const { data: session } = useSessionQuery();
-  const { data: index } = useRunsQuery(query);
+  const runsQuery = useRunsQuery(query);
+  const { data: index } = runsQuery;
   const { data: detail, isError: isDetailMissing } = useRunQuery(openRunId);
   const { users: nameOf } = useReferenceLabels(["users"]);
   const [notice, setNotice] = useState<ShownNotice | null>(null);
@@ -144,7 +146,23 @@ export function TasksPage() {
           }
         }}
       >
-        {index === undefined ? null : (
+        {index === undefined ? (
+          <TableWithDrawer
+            openId={null}
+            onClose={() => {}}
+            drawerTitle=""
+            drawer={null}
+            table={{
+              rows: [],
+              rowId: (run: Run) => run.id,
+              columns: runColumns({ asOf: new Date().toISOString(), nameOf, onOpen: select }),
+              emptyText: "No finished run matches these filters.",
+              isLoading: runsQuery.isLoading,
+              loadingText: "Loading runs…",
+              failure: failureOf(runsQuery, "Could not load runs."),
+            }}
+          />
+        ) : (
           <TableWithDrawer
             openId={openRunId}
             onClose={() => select(null)}
@@ -191,6 +209,7 @@ export function TasksPage() {
               columns: runColumns({ asOf: index.asOf, nameOf, onOpen: select }),
               onOpen: select,
               emptyText: "No finished run matches these filters.",
+              isLoading: false,
               noteOf: (run) =>
                 run.failure === null ? null : (
                   <FailureNote run={run} onRunAgain={actsOf(run).onRunAgain} />

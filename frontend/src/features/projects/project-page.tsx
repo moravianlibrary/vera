@@ -22,6 +22,7 @@ import { RecordPage } from "@/components/layout/record-page";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import type { Member } from "@/components/members-card";
 import { MembersCard } from "@/components/members-card";
+import { failureOf, QueryState } from "@/components/query-state";
 import { HistoryCard } from "@/components/record-cards";
 import {
   ListStateBadge,
@@ -53,13 +54,38 @@ const backToProjects = { label: "Back to Projects", href: "/projects" };
 
 export function ProjectPage() {
   const { projectId = null } = useParams();
-  const { data: detail } = useProjectQuery(projectId);
+  const detailQuery = useProjectQuery(projectId);
+  const { data: detail } = detailQuery;
   const { data: users = [] } = useUsersQuery();
   const { data: categories = [] } = useCategoriesQuery();
   const { data: session } = useSessionQuery();
 
+  if (detailQuery.isError)
+    return (
+      <>
+        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
+        <QueryState
+          isLoading={false}
+          failure={failureOf(detailQuery, "Could not load this project.")}
+        >
+          <span />
+        </QueryState>
+      </>
+    );
+
   if (detail === undefined || session === undefined) {
-    return <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />;
+    return (
+      <>
+        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
+        <QueryState
+          isLoading={detailQuery.isLoading}
+          failure={failureOf(detailQuery, "Could not load this project.")}
+          loadingText="Loading the project…"
+        >
+          <span />
+        </QueryState>
+      </>
+    );
   }
 
   if (detail === null) {

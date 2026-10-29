@@ -19,6 +19,7 @@ import { listWatchlists } from "@/api/watchlists";
 import { TabLink, TabStrip } from "@/components/filters/tab-strip";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { failureOf, QueryError } from "@/components/query-state";
 import {
   Select,
   SelectContent,
@@ -86,14 +87,11 @@ function NotificationsPreferences() {
   const [params] = useSearchParams();
   const focusedHook = params.get("hook");
   const { data: settings } = useUserSettingsQuery();
-  const {
-    data: hooks = [],
-    isPending,
-    isError,
-  } = useQuery({
+  const hooksQuery = useQuery({
     queryKey: ["notification-hooks"],
     queryFn: getNotificationHooks,
   });
+  const { data: hooks = [], isPending, isError } = hooksQuery;
   const update = useUserSettingsMutation();
   const choices = settings?.notifications ?? { doNotSend: false, hooks: {} };
   const [error, setError] = useState("");
@@ -143,10 +141,15 @@ function NotificationsPreferences() {
       />
       <h3 className="font-semibold">Hook emails</h3>
       {isPending && <p className="text-sm text-muted-foreground">Loading Hook emails…</p>}
-      {isError && (
-        <p role="alert" className="text-sm text-destructive">
-          Could not load Hook emails.
-        </p>
+      {isError && failureOf(hooksQuery, "Could not load Hook emails.") && (
+        <QueryError
+          failure={
+            failureOf(hooksQuery, "Could not load Hook emails.") ?? {
+              text: "Could not load Hook emails.",
+              onRetry: () => void hooksQuery.refetch(),
+            }
+          }
+        />
       )}
       {!isPending && !isError && hooks.length === 0 && (
         <p className="text-sm text-muted-foreground">
@@ -437,19 +440,22 @@ function Choice({
 
 function AccountPreferences() {
   const { data: session } = useSessionQuery();
-  const {
-    data: account,
-    isPending,
-    isError,
-  } = useQuery({ queryKey: ["session-account"], queryFn: getAccount });
+  const accountQuery = useQuery({ queryKey: ["session-account"], queryFn: getAccount });
+  const { data: account, isPending, isError } = accountQuery;
   return (
     <section>
       <h2 className="text-lg font-semibold">Account</h2>
       {isPending && <p className="mt-4 text-sm text-muted-foreground">Loading account…</p>}
       {isError && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
-          Could not load account details.
-        </p>
+        <QueryError
+          failure={
+            failureOf(accountQuery, "Could not load account details.") ?? {
+              text: "Could not load account details.",
+              onRetry: () => void accountQuery.refetch(),
+            }
+          }
+          className="mt-4"
+        />
       )}
       {account && (
         <div className="mt-5 space-y-5 rounded-lg border bg-background p-5 text-sm">

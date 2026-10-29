@@ -21,6 +21,7 @@ import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { MixSetCard } from "@/components/mix-set-card";
+import { failureOf, QueryState } from "@/components/query-state";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { useIntentionMixQuery } from "@/features/intentions/use-intentions-query";
@@ -33,7 +34,8 @@ import { plural } from "@/lib/plural";
 export function IntentionMixPage() {
   const { intentionId = null } = useParams();
   const [params, setParams] = useSearchParams();
-  const { data: detail } = useIntentionMixQuery(intentionId);
+  const detailQuery = useIntentionMixQuery(intentionId);
+  const { data: detail } = detailQuery;
   const { data: liveCategories } = useCategoriesQuery();
   const { data: session } = useSessionQuery();
   const [isRootOpen, setIsRootOpen] = useState(false);
@@ -57,8 +59,30 @@ export function IntentionMixPage() {
     );
   }
 
+  if (detailQuery.isError) {
+    return (
+      <>
+        <PageHeader title="Mix" breadcrumb={backToIndex} />
+        <QueryState isLoading={false} failure={failureOf(detailQuery, "Could not load this mix.")}>
+          <span />
+        </QueryState>
+      </>
+    );
+  }
+
   if (detail === undefined || liveCategories === undefined || session === undefined) {
-    return <PageHeader title="Mix" breadcrumb={backToIndex} />;
+    return (
+      <>
+        <PageHeader title="Mix" breadcrumb={backToIndex} />
+        <QueryState
+          isLoading={detailQuery.isLoading}
+          failure={failureOf(detailQuery, "Could not load this mix.")}
+          loadingText="Loading the mix…"
+        >
+          <span />
+        </QueryState>
+      </>
+    );
   }
 
   const { mix } = detail;

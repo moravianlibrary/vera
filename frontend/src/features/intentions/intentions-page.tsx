@@ -23,6 +23,7 @@ import { CardSections } from "@/components/card-sections";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { failureOf, QueryError } from "@/components/query-state";
 import { StatusNote } from "@/components/status-note";
 import type { MixLink } from "@/features/intentions/intention-card";
 import { IntentionCard } from "@/features/intentions/intention-card";
@@ -86,7 +87,9 @@ export interface IntentionActs {
 
 export function IntentionsPage() {
   const view = useViewUrlState(intentionsView, "i");
-  const { data: index, error } = useIntentionIndexQuery();
+  const indexQuery = useIntentionIndexQuery();
+  const indexFailure = failureOf(indexQuery, "Could not load intentions.");
+  const { data: index } = indexQuery;
   const { data: session } = useSessionQuery();
   const { data: projects = [] } = useProjectsQuery();
   const [params, setParams] = useSearchParams();
@@ -261,10 +264,8 @@ export function IntentionsPage() {
         searchPlaceholder="Search intentions and repeats"
       />
       <PageContent>
-        {error !== null ? (
-          <StatusNote tone="red" title="Intentions could not be loaded">
-            Try again in a moment.
-          </StatusNote>
+        {indexFailure !== undefined ? (
+          <QueryError failure={indexFailure} />
         ) : index === undefined ? null : (
           <>
             {note !== null && (

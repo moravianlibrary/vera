@@ -22,6 +22,7 @@ import type { ViewAction } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { NoticeLine } from "@/components/notice-line";
+import { failureOf, QueryState } from "@/components/query-state";
 import { TableWithDrawer } from "@/components/table-with-drawer";
 import type { PluginDialog, PluginNotice } from "@/features/plugins/plugin-acts";
 import {
@@ -57,7 +58,8 @@ import { plural } from "@/lib/plural";
 
 export function PluginsPage() {
   const [params, setParams] = useSearchParams();
-  const { data: index } = usePluginsQuery();
+  const pluginsQuery = usePluginsQuery();
+  const { data: index } = pluginsQuery;
   const { data: session } = useSessionQuery();
   const [notice, setNotice] = useState<PluginNotice | null>(null);
   const [dialog, setDialog] = useState<PluginDialog | null>(null);
@@ -104,7 +106,15 @@ export function PluginsPage() {
         searchPlaceholder="Search plugins and instances…"
       />
       <PageContent isFlushVertical className="@container">
-        {index !== undefined && (
+        {index === undefined ? (
+          <QueryState
+            isLoading={pluginsQuery.isLoading}
+            failure={failureOf(pluginsQuery, "Could not load plugins.")}
+            loadingText="Loading plugins…"
+          >
+            <span />
+          </QueryState>
+        ) : (
           <PluginTable
             index={index}
             query={query}
@@ -304,6 +314,7 @@ function PluginTable({
         </>
       }
       table={{
+        isLoading: false,
         flush: true,
         rows: shown.instances,
         rowId: (instance) => instance.id,

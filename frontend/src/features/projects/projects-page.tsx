@@ -15,8 +15,8 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
+import { failureOf, QueryState } from "@/components/query-state";
 import { ToneBadge } from "@/components/status-badge";
-import { StatusNote } from "@/components/status-note";
 import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectCard } from "@/features/projects/project-card";
 import { ProjectFormDialog } from "@/features/projects/project-dialogs";
@@ -124,7 +124,8 @@ export function ProjectsPage() {
   const navigate = useNavigate();
   const [isStarting, setIsStarting] = useState(false);
   const { data: session } = useSessionQuery();
-  const { data: index, error } = useProjectIndexQuery(view.query);
+  const indexQuery = useProjectIndexQuery(view.query);
+  const { data: index } = indexQuery;
   const { data: users = [] } = useUsersQuery();
 
   if (session === undefined) {
@@ -178,10 +179,16 @@ export function ProjectsPage() {
         searchPlaceholder="Search projects — name, description"
       />
       <PageContent>
-        {error !== null ? (
-          <StatusNote tone="red" title="Projects could not be loaded">
-            Try again in a moment.
-          </StatusNote>
+        {indexQuery.isError ? (
+          <>
+            <QueryState
+              isLoading={false}
+              failure={failureOf(indexQuery, "Could not load projects.")}
+            >
+              <span />
+            </QueryState>
+            <p className="px-4 text-sm text-muted-foreground">Try again in a moment.</p>
+          </>
         ) : index === undefined ? null : (
           <ProjectBoard
             key={session.user.id}

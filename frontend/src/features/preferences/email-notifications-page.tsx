@@ -4,6 +4,7 @@ import {
   getPublicNotificationPreferences,
   updatePublicNotificationPreferences,
 } from "@/api/notification-preferences";
+import { failureOf, QueryError } from "@/components/query-state";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -12,11 +13,12 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 export function EmailNotificationsPage() {
   const { token = "" } = useParams();
   const { data: session } = useSessionQuery();
-  const { data, isPending, isError, refetch } = useQuery({
+  const preferencesQuery = useQuery({
     queryKey: ["email-notification-choices", token],
     queryFn: () => getPublicNotificationPreferences(token),
     retry: false,
   });
+  const { data, isPending, isError, refetch } = preferencesQuery;
   const save = useMutation({
     mutationFn: (notifications: NonNullable<typeof data>["notifications"]) =>
       updatePublicNotificationPreferences(token, notifications),
@@ -26,7 +28,16 @@ export function EmailNotificationsPage() {
   if (isPending) return <div className="mx-auto max-w-xl p-8">Loading notification choices…</div>;
   if (isError || data === undefined)
     return (
-      <div className="mx-auto max-w-xl p-8">This notification link is invalid or expired.</div>
+      <div className="mx-auto max-w-xl p-8">
+        <QueryError
+          failure={
+            failureOf(preferencesQuery, "This notification link is invalid or expired.") ?? {
+              text: "This notification link is invalid or expired.",
+              onRetry: () => void preferencesQuery.refetch(),
+            }
+          }
+        />
+      </div>
     );
   if (session?.user.id === data.userId) {
     return (

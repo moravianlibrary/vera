@@ -32,6 +32,7 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
+import { failureOf, QueryError, QueryState } from "@/components/query-state";
 import { Tree } from "@/components/tree";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,12 +62,15 @@ export function MixesPage() {
   const queryClient = useQueryClient();
   const { data: session } = useSessionQuery();
   const { data: categories = [] } = useCategoriesQuery();
-  const { data: mixes = [] } = useQuery({ queryKey: mixQueryKey, queryFn: listMixes });
-  const { data: selected } = useQuery({
+  const mixesQuery = useQuery({ queryKey: mixQueryKey, queryFn: listMixes });
+  const { data: mixes = [] } = mixesQuery;
+  const selectedQuery = useQuery({
     queryKey: [...mixQueryKey, mixId],
     queryFn: () => getMix(mixId ?? ""),
     enabled: mixId !== undefined,
   });
+  const { data: selected } = selectedQuery;
+  const selectedFailure = failureOf(selectedQuery, "Could not load this mix.");
   const current = selected ?? mixes.find((mix) => mix.id === mixId) ?? null;
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categorySearch, setCategorySearch] = useState("");
@@ -221,50 +225,60 @@ export function MixesPage() {
       <MasterDetail
         masterWidth="tree"
         master={
-          <div>
-            {current === null && message !== null && (
-              <p
-                role="alert"
-                className="m-4 rounded-md border border-destructive/40 p-3 text-sm text-destructive"
-              >
-                {message}
-              </p>
-            )}
+          <QueryState
+            isLoading={mixesQuery.isLoading}
+            failure={failureOf(mixesQuery, "Could not load mixes.")}
+            loadingText="Loading mixes…"
+          >
             <div>
-              {filtered.map((mix) => (
-                <Link
-                  key={mix.id}
-                  to={{ pathname: `/mixes/${mix.id}`, search: location.search }}
-                  onClick={() => {
-                    setRevision(null);
-                    setSelectedCategoryId(null);
-                  }}
-                  aria-current={mix.id === current?.id ? "page" : undefined}
-                  className={`block border-b border-l-3 border-l-transparent px-4 py-2.5 text-sm hover:bg-muted ${mix.id === current?.id ? "border-l-primary bg-primary/8 hover:bg-primary/12" : ""}`}
+              {current === null && message !== null && (
+                <p
+                  role="alert"
+                  className="m-4 rounded-md border border-destructive/40 p-3 text-sm text-destructive"
                 >
-                  <span className="block font-medium">
-                    {mix.name}{" "}
-                    {mix.isPrimary && (
-                      <span className="ml-2 rounded-xs bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                        Primary
-                      </span>
-                    )}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {mix.archivedAt === null ? `Revision ${mix.revision}` : "Archived"} ·{" "}
-                    {mix.usageCount} intentions ·{" "}
-                    {complete(mix) ? "Complete" : "Has unallocated shares"}
-                  </span>
-                </Link>
-              ))}
+                  {message}
+                </p>
+              )}
+              <div>
+                {filtered.map((mix) => (
+                  <Link
+                    key={mix.id}
+                    to={{ pathname: `/mixes/${mix.id}`, search: location.search }}
+                    onClick={() => {
+                      setRevision(null);
+                      setSelectedCategoryId(null);
+                    }}
+                    aria-current={mix.id === current?.id ? "page" : undefined}
+                    className={`block border-b border-l-3 border-l-transparent px-4 py-2.5 text-sm hover:bg-muted ${mix.id === current?.id ? "border-l-primary bg-primary/8 hover:bg-primary/12" : ""}`}
+                  >
+                    <span className="block font-medium">
+                      {mix.name}{" "}
+                      {mix.isPrimary && (
+                        <span className="ml-2 rounded-xs bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                          Primary
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {mix.archivedAt === null ? `Revision ${mix.revision}` : "Archived"} ·{" "}
+                      {mix.usageCount} intentions ·{" "}
+                      {complete(mix) ? "Complete" : "Has unallocated shares"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+              {filtered.length === 0 && (
+                <p className="px-4 py-6 text-sm text-muted-foreground">
+                  No mixes match this search.
+                </p>
+              )}
             </div>
-            {filtered.length === 0 && (
-              <p className="px-4 py-6 text-sm text-muted-foreground">No mixes match this search.</p>
-            )}
-          </div>
+          </QueryState>
         }
         detail={
-          current === null ? (
+          selectedFailure !== undefined ? (
+            <QueryError failure={selectedFailure} />
+          ) : current === null ? (
             <p className="text-sm text-muted-foreground">
               Select a mix to see its definition and proportions.
             </p>
