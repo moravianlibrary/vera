@@ -179,6 +179,27 @@ takes over Tlačítko digitalizovat. Needs:
 Not settled: which portal hosts the button, and so the first instance's return origin. Old
 requests from the mini app are moved by hand, not imported. → engine, then frontend.
 
+### L71: Local sign-up
+
+Rules: [ACCESS-sign-up](reference/access/people.md#access-sign-up),
+[ACCESS-verify-email](reference/access/people.md#access-verify-email),
+[ACCESS-password-reset](reference/access/people.md#access-password-reset),
+[ACCESS-no-enumeration](reference/access/people.md#access-no-enumeration).
+
+Decided on 2026-10-29 ([DEC-0016](decisions/DEC-0016-local-sign-up.md)). Needs:
+- endpoints `POST /api/signup/:instanceId`, `POST /api/email-verification/:instanceId` (send
+  again), `POST /api/email-verification/confirm {token}`, `POST /api/password-reset/:instanceId`
+  `{email}` and `POST /api/password-reset/confirm {token, password}`, each answering 202 or 204
+  as the rules say;
+- unverified accounts and single-use tokens stored as hashes, with their expiry, on the engine
+  clock; a job deleting unverified accounts after 7 days;
+- the emails sent through the instance's `mail_channel`;
+- the pages: *Create an account*, *Check your email*, `/verify-email/:token`,
+  *Forgot your password?* and `/reset-password/:token`, in the mock first, the links shown on the
+  page in mock mode since the mock sends no mail.
+
+→ frontend with the mock, then engine.
+
 ## For part 5 (writing and i18n)
 
 ### L37: Czech terms

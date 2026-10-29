@@ -8,7 +8,7 @@ builds a fake of each one it needs ([engine.md](engine.md)); the real ones come 
 
 | Implementation | Instances | Notes |
 |---|---|---|
-| `LocalAccounts` | Local accounts | form login; staff without a library account |
+| `LocalAccounts` | Local accounts | form login; staff without a library account, and, with `signup` on, anyone who creates their own ([DEC-0016](../decisions/DEC-0016-local-sign-up.md)); `mail_channel` names the mailer for its emails |
 | `OidcIdentity` | MZK Keycloak · **Google** · **Seznam** | Keycloak for staff and library readers (it can broker eduID). Google and Seznam are the public's way in ([DEC-0015](../decisions/DEC-0015-public-requests-by-entry-link.md)): default role *reader*. Verify that Seznam's login speaks OpenID Connect (discovery and an ID token with a verified email); if it is plain OAuth 2.0, `OidcIdentity` needs a profile-endpoint mode rather than a second implementation |
 
 *Match by email* only for an instance whose email claim is verified.

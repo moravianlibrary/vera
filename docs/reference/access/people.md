@@ -105,8 +105,46 @@ history stay.
 
 An admin creates a local account for somebody with no institutional account: a name, a
 username unique among local accounts, an optional email, and roles set by hand. This works only
-while a local-accounts Identity instance is enabled. Everyone else appears at their first
+while a local-accounts Identity instance is enabled. While its sign-up is on, a person may also
+create their own ([ACCESS-sign-up](#access-sign-up)). Everyone else appears at their first
 login.
+
+#### ACCESS-sign-up
+
+A local-accounts instance's configuration says whether people may sign up (`signup`: `on` or
+`off`) and which Delivery channel instance sends its emails (`mail_channel`, an SMTP or Gmail
+mailer); sign-up cannot be on without one (422). While it is on, its login form offers *Create
+an account* ([DEC-0016](../../decisions/DEC-0016-local-sign-up.md)):
+- a name, an email, a username unique among local accounts (422 when taken) and a password of at
+  least the instance's `password_min` characters;
+- the account is created **unverified**, with the instance's default role, and cannot log in;
+- the page answers *check your email* ([ACCESS-no-enumeration](#access-no-enumeration)), and
+  keeps the page the person came from, for after verifying
+  ([ACCESS-login-return](#access-login-return));
+- a hidden field a person never fills, and at most 5 sign-ups an hour from one address and 3 a
+  day for one email (429), stop scripted sign-ups;
+- an unverified account is deleted 7 days after it was created.
+
+#### ACCESS-verify-email
+
+The sign-up email holds a link that is good for 24 hours and once. Opening it verifies the email,
+makes the account usable, logs the person in, and goes to the page they came from. An expired or
+used link says so and offers to send a new one. The email can be sent again from the login form
+for an unverified account (*Send the link again*), as a sign-up would.
+
+#### ACCESS-password-reset
+
+*Forgot your password?* on the login form asks for the email of a local account. The email holds
+a link good for 1 hour and once, to set a new password of at least `password_min` characters.
+Setting it ends every session of that account and logs the person in. An admin-created account
+without an email cannot reset its password this way; an admin sets one.
+
+#### ACCESS-no-enumeration
+
+Signing up and asking for a reset never say whether an email has an account. Both answer *check
+your email*; the email says what happened: the link, or *you already have an account* with a
+reset link, or nothing for an email VERA does not know. Only a taken **username** is said on the
+form, since a person must choose another.
 
 ## How a role is held
 
