@@ -43,6 +43,15 @@ Each instance has these settings:
 | match by email | whether a first login links to an existing user with the same verified email |
 | mappings | claims, each giving a role |
 
+#### ACCESS-default-role
+
+An Identity instance has one default role, or none. It is set in Users & Groups, on the instance
+under *Ways in* ([ACT-identity-default-role](acts.md#users--groups)), or with the instance's
+settings in Plugins; both change the same setting. A change applies to first logins from then on
+([ACCESS-first-login](#access-first-login)): people already in keep the role they were given, as
+a default role is never removed at login
+([ACCESS-mapping-at-login](#access-mapping-at-login)).
+
 #### ACCESS-identity-key
 
 A user is found by their identity: the instance and the value of its user id claim. A name is

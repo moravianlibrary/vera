@@ -281,6 +281,7 @@ Every act needs `access.manage` and is refused when it would leave nobody able t
 | `ACT-user-suspend` | *Suspend…* | a person, not an agent (422); not suspended already (409) |
 | `ACT-user-restore` | *Restore* | suspended (409) |
 | `ACT-local-account` | *New local account…* | local accounts enabled (422); a free username (409) |
+| `ACT-identity-default-role` | *Default role…* on a way in | an enabled Identity instance (404); an existing role, or none (422) |
 | `ACT-group-save` | *New group*, *Edit group*, *Members…* | a unique name (409) |
 | `ACT-custody-save` | *New custody*, *Edit*, *Members…* | a unique name (409); the fallback keeps its name (422); members are people or groups |
 | `ACT-custody-delete` | *Delete custody…* | not the fallback (422) |
