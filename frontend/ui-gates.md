@@ -69,17 +69,21 @@ by `bun run check:ui` once session U1 of `closure-plan.md` lands; until then the
   | `text-xs` | 0.75rem | secondary text, table cells, badges |
   | `text-ui` | 0.8125rem | controls, list rows |
   | `text-sm` | 0.875rem | body, card content |
+  | `text-title` | 0.9375rem | drawer titles, text stats |
   | `text-base` | 1rem | dialog titles |
   | `text-lg` / `text-xl` | — | page titles, system pages |
 
   No `text-[…]`. **(check)** Do not shrink type to make a layout fit.
-- **G-STYLE-3** Radius: `rounded-md` controls, `rounded-lg` cards, panels and popovers,
-  `rounded-full` pills, dots and avatars. Edge-only radii (`rounded-l`, `rounded-t`) are allowed
-  for joined segments. No bare `rounded`, no `rounded-[…]`. **(check)**
+- **G-STYLE-3** Radius: `rounded-xs` (0.25rem) small marks, checkboxes and key caps,
+  `rounded-md` controls, `rounded-lg` cards, panels and popovers, `rounded-full` pills, dots and
+  avatars. Edge-only radii (`rounded-l`, `rounded-t`) are allowed for joined segments. No bare
+  `rounded`, no `rounded-[…]`. **(check)**
 - **G-STYLE-4** Arbitrary values: allowed for grid templates (`grid-cols-[…]`,
   `grid-rows-[…]`), `min()`/`calc()` sizes and `data-[…]`/`group-data-[…]` variants. Not allowed
-  for color, shadow, z-index, radius, spacing or font size. Repeated arbitrary sizes become a
-  token or a component prop. **(check)**
+  for color, shadow, z-index, radius, spacing, line height or font size. Shadows are named in
+  `globals.css` (`shadow-mark`, `shadow-mark-purple`, `shadow-peek`); spacing and line height use
+  the 0.25rem scale (`-top-0.75`, `leading-4.5`). Repeated arbitrary sizes become a token or a
+  component prop. No `!` important modifier. **(check)**
 - **G-STYLE-5** Inline `style` only for data-driven geometry (bar widths, timeline positions,
   tree indentation by depth).
 - **G-STYLE-6** Spacing follows the component it sits in; a page does not restyle a shared

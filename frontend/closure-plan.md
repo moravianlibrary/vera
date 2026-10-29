@@ -1,5 +1,8 @@
 # Frontend closure plan
 
+Step-by-step task files for the implementing model are kept out of git in `plans/luna/`
+(U0, U1, U2, U3a, U3b, U3c), each run in its own worktree and branch.
+
 Audit of 2026-10-29 on `feat/client-redesign`. It replaces the open parts of
 `completion-plan.md` (Sessions C, E, F). Each session is one Codex run. Every session obeys
 `ui-gates.md`; review cites its gate IDs.
@@ -23,8 +26,8 @@ Audit of 2026-10-29 on `feat/client-redesign`. It replaces the open parts of
 ## U0 — Land the in-flight Mixes work
 
 The Mixes work was committed in `d3a48990`/`bdd364fe`. Review follow-ups:
-1. `hasUnallocatedProportions` (`contract/src/mix-filters.ts`) uses `siblingSetOf` from
-   `domain/src/mixes.ts` instead of re-implementing it.
+1. (Dropped: `hasUnallocatedProportions` cannot reuse `siblingSetOf`, whose shares are not
+   nullable as the contract's are.)
 2. Mix *Delete…* uses `ConsequenceDialog` and the destructive button variant, not a
    `DialogShell` and `className="text-destructive"`.
 3. Tasks, Plugins, Schedules: drop `!pt-0 !pb-0`; give `PageContent` a padding prop instead.
