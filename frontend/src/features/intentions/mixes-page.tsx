@@ -161,23 +161,13 @@ export function MixesPage() {
     <>
       <PageHeader
         title="Category mixes"
-        back={
-          session !== undefined && can(session, "category.read")
-            ? {
-                label: "Back to Categories",
-                href:
-                  current === null || current.archivedAt !== null
-                    ? "/categories"
-                    : `/categories?mix=${encodeURIComponent(current.id)}`,
-              }
-            : undefined
-        }
         actions={[
           ...(mayEdit
             ? [
                 {
                   id: "new",
                   label: "New mix",
+                  isPrimary: true,
                   onSelect: () => {
                     setName("");
                     setEditor("new");
@@ -190,16 +180,16 @@ export function MixesPage() {
       <MasterDetail
         masterWidth="tree"
         master={
-          <div className="space-y-3 p-4">
+          <div>
             {current === null && message !== null && (
               <p
                 role="alert"
-                className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
+                className="m-4 rounded-md border border-destructive/40 p-3 text-sm text-destructive"
               >
                 {message}
               </p>
             )}
-            <div className="flex flex-wrap gap-2">
+            <div className="sticky top-0 z-10 flex flex-wrap gap-2 border-b bg-background px-4 py-3">
               <Input
                 aria-label="Search mixes"
                 placeholder="Search mixes"
@@ -218,7 +208,7 @@ export function MixesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid gap-2">
+            <div>
               {filtered.map((mix) => (
                 <Link
                   key={mix.id}
@@ -227,8 +217,8 @@ export function MixesPage() {
                     setRevision(null);
                     setSelectedCategoryId(null);
                   }}
-                  aria-current={mix.id === current?.id ? "true" : undefined}
-                  className={`rounded-lg border p-3 hover:bg-muted/40 ${mix.id === current?.id ? "border-primary bg-primary/5" : "bg-card"}`}
+                  aria-current={mix.id === current?.id ? "page" : undefined}
+                  className={`block border-b border-l-3 border-l-transparent px-4 py-2.5 text-sm hover:bg-muted ${mix.id === current?.id ? "border-l-primary bg-primary/8 hover:bg-primary/12" : ""}`}
                 >
                   <span className="block font-medium">
                     {mix.name}{" "}
@@ -247,7 +237,7 @@ export function MixesPage() {
               ))}
             </div>
             {filtered.length === 0 && (
-              <p className="text-sm text-muted-foreground">No mixes match this search.</p>
+              <p className="px-4 py-6 text-sm text-muted-foreground">No mixes match this search.</p>
             )}
           </div>
         }
@@ -259,8 +249,8 @@ export function MixesPage() {
           ) : (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-semibold">{current.name}</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="text-xl leading-7 font-semibold">{current.name}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
                   {current.archivedAt === null ? `Revision ${current.revision}` : "Archived"}
                 </p>
                 {(mayEdit || mayManage) && (
