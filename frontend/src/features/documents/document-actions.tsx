@@ -252,6 +252,7 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
   const id = useId();
   const publish = useActionMutation({
     call: (publication: Publication) => publishIteration(iteration.id, publication),
+    act: "ACT-publish",
     invalidates: iterationInvalidations,
     refusalTexts: {
       409: "It is not digitized yet.",

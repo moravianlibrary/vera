@@ -4,10 +4,12 @@
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Approval, RequestGrouping, RequestQuery } from "@vera/contract/requests";
+import { ApiError } from "@/api/http";
 import { approveProposal, findRequest, listRequests } from "@/api/requests";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { recordAct } from "@/lib/telemetry/telemetry";
 
 export const requestsQueryKey = ["requests"] as const;
 
@@ -50,7 +52,13 @@ export function useDecisionMutations() {
     approve: useMutation({
       mutationFn: ({ documentId, approval }: { documentId: string; approval: Approval }) =>
         approveProposal(documentId, approval),
-      onSuccess,
+      onSuccess: () => {
+        recordAct("ACT-approve", "done");
+        onSuccess();
+      },
+      onError: (error) => {
+        recordAct("ACT-approve", "refused", error instanceof ApiError ? error.status : undefined);
+      },
     }),
   };
 }

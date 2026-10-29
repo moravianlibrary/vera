@@ -184,6 +184,7 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
     call: ({ documentId, decline }: { documentId: string; decline: Decline }) =>
       declineProposal(documentId, decline),
     invalidates: decisionInvalidations,
+    act: "ACT-decline",
     refusalTexts: { 409: "Someone has decided it meanwhile." },
   });
   const prefilled = prefilledPriorityOf(row, projects);

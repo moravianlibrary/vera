@@ -201,6 +201,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
 
   const save = useActionMutation<ListDraft, ListDetail>({
     call: (draft) => (listId === null ? createList(draft) : saveList(listId, draft)),
+    act: listId === null ? "ACT-list-create" : undefined,
     invalidates: listInvalidations,
     refusalTexts: {
       "list.member_unavailable": "Something you put on it is no longer ready to list.",

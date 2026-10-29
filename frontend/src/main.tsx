@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "@/app";
 import { env } from "@/config/env";
+import { startTelemetry } from "@/lib/telemetry/telemetry";
 import "@/globals.css";
 import "@/i18n";
 
@@ -25,4 +26,5 @@ async function prepareApp() {
   );
 }
 
+void startTelemetry();
 prepareApp();

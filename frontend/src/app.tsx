@@ -123,24 +123,63 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
 }
 
 const router = createBrowserRouter([
-  { path: "/login", element: <LoginPage />, errorElement: <CrashPage /> },
-  { path: "/signup", element: <SignUpPage />, errorElement: <CrashPage /> },
-  { path: "/verify-email/:token", element: <VerifyEmailPage />, errorElement: <CrashPage /> },
-  { path: "/forgot-password", element: <ForgotPasswordPage />, errorElement: <CrashPage /> },
-  { path: "/reset-password/:token", element: <ResetPasswordPage />, errorElement: <CrashPage /> },
-  { path: "/signed-out", element: <SignedOutPage /> },
-  { path: "/email-notifications/:token", element: <EmailNotificationsPage /> },
+  {
+    path: "/login",
+    handle: { template: "/login" },
+    element: <LoginPage />,
+    errorElement: <CrashPage />,
+  },
+  {
+    path: "/signup",
+    handle: { template: "/signup" },
+    element: <SignUpPage />,
+    errorElement: <CrashPage />,
+  },
+  {
+    path: "/verify-email/:token",
+    handle: { template: "/verify-email/:token" },
+    element: <VerifyEmailPage />,
+    errorElement: <CrashPage />,
+  },
+  {
+    path: "/forgot-password",
+    handle: { template: "/forgot-password" },
+    element: <ForgotPasswordPage />,
+    errorElement: <CrashPage />,
+  },
+  {
+    path: "/reset-password/:token",
+    handle: { template: "/reset-password/:token" },
+    element: <ResetPasswordPage />,
+    errorElement: <CrashPage />,
+  },
+  { path: "/signed-out", handle: { template: "/signed-out" }, element: <SignedOutPage /> },
+  {
+    path: "/email-notifications/:token",
+    handle: { template: "/email-notifications/:token" },
+    element: <EmailNotificationsPage />,
+  },
   {
     path: "/",
+    handle: { template: "/" },
     element: <AppShell />,
     errorElement: <CrashPage />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "preferences", element: <Navigate to="/preferences/watchlists" replace /> },
-      { path: "preferences/:section", element: <PreferencesPage /> },
-      { path: "ask", element: <AskRoute /> },
+      {
+        path: "preferences",
+        handle: { template: "/preferences" },
+        element: <Navigate to="/preferences/watchlists" replace />,
+      },
+      {
+        path: "preferences/:section",
+        handle: { template: "/preferences/:section" },
+        element: <PreferencesPage />,
+      },
+      { path: "ask", handle: { template: "/ask" }, element: <AskRoute /> },
       ...navigationEntries.map((entry) => ({
         path: entry.path.slice(1),
+        handle: { template: entry.path },
         element: (
           <Gate entryId={entry.id}>
             <EntryPage entryId={entry.id} label={entry.label} />
@@ -150,6 +189,7 @@ const router = createBrowserRouter([
       // Digitization Lists' editor: one page, three surfaces (view-map.md §2.4).
       ...["lists/new", "lists/:listId/edit"].map((path) => ({
         path,
+        handle: { template: path === "lists/new" ? "/lists/new" : "/lists/:listId/edit" },
         element: (
           <Gate entryId="lists">
             <ListEditorPage />
@@ -159,6 +199,7 @@ const router = createBrowserRouter([
       // A project's own page: few run at once, so it is not a pane (STATUS "Projects").
       {
         path: "projects/:projectId",
+        handle: { template: "/projects/:projectId" },
         element: (
           <Gate entryId="projects">
             <ProjectPage />
@@ -168,6 +209,7 @@ const router = createBrowserRouter([
       // An intention's Mix: the mix it chose, read against its output (PLAN-mix-reading).
       {
         path: "intentions/:intentionId/mix",
+        handle: { template: "/intentions/:intentionId/mix" },
         element: (
           <Gate entryId="intentions">
             <IntentionMixPage />
@@ -176,13 +218,14 @@ const router = createBrowserRouter([
       },
       {
         path: "mixes/:mixId",
+        handle: { template: "/mixes/:mixId" },
         element: (
           <Gate entryId="mixes">
             <MixesPage />
           </Gate>
         ),
       },
-      { path: "*", element: <NotFoundPage /> },
+      { path: "*", handle: { template: "/*" }, element: <NotFoundPage /> },
     ],
   },
 ]);

@@ -10,6 +10,7 @@
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/api/http";
+import { recordAct } from "@/lib/telemetry/telemetry";
 
 export const refusalStatuses = [403, 404, 409, 422] as const;
 export type RefusalStatus = (typeof refusalStatuses)[number];
@@ -44,12 +45,14 @@ interface ActionMutationOptions<Input, Value> {
   invalidates: readonly QueryKey[];
   // The action's own words for a refusal, where the server's or the default say too little.
   refusalTexts?: RefusalTexts;
+  act?: string;
 }
 
 export function useActionMutation<Input, Value>({
   call,
   invalidates,
   refusalTexts = {},
+  act,
 }: ActionMutationOptions<Input, Value>) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -63,9 +66,19 @@ export function useActionMutation<Input, Value>({
 
   const run = async (input: Input): Promise<ActionResult<Value>> => {
     try {
-      return { isDone: true, value: await mutation.mutateAsync(input) };
+      const value = await mutation.mutateAsync(input);
+      if (act !== undefined) recordAct(act, "done");
+      return { isDone: true, value };
     } catch (error) {
-      return { isDone: false, refusal: refusalOf(error, refusalTexts) };
+      const refusal = refusalOf(error, refusalTexts);
+      if (act !== undefined) {
+        recordAct(
+          act,
+          "refused",
+          refusal.status ?? (error instanceof ApiError ? error.status : undefined),
+        );
+      }
+      return { isDone: false, refusal };
     }
   };
 

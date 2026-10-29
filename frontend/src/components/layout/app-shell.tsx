@@ -8,8 +8,8 @@
 // TODO(rrandiak): phone gestures (component-interfaces.md §8.1); labels move to i18n.
 
 import { loginPathFor } from "@vera/contract/return-to";
-import { useLayoutEffect, useState } from "react";
-import { Navigate, Outlet, useLocation } from "react-router";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Navigate, Outlet, useLocation, useMatches } from "react-router";
 import { ApiError } from "@/api/http";
 import { OpenNavigationContext } from "@/components/layout/navigation-button";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -23,11 +23,15 @@ import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useTier } from "@/hooks/use-tier";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
+import { routeTemplateOf, telemetryUserId } from "@/lib/telemetry/rules";
+import { recordPageView, setTelemetryUser } from "@/lib/telemetry/telemetry";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {
   const { data: session, error, refetch } = useSessionQuery();
   const location = useLocation();
+  const matches = useMatches();
+  const lastPage = useRef<string | null>(null);
   useAppearance();
   useAppliedLanguage();
   const { data: userSettings } = useUserSettingsQuery();
@@ -37,6 +41,26 @@ export function AppShell() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [displayVersion, setDisplayVersion] = useState(0);
   const peek = useSidebarPeek(isDocked && !sidebar.isExpanded);
+
+  const routeTemplate = routeTemplateOf(
+    matches.map((match) => {
+      const handle = match.handle;
+      return typeof handle === "object" &&
+        handle !== null &&
+        "template" in handle &&
+        typeof handle.template === "string"
+        ? handle.template
+        : undefined;
+    }),
+  );
+  useEffect(() => setTelemetryUser(telemetryUserId(session)), [session]);
+  useEffect(() => {
+    const key = `${routeTemplate}\n${location.pathname}`;
+    if (lastPage.current !== key) {
+      lastPage.current = key;
+      recordPageView(routeTemplate);
+    }
+  }, [location.pathname, routeTemplate]);
 
   // Before paint, so the large tier never shows a frame at the wrong size.
   useLayoutEffect(() => {

@@ -33,6 +33,7 @@ import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@vera/do
 import { Check, FileUp, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { ApiError } from "@/api/http";
 import {
   checkProposalItems,
   getProposalSettings,
@@ -72,6 +73,7 @@ import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { recordAct } from "@/lib/telemetry/telemetry";
 import { cn } from "@/lib/utils";
 
 const steps = ["Items", "Details", "Submitted"] as const;
@@ -179,6 +181,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
   const submit = useMutation({
     mutationFn: submitProposal,
     onSuccess: (submitted) => {
+      recordAct("ACT-propose", "done");
       setReport(submitted);
       setStep("Submitted");
       void queryClient.invalidateQueries({ queryKey: documentsQueryKey });
@@ -187,6 +190,9 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
       void queryClient.invalidateQueries({ queryKey: [...requestsQueryKey, "list"] });
       void queryClient.invalidateQueries({ queryKey: [...referenceQueryKey, "batches"] });
       void queryClient.invalidateQueries({ queryKey: ["proposals", "rate-limit"] });
+    },
+    onError: (error) => {
+      recordAct("ACT-propose", "refused", error instanceof ApiError ? error.status : undefined);
     },
   });
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteError } from "react-router";
 import { Button } from "@/components/ui/button";
+import { recordError } from "@/lib/telemetry/telemetry";
 import { SystemPage } from "./system-page";
 
 export function CrashPage() {
@@ -14,6 +15,7 @@ export function CrashPage() {
 
   useEffect(() => {
     console.error(`VERA crash ${reference}`, error);
+    recordError(reference, error);
   }, [error, reference]);
 
   return (
