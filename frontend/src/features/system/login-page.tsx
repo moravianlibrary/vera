@@ -78,26 +78,24 @@ export function LoginPage() {
         ) : undefined
       }
       footer={
-        <>
-          <div className="flex items-center gap-1">
-            <span>{t("login.language")}</span>
-            {languages.map((language) => (
-              <Button
-                key={language}
-                size="sm"
-                variant="ghost"
-                aria-pressed={i18n.resolvedLanguage === language}
-                className="aria-pressed:text-foreground aria-pressed:font-medium"
-                onClick={() => {
-                  pickLoginLanguage(language);
-                  void i18n.changeLanguage(language);
-                }}
-              >
-                {languageNames[language]}
-              </Button>
-            ))}
-          </div>
-        </>
+        <div className="flex items-center gap-1">
+          <span>{t("login.language")}</span>
+          {languages.map((language) => (
+            <Button
+              key={language}
+              size="sm"
+              variant="ghost"
+              aria-pressed={i18n.resolvedLanguage === language}
+              className="aria-pressed:text-foreground aria-pressed:font-medium"
+              onClick={() => {
+                pickLoginLanguage(language);
+                void i18n.changeLanguage(language);
+              }}
+            >
+              {languageNames[language]}
+            </Button>
+          ))}
+        </div>
       }
     >
       {showsEntries && (
