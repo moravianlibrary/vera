@@ -51,7 +51,9 @@ choices) are theirs alone. They are kept on the server, apart from the user reco
 follow the person to any browser they log in from, and nobody else reads or changes them. A
 change sends only what changed; it is merged into what is kept, key by key, and leaves the other
 preferences as they were. Only what a person may choose before logging in, such as the
-appearance and the language on the login page, is kept in the browser until they log in.
+appearance and the language on the login page, is kept in the browser until they log in; and the
+sidebar's expanded or collapsed state stays with the device ([UI-rail](#ui-rail)), since one
+person wants a different answer on a large monitor and on a notebook.
 
 #### UI-language
 
