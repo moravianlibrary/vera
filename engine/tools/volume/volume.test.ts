@@ -5,9 +5,11 @@ import { join } from "node:path";
 import {
   batchSchema,
   categorySchema,
+  digitizationListSchema,
   documentSchema,
   iterationSchema,
   requestSchema,
+  statusLogEntrySchema,
   userSchema,
 } from "@vera/domain/entities";
 import { createEngine } from "../../src/engine";
@@ -18,6 +20,7 @@ import { sampleArrival } from "./time";
 const seedDir = join(import.meta.dir, "../../seeds");
 const base = await Bun.file(join(seedDir, "base.json")).json();
 const installation = await Bun.file(join(seedDir, "installation.json")).json();
+const reviewScaleSample = generateVolumeSeed(base, 321, 0.2);
 const temporary: string[] = [];
 afterEach(async () =>
   Promise.all(temporary.splice(0).map((path) => rm(path, { recursive: true, force: true }))),
@@ -35,6 +38,8 @@ describe("volume seed generator", () => {
     for (const row of first.collections.iterations) iterationSchema.parse(row);
     for (const row of first.collections.requests) requestSchema.parse(row);
     for (const row of first.collections.batches) batchSchema.parse(row);
+    for (const row of first.collections.lists) digitizationListSchema.parse(row);
+    for (const row of first.collections.statusLog) statusLogEntrySchema.parse(row);
   });
 
   test("produces scaled volumes and synthetic identities", () => {
@@ -61,6 +66,127 @@ describe("volume seed generator", () => {
       result.collections.users.every((user) => !user.email || user.email.endsWith("@example.org")),
     ).toBe(true);
     expectGeneratedIdsDoNotCollide(result);
+  });
+
+  test("adds volume lists, validation, runs, public requests and history", () => {
+    const result = generateVolumeSeed(base, 21, 0.02);
+    const staffRequests = result.collections.requests.filter((r: any) => r.id.startsWith("V-R"));
+    for (const request of staffRequests) {
+      const batch = result.collections.batches.find((row: any) => row.id === request.batchId);
+      expect(request.requesterId).toBe(batch.submittedBy);
+    }
+    expect(
+      result.collections.lists.every(
+        (list: any) => list.createdAt >= "2024-05" && list.createdAt < "2025-10",
+      ),
+    ).toBe(true);
+    for (const list of result.collections.lists) {
+      const members = result.collections.iterations.filter((it: any) => it.listId === list.id);
+      for (const it of members)
+        expect(
+          Date.parse(result.collections.requests.find((r: any) => r.id === it.requestId)!.at),
+        ).toBeLessThan(Date.parse(list.createdAt));
+      if (list.done) expect(members.every((it: any) => it.progress === "Published")).toBe(true);
+    }
+    const defectIterations = result.collections.iterations.filter((it: any) => it.defects.length);
+    expect(defectIterations.every((it: any) => it.defects.length > 0)).toBe(true);
+    for (const it of defectIterations.filter(
+      (row: any) => !["Ready", "Enqueued"].includes(row.progress),
+    )) {
+      const approved = new Set(
+        it.verdicts.filter((v: any) => v.verdict === "Approved").flatMap((v: any) => v.defectKeys),
+      );
+      expect(it.defects.every((d: any) => approved.has(d.key))).toBe(true);
+    }
+    const doneLimit = Date.parse(result.now) - 90 * 86400000;
+    const failedLimit = Date.parse(result.now) - 365 * 86400000;
+    expect(result.collections.runs.some((r: any) => r.ending.state === "Failed")).toBe(true);
+    expect(
+      result.collections.runs.every(
+        (r: any) =>
+          Date.parse(r.startedAt) >= (r.ending.state === "Failed" ? failedLimit : doneLimit),
+      ),
+    ).toBe(true);
+    const publicRequests = result.collections.requests.filter((r: any) => r.id.startsWith("V-PR"));
+    for (const request of publicRequests) {
+      const batch = result.collections.batches.find((row: any) => row.id === request.batchId);
+      expect(batch.size).toBe(1);
+      expect(batch.source.instanceId).toBe("pi43");
+    }
+    for (const weekday of [0, 6])
+      expect(
+        publicRequests.filter((r: any) => new Date(r.at).getUTCDay() === weekday).length /
+          publicRequests.length,
+      ).toBeGreaterThan(0.08);
+    for (const request of result.collections.requests)
+      expect(
+        result.collections.statusLog.some(
+          (entry: any) =>
+            entry.subjectId === request.id &&
+            entry.event === "Proposed, approval requested" &&
+            entry.actor.userId === request.requesterId,
+        ),
+      ).toBe(true);
+    expect(
+      result.collections.statusLog.every(
+        (entry: any) => Date.parse(entry.at) <= Date.parse(result.now),
+      ),
+    ).toBe(true);
+  });
+
+  test("samples one- and three-defect comparisons", () => {
+    const counts = reviewScaleSample.collections.iterations
+      .map((iteration: any) => iteration.defects.length)
+      .filter((count: number) => count > 0);
+    expect(counts).toContain(1);
+    expect(counts).toContain(3);
+  });
+
+  test("matches list members to a category subtree and keeps normal lists populated", () => {
+    const categories = new Map(
+      reviewScaleSample.collections.categories.map((row: any) => [row.id, row]),
+    );
+    const rootOf = (id: string) => {
+      let node: any = categories.get(id);
+      while (node?.parentId && node.parentId !== "vc0") node = categories.get(node.parentId);
+      return node?.id;
+    };
+    const nonEmpty = reviewScaleSample.collections.lists
+      .map((list: any) =>
+        reviewScaleSample.collections.iterations.filter(
+          (iteration: any) => iteration.listId === list.id,
+        ),
+      )
+      .filter((members: any[]) => members.length > 0);
+    expect(nonEmpty.length).toBeGreaterThan(0);
+    for (const members of nonEmpty)
+      expect(new Set(members.map((it: any) => rootOf(it.categoryId))).size).toBe(1);
+    expect(
+      nonEmpty.filter((members: any[]) => members.length < 4).length / nonEmpty.length,
+    ).toBeLessThan(1 / 3);
+  });
+
+  test("models requester bursts and existing copies", () => {
+    const publicRequests = reviewScaleSample.collections.requests.filter((request: any) =>
+      request.id.startsWith("V-PR"),
+    );
+    const daily = new Map<string, number>();
+    for (const request of publicRequests) {
+      const key = `${request.requesterId}:${request.at.slice(0, 10)}`;
+      daily.set(key, (daily.get(key) ?? 0) + 1);
+    }
+    expect(Math.max(...daily.values())).toBeGreaterThanOrEqual(20);
+    expect(
+      publicRequests.some(
+        (request: any) =>
+          request.decision === "Approved" &&
+          request.iteration?.relation === "Tracks" &&
+          request.existingCopies.some((copy: any) => copy.iterationId),
+      ),
+    ).toBe(true);
+    expect(
+      publicRequests.filter((request: any) => request.decision === "Duplicate").length,
+    ).toBeGreaterThan(0);
   });
 
   test("sampled arrivals follow Prague work hours and weekdays", () => {
@@ -107,7 +233,9 @@ describe("volume seed generator", () => {
     const part = (date: Date, type: Intl.DateTimeFormatPartTypes) =>
       formatter.formatToParts(date).find((item) => item.type === type)?.value;
     const months = new Map<string, number>();
-    for (const request of result.collections.requests) {
+    for (const request of result.collections.requests.filter((row: any) =>
+      row.id.startsWith("V-R"),
+    )) {
       const date = new Date(request.at);
       const month = `${part(date, "year")}-${part(date, "month")}`;
       months.set(month, (months.get(month) ?? 0) + 1);

@@ -8,9 +8,14 @@ import {
   requestSchema,
   userSchema,
 } from "@vera/domain/entities";
+import { addHistory } from "./volume/history";
+import { addLists } from "./volume/lists";
 import { bookTitle, emailName, personName } from "./volume/names";
+import { addPublic } from "./volume/public";
 import { logNormal, mulberry32, type Random, weighted } from "./volume/random";
+import { addRuns } from "./volume/runs";
 import { baseNow, burstTimes, sampleArrival } from "./volume/time";
+import { addValidation } from "./volume/validation";
 
 type Row = Record<string, any>;
 type Seed = {
@@ -76,12 +81,12 @@ const timestamp = (date: Date) => date.toISOString();
 function createCategories(): Row[] {
   const rows = [{ id: "vc0", name: "Old VERA", parentId: null }];
   const roots = categoryNames.slice(0, 6);
-  const children = categoryNames.slice(6, 29);
+  const children = categoryNames.slice(6, 29).filter((name) => name !== "Požadavky čtenářů");
   let childIndex = 0;
   for (let root = 0; root < roots.length; root++) {
     const id = `vc${root + 1}`;
     rows.push({ id, name: roots[root], parentId: "vc0" });
-    const count = root < 5 ? 4 : 3;
+    const count = root === 0 ? 3 : root < 5 ? 4 : 3;
     for (let i = 0; i < count; i++) {
       const childId = `vc${7 + childIndex}`;
       rows.push({ id: childId, name: children[childIndex]!, parentId: id });
@@ -94,6 +99,7 @@ function createCategories(): Row[] {
       childIndex++;
     }
   }
+  rows.push({ id: "vc32", name: "Požadavky čtenářů", parentId: "vc0" });
   return rows.map((row) => categorySchema.parse(row));
 }
 
@@ -384,7 +390,7 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
         requestSchema.parse({
           id: requestId,
           documentId: id,
-          requesterId: requesters[documentIndex % requesters.length]!,
+          requesterId: arrivalProposers[documentIndex]!,
           at: timestamp(at),
           reason: null,
           batchId,
@@ -410,11 +416,55 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
         source: null,
       }),
     );
+  const publicResult = addPublic(
+    random,
+    scale,
+    base.now ?? baseNow,
+    requesters,
+    staff,
+    documents,
+    iterations,
+    requests,
+    batches,
+    catalogRecords,
+    categories,
+  );
+  addValidation(random, iterations, staff, requests);
+  const lists = addLists(
+    random,
+    iterations,
+    documents,
+    requests,
+    staff,
+    categories,
+    base.now ?? baseNow,
+    scale,
+  );
+  const runs = addRuns(random, base.now ?? baseNow, scale, base, iterations, staff);
+  const statusLog = addHistory(
+    requests,
+    iterations,
+    lists,
+    staff,
+    base.now ?? baseNow,
+    publicResult.decisions,
+  );
   return {
     name: "volume",
     extends: "base",
     now: base.now ?? baseNow,
-    collections: { users, userAccess, categories, documents, iterations, requests, batches },
+    collections: {
+      users,
+      userAccess,
+      categories,
+      documents,
+      iterations,
+      requests,
+      batches,
+      lists,
+      runs,
+      statusLog,
+    },
     fakes: { catalogRecords: [...(base.fakes?.catalogRecords ?? []), ...catalogRecords] },
   };
 }
@@ -433,7 +483,7 @@ if (import.meta.main) {
   const base = await Bun.file("engine/seeds/base.json").json();
   const result = generate(base, seedNumber, scale);
   await mkdir(dirname(output), { recursive: true });
-  const json = `${JSON.stringify(result, null, 2)}\n`;
+  const json = `${JSON.stringify(result)}\n`;
   await Bun.write(output, json);
   await mkdir("frontend/public/seeds", { recursive: true });
   await Bun.write("frontend/public/seeds/volume.json", json);
