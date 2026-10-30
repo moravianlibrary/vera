@@ -54,6 +54,7 @@ has no audit page of its own. A record holds:
 - what changed, field by field, from and to; a plugin secret as changed, never its value;
 - the actor: a staff member by user id and display name, an agent or the system; a reader
   without id or name;
+- when the subject is a person who holds a role beyond *reader*, their display name;
 - the trace id, so a record leads to the request that caused it.
 
 Never a reason, a message text, a note or a reader's name: a reader appears only as a subject's
