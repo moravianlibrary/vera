@@ -21,6 +21,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
+import { CompactTable } from "@/components/compact-table";
 import type { Fact } from "@/components/detail-card";
 import { DetailCard, DetailRow, FactGrid, FinePrint, Muted } from "@/components/detail-card";
 import { RunStateBadge } from "@/components/run-state-badge";
@@ -211,32 +212,34 @@ function Contract({ version }: { version: PluginVersion }) {
       )}
       {declares.rawStates.length > 0 && (
         <DetailCard title="Registry mapping">
-          <table className="w-full text-ui">
-            <thead>
-              <tr className="text-left text-xs text-muted-foreground">
-                <th className="py-1 font-medium">Raw</th>
-                <th className="py-1 font-medium">State</th>
-                <th className="py-1 font-medium">Existing copy, by default</th>
-              </tr>
-            </thead>
-            <tbody>
-              {declares.rawStates.map((state) => (
-                <tr key={state.raw} className="border-t">
-                  <td className="py-1.5 font-mono text-xs">{state.raw}</td>
-                  <td className="py-1.5">
-                    {state.state ?? <span className="text-tone-amber-foreground">Unmapped</span>}
-                  </td>
-                  <td className="py-1.5">
-                    {state.isExistingCopy ? (
-                      <span className="text-tone-purple-foreground">counts</span>
-                    ) : (
-                      <Muted>—</Muted>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <CompactTable
+            rows={declares.rawStates}
+            rowKey={(state) => state.raw}
+            className="text-ui"
+            columns={[
+              {
+                key: "raw",
+                header: "Raw",
+                cell: (state) => <span className="font-mono text-xs">{state.raw}</span>,
+              },
+              {
+                key: "state",
+                header: "State",
+                cell: (state) =>
+                  state.state ?? <span className="text-tone-amber-foreground">Unmapped</span>,
+              },
+              {
+                key: "copy",
+                header: "Existing copy, by default",
+                cell: (state) =>
+                  state.isExistingCopy ? (
+                    <span className="text-tone-purple-foreground">counts</span>
+                  ) : (
+                    <Muted>—</Muted>
+                  ),
+              },
+            ]}
+          />
           {hasUnmapped && (
             <StatusNote tone="amber" title="Unmapped on purpose" className="mt-3">
               An unmapped value shown verbatim costs a curator one moment of unfamiliarity; a wrong

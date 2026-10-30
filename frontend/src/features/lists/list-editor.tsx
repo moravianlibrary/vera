@@ -37,6 +37,15 @@ import { PriorityBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { TransferEditor } from "@/components/transfer-editor";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GenerateDialog } from "@/features/lists/generate-dialog";
 import { GenerationReport } from "@/features/lists/generation-report";
 import { CountsTowardsLine, MixMeters } from "@/features/lists/list-intentions";
@@ -582,24 +591,28 @@ function PoolFilter({
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
       />
-      <select
-        aria-label="Category"
-        className="h-7 rounded-md border bg-background px-2 text-xs"
-        value={categoryId}
-        onChange={(event) => onCategoryChange(event.target.value)}
+      <Select
+        value={categoryId || "__all_categories__"}
+        onValueChange={(value) => onCategoryChange(value === "__all_categories__" ? "" : value)}
       >
-        <option value="">Every category</option>
-        {tops.map((top) => (
-          <optgroup key={top.id} label={top.name}>
-            <option value={top.id}>All of {top.name}</option>
-            {childrenOf(top.id).map((child) => (
-              <option key={child.id} value={child.id}>
-                {child.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+        <SelectTrigger aria-label="Category" className="h-7 w-auto px-2 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all_categories__">Every category</SelectItem>
+          {tops.map((top) => (
+            <SelectGroup key={top.id}>
+              <SelectLabel>{top.name}</SelectLabel>
+              <SelectItem value={top.id}>All of {top.name}</SelectItem>
+              {childrenOf(top.id).map((child) => (
+                <SelectItem key={child.id} value={child.id}>
+                  {child.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          ))}
+        </SelectContent>
+      </Select>
       <PropertyFilterControls properties={properties} />
     </>
   );
@@ -644,15 +657,18 @@ function EditorHeader({
         {listId !== null && (
           <span className="font-mono text-xs text-muted-foreground">{listId}</span>
         )}
-        <select
-          aria-label="When it starts"
-          className="h-8 rounded-md border bg-background px-2 text-sm"
+        <Select
           value={fields.startsNow ? "now" : "on"}
-          onChange={(event) => onFieldsChange({ startsNow: event.target.value === "now" })}
+          onValueChange={(value) => onFieldsChange({ startsNow: value === "now" })}
         >
-          <option value="now">Starts now</option>
-          <option value="on">Starts on</option>
-        </select>
+          <SelectTrigger aria-label="When it starts" className="h-8 w-auto px-2 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="now">Starts now</SelectItem>
+            <SelectItem value="on">Starts on</SelectItem>
+          </SelectContent>
+        </Select>
         {!fields.startsNow && (
           <Input
             type="date"
@@ -759,24 +775,27 @@ function IntentionsStrip({
         <CountsTowardsLine rows={reading.countsTowards} canOpen={canOpen} />
       </div>
       <div className="grid gap-2 sm:grid-cols-[auto_1fr] sm:items-start">
-        <label className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
             Mix
           </span>
-          <select
-            aria-label="Read the fill against"
-            title="Which intention's mix to read the fill against"
-            className="h-7 max-w-48 rounded-md border bg-background px-2 text-xs"
-            value={mixBy ?? overall?.id ?? ""}
-            onChange={(event) => onMixByChange(event.target.value)}
-          >
-            {shapes.map((shape) => (
-              <option key={shape.id} value={shape.id}>
-                {shape.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          <Select value={mixBy ?? overall?.id ?? shapes[0]?.id ?? ""} onValueChange={onMixByChange}>
+            <SelectTrigger
+              aria-label="Read the fill against"
+              title="Which intention's mix to read the fill against"
+              className="h-7 w-auto max-w-48 px-2 text-xs"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {shapes.map((shape) => (
+                <SelectItem key={shape.id} value={shape.id}>
+                  {shape.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <MixMeters mix={reading.mix} hasTarget={hasTarget} />
       </div>
       {!isGeneratedCounted && generatedWith !== null && (

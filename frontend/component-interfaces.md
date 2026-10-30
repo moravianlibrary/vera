@@ -558,6 +558,28 @@ moves into the header's `…`.
 `BatchGroupHeader` adds the shared batch title and submitter, day and source line;
 Documents and Requests provide their own counts, action and footnote.
 
+### `CompactTable` (🆕) — small comparisons
+
+```ts
+export interface CompactColumn<Row> {
+  key: string;
+  header: ReactNode;
+  cell: (row: Row) => ReactNode;
+  align?: "start" | "end";
+  isHiddenOnPhone?: boolean;
+}
+
+export function CompactTable<Row>(props: {
+  rows: readonly Row[];
+  rowKey: (row: Row) => string;
+  columns: readonly CompactColumn<Row>[];
+  label?: string;
+  className?: string;
+}): ReactNode;
+```
+
+For a comparison in a dialog or detail card, with no tiers and no rows to open.
+
 ### 2.4 `DataTable` (🆕) — full-width tables
 
 ```ts
@@ -568,6 +590,8 @@ export interface DataTableProps<Row> {
   columns: PerTier<readonly ColumnDefinition<Row>[]>;
   // Nested grouping: Plugins is type → implementation → instance.
   groupBy?: readonly GroupLevel<Row>[];
+  // Under a heading of its own whose columns are plain, the header row is left out.
+  isHeadless?: boolean;
   // A note row under a row, full width: a failed run's red line with "Run again".
   noteOf?: (row: Row) => ReactNode;
   rowActions?: (row: Row) => readonly ViewAction[];
@@ -847,6 +871,10 @@ export interface TimelineProps {
 ---
 
 ## 6. Dialogs
+
+`useFilePicker` (`components/fields/file-picker.tsx`) owns a hidden file input and exposes its
+`input` node and `open()` action; it clears the input after selection so the same file can be
+picked again.
 
 ### 6.1 `DialogShell` (🆕) — every dialog
 

@@ -18,6 +18,7 @@ import { Camera, ExternalLink, ScanBarcode } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/api/proposals";
+import { useFilePicker } from "@/components/fields/file-picker";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -461,7 +462,6 @@ function CameraScanner({ onScan }: { onScan: (code: string) => void }) {
 // One photo per book, its barcode read by the plugin on the server; each code goes into the same
 // loop as a scan, and the next photo is a tap away.
 export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isUnread, setIsUnread] = useState(false);
   const read = useMutation({
     mutationFn: readBarcode,
@@ -472,29 +472,16 @@ export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => voi
       }
     },
   });
+  const picker = useFilePicker({
+    accept: "image/*",
+    capture: "environment",
+    label: "Photo of a barcode",
+    onFile: (photo) => read.mutate(photo),
+  });
   return (
     <div className="grid justify-items-start gap-1.5">
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        aria-label="Photo of a barcode"
-        onChange={(event) => {
-          const photo = event.target.files?.[0];
-          event.target.value = "";
-          if (photo !== undefined) {
-            read.mutate(photo);
-          }
-        }}
-      />
-      <Button
-        size="sm"
-        onClick={() => inputRef.current?.click()}
-        disabled={read.isPending}
-        autoFocus
-      >
+      {picker.input}
+      <Button size="sm" onClick={picker.open} disabled={read.isPending} autoFocus>
         <Camera className="size-3.5" /> {read.isPending ? "Reading…" : "Photograph a barcode"}
       </Button>
       <p className="text-xs text-muted-foreground">
@@ -518,25 +505,14 @@ export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => voi
 // text if there are none, and matched to catalog records. Reading can be wrong, so the
 // candidates come back with why each matched, and nothing is added until one is picked.
 export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInstead?: () => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const read = useMutation({ mutationFn: readPhoto });
-  const take = () => inputRef.current?.click();
-  const fileInput = (
-    <input
-      ref={inputRef}
-      type="file"
-      accept="image/*"
-      capture="environment"
-      className="hidden"
-      onChange={(event) => {
-        const photo = event.target.files?.[0];
-        event.target.value = "";
-        if (photo !== undefined) {
-          read.mutate(photo);
-        }
-      }}
-    />
-  );
+  const picker = useFilePicker({
+    accept: "image/*",
+    capture: "environment",
+    onFile: (photo) => read.mutate(photo),
+  });
+  const take = picker.open;
+  const fileInput = picker.input;
 
   if (read.data !== undefined) {
     return (

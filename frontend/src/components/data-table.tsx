@@ -56,6 +56,8 @@ export interface DataTableProps<Row> {
   // On a phone, each row as a card instead of the table; its title opens it from the keyboard.
   cardOf?: (row: Row) => ReactNode;
   groupBy?: readonly GroupLevel<Row>[];
+  // Under a heading of its own whose columns are plain, the header row is left out.
+  isHeadless?: boolean;
   stickyHeader?: boolean;
   stickyHeaderClassName?: string;
   // The table meets the page edges instead of sitting in a padded card.
@@ -110,6 +112,7 @@ export function DataTable<Row>({
   noteOf,
   cardOf,
   groupBy = [],
+  isHeadless = false,
   stickyHeader = false,
   stickyHeaderClassName,
   flush = false,
@@ -333,24 +336,26 @@ export function DataTable<Row>({
       )}
     >
       <table className="w-full border-collapse text-ui">
-        <thead
-          className={stickyHeader ? cn("sticky top-0 z-10", stickyHeaderClassName) : undefined}
-        >
-          <tr className="bg-muted">
-            {shown.map((column) => (
-              <th
-                key={column.key}
-                scope="col"
-                className={cn(
-                  "px-3 py-2 text-left text-xs font-medium text-muted-foreground",
-                  column.isNumeric && "text-right",
-                )}
-              >
-                {column.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        {!isHeadless && (
+          <thead
+            className={stickyHeader ? cn("sticky top-0 z-10", stickyHeaderClassName) : undefined}
+          >
+            <tr className="bg-muted">
+              {shown.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className={cn(
+                    "px-3 py-2 text-left text-xs font-medium text-muted-foreground",
+                    column.isNumeric && "text-right",
+                  )}
+                >
+                  {column.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
         <tbody>{isGrouped ? groupRows(groups) : rowsOf(rows)}</tbody>
       </table>
     </div>

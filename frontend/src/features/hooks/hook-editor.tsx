@@ -12,12 +12,22 @@ import type {
 } from "@vera/contract/hooks";
 import { hookDraftSchema, hookEventSchema } from "@vera/contract/hooks";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { previewHook, sendHookTest } from "@/api/hooks";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
@@ -50,6 +60,7 @@ const destinationLabels = {
   Webhook: "HTTPS endpoint",
   File: "Destination path",
 } as const;
+const noChannel = "__none__";
 
 export function HookEditor({
   hook,
@@ -216,17 +227,24 @@ export function HookEditor({
           </Field>
           <FieldError text={form.formState.errors.name?.message} />
           <Field id="hook-event" label="When">
-            <select
-              id="hook-event"
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-              {...form.register("event")}
-            >
-              {hookEventSchema.options.map((event) => (
-                <option key={event} value={event}>
-                  {event}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={form.control}
+              name="event"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="hook-event">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hookEventSchema.options.map((event) => (
+                      <SelectItem key={event} value={event}>
+                        {event}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <Field id="hook-filter" label="Only when">
             <Input
@@ -241,19 +259,29 @@ export function HookEditor({
           </p>
           <FieldError text={form.formState.errors.filter?.message} />
           <Field id="hook-channel" label="Send through">
-            <select
-              id="hook-channel"
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-              {...form.register("channelId")}
-            >
-              <option value="">Choose a delivery channel</option>
-              {channels.map((item) => (
-                <option key={item.id} value={item.id} disabled={!item.isEnabled}>
-                  {item.name} · {item.interface}
-                  {!item.isEnabled && " (disabled)"}
-                </option>
-              ))}
-            </select>
+            <Controller
+              control={form.control}
+              name="channelId"
+              render={({ field }) => (
+                <Select
+                  value={field.value || noChannel}
+                  onValueChange={(value) => field.onChange(value === noChannel ? "" : value)}
+                >
+                  <SelectTrigger id="hook-channel">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={noChannel}>Choose a delivery channel</SelectItem>
+                    {channels.map((item) => (
+                      <SelectItem key={item.id} value={item.id} disabled={!item.isEnabled}>
+                        {item.name} · {item.interface}
+                        {!item.isEnabled && " (disabled)"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </Field>
           <p className="-mt-2 text-xs text-muted-foreground">
             Delivery channels are configured in Plugins.
@@ -270,22 +298,24 @@ export function HookEditor({
           {channel?.interface === "Email" && (
             <fieldset className="grid gap-3 rounded-lg border p-4">
               <legend className="px-1 text-sm font-medium">Recipient preference</legend>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
+              <div className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  id="hook-recipient-preference"
                   checked={recipientPreference != null}
-                  onChange={(event) =>
+                  onCheckedChange={(checked) =>
                     form.setValue(
                       "recipientPreference",
-                      event.target.checked
+                      checked === true
                         ? { label: form.getValues("name") || "Hook email", defaultEnabled: false }
                         : null,
                       { shouldDirty: true },
                     )
                   }
                 />
-                Recipient is a VERA user who can turn this email off
-              </label>
+                <Label htmlFor="hook-recipient-preference">
+                  Recipient is a VERA user who can turn this email off
+                </Label>
+              </div>
               {recipientPreference != null && (
                 <>
                   <Field id="hook-preference-label" label="Name in user preferences">
@@ -323,28 +353,25 @@ export function HookEditor({
           </p>
           <fieldset className="grid gap-2 rounded-lg border p-4">
             <legend className="px-1 text-sm font-medium">Timing</legend>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={batch === null}
-                onChange={() => form.setValue("batch", null, { shouldDirty: true })}
-              />
-              Send each event at once
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={batch !== null}
-                onChange={() =>
-                  form.setValue(
-                    "batch",
-                    { waitMinutes: 15, maxMinutes: 60, by: "recipient" },
-                    { shouldDirty: true },
-                  )
-                }
-              />
-              Wait for more
-            </label>
+            <RadioGroup
+              value={batch === null ? "once" : "batch"}
+              onValueChange={(value) =>
+                form.setValue(
+                  "batch",
+                  value === "once" ? null : { waitMinutes: 15, maxMinutes: 60, by: "recipient" },
+                  { shouldDirty: true },
+                )
+              }
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem id="hook-timing-once" value="once" />
+                <Label htmlFor="hook-timing-once">Send each event at once</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem id="hook-timing-batch" value="batch" />
+                <Label htmlFor="hook-timing-batch">Wait for more</Label>
+              </div>
+            </RadioGroup>
             {batch !== null && (
               <div className="grid gap-3 sm:grid-cols-3">
                 <Field id="hook-wait" label="Quiet wait · min">
@@ -364,14 +391,21 @@ export function HookEditor({
                   />
                 </Field>
                 <Field id="hook-by" label="Combine by">
-                  <select
-                    id="hook-by"
-                    className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-                    {...form.register("batch.by")}
-                  >
-                    <option value="recipient">Recipient</option>
-                    <option value="all">All events</option>
-                  </select>
+                  <Controller
+                    control={form.control}
+                    name="batch.by"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger id="hook-by">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="recipient">Recipient</SelectItem>
+                          <SelectItem value="all">All events</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </Field>
               </div>
             )}
@@ -394,14 +428,21 @@ export function HookEditor({
               />
             </Field>
             <Field id="hook-backoff" label="Wait between attempts">
-              <select
-                id="hook-backoff"
-                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-                {...form.register("retry.backoff")}
-              >
-                <option value="fixed">Fixed · 5 min</option>
-                <option value="exponential">Growing · 1, 2, 4… min</option>
-              </select>
+              <Controller
+                control={form.control}
+                name="retry.backoff"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="hook-backoff">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fixed">Fixed · 5 min</SelectItem>
+                      <SelectItem value="exponential">Growing · 1, 2, 4… min</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </Field>
           </fieldset>
           <FieldError text={form.formState.errors.retry?.attempts?.message} />

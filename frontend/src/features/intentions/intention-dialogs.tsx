@@ -39,6 +39,7 @@ import {
 } from "@/api/intentions";
 import { listMixes } from "@/api/mix-catalog";
 import { Field } from "@/components/classification-fields";
+import { CompactTable } from "@/components/compact-table";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { FormDialog } from "@/components/dialogs/form-dialog";
@@ -643,31 +644,25 @@ function LandingNote({ values, edited }: { values: IntentionForm; edited: Intent
         </div>
       )}
       {isMixChanged && preview !== undefined && (
-        <table className="w-full max-w-sm text-xs">
-          <thead className="text-muted-foreground">
-            <tr>
-              <th className="text-left font-normal">Mix within the scope</th>
-              <th className="text-right font-normal">Now</th>
-              <th className="text-right font-normal">After</th>
-            </tr>
-          </thead>
-          <tbody>
-            {preview.mix.map((row) => (
-              <tr key={row.categoryId}>
-                <td>{row.name}</td>
-                <td className="text-right tabular-nums">{shareTextOf(row.before)}</td>
-                <td
-                  className={cn(
-                    "text-right tabular-nums",
-                    row.before !== row.after && "font-semibold",
-                  )}
-                >
+        <CompactTable
+          rows={preview.mix}
+          rowKey={(row) => row.categoryId}
+          className="max-w-sm"
+          columns={[
+            { key: "name", header: "Mix within the scope", cell: (row) => row.name },
+            { key: "before", header: "Now", align: "end", cell: (row) => shareTextOf(row.before) },
+            {
+              key: "after",
+              header: "After",
+              align: "end",
+              cell: (row) => (
+                <span className={cn(row.before !== row.after && "font-semibold")}>
                   {shareTextOf(row.after)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </span>
+              ),
+            },
+          ]}
+        />
       )}
     </div>
   );
@@ -1006,45 +1001,52 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
         {preview !== undefined && (
           <>
             <div>
-              <table className="w-full text-xs">
-                <thead className="text-muted-foreground">
-                  <tr className="border-b">
-                    <th className="py-1.5 text-left font-medium">
-                      {within === null ? "Category" : `Within ${within}`}
-                    </th>
-                    <th className="text-right font-medium">Intended</th>
-                    <th className="hidden text-right font-medium sm:table-cell">Output now</th>
-                    <th className="text-right font-medium">New pages</th>
-                    <th className="text-right font-medium">After</th>
-                    <th className="hidden text-right font-medium sm:table-cell">Ready</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {preview.rows.map((correction) => {
-                    const drift =
-                      correction.intended === null
-                        ? null
-                        : Math.round(correction.after - correction.intended);
-                    return (
-                      <tr key={correction.categoryId} className="border-b last:border-0">
-                        <td className="py-1.5">{correction.name}</td>
-                        <td
-                          className={cn(
-                            "text-right tabular-nums",
-                            correction.intended === null && "text-tone-amber-foreground",
-                          )}
-                        >
-                          {correction.intended === null
-                            ? "no share"
-                            : shareTextOf(correction.intended)}
-                        </td>
-                        <td className="hidden text-right tabular-nums sm:table-cell">
-                          {correction.output === null ? "—" : `${Math.round(correction.output)}%`}
-                        </td>
-                        <td className="text-right font-semibold tabular-nums">
-                          {formatCount(correction.newPages)}
-                        </td>
-                        <td className="text-right tabular-nums">
+              <CompactTable
+                rows={preview.rows}
+                rowKey={(row) => row.categoryId}
+                columns={[
+                  {
+                    key: "name",
+                    header: within === null ? "Category" : `Within ${within}`,
+                    cell: (row) => row.name,
+                  },
+                  {
+                    key: "intended",
+                    header: "Intended",
+                    align: "end",
+                    cell: (row) =>
+                      row.intended === null ? (
+                        <span className="text-tone-amber-foreground">no share</span>
+                      ) : (
+                        shareTextOf(row.intended)
+                      ),
+                  },
+                  {
+                    key: "output",
+                    header: "Output now",
+                    align: "end",
+                    isHiddenOnPhone: true,
+                    cell: (row) => (row.output === null ? "—" : `${Math.round(row.output)}%`),
+                  },
+                  {
+                    key: "new",
+                    header: "New pages",
+                    align: "end",
+                    cell: (row) => (
+                      <span className="font-semibold">{formatCount(row.newPages)}</span>
+                    ),
+                  },
+                  {
+                    key: "after",
+                    header: "After",
+                    align: "end",
+                    cell: (correction) => {
+                      const drift =
+                        correction.intended === null
+                          ? null
+                          : Math.round(correction.after - correction.intended);
+                      return (
+                        <>
                           {Math.round(correction.after)}%
                           {drift !== null && Math.abs(drift) > mixBand && (
                             <span
@@ -1059,20 +1061,27 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
                               {drift}
                             </span>
                           )}
-                        </td>
-                        <td
-                          className={cn(
-                            "hidden text-right tabular-nums sm:table-cell",
-                            correction.shortPages > 0 && "font-semibold text-tone-amber-foreground",
-                          )}
-                        >
-                          {formatCount(correction.readyPages)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </>
+                      );
+                    },
+                  },
+                  {
+                    key: "ready",
+                    header: "Ready",
+                    align: "end",
+                    isHiddenOnPhone: true,
+                    cell: (row) => (
+                      <span
+                        className={cn(
+                          row.shortPages > 0 && "font-semibold text-tone-amber-foreground",
+                        )}
+                      >
+                        {formatCount(row.readyPages)}
+                      </span>
+                    ),
+                  },
+                ]}
+              />
             </div>
             {preview.unallocated > 0.5 && (
               <p className="text-xs text-tone-amber-foreground">
