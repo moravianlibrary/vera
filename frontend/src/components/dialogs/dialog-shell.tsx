@@ -38,6 +38,7 @@ export interface DialogPrimaryAction {
   isPending?: boolean;
   // Only while a required field is empty.
   isDisabled?: boolean;
+  disabledReason?: string;
   // A hand-off elsewhere, opened in a new tab as a link (the Message dialog), rather than a call
   // to the server; `onSelect` runs as it opens.
   href?: string;
@@ -47,7 +48,8 @@ export interface DialogPrimaryAction {
 export interface DialogSecondaryAction {
   label: string;
   isDestructive?: boolean;
-  onSelect: () => void;
+  href?: string;
+  onSelect?: () => void;
 }
 
 export interface DialogShellProps {
@@ -143,10 +145,15 @@ export function DialogShell({
                     secondary.isDestructive === true && "text-destructive",
                     isPhone && "order-last w-full",
                   )}
-                  onClick={secondary.onSelect}
-                  disabled={primary.isPending}
+                  asChild={secondary.href !== undefined}
+                  onClick={secondary.href === undefined ? secondary.onSelect : undefined}
+                  disabled={secondary.href === undefined && primary.isPending}
                 >
-                  {secondary.label}
+                  {secondary.href !== undefined ? (
+                    <a href={secondary.href}>{secondary.label}</a>
+                  ) : (
+                    secondary.label
+                  )}
                 </Button>
               )}
               {!isPhone && cancelLabel !== null && (
@@ -216,6 +223,7 @@ function PrimaryButton({ primary, isFilled, isPhone }: PrimaryButtonProps) {
       variant={variant}
       className={className}
       disabled={isDisabled}
+      title={primary.isDisabled === true ? primary.disabledReason : undefined}
       onClick={primary.onSelect}
     >
       {primary.label}

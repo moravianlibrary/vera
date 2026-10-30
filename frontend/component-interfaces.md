@@ -892,6 +892,36 @@ export interface DialogShellProps {
   children: ReactNode;
 }
 
+export interface DialogPrimaryAction {
+  label: string;
+  isDisabled?: boolean;
+  disabledReason?: string;             // title while disabled
+  isPending?: boolean;
+  onSelect: () => void;
+}
+
+export interface DialogSecondaryAction {
+  label: string;
+  href?: string;                        // same-tab link in place of an action
+  onSelect?: () => void;
+}
+
+// Wrapped choices inside a dialog or card, unlike page-level TabStrip.
+export interface ChoicePanel<Value extends string> {
+  value: Value;
+  label: string;
+  content: ReactNode;
+}
+
+export function ChoiceTabs<Value extends string>({
+  value, onChange, panels, label,
+}: {
+  value: Value;
+  onChange: (value: Value) => void;
+  panels: readonly ChoicePanel<Value>[];
+  label: string;
+}): ReactNode;
+
 export interface DialogFooter {
   // Back, on the left, in stepped dialogs.
   secondary?: { label: string; onSelect: () => void };

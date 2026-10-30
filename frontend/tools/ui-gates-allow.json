@@ -1,14 +1,1 @@
-[
-  {
-    "gate": "G-COMP-1",
-    "file": "features/documents/propose-dialog.tsx",
-    "count": 2,
-    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
-  },
-  {
-    "gate": "G-COMP-2",
-    "file": "features/documents/propose-dialog.tsx",
-    "count": 1,
-    "reason": "U4: shadcn Select, Input or Textarea"
-  }
-]
+[]

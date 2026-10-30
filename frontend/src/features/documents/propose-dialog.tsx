@@ -41,20 +41,16 @@ import {
   readRecordLink,
   submitProposal,
 } from "@/api/proposals";
+import type { ChoicePanel } from "@/components/choice-tabs";
+import { ChoiceTabs } from "@/components/choice-tabs";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
+import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { StepIndicator } from "@/components/dialogs/step-indicator";
+import { useFilePicker } from "@/components/fields/file-picker";
 import { StatusBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -64,7 +60,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { allowedReturn, type EntryAsk, entryReasonLimit } from "@/features/documents/entry-link";
 import { IdentifierRulesContext, useIdentifierRules } from "@/features/documents/identifier-rules";
@@ -133,21 +128,15 @@ export function ProposeDialog({
   viewTitle,
   ask,
 }: ProposeDialogProps) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] sm:max-w-3xl">
-        {/* Remounted on every open, so a closed proposal starts afresh. */}
-        {isOpen && (
-          <ProposeFlow
-            session={session}
-            viewTitle={viewTitle}
-            ask={ask}
-            onClose={() => onOpenChange(false)}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+  // Remounted on every open, so a closed proposal starts afresh.
+  return isOpen ? (
+    <ProposeFlow
+      session={session}
+      viewTitle={viewTitle}
+      ask={ask}
+      onClose={() => onOpenChange(false)}
+    />
+  ) : null;
 }
 
 interface ProposeFlowProps {
@@ -162,6 +151,8 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
   const [items, setItems] = useState<DraftItem[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
   const [report, setReport] = useState<ProposalReport | null>(null);
+  const [submitRefusal, setSubmitRefusal] = useState<string | null>(null);
+  const detailsSubmit = useRef<(() => void) | null>(null);
   const queryClient = useQueryClient();
   const { data: settings } = useQuery({
     queryKey: ["proposals", "settings"],
@@ -344,64 +335,99 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
     setNotice(null);
   };
 
+  const tally = { new: 0, inVera: 0, open: 0, skip: 0 } satisfies Record<Outcome, number>;
+  for (const item of items) tally[outcomeOf(item)] += 1;
+  const hasSubmittable = tally.new + tally.inVera > 0;
+  const continueRefusal =
+    tally.open > 0
+      ? "Choose the volume, or remove the item"
+      : hasSubmittable
+        ? null
+        : "Nothing to submit yet";
+  const description = `${proposeActOf(session)} documents for digitization, one or several at once.`;
+  const entrySource = (settings?.entrySources ?? []).find((entry) => entry.id === ask?.sourceId);
+  const returnTo = allowedReturn(ask?.returnTo ?? null, entrySource?.allowedOrigins ?? []);
+  const backToSource =
+    entrySource !== undefined && returnTo !== null
+      ? { label: `Back to ${entrySource.name}`, href: returnTo }
+      : undefined;
+  const primary =
+    step === "Items"
+      ? {
+          label: "Continue",
+          isDisabled: continueRefusal !== null,
+          disabledReason: continueRefusal ?? undefined,
+          onSelect: () => setStep("Details"),
+        }
+      : step === "Details"
+        ? {
+            label: "Submit",
+            isPending: submit.isPending,
+            isDisabled: submitRefusal !== null,
+            disabledReason: submitRefusal ?? undefined,
+            onSelect: () => detailsSubmit.current?.(),
+          }
+        : { label: "Done", onSelect: onClose };
+
   return (
     <IdentifierRulesContext value={rules}>
-      <DialogHeader className="gap-3">
-        <DialogTitle>{proposeActOf(session)}</DialogTitle>
-        <DialogDescription className="sr-only">
-          {proposeActOf(session)} documents for digitization, one or several at once.
-        </DialogDescription>
-        <StepIndicator steps={steps} currentIndex={steps.indexOf(step)} />
-      </DialogHeader>
-
-      {step === "Items" && (
-        <ItemsStep
-          items={items}
-          limit={limit}
-          settings={settings}
-          rateLimit={rateLimit}
-          notice={notice}
-          onAdd={add}
-          onChange={change}
-          onPickRecords={pickRecords}
-          onRemove={remove}
-          onCancel={onClose}
-          onContinue={() => setStep("Details")}
-        />
-      )}
-      {step === "Details" && (
-        <DetailsStep
-          items={items}
-          session={session}
-          isSubmitting={submit.isPending}
-          isFailed={submit.isError}
-          rateLimit={rateLimit}
-          initialReason={ask?.reason ?? ""}
-          onBack={() => setStep("Items")}
-          onSubmit={(details) => {
-            const accepted = items.flatMap(({ type, value, check, reason, source }) =>
-              type !== null && (check?.kind === "new" || check?.kind === "inVera")
-                ? [{ type, value, unit: check.unit, reason, source }]
-                : [],
-            );
-            submit.mutate({
-              ...details,
-              entrySourceId: ask?.sourceId ?? null,
-              items: accepted.map(({ source: _source, ...item }) => item),
-            });
-          }}
-        />
-      )}
-      {step === "Submitted" && report !== null && (
-        <ReportStep
-          report={report}
-          skipped={items.filter((item) => outcomeOf(item) === "skip")}
-          viewTitle={viewTitle}
-          onDone={onClose}
-          ask={ask}
-          entrySources={settings?.entrySources ?? []}
-        />
-      )}
+      <DialogShell
+        isOpen
+        onClose={onClose}
+        title={proposeActOf(session)}
+        description={description}
+        width="wide"
+        isDirty={items.length > 0 && step !== "Submitted"}
+        head={<StepIndicator steps={steps} currentIndex={steps.indexOf(step)} />}
+        onBack={step === "Details" ? () => setStep("Items") : undefined}
+        cancelLabel={step === "Submitted" ? null : "Cancel"}
+        primary={primary}
+        secondary={step === "Submitted" && report !== null ? backToSource : undefined}
+      >
+        {step === "Items" && (
+          <ItemsStep
+            items={items}
+            limit={limit}
+            settings={settings}
+            rateLimit={rateLimit}
+            notice={notice}
+            onAdd={add}
+            onChange={change}
+            onPickRecords={pickRecords}
+            onRemove={remove}
+          />
+        )}
+        {step === "Details" && (
+          <DetailsStep
+            items={items}
+            session={session}
+            isFailed={submit.isError}
+            onRefusalChange={setSubmitRefusal}
+            submitRef={detailsSubmit}
+            rateLimit={rateLimit}
+            initialReason={ask?.reason ?? ""}
+            onSubmit={(details) => {
+              const accepted = items.flatMap(({ type, value, check, reason, source }) =>
+                type !== null && (check?.kind === "new" || check?.kind === "inVera")
+                  ? [{ type, value, unit: check.unit, reason, source }]
+                  : [],
+              );
+              submit.mutate({
+                ...details,
+                entrySourceId: ask?.sourceId ?? null,
+                items: accepted.map(({ source: _source, ...item }) => item),
+              });
+            }}
+          />
+        )}
+        {step === "Submitted" && report !== null && (
+          <ReportStep
+            report={report}
+            skipped={items.filter((item) => outcomeOf(item) === "skip")}
+            viewTitle={viewTitle}
+          />
+        )}
+      </DialogShell>
     </IdentifierRulesContext>
   );
 }
@@ -419,8 +445,6 @@ interface ItemsStepProps {
   onChange: (key: string, patch: Partial<DraftItem>) => void;
   onPickRecords: (key: string, catalogIds: string[]) => void;
   onRemove: (key: string) => void;
-  onCancel: () => void;
-  onContinue: () => void;
 }
 
 function ItemsStep({
@@ -433,21 +457,11 @@ function ItemsStep({
   onChange,
   onPickRecords,
   onRemove,
-  onCancel,
-  onContinue,
 }: ItemsStepProps) {
   const tally = { new: 0, inVera: 0, open: 0, skip: 0 } satisfies Record<Outcome, number>;
   for (const item of items) {
     tally[outcomeOf(item)] += 1;
   }
-
-  const hasSubmittable = tally.new + tally.inVera > 0;
-  const continueRefusal =
-    tally.open > 0
-      ? "Choose the volume, or remove the item"
-      : hasSubmittable
-        ? null
-        : "Nothing to submit yet";
 
   const dailyRemaining = rateLimit?.perDay ?? null;
   const [way, setWay] = useState<Way>("typed");
@@ -456,69 +470,66 @@ function ItemsStep({
   const linkCatalogs = settings?.linkCatalogs ?? [];
   const hasCatalogWay = searchCatalogs.length + linkCatalogs.length > 0;
   // PERM-absent-not-disabled: a way whose plugin is not enabled is not offered.
-  const ways: { way: Way; label: string }[] = [
-    { way: "typed", label: "Type it" },
+  const panels: ChoicePanel<Way>[] = [
+    {
+      value: "typed",
+      label: "Type it",
+      content: <TypedWay onAdd={(line) => onAdd([line], "typed")} />,
+    },
     ...(hasCatalogWay
       ? [
           {
-            way: "catalog" as const,
+            value: "catalog" as const,
             label: searchCatalogs.length > 0 ? "Catalog search" : "Record link",
-          },
-        ]
-      : []),
-    { way: "pasted", label: "Paste list" },
-    { way: "file", label: "File upload" },
-    { way: "barcode", label: "Barcode scan" },
-    ...(settings?.canReadPhotos === true
-      ? [{ way: "photo" as const, label: "Photo capture" }]
-      : []),
-  ];
-
-  return (
-    <>
-      <div className="-mx-6 min-h-0 overflow-y-auto px-6">
-        <Tabs value={way} onValueChange={(picked) => setWay(picked as Way)}>
-          <TabsList className="h-auto flex-wrap">
-            {ways.map((each) => (
-              <TabsTrigger key={each.way} value={each.way}>
-                {each.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value="typed" className="pt-2">
-            <TypedWay onAdd={(line) => onAdd([line], "typed")} />
-          </TabsContent>
-          {hasCatalogWay && (
-            <TabsContent value="catalog" className="pt-2">
+            content: (
               <CatalogSearchWay
                 searchCatalogs={searchCatalogs}
                 linkCatalogs={linkCatalogs}
                 onAdd={onAdd}
               />
-            </TabsContent>
-          )}
-          <TabsContent value="pasted" className="pt-2">
-            <PastedWay
-              key={String(canDetectTypes)}
-              canDetectTypes={canDetectTypes}
-              onAdd={(lines) => onAdd(lines, "pasted")}
-            />
-          </TabsContent>
-          <TabsContent value="file" className="pt-2">
-            <FileWay onAdd={onAdd} />
-          </TabsContent>
-          <TabsContent value="barcode" className="pt-2">
-            <BarcodeWay canScanWithCamera={settings?.canScanWithCamera === true} onAdd={onAdd} />
-          </TabsContent>
-          {settings?.canReadPhotos === true && (
-            <TabsContent value="photo" className="pt-2">
+            ),
+          },
+        ]
+      : []),
+    {
+      value: "pasted",
+      label: "Paste list",
+      content: (
+        <PastedWay
+          key={String(canDetectTypes)}
+          canDetectTypes={canDetectTypes}
+          onAdd={(lines) => onAdd(lines, "pasted")}
+        />
+      ),
+    },
+    { value: "file", label: "File upload", content: <FileWay onAdd={onAdd} /> },
+    {
+      value: "barcode",
+      label: "Barcode scan",
+      content: (
+        <BarcodeWay canScanWithCamera={settings?.canScanWithCamera === true} onAdd={onAdd} />
+      ),
+    },
+    ...(settings?.canReadPhotos === true
+      ? [
+          {
+            value: "photo" as const,
+            label: "Photo capture",
+            content: (
               <PhotoWay
                 onAdd={onAdd}
                 onSearchInstead={hasCatalogWay ? () => setWay("catalog") : undefined}
               />
-            </TabsContent>
-          )}
-        </Tabs>
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <>
+      <div>
+        <ChoiceTabs value={way} onChange={setWay} label="Ways to add items" panels={panels} />
 
         {notice !== null && (
           <StatusNote tone="amber" title="Not everything was added" className="mt-3">
@@ -569,19 +580,6 @@ function ItemsStep({
           ))}
         </ol>
       </div>
-
-      <DialogFooter>
-        <Button variant="outline" onClick={onCancel} className="sm:mr-auto">
-          Cancel
-        </Button>
-        <Button
-          onClick={onContinue}
-          disabled={continueRefusal !== null}
-          title={continueRefusal ?? undefined}
-        >
-          Continue
-        </Button>
-      </DialogFooter>
     </>
   );
 }
@@ -685,8 +683,15 @@ function PastedWay({
 
 function FileWay({ onAdd }: { onAdd: (lines: ProposalLine[], source: string) => void }) {
   const rules = useIdentifierRules();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [isUnreadable, setIsUnreadable] = useState(false);
+  const picker = useFilePicker({
+    accept: ".csv,.txt,text/csv,text/plain",
+    onFile: async (file) => {
+      const text = await file.text().catch(() => null);
+      setIsUnreadable(text === null);
+      if (text !== null) onAdd(parseProposalLines(text, null, rules), `file · ${file.name}`);
+    },
+  });
 
   return (
     <div className="grid place-items-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center">
@@ -695,26 +700,8 @@ function FileWay({ onAdd }: { onAdd: (lines: ProposalLine[], source: string) => 
       <span className="text-xs text-muted-foreground">
         columns: identifier ; volume or issue ; why
       </span>
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".csv,.txt,text/csv,text/plain"
-        className="hidden"
-        onChange={async (event) => {
-          const file = event.target.files?.[0];
-          event.target.value = "";
-          if (file === undefined) {
-            return;
-          }
-
-          const text = await file.text().catch(() => null);
-          setIsUnreadable(text === null);
-          if (text !== null) {
-            onAdd(parseProposalLines(text, null, rules), `file · ${file.name}`);
-          }
-        }}
-      />
-      <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()}>
+      {picker.input}
+      <Button size="sm" variant="outline" onClick={picker.open}>
         Choose file…
       </Button>
       {isUnreadable && <p className="text-xs text-destructive">The file could not be read.</p>}
@@ -989,22 +976,22 @@ type Details = Pick<ProposalDraft, "reason" | "projectId" | "batchName" | "appro
 interface DetailsStepProps {
   items: DraftItem[];
   session: Session;
-  isSubmitting: boolean;
   isFailed: boolean;
   rateLimit: RateLimitStatus | undefined;
   initialReason: string;
-  onBack: () => void;
+  onRefusalChange: (refusal: string | null) => void;
+  submitRef: { current: (() => void) | null };
   onSubmit: (details: Details) => void;
 }
 
 function DetailsStep({
   items,
   session,
-  isSubmitting,
   isFailed,
   rateLimit,
   initialReason,
-  onBack,
+  onRefusalChange,
+  submitRef,
   onSubmit,
 }: DetailsStepProps) {
   const fieldId = useId();
@@ -1029,10 +1016,20 @@ function DetailsStep({
   const [priority, setPriority] = useState<Priority>("Normal");
   const isApproving = canDecide && newCount > 0 && isApprovedNow;
   const submitRefusal = isApproving && categoryId === null ? "Choose a category" : null;
+  useEffect(() => onRefusalChange(submitRefusal), [onRefusalChange, submitRefusal]);
+  useEffect(() => {
+    submitRef.current = () =>
+      onSubmit({
+        reason: reason.trim() || null,
+        projectId: projectId === noProject ? null : projectId,
+        batchName: isStaff && isBatch ? batchName.trim() || null : null,
+        approval: isApproving && categoryId !== null ? { categoryId, priority } : null,
+      });
+  });
 
   return (
     <>
-      <div className="-mx-6 grid min-h-0 content-start gap-4 overflow-y-auto px-6">
+      <div className="grid content-start gap-4">
         {isStaff && isBatch && (
           <Field id={`${fieldId}-batch`} label="Batch name" hint="optional">
             <Input
@@ -1140,26 +1137,6 @@ function DetailsStep({
           </p>
         )}
       </div>
-
-      <DialogFooter>
-        <Button variant="outline" onClick={onBack} className="sm:mr-auto">
-          Back
-        </Button>
-        <Button
-          disabled={isSubmitting || submitRefusal !== null}
-          title={submitRefusal ?? undefined}
-          onClick={() =>
-            onSubmit({
-              reason: reason.trim() || null,
-              projectId: projectId === noProject ? null : projectId,
-              batchName: isStaff && isBatch ? batchName.trim() || null : null,
-              approval: isApproving && categoryId !== null ? { categoryId, priority } : null,
-            })
-          }
-        >
-          Submit
-        </Button>
-      </DialogFooter>
     </>
   );
 }
@@ -1171,14 +1148,9 @@ interface ReportStepProps {
   // Skipped before submitting: no known identifier, not in the catalog, already the caller's.
   skipped: DraftItem[];
   viewTitle: string;
-  onDone: () => void;
-  ask?: EntryAsk;
-  entrySources: ProposalSettings["entrySources"];
 }
 
-function ReportStep({ report, skipped, viewTitle, onDone, ask, entrySources }: ReportStepProps) {
-  const source = entrySources.find((entry) => entry.id === ask?.sourceId);
-  const returnTo = allowedReturn(ask?.returnTo ?? null, source?.allowedOrigins ?? []);
+function ReportStep({ report, skipped, viewTitle }: ReportStepProps) {
   const skippedValues = [
     ...skipped.map((item) => [item.value, item.unit]),
     ...report.skipped.map((item) => [item.value, item.unit]),
@@ -1187,7 +1159,7 @@ function ReportStep({ report, skipped, viewTitle, onDone, ask, entrySources }: R
 
   return (
     <>
-      <div className="-mx-6 grid min-h-0 content-start gap-3 overflow-y-auto px-6">
+      <div className="grid content-start gap-3">
         <div className="flex items-start gap-2 border-l-[3px] border-tone-green-foreground bg-tone-green/50 px-3.5 py-2 text-sm">
           <Check className="mt-0.5 size-4 shrink-0 text-tone-green-foreground" />
           <p>
@@ -1228,15 +1200,6 @@ function ReportStep({ report, skipped, viewTitle, onDone, ask, entrySources }: R
         </ul>
         <p className="text-xs text-muted-foreground">You find them in {viewTitle}.</p>
       </div>
-
-      <DialogFooter>
-        {source !== undefined && returnTo !== null && (
-          <Button variant="outline" asChild>
-            <a href={returnTo}>Back to {source.name}</a>
-          </Button>
-        )}
-        <Button onClick={onDone}>Done</Button>
-      </DialogFooter>
     </>
   );
 }
