@@ -30,7 +30,7 @@ flowchart LR
   subgraph app ["one image, two roles"]
     API["api: HTTP boundary → commands, queries"]
     WORKER["worker: jobs, schedules, deliveries"]
-    API --> CORE["core: rules ported from domain/, citing IDs"]
+    API --> CORE["domain: rules ported from domain/, citing IDs"]
     WORKER --> CORE
     WORKER --> PLUGINS["plugins: one class loader per version"]
     API --> PLUGINS
@@ -106,7 +106,7 @@ and enforced in the backend by hand, each with a test.
 
 `domain/src` is TypeScript, shared by the frontend and the engine. The backend ports what it
 uses (permissions and scopes, status and the badge, schedules and cadences, value ranges,
-counting and mixes, properties) to plain Java with no framework, in a `core` module.
+counting and mixes, properties) to plain Java with no framework, in a `domain` module.
 
 To keep the two from drifting, the domain's tests move their cases into JSON files
 (`domain/cases/*.json`: input, expected output, the rule ID), read by the Bun tests and by JUnit
@@ -231,6 +231,92 @@ A reset per test is fast enough with PostgreSQL's template databases: the seed i
 into a template, and a reset drops the database and creates it again from the template.
 Tests running in parallel get one backend each, on its own database.
 
+### B9. Packages: a feature per group of acts
+
+Everything is under `cz.mzk.vera`. The Gradle modules split what may depend on what; inside
+`app`, the packages split by feature, and each feature holds its layers as files.
+
+**Modules**, each depending only on those before it:
+
+| Module | Packages | Holds |
+|---|---|---|
+| `plugin-api` | `cz.mzk.vera.plugin`, one subpackage per kind (`.identity`, `.catalog`, `.registry`, …) | the plugin contract (B6) |
+| `domain` | `cz.mzk.vera.domain.*`, one package per file of `domain/src` (`.permissions`, `.status`, `.schedules`, `.mixes`, …) | the ported rules (B3), pure |
+| `app` | `cz.mzk.vera.<feature>` and the shared packages below | the backend |
+| `testing` | `cz.mzk.vera.testing.control`, `.seeds`, `.fakes.<kind>` | `/_engine`, seeds, fakes (B8) |
+| `plugins/<name>` | `cz.mzk.vera.plugins.<name>` | one shipped implementation each |
+
+**Features.** A feature is a section of [acts](../reference/access/acts.md), so a rule's act and
+its code are found under the same name; it serves the contract modules beside it. A page with no
+acts of its own goes with the acts it shows.
+
+| Feature | Acts | Contract modules |
+|---|---|---|
+| `login` | logging in, sign-up, reset, logging out | `login` |
+| `account` | the person's own settings | `user-settings`, `notification-preferences`, `push` |
+| `access` | Users & Groups | `access` |
+| `proposals` | Proposing, the entry link, the library day | `proposals` |
+| `requests` | Request review, custody placement, retrying a batch | `requests`, `additions` |
+| `ingest` | none: the ingest job ([LC-ITER-ingest](../reference/lifecycles/iteration.md#lc-iter-ingest)) | |
+| `documents` | none: Documents and My Documents | `documents` |
+| `iterations` | Iterations, publication links | `iterations` |
+| `validations` | Validation verdicts | `validations` |
+| `lists` | Digitization lists | `lists` |
+| `projects` | Projects | `projects` |
+| `intentions` | Intentions and repeats, generating | `intentions`, `intention-filters` |
+| `categories` | Categories | `categories`, `category-filters` |
+| `mixes` | Mixes | `mixes`, `mix-catalog`, `mix-filters` |
+| `properties` | Properties | `properties` |
+| `watchlists` | Watchlists, their sends | `watchlists` |
+| `tasks` | Tasks and schedules | `tasks`, `schedules` |
+| `plugins` | Plugins: instances, upload, moving a version | `plugins` |
+| `hooks` | Hooks, deliveries | `hooks` |
+| `messages` | Messages | `messages` |
+| `reference` | none: the reference data views resolve names through | `reference` |
+
+**Inside a feature**, for `requests`:
+
+```text
+cz.mzk.vera.requests/
+  RequestsController.java   the table's routes, thin: parse, call, answer
+  RequestsContract.java     the contract's shapes, nested records and sealed interfaces,
+                            one-for-one with contract/src/requests.ts
+  RequestCommands.java      one method per act, citing its ID, each its own transaction
+  RequestQueries.java       one method per read model
+  RequestRepository.java    jOOQ; package-private
+  RequestJobs.java          the job kinds it owns (placing again, L8)
+```
+
+A small feature keeps fewer files; a large one splits a file into a subpackage when it grows
+(`intentions.generation`).
+
+**Shared packages**, which never import a feature:
+
+| Package | Holds |
+|---|---|
+| `web` | the boundary: the contract check against the OpenAPI document, the route check at start-up, refusals as problems |
+| `session` | the session cookie filter and the `Caller` a command is given |
+| `db` | jOOQ, transactions, the generated table classes |
+| `clock` | the clock (B5) |
+| `jobs` | the queue, the worker loop, the `JobKind` interface a feature implements |
+| `pluginhost` | loading, verifying and calling plugins (B6) |
+| `log` | writing log entries, the event codes ([L23](../ledger.md#l23-event-codes)) |
+| `events` | recording hook events in the act's transaction ([L33](../ledger.md#l33-hook-events)) |
+| `telemetry` | the attribute allow-list, the act and run on each record |
+
+**Between features**:
+- a feature reads and writes only its own tables, through its own package-private repository;
+- it calls another feature only through that feature's commands or queries (approving a proposal
+  asks `iterations` for the iteration, and `ingest` for the job);
+- no cycles between features.
+
+Spring Modulith's verification checks all three in one test, with each top-level package as a
+module. Only its verification is used: its event registry is not, since hook events are written by
+`events` in the act's own transaction.
+
+The engine's folders take the same feature names as it grows, so a file in one is found in the
+other by the same path.
+
 ## What the engine has to do first
 
 These are cheap now and expensive later. Each is a step of the engine's, not of the backend's:
@@ -258,8 +344,8 @@ backend change are one commit:
 backend/
   settings.gradle.kts
   plugin-api/      the plugin contract 1.x; no dependencies
-  core/            the ported rules (B3); no framework
-  app/             boundary, commands, queries, jobs, persistence, plugin host; api and worker roles
+  domain/          the ported rules (B3); no framework
+  app/             the features and the shared packages (B9); api and worker roles
   testing/         control endpoints, seed loader, fakes; test profile only
   plugins/         the shipped implementations, one Gradle project each
 ```
