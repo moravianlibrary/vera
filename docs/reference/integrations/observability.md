@@ -48,4 +48,5 @@ its daily counts per route and act.
 The engine sends the same streams when given an endpoint, so the pipeline and HyperDX can be
 tried against the fake engine and its simulation before the Java application exists.
 
-> **Open — [L72](../../ledger.md#l72-observability).** Not built.
+> **Built** for the engine ([L72](../../ledger.md#l72-observability)): API calls, jobs and Identity
+> plugin calls. The Java application's agent waits on the backend.

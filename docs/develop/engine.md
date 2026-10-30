@@ -70,6 +70,14 @@ The frontend's live mode proxies `/api` to the engine (`VITE_API_MODE=live`,
   window keeps its own session cookie; cookies are per host, not per port.
 - **Tests** open a session for a user with `POST /_engine/sessions`.
 
+When set, `VERA_ENGINE_OTEL_ENDPOINT` sends telemetry to an OTLP/HTTP collector;
+`VERA_ENGINE_OTEL_KEY` provides its authorization header. After `make obs-up`, run:
+
+```sh
+VERA_ENGINE_OTEL_ENDPOINT=http://localhost:4318 \
+VERA_ENGINE_OTEL_KEY=… make engine
+```
+
 ## Control endpoints
 
 Development and tests only, under `/_engine`:

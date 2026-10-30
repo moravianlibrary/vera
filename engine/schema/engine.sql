@@ -10,6 +10,7 @@ CREATE TABLE jobs (
   kind TEXT NOT NULL,
   due_at TEXT NOT NULL,
   payload TEXT NOT NULL DEFAULT '{}',
+  trace_parent TEXT,
   state TEXT NOT NULL DEFAULT 'due' CHECK (state IN ('due', 'done', 'failed')),
   ran_at TEXT,
   error TEXT

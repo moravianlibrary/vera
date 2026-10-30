@@ -168,7 +168,8 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   views by route template, acts, errors with the crash reference, slow answers and web vitals,
   and sending the trace context with each API call; the user id only for a role beyond reader;
 - the engine: the same streams from its HTTP boundary, jobs and fake plugins, behind an endpoint
-  setting, so the simulation fills HyperDX;
+  setting, so the simulation fills HyperDX. Built for the engine on 2026-10-30: API calls, jobs
+  and Identity plugin calls; the fake plugins of later steps call `withPluginSpan`;
 - a local stack for development (collector, ClickHouse, HyperDX) in a compose file, and its
   production counterpart beside the deployment;
 - the Java application and its workers: the OpenTelemetry Java agent and structured logs, when

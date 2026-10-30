@@ -5,6 +5,7 @@
 
 import type { Database } from "bun:sqlite";
 import type { Clock } from "./clock";
+import { currentTraceParent, logEvent, withJobSpan } from "./telemetry/telemetry";
 
 export interface Job {
   id: number;
@@ -34,8 +35,11 @@ export function createJobs(db: Database, clock: Clock): Jobs {
 
   const nextDue = () =>
     db
-      .query<{ id: number; kind: string; due_at: string; payload: string }, [string]>(
-        "SELECT id, kind, due_at, payload FROM jobs WHERE state = 'due' AND due_at <= ? ORDER BY due_at, id LIMIT 1",
+      .query<
+        { id: number; kind: string; due_at: string; payload: string; trace_parent: string | null },
+        [string]
+      >(
+        "SELECT id, kind, due_at, payload, trace_parent FROM jobs WHERE state = 'due' AND due_at <= ? ORDER BY due_at, id LIMIT 1",
       )
       .get(clock.now().toISOString());
 
@@ -47,10 +51,10 @@ export function createJobs(db: Database, clock: Clock): Jobs {
   return {
     enqueue(kind, dueAt, payload = {}) {
       const row = db
-        .query<{ id: number }, [string, string, string]>(
-          "INSERT INTO jobs (kind, due_at, payload) VALUES (?, ?, ?) RETURNING id",
+        .query<{ id: number }, [string, string, string, string | null]>(
+          "INSERT INTO jobs (kind, due_at, payload, trace_parent) VALUES (?, ?, ?, ?) RETURNING id",
         )
-        .get(kind, dueAt.toISOString(), JSON.stringify(payload));
+        .get(kind, dueAt.toISOString(), JSON.stringify(payload), currentTraceParent());
       return row?.id ?? 0;
     },
     register(kind, handler) {
@@ -72,17 +76,23 @@ export function createJobs(db: Database, clock: Clock): Jobs {
         };
         const handler = handlers.get(job.kind);
         try {
-          if (handler === undefined) {
-            throw new Error(`No handler for jobs of kind ${job.kind}`);
-          }
-
-          db.transaction(() => {
-            handler(job);
-            mark(job.id, "done", null);
-          })();
+          withJobSpan(job.kind, job.payload, row.trace_parent, () => {
+            try {
+              if (handler === undefined) throw new Error(`No handler for jobs of kind ${job.kind}`);
+              db.transaction(() => {
+                handler(job);
+                mark(job.id, "done", null);
+              })();
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              logEvent("error", message, { "vera.job.kind": job.kind });
+              throw error;
+            }
+          });
           report.ran += 1;
         } catch (error) {
-          mark(job.id, "failed", error instanceof Error ? error.message : String(error));
+          const message = error instanceof Error ? error.message : String(error);
+          mark(job.id, "failed", message);
           report.failed += 1;
         }
       }

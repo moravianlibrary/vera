@@ -6,7 +6,10 @@
 
 import { z } from "zod";
 import type { Calling } from "../access/caller";
+import { sessionOf } from "../access/session";
 import type { Engine } from "../engine";
+import { routeTemplateOf, telemetryUserId } from "../telemetry/rules";
+import { logEvent, withApiSpan } from "../telemetry/telemetry";
 import type { Endpoint } from "./endpoint";
 import { matchPath } from "./match";
 import { fieldErrorsOf, problem } from "./problem";
@@ -22,70 +25,85 @@ export async function serveApi(
   callerOf: CallerResolver,
 ): Promise<Response> {
   const url = new URL(request.url);
-  const calling = callerOf(request);
   const path = url.pathname.slice(apiPrefix.length) || "/";
-  const matching = endpoints.flatMap((candidate) => {
-    const params = matchPath(candidate.path, path);
-    return params === null ? [] : [{ endpoint: candidate, params }];
-  });
-  if (matching.length === 0) {
-    return withCookie(problem(404, `No endpoint answers ${path}.`), calling.cookie);
-  }
-
-  const found = matching.find(({ endpoint }) => endpoint.method === request.method);
-  if (found === undefined) {
-    return withCookie(problem(405, `${path} does not answer ${request.method}.`), calling.cookie);
-  }
-
-  const { endpoint, params: rawParams } = found;
-  const params = parseInput(endpoint.params, rawParams);
-  if (params instanceof Response) {
-    return withCookie(params, calling.cookie);
-  }
-
-  const query = parseInput(endpoint.query, Object.fromEntries(url.searchParams));
-  if (query instanceof Response) {
-    return withCookie(query, calling.cookie);
-  }
-
-  let rawBody: unknown;
-  if (endpoint.body !== undefined) {
-    try {
-      rawBody = await request.json();
-    } catch {
-      return withCookie(problem(400, "The body is not JSON."), calling.cookie);
+  const match = endpoints.find((candidate) => matchPath(candidate.path, path) !== null);
+  const route = routeTemplateOf(match?.path ?? null);
+  return withApiSpan(request, route, async (span) => {
+    const calling = callerOf(request);
+    if (calling.caller !== null) {
+      const userId = calling.caller.userId;
+      span.setUser(() => {
+        const session = sessionOf(engine.db, userId);
+        return telemetryUserId(session?.user.id ?? null, session?.roleIds ?? []);
+      });
     }
-  }
-
-  const body = parseInput(endpoint.body, rawBody);
-  if (body instanceof Response) {
-    return withCookie(body, calling.cookie);
-  }
-
-  try {
-    const answer = await endpoint.handle({
-      params,
-      query,
-      body,
-      caller: calling.caller,
-      engine,
-      request,
+    const matching = endpoints.flatMap((candidate) => {
+      const params = matchPath(candidate.path, path);
+      return params === null ? [] : [{ endpoint: candidate, params }];
     });
-    if (answer instanceof Response) {
-      return withCookie(answer, calling.cookie);
+    if (matching.length === 0) {
+      return withCookie(problem(404, `No endpoint answers ${path}.`), calling.cookie);
     }
 
-    return withCookie(
-      checkedAnswer(endpoint, request.method, path, answer.status ?? 200, answer.body),
-      calling.cookie,
-    );
-  } catch (error) {
-    console.error(`${request.method} ${path} failed`, error);
-    return withCookie(
-      problem(500, error instanceof Error ? error.message : String(error)),
-      calling.cookie,
-    );
-  }
+    const found = matching.find(({ endpoint }) => endpoint.method === request.method);
+    if (found === undefined) {
+      return withCookie(problem(405, `${path} does not answer ${request.method}.`), calling.cookie);
+    }
+
+    const { endpoint, params: rawParams } = found;
+    const params = parseInput(endpoint.params, rawParams);
+    if (params instanceof Response) {
+      return withCookie(params, calling.cookie);
+    }
+
+    const query = parseInput(endpoint.query, Object.fromEntries(url.searchParams));
+    if (query instanceof Response) {
+      return withCookie(query, calling.cookie);
+    }
+
+    let rawBody: unknown;
+    if (endpoint.body !== undefined) {
+      try {
+        rawBody = await request.json();
+      } catch {
+        return withCookie(problem(400, "The body is not JSON."), calling.cookie);
+      }
+    }
+
+    const body = parseInput(endpoint.body, rawBody);
+    if (body instanceof Response) {
+      return withCookie(body, calling.cookie);
+    }
+
+    try {
+      const answer = await endpoint.handle({
+        params,
+        query,
+        body,
+        caller: calling.caller,
+        engine,
+        request,
+      });
+      if (answer instanceof Response) {
+        return withCookie(answer, calling.cookie);
+      }
+
+      return withCookie(
+        checkedAnswer(endpoint, request.method, path, answer.status ?? 200, answer.body),
+        calling.cookie,
+      );
+    } catch (error) {
+      console.error(`${request.method} ${route} failed`, error);
+      logEvent("error", `${request.method} ${route} failed`, {
+        "http.request.method": request.method,
+        "http.route": route,
+      });
+      return withCookie(
+        problem(500, error instanceof Error ? error.message : String(error)),
+        calling.cookie,
+      );
+    }
+  });
 }
 
 function parseInput(schema: z.ZodType | undefined, value: unknown): unknown {
@@ -116,6 +134,11 @@ function checkedAnswer(
   if (!checked.success) {
     const issues = z.prettifyError(checked.error);
     console.error(`${method} ${path} answered outside the contract:\n${issues}`);
+    logEvent("error", `${method} ${routeTemplateOf(endpoint.path)} answered outside the contract`, {
+      "http.request.method": method,
+      "http.route": routeTemplateOf(endpoint.path),
+      "vera.problem.code": "contract.response",
+    });
     return problem(500, `The answer does not fit the contract:\n${issues}`, {
       code: "contract.response",
     });

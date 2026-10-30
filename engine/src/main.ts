@@ -3,27 +3,34 @@
 //   VERA_ENGINE_PORT         default 8080, where the frontend's live mode proxies /api
 //   VERA_ENGINE_DATABASE     default engine/.data/vera.sqlite
 //   VERA_ENGINE_DEVELOPMENT  "1" honours the dev servers' header and serves /_engine
+//   VERA_ENGINE_OTEL_ENDPOINT  an OTLP/HTTP base URL (make obs-up: http://localhost:4318); unset or
+//                              empty: no telemetry, the SDK is not loaded (OBS-pipeline)
+//   VERA_ENGINE_OTEL_KEY       the collector's ingestion key from HyperDX, sent as `authorization`
 
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createEngine } from "./engine";
+import { startTelemetry, stopTelemetry } from "./telemetry/telemetry";
 
 const port = Number(process.env.VERA_ENGINE_PORT ?? 8080);
 const databasePath =
   process.env.VERA_ENGINE_DATABASE ?? join(import.meta.dir, "..", ".data", "vera.sqlite");
 const development = process.env.VERA_ENGINE_DEVELOPMENT === "1";
+const telemetryEndpoint = process.env.VERA_ENGINE_OTEL_ENDPOINT;
+await startTelemetry({ endpoint: telemetryEndpoint, key: process.env.VERA_ENGINE_OTEL_KEY });
 
 mkdirSync(dirname(databasePath), { recursive: true });
 const engine = createEngine({ databasePath, development });
 const server = Bun.serve({ hostname: "127.0.0.1", port, fetch: engine.fetch });
 
 console.log(
-  `VERA engine on ${server.url} (${development ? "development" : "no dev header, no /_engine"}), database ${databasePath}, clock ${engine.clock.now().toISOString()}`,
+  `VERA engine on ${server.url} (${development ? "development" : "no dev header, no /_engine"}), database ${databasePath}, clock ${engine.clock.now().toISOString()}, ${telemetryEndpoint ? `telemetry to ${telemetryEndpoint}` : "no telemetry"}`,
 );
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.on(signal, () => {
+  process.on(signal, async () => {
     server.stop();
+    await stopTelemetry();
     engine.close();
     process.exit(0);
   });

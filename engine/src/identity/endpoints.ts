@@ -6,6 +6,7 @@ import type { Engine } from "../engine";
 import type { Endpoint } from "../http/endpoint";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
+import { withPluginSpan } from "../telemetry/telemetry";
 import { callback, startUrl } from "./fake-redirect";
 import { identityInstance, identityInstances } from "./instances";
 import { formLogin } from "./local-accounts";
@@ -38,7 +39,12 @@ const loginEntries = implement(endpoints.loginEntries, ({ engine }) => ({
 const loginForm = implement(endpoints.loginForm, async ({ engine, params, body }) => {
   const instance = identityInstance(engine, params.instanceId);
   if (instance?.entry !== "form") return problem(404, "There is no local login for this instance.");
-  const identity = await formLogin(engine, instance, body.username, body.password);
+  const identity = await withPluginSpan(
+    instance.id,
+    implementationName(engine, instance.implementationId),
+    () => formLogin(engine, instance, body.username, body.password),
+    (result) => (result === null ? "refused" : "answered"),
+  );
   if (identity === null) return problem(401, "The username or password is not accepted.");
   const loggedIn = logIn(engine, instance, identity);
   if ("refusal" in loggedIn)
@@ -82,7 +88,12 @@ const loginCallback = implement(endpoints.loginCallback, ({ engine, params, quer
   const instance = identityInstance(engine, params.instanceId);
   if (instance?.entry !== "redirect")
     return new Response(null, { status: 302, headers: { Location: "/login?error=login.expired" } });
-  const identity = callback(engine, instance, query.code);
+  const identity = withPluginSpan(
+    instance.id,
+    implementationName(engine, instance.implementationId),
+    () => callback(engine, instance, query.code),
+    (result) => (result === null ? "refused" : "answered"),
+  );
   if (identity === null)
     return new Response(null, { status: 302, headers: { Location: "/login?error=login.unknown" } });
   const loggedIn = logIn(engine, instance, identity);
@@ -97,6 +108,14 @@ const loginCallback = implement(endpoints.loginCallback, ({ engine, params, quer
     headers: { Location: row.return_to, "Set-Cookie": sessionCookie(token, engine.development) },
   });
 });
+
+function implementationName(engine: Engine, implementationId: string): string {
+  return (
+    engine.db
+      .query<{ name: string }, [string]>("SELECT name FROM plugin_implementations WHERE id = ?")
+      .get(implementationId)?.name ?? "Identity"
+  );
+}
 
 export const loginEndpoints: readonly Endpoint[] = [
   loginEntries,
