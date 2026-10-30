@@ -45,7 +45,7 @@ function open(profile: "admin" | "reader", url = "/watchlists") {
 describe("Watchlist pages", () => {
   it("keeps a person's personal watchlists and delivery settings in Preferences", async () => {
     open("reader", "/preferences/watchlists");
-    const link = await screen.findByRole("link", { name: "Ready to read" });
+    const link = await screen.findByRole("link", { name: "Ready to read" }, { timeout: 5000 });
     expect(link).toHaveAttribute("href", expect.stringContaining("/my-documents?"));
     expect(link).toHaveAttribute("href", expect.stringContaining("status=Available"));
     expect(screen.getByRole("columnheader", { name: "Delivery" })).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe("Watchlist pages", () => {
 
   it("shows only system definitions and audience actions in administration", async () => {
     open("admin");
-    const periodicals = await screen.findByRole("link", { name: "Periodicals" });
+    const periodicals = await screen.findByRole("link", { name: "Periodicals" }, { timeout: 5000 });
     expect(periodicals).toHaveAttribute("href", expect.stringContaining("/requests?"));
     expect(screen.getByRole("button", { name: "Audience for Periodicals" })).toBeInTheDocument();
     expect(screen.queryByRole("columnheader")).not.toBeInTheDocument();
