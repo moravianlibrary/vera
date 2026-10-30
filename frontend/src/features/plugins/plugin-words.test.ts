@@ -57,7 +57,7 @@ describe("newerVersionOf", () => {
   it("offers the newest version VERA can run, never one for another contract", () => {
     const current = implementation?.versions[0];
     if (implementation === undefined || instance === undefined || current === undefined) {
-      throw new Error("CatalogValidity and its ruleset are in the fixtures");
+      throw new Error("MarcComparator and its ruleset are in the fixtures");
     }
 
     expect(newerVersionOf(instance, implementation)).toBeNull();

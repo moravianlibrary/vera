@@ -74,7 +74,7 @@ export const users: readonly User[] = [
   },
   {
     id: "a2",
-    name: "ISSN harvester",
+    name: "Periodical gaps",
     kind: "agent",
     email: null,
   },

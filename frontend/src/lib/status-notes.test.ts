@@ -56,7 +56,7 @@ describe("iterationNoteOf", () => {
     const note = iterationNoteOf(attempt, null, "public");
 
     expect(note?.title).toBe("Being checked");
-    expect(note?.text).not.toContain("CatalogValidity");
+    expect(note?.text).not.toContain("MarcComparator");
   });
 
   it("keeps a failed ingest from a requester", () => {

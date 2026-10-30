@@ -67,6 +67,59 @@ describe("getPluginIndex", () => {
     signInAs("admin");
     const { implementations } = await getPluginIndex();
 
+    const catalogNames = [
+      "LocalAccounts",
+      "OidcIdentity",
+      "BarcodeReader",
+      "CoverRecognition",
+      "ShelfMarkRecognition",
+      "CatalogCardRecognition",
+      "EntryLink",
+      "Pattern",
+      "DnntoFromCatalog",
+      "DnntoFromSdnnt",
+      "PeriodicalGaps",
+      "SftpFile",
+      "GoogleSheet",
+      "AlephOaiCatalogAdapter",
+      "XmlDumpCatalogAdapter",
+      "MarcExtentPageCount",
+      "SiblingVolumePageCount",
+      "PageCountPredictor",
+      "ShelfMarkToSize",
+      "JqProperty",
+      "KrameriusRegistry",
+      "RdczRegistry",
+      "MarcComparator",
+      "FieldsCompleteness",
+      "ForbiddenByRecordValue",
+      "JqCustody",
+      "MaterialType",
+      "PlaceOfPublication",
+      "PriorityThenMix",
+      "ShelfAdvisor",
+      "KrameriusLink",
+      "Kramerius72XPublicationDetector",
+      "MailtoMessage",
+      "SlackMessage",
+      "SlackBotMessage",
+      "HttpWebhook",
+      "SlackNotifier",
+      "SftpDrop",
+      "SmtpMailer",
+      "GmailAccountMailer",
+    ];
+    const keptNames = [
+      "IdentifierDetector",
+      "SamlIdentity",
+      "TeamsNotifier",
+      "PageCountCheck",
+      "CatalogLinkCheck",
+    ];
+    expect(
+      implementations.every(({ name }) => [...catalogNames, ...keptNames].includes(name)),
+    ).toBe(true);
+
     // PLG-kinds: the order a document meets them.
     const ranks = implementations.map((implementation) => pluginKinds.indexOf(implementation.kind));
     expect(ranks).toEqual(ranks.toSorted((first, second) => first - second));
@@ -451,7 +504,7 @@ describe("uploading a package", () => {
     const reading = await uploadPluginPackage(packageNamed("catalog-validity-3.2.0.jar"), "pt6");
 
     expect(reading).toMatchObject({
-      name: "CatalogValidity",
+      name: "MarcComparator",
       implementationId: "pt6",
       currentVersion: "3.1.0",
       isRunnable: true,

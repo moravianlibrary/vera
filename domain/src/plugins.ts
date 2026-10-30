@@ -31,7 +31,7 @@ export type PluginKind = z.infer<typeof pluginKindSchema>;
 export const pluginInstanceSchema = z.object({
   id: z.string(),
   name: z.string(),
-  // The implementation it runs: "AlephCatalogAdapter".
+  // The implementation it runs: "AlephOaiCatalogAdapter".
   plugin: z.string(),
   kind: pluginKindSchema,
   isEnabled: z.boolean(),

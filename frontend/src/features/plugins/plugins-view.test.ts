@@ -54,12 +54,12 @@ describe("shownPluginsOf", () => {
 
     expect(shown.instances.map((instance) => instance.name)).toEqual(["NKP Aleph"]);
     expect(shown.implementations.map((implementation) => implementation.name)).toEqual([
-      "AlephCatalogAdapter",
+      "AlephOaiCatalogAdapter",
     ]);
   });
 
   it("keeps an implementation by its name only while no State is picked", () => {
-    expect(shownPluginsOf(index, { search: "PageCount" }).implementations).toHaveLength(2);
+    expect(shownPluginsOf(index, { search: "PageCount" }).implementations).toHaveLength(4);
     expect(
       shownPluginsOf(index, { search: "PageCount", states: ["disabled"] }).implementations,
     ).toHaveLength(0);

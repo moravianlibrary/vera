@@ -123,7 +123,7 @@ export const statusLog: readonly EventEntry[] = [
     correlationId: "k15",
     reason: {
       public: null,
-      internal: "CopyrightRule: editor-in-chief died 1961, protected until 2031.",
+      internal: "editor-in-chief died 1961, protected until 2031.",
     },
     code: "iteration.restricted",
     data: {
@@ -444,7 +444,7 @@ export const statusLog: readonly EventEntry[] = [
     correlationId: "k17",
     reason: {
       public: null,
-      internal: "Approved on arrival from the ISSN harvester.",
+      internal: "Approved on arrival from Periodical gaps.",
     },
     code: "iteration.ingested",
     data: {},
@@ -1107,7 +1107,7 @@ export const statusLog: readonly EventEntry[] = [
     data: {
       batch: {
         id: "B-0138",
-        name: "harvest / ISSN harvester",
+        name: "harvest / Periodical gaps",
       },
       source: null,
     },

@@ -72,7 +72,7 @@
       },
       {
         "id": "a2",
-        "name": "ISSN harvester",
+        "name": "Periodical gaps",
         "kind": "agent",
         "email": null
       },
@@ -1412,7 +1412,7 @@
       },
       {
         "id": "B-0138",
-        "name": "harvest / ISSN harvester",
+        "name": "harvest / Periodical gaps",
         "submittedBy": "a2",
         "submittedAt": "2026-06-14T06:00:00Z"
       },
@@ -8599,7 +8599,7 @@
         "correlationId": "k15",
         "reason": {
           "public": null,
-          "internal": "CopyrightRule: editor-in-chief died 1961, protected until 2031."
+          "internal": "editor-in-chief died 1961, protected until 2031."
         },
         "code": "iteration.restricted",
         "data": {
@@ -8919,7 +8919,7 @@
         "correlationId": "k17",
         "reason": {
           "public": null,
-          "internal": "Approved on arrival from the ISSN harvester."
+          "internal": "Approved on arrival from Periodical gaps."
         },
         "code": "iteration.ingested",
         "data": {}
@@ -9580,7 +9580,7 @@
         "data": {
           "batch": {
             "id": "B-0138",
-            "name": "harvest / ISSN harvester"
+            "name": "harvest / Periodical gaps"
           },
           "source": null
         }
@@ -11349,9 +11349,9 @@
       {
         "id": "pt1",
         "descriptorId": "cz.mzk.vera.aleph-catalog-adapter",
-        "name": "AlephCatalogAdapter",
+        "name": "AlephOaiCatalogAdapter",
         "kind": "CatalogAdapter",
-        "description": "Adapter for the Aleph ILS. Speaks Z39.50 and REST; enumerates units.",
+        "description": "Connects to live MZK Aleph.",
         "versions": [
           {
             "version": "2.4.1",
@@ -11469,9 +11469,9 @@
       {
         "id": "pt3",
         "descriptorId": "cz.mzk.vera.rdczregistry",
-        "name": "RDCZRegistry",
+        "name": "RdczRegistry",
         "kind": "Registry",
-        "description": "The national digitization registry. Reports what other libraries plan and hold.",
+        "description": "Reports what other libraries plan and hold in the national digitization registry.",
         "versions": [
           {
             "version": "1.2.3",
@@ -11573,9 +11573,9 @@
       {
         "id": "pt5",
         "descriptorId": "cz.mzk.vera.issnharvester",
-        "name": "ISSNHarvester",
+        "name": "PeriodicalGaps",
         "kind": "Harvester",
-        "description": "Watches the ISSN portal for new titles in scope and proposes them.",
+        "description": "Finds missing volumes of periodicals partly digitized in Kramerius.",
         "versions": [
           {
             "version": "1.0.4",
@@ -11589,7 +11589,7 @@
               "rawStates": [],
               "rules": [],
               "agent": {
-                "name": "ISSN harvester",
+                "name": "Periodical gaps",
                 "entryPoint": "proposals"
               },
               "generatorClass": null,
@@ -11620,9 +11620,9 @@
       {
         "id": "pt26",
         "descriptorId": "cz.mzk.vera.kramerius-harvester",
-        "name": "KrameriusHarvester",
+        "name": "DnntoFromSdnnt",
         "kind": "Harvester",
-        "description": "Finds what a Kramerius instance published that VERA does not hold, and adds it.",
+        "description": "Finds documents with DNNTO in SDNNT that no library has digitized.",
         "versions": [
           {
             "version": "1.0.0",
@@ -11667,9 +11667,9 @@
       {
         "id": "pt6",
         "descriptorId": "cz.mzk.vera.catalog-validity",
-        "name": "CatalogValidity",
+        "name": "MarcComparator",
         "kind": "Validation",
-        "description": "Checks a catalogue record is complete enough to digitize against.",
+        "description": "Validates a record against SKC and ČNB through the MARC comparator application.",
         "versions": [
           {
             "version": "3.1.0",
@@ -11720,9 +11720,9 @@
       {
         "id": "pt7",
         "descriptorId": "cz.mzk.vera.language-check",
-        "name": "LanguageCheck",
+        "name": "FieldsCompleteness",
         "kind": "Validation",
-        "description": "Flags records with no language recorded.",
+        "description": "Checks required fields for each issuance type.",
         "versions": [
           {
             "version": "1.0.0",
@@ -11759,9 +11759,9 @@
       {
         "id": "pt25",
         "descriptorId": "cz.mzk.vera.copyright-rule",
-        "name": "CopyrightRule",
+        "name": "ForbiddenByRecordValue",
         "kind": "Restriction",
-        "description": "Forbids what is still in copyright: the last known author or editor died less than 70 years ago.",
+        "description": "Forbids digitizing when a field or subfield holds a given value.",
         "versions": [
           {
             "version": "1.0.0",
@@ -12202,9 +12202,9 @@
       {
         "id": "pt30",
         "descriptorId": "cz.mzk.vera.kramerius-publication-detector",
-        "name": "KrameriusPublicationDetector",
+        "name": "Kramerius72XPublicationDetector",
         "kind": "PublicationDetector",
-        "description": "Asks a Kramerius instance which digitized items it now publishes, and sets their links.",
+        "description": "Detects publications from Kramerius 72X fields.",
         "versions": [
           {
             "version": "1.0.0",
@@ -12425,9 +12425,9 @@
       {
         "id": "pt14",
         "descriptorId": "cz.mzk.vera.mailgun-mailer",
-        "name": "MailgunMailer",
+        "name": "GmailAccountMailer",
         "kind": "DeliveryChannel",
-        "description": "Sends mail through the Mailgun API — for volume the house server should not carry.",
+        "description": "Sends mail through the Gmail API with a send-only OAuth2 client.",
         "versions": [
           {
             "version": "0.6.2",
@@ -12847,6 +12847,286 @@
                 "isRequired": true
               }
             ]
+          }
+        ]
+      },
+      {
+        "id": "pt40",
+        "descriptorId": "cz.mzk.vera.shelf-mark-recognition",
+        "name": "ShelfMarkRecognition",
+        "kind": "Input",
+        "description": "Recognises shelf marks on spines.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt41",
+        "descriptorId": "cz.mzk.vera.catalog-card-recognition",
+        "name": "CatalogCardRecognition",
+        "kind": "Input",
+        "description": "Recognises catalog cards.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt42",
+        "descriptorId": "cz.mzk.vera.dnnto-from-catalog",
+        "name": "DnntoFromCatalog",
+        "kind": "Harvester",
+        "description": "Finds MZK records that could get the DNNTO licence if digitized.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnSchedule", "OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt43",
+        "descriptorId": "cz.mzk.vera.sftp-file",
+        "name": "SftpFile",
+        "kind": "Harvester",
+        "description": "Finds new files in an SFTP directory (CSV or TXT).",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnSchedule", "OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt44",
+        "descriptorId": "cz.mzk.vera.google-sheet",
+        "name": "GoogleSheet",
+        "kind": "Harvester",
+        "description": "Finds new rows of a Google Sheet through a service account.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnSchedule", "OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt45",
+        "descriptorId": "cz.mzk.vera.xml-dump-catalog-adapter",
+        "name": "XmlDumpCatalogAdapter",
+        "kind": "CatalogAdapter",
+        "description": "Reads a downloaded catalog dump refreshed on schedule; the reading's date is the dump's.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt46",
+        "descriptorId": "cz.mzk.vera.marc-extent-page-count",
+        "name": "MarcExtentPageCount",
+        "kind": "PropertySource",
+        "description": "Parses page count from 300 $a.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnIngest", "OnRecordChange", "OnSchedule"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt47",
+        "descriptorId": "cz.mzk.vera.sibling-volume-page-count",
+        "name": "SiblingVolumePageCount",
+        "kind": "PropertySource",
+        "description": "Estimates periodical page count as the median of the title's volumes already digitized.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnIngest", "OnRecordChange", "OnSchedule"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt48",
+        "descriptorId": "cz.mzk.vera.shelf-mark-to-size",
+        "name": "ShelfMarkToSize",
+        "kind": "PropertySource",
+        "description": "Derives size from the shelf mark's prefix.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnIngest", "OnRecordChange", "OnSchedule"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
+          }
+        ]
+      },
+      {
+        "id": "pt49",
+        "descriptorId": "cz.mzk.vera.jq-property",
+        "name": "JqProperty",
+        "kind": "PropertySource",
+        "description": "Reads any property by a jq expression over the record.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-06-02",
+            "installedBy": "u3",
+            "triggers": ["OnIngest", "OnRecordChange", "OnSchedule"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "inputMode": null,
+              "loginEntry": null
+            },
+            "configFields": []
           }
         ]
       }

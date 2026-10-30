@@ -103,7 +103,19 @@ function implementation(
   description: string,
   ...versions: readonly VersionSource[]
 ): StoredPluginImplementation {
-  const slug = name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  const legacyDescriptorSlugs: Readonly<Record<string, string>> = {
+    pt1: "aleph-catalog-adapter",
+    pt3: "rdczregistry",
+    pt5: "issnharvester",
+    pt6: "catalog-validity",
+    pt7: "language-check",
+    pt14: "mailgun-mailer",
+    pt25: "copyright-rule",
+    pt26: "kramerius-harvester",
+    pt30: "kramerius-publication-detector",
+  };
+  const slug =
+    legacyDescriptorSlugs[id] ?? name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
   return {
     id,
     descriptorId: `cz.mzk.vera.${slug}`,
@@ -118,28 +130,22 @@ const catalogTriggers = ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"] as 
 const registryTriggers = ["OnProposal", "OnIngest", "OnSchedule"] as const;
 
 export const pluginImplementations: readonly StoredPluginImplementation[] = [
-  implementation(
-    "pt1",
-    "AlephCatalogAdapter",
-    "CatalogAdapter",
-    "Adapter for the Aleph ILS. Speaks Z39.50 and REST; enumerates units.",
-    {
-      version: "2.4.1",
-      installedAt: "2026-01-15",
-      triggers: catalogTriggers,
-      declares: {
-        properties: [
-          { key: "page_count", tier: 50 },
-          { key: "material_type", tier: 50 },
-          { key: "shelf_mark", tier: 50 },
-          { key: "title", tier: 50 },
-          { key: "unit_enumeration", tier: 50 },
-        ],
-        identifierTypes: ["NBN", "ISSN", "ISBN", "Shelf mark"],
-      },
-      fields: ["base_url", "protocol", "timeout", "search?"],
+  implementation("pt1", "AlephOaiCatalogAdapter", "CatalogAdapter", "Connects to live MZK Aleph.", {
+    version: "2.4.1",
+    installedAt: "2026-01-15",
+    triggers: catalogTriggers,
+    declares: {
+      properties: [
+        { key: "page_count", tier: 50 },
+        { key: "material_type", tier: 50 },
+        { key: "shelf_mark", tier: 50 },
+        { key: "title", tier: 50 },
+        { key: "unit_enumeration", tier: 50 },
+      ],
+      identifierTypes: ["NBN", "ISSN", "ISBN", "Shelf mark"],
     },
-  ),
+    fields: ["base_url", "protocol", "timeout", "search?"],
+  }),
   implementation(
     "pt2",
     "KrameriusRegistry",
@@ -160,9 +166,9 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   ),
   implementation(
     "pt3",
-    "RDCZRegistry",
+    "RdczRegistry",
     "Registry",
-    "The national digitization registry. Reports what other libraries plan and hold.",
+    "Reports what other libraries plan and hold in the national digitization registry.",
     {
       version: "1.2.3",
       installedAt: "2026-01-15",
@@ -193,25 +199,25 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   ),
   implementation(
     "pt5",
-    "ISSNHarvester",
+    "PeriodicalGaps",
     "Harvester",
-    "Watches the ISSN portal for new titles in scope and proposes them.",
+    "Finds missing volumes of periodicals partly digitized in Kramerius.",
     {
       version: "1.0.4",
       installedAt: "2026-04-11",
       triggers: ["OnSchedule", "OnDemand"],
       declares: {
         identifierTypes: ["ISSN"],
-        agent: { name: "ISSN harvester", entryPoint: "proposals" },
+        agent: { name: "Periodical gaps", entryPoint: "proposals" },
       },
       fields: ["region", "since", "max"],
     },
   ),
   implementation(
     "pt26",
-    "KrameriusHarvester",
+    "DnntoFromSdnnt",
     "Harvester",
-    "Finds what a Kramerius instance published that VERA does not hold, and adds it.",
+    "Finds documents with DNNTO in SDNNT that no library has digitized.",
     {
       version: "1.0.0",
       installedAt: "2026-01-15",
@@ -225,9 +231,9 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   ),
   implementation(
     "pt6",
-    "CatalogValidity",
+    "MarcComparator",
     "Validation",
-    "Checks a catalogue record is complete enough to digitize against.",
+    "Validates a record against SKC and ČNB through the MARC comparator application.",
     {
       version: "3.1.0",
       installedAt: "2026-01-15",
@@ -242,18 +248,24 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       fields: ["severity", "rules"],
     },
   ),
-  implementation("pt7", "LanguageCheck", "Validation", "Flags records with no language recorded.", {
-    version: "1.0.0",
-    installedAt: "2026-06-02",
-    triggers: ["OnIngest", "OnRecordChange", "OnSchedule", "OnDemand"],
-    declares: { rules: [{ code: "R01", label: "language recorded" }] },
-    fields: ["severity"],
-  }),
+  implementation(
+    "pt7",
+    "FieldsCompleteness",
+    "Validation",
+    "Checks required fields for each issuance type.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnIngest", "OnRecordChange", "OnSchedule", "OnDemand"],
+      declares: { rules: [{ code: "R01", label: "language recorded" }] },
+      fields: ["severity"],
+    },
+  ),
   implementation(
     "pt25",
-    "CopyrightRule",
+    "ForbiddenByRecordValue",
     "Restriction",
-    "Forbids what is still in copyright: the last known author or editor died less than 70 years ago.",
+    "Forbids digitizing when a field or subfield holds a given value.",
     {
       version: "1.0.0",
       installedAt: "2026-06-10",
@@ -390,9 +402,9 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   ),
   implementation(
     "pt30",
-    "KrameriusPublicationDetector",
+    "Kramerius72XPublicationDetector",
     "PublicationDetector",
-    "Asks a Kramerius instance which digitized items it now publishes, and sets their links.",
+    "Detects publications from Kramerius 72X fields.",
     {
       version: "1.0.0",
       installedAt: "2026-10-16",
@@ -448,9 +460,9 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
   }),
   implementation(
     "pt14",
-    "MailgunMailer",
+    "GmailAccountMailer",
     "DeliveryChannel",
-    "Sends mail through the Mailgun API — for volume the house server should not carry.",
+    "Sends mail through the Gmail API with a send-only OAuth2 client.",
     {
       version: "0.6.2",
       installedAt: "2026-05-02",
@@ -557,6 +569,114 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       triggers: catalogTriggers,
       declares: { rules: [{ code: "R01", label: "catalog link resolves" }] },
       fields: ["severity"],
+    },
+  ),
+  implementation("pt40", "ShelfMarkRecognition", "Input", "Recognises shelf marks on spines.", {
+    version: "1.0.0",
+    installedAt: "2026-06-02",
+    triggers: ["OnDemand"],
+    fields: [],
+  }),
+  implementation("pt41", "CatalogCardRecognition", "Input", "Recognises catalog cards.", {
+    version: "1.0.0",
+    installedAt: "2026-06-02",
+    triggers: ["OnDemand"],
+    fields: [],
+  }),
+  implementation(
+    "pt42",
+    "DnntoFromCatalog",
+    "Harvester",
+    "Finds MZK records that could get the DNNTO licence if digitized.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnSchedule", "OnDemand"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt43",
+    "SftpFile",
+    "Harvester",
+    "Finds new files in an SFTP directory (CSV or TXT).",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnSchedule", "OnDemand"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt44",
+    "GoogleSheet",
+    "Harvester",
+    "Finds new rows of a Google Sheet through a service account.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnSchedule", "OnDemand"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt45",
+    "XmlDumpCatalogAdapter",
+    "CatalogAdapter",
+    "Reads a downloaded catalog dump refreshed on schedule; the reading's date is the dump's.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: catalogTriggers,
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt46",
+    "MarcExtentPageCount",
+    "PropertySource",
+    "Parses page count from 300 $a.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnIngest", "OnRecordChange", "OnSchedule"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt47",
+    "SiblingVolumePageCount",
+    "PropertySource",
+    "Estimates periodical page count as the median of the title's volumes already digitized.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnIngest", "OnRecordChange", "OnSchedule"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt48",
+    "ShelfMarkToSize",
+    "PropertySource",
+    "Derives size from the shelf mark's prefix.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnIngest", "OnRecordChange", "OnSchedule"],
+      fields: [],
+    },
+  ),
+  implementation(
+    "pt49",
+    "JqProperty",
+    "PropertySource",
+    "Reads any property by a jq expression over the record.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-06-02",
+      triggers: ["OnIngest", "OnRecordChange", "OnSchedule"],
+      fields: [],
     },
   ),
 ];

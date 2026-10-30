@@ -38,7 +38,7 @@ export const batches: readonly StoredBatch[] = [
   },
   {
     id: "B-0138",
-    name: "harvest / ISSN harvester",
+    name: "harvest / Periodical gaps",
     submittedBy: "a2",
     submittedAt: "2026-06-14T06:00:00Z",
   },

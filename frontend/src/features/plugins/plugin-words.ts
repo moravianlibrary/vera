@@ -103,7 +103,7 @@ export function generatorClassText(generatorClass: keyof typeof generatorClassLa
   return generatorClassLabels[generatorClass];
 }
 
-// "page_count tier 50", "4 registry states", "3 rules", "ISSN · ISBN", "agent ISSN harvester".
+// "page_count tier 50", "4 registry states", "3 rules", "ISSN · ISBN", "agent Periodical gaps".
 export function suppliesOf(version: PluginVersion): string[] {
   const { declares } = version;
   return [
