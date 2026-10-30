@@ -410,6 +410,9 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
   );
   moveMembers(session, list, draft.memberIds, correlationId);
   recordHookEvent("list.created", list.id, "", `New list ${list.name} starts ${list.startsOn}`);
+  if (list.startsOn === today()) {
+    recordHookEvent("list.started", list.id, "", `${list.name} started`);
+  }
   return { value: detailOf(list) };
 }
 
@@ -660,6 +663,7 @@ export function startListNow(session: Session, listId: string): Outcome<ListDeta
   }
 
   logList(session, started, crypto.randomUUID(), "list.started_early", { starts: oldStart }, null);
+  recordHookEvent("list.started", started.id, "", `${started.name} started`);
   return { value: detailOf(started) };
 }
 
@@ -735,6 +739,7 @@ export function markListDone(session: Session, listId: string): Outcome<ListDeta
           .join(" · ") || null,
     },
   );
+  recordHookEvent("list.marked_done", done.id, "", `${done.name} marked done`);
   return { value: detailOf(done) };
 }
 

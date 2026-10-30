@@ -5,31 +5,57 @@ import { database } from "@/mocks/database";
 import { recordHookEvent } from "@/mocks/hooks";
 
 describe("hook event collection", () => {
-  it("groups a requester's decisions, caps the wait and excludes other decisions", () => {
+  it("delivers each subscribed code to an unbatched multi-code hook", () => {
+    const template = database.hooks[0];
+    if (template === undefined) throw new Error("Missing hook fixture");
+    const hookId = "test-multi-code-hook";
+    database.hooks.push({
+      ...template,
+      id: hookId,
+      events: ["request.held", "iteration.ingested"],
+      filter: "",
+      batch: null,
+    });
+
+    recordHookEvent("request.held", "R-held", "", "Held");
+    recordHookEvent("iteration.ingested", "IT-ingested", "", "Ingested");
+
+    expect(
+      database.hookDeliveries
+        .filter((delivery) => delivery.hookId === hookId)
+        .map((delivery) => delivery.events),
+    ).toEqual([["request.held"], ["iteration.ingested"]]);
+    database.hooks = database.hooks.filter((hook) => hook.id !== hookId);
+    database.hookDeliveries = database.hookDeliveries.filter(
+      (delivery) => delivery.hookId !== hookId,
+    );
+  });
+
+  it("groups a requester's subscribed events and caps the wait", () => {
     const before = database.hookDeliveries.length;
     const first = new Date("2026-06-25T11:00:00Z");
     recordHookEvent(
-      "request.decided",
+      "request.approved",
       "R-new-1",
       "reader@example.org",
       "The request was approved",
-      { decision: "Approved" },
+      {},
       first,
     );
     recordHookEvent(
-      "request.decided",
+      "request.declined",
       "R-new-2",
       "reader@example.org",
       "The request was denied",
-      { decision: "Denied" },
+      {},
       new Date("2026-06-25T11:50:00Z"),
     );
     recordHookEvent(
-      "request.decided",
+      "request.held",
       "R-new-3",
       "reader@example.org",
       "The request was withdrawn",
-      { decision: "Other" },
+      {},
       new Date("2026-06-25T11:51:00Z"),
     );
 
@@ -38,6 +64,7 @@ describe("hook event collection", () => {
     expect(added[0]).toMatchObject({
       hookId: "H-02",
       subjects: ["R-new-1", "R-new-2"],
+      events: ["request.approved", "request.declined"],
       state: "waiting",
       sendAt: "2026-06-25T12:00:00.000Z",
     });

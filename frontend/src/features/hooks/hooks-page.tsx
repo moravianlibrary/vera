@@ -84,7 +84,7 @@ export function hookColumns(index: HookIndex | undefined): ColumnDefinition<Hook
       track: "minmax(8rem,1fr)",
       cell: (hook) => (
         <>
-          <span className="font-mono text-xs">{hook.event}</span>
+          <span className="font-mono text-xs">{hook.events.join(" · ")}</span>
           {hook.filter && (
             <span className="block text-xs text-muted-foreground">{hook.filter}</span>
           )}
@@ -217,7 +217,10 @@ export function HooksPage() {
             }}
             columns={hookColumns(index)}
             card={{
-              eyebrow: (hook) => hook.event,
+              eyebrow: (hook) =>
+                hook.events.length > 1
+                  ? `${hook.events[0]} +${hook.events.length - 1}`
+                  : hook.events[0],
               title: (hook) => hook.name,
               meta: (hook) => (
                 <>
@@ -585,7 +588,10 @@ function HookDetail({
       <DetailCard title="Subscription">
         <FactGrid
           facts={[
-            { label: "Fires on", value: <span className="font-mono text-xs">{hook.event}</span> },
+            {
+              label: "Fires on",
+              value: <span className="font-mono text-xs">{hook.events.join(" · ")}</span>,
+            },
             { label: "Only when", value: hook.filter || "Every event" },
             { label: "Sends to", value: hook.recipient },
             {

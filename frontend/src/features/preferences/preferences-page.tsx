@@ -166,7 +166,7 @@ function NotificationsPreferences() {
             <div>
               <p className="font-medium">{hook.label}</p>
               <p className="text-xs text-muted-foreground">
-                {hook.event}
+                {hook.events.join(" · ")}
                 {!hook.isActive && " · Hook paused"} ·{" "}
                 {hook.defaultEnabled ? "On by default" : "Off by default"}
               </p>

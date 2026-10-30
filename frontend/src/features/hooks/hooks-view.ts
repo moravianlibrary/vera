@@ -2,7 +2,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { Hook, HookIndex } from "@vera/contract/hooks";
-import { hookGroups, hookInterfaceSchema } from "@vera/contract/hooks";
+import { hookGroupOfEvent, hookGroups, hookInterfaceSchema } from "@vera/contract/hooks";
 import type { Facets } from "@/components/filters/filter-bar";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
@@ -60,16 +60,7 @@ export const hooksView: ViewDefinition<HooksQuery> = {
 };
 
 export function hookGroupOf(hook: Hook): (typeof hookGroups)[number] {
-  if (hook.event.startsWith("request.")) return "Requests";
-  if (
-    hook.event.startsWith("document.") ||
-    hook.event === "iteration.link_added" ||
-    hook.event === "iteration.link_changed"
-  )
-    return "Documents";
-  if (hook.event.startsWith("iteration.")) return "Records";
-  if (hook.event.startsWith("list.")) return "Lists";
-  return "Tasks";
+  return hookGroupOfEvent(hook.events[0]);
 }
 
 export function hookStateOf(index: HookIndex, hook: Hook): string[] {
@@ -94,8 +85,8 @@ export function shownHooksOf(index: HookIndex, query: HooksQuery): Hook[] {
         (!query.states?.length ||
           query.states.some((state) => hookStateOf(index, hook).includes(state))) &&
         (!needle ||
-          [hook.name, hook.event, hook.filter, hook.recipient, channel?.name ?? ""].some((value) =>
-            value.toLowerCase().includes(needle),
+          [hook.name, ...hook.events, hook.filter, hook.recipient, channel?.name ?? ""].some(
+            (value) => value.toLowerCase().includes(needle),
           ))
       );
     })

@@ -570,7 +570,7 @@ export function createHandlers(profile: MockUserProfile) {
                 {
                   id: hook.id,
                   label: hook.recipientPreference.label,
-                  event: hook.event,
+                  events: hook.events,
                   defaultEnabled: hook.recipientPreference.defaultEnabled,
                   isActive: hook.state === "active",
                 },

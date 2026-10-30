@@ -25,6 +25,7 @@ import {
   startList,
 } from "@/api/lists";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
 import { eventEntries, eventEntry } from "./event-entries-test";
 
@@ -36,6 +37,14 @@ afterAll(() => server.close());
 
 function signInAs(profile: MockUserProfile): void {
   server.use(...createHandlers(profile));
+}
+
+function watchHookEvent(event: "list.started" | "list.marked_done"): string {
+  const template = database.hooks[0];
+  if (template === undefined) throw new Error("Missing hook fixture");
+  const id = `test-${event}`;
+  database.hooks.push({ ...template, id, events: [event], filter: "", batch: null });
+  return id;
 }
 
 async function statusOf(call: Promise<unknown>): Promise<number | null> {
@@ -625,6 +634,7 @@ describe("acting on a list", () => {
 
   it("marks a running list Done: its open members Digitized, the stopped ones not", async () => {
     signInAs("digitization");
+    const hookId = watchHookEvent("list.marked_done");
     expect(await statusOf(previewMarkDone("L-2026-016"))).toBe(409); // still Planned
 
     const dryRun = await previewMarkDone("L-2026-014");
@@ -640,6 +650,12 @@ describe("acting on a list", () => {
         .every((item) => item.iteration.progress !== "Digitized"),
     ).toBe(true);
     expect(eventEntries(detail.log).map((entry) => entry.code)).toContain("list.marked_done");
+    expect(
+      database.hookDeliveries.some(
+        (delivery) => delivery.hookId === hookId && delivery.events.includes("list.marked_done"),
+      ),
+    ).toBe(true);
+    database.hooks = database.hooks.filter((hook) => hook.id !== hookId);
     expect(await statusOf(markDone("L-2026-014"))).toBe(409);
   });
 });
@@ -647,12 +663,19 @@ describe("acting on a list", () => {
 describe("ACT-list-start", () => {
   it("moves a Planned list's start date to today, once", async () => {
     signInAs("digitization");
+    const hookId = watchHookEvent("list.started");
 
     const detail = await startList("L-2026-016");
 
     expect(detail.row.state).toBe("InProgress");
     expect(detail.row.list.startsOn).toBe("2026-06-25"); // LC-LIST-start-now
     expect(eventEntries(detail.log).map((entry) => entry.code)).toContain("list.started_early");
+    expect(
+      database.hookDeliveries.some(
+        (delivery) => delivery.hookId === hookId && delivery.events.includes("list.started"),
+      ),
+    ).toBe(true);
+    database.hooks = database.hooks.filter((hook) => hook.id !== hookId);
     expect(await statusOf(startList("L-2026-016"))).toBe(409);
   });
 

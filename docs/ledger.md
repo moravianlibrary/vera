@@ -95,17 +95,11 @@ ingest:
 Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
 [HOOK-condition](reference/integrations/hooks.md#hook-condition).
 
-The mock fires only `iteration.published` and `list.created`, and accepts two condition phrases.
-`list.started` and `list.done` were added at the user's request on 2026-10-15
-([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)); the frontend's
-event list (`api/hooks.ts`) does not offer them yet.
-
-Since [DEC-0018](decisions/DEC-0018-one-event-catalogue.md) (2026-10-30) a hook subscribes to
-one or more catalogue codes: `contract/src/hooks.ts` (`hookEventSchema`, a single `event`) and
-the hook editor still use the earlier names (`request.decided`, `iteration.validated`,
-`iteration.classified`, `list.dates_changed`, `list.done`, `task.*`).
-The engine fires every event from the act or job that causes it, with a typed condition
-builder. The act matrix then names each act's event. → engine, then docs.
+The client part is done: the contract, editor and mock use hookable catalogue codes, and the
+mock's lists fire `list.started` and `list.marked_done`
+([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
+The engine fires every event from the act or job that causes it, with a typed condition builder.
+The act matrix then names each act's event. → engine, then docs.
 
 ### L49: Hook payload
 

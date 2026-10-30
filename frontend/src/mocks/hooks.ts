@@ -76,11 +76,7 @@ function channelRefusal(draft: HookDraft): Refusal | null {
   // TODO(rrandiak): define a typed condition builder for hook subscriptions.
   // The accepted demo supplies only these two phrases; an arbitrary phrase
   // cannot be executed safely or predictably by the mock server.
-  if (
-    draft.filter !== "" &&
-    draft.filter !== "category under Periodicals" &&
-    draft.filter !== "decision is Approved or Denied"
-  ) {
+  if (draft.filter !== "" && draft.filter !== "category under Periodicals") {
     return {
       status: 422,
       code: "hook.filter_unsupported",
@@ -456,11 +452,12 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
 
   // A sample payload has public wording only. It never interpolates status-log
   // internal notes, plugin configuration or channel secrets.
-  const sampleSubject = draft.event.startsWith("task.")
+  const event = draft.events[0];
+  const sampleSubject = event.startsWith("run.")
     ? "T-9897"
-    : draft.event.startsWith("list.")
+    : event.startsWith("list.")
       ? "L-2026-015"
-      : draft.event.startsWith("request.")
+      : event.startsWith("request.")
         ? "R21"
         : "IT7";
   const sampleIteration = database.iterations.find((iteration) => iteration.id === "IT7");
@@ -468,7 +465,7 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
     sampleIteration === undefined ? null : (primaryLinkOf(sampleIteration)?.url ?? null);
   const publicText =
     draft.message === ""
-      ? `${draft.event}: ${sampleSubject}`
+      ? `${event}: ${sampleSubject}`
       : draft.message.replace(
           /\{(title|decision|public_text|link|task|error|list|pages|starts)\}/g,
           (_match, field: string) =>
@@ -485,7 +482,7 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
             })[field] ?? "",
         );
   return {
-    value: { channel, recipient: draft.recipient, event: draft.event, sampleSubject, publicText },
+    value: { channel, recipient: draft.recipient, event, sampleSubject, publicText },
   };
 }
 
@@ -526,10 +523,6 @@ function matchesFilter(hook: Hook, context: HookEventContext): boolean {
     return context.categoryPath?.includes("Periodicals") ?? false;
   }
 
-  if (hook.filter === "decision is Approved or Denied") {
-    return context.decision === "Approved" || context.decision === "Denied";
-  }
-
   return false;
 }
 
@@ -547,7 +540,7 @@ export function recordHookEvent(
 
   for (const hook of database.hooks.filter(
     (candidate) =>
-      candidate.event === event &&
+      candidate.events.includes(event) &&
       candidate.state === "active" &&
       matchesFilter(candidate, context),
   )) {
@@ -567,6 +560,7 @@ export function recordHookEvent(
       const updated: HookDelivery = {
         ...pending,
         subjects: [...pending.subjects, subject],
+        events: [...pending.events, event],
         publicText: `${pending.publicText}\n${publicText}`,
         lastAt: at.toISOString(),
         sendAt: sendAtOf(new Date(pending.firstAt), at, batch).toISOString(),
@@ -580,7 +574,7 @@ export function recordHookEvent(
       hookId: hook.id,
       recipient: target,
       subjects: [subject],
-      event,
+      events: [event],
       publicText,
       state: "waiting",
       firstAt: at.toISOString(),

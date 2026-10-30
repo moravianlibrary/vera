@@ -10,7 +10,12 @@ import type {
   HookPreview,
   HookTestResult,
 } from "@vera/contract/hooks";
-import { hookDraftSchema, hookEventSchema } from "@vera/contract/hooks";
+import {
+  hookDraftSchema,
+  hookEventSchema,
+  hookGroupOfEvent,
+  hookGroups,
+} from "@vera/contract/hooks";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { previewHook, sendHookTest } from "@/api/hooks";
@@ -18,6 +23,13 @@ import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -35,7 +47,7 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 
 const emptyHookDraft: HookDraft = {
   name: "",
-  event: "iteration.published",
+  events: ["iteration.published"],
   filter: "",
   channelId: "",
   recipient: "",
@@ -229,21 +241,55 @@ export function HookEditor({
           <Field id="hook-event" label="When">
             <Controller
               control={form.control}
-              name="event"
+              name="events"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="hook-event">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hookEventSchema.options.map((event) => (
-                      <SelectItem key={event} value={event}>
-                        {event}
-                      </SelectItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    id="hook-event"
+                    className="flex min-h-9 w-full items-center rounded-md border px-3 text-left text-xs focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    {field.value.length <= 2
+                      ? field.value.join(" · ")
+                      : `${field.value.slice(0, 2).join(" · ")} +${field.value.length - 2} more`}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="max-h-80 w-80 overflow-y-auto">
+                    {hookGroups.map((group, groupIndex) => (
+                      <div key={group}>
+                        {groupIndex > 0 && <DropdownMenuSeparator />}
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          {group}
+                        </div>
+                        {hookEventSchema.options
+                          .filter((event) => hookGroupOfEvent(event) === group)
+                          .map((event) => (
+                            <DropdownMenuCheckboxItem
+                              key={event}
+                              checked={field.value.includes(event)}
+                              onCheckedChange={(checked) =>
+                                field.onChange(
+                                  checked
+                                    ? [...field.value, event]
+                                    : field.value.filter((value) => value !== event),
+                                )
+                              }
+                              onSelect={(e) => e.preventDefault()}
+                              className="font-mono text-xs"
+                            >
+                              {event}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
+            />
+            <FieldError
+              text={
+                form.formState.errors.events?.message ??
+                form.formState.errors.events?.root?.message ??
+                (form.formState.errors.events ? "Pick at least one event" : undefined)
+              }
             />
           </Field>
           <Field id="hook-filter" label="Only when">
@@ -254,8 +300,7 @@ export function HookEditor({
             />
           </Field>
           <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
-            Leave empty for every event. Supported: category under Periodicals; decision is Approved
-            or Denied.
+            Leave empty for every event. Supported: category under Periodicals.
           </p>
           <FieldError text={form.formState.errors.filter?.message} />
           <Field id="hook-channel" label="Send through">

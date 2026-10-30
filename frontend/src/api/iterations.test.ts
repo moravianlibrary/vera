@@ -208,7 +208,7 @@ describe("setting where it is available", () => {
         ...hookTemplate,
         id,
         name: `Link act test ${index}`,
-        event,
+        events: [event],
         filter: "",
       };
     });
@@ -242,7 +242,7 @@ describe("setting where it is available", () => {
         database.hookDeliveries
           .slice(deliveryStart)
           .filter((delivery) => hookIds.includes(delivery.hookId))
-          .map((delivery) => delivery.event),
+          .flatMap((delivery) => delivery.events),
       ).toEqual([
         "iteration.published",
         "iteration.link_added",

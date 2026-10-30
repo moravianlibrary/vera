@@ -1,6 +1,7 @@
 // Hooks' HTTP contract: subscriptions, channel-backed delivery and public previews
 // (STATUS "Hooks"; plugins.md §4.12; permissions.md §3).
 
+import { hookEventCodes } from "@vera/domain/events";
 import { z } from "zod";
 
 const id = z.string().min(1);
@@ -11,33 +12,18 @@ const count = z.number().int().nonnegative();
 
 export const hookGroups = ["Requests", "Documents", "Records", "Lists", "Tasks"] as const;
 
-export const hookEventSchema = z.enum([
-  "request.created",
-  "request.decided",
-  "request.held",
-  "iteration.ingested",
-  "iteration.ingest_failed",
-  "iteration.validated",
-  "iteration.restricted",
-  "iteration.cancelled",
-  "iteration.listed",
-  "iteration.digitized",
-  "iteration.published",
-  "iteration.link_added",
-  "iteration.link_changed",
-  "iteration.classified",
-  "document.relinked",
-  "document.property_changed",
-  "iteration.property_changed",
-  "document.registry_changed",
-  "list.created",
-  "list.dates_changed",
-  "list.deleted",
-  "task.failed",
-  "task.finished",
-]);
+export const hookEventSchema = z.enum(hookEventCodes);
 
 export type HookEvent = z.infer<typeof hookEventSchema>;
+
+export function hookGroupOfEvent(event: HookEvent): (typeof hookGroups)[number] {
+  if (event.startsWith("request.")) return "Requests";
+  if (event.startsWith("list.")) return "Lists";
+  if (event.startsWith("run.")) return "Tasks";
+  if (event.startsWith("document.")) return "Records";
+  if (event === "iteration.property_changed") return "Records";
+  return "Documents";
+}
 
 export const hookInterfaceSchema = z.enum(["Email", "Chat", "Webhook", "File"]);
 
@@ -68,7 +54,12 @@ export const hookBatchSchema = z
 
 export const hookDraftSchema = z.object({
   name: z.string().trim().min(1),
-  event: hookEventSchema,
+  events: z
+    .array(hookEventSchema)
+    .min(1)
+    .refine((events) => new Set(events).size === events.length, {
+      message: "Pick each event once",
+    }),
   filter: z.string().trim(),
   channelId: id,
   recipient: z.string().trim().min(1),
@@ -93,7 +84,7 @@ export const hookDeliverySchema = z.object({
   hookId: id,
   recipient: z.string(),
   subjects: z.array(z.string()),
-  event: hookEventSchema,
+  events: z.array(hookEventSchema).min(1),
   publicText: z.string(),
   manageNotificationsUrl: z.string().nullable().optional(),
   state: z.enum(["waiting", "gave_up", "sent", "discarded", "suppressed"]),
@@ -130,7 +121,7 @@ export type Hook = z.infer<typeof hookSchema>;
 export const notificationHookSchema = z.object({
   id,
   label: z.string(),
-  event: hookEventSchema,
+  events: z.array(hookEventSchema).min(1),
   defaultEnabled: z.boolean(),
   isActive: z.boolean(),
 });

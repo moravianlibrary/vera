@@ -30,7 +30,13 @@ describe("Hooks view", () => {
   });
 
   it("groups by subject and finds hooks with exhausted deliveries", () => {
-    expect(hookGroupOf(hooks[0])).toBe("Records");
+    expect(hookGroupOf(hooks[0])).toBe("Documents");
+    expect(hookGroupOf({ ...hooks[0], events: ["list.created", "document.relinked"] })).toBe(
+      "Lists",
+    );
+    expect(hookGroupOf({ ...hooks[0], events: ["document.relinked", "list.created"] })).toBe(
+      "Records",
+    );
     expect(shownHooksOf(index, { states: ["gave_up"] }).map((hook) => hook.id)).toEqual(["H-03"]);
     expect(shownHooksOf(index, { kinds: ["Email"] }).map((hook) => hook.id)).toEqual(["H-02"]);
   });

@@ -1,6 +1,7 @@
 // Hooks over HTTP: reach, channel references, preview versus test, delivery
 // transitions and plugin impact (STATUS "Hooks"; plugins.md §4.12).
 
+import type { HookDraft } from "@vera/contract/hooks";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -49,9 +50,9 @@ const refusalOf = async (request: Promise<unknown>) => {
   }
 };
 
-const draft = {
+const draft: HookDraft = {
   name: "A new hook",
-  event: "task.failed" as const,
+  events: ["run.failed"],
   filter: "",
   channelId: "pi18",
   recipient: "#digitalizace",

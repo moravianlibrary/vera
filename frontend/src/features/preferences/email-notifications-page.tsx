@@ -113,7 +113,7 @@ export function EmailNotificationsPage() {
             <div>
               <p className="font-medium">{hook.label}</p>
               <p className="text-xs text-muted-foreground">
-                {hook.event} · {hook.defaultEnabled ? "On" : "Off"} by default
+                {hook.events.join(" · ")} · {hook.defaultEnabled ? "On" : "Off"} by default
               </p>
             </div>
             <Switch

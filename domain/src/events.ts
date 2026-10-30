@@ -601,6 +601,12 @@ export const eventCatalogue = {
 
 // Codes stored on record History entries, in catalogue order.
 export type EventCode = keyof typeof eventCatalogue;
+export type HookEventCode = {
+  [Code in EventCode]: (typeof eventCatalogue)[Code]["hook"] extends true ? Code : never;
+}[EventCode];
+export const hookEventCodes = Object.keys(eventCatalogue).filter(
+  (code) => eventCatalogue[code as EventCode].hook,
+) as [HookEventCode, ...HookEventCode[]];
 export const historyCodes = [
   "request.created",
   "request.approved",

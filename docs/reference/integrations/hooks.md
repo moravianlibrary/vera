@@ -34,10 +34,9 @@ at once on *Start now…*, which also sends `list.started_early`. `list.marked_d
 ([LC-LIST-state](../lifecycles/list.md#lc-list-state)), so nothing would otherwise mark the
 moment the scanning operation should begin.
 
-> **Open — [L33](../../ledger.md#l33-hook-events).** The contract and the mock still use the
-> earlier names (`request.decided`, `list.dates_changed`…) and one event per hook; the mock fires
-> only `iteration.published` and `list.created`. The engine has to fire every event from the act
-> or job that causes it, and the [acts](../access/acts.md) need a column naming them.
+> **Open — [L33](../../ledger.md#l33-hook-events).** The mock fires only
+> `iteration.published` and list events; the engine has to fire every event from the act or job
+> that causes it, and the [acts](../access/acts.md) need a column naming them.
 
 #### HOOK-condition
 
