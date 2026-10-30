@@ -4,7 +4,6 @@
 // (DOC-property-values). A public reader sees the public ones only, without who set them
 // (DOC-property-visibility). Staff with `property.<key>.edit` enter a value here
 // (DOC-property-hand).
-// TODO(rrandiak): labels move to i18n.
 
 import type { Audience, DocumentRecord } from "@vera/domain/documents";
 import { currentIterationOf } from "@vera/domain/documents";
@@ -22,12 +21,14 @@ import {
 } from "@vera/domain/properties";
 import { isFoundAfterScan } from "@vera/domain/validations";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
@@ -54,7 +55,7 @@ export function shownDefinitionsOf(
 }
 
 function sourceNameOf(source: SourcedValue["source"]): string {
-  return source.kind === "hand" ? "By hand" : source.instanceName;
+  return source.kind === "hand" ? i18n.t("properties:propertiesCard.byHand") : source.instanceName;
 }
 
 interface PropertiesCardProps {
@@ -64,6 +65,7 @@ interface PropertiesCardProps {
 }
 
 export function PropertiesCard({ record, audience, nameOf }: PropertiesCardProps) {
+  const { t } = useTranslation("properties");
   const { data: session } = useSessionQuery();
   const { data: index } = usePropertiesQuery();
   const [entering, setEntering] = useState<PropertyDefinition | null>(null);
@@ -108,16 +110,16 @@ export function PropertiesCard({ record, audience, nameOf }: PropertiesCardProps
     ));
 
   return (
-    <DetailCard title="Properties">
+    <DetailCard title={t("propertiesCard.title")}>
       {notice !== null && <p className="mb-2 text-xs text-tone-green-foreground">{notice}</p>}
       {rows(documentDefinitions)}
       {attemptDefinitions.length > 0 && (
         <>
-          <h3 className="mt-3.5 mb-1 text-xs font-semibold text-muted-foreground">This attempt</h3>
+          <h3 className="mt-3.5 mb-1 text-xs font-semibold text-muted-foreground">
+            {t("propertiesCard.thisAttempt")}
+          </h3>
           {rows(attemptDefinitions)}
-          {isStaff && isScanned && (
-            <FinePrint>It is scanned, so what it was scanned with stays as it is.</FinePrint>
-          )}
+          {isStaff && isScanned && <FinePrint>{t("propertiesCard.scanned")}</FinePrint>}
         </>
       )}
       {entering !== null && (
@@ -129,9 +131,11 @@ export function PropertiesCard({ record, audience, nameOf }: PropertiesCardProps
           onEntered={(result) => {
             setEntering(null);
             setNotice(
-              "isRechecked" in result && result.isRechecked
-                ? `${propertyNameOf(entering)} entered; the checks ran again.`
-                : `${propertyNameOf(entering)} entered.`,
+              i18n.t(
+                "properties:propertiesCard.entered" +
+                  ("isRechecked" in result && result.isRechecked ? "Rechecked" : ""),
+                { name: propertyNameOf(entering) },
+              ),
             );
           }}
         />
@@ -153,6 +157,7 @@ function PropertyRow({
   nameOf: (userId: string) => string;
   onEnter: (() => void) | undefined;
 }) {
+  const { t } = useTranslation("properties");
   const inUse = valueInUseOf(values);
   const sources = sourcesByTierOf(values);
   return (
@@ -163,7 +168,7 @@ function PropertyRow({
           {": "}
           <b className="font-semibold">
             {inUse === null ? (
-              <Muted>no value</Muted>
+              <Muted>{t("propertiesCard.noValue")}</Muted>
             ) : (
               formatPropertyValue(definition, inUse.value)
             )}
@@ -171,7 +176,7 @@ function PropertyRow({
         </span>
         {onEnter !== undefined && (
           <Button size="sm" variant="ghost" className="h-7 shrink-0" onClick={onEnter}>
-            {inUse === null ? "Enter…" : "Change…"}
+            {inUse === null ? t("propertiesCard.enter") : t("propertiesCard.change")}
           </Button>
         )}
       </div>
@@ -181,7 +186,7 @@ function PropertyRow({
             key={`${source.source.kind}-${source.source.kind === "plugin" ? source.source.instanceId : source.setBy}`}
             aside={
               source === inUse && sources.length > 1 ? (
-                <ToneBadge tone="green">in use</ToneBadge>
+                <ToneBadge tone="green">{t("propertiesCard.inUse")}</ToneBadge>
               ) : undefined
             }
           >
@@ -190,7 +195,7 @@ function PropertyRow({
               <Muted>
                 {joinDetails([
                   sourceNameOf(source.source),
-                  `tier ${source.tier}`,
+                  t("propertiesCard.tier", { count: source.tier }),
                   formatDay(source.observedAt),
                   source.setBy === null ? null : nameOf(source.setBy),
                 ])}

@@ -8,7 +8,7 @@ describe("Category mixes navigation (VIEW-mixes-entry)", () => {
     expect(visibleNavigation(admin).map((entry) => entry.id)).toContain("categories");
     expect(visibleNavigation(admin).map((entry) => entry.id)).toContain("mixes");
     expect(visibleNavigation(admin).find((entry) => entry.id === "mixes")?.visibleLabel).toBe(
-      "Category mixes",
+      "common:navigation.entry.mixes",
     );
     expect(canOpenNavigationEntry(admin, "mixes")).toBe(true);
 

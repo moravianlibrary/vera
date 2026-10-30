@@ -5,7 +5,6 @@
 // grants; what joining a group gives, never a role; a custody's members, what each can do with
 // its proposals, and the rule that places proposals in it. Category custody is shown here and
 // changed on Categories; mappings and Custody rules on Plugins.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@vera/contract/access";
 import type {
@@ -42,14 +41,13 @@ import type { AccessSelection, AccessSelectionKind } from "@/features/access/acc
 import {
   confersText,
   permissionLineOf,
-  scopeLabelOf,
   viaText,
   waysShortText,
 } from "@/features/access/access-words";
 import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
 import { agoText } from "@/lib/format-moment";
-import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 // Names out of the index; the categories' paths and the plugin instances' names from the
@@ -164,7 +162,10 @@ function Row({ aside, children }: { aside?: ReactNode; children: ReactNode }) {
 }
 
 function None({ text = "None." }: { text?: string }) {
-  return <p className="text-xs text-muted-foreground">{text}</p>;
+  const { t } = useTranslation("access");
+  return (
+    <p className="text-xs text-muted-foreground">{text === "None." ? t("record.none") : text}</p>
+  );
 }
 
 function Fine({ children }: { children: ReactNode }) {
@@ -199,29 +200,31 @@ function RecordLink({
 }
 
 function HandTag() {
+  const { t } = useTranslation("access");
   return (
     <span className="rounded-full bg-tone-purple px-2 py-px text-caption text-tone-purple-foreground">
-      by hand
+      {t("record.byHand")}
     </span>
   );
 }
 
 // How a role reaches the person, each way: "by hand", "mapped by MZK Keycloak from …".
 function Ways({ ways, names }: { ways: readonly RoleWay[]; names: AccessNames }) {
+  const { t } = useTranslation("access");
   return (
     <span className="inline-flex flex-wrap items-baseline justify-end gap-x-1">
       {ways.map((way, position) => (
         <span key={way.by === "hand" ? "hand" : `${way.instanceId}:${way.claim}`}>
-          {position > 0 && <Muted>and </Muted>}
+          {position > 0 && <Muted>{t("record.and")} </Muted>}
           {way.by === "hand" ? (
             <HandTag />
           ) : (
             <>
-              mapped by{" "}
+              {t("record.mappedBy")}{" "}
               <Link to={pluginInstanceHrefOf(way.instanceId)} className={linkClass}>
                 {names.instance(way.instanceId)}
               </Link>{" "}
-              <Muted>from {way.claim}</Muted>
+              <Muted>{t("record.fromClaim", { claim: way.claim })}</Muted>
             </>
           )}
         </span>
@@ -240,6 +243,7 @@ const scopeTones = {
 } as const;
 
 function ScopePill({ scope }: { scope: GrantScope }) {
+  const { t } = useTranslation("access");
   return (
     <span
       className={cn(
@@ -247,7 +251,7 @@ function ScopePill({ scope }: { scope: GrantScope }) {
         scope === null ? "bg-muted text-muted-foreground" : scopeTones[scope],
       )}
     >
-      {scopeLabelOf(scope)}
+      {t(`record.scope.${scope ?? "own"}`)}
     </span>
   );
 }
@@ -276,7 +280,9 @@ function PermissionTable({ rows }: { rows: readonly PermissionRow[] }) {
 
         return (
           <div key={group} className="mb-3 break-inside-avoid">
-            <h4 className="mb-1 text-xs font-semibold">{group}</h4>
+            <h4 className="mb-1 text-xs font-semibold">
+              {i18n.t(`access:record.permissionGroup.${group}`)}
+            </h4>
             {inGroup.map((row) => (
               <div
                 key={row.permission}
@@ -309,6 +315,7 @@ export function UserRecord({
   // Given with `access.manage`; offered on each identity but the last (ACCESS-link-identity).
   onUnlink?: (identity: Identity) => void;
 }) {
+  const { t } = useTranslation("access");
   const held = heldRolesOf(user);
   const permissions = effectivePermissionsOf(index.roles, heldRoleIdsOf(user));
   const custodies = requestCustodyOf(user.id, index.groups, index.custodies);
@@ -320,7 +327,11 @@ export function UserRecord({
     </RecordLink>
   );
   const via = (groupId: string | null, direct: string) =>
-    groupId === null ? <Muted>{direct}</Muted> : <Muted>via {names.group(groupId)}</Muted>;
+    groupId === null ? (
+      <Muted>{t(`via.${direct}`)}</Muted>
+    ) : (
+      <Muted>{t("via.group", { name: names.group(groupId) })}</Muted>
+    );
 
   return (
     <RecordFrame
@@ -335,12 +346,9 @@ export function UserRecord({
       sub={
         user.kind === "agent" ? (
           user.entry === null ? (
-            <>A plugin acting as a user; what it does is logged as it. It never logs in.</>
+            <>{t("record.agentDescription")}</>
           ) : (
-            <>
-              A plugin acting as a user: it enters through <b>{user.entry}</b>, so what it proposes
-              goes through review. It never logs in.
-            </>
+            <>{t("record.agentEntryDescription", { entry: user.entry })}</>
           )
         ) : (
           user.email
@@ -349,22 +357,27 @@ export function UserRecord({
       actions={actions}
     >
       {user.suspendedAt !== null && (
-        <StatusNote tone="red" title={`Suspended ${formatDay(user.suspendedAt)}`} className="mb-1">
-          They cannot log in. Their roles are kept but give nothing until they are restored; their
-          groups, history and open asks stay.
+        <StatusNote
+          tone="red"
+          title={t("record.suspended", { date: formatDay(user.suspendedAt) })}
+          className="mb-1"
+        >
+          {t("record.suspendedDescription")}
         </StatusNote>
       )}
       {held.length === 0 && (
-        <StatusNote tone="amber" title="No access yet" className="mb-1">
+        <StatusNote tone="amber" title={t("record.noAccessYet")} className="mb-1">
           {firstIdentity === undefined
-            ? "They hold no role and see nothing."
-            : `They logged in through ${names.instance(firstIdentity.instanceId)}, whose default role is none, and see “You have no access yet”.`}{" "}
-          Give them a role, reader at least.
+            ? t("record.noRolesSeeNothing")
+            : t("record.noAccessViaIdentity", {
+                instance: names.instance(firstIdentity.instanceId),
+              })}{" "}
+          {t("record.giveRole")}
         </StatusNote>
       )}
       <Columns>
         <div>
-          <Part title="Roles, and how">
+          <Part title={t("record.rolesAndHow")}>
             {held.length === 0 && <None />}
             {held.map(({ roleId, ways }) => (
               <Row key={roleId} aside={<Ways ways={ways} names={names} />}>
@@ -373,26 +386,16 @@ export function UserRecord({
                 </RecordLink>
               </Row>
             ))}
-            {held.some(({ ways }) => ways.length > 1) && (
-              <Fine>
-                Held two ways is not a conflict. Remove the hand-set one and the mapped one still
-                holds.
-              </Fine>
-            )}
+            {held.some(({ ways }) => ways.length > 1) && <Fine>{t("record.heldTwoWays")}</Fine>}
             {held.some(({ ways }) => ways.some((way) => way.by === "mapped")) && (
-              <Fine>
-                Mapped roles follow the provider: they are checked again at every login. Change them
-                there, or the mapping on Plugins.
-              </Fine>
+              <Fine>{t("record.mappedRoles")}</Fine>
             )}
           </Part>
-          <Part title="Signs in with">
+          <Part title={t("record.signsInWith")}>
             {user.identities.length === 0 && (
               <None
                 text={
-                  user.kind === "agent"
-                    ? "Nothing: an agent has no identity."
-                    : "No identity linked."
+                  user.kind === "agent" ? t("record.agentNoIdentity") : t("record.noIdentityLinked")
                 }
               />
             )}
@@ -403,8 +406,10 @@ export function UserRecord({
                   <>
                     <Muted>
                       {identity.lastLoginAt === null
-                        ? "never logged in"
-                        : `last ${agoText(identity.lastLoginAt, index.asOf)}`}
+                        ? t("record.neverLoggedIn")
+                        : t("record.lastLoggedIn", {
+                            ago: agoText(identity.lastLoginAt, index.asOf),
+                          })}
                     </Muted>
                     {onUnlink !== undefined && user.identities.length > 1 && (
                       <Button
@@ -413,7 +418,7 @@ export function UserRecord({
                         className="ml-2 h-auto p-0 text-xs"
                         onClick={() => onUnlink(identity)}
                       >
-                        Unlink
+                        {t("record.unlink")}
                       </Button>
                     )}
                   </>
@@ -426,7 +431,7 @@ export function UserRecord({
               </Row>
             ))}
           </Part>
-          <Part title="Groups">
+          <Part title={t("record.groups")}>
             {user.groupIds.length === 0 && <None />}
             {user.groupIds.map((groupId) => (
               <Row
@@ -451,7 +456,7 @@ export function UserRecord({
             )}
             names={names}
           />
-          <Part title="Request custody">
+          <Part title={t("record.requestCustody")}>
             {custodies.length === 0 && <None />}
             {custodies.map(({ custodyId, via: by }) => (
               <Row key={`${custodyId}:${by}`} aside={via(by, "member")}>
@@ -460,23 +465,19 @@ export function UserRecord({
                 </RecordLink>
               </Row>
             ))}
-            {custodies.length > 0 && reach === null && (
-              <Fine>
-                A member, but no role of theirs reaches proposals: they see nothing in it.
-              </Fine>
-            )}
+            {custodies.length > 0 && reach === null && <Fine>{t("record.memberNoRoleReach")}</Fine>}
           </Part>
-          <Part title="Projects">
+          <Part title={t("record.projects")}>
             <ProjectRows user={user} index={index} names={names} />
           </Part>
         </div>
       </Columns>
       <Part
-        title="What they can do"
-        aside={`${plural(permissions.length, "permission")}, and which role each comes from`}
+        title={t("record.whatTheyCanDo")}
+        aside={t("record.permissionCountAndSource", { count: permissions.length })}
       >
         {permissions.length === 0 ? (
-          <None text="Nothing." />
+          <None text={t("record.nothing")} />
         ) : (
           <PermissionTable
             rows={permissions.map((permission) => ({
@@ -528,7 +529,13 @@ function ProjectRows({
       {projects.map(({ projectId, via }) => (
         <Row
           key={`${projectId}:${typeof via === "string" ? via : via.groupId}`}
-          aside={<Muted>{typeof via === "string" ? via : `via ${names.group(via.groupId)}`}</Muted>}
+          aside={
+            <Muted>
+              {typeof via === "string"
+                ? via
+                : i18n.t("access:via.group", { name: names.group(via.groupId) })}
+            </Muted>
+          }
         >
           <Link to={`/projects/${encodeURIComponent(projectId)}`} className={linkClass}>
             {names.project(projectId)}
@@ -547,23 +554,24 @@ function CategoryCustodyPart({
   held: readonly { categoryId: string; key: string; aside?: ReactNode }[];
   names: AccessNames;
 }) {
+  const { t } = useTranslation("access");
   return (
-    <Part title="Category custody">
+    <Part title={t("record.categoryCustody")}>
       {held.length === 0 && <None />}
       {held.map(({ categoryId, key, aside }) => (
         <Row key={key} aside={aside}>
           <Link to={`/categories?c=${encodeURIComponent(categoryId)}`} className={linkClass}>
             {names.category(categoryId)}
           </Link>{" "}
-          <Muted>and everything under it</Muted>
+          <Muted>{t("record.everythingUnderIt")}</Muted>
         </Row>
       ))}
       <Fine>
-        Category custody is granted on{" "}
+        {t("record.categoryCustodyGrantedOn")}{" "}
         <Link to="/categories" className={linkClass}>
           Categories
         </Link>
-        , from the branch, not here.
+        {t("record.fromBranchNotHere")}
       </Fine>
     </Part>
   );
@@ -578,6 +586,7 @@ export function RoleRecord({
   actions,
   role,
 }: RecordProps & { role: Role }) {
+  const { t } = useTranslation("access");
   const holders = holdersOf(index.users, role.id);
   const included = includedRolesOf(index.roles, role);
   const mappings = mappingsOf(index.identityInstances, role.id);
@@ -586,7 +595,7 @@ export function RoleRecord({
       title={role.name}
       badge={
         <ToneBadge tone={role.isShipped ? "slate" : "blue"} className="px-1.5 py-0 text-2xs">
-          {role.isShipped ? "shipped" : "custom"}
+          {t(role.isShipped ? "record.shipped" : "record.custom")}
         </ToneBadge>
       }
       sub={
@@ -595,16 +604,16 @@ export function RoleRecord({
           {included.length > 0 && (
             <>
               {role.description !== "" && " · "}
-              includes everything{" "}
+              {t("record.includesEverything")}{" "}
               {included.map((other, position) => (
                 <span key={other.id}>
-                  {position > 0 && " and "}
+                  {position > 0 && ` ${t("record.and")} `}
                   <RecordLink kind="roles" id={other.id} onSelect={onSelect}>
                     {other.name}
                   </RecordLink>
                 </span>
               ))}{" "}
-              has
+              {t("record.has")}
             </>
           )}
         </>
@@ -612,8 +621,8 @@ export function RoleRecord({
       actions={actions}
     >
       <Columns>
-        <Part title="Held by" aside={String(holders.length)}>
-          {holders.length === 0 && <None text="Nobody." />}
+        <Part title={t("record.heldBy")} aside={String(holders.length)}>
+          {holders.length === 0 && <None text={t("record.nobody")} />}
           {holders.map(({ user, ways }) => (
             <Row key={user.id} aside={<Ways ways={ways} names={names} />}>
               <RecordLink kind="users" id={user.id} onSelect={onSelect}>
@@ -622,12 +631,12 @@ export function RoleRecord({
             </Row>
           ))}
         </Part>
-        <Part title="Mapped by identity providers">
-          {mappings.length === 0 && <None text="No mapping gives it: only by hand." />}
+        <Part title={t("record.mappedByIdentityProviders")}>
+          {mappings.length === 0 && <None text={t("record.noMappingOnlyHand")} />}
           {mappings.map(({ instanceId, claim }) => (
             <Row
               key={`${instanceId}:${claim}`}
-              aside={<Muted>{claim ?? "default role: everyone first seen here"}</Muted>}
+              aside={<Muted>{claim ?? t("record.defaultRoleEveryone")}</Muted>}
             >
               <Link to={pluginInstanceHrefOf(instanceId)} className={linkClass}>
                 {names.instance(instanceId)}
@@ -635,7 +644,7 @@ export function RoleRecord({
             </Row>
           ))}
           <Fine>
-            Mappings are set on the Identity instance, on{" "}
+            {t("record.mappingsSetOnIdentity")}{" "}
             <Link to="/plugins?kind=Identity" className={linkClass}>
               Plugins
             </Link>
@@ -644,31 +653,31 @@ export function RoleRecord({
         </Part>
       </Columns>
       <Part
-        title="Proposal submission limit"
-        aside={role.proposalBatchLimit === null ? "Unlimited" : `${role.proposalBatchLimit} items`}
-      >
-        <Fine>Maximum items in one submission for a holder of this role.</Fine>
-      </Part>
-      <Part
-        title="Proposal daily limit"
-        aside={role.proposalDailyLimit === null ? "Unlimited" : `${role.proposalDailyLimit} items`}
-      >
-        <Fine>
-          Accepted items per library calendar day. Among roles granting request.create, the highest
-          limit applies, or unlimited if one has no limit.
-        </Fine>
-      </Part>
-      <Part
-        title="Grants"
+        title={t("record.proposalSubmissionLimit")}
         aside={
-          <>
-            {role.grants.length} · <i>own</i> is self-scoped: it acts on the holder's own records
-            and has no scope to choose · <i>managed</i> is a project they manage
-          </>
+          role.proposalBatchLimit === null
+            ? t("record.unlimited")
+            : t("record.items", { count: role.proposalBatchLimit })
         }
       >
+        <Fine>{t("record.proposalSubmissionLimitDescription")}</Fine>
+      </Part>
+      <Part
+        title={t("record.proposalDailyLimit")}
+        aside={
+          role.proposalDailyLimit === null
+            ? t("record.unlimited")
+            : t("record.items", { count: role.proposalDailyLimit })
+        }
+      >
+        <Fine>{t("record.proposalDailyLimitDescription")}</Fine>
+      </Part>
+      <Part
+        title={t("record.grants")}
+        aside={<>{t("record.grantsDescription", { count: role.grants.length })}</>}
+      >
         {role.grants.length === 0 ? (
-          <None text="None: whoever holds only this role sees nothing." />
+          <None text={t("record.noGrantsSeeNothing")} />
         ) : (
           <PermissionTable rows={role.grants} />
         )}
@@ -686,12 +695,13 @@ export function GroupRecord({
   actions,
   group,
 }: RecordProps & { group: AccessGroup }) {
+  const { t } = useTranslation("access");
   const custodies = index.custodies.filter((custody) => custody.groupIds.includes(group.id));
   const projects = index.projects.filter((project) => project.memberGroupIds.includes(group.id));
   const members = index.users.filter((user) => group.memberIds.includes(user.id));
   return (
     <RecordFrame title={group.name} sub={group.description} actions={actions}>
-      <StatusNote tone="blue" title="Adding somebody here gives them">
+      <StatusNote tone="blue" title={t("record.addingGivesThem")}>
         {confersText({
           categoryNames: group.categoryIds.map(names.category),
           custodyNames: custodies.map(({ name }) => name),
@@ -700,8 +710,8 @@ export function GroupRecord({
         .
       </StatusNote>
       <Columns>
-        <Part title="Members" aside={String(members.length)}>
-          {members.length === 0 && <None text="Nobody yet." />}
+        <Part title={t("record.members")} aside={String(members.length)}>
+          {members.length === 0 && <None text={t("record.nobodyYet")} />}
           {members.map((user) => {
             const roleIds = heldRoleIdsOf(user);
             return (
@@ -709,7 +719,7 @@ export function GroupRecord({
                 key={user.id}
                 aside={
                   <Muted>
-                    {roleIds.length === 0 ? "no role" : roleIds.map(names.role).join(", ")}
+                    {roleIds.length === 0 ? t("record.noRole") : roleIds.map(names.role).join(", ")}
                   </Muted>
                 }
               >
@@ -720,27 +730,27 @@ export function GroupRecord({
               </Row>
             );
           })}
-          <Fine>
-            A group never gives a role. Roles are set by hand here, or mapped by an Identity plugin
-            from a claim.
-          </Fine>
+          <Fine>{t("record.groupRolesDescription")}</Fine>
         </Part>
         <div>
           <CategoryCustodyPart
             held={group.categoryIds.map((categoryId) => ({ categoryId, key: categoryId }))}
             names={names}
           />
-          <Part title="Request custody">
+          <Part title={t("record.requestCustody")}>
             {custodies.length === 0 && <None />}
             {custodies.map((custody) => (
-              <Row key={custody.id} aside={<Muted>{custody.openCount} open</Muted>}>
+              <Row
+                key={custody.id}
+                aside={<Muted>{t("record.openCount", { count: custody.openCount })}</Muted>}
+              >
                 <RecordLink kind="custodies" id={custody.id} onSelect={onSelect}>
                   {custody.name}
                 </RecordLink>
               </Row>
             ))}
           </Part>
-          <Part title="Projects">
+          <Part title={t("record.projects")}>
             {projects.length === 0 && <None />}
             {projects.map((project) => (
               <Row key={project.id}>
@@ -758,8 +768,6 @@ export function GroupRecord({
 
 // ---------------------------------------------------------------- a request custody
 
-const reachLabels = { decides: "decides", sees: "sees only" } as const;
-
 export function CustodyRecordView({
   index,
   names,
@@ -767,6 +775,7 @@ export function CustodyRecordView({
   actions,
   custody,
 }: RecordProps & { custody: CustodyRecord }) {
+  const { t } = useTranslation("access");
   const members = custodyMembersOf(custody, index.groups);
   const placedProposals = index.proposals.filter((proposal) =>
     proposal.custodyIds.includes(custody.id),
@@ -777,7 +786,7 @@ export function CustodyRecordView({
       badge={
         custody.isFallback ? (
           <ToneBadge tone="amber" className="px-1.5 py-0 text-2xs">
-            fallback
+            {t("record.fallback")}
           </ToneBadge>
         ) : undefined
       }
@@ -786,7 +795,7 @@ export function CustodyRecordView({
           {custody.description}
           {custody.description !== "" && " · "}
           <Link to={`/requests?custody=${encodeURIComponent(custody.id)}`} className={linkClass}>
-            {plural(custody.openCount, "open proposal")}
+            {t("record.openProposalCount", { count: custody.openCount })}
           </Link>
         </>
       }
@@ -794,17 +803,13 @@ export function CustodyRecordView({
     >
       <StatusNote
         tone="blue"
-        title={
-          custody.isFallback
-            ? "What no rule placed lands here"
-            : "Which proposals are in it is a rule's answer, never typed in"
-        }
+        title={custody.isFallback ? t("record.fallbackTitle") : t("record.ruleTitle")}
       >
         {custody.isFallback ? (
-          "Every Custody rule answered nothing for these. It cannot be deleted. With no members, only admins see them."
+          t("record.fallbackDescription")
         ) : custody.placedByIds.length > 0 ? (
           <>
-            Placed by{" "}
+            {t("record.placedBy")}{" "}
             {custody.placedByIds.map((instanceId, position) => (
               <span key={instanceId}>
                 {position > 0 && ", "}
@@ -813,15 +818,15 @@ export function CustodyRecordView({
                 </Link>
               </span>
             ))}
-            , on Plugins. To move a proposal, change the rule.
+            {t("record.placedByDescription")}
           </>
         ) : (
-          "No Custody rule names it yet, so it holds nothing. Add its name to a rule on Plugins."
+          t("record.noRuleNamesIt")
         )}
       </StatusNote>
       <Columns>
-        <Part title="Members" aside={String(members.length)}>
-          {members.length === 0 && <None text="Nobody." />}
+        <Part title={t("record.members")} aside={String(members.length)}>
+          {members.length === 0 && <None text={t("record.nobody")} />}
           {members.map(({ userId, via }) => {
             const user = index.users.find((candidate) => candidate.id === userId);
             const reach =
@@ -831,36 +836,42 @@ export function CustodyRecordView({
                 key={userId}
                 aside={
                   reach === null ? (
-                    <span className="text-tone-amber-foreground">no role reaches it</span>
+                    <span className="text-tone-amber-foreground">
+                      {t("record.noRoleReachesIt")}
+                    </span>
                   ) : (
-                    <Muted>{reachLabels[reach]}</Muted>
+                    <Muted>{t(`record.reach.${reach}`)}</Muted>
                   )
                 }
               >
                 <RecordLink kind="users" id={userId} onSelect={onSelect}>
                   {names.user(userId)}
                 </RecordLink>{" "}
-                <Muted>{via.map((way) => viaText(way, names.group, "direct")).join(" and ")}</Muted>
+                <Muted>
+                  {via
+                    .map((way) => viaText(way, names.group, "direct"))
+                    .join(` ${t("record.and")} `)}
+                </Muted>
               </Row>
             );
           })}
           <Fine>
-            Membership is not capability: a member decides only with{" "}
-            <span className="font-mono">request.decide</span>, and sees only with{" "}
-            <span className="font-mono">request.read</span>, through a role.
+            {t("record.membershipCapability")} <span className="font-mono">request.decide</span>,
+            {t("record.andSeesOnlyWith")} <span className="font-mono">request.read</span>
+            {t("record.throughRole")}
           </Fine>
         </Part>
-        <Part title="Groups in it">
+        <Part title={t("record.groupsInIt")}>
           {custody.groupIds.length === 0 && <None />}
           {custody.groupIds.map((groupId) => (
             <Row
               key={groupId}
               aside={
                 <Muted>
-                  {plural(
-                    index.groups.find((group) => group.id === groupId)?.memberIds.length ?? 0,
-                    "member",
-                  )}
+                  {t("record.memberCount", {
+                    count:
+                      index.groups.find((group) => group.id === groupId)?.memberIds.length ?? 0,
+                  })}
                 </Muted>
               }
             >
@@ -871,24 +882,19 @@ export function CustodyRecordView({
           ))}
         </Part>
       </Columns>
-      <Part title="Current plugin output · open proposals" aside={String(custody.openCount)}>
-        {placedProposals.length === 0 && (
-          <None text="No open proposals currently placed in this set." />
-        )}
+      <Part title={t("record.currentPluginOutput")} aside={String(custody.openCount)}>
+        {placedProposals.length === 0 && <None text={t("record.noOpenProposalsPlaced")} />}
         {placedProposals.slice(0, 8).map((proposal) => (
-          <Row key={proposal.id} aside={<Muted>placed by custody rule</Muted>}>
+          <Row key={proposal.id} aside={<Muted>{t("record.placedByCustodyRule")}</Muted>}>
             <Link to={`/requests?id=${encodeURIComponent(proposal.id)}`} className={linkClass}>
               {proposal.title}
             </Link>
           </Row>
         ))}
         {placedProposals.length > 8 && (
-          <Fine>Showing 8 of {placedProposals.length} open proposals.</Fine>
+          <Fine>{t("record.showingOpenProposals", { count: placedProposals.length })}</Fine>
         )}
-        <Fine>
-          Placement is calculated from Custody plugin output. Change the rule on Plugins; manage
-          this set's members here.
-        </Fine>
+        <Fine>{t("record.placementDescription")}</Fine>
       </Part>
     </RecordFrame>
   );

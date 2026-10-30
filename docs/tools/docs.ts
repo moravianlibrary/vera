@@ -200,11 +200,12 @@ function sidebarTable(): string {
     `| Entry | Path | Shown with any of | ${roles.map((role) => `\`${role.name}\``).join(" | ")} |`,
     `|---|---|---|${roles.map(() => "---").join("|")}|`,
     ...navigationEntries.map((entry) => {
-      const cells = visible.map(
-        (entries) => entries.find((shown) => shown.id === entry.id)?.visibleLabel ?? "",
-      );
+      const cells = visible.map((entries) => {
+        const label = entries.find((shown) => shown.id === entry.id)?.visibleLabel;
+        return label === undefined ? "" : i18n.t(label, { lng: "en" });
+      });
       const requires = entry.requires.map((permission) => `\`${permission}\``).join(" · ");
-      return `| ${entry.label} | \`${entry.path}\` | ${requires} | ${cells.join(" | ")} |`;
+      return `| ${i18n.t(entry.label, { lng: "en" })} | \`${entry.path}\` | ${requires} | ${cells.join(" | ")} |`;
     }),
   ].join("\n");
 }

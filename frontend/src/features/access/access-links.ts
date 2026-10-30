@@ -3,7 +3,6 @@
 // always run left to right: role → user → group, custody or shared watchlist. A role held only
 // through a mapping is a dashed line, as is a custody reached through a group. A shared watchlist
 // lights up the groups and roles in its audience and the people it reaches, and they light it up.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@vera/contract/access";
 import {
@@ -17,6 +16,10 @@ import type { LinkedLine, LinkedTag } from "@/components/linked-columns";
 import { linkKeyOf } from "@/components/linked-columns";
 import type { AccessSelection } from "@/features/access/access-view";
 import { viaText, waysShortText } from "@/features/access/access-words";
+import { i18n } from "@/i18n";
+
+const t = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 
 export interface AccessLinks {
   tags: Map<string, LinkedTag>;
@@ -37,7 +40,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
   const tagSharedWith = (field: "roleIds" | "groupIds", recordId: string) => {
     for (const watchlist of index.sharedWatchlists) {
       if (watchlist.audience.kind === "some" && watchlist.audience[field].includes(recordId)) {
-        tag("watchlists", watchlist.id, "shared with it");
+        tag("watchlists", watchlist.id, t("links.sharedWithIt"));
       }
     }
   };
@@ -60,7 +63,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
       }
 
       for (const groupId of user.groupIds) {
-        tag("groups", groupId, "member");
+        tag("groups", groupId, t("via.member"));
         line(["users", user.id], ["groups", groupId]);
       }
 
@@ -71,7 +74,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
 
       for (const watchlist of index.sharedWatchlists) {
         if (watchlist.reachedUserIds.includes(user.id)) {
-          tag("watchlists", watchlist.id, "sees it");
+          tag("watchlists", watchlist.id, t("links.seesIt"));
           line(["users", user.id], ["watchlists", watchlist.id]);
         }
       }
@@ -94,14 +97,14 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
     case "groups": {
       const group = index.groups.find((candidate) => candidate.id === selection.id);
       for (const userId of group?.memberIds ?? []) {
-        tag("users", userId, "member");
+        tag("users", userId, t("via.member"));
         line(["users", userId], ["groups", selection.id]);
       }
 
       for (const custody of index.custodies.filter((candidate) =>
         candidate.groupIds.includes(selection.id),
       )) {
-        tag("custodies", custody.id, "held by this group");
+        tag("custodies", custody.id, t("links.heldByGroup"));
       }
 
       tagSharedWith("groupIds", selection.id);
@@ -118,7 +121,9 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
         tag(
           "users",
           userId,
-          via.includes(null) ? "member" : `via ${groupIds.map(groupNameOf).join(", ")}`,
+          via.includes(null)
+            ? t("via.member")
+            : t("links.viaGroups", { groups: groupIds.map(groupNameOf).join(", ") }),
         );
         if (via.includes(null)) {
           line(["users", userId], ["custodies", custody.id]);
@@ -130,7 +135,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
       }
 
       for (const groupId of custody.groupIds) {
-        tag("groups", groupId, "member of it");
+        tag("groups", groupId, t("links.memberOfIt"));
       }
 
       break;
@@ -142,21 +147,21 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
       }
 
       for (const userId of watchlist.reachedUserIds) {
-        tag("users", userId, "sees it");
+        tag("users", userId, t("links.seesIt"));
         line(["users", userId], ["watchlists", watchlist.id]);
       }
 
       for (const userId of watchlist.outOfViewUserIds) {
-        tag("users", userId, "cannot open the view");
+        tag("users", userId, t("links.cannotOpenView"));
       }
 
       if (watchlist.audience.kind === "some") {
         for (const roleId of watchlist.audience.roleIds) {
-          tag("roles", roleId, "in its audience");
+          tag("roles", roleId, t("links.inAudience"));
         }
 
         for (const groupId of watchlist.audience.groupIds) {
-          tag("groups", groupId, "in its audience");
+          tag("groups", groupId, t("links.inAudience"));
         }
       }
 

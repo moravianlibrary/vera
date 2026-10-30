@@ -1,7 +1,6 @@
 // The channels a watchlist reaches the person through (WATCH-delivery), shared by the Watchlists
 // preferences and Preferences → Notifications: browser push, then each Delivery channel instance that can
 // reach them, named by the instance's name. WATCH-channel-off: each one off for every watchlist.
-// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { UserSettings } from "@vera/contract/user-settings";
@@ -9,8 +8,9 @@ import type { WatchlistChannel } from "@vera/contract/watchlists";
 import { pushChannelId } from "@vera/contract/watchlists";
 import { listWatchlistChannels } from "@/api/watchlists";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 
-export const pushChannelName = "Browser push";
+export const pushChannelName = "preferences:channels.browserPush";
 
 export function useWatchlistChannelsQuery() {
   return useQuery({
@@ -26,8 +26,8 @@ export function unreachableTextOf(channel: WatchlistChannel): string | null {
   }
 
   return channel.reach.by === "email"
-    ? "Cannot reach you: your account has no email address."
-    : `Cannot reach you: your login gives it no ${channel.reach.claim}.`;
+    ? i18n.t("preferences:channels.noEmail")
+    : i18n.t("preferences:channels.noClaim", { claim: channel.reach.claim });
 }
 
 export function isOffForAll(settings: UserSettings | undefined, channelId: string): boolean {

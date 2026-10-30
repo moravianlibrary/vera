@@ -4,7 +4,7 @@
 import { permissionKeys } from "@vera/domain/permissions";
 import { afterEach, describe, expect, it } from "vitest";
 import { permissionLineOf } from "@/features/access/access-words";
-import { resources } from "@/i18n";
+import { i18n, resources } from "@/i18n";
 import {
   browserLanguageOf,
   forgetLoginLanguagePick,
@@ -15,6 +15,24 @@ import {
 } from "@/i18n/language";
 
 describe("messages", () => {
+  it("registers every locale file as a namespace in both languages", () => {
+    const englishFiles = Object.keys(import.meta.glob("./locales/en/*.json")).map((path) =>
+      path
+        .split("/")
+        .at(-1)
+        ?.replace(/\.json$/, ""),
+    );
+    const czechFiles = Object.keys(import.meta.glob("./locales/cs/*.json")).map((path) =>
+      path
+        .split("/")
+        .at(-1)
+        ?.replace(/\.json$/, ""),
+    );
+    expect(czechFiles.toSorted()).toEqual(englishFiles.toSorted());
+    expect(Object.keys(resources.en).toSorted()).toEqual(englishFiles.toSorted());
+    expect(i18n.options.ns).toEqual(expect.arrayContaining(englishFiles));
+  });
+
   it("has the same keys in Czech as in English, accounting for Czech plurals", () => {
     for (const namespace of Object.keys(resources.en) as (keyof typeof resources.en)[]) {
       const english = Object.keys(resources.en[namespace]);

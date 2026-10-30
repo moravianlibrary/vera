@@ -2,7 +2,6 @@
 // takes (DOC-property-filter) — some of an enum's or yes/no's values, what a text contains,
 // starts with or ends with, a range of numbers or days — and may also take *no value*. All of
 // them hold for an item in scope.
-// TODO(rrandiak): labels move to i18n.
 
 import type { PropertyCondition, PropertyDefinition, TextMatch } from "@vera/domain/properties";
 import {
@@ -11,14 +10,13 @@ import {
   propertyNameOf,
   textConditionOf,
   textMatches,
-  textMatchLabels,
-  textSummaryOf,
   withTextCondition,
   yesNoValues,
 } from "@vera/domain/properties";
 import { Plus, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -30,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
+import { i18n } from "@/i18n";
 
 // "Machines: Zeutschel", "Size: A4 or no value", "Width: 20–40 cm", "Note: starts with “Rare”".
 export function conditionTextOf(
@@ -40,17 +39,23 @@ export function conditionTextOf(
     return condition.key;
   }
 
-  const range = (from: number | string | undefined, to: number | string | undefined) =>
-    from !== undefined && to !== undefined
-      ? `${from}–${to}`
-      : from !== undefined
-        ? `from ${from}`
-        : `up to ${to}`;
+  const range = (from: number | string | undefined, to: number | string | undefined) => {
+    if (from !== undefined && to !== undefined) return `${from}–${to}`;
+    return from !== undefined
+      ? i18n.t("properties:scopeCondition.from", { value: from })
+      : i18n.t("properties:scopeCondition.upTo", { value: to });
+  };
+  const textCondition = textConditionOf(condition);
   const parts = [
     condition.anyOf === undefined || condition.anyOf.length === 0
       ? null
       : condition.anyOf.map((value) => enumValueNameOf(definition, value)).join(", "),
-    textSummaryOf(condition),
+    textCondition.text.trim() === ""
+      ? null
+      : i18n.t("properties:scopeCondition.textSummary", {
+          match: i18n.t(`common:filter.match.${textCondition.match}`).toLocaleLowerCase(),
+          text: textCondition.text.trim(),
+        }),
     condition.numberRange === undefined
       ? null
       : `${range(condition.numberRange.from, condition.numberRange.to)}${
@@ -61,9 +66,12 @@ export function conditionTextOf(
     condition.dayRange === undefined || "preset" in condition.dayRange
       ? null
       : range(condition.dayRange.from, condition.dayRange.to),
-    condition.hasNoValue === true ? "no value" : null,
+    condition.hasNoValue === true ? i18n.t("properties:scopeCondition.noValue") : null,
   ].filter((part) => part !== null);
-  return `${propertyNameOf(definition)}: ${parts.join(" or ")}`;
+  return i18n.t("properties:scopeCondition.summary", {
+    name: propertyNameOf(definition),
+    parts: parts.join(` ${i18n.t("common:filter.or")} `),
+  });
 }
 
 interface ScopeConditionsFieldProps {
@@ -73,6 +81,7 @@ interface ScopeConditionsFieldProps {
 }
 
 export function ScopeConditionsField({ id, value, onChange }: ScopeConditionsFieldProps) {
+  const { t } = useTranslation("properties");
   const { data: index } = usePropertiesQuery();
   const definitions = index?.definitions ?? [];
   const unused = definitions.filter(
@@ -84,7 +93,8 @@ export function ScopeConditionsField({ id, value, onChange }: ScopeConditionsFie
   return (
     <fieldset className="grid gap-2">
       <legend className="mb-1 text-sm font-medium">
-        Properties <span className="font-normal text-muted-foreground">— optional</span>
+        {t("scopeCondition.properties")}{" "}
+        <span className="font-normal text-muted-foreground">— {t("scopeCondition.optional")}</span>
       </legend>
       {value.map((condition, at) => {
         const definition = definitions.find((candidate) => candidate.key === condition.key);
@@ -99,7 +109,9 @@ export function ScopeConditionsField({ id, value, onChange }: ScopeConditionsFie
                 variant="ghost"
                 size="icon"
                 className="size-7"
-                aria-label={`Remove the condition on ${definition === undefined ? condition.key : propertyNameOf(definition)}`}
+                aria-label={t("scopeCondition.remove", {
+                  name: definition === undefined ? condition.key : propertyNameOf(definition),
+                })}
                 onClick={() => onChange(value.filter((_, index) => index !== at))}
               >
                 <X />
@@ -119,12 +131,12 @@ export function ScopeConditionsField({ id, value, onChange }: ScopeConditionsFie
       {unused.length > 0 && (
         <Select value="" onValueChange={(key) => onChange([...value, { key }])}>
           <SelectTrigger
-            aria-label="Add a condition on a property"
+            aria-label={t("scopeCondition.add")}
             size="sm"
             className="w-fit gap-1.5 text-xs"
           >
             <Plus className="size-3.5" />
-            <SelectValue placeholder="Only items whose property…" />
+            <SelectValue placeholder={t("scopeCondition.placeholder")} />
           </SelectTrigger>
           <SelectContent>
             {unused.map((definition) => (
@@ -137,10 +149,11 @@ export function ScopeConditionsField({ id, value, onChange }: ScopeConditionsFie
       )}
       {value.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          All of them hold for an item it counts. A digitized item is read as it was on its
-          digitized date, so a later change does not move what was counted.
-          {value.some((condition) => !isActiveCondition(condition)) &&
-            " A condition with nothing chosen yet is not saved."}
+          {t(
+            value.some((condition) => !isActiveCondition(condition))
+              ? "scopeCondition.helpIncomplete"
+              : "scopeCondition.help",
+          )}
         </p>
       )}
     </fieldset>
@@ -158,6 +171,7 @@ function ConditionInput({
   condition: PropertyCondition;
   onChange: (condition: PropertyCondition) => void;
 }) {
+  const { t } = useTranslation("properties");
   const { type } = definition;
   const noValue = (
     <label htmlFor={`${id}-none`} className="flex items-center gap-2 text-xs">
@@ -168,7 +182,7 @@ function ConditionInput({
           onChange({ ...condition, hasNoValue: checked === true || undefined })
         }
       />
-      Or no value
+      {t("scopeCondition.orNoValue")}
     </label>
   );
 
@@ -192,7 +206,9 @@ function ConditionInput({
                 })
               }
             />
-            {type.kind === "enum" ? enumValueNameOf(definition, value) : value}
+            {type.kind === "enum"
+              ? enumValueNameOf(definition, value)
+              : i18n.t(`common:answer.${value}`)}
           </label>
         ))}
         {noValue}
@@ -231,7 +247,7 @@ function ConditionInput({
     <div className="grid gap-1.5">
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <Input
-          aria-label={`${propertyNameOf(definition)} from`}
+          aria-label={t("scopeCondition.fromLabel", { name: propertyNameOf(definition) })}
           type={isDate ? "date" : "number"}
           className="h-8 w-36"
           value={ends.from ?? ""}
@@ -239,7 +255,7 @@ function ConditionInput({
         />
         –
         <Input
-          aria-label={`${propertyNameOf(definition)} to`}
+          aria-label={t("scopeCondition.toLabel", { name: propertyNameOf(definition) })}
           type={isDate ? "date" : "number"}
           className="h-8 w-36"
           value={ends.to ?? ""}
@@ -264,6 +280,7 @@ function TextConditionInput({
   onChange: (condition: PropertyCondition) => void;
   children: ReactNode;
 }) {
+  const { t } = useTranslation("properties");
   const written = textConditionOf(condition);
   const [chosen, setChosen] = useState<TextMatch>(written.match);
   const match = written.text === "" ? chosen : written.match;
@@ -278,19 +295,26 @@ function TextConditionInput({
             onChange(withTextCondition(condition, value as TextMatch, written.text));
           }}
         >
-          <SelectTrigger aria-label={`How ${name} matches`} size="sm" className="w-fit shrink-0">
+          <SelectTrigger
+            aria-label={t("scopeCondition.howMatches", { name })}
+            size="sm"
+            className="w-fit shrink-0"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {textMatches.map((candidate) => (
               <SelectItem key={candidate} value={candidate}>
-                {textMatchLabels[candidate]}
+                {t(`scopeCondition.match.${candidate}`)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Input
-          aria-label={`${name} ${textMatchLabels[match].toLocaleLowerCase()}`}
+          aria-label={t("scopeCondition.textInput", {
+            name,
+            match: t(`scopeCondition.match.${match}`).toLocaleLowerCase(),
+          })}
           className="h-8"
           value={written.text}
           onChange={(event) => onChange(withTextCondition(condition, match, event.target.value))}

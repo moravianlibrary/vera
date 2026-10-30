@@ -4,12 +4,12 @@
 // definition's tier; taking it away leaves the other sources. The server checks
 // `property.<key>.edit` again, refuses an attempt already scanned (409), and runs the checks
 // again when a rule reads the property.
-// TODO(rrandiak): labels move to i18n.
 
 import type { BulkPropertyEntryResult, PropertyEntryResult } from "@vera/contract/properties";
 import type { PropertyDefinition, PropertyValue, ScalarValue } from "@vera/domain/properties";
 import { isValueOf, propertyNameOf } from "@vera/domain/properties";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { enterPropertyValue, enterPropertyValues } from "@/api/properties";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,14 +27,14 @@ import { propertiesQueryKey } from "@/features/properties/use-properties-query";
 import { validationsQueryKey } from "@/features/validations/use-validations-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 
 const invalidations = [documentsQueryKey, validationsQueryKey, propertiesQueryKey] as const;
 
-const refusalTexts = {
-  "iteration.scanned": "This attempt is scanned; what it was scanned with stays.",
-  403: "You may no longer enter this property.",
-};
+const refusalTextsOf = (t: (key: string) => string) => ({
+  "iteration.scanned": t("propertyValueDialog.refusal.scanned"),
+  403: t("propertyValueDialog.refusal.forbidden"),
+});
 
 // What is typed, before it is read as the type: the scalars as strings.
 type Typed = readonly string[];
@@ -91,18 +91,19 @@ export function PropertyValueDialog({
   onClose,
   onEntered,
 }: PropertyValueDialogProps) {
+  const { t } = useTranslation("properties");
   const id = useId();
   const [typed, setTyped] = useState<Typed>(() => typedOf(handValue));
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const one = useActionMutation({
     call: enterPropertyValue,
     invalidates: invalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsOf(t),
   });
   const many = useActionMutation({
     call: enterPropertyValues,
     invalidates: invalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsOf(t),
   });
   const value = enteredValueOf(definition, typed);
   const isValid = value !== null && isValueOf(definition, value);
@@ -132,22 +133,24 @@ export function PropertyValueDialog({
       isOpen
       onClose={onClose}
       title={
-        isBulk ? `Enter ${name} for ${plural(documentIds.length, "document")}` : `Enter ${name}`
+        isBulk
+          ? t("propertyValueDialog.enterFor", { name, count: documentIds.length })
+          : t("propertyValueDialog.enter", { name })
       }
-      description={`Enter ${name} by hand`}
+      description={t("propertyValueDialog.description", { name })}
       isDirty={typed.join() !== typedOf(handValue).join()}
       refusal={refusal}
       secondary={
         handValue === null || isBulk
           ? undefined
           : {
-              label: "Take the hand value away",
+              label: t("propertyValueDialog.remove"),
               isDestructive: true,
               onSelect: () => void enter(null),
             }
       }
       primary={{
-        label: "Enter",
+        label: t("propertyValueDialog.enterAction"),
         isPending: one.isPending || many.isPending,
         isDisabled: !isValid,
         onSelect: () => void enter(value),
@@ -156,12 +159,9 @@ export function PropertyValueDialog({
       <div className="grid gap-3">
         <ValueInput id={id} definition={definition} typed={typed} onChange={setTyped} />
         <p className="text-xs text-muted-foreground">
-          {definition.about === "attempt"
-            ? "Set on the current attempt. Once it is scanned the value stays."
-            : "Set on the document, whatever attempt is made."}{" "}
-          A hand value has tier {definition.handTier}; the highest tier with a value is the one in
-          use, and every source stays visible.
-          {isBulk && " Documents that refuse it are listed afterwards."}
+          {t(`propertyValueDialog.details.${definition.about}${isBulk ? "Bulk" : ""}`, {
+            tier: definition.handTier,
+          })}
         </p>
       </div>
     </DialogShell>
@@ -179,6 +179,7 @@ function ValueInput({
   typed: Typed;
   onChange: (typed: Typed) => void;
 }) {
+  const { t } = useTranslation("properties");
   const { type } = definition;
   const name = propertyNameOf(definition);
   const options =
@@ -186,8 +187,8 @@ function ValueInput({
       ? type.values.map((value) => ({ value: value.value, label: value.names.en }))
       : type.kind === "yesNo"
         ? [
-            { value: "Yes", label: "Yes" },
-            { value: "No", label: "No" },
+            { value: "Yes", label: i18n.t("common:answer.Yes") },
+            { value: "No", label: i18n.t("common:answer.No") },
           ]
         : null;
 
@@ -223,7 +224,9 @@ function ValueInput({
     return (
       <Select value={typed[0] ?? ""} onValueChange={(value) => onChange([value])}>
         <SelectTrigger aria-label={name} className="w-full">
-          <SelectValue placeholder={`Choose ${name.toLowerCase()}`} />
+          <SelectValue
+            placeholder={t("propertyValueDialog.choose", { name: name.toLowerCase() })}
+          />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
@@ -247,7 +250,9 @@ function ValueInput({
           value={typed.join("\n")}
           onChange={(event) => onChange(event.target.value.split("\n"))}
         />
-        <p className="text-xs text-muted-foreground">One value per line{unit && `, in ${unit}`}.</p>
+        <p className="text-xs text-muted-foreground">
+          {t("propertyValueDialog.onePerLine", { unit: unit === null ? "" : `, in ${unit}` })}
+        </p>
       </div>
     );
   }

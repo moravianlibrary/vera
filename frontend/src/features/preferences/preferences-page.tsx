@@ -12,6 +12,7 @@ import {
   propertyOfPermission,
 } from "@vera/domain/permissions";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { getNotificationHooks } from "@/api/hooks";
 import { getAccount } from "@/api/session";
@@ -40,17 +41,19 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 import { languageNames } from "@/i18n/language";
 
 const sections = ["watchlists", "notifications", "display", "account"] as const;
 type Section = (typeof sections)[number];
 
 function viewLabel(view: WatchlistView): string {
-  if (view === "my-documents") return "My Documents";
-  return navigationEntries.find((entry) => entry.id === view)?.label ?? view;
+  const key = navigationEntries.find((entry) => entry.id === view)?.label;
+  return key === undefined ? view : i18n.t(key);
 }
 
 export function PreferencesPage() {
+  const { t } = useTranslation("preferences");
   const { section } = useParams();
   if (section === undefined) return <Navigate to="/preferences/watchlists" replace />;
   if (!sections.includes(section as Section))
@@ -58,8 +61,8 @@ export function PreferencesPage() {
 
   return (
     <>
-      <PageHeader title="Preferences" />
-      <TabStrip label="Preference sections">
+      <PageHeader title={t("page.title")} />
+      <TabStrip label={t("page.sectionsLabel")}>
         {sections.map((name) => (
           <TabLink
             key={name}
@@ -67,7 +70,7 @@ export function PreferencesPage() {
             selected={name === section}
             className="capitalize"
           >
-            {name}
+            {t(`section.${name}`)}
           </TabLink>
         ))}
       </TabStrip>
@@ -84,6 +87,7 @@ export function PreferencesPage() {
 }
 
 function NotificationsPreferences() {
+  const { t } = useTranslation("preferences");
   const [params] = useSearchParams();
   const focusedHook = params.get("hook");
   const { data: settings } = useUserSettingsQuery();
@@ -100,18 +104,15 @@ function NotificationsPreferences() {
     try {
       await update.mutateAsync({ notifications: next });
     } catch {
-      setError("Could not save notification choices.");
+      setError(t("notifications.saveError"));
     }
   };
 
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold">Notifications</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Choose which automatic Hook emails reach you, and switch one kind of notification off
-          everywhere. Watchlist delivery is set on each watchlist in Preferences → Watchlists.
-        </p>
+        <h2 className="text-lg font-semibold">{t("notifications.title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("notifications.description")}</p>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -120,14 +121,11 @@ function NotificationsPreferences() {
       )}
       <div className="flex items-center justify-between gap-4 rounded-lg border bg-background p-4">
         <div>
-          <p className="font-medium">Do not send notifications</p>
-          <p className="text-xs text-muted-foreground">
-            Suppresses optional Hook and watchlist delivery, including future Hooks. Your individual
-            choices remain saved.
-          </p>
+          <p className="font-medium">{t("notifications.doNotSend")}</p>
+          <p className="text-xs text-muted-foreground">{t("notifications.doNotSendDescription")}</p>
         </div>
         <Switch
-          aria-label="Do not send notifications"
+          aria-label={t("notifications.doNotSend")}
           checked={choices.doNotSend}
           disabled={update.isPending}
           onCheckedChange={(doNotSend) => void save({ ...choices, doNotSend })}
@@ -139,22 +137,22 @@ function NotificationsPreferences() {
         isSaving={update.isPending}
         onChange={(change) => void save({ ...choices, ...change })}
       />
-      <h3 className="font-semibold">Hook emails</h3>
-      {isPending && <p className="text-sm text-muted-foreground">Loading Hook emails…</p>}
-      {isError && failureOf(hooksQuery, "Could not load Hook emails.") && (
+      <h3 className="font-semibold">{t("notifications.hookEmails")}</h3>
+      {isPending && (
+        <p className="text-sm text-muted-foreground">{t("notifications.loadingHooks")}</p>
+      )}
+      {isError && failureOf(hooksQuery, t("notifications.loadHooksError")) && (
         <QueryError
           failure={
-            failureOf(hooksQuery, "Could not load Hook emails.") ?? {
-              text: "Could not load Hook emails.",
+            failureOf(hooksQuery, t("notifications.loadHooksError")) ?? {
+              text: t("notifications.loadHooksError"),
               onRetry: () => void hooksQuery.refetch(),
             }
           }
         />
       )}
       {!isPending && !isError && hooks.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No user-addressed Hook emails are configured.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("notifications.noHooks")}</p>
       )}
       <div className="divide-y rounded-lg border bg-background">
         {hooks.map((hook) => (
@@ -167,18 +165,18 @@ function NotificationsPreferences() {
               <p className="font-medium">{hook.label}</p>
               <p className="text-xs text-muted-foreground">
                 {hook.events.join(" · ")}
-                {!hook.isActive && " · Hook paused"} ·{" "}
-                {hook.defaultEnabled ? "On by default" : "Off by default"}
+                {!hook.isActive && ` · ${t("notifications.hookPaused")}`} ·{" "}
+                {t(hook.defaultEnabled ? "emailLink.onByDefault" : "emailLink.offByDefault")}
               </p>
             </div>
             <span className="flex shrink-0 items-center gap-2">
               {choices.noHookEmail === true && (choices.hooks[hook.id] ?? hook.defaultEnabled) && (
                 <span className="text-xs text-tone-amber-foreground">
-                  Hook email is off for all
+                  {t("notifications.hookEmailOffForAll")}
                 </span>
               )}
               <Switch
-                aria-label={`${hook.label} email`}
+                aria-label={t("emailLink.hookEmail", { name: hook.label })}
                 checked={choices.hooks[hook.id] ?? hook.defaultEnabled}
                 disabled={update.isPending}
                 onCheckedChange={(enabled) =>
@@ -206,6 +204,7 @@ function OffEverywhere({
   isSaving: boolean;
   onChange: (change: { channelsOff?: string[]; noHookEmail?: boolean }) => void;
 }) {
+  const { t } = useTranslation("preferences");
   const { data: channels = [] } = useWatchlistChannelsQuery();
   const toggle = (channelId: string, isOff: boolean) =>
     onChange({
@@ -214,26 +213,30 @@ function OffEverywhere({
         : channelsOff.filter((id) => id !== channelId),
     });
   const rows = [
-    { id: pushChannelId, name: pushChannelName, note: "Every watchlist's browser push." },
+    {
+      id: pushChannelId,
+      name: i18n.t(pushChannelName),
+      note: t("channels.everyWatchlistPush"),
+    },
     ...channels.map((channel) => ({
       id: channel.id,
       name: channel.name,
-      note: unreachableTextOf(channel) ?? `Every watchlist's ${channel.name}.`,
+      note: unreachableTextOf(channel) ?? t("channels.everyWatchlist", { name: channel.name }),
     })),
   ];
 
   return (
     <div className="rounded-lg border bg-background">
-      <h3 className="border-b px-4 py-2.5 font-semibold">Off everywhere</h3>
+      <h3 className="border-b px-4 py-2.5 font-semibold">{t("offEverywhere.title")}</h3>
       <div className="divide-y">
         {rows.map((row) => (
           <div key={row.id} className="flex items-center justify-between gap-4 px-4 py-3">
             <div>
-              <p className="font-medium">No {row.name}</p>
+              <p className="font-medium">{t("offEverywhere.noNamed", { name: row.name })}</p>
               <p className="text-xs text-muted-foreground">{row.note}</p>
             </div>
             <Switch
-              aria-label={`No ${row.name} for any watchlist`}
+              aria-label={t("offEverywhere.noNamedForAnyWatchlist", { name: row.name })}
               checked={channelsOff.includes(row.id)}
               disabled={isSaving}
               onCheckedChange={(isOff) => toggle(row.id, isOff)}
@@ -242,14 +245,13 @@ function OffEverywhere({
         ))}
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
-            <p className="font-medium">No hook email</p>
+            <p className="font-medium">{t("offEverywhere.noHookEmail")}</p>
             <p className="text-xs text-muted-foreground">
-              Every hook addressed to you, those added later included. Hooks reach you by email
-              only.
+              {t("offEverywhere.noHookEmailDescription")}
             </p>
           </div>
           <Switch
-            aria-label="No hook email"
+            aria-label={t("offEverywhere.noHookEmail")}
             checked={noHookEmail}
             disabled={isSaving}
             onCheckedChange={(isOff) => onChange({ noHookEmail: isOff })}
@@ -257,13 +259,14 @@ function OffEverywhere({
         </div>
       </div>
       <p className="border-t px-4 py-2.5 text-xs text-muted-foreground">
-        Your choices on each watchlist and hook stay for when you switch these back.
+        {t("offEverywhere.choicesStay")}
       </p>
     </div>
   );
 }
 
 function DisplayPreferences() {
+  const { t } = useTranslation("preferences");
   const { data: settings, isPending } = useUserSettingsQuery();
   const update = useUserSettingsMutation();
   const { appearance } = useAppearance();
@@ -290,19 +293,15 @@ function DisplayPreferences() {
     try {
       await update.mutateAsync(change);
     } catch {
-      setError("Could not save display preferences.");
+      setError(t("display.saveError"));
     }
   };
-  if (isPending)
-    return <p className="text-sm text-muted-foreground">Loading display preferences…</p>;
+  if (isPending) return <p className="text-sm text-muted-foreground">{t("display.loading")}</p>;
   return (
     <section className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Display</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          These choices follow your account. Sidebar width stays on this device for each screen
-          size.
-        </p>
+        <h2 className="text-lg font-semibold">{t("display.title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("display.description")}</p>
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -311,49 +310,54 @@ function DisplayPreferences() {
       )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Choice
-          label="Appearance"
+          label={t("display.appearance")}
           value={appearance}
           options={["system", "light", "dark"]}
+          labels={{
+            system: t("display.system"),
+            light: t("display.light"),
+            dark: t("display.dark"),
+          }}
           onChange={(value) => save({ appearance: value as typeof appearance })}
         />
         <Choice
-          label="Language"
+          label={t("display.language")}
           value={language}
           options={[...languages]}
           labels={languageNames}
           onChange={(value) => save({ language: value as typeof language })}
         />
         <Choice
-          label="List density"
+          label={t("display.listDensity")}
           value={settings?.density ?? "comfortable"}
           options={["comfortable", "compact"]}
+          labels={{ comfortable: t("display.comfortable"), compact: t("display.compact") }}
           onChange={(value) => save({ density: value as "comfortable" | "compact" })}
         />
         <Choice
-          label="Date format"
+          label={t("display.dateFormat")}
           value={settings?.dateFormat ?? "local"}
           options={["local", "iso"]}
+          labels={{ local: t("display.localDate"), iso: t("display.isoDate") }}
           onChange={(value) => save({ dateFormat: value as "local" | "iso" })}
         />
       </div>
       <div>
-        <h3 className="font-semibold">Sidebar on this device</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Remembered separately for notebook and large screens.
-        </p>
+        <h3 className="font-semibold">{t("display.sidebarTitle")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("display.sidebarDescription")}</p>
         <div className="mt-3 flex flex-wrap gap-6 text-sm">
           <span className="flex items-center gap-2">
-            Notebook expanded{" "}
+            {t("display.notebookExpanded")}{" "}
             <Switch
-              aria-label="Notebook sidebar expanded"
+              aria-label={t("display.notebookExpanded")}
               checked={sidebar.preferences.notebook ?? false}
               onCheckedChange={(checked) => sidebar.setForTier("notebook", checked)}
             />
           </span>
           <span className="flex items-center gap-2">
-            Large screen expanded{" "}
+            {t("display.largeExpanded")}{" "}
             <Switch
-              aria-label="Large screen sidebar expanded"
+              aria-label={t("display.largeExpanded")}
               checked={sidebar.preferences.large ?? true}
               onCheckedChange={(checked) => sidebar.setForTier("large", checked)}
             />
@@ -361,10 +365,8 @@ function DisplayPreferences() {
         </div>
       </div>
       <div>
-        <h3 className="font-semibold">Opening tabs</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Choose the tab a view opens on, or follow the last tab you used.
-        </p>
+        <h3 className="font-semibold">{t("display.openingTabs")}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{t("display.openingTabsDescription")}</p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {visibleViews.map((view) => {
             const fixed = settings?.fixedOpeningWatchlists;
@@ -385,8 +387,8 @@ function DisplayPreferences() {
                   ...watchlists.filter((item) => item.view === view).map((item) => item.id),
                 ]}
                 labels={{
-                  last: "Last used",
-                  all: "All",
+                  last: t("display.lastUsed"),
+                  all: t("display.all"),
                   ...Object.fromEntries(watchlists.map((item) => [item.id, item.name])),
                 }}
                 onChange={(selected) =>
@@ -439,18 +441,19 @@ function Choice({
 }
 
 function AccountPreferences() {
+  const { t } = useTranslation("preferences");
   const { data: session } = useSessionQuery();
   const accountQuery = useQuery({ queryKey: ["session-account"], queryFn: getAccount });
   const { data: account, isPending, isError } = accountQuery;
   return (
     <section>
-      <h2 className="text-lg font-semibold">Account</h2>
-      {isPending && <p className="mt-4 text-sm text-muted-foreground">Loading account…</p>}
+      <h2 className="text-lg font-semibold">{t("account.title")}</h2>
+      {isPending && <p className="mt-4 text-sm text-muted-foreground">{t("account.loading")}</p>}
       {isError && (
         <QueryError
           failure={
-            failureOf(accountQuery, "Could not load account details.") ?? {
-              text: "Could not load account details.",
+            failureOf(accountQuery, t("account.loadError")) ?? {
+              text: t("account.loadError"),
               onRetry: () => void accountQuery.refetch(),
             }
           }
@@ -460,17 +463,17 @@ function AccountPreferences() {
       {account && (
         <div className="mt-5 space-y-5 rounded-lg border bg-background p-5 text-sm">
           <div>
-            <span className="text-muted-foreground">Name</span>
+            <span className="text-muted-foreground">{t("account.name")}</span>
             <p className="font-medium">{account.name}</p>
           </div>
           <div>
-            <span className="text-muted-foreground">Email</span>
-            <p>{account.email ?? "No email address"}</p>
+            <span className="text-muted-foreground">{t("account.email")}</span>
+            <p>{account.email ?? t("account.noEmail")}</p>
           </div>
           <div>
-            <span className="text-muted-foreground">Sign-in identities</span>
+            <span className="text-muted-foreground">{t("account.identities")}</span>
             {account.identities.length === 0 ? (
-              <p>None recorded</p>
+              <p>{t("account.noIdentities")}</p>
             ) : (
               <ul className="mt-2 space-y-2">
                 {account.identities.map((identity) => (
@@ -482,8 +485,10 @@ function AccountPreferences() {
                     {identity.externalId}
                     <p className="text-xs text-muted-foreground">
                       {identity.lastLoginAt
-                        ? `Last used ${new Date(identity.lastLoginAt).toLocaleString()}`
-                        : "Never used"}
+                        ? t("account.lastUsed", {
+                            date: new Date(identity.lastLoginAt).toLocaleString(),
+                          })
+                        : t("account.neverUsed")}
                     </p>
                   </li>
                 ))}
@@ -493,13 +498,11 @@ function AccountPreferences() {
           {session && (
             <>
               <div className="border-t pt-5">
-                <h3 className="font-semibold">Your roles</h3>
-                <p className="mt-1 text-muted-foreground">
-                  Roles combine to give the access listed below.
-                </p>
+                <h3 className="font-semibold">{t("account.roles")}</h3>
+                <p className="mt-1 text-muted-foreground">{t("account.rolesDescription")}</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {session.roleIds.length === 0
-                    ? "No roles assigned"
+                    ? t("account.noRoles")
                     : session.roleIds.map((role) => (
                         <span
                           key={role}
@@ -511,21 +514,18 @@ function AccountPreferences() {
                 </div>
               </div>
               <div className="border-t pt-5">
-                <h3 className="font-semibold">Views you can open</h3>
+                <h3 className="font-semibold">{t("account.views")}</h3>
                 <p className="mt-2">
                   {visibleNavigation(session)
-                    .map((entry) => entry.visibleLabel)
-                    .join(" · ") || "No views available"}
+                    .map((entry) => i18n.t(entry.visibleLabel))
+                    .join(" · ") || t("account.noViews")}
                 </p>
               </div>
               <div className="border-t pt-5">
-                <h3 className="font-semibold">What you can do</h3>
-                <p className="mt-1 text-muted-foreground">
-                  Effective permissions from all your roles. Some actions only apply within your
-                  custody or projects.
-                </p>
+                <h3 className="font-semibold">{t("account.permissions")}</h3>
+                <p className="mt-1 text-muted-foreground">{t("account.permissionsDescription")}</p>
                 {session.grants.length === 0 ? (
-                  <p className="mt-3">No permissions assigned.</p>
+                  <p className="mt-3">{t("account.noPermissions")}</p>
                 ) : (
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     {permissionGroups.map((group) => {
@@ -534,7 +534,7 @@ function AccountPreferences() {
                       );
                       return grants.length === 0 ? null : (
                         <div key={group} className="rounded-md border p-3">
-                          <h4 className="font-semibold">{group}</h4>
+                          <h4 className="font-semibold">{t(`permissionGroup.${group}`)}</h4>
                           <ul className="mt-2 space-y-1.5">
                             {grants.map((grant) => (
                               <li
@@ -562,79 +562,86 @@ function AccountPreferences() {
   );
 }
 
-const subjects: Record<string, string> = {
-  request: "proposals",
-  iteration: "documents",
-  validation: "validations",
-  restriction: "restrictions",
-  addition: "additions",
-  list: "digitization lists",
-  intention: "intentions",
-  mix: "mixes",
-  project: "projects",
-  category: "categories",
-  task: "tasks",
-  plugin: "plugins",
-  hook: "hooks",
-  access: "users and groups",
-  watchlist: "shared watchlists",
-};
-
 function permissionLabel(permission: Permission): string {
   const special: Partial<Record<Permission, string>> = {
-    watch: "Watch changes",
-    "request.withdraw_own": "Withdraw own proposals",
-    "request.read_mine": "View My Documents",
-    "task.read_own": "View own tasks",
-    "intention.repeat": "Manage repeats",
-    "project.manage_members": "Manage project members",
-    "category.grant_custody": "Grant category custody",
-    "request.read_ingest": "View ingest detail",
-    "request.retry": "Retry ingest",
-    "request.read_payload": "View ingest payloads",
-    "plugin.upload_code": "Upload plugin code",
-    "watchlist.manage_system": "Manage system watchlists",
-    "property.define": "Define properties",
+    watch: "watch",
+    "request.withdraw_own": "withdrawOwn",
+    "request.read_mine": "readMine",
+    "task.read_own": "readOwnTasks",
+    "intention.repeat": "repeat",
+    "project.manage_members": "manageMembers",
+    "category.grant_custody": "grantCustody",
+    "request.read_ingest": "readIngest",
+    "request.retry": "retryIngest",
+    "request.read_payload": "readPayload",
+    "plugin.upload_code": "uploadPluginCode",
+    "watchlist.manage_system": "manageSystemWatchlists",
+    "property.define": "defineProperties",
   };
-  if (special[permission]) return special[permission];
+  if (special[permission])
+    return i18n.t(`preferences:permissionLabel.special.${special[permission]}`);
   const propertyKey = propertyOfPermission(permission);
-  if (propertyKey !== null) return `Enter ${propertyKey} by hand`;
+  if (propertyKey !== null)
+    return i18n.t("preferences:permissionLabel.enterProperty", { property: propertyKey });
   const [subject, action = ""] = permission.split(".");
-  const verbs: Record<string, string> = {
-    read: "View",
-    create: "Create",
-    edit: "Edit",
-    delete: "Delete",
-    decide: "Decide",
-    recheck: "Re-check",
-    classify: "Classify",
-    approve: "Approve",
-    deny: "Deny",
-    revoke: "Revoke",
-    overrule: "Overrule",
-    cancel: "Cancel",
-    resume: "Resume",
-    publish: "Publish",
-    retry: "Retry",
-    manage: "Manage",
-    schedule: "Schedule",
-    configure: "Configure",
-    run: "Run",
+  const subjects: Record<string, string> = {
+    request: "proposals",
+    iteration: "documents",
+    validation: "validations",
+    restriction: "restrictions",
+    addition: "additions",
+    list: "digitizationLists",
+    intention: "intentions",
+    mix: "mixes",
+    project: "projects",
+    category: "categories",
+    task: "tasks",
+    plugin: "plugins",
+    hook: "hooks",
+    access: "usersAndGroups",
+    watchlist: "sharedWatchlists",
   };
-  return `${verbs[action] ?? action.replaceAll("_", " ")} ${subjects[subject] ?? subject}`;
+  const verbs = [
+    "read",
+    "create",
+    "edit",
+    "delete",
+    "decide",
+    "recheck",
+    "classify",
+    "approve",
+    "deny",
+    "revoke",
+    "overrule",
+    "cancel",
+    "resume",
+    "publish",
+    "retry",
+    "manage",
+    "schedule",
+    "configure",
+    "run",
+  ];
+  const verb = verbs.includes(action)
+    ? i18n.t(`preferences:permissionLabel.verb.${action}`)
+    : action.replaceAll("_", " ");
+  const translatedSubject = subjects[subject]
+    ? i18n.t(`preferences:permissionLabel.subject.${subjects[subject]}`)
+    : subject;
+  return i18n.t("preferences:permissionLabel.generic", { verb, subject: translatedSubject });
 }
 
 function scopeLabel(scope: Grant["scope"]): string {
   switch (scope) {
     case null:
-      return "own";
+      return i18n.t("preferences:scope.own");
     case "any":
-      return "all";
+      return i18n.t("preferences:scope.all");
     case "custody":
-      return "in custody";
+      return i18n.t("preferences:scope.custody");
     case "project":
-      return "in projects";
+      return i18n.t("preferences:scope.projects");
     case "managed":
-      return "managed projects";
+      return i18n.t("preferences:scope.managed");
   }
 }

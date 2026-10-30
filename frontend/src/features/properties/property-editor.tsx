@@ -3,7 +3,6 @@
 // whether it may be entered by hand with the tier a hand value gets. A fact the catalog holds is
 // never entered by hand, the page count apart (DOC-property-hand). The server refuses a key that
 // is or was in use, and a type change once records hold values.
-// TODO(rrandiak): labels move to i18n.
 
 import type { NewProperty } from "@vera/contract/properties";
 import type {
@@ -22,6 +21,7 @@ import {
 } from "@vera/domain/properties";
 import { Plus, X } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Button } from "@/components/ui/button";
@@ -37,26 +37,26 @@ import {
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 
 export const typeLabels = {
-  text: "Text",
-  number: "Number",
-  yesNo: "Yes / no",
-  date: "Date",
-  enum: "One of a set of values",
+  text: "properties:type.text",
+  number: "properties:type.number",
+  yesNo: "properties:type.yesNo",
+  date: "properties:type.date",
+  enum: "properties:type.enum",
 } as const satisfies Record<PropertyTypeKind, string>;
 
 export const subjectLabels = {
-  document: "The document",
-  attempt: "One attempt",
+  document: "properties:subject.document",
+  attempt: "properties:subject.attempt",
 } as const;
 
 export const visibilityLabels = {
-  public: "Public",
-  staff: "Staff",
+  public: "properties:visibility.public",
+  staff: "properties:visibility.staff",
 } as const;
 
 const visibilityHints = {
-  public: "read wherever its record is, My Documents included",
-  staff: "read in staff detail only",
+  public: "properties:visibilityHint.public",
+  staff: "properties:visibilityHint.staff",
 } as const;
 
 // The tier a hand value gets unless the admin says otherwise: the page count's manual tier, above
@@ -111,12 +111,12 @@ function draftOf(state: EditorState): PropertyDraft {
   return { ...state.draft, type };
 }
 
-export const propertyRefusalTexts = {
-  "property.key_taken": "That key is or was in use. A key is never used twice.",
-  "property.in_use": "Records hold values of it, so its type and what it is about stay.",
-  "property.value_in_use": "A value records hold cannot be taken out.",
-  "property.catalog_fact": "The catalog holds it: it is repaired there, never entered by hand.",
-};
+export const propertyRefusalTextsOf = (t: (key: string) => string) => ({
+  "property.key_taken": t("editor.refusal.keyTaken"),
+  "property.in_use": t("editor.refusal.inUse"),
+  "property.value_in_use": t("editor.refusal.valueInUse"),
+  "property.catalog_fact": t("editor.refusal.catalogFact"),
+});
 
 interface PropertyEditorProps {
   // Null for a new property.
@@ -135,6 +135,7 @@ export function PropertyEditor({
   onSave,
   onSaved,
 }: PropertyEditorProps) {
+  const { t } = useTranslation("properties");
   const id = useId();
   const [state, setState] = useState(() => initialState(definition));
   const [refusal, setRefusal] = useState<Refusal | null>(null);
@@ -170,13 +171,13 @@ export function PropertyEditor({
     <DialogShell
       isOpen
       onClose={onClose}
-      title={isNew ? "New property" : `Edit ${definition.names.en}`}
-      description="A property's definition"
+      title={isNew ? t("editor.new") : t("editor.edit", { name: definition.names.en })}
+      description={t("editor.description")}
       width="wide"
       isDirty
       refusal={refusal}
       primary={{
-        label: isNew ? "Create property" : "Save",
+        label: isNew ? t("editor.create") : t("editor.save"),
         isPending,
         isDisabled: !isValid,
         onSelect: () => void save(),
@@ -184,17 +185,21 @@ export function PropertyEditor({
     >
       <div className="grid gap-4">
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field id={`${id}-key`} label="Key" hint={isNew ? "never changes" : "fixed"}>
+          <Field
+            id={`${id}-key`}
+            label={t("editor.key")}
+            hint={t(isNew ? "editor.keyNeverChanges" : "editor.keyFixed")}
+          >
             <Input
               id={`${id}-key`}
               className="font-mono"
-              placeholder="e.g. size"
+              placeholder={t("editor.keyPlaceholder")}
               value={state.key}
               disabled={!isNew}
               onChange={(event) => setState({ ...state, key: event.target.value })}
             />
           </Field>
-          <Field id={`${id}-name-en`} label="Name in English">
+          <Field id={`${id}-name-en`} label={t("editor.nameEnglish")}>
             <Input
               id={`${id}-name-en`}
               value={state.draft.names.en}
@@ -203,7 +208,7 @@ export function PropertyEditor({
               }
             />
           </Field>
-          <Field id={`${id}-name-cs`} label="Name in Czech">
+          <Field id={`${id}-name-cs`} label={t("editor.nameCzech")}>
             <Input
               id={`${id}-name-cs`}
               value={state.draft.names.cs}
@@ -214,13 +219,11 @@ export function PropertyEditor({
           </Field>
         </div>
         {isNew && !isKeyValid && state.key !== "" && (
-          <p className="-mt-2 text-xs text-destructive">
-            Lower-case letters, digits and _, starting with a letter.
-          </p>
+          <p className="-mt-2 text-xs text-destructive">{t("editor.keyFormat")}</p>
         )}
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field id={`${id}-about`} label="About">
+          <Field id={`${id}-about`} label={t("editor.about")}>
             <Select
               value={state.draft.about}
               disabled={isTypeFixed}
@@ -232,13 +235,13 @@ export function PropertyEditor({
               <SelectContent>
                 {propertySubjects.map((subject) => (
                   <SelectItem key={subject} value={subject}>
-                    {subjectLabels[subject]}
+                    {t(subjectLabels[subject])}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
-          <Field id={`${id}-type`} label="Type">
+          <Field id={`${id}-type`} label={t("editor.type")}>
             <Select
               value={state.draft.type.kind}
               disabled={isTypeFixed}
@@ -266,13 +269,13 @@ export function PropertyEditor({
               <SelectContent>
                 {propertyTypeKinds.map((kind) => (
                   <SelectItem key={kind} value={kind}>
-                    {typeLabels[kind]}
+                    {t(typeLabels[kind])}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
-          <Field id={`${id}-visibility`} label="Visibility">
+          <Field id={`${id}-visibility`} label={t("editor.visibility")}>
             <Select
               value={state.draft.visibility}
               onValueChange={(visibility) =>
@@ -285,7 +288,7 @@ export function PropertyEditor({
               <SelectContent>
                 {propertyVisibilities.map((visibility) => (
                   <SelectItem key={visibility} value={visibility}>
-                    {visibilityLabels[visibility]}
+                    {t(visibilityLabels[visibility])}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -293,11 +296,14 @@ export function PropertyEditor({
           </Field>
         </div>
         <p className="-mt-2 text-xs text-muted-foreground">
-          {state.draft.about === "document"
-            ? "True of the document whatever attempt is made, such as its size."
-            : "Chosen for one attempt, such as the machine it is scanned on."}{" "}
-          {visibilityLabels[state.draft.visibility]}: {visibilityHints[state.draft.visibility]}.
-          {isTypeFixed && " Records hold values of it, so what it is about and its type stay."}
+          {t("editor.aboutHelp", {
+            about: t(
+              state.draft.about === "document" ? "editor.documentHelp" : "editor.attemptHelp",
+            ),
+            visibility: t(visibilityLabels[state.draft.visibility]),
+            hint: t(visibilityHints[state.draft.visibility]),
+            fixed: isTypeFixed ? t("editor.fixedSuffix") : "",
+          })}
         </p>
 
         <label htmlFor={`${id}-list`} className="flex items-center gap-2 text-sm">
@@ -307,15 +313,15 @@ export function PropertyEditor({
             disabled={isTypeFixed}
             onCheckedChange={(checked) => setDraft({ isList: checked === true })}
           />
-          A list: a record may hold several values
+          {t("editor.list")}
         </label>
 
         {state.draft.type.kind === "number" && (
-          <Field id={`${id}-unit`} label="Unit" hint="shown after the number">
+          <Field id={`${id}-unit`} label={t("editor.unit")} hint={t("editor.unitHint")}>
             <Input
               id={`${id}-unit`}
               className="max-w-48"
-              placeholder="e.g. cm"
+              placeholder={t("editor.unitPlaceholder")}
               value={state.unit}
               disabled={isTypeFixed}
               onChange={(event) => setState({ ...state, unit: event.target.value })}
@@ -325,11 +331,11 @@ export function PropertyEditor({
 
         {state.draft.type.kind === "enum" && (
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-medium">Values</legend>
+            <legend className="mb-1 text-sm font-medium">{t("editor.values")}</legend>
             <div className="hidden grid-cols-[1fr_1fr_1fr_2rem] gap-2 text-xs text-muted-foreground sm:grid">
-              <span>Value</span>
-              <span>Name in English</span>
-              <span>Name in Czech</span>
+              <span>{t("editor.value")}</span>
+              <span>{t("editor.nameEnglish")}</span>
+              <span>{t("editor.nameCzech")}</span>
             </div>
             {state.enumValues.map((value, index) => (
               <div
@@ -339,13 +345,13 @@ export function PropertyEditor({
                 className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_2rem]"
               >
                 <Input
-                  aria-label={`Value ${index + 1}`}
+                  aria-label={t("editor.valueNumber", { index: index + 1 })}
                   className="font-mono"
                   value={value.value}
                   onChange={(event) => setEnumValue(index, { ...value, value: event.target.value })}
                 />
                 <Input
-                  aria-label={`Value ${index + 1} in English`}
+                  aria-label={t("editor.valueNameEnglish", { index: index + 1 })}
                   value={value.names.en}
                   onChange={(event) =>
                     setEnumValue(index, {
@@ -355,7 +361,7 @@ export function PropertyEditor({
                   }
                 />
                 <Input
-                  aria-label={`Value ${index + 1} in Czech`}
+                  aria-label={t("editor.valueNameCzech", { index: index + 1 })}
                   value={value.names.cs}
                   onChange={(event) =>
                     setEnumValue(index, {
@@ -367,7 +373,7 @@ export function PropertyEditor({
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label={`Remove value ${index + 1}`}
+                  aria-label={t("editor.removeValue", { index: index + 1 })}
                   disabled={state.enumValues.length === 1}
                   onClick={() =>
                     setState({
@@ -389,7 +395,7 @@ export function PropertyEditor({
               }
             >
               <Plus />
-              Add a value
+              {t("editor.addValue")}
             </Button>
           </fieldset>
         )}
@@ -404,30 +410,23 @@ export function PropertyEditor({
                 setDraft({ handTier: checked === true ? defaultHandTier : null })
               }
             />
-            May be entered by hand
+            {t("editor.mayEnterByHand")}
           </label>
           {!isHandAllowed && (
-            <p className="text-xs text-muted-foreground">
-              The catalog holds it. A mistake is repaired in the catalog and read again with
-              Recheck.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("editor.catalogFactHelp")}</p>
           )}
           {state.draft.handTier !== null && (
             <div className="grid gap-1.5 sm:grid-cols-[minmax(0,10rem)_1fr] sm:items-center sm:gap-3">
               <Input
                 id={`${id}-tier`}
-                aria-label="Tier of a hand value"
+                aria-label={t("editor.handValueTier")}
                 type="number"
                 min={0}
                 step={1}
                 value={state.draft.handTier}
                 onChange={(event) => setDraft({ handTier: Number(event.target.value) })}
               />
-              <p className="text-xs text-muted-foreground">
-                The tier a hand value gets. The highest tier with a value is the one in use, so
-                above a plugin's tier a hand value wins over it. Each property has its own
-                permission to enter it, given on Users management.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("editor.handValueHelp")}</p>
             </div>
           )}
         </div>

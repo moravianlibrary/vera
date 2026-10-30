@@ -2,7 +2,6 @@
 // search and filters in the URL. The older selection and linked-column helpers remain below
 // for compatibility while other access editors migrate; the page itself opens without a
 // selected record and does not display shared watchlists.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@vera/contract/access";
 import type { AccessRecordKind } from "@vera/contract/routes";
@@ -17,9 +16,9 @@ export const userShows = ["person", "agent", "none"] as const;
 export type UserShow = (typeof userShows)[number];
 
 export const userShowLabels = {
-  person: "People",
-  agent: "Agents",
-  none: "No role yet",
+  person: "access:userShow.people",
+  agent: "access:userShow.agents",
+  none: "access:userShow.none",
 } as const satisfies Record<UserShow, string>;
 
 export interface AccessQuery {
@@ -93,7 +92,12 @@ export const accessView: ViewDefinition<AccessQuery> = {
   isSameQuery: (first, second) =>
     toAccessSearchParams(first).toString() === toAccessSearchParams(second).toString(),
   fields: [
-    { key: "show", label: "Show", field: vocabulary(userShows, userShowLabels), isQuick: true },
+    {
+      key: "show",
+      label: "access:accessView.show",
+      field: vocabulary(userShows, userShowLabels),
+      isQuick: true,
+    },
   ],
   groupings: [],
   groupingParam: "group",

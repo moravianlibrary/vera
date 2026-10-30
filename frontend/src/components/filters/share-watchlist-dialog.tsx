@@ -26,16 +26,16 @@ const audienceLabels = {
 } as const satisfies Record<AudienceKind, string>;
 
 export const viewLabels = {
-  documents: "watchlist.view.documents",
-  "my-documents": "watchlist.view.myDocuments",
-  requests: "watchlist.view.requests",
-  validations: "watchlist.view.validations",
-  lists: "watchlist.view.lists",
-  projects: "watchlist.view.projects",
-  categories: "watchlist.view.categories",
-  mixes: "watchlist.view.mixes",
-  intentions: "watchlist.view.intentions",
-  tasks: "watchlist.view.tasks",
+  documents: "common:navigation.entry.documents",
+  "my-documents": "common:navigation.entry.my-documents",
+  requests: "common:navigation.entry.requests",
+  validations: "common:navigation.entry.validations",
+  lists: "common:navigation.entry.lists",
+  projects: "common:navigation.entry.projects",
+  categories: "common:navigation.entry.categories",
+  mixes: "common:navigation.entry.mixes",
+  intentions: "common:navigation.entry.intentions",
+  tasks: "common:navigation.entry.tasks",
 } as const satisfies Record<Watchlist["view"], string>;
 
 export function isEmptyWatchlistAudience(audience: WatchlistAudience): boolean {

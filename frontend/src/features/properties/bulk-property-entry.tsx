@@ -2,7 +2,6 @@
 // (DOC-property-hand): *Select* starts picking rows, and *Enter a property…* offers each property
 // the person may enter by hand. The server enters it document by document and says which refused,
 // as an attempt already scanned does.
-// TODO(rrandiak): labels move to i18n.
 
 import type { BulkPropertyEntryResult } from "@vera/contract/properties";
 import type { Session } from "@vera/domain/entities";
@@ -11,6 +10,7 @@ import { propertyNameOf } from "@vera/domain/properties";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { RowPicking } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,6 @@ import {
 import { canEnterProperty } from "@/features/properties/properties-card";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
-import { plural } from "@/lib/plural";
 
 export interface BulkPropertyEntryState {
   // Undefined when the person may enter no property by hand.
@@ -38,6 +37,7 @@ export function useBulkPropertyEntry(
   session: Session | undefined,
   isStaff: boolean,
 ): BulkPropertyEntryState {
+  const { t } = useTranslation("properties");
   const { data: index } = usePropertiesQuery();
   const [pickedIds, setPickedIds] = useState<ReadonlySet<string> | null>(null);
   const [entering, setEntering] = useState<PropertyDefinition | null>(null);
@@ -78,12 +78,12 @@ export function useBulkPropertyEntry(
   const toolbarActions = isPicking ? (
     <div className="flex items-center gap-1.5">
       <span className="text-xs text-muted-foreground">
-        {plural(picked.size, "picked", "picked")}
+        {t("bulkPropertyEntry.picked", { count: picked.size })}
       </span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="sm" variant="outline" className="h-7" disabled={picked.size === 0}>
-            Enter a property…
+            {t("bulkPropertyEntry.enterProperty")}
             <ChevronDown />
           </Button>
         </DropdownMenuTrigger>
@@ -96,12 +96,12 @@ export function useBulkPropertyEntry(
         </DropdownMenuContent>
       </DropdownMenu>
       <Button size="sm" variant="ghost" className="h-7" onClick={() => setPickedIds(null)}>
-        Done
+        {t("bulkPropertyEntry.done")}
       </Button>
     </div>
   ) : (
     <Button size="sm" variant="ghost" className="h-7" onClick={() => setPickedIds(new Set())}>
-      Select
+      {t("bulkPropertyEntry.select")}
     </Button>
   );
 
@@ -109,16 +109,22 @@ export function useBulkPropertyEntry(
     result === null ? null : (
       <NoticeLine
         tone={result.entered.refusals.length === 0 ? "green" : "amber"}
-        title={`${propertyNameOf(result.definition)} entered for ${plural(result.entered.enteredCount, "document")}`}
+        title={t("bulkPropertyEntry.entered", {
+          name: propertyNameOf(result.definition),
+          count: result.entered.enteredCount,
+        })}
         onDismiss={() => setResult(null)}
         className="mx-4 mt-3"
       >
         {result.entered.refusals.length === 0
-          ? "Every picked document took it."
-          : `${plural(result.entered.refusals.length, "document")} refused: ${result.entered.refusals
-              .map((refusal) => refusal.message)
-              .filter((message, at, all) => all.indexOf(message) === at)
-              .join("; ")}.`}
+          ? t("bulkPropertyEntry.allEntered")
+          : t("bulkPropertyEntry.refused", {
+              count: result.entered.refusals.length,
+              reasons: result.entered.refusals
+                .map((refusal) => refusal.message)
+                .filter((message, at, all) => all.indexOf(message) === at)
+                .join("; "),
+            })}
       </NoticeLine>
     );
 

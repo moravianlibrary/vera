@@ -2,7 +2,6 @@
 // for each permission, how a role reaches a person, and how a responsibility does, with its
 // provenance (permissions.md §6): "mapped by MZK Keycloak from group mzk-staff", "via Periodicals
 // Curators".
-// TODO(rrandiak): the labels other than the permission lines move to i18n.
 
 import type { RoleWay, Via } from "@vera/domain/access";
 import type { Watchlist } from "@vera/domain/entities";
@@ -36,19 +35,25 @@ export function permissionLineOf(permission: Permission, propertyName?: string):
 
 // A self-scoped grant reads "own": it acts on the holder's own records and has no scope to choose.
 export function scopeLabelOf(scope: GrantScope): string {
-  return scope ?? "own";
+  return scope ?? i18n.t("scope.own", { ns: "access" });
 }
 
 export type NameOf = (id: string) => string;
 
 // "by hand", "mapped", "by hand and mapped".
 export function waysShortText(ways: readonly RoleWay[]): string {
-  return [...new Set(ways.map((way) => (way.by === "hand" ? "by hand" : "mapped")))].join(" and ");
+  const hasHand = ways.some((way) => way.by === "hand");
+  const hasMapped = ways.some((way) => way.by === "mapped");
+  if (!hasHand && !hasMapped) return "";
+  if (hasHand && hasMapped) return i18n.t("way.both", { ns: "access" });
+  return i18n.t(`way.${hasHand ? "hand" : "mapped"}`, { ns: "access" });
 }
 
 // "member", "via Periodicals Curators".
 export function viaText(via: Via, groupNameOf: NameOf, direct = "member"): string {
-  return via === null ? direct : `via ${groupNameOf(via)}`;
+  return via === null
+    ? i18n.t(direct === "member" ? "via.member" : "via.direct", { ns: "access" })
+    : i18n.t("via.group", { ns: "access", name: groupNameOf(via) });
 }
 
 // What adding somebody to a group gives them: never a role.
@@ -63,22 +68,34 @@ export function confersText({
 }): string {
   const parts = [
     categoryNames.length > 0
-      ? `custody of ${joinAnd(categoryNames)} and everything under it`
+      ? i18n.t("conferred.categoryCustody", {
+          ns: "access",
+          names: joinAnd(categoryNames),
+        })
       : null,
     custodyNames.length > 0
-      ? `the proposal ${custodyNames.length === 1 ? "custody" : "custodies"} ${joinAnd(custodyNames)}`
+      ? i18n.t("conferred.proposalCustody", {
+          ns: "access",
+          count: custodyNames.length,
+          names: joinAnd(custodyNames),
+        })
       : null,
-    projectNames.length > 0 ? `membership of ${joinAnd(projectNames)}` : null,
+    projectNames.length > 0
+      ? i18n.t("conferred.projects", { ns: "access", names: joinAnd(projectNames) })
+      : null,
   ].filter((part) => part !== null);
-  return parts.length === 0
-    ? "nothing yet: the group holds no custody and no project"
-    : parts.join(", ");
+  return parts.length === 0 ? i18n.t("conferred.empty", { ns: "access" }) : parts.join(", ");
 }
 
 function joinAnd(names: readonly string[]): string {
-  return names.length < 2
-    ? names.join("")
-    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+  if (names.length < 2) return names.join("");
+  if (names.length === 2)
+    return i18n.t("conferred.twoNames", { ns: "access", first: names[0], second: names[1] });
+  return i18n.t("conferred.manyNames", {
+    ns: "access",
+    first: names.slice(0, -1).join(", "),
+    last: names[names.length - 1],
+  });
 }
 
 // A watchlist's filter in its view's own words: "Decision: Pending · Material: Periodical".

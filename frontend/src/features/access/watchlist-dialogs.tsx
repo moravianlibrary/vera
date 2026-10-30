@@ -1,7 +1,6 @@
 // What is done to a shared watchlist from Users & Groups (view-catalog.md *Shared watchlists*;
 // filtering.md §4.5), under `watchlist.manage_system`: who sees it, its name, and deleting it,
 // which says first how many people lose it. Its filter is edited in its own view, opened on it.
-// TODO(rrandiak): labels move to i18n.
 
 import type { SharedWatchlist } from "@vera/contract/access";
 import type { WatchlistAudience } from "@vera/domain/entities";
@@ -19,13 +18,16 @@ import type { AccessNotice } from "@/features/access/access-dialogs";
 import { accessQueryKey } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
+
+const t = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 
 const invalidates = [accessQueryKey, watchlistsQueryKey] as const;
 
 const refusalTexts = {
-  403: "Only those who manage shared watchlists change them.",
-  409: "Another watchlist the people it reaches see already holds this.",
+  403: t("watchlist.refusal.forbidden"),
+  409: t("watchlist.refusal.duplicate"),
 };
 
 interface WatchlistDialogProps {
@@ -60,8 +62,8 @@ export function ShareSharedWatchlistDialog({ onClose, watchlist, onDone }: Watch
             title: `“${watchlist.name}” shared`,
             text:
               audience.kind === "personal"
-                ? "It is your own now; nobody else sees it."
-                : "Who sees it changed.",
+                ? t("watchlist.personalNow")
+                : t("watchlist.audienceChanged"),
           });
         }
 
@@ -71,7 +73,7 @@ export function ShareSharedWatchlistDialog({ onClose, watchlist, onDone }: Watch
   );
 }
 
-const nameSchema = z.object({ name: z.string().trim().min(1, "Give it a name") });
+const nameSchema = z.object({ name: z.string().trim().min(1, t("watchlist.nameRequired")) });
 
 export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: WatchlistDialogProps) {
   const id = useId();
@@ -84,22 +86,25 @@ export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: Watc
     <FormDialog
       isOpen
       onClose={onClose}
-      title={`Rename “${watchlist.name}”`}
-      description="The shared watchlist's name"
+      title={t("watchlist.renameTitle", { name: watchlist.name })}
+      description={t("watchlist.renameDescription")}
       schema={nameSchema}
       defaultValues={{ name: watchlist.name }}
-      submitLabel="Rename"
+      submitLabel={t("watchlist.rename")}
       onSubmit={async ({ name }) => {
         const result = await rename.run(name);
         if (result.isDone) {
-          onDone({ title: "Watchlist renamed", text: `It is “${name}” for everyone who sees it.` });
+          onDone({
+            title: t("watchlist.renamed"),
+            text: t("watchlist.renamedDescription", { name }),
+          });
         }
 
         return result;
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
+          <Field id={`${id}-name`} label={t("watchlist.name")}>
             <Input id={`${id}-name`} {...form.register("name")} />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
@@ -115,21 +120,24 @@ export function DeleteSharedWatchlistDialog({ onClose, watchlist, onDone }: Watc
     <ConsequenceDialog
       isOpen
       onClose={onClose}
-      title={`Delete “${watchlist.name}”?`}
-      description={`What deleting the shared watchlist ${watchlist.name} does`}
+      title={t("watchlist.deleteTitle", { name: watchlist.name })}
+      description={t("watchlist.deleteDescription", { name: watchlist.name })}
       consequences={[
         {
-          text: `It goes from the tabs of the ${plural(watchlist.reachedUserIds.length, "person", "people")} who see it.`,
+          text: t("watchlist.deleteReachedPeople", { count: watchlist.reachedUserIds.length }),
           tone: "amber",
         },
-        { text: "The records it matched stay where they are." },
+        { text: t("watchlist.deleteRecordsStay") },
       ]}
-      confirmLabel="Delete watchlist"
+      confirmLabel={t("watchlist.delete")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(watchlist.id);
         if (result.isDone) {
-          onDone({ title: `“${watchlist.name}” deleted`, text: "Nobody sees it any more." });
+          onDone({
+            title: t("watchlist.deleted", { name: watchlist.name }),
+            text: t("watchlist.nobodySeesIt"),
+          });
         }
 
         return result;

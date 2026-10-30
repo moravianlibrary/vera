@@ -7,7 +7,6 @@
 // their other roles are counted. It refuses to leave nobody able to manage access. Deleting says
 // first, from the server, what each holder keeps and which identity mappings stop giving
 // anything.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex, RoleDraft } from "@vera/contract/access";
 import type { AccessUser, GrantChange, PersonReached, Role } from "@vera/domain/access";
@@ -48,15 +47,18 @@ import {
 } from "@/components/ui/select";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import type { AccessNames } from "@/features/access/access-records";
-import { permissionLineOf, scopeLabelOf, waysShortText } from "@/features/access/access-words";
+import { permissionLineOf, waysShortText } from "@/features/access/access-words";
 import { accessInvalidations, useRoleImpactQuery } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
+
+const t = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 
 const refusalTexts = {
-  "access.last_manager": "Nobody else could manage access after this.",
-  "access.name_taken": "There is already a role with that name.",
-  403: "You may no longer change roles.",
+  "access.last_manager": t("role.refusal.lastManager"),
+  "access.name_taken": t("role.refusal.nameTaken"),
+  403: t("role.refusal.forbidden"),
 };
 
 const noScope = "none";
@@ -93,31 +95,36 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
 
   const invalidReasonOf = ([draft]: readonly RoleDraft[]): string | null => {
     if (draft === undefined || draft.name.trim() === "") {
-      return "A role needs a name.";
+      return t("role.validation.nameRequired");
     }
     if (
       draft.proposalBatchLimit !== null &&
       (!Number.isInteger(draft.proposalBatchLimit) || draft.proposalBatchLimit < 0)
     ) {
-      return "The per-submission limit must be a whole number of at least zero.";
+      return t("role.validation.submissionLimit");
     }
     if (
       draft.proposalDailyLimit !== null &&
       (!Number.isInteger(draft.proposalDailyLimit) || draft.proposalDailyLimit < 0)
     ) {
-      return "The daily proposal limit must be a whole number of at least zero.";
+      return t("role.validation.dailyLimit");
     }
 
     const [missing] = missingRequirementsOf(draft.grants);
     if (missing !== undefined) {
       const { grant, needs } = missing;
-      const at = needs.scope === null ? "" : ` (${scopeLabelOf(needs.scope)})`;
-      return `${grant.permission} needs ${needs.permission}${at}: grant it, or take ${grant.permission} away.`;
+      const at = needs.scope === null ? "" : ` (${t(`record.scope.${needs.scope}`)})`;
+      return t("role.validation.permissionNeeds", {
+        permission: grant.permission,
+        needs: needs.permission,
+        scope: at,
+        action: grant.permission,
+      });
     }
 
     const name = roleNameOf(draft.name);
     if (index.roles.some((other) => other.name === name && (isNew || other.id !== role?.id))) {
-      return `There is already a role called ${name}.`;
+      return t("role.validation.nameTaken", { name });
     }
 
     if (!isNew && role !== null) {
@@ -125,7 +132,7 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
         other.id === role.id ? { ...other, grants: draft.grants } : other,
       );
       if (managersOf(index.users, roles).length === 0) {
-        return "Nobody else could manage access after this: keep access.manage, or give it to another role first.";
+        return t("role.validation.lastManager");
       }
     }
 
@@ -148,25 +155,24 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
     }
 
     return {
-      submitLabel: "Save role",
+      submitLabel: t("role.save"),
       body: (
         <>
           {grantsChanged && reached.length > 0 && <RoleReach change={change} reached={reached} />}
           {batchLimitChanged && (
             <p className="text-sm">
-              The per-submission proposal limit changes for{" "}
-              {plural(holders.length, "person", "people")}
+              {t("role.submissionLimitChanges", { count: holders.length })}
               {draft.proposalBatchLimit === null
-                ? " to unlimited."
-                : ` to ${draft.proposalBatchLimit} items.`}
+                ? t("role.toUnlimited")
+                : t("role.toItems", { count: draft.proposalBatchLimit })}
             </p>
           )}
           {dailyLimitChanged && (
             <p className="text-sm">
-              The daily proposal limit changes for {plural(holders.length, "person", "people")}
+              {t("role.dailyLimitChanges", { count: holders.length })}
               {draft.proposalDailyLimit === null
-                ? " to unlimited."
-                : ` to ${draft.proposalDailyLimit} items.`}
+                ? t("role.toUnlimited")
+                : t("role.toItems", { count: draft.proposalDailyLimit })}
             </p>
           )}
         </>
@@ -179,9 +185,13 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       isOpen={isOpen}
       onClose={onClose}
       title={
-        role === null ? "New role" : isCopy ? `Duplicate ${role.name}` : `Edit role ${role.name}`
+        role === null
+          ? t("role.new")
+          : isCopy
+            ? t("role.duplicate", { name: role.name })
+            : t("role.edit", { name: role.name })
       }
-      description="A role's permissions and proposal limits"
+      description={t("role.description")}
       width="wide"
       entries={[stored]}
       renderEntries={([draft], onChange) =>
@@ -197,18 +207,17 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       summaryOf={([draft]) =>
         draft === undefined ? null : (
           <p className="text-xs text-muted-foreground">
-            {plural(draft.grants.length, "grant")}.{" "}
-            {isNew &&
-              "Nobody holds it until you give it to somebody, or an Identity mapping names it."}
+            {t("role.grantCount", { count: draft.grants.length })}.{" "}
+            {isNew && t("role.notHeldDescription")}
           </p>
         )
       }
       invalidReasonOf={invalidReasonOf}
       reachOf={reachOf}
-      submitLabel={isNew ? "Create role" : "Save role"}
+      submitLabel={isNew ? t("role.create") : t("role.save")}
       onSave={async ([draft]) => {
         if (draft === undefined) {
-          throw new Error("The role editor has one draft");
+          throw new Error(t("role.oneDraftError"));
         }
 
         const result = await save.run(draft);
@@ -217,15 +226,15 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
           onSaved(
             isNew
               ? {
-                  title: `Role ${result.value.name} created`,
-                  text: "Give it to somebody, or name it in an Identity mapping, to take effect.",
+                  title: t("role.created", { name: result.value.name }),
+                  text: t("role.createdDescription"),
                 }
               : {
-                  title: `Role ${result.value.name} saved`,
+                  title: t("role.saved", { name: result.value.name }),
                   text:
                     holderCount === 0
-                      ? "Nobody holds it yet."
-                      : `${plural(holderCount, "person holds", "people hold")} it: the change is theirs now.`,
+                      ? t("role.nobodyHoldsIt")
+                      : t("role.holdersAffected", { count: holderCount }),
                 },
             result.value.id,
           );
@@ -277,16 +286,16 @@ function RoleFields({
     <>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor={`${id}-name`}>Name</Label>
+          <Label htmlFor={`${id}-name`}>{t("role.name")}</Label>
           <Input
             id={`${id}-name`}
-            placeholder="e.g. maps-curator"
+            placeholder={t("role.nameExample")}
             value={draft.name}
             onChange={(event) => onChange({ ...draft, name: event.target.value })}
           />
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor={`${id}-description`}>What it is for</Label>
+          <Label htmlFor={`${id}-description`}>{t("role.purpose")}</Label>
           <Input
             id={`${id}-description`}
             value={draft.description}
@@ -296,7 +305,7 @@ function RoleFields({
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,12rem)_1fr] sm:items-end">
         <div className="grid gap-1.5">
-          <Label htmlFor={`${id}-batch-limit`}>Items per submission</Label>
+          <Label htmlFor={`${id}-batch-limit`}>{t("role.itemsPerSubmission")}</Label>
           <Input
             id={`${id}-batch-limit`}
             type="number"
@@ -317,12 +326,12 @@ function RoleFields({
               onChange({ ...draft, proposalBatchLimit: checked === true ? null : 10 })
             }
           />
-          No per-submission limit
+          {t("role.noSubmissionLimit")}
         </label>
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,12rem)_1fr] sm:items-end">
         <div className="grid gap-1.5">
-          <Label htmlFor={`${id}-proposal-limit`}>Proposals per day</Label>
+          <Label htmlFor={`${id}-proposal-limit`}>{t("role.proposalsPerDay")}</Label>
           <Input
             id={`${id}-proposal-limit`}
             type="number"
@@ -343,22 +352,17 @@ function RoleFields({
               onChange({ ...draft, proposalDailyLimit: checked === true ? null : 300 })
             }
           />
-          No daily limit
+          {t("role.noDailyLimit")}
         </label>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        The daily limit counts accepted items across submissions in the library's calendar day.
-        Among roles granting request.create, the highest limit applies for each setting; a role with
-        no limit makes that setting unlimited.
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Pick the scope each permission reaches. <i>own</i> is the holder's own records, with no
-        scope to choose; <i>managed</i> is a project they manage.
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("role.dailyLimitHelp")}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("role.scopeHelp")}</p>
       <div className="gap-8 md:columns-2">
         {permissionGroups.map((group) => (
           <div key={group} className="mb-3 break-inside-avoid">
-            <h4 className="border-b pb-1 text-xs font-semibold">{group}</h4>
+            <h4 className="border-b pb-1 text-xs font-semibold">
+              {t(`record.permissionGroup.${group}`)}
+            </h4>
             {catalog
               .filter((permission) => catalogEntryOf(permission).group === group)
               .map((permission) => (
@@ -406,7 +410,7 @@ function PermissionRow({
             checked={scope === null}
             onCheckedChange={(isChecked) => onChange(isChecked === true ? null : undefined)}
           />
-          own
+          {t("record.scope.own")}
         </span>
       ) : (
         <Select
@@ -422,7 +426,7 @@ function PermissionRow({
             <SelectItem value={noScope}>—</SelectItem>
             {scopes.map((option) => (
               <SelectItem key={option} value={option}>
-                {option}
+                {t(`record.scope.${option}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -446,29 +450,26 @@ function RoleReach({
     <div className="grid gap-3">
       <p>
         <b className="font-semibold">
-          {plural(change.added.length + change.removed.length, "change")}
+          {t("role.changeCount", { count: change.added.length + change.removed.length })}
         </b>
         {change.added.length > 0 && (
           <>
             {" "}
-            · adds or widens{" "}
+            · {t("role.addsOrWidens")}{" "}
             <span className="font-mono text-xs">{change.added.map(grantText).join(", ")}</span>
           </>
         )}
         {change.removed.length > 0 && (
           <>
             {" "}
-            · removes{" "}
+            · {t("role.removes")}{" "}
             <span className="font-mono text-xs">
               {change.removed.map(({ permission }) => permission).join(", ")}
             </span>
           </>
         )}
       </p>
-      <p>
-        It reaches <b className="font-semibold">{plural(reached.length, "person", "people")}</b> at
-        once:
-      </p>
+      <p>{t("role.reachesPeople", { count: reached.length })}</p>
       <ul className="grid gap-1.5">
         {reached.map(({ user, ways, gains, loses }) => (
           <li key={user.id} className="border-b pb-1.5 text-xs last:border-b-0">
@@ -476,13 +477,22 @@ function RoleReach({
             <span className="text-muted-foreground">({waysShortText(ways)})</span>
             <span className="block text-muted-foreground">
               {gains.length + loses.length === 0
-                ? "Nothing changes for them: another role of theirs holds the same."
+                ? t("role.nothingChanges")
                 : [
                     gains.length > 0
-                      ? `gains ${gains.map((held) => `${held.permission} (${scopeLabelOf(held.scope)})`).join(", ")}`
+                      ? t("role.gains", {
+                          permissions: gains
+                            .map(
+                              (held) =>
+                                `${held.permission} (${t(`record.scope.${held.scope ?? "own"}`)})`,
+                            )
+                            .join(", "),
+                        })
                       : null,
                     loses.length > 0
-                      ? `loses ${loses.map((held) => held.permission).join(", ")}`
+                      ? t("role.loses", {
+                          permissions: loses.map((held) => held.permission).join(", "),
+                        })
                       : null,
                   ]
                     .filter((part) => part !== null)
@@ -522,28 +532,34 @@ export function DeleteRoleDialog({
       ? undefined
       : [
           impact.holders.length === 0
-            ? { text: "Nobody holds it." }
+            ? { text: t("role.nobodyHoldsIt") }
             : {
-                text: `It is held by ${plural(impact.holders.length, "person", "people")}. They lose what only this role gave them.`,
+                text: t("role.deleteHoldersImpact", { count: impact.holders.length }),
               },
           ...impact.holders.map(
             ({ userId, keptRoleIds }): Consequence =>
               keptRoleIds.length === 0
                 ? {
-                    text: `${names.user(userId)} is left with no role, and sees nothing.`,
+                    text: t("role.deleteNoRole", { name: names.user(userId) }),
                     tone: "amber",
                   }
                 : {
-                    text: `${names.user(userId)} keeps ${keptRoleIds.map(names.role).join(", ")}.`,
+                    text: t("role.deleteKeepsRoles", {
+                      name: names.user(userId),
+                      roles: keptRoleIds.map(names.role).join(", "),
+                    }),
                   },
           ),
           ...impact.mappings.map(
             ({ instanceId, claim }): Consequence => ({
-              text: `${names.instance(instanceId)} maps ${claim ?? "everyone first seen there"} to it. That mapping stops giving anything, and shows a warning on Plugins until it is changed.`,
+              text: t("role.deleteMappingImpact", {
+                instance: names.instance(instanceId),
+                claim: claim ?? t("record.defaultRoleEveryone"),
+              }),
             }),
           ),
           ...(impact.leavesNoManager
-            ? [{ text: "Nobody else could manage access after this.", tone: "red" as const }]
+            ? [{ text: t("role.refusal.lastManager"), tone: "red" as const }]
             : []),
         ];
 
@@ -551,20 +567,20 @@ export function DeleteRoleDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${role.name}?`}
-      description={`What deleting the role ${role.name} takes from whom`}
+      title={t("role.deleteTitle", { name: role.name })}
+      description={t("role.deleteDescription", { name: role.name })}
       consequences={consequences}
-      confirmLabel="Delete role"
+      confirmLabel={t("role.delete")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(role.id);
         if (result.isDone) {
           onDeleted({
-            title: `Role ${role.name} deleted`,
+            title: t("role.deleted", { name: role.name }),
             text:
               impact === undefined || impact.holders.length === 0
-                ? "Nobody held it."
-                : `${plural(impact.holders.length, "person", "people")} affected.`,
+                ? t("role.nobodyHeldIt")
+                : t("role.affectedPeople", { count: impact.holders.length }),
           });
         }
 

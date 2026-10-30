@@ -14,7 +14,9 @@ import csDocuments from "@/i18n/locales/cs/documents.json";
 import csHistory from "@/i18n/locales/cs/history.json";
 import csIntentions from "@/i18n/locales/cs/intentions.json";
 import csLists from "@/i18n/locales/cs/lists.json";
+import csPreferences from "@/i18n/locales/cs/preferences.json";
 import csProjects from "@/i18n/locales/cs/projects.json";
+import csProperties from "@/i18n/locales/cs/properties.json";
 import csRequests from "@/i18n/locales/cs/requests.json";
 import csSystem from "@/i18n/locales/cs/system.json";
 import csValidations from "@/i18n/locales/cs/validations.json";
@@ -25,7 +27,9 @@ import enDocuments from "@/i18n/locales/en/documents.json";
 import enHistory from "@/i18n/locales/en/history.json";
 import enIntentions from "@/i18n/locales/en/intentions.json";
 import enLists from "@/i18n/locales/en/lists.json";
+import enPreferences from "@/i18n/locales/en/preferences.json";
 import enProjects from "@/i18n/locales/en/projects.json";
+import enProperties from "@/i18n/locales/en/properties.json";
 import enRequests from "@/i18n/locales/en/requests.json";
 import enSystem from "@/i18n/locales/en/system.json";
 import enValidations from "@/i18n/locales/en/validations.json";
@@ -43,6 +47,8 @@ export const resources = {
     projects: enProjects,
     intentions: enIntentions,
     categories: enCategories,
+    properties: enProperties,
+    preferences: enPreferences,
   },
   cs: {
     access: csAccess,
@@ -56,6 +62,8 @@ export const resources = {
     projects: csProjects,
     intentions: csIntentions,
     categories: csCategories,
+    properties: csProperties,
+    preferences: csPreferences,
   },
 } as const;
 
@@ -77,6 +85,8 @@ i18n.use(initReactI18next).init({
     "projects",
     "intentions",
     "categories",
+    "properties",
+    "preferences",
   ],
   defaultNS: "access",
   keySeparator: false,

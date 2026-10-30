@@ -2,7 +2,6 @@
 // opening in its pane, for a holder of `property.define`. The predefined four are edited, never
 // deleted (DOC-property-predefined); deleting another first says, from the server, what goes with
 // it (DOC-property-delete). The open property lives at ?property=.
-// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { NewProperty } from "@vera/contract/properties";
@@ -11,6 +10,7 @@ import type { PropertyDefinition } from "@vera/domain/properties";
 import { editPermissionOf, mayBeEnteredByHand, propertyNameOf } from "@vera/domain/properties";
 import { Tags } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import {
   createProperty,
@@ -32,7 +32,7 @@ import { Pane, paneStateOf } from "@/components/pane-state";
 import { failureOf } from "@/components/query-state";
 import {
   PropertyEditor,
-  propertyRefusalTexts,
+  propertyRefusalTextsOf,
   subjectLabels,
   typeLabels,
   visibilityLabels,
@@ -44,7 +44,7 @@ import {
 import type { ActionResult } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 
 const selectedParam = "property";
 const localPaging = { hasMore: false, isLoadingMore: false, onLoadMore: () => {} };
@@ -54,19 +54,23 @@ export function typeTextOf(definition: PropertyDefinition): string {
   const { type } = definition;
   const base =
     type.kind === "enum"
-      ? `${typeLabels.enum} · ${type.values.length}`
+      ? `${i18n.t(typeLabels.enum)} · ${type.values.length}`
       : type.kind === "number" && type.unit !== ""
-        ? `${typeLabels.number} in ${type.unit}`
-        : typeLabels[type.kind];
-  return definition.isList ? `List: ${base.toLowerCase()}` : base;
+        ? `${i18n.t(typeLabels.number)} in ${type.unit}`
+        : i18n.t(typeLabels[type.kind]);
+  return definition.isList
+    ? i18n.t("properties:propertiesPage.listType", { type: base.toLowerCase() })
+    : base;
 }
 
 function handTextOf(definition: PropertyDefinition): string {
   if (definition.handTier !== null) {
-    return `By hand, tier ${definition.handTier}`;
+    return i18n.t("properties:propertiesPage.byHandTier", { count: definition.handTier });
   }
 
-  return mayBeEnteredByHand(definition) ? "Not by hand" : "From the catalog";
+  return mayBeEnteredByHand(definition)
+    ? i18n.t("properties:propertiesPage.notByHand")
+    : i18n.t("properties:propertiesPage.fromCatalog");
 }
 
 type Editing = { kind: "new" } | { kind: "edit"; definition: PropertyDefinition };
@@ -76,7 +80,7 @@ type Editing = { kind: "new" } | { kind: "edit"; definition: PropertyDefinition 
 export const propertyColumns: ColumnDefinition<PropertyDefinition>[] = [
   {
     key: "property",
-    header: "Property",
+    header: "properties:propertiesPage.property",
     track: "minmax(10rem,1.4fr)",
     cell: (definition) => (
       <>
@@ -87,31 +91,32 @@ export const propertyColumns: ColumnDefinition<PropertyDefinition>[] = [
   },
   {
     key: "type",
-    header: "Type",
+    header: "properties:propertiesPage.type",
     track: "minmax(8rem,1fr)",
     cell: (definition) => typeTextOf(definition),
   },
   {
     key: "about",
-    header: "About",
+    header: "properties:propertiesPage.about",
     track: "max-content",
-    cell: (definition) => subjectLabels[definition.about],
+    cell: (definition) => i18n.t(subjectLabels[definition.about]),
   },
   {
     key: "visibility",
-    header: "Visibility",
+    header: "properties:propertiesPage.visibility",
     track: "max-content",
-    cell: (definition) => visibilityLabels[definition.visibility],
+    cell: (definition) => i18n.t(visibilityLabels[definition.visibility]),
   },
   {
     key: "hand",
-    header: "Entered",
+    header: "properties:propertiesPage.entered",
     track: "max-content",
     cell: (definition) => handTextOf(definition),
   },
 ];
 
 export function PropertiesPage() {
+  const { t } = useTranslation("properties");
   const [params, setParams] = useSearchParams();
   const selectedKey = params.get(selectedParam);
   const select = (key: string | null) =>
@@ -132,17 +137,17 @@ export function PropertiesPage() {
   const create = useActionMutation({
     call: createProperty,
     invalidates: propertyInvalidations,
-    refusalTexts: propertyRefusalTexts,
+    refusalTexts: propertyRefusalTextsOf(t),
   });
   const save = useActionMutation({
     call: saveProperty,
     invalidates: propertyInvalidations,
-    refusalTexts: propertyRefusalTexts,
+    refusalTexts: propertyRefusalTextsOf(t),
   });
   const remove = useActionMutation({
     call: deleteProperty,
     invalidates: propertyInvalidations,
-    refusalTexts: { "property.predefined": "A predefined property is edited, never deleted." },
+    refusalTexts: { "property.predefined": t("propertiesPage.predefinedRefusal") },
   });
 
   if (session === undefined) return null;
@@ -155,7 +160,7 @@ export function PropertiesPage() {
     ? [
         {
           id: "new",
-          label: "New property…",
+          label: t("propertiesPage.new"),
           isPrimary: true,
           onSelect: () => setEditing({ kind: "new" }),
         },
@@ -164,7 +169,7 @@ export function PropertiesPage() {
 
   return (
     <>
-      <PageHeader title="Properties" actions={headerActions} />
+      <PageHeader title={t("propertiesPage.title")} actions={headerActions} />
       {notice !== null && (
         <NoticeLine
           tone="green"
@@ -181,27 +186,29 @@ export function PropertiesPage() {
             rows={definitions}
             rowId={(definition) => definition.key}
             total={index === undefined ? undefined : definitions.length}
-            toolbar={{ count: plural(definitions.length, "property", "properties") }}
+            toolbar={{ count: t("propertiesPage.count", { count: definitions.length }) }}
             columns={propertyColumns}
             card={{
               eyebrow: (definition) => definition.key,
               title: (definition) => propertyNameOf(definition),
               meta: (definition) => (
                 <>
-                  {typeTextOf(definition)} · {subjectLabels[definition.about]} ·{" "}
-                  {visibilityLabels[definition.visibility]}
+                  {typeTextOf(definition)} · {i18n.t(subjectLabels[definition.about])} ·{" "}
+                  {i18n.t(visibilityLabels[definition.visibility])}
                 </>
               ),
             }}
-            whyOf={(definition) => (definition.isPredefined ? "Predefined" : null)}
+            whyOf={(definition) =>
+              definition.isPredefined ? "properties:propertiesPage.predefined" : null
+            }
             paging={localPaging}
             isLoading={isLoading}
             selectedId={selectedKey}
             onSelect={select}
-            loadingText="Loading properties…"
-            emptyText="No properties are defined."
-            failure={failureOf({ isError, refetch }, "Could not load properties.")}
-            loadingMoreText="Loading more properties…"
+            loadingText={t("propertiesPage.loading")}
+            emptyText={t("propertiesPage.empty")}
+            failure={failureOf({ isError, refetch }, t("propertiesPage.loadError"))}
+            loadingMoreText={t("propertiesPage.loadingMore")}
           />
         }
         detail={
@@ -209,10 +216,10 @@ export function PropertiesPage() {
             state={paneStateOf(
               selectedKey,
               index === undefined ? undefined : selected,
-              "This property no longer exists",
+              t("propertiesPage.gone"),
             )}
             emptyIcon={Tags}
-            emptyText="Select a property"
+            emptyText={t("propertiesPage.select")}
             render={(definition) => (
               <PropertyDetail
                 definition={definition}
@@ -224,7 +231,7 @@ export function PropertiesPage() {
             )}
           />
         }
-        detailTitle={selected === null ? "Property" : propertyNameOf(selected)}
+        detailTitle={selected === null ? t("propertiesPage.property") : propertyNameOf(selected)}
         detailOpen={selectedKey !== null}
         onDetailOpenChange={(open) => {
           if (!open) select(null);
@@ -250,10 +257,12 @@ export function PropertiesPage() {
             setEditing(null);
             select(definition.key);
             setNotice({
-              title: editing.kind === "new" ? "Property created" : "Property saved",
+              title: t(editing.kind === "new" ? "propertiesPage.created" : "propertiesPage.saved"),
               detail:
                 editing.kind === "new" && definition.handTier !== null
-                  ? `Give ${editPermissionOf(definition.key)} on Users management to whoever enters it.`
+                  ? t("propertiesPage.givePermission", {
+                      permission: editPermissionOf(definition.key),
+                    })
                   : propertyNameOf(definition),
             });
           }}
@@ -268,8 +277,8 @@ export function PropertiesPage() {
             if (result.isDone) {
               select(null);
               setNotice({
-                title: "Property deleted",
-                detail: `${propertyNameOf(deleting)} and its key are gone; the key is never used again.`,
+                title: t("propertiesPage.deleted"),
+                detail: t("propertiesPage.deleteNotice", { name: propertyNameOf(deleting) }),
               });
             }
             return result;
@@ -293,15 +302,16 @@ function PropertyDetail({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation("properties");
   const actions: ViewAction[] = canDefine
     ? [
-        { id: "edit", label: "Edit…", onSelect: onEdit },
+        { id: "edit", label: t("propertiesPage.edit"), onSelect: onEdit },
         ...(definition.isPredefined
           ? []
           : [
               {
                 id: "delete",
-                label: "Delete…",
+                label: t("propertiesPage.delete"),
                 isDestructive: true,
                 isInMenu: true,
                 onSelect: onDelete,
@@ -319,26 +329,34 @@ function PropertyDetail({
           </h2>
           <p className="mt-1 font-mono text-sm text-muted-foreground">{definition.key}</p>
         </div>
-        <ActionBar actions={actions} menuLabel="More" />
+        <ActionBar actions={actions} menuLabel={t("propertiesPage.more")} />
       </div>
-      <DetailCard title="Definition">
+      <DetailCard title={t("propertiesPage.definition")}>
         <FactGrid
           facts={[
-            { label: "Name in English", value: definition.names.en },
-            { label: "Name in Czech", value: definition.names.cs },
-            { label: "About", value: subjectLabels[definition.about] },
-            { label: "Type", value: typeTextOf(definition) },
-            { label: "Visibility", value: visibilityLabels[definition.visibility] },
-            { label: "Entered", value: handTextOf(definition) },
+            { label: t("propertiesPage.nameEnglish"), value: definition.names.en },
+            { label: t("propertiesPage.nameCzech"), value: definition.names.cs },
+            { label: t("propertiesPage.about"), value: i18n.t(subjectLabels[definition.about]) },
+            { label: t("propertiesPage.type"), value: typeTextOf(definition) },
             {
-              label: "Held by",
-              value: plural(valueCount, definition.about === "document" ? "document" : "attempt"),
+              label: t("propertiesPage.visibility"),
+              value: i18n.t(visibilityLabels[definition.visibility]),
+            },
+            { label: t("propertiesPage.entered"), value: handTextOf(definition) },
+            {
+              label: t("propertiesPage.heldBy"),
+              value: t(
+                definition.about === "document"
+                  ? "propertiesPage.valueCountDocument"
+                  : "propertiesPage.valueCountAttempt",
+                { count: valueCount },
+              ),
             },
             ...(definition.handTier === null
               ? []
               : [
                   {
-                    label: "Permission",
+                    label: t("propertiesPage.permission"),
                     value: (
                       <span className="font-mono text-xs">{editPermissionOf(definition.key)}</span>
                     ),
@@ -346,15 +364,12 @@ function PropertyDetail({
                 ]),
           ]}
         />
-        {definition.isPredefined && (
-          <FinePrint>
-            Predefined: counting, generating and the pages' filters read it, so it is edited but
-            never deleted.
-          </FinePrint>
-        )}
+        {definition.isPredefined && <FinePrint>{t("propertiesPage.predefinedNote")}</FinePrint>}
       </DetailCard>
       {definition.type.kind === "enum" && (
-        <DetailCard title={`Values · ${definition.type.values.length}`}>
+        <DetailCard
+          title={t("propertiesPage.valuesCount", { count: definition.type.values.length })}
+        >
           <ul className="divide-y">
             {definition.type.values.map((value) => (
               <li key={value.value} className="flex flex-wrap items-baseline gap-x-3 py-1.5">
@@ -381,6 +396,7 @@ function DeletePropertyDialog({
   onClose: () => void;
   onConfirm: () => Promise<ActionResult<void>>;
 }) {
+  const { t } = useTranslation("properties");
   const { data: impact } = useQuery({
     queryKey: ["properties", definition.key, "impact"],
     queryFn: () => fetchPropertyImpact(definition.key),
@@ -392,38 +408,40 @@ function DeletePropertyDialog({
           {
             text:
               impact.valueCount === 0
-                ? "No record holds a value of it."
-                : `${plural(impact.valueCount, "record")} lose ${impact.valueCount === 1 ? "its value" : "their values"}.`,
+                ? t("propertiesPage.noValuesHeld")
+                : t("propertiesPage.valuesRemoved", { count: impact.valueCount }),
             tone: impact.valueCount === 0 ? "plain" : "red",
           },
           ...(impact.roleNames.length === 0
             ? []
             : [
                 {
-                  text: `Its permission is taken from ${impact.roleNames.join(", ")}.`,
+                  text: t("propertiesPage.permissionRemoved", {
+                    names: impact.roleNames.join(", "),
+                  }),
                 },
               ]),
           ...impact.watchlists.map((watchlist) => ({
             text: watchlist.isShared
-              ? `${watchlist.name} loses its condition on it and pauses until each recipient confirms.`
-              : `${watchlist.name} loses its condition on it.`,
+              ? t("propertiesPage.sharedWatchlistConditionRemoved", { name: watchlist.name })
+              : t("propertiesPage.watchlistConditionRemoved", { name: watchlist.name }),
             tone: watchlist.isShared ? ("amber" as const) : ("plain" as const),
           })),
           ...impact.intentionNames.map((name) => ({
-            text: `${name} loses its condition on it, and counts more from then on.`,
+            text: t("propertiesPage.intentionConditionRemoved", { name }),
             tone: "amber" as const,
           })),
-          { text: `The key ${definition.key} is never used again.` },
+          { text: t("propertiesPage.keyRetired", { key: definition.key }) },
         ];
 
   return (
     <ConsequenceDialog
       isOpen
       onClose={onClose}
-      title={`Delete ${propertyNameOf(definition)}?`}
-      description="What deleting this property removes"
+      title={t("propertiesPage.deleteTitle", { name: propertyNameOf(definition) })}
+      description={t("propertiesPage.deleteDescription")}
       consequences={consequences}
-      confirmLabel="Delete property"
+      confirmLabel={t("propertiesPage.deleteProperty")}
       isDestructive
       onConfirm={onConfirm}
     />

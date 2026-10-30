@@ -7,9 +7,9 @@
 // another identity (not for an agent, which never logs in); a role's grants, a copy and its
 // delete; a group's name and members; a custody's name, members and delete, never the
 // fallback's.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@vera/contract/access";
+import { useTranslation } from "react-i18next";
 import type { ViewAction } from "@/components/actions/action-bar";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import {
@@ -26,6 +26,10 @@ import {
 } from "@/features/access/access-dialogs";
 import type { AccessNames } from "@/features/access/access-records";
 import type { AccessSelection } from "@/features/access/access-view";
+import { i18n } from "@/i18n";
+
+const t = (key: string) => i18n.t(key, { ns: "access" });
+
 import { DeleteRoleDialog, RoleEditorDialog } from "@/features/access/role-dialogs";
 import {
   DeleteSharedWatchlistDialog,
@@ -62,15 +66,15 @@ export function headerActionsFor(open: Open): ViewAction[] {
   return [
     {
       id: "new-account",
-      label: "New local account",
+      label: t("acts.newLocalAccount"),
       isPrimary: true,
       onSelect: () => open({ kind: "newAccount" }),
     },
-    { id: "new-role", label: "New role", onSelect: () => open({ kind: "newRole" }) },
-    { id: "new-group", label: "New group", onSelect: () => open({ kind: "newGroup" }) },
+    { id: "new-role", label: t("acts.newRole"), onSelect: () => open({ kind: "newRole" }) },
+    { id: "new-group", label: t("acts.newGroup"), onSelect: () => open({ kind: "newGroup" }) },
     {
       id: "new-custody",
-      label: "New request custody set",
+      label: t("acts.newCustody"),
       onSelect: () => open({ kind: "newCustody" }),
     },
   ];
@@ -98,18 +102,18 @@ export function recordActionsFor(
     return [
       {
         id: "share",
-        label: "Share…",
+        label: t("acts.share"),
         onSelect: () => open({ kind: "shareWatchlist", id: watchlist.id }),
       },
       {
         id: "rename",
-        label: "Rename…",
+        label: t("acts.rename"),
         onSelect: () => open({ kind: "renameWatchlist", id: watchlist.id }),
       },
-      { id: "edit-filter", label: "Edit filter", href: watchlistHrefOf(watchlist) },
+      { id: "edit-filter", label: t("acts.editFilter"), href: watchlistHrefOf(watchlist) },
       {
         id: "delete",
-        label: "Delete…",
+        label: t("acts.delete"),
         isDestructive: true,
         onSelect: () => open({ kind: "deleteWatchlist", id: watchlist.id }),
       },
@@ -130,33 +134,33 @@ export function recordActionsFor(
     case "users": {
       const user = index.users.find((candidate) => candidate.id === id);
       if (user?.kind !== "person") {
-        return [act("userRoles", "Roles…"), act("userGroups", "Groups…")];
+        return [act("userRoles", t("acts.roles")), act("userGroups", t("acts.groups"))];
       }
 
       return [
-        act("userRoles", "Roles…"),
-        act("userGroups", "Groups…"),
-        act("linkIdentity", "Link identity…"),
+        act("userRoles", t("acts.roles")),
+        act("userGroups", t("acts.groups")),
+        act("linkIdentity", t("acts.linkIdentity")),
         user.suspendedAt === null
-          ? { ...act("suspendUser", "Suspend…"), isDestructive: true }
-          : { id: "restoreUser", label: "Restore", onSelect: () => onRestore(user.id) },
+          ? { ...act("suspendUser", t("acts.suspend")), isDestructive: true }
+          : { id: "restoreUser", label: t("acts.restore"), onSelect: () => onRestore(user.id) },
       ];
     }
     case "roles":
       return [
-        act("editRole", "Edit grants…"),
-        act("copyRole", "Duplicate"),
-        { ...act("deleteRole", "Delete…"), isDestructive: true },
+        act("editRole", t("acts.editGrants")),
+        act("copyRole", t("acts.duplicate")),
+        { ...act("deleteRole", t("acts.delete")), isDestructive: true },
       ];
     case "groups":
-      return [act("editGroup", "Edit…"), act("groupMembers", "Members…")];
+      return [act("editGroup", t("acts.edit")), act("groupMembers", t("acts.members"))];
     case "custodies": {
       const custody = index.custodies.find((candidate) => candidate.id === id);
       return [
-        act("editCustody", "Edit…"),
-        act("custodyMembers", "Members…"),
+        act("editCustody", t("acts.edit")),
+        act("custodyMembers", t("acts.members")),
         ...(custody?.isFallback === false
-          ? [{ ...act("deleteCustody", "Delete…"), isDestructive: true }]
+          ? [{ ...act("deleteCustody", t("acts.delete")), isDestructive: true }]
           : []),
       ];
     }
@@ -175,6 +179,7 @@ interface AccessDialogViewProps {
 }
 
 export function AccessDialogView({ dialog, index, names, onClose, onDone }: AccessDialogViewProps) {
+  useTranslation();
   const common = { isOpen: true, onClose, index, names };
   const recordOf = <Record extends { id: string }>(records: readonly Record[]) =>
     "id" in dialog ? records.find((record) => record.id === dialog.id) : undefined;

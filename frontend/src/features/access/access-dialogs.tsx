@@ -6,7 +6,6 @@
 // institutional one. A group's name and members, with what each member added gets, never a
 // role; a custody's name, its groups and people with what each could do with its proposals, and
 // its delete, as the server counts it. Each says where it is done and what follows.
-// TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex, LocalAccount, RecordDraft } from "@vera/contract/access";
 import { identityLinkSchema, localAccountSchema, recordDraftSchema } from "@vera/contract/access";
@@ -50,7 +49,10 @@ import type { AccessNames } from "@/features/access/access-records";
 import { confersText } from "@/features/access/access-words";
 import { accessInvalidations, useCustodyImpactQuery } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
+
+const t = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 
 // Said above the columns once something is saved.
 export interface AccessNotice {
@@ -61,21 +63,20 @@ export interface AccessNotice {
 }
 
 const refusalTexts = {
-  "access.last_manager": "Nobody could manage access after this.",
-  "access.name_taken": "There is already one with that name.",
-  "access.identity_taken": "Somebody already signs in with that.",
-  "access.fallback": "The fallback keeps its name, and cannot be deleted.",
-  "access.suspended": "They are suspended already.",
-  "access.not_suspended": "They are not suspended.",
-  "access.last_identity": "It is their only way in. Suspend them instead.",
-  403: "You may no longer change users, groups or roles.",
+  "access.last_manager": t("dialog.refusal.lastManager"),
+  "access.name_taken": t("dialog.refusal.nameTaken"),
+  "access.identity_taken": t("dialog.refusal.identityTaken"),
+  "access.fallback": t("dialog.refusal.fallback"),
+  "access.suspended": t("dialog.refusal.suspended"),
+  "access.not_suspended": t("dialog.refusal.notSuspended"),
+  "access.last_identity": t("dialog.refusal.lastIdentity"),
+  403: t("dialog.refusal.forbidden"),
 };
 
 // The page's acts that open no dialog word their refusals the same way.
 export const accessRefusalTexts = refusalTexts;
 
-const noRoleText =
-  "A group never gives a role. Roles are set by hand here, or mapped by an Identity plugin from a claim.";
+const noRoleText = t("record.groupRolesDescription");
 
 interface DialogProps {
   isOpen: boolean;
@@ -105,11 +106,11 @@ export function IdentityDefaultRoleDialog({
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Default role: ${instance.name}`}
-      description="Choose the role a first login receives."
+      title={t("dialog.defaultRoleTitle", { name: instance.name })}
+      description={t("dialog.defaultRoleDescription")}
       schema={defaultRoleDraftSchema}
       defaultValues={{ roleId: instance.defaultRoleId ?? "none" }}
-      submitLabel="Save"
+      submitLabel={t("dialog.save")}
       onSubmit={async ({ roleId }) => {
         const result = await save.run({
           instanceId: instance.id,
@@ -117,14 +118,20 @@ export function IdentityDefaultRoleDialog({
         });
         if (result.isDone)
           onSaved({
-            title: "Default role saved",
-            text: `${instance.name} will give ${roleId === "none" ? "no role" : (index.roles.find((role) => role.id === roleId)?.name ?? roleId)} to first logins from now on.`,
+            title: t("dialog.defaultRoleSaved"),
+            text: t("dialog.defaultRoleSavedDescription", {
+              instance: instance.name,
+              role:
+                roleId === "none"
+                  ? t("dialog.noRole")
+                  : (index.roles.find((role) => role.id === roleId)?.name ?? roleId),
+            }),
           });
         return result;
       }}
       render={(form) => (
         <>
-          <p>Applies to first logins from now on; people already in keep their roles.</p>
+          <p>{t("dialog.defaultRoleApplies")}</p>
           <Select
             value={form.watch("roleId")}
             onValueChange={(roleId) => form.setValue("roleId", roleId, { shouldDirty: true })}
@@ -133,7 +140,7 @@ export function IdentityDefaultRoleDialog({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">None — no access yet</SelectItem>
+              <SelectItem value="none">{t("dialog.noneNoAccess")}</SelectItem>
               {index.roles.map((role) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
@@ -165,7 +172,10 @@ function RoleOption({ role }: { role: Role }) {
     <span className="text-sm">
       <b className="font-medium">{role.name}</b>{" "}
       <span className="text-muted-foreground">
-        — {role.description === "" ? plural(role.grants.length, "grant") : role.description}
+        —{" "}
+        {role.description === ""
+          ? t("dialog.grantCount", { count: role.grants.length })
+          : role.description}
       </span>
     </span>
   );
@@ -190,15 +200,22 @@ export function UserRolesDialog({
     const ways = user.mappedRoles.filter((mapped) => mapped.roleId === role.id);
     return ways.length === 0
       ? null
-      : `Also mapped by ${ways.map((way) => `${names.instance(way.instanceId)} from ${way.claim}`).join(" and ")}: it follows the provider at every login.`;
+      : t("dialog.alsoMapped", {
+          mappings: ways
+            .map(
+              (way) =>
+                `${names.instance(way.instanceId)} ${t("record.fromClaim", { claim: way.claim })}`,
+            )
+            .join(` ${t("record.and")} `),
+        });
   };
 
   return (
     <PickerDialog<Role>
       isOpen={isOpen}
       onClose={onClose}
-      title={`Roles: ${user.name}`}
-      description={`The roles ${user.name} holds by hand`}
+      title={t("dialog.rolesTitle", { name: user.name })}
+      description={t("dialog.rolesDescription", { name: user.name })}
       sections={[{ items: index.roles }]}
       itemId={(role) => role.id}
       itemText={(role) => role.name}
@@ -209,16 +226,16 @@ export function UserRolesDialog({
         const isLeftWithNone = picked.size === 0 && user.mappedRoles.length === 0;
         return (
           <p className="text-xs text-muted-foreground">
-            Roles set by hand. Mapped ones are not changed here.
+            {t("dialog.rolesByHandHelp")}
             {isLeftWithNone && (
               <span className="mt-1 block text-tone-amber-foreground">
-                They will hold no role, and see nothing.
+                {t("dialog.noRoleSeeNothing")}
               </span>
             )}
           </p>
         );
       }}
-      submitLabel="Save roles"
+      submitLabel={t("dialog.saveRoles")}
       onSave={async (picked) => {
         const result = await save.run({ recordId: user.id, body: { roleIds: [...picked] } });
         if (result.isDone) {
@@ -227,8 +244,8 @@ export function UserRolesDialog({
             title: `Roles saved for ${user.name}`,
             text:
               held.length === 0
-                ? "They hold no role now: they will see nothing."
-                : `Now ${held.map(names.role).join(", ")}.`,
+                ? t("dialog.noRoleSeeNothing")
+                : t("dialog.nowRoles", { roles: held.map(names.role).join(", ") }),
           });
         }
 
@@ -255,8 +272,8 @@ export function UserGroupsDialog({
     <PickerDialog<AccessGroup>
       isOpen={isOpen}
       onClose={onClose}
-      title={`Groups: ${user.name}`}
-      description={`The groups ${user.name} is in`}
+      title={t("dialog.groupsTitle", { name: user.name })}
+      description={t("dialog.groupsDescription", { name: user.name })}
       sections={[{ items: index.groups }]}
       itemId={(group) => group.id}
       itemText={(group) => group.name}
@@ -264,13 +281,13 @@ export function UserGroupsDialog({
         <span className="text-sm">
           <b className="font-medium">{group.name}</b>{" "}
           <span className="text-muted-foreground">
-            — gives {groupConfersText(group, index, names)}
+            — {t("dialog.givesText")} {groupConfersText(group, index, names)}
           </span>
         </span>
       )}
       initiallyPicked={new Set(user.groupIds)}
       consequenceOf={() => <p className="text-xs text-muted-foreground">{noRoleText}</p>}
-      submitLabel="Save groups"
+      submitLabel={t("dialog.saveGroups")}
       onSave={async (picked) => {
         const result = await save.run({ recordId: user.id, body: { groupIds: [...picked] } });
         if (result.isDone) {
@@ -278,7 +295,7 @@ export function UserGroupsDialog({
             title: `Groups saved for ${user.name}`,
             text:
               result.value.groupIds.length === 0
-                ? "In no group now."
+                ? t("dialog.noGroupNow")
                 : result.value.groupIds.map(names.group).join(", "),
           });
         }
@@ -307,18 +324,21 @@ export function LinkIdentityDialog({
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Link an identity: ${user.name}`}
-      description={`Another way for ${user.name} to log in`}
+      title={t("dialog.linkIdentityTitle", { name: user.name })}
+      description={t("dialog.linkIdentityDescription", { name: user.name })}
       schema={identityLinkSchema}
       defaultValues={{ instanceId: index.identityInstances[0]?.id ?? "", externalId: "" }}
-      submitLabel="Link"
+      submitLabel={t("dialog.link")}
       fieldOf={(refusal) => (refusal.status === 409 ? "externalId" : null)}
       onSubmit={async (values) => {
         const result = await link.run({ userId: user.id, link: values });
         if (result.isDone) {
           onSaved({
-            title: "Identity linked",
-            text: `${user.name} can now log in with ${names.instance(values.instanceId)}.`,
+            title: t("dialog.identityLinked"),
+            text: t("dialog.identityLinkedDescription", {
+              name: user.name,
+              provider: names.instance(values.instanceId),
+            }),
           });
         }
 
@@ -329,10 +349,8 @@ export function LinkIdentityDialog({
         const errors = form.formState.errors;
         return (
           <>
-            <p className="text-muted-foreground">
-              Another way for the same person to log in. Their record, roles and history stay one.
-            </p>
-            <Field id={`${id}-instance`} label="Provider">
+            <p className="text-muted-foreground">{t("dialog.identityDescription")}</p>
+            <Field id={`${id}-instance`} label={t("dialog.provider")}>
               <Select
                 value={values.instanceId}
                 onValueChange={(value) =>
@@ -345,16 +363,19 @@ export function LinkIdentityDialog({
                 <SelectContent>
                   {index.identityInstances.map((instance) => (
                     <SelectItem key={instance.id} value={instance.id}>
-                      {instance.name} — user id is {instance.userIdClaim}
+                      {t("dialog.providerClaim", {
+                        name: instance.name,
+                        claim: instance.userIdClaim,
+                      })}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
-            <Field id={`${id}-external`} label="Their id there">
+            <Field id={`${id}-external`} label={t("dialog.externalId")}>
               <Input
                 id={`${id}-external`}
-                placeholder="the value of that claim"
+                placeholder={t("dialog.claimValue")}
                 {...form.register("externalId")}
               />
             </Field>
@@ -380,27 +401,25 @@ export function SuspendUserDialog({
   });
   const roleCount = heldRoleIdsOf(user).length;
   const consequences: Consequence[] = [
-    { text: `${user.name} cannot log in until restored.`, tone: "red" },
-    ...(roleCount === 0
-      ? []
-      : [{ text: `Their ${plural(roleCount, "role")} are kept, but give nothing meanwhile.` }]),
-    { text: "Their groups, history and open asks stay." },
+    { text: t("dialog.suspendCannotLogin", { name: user.name }), tone: "red" },
+    ...(roleCount === 0 ? [] : [{ text: t("dialog.suspendRolesKept", { count: roleCount }) }]),
+    { text: t("dialog.suspendGroupsStay") },
   ];
   return (
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Suspend ${user.name}?`}
-      description={`What suspending ${user.name} does`}
+      title={t("dialog.suspendTitle", { name: user.name })}
+      description={t("dialog.suspendDescription", { name: user.name })}
       consequences={consequences}
-      confirmLabel="Suspend"
+      confirmLabel={t("dialog.suspend")}
       isDestructive
       onConfirm={async () => {
         const result = await suspend.run(user.id);
         if (result.isDone) {
           onSaved({
-            title: `${user.name} suspended`,
-            text: "They cannot log in until restored.",
+            title: t("dialog.suspended", { name: user.name }),
+            text: t("dialog.suspendCannotLoginGeneric"),
           });
         }
 
@@ -429,11 +448,11 @@ export function NewLocalAccountDialog({
     <FormDialog<LocalAccount>
       isOpen={isOpen}
       onClose={onClose}
-      title="New local account"
-      description="A username and password kept by VERA, for somebody with no institutional account"
+      title={t("dialog.newLocalAccount")}
+      description={t("dialog.newLocalAccountDescription")}
       schema={localAccountSchema}
       defaultValues={{ name: "", username: "", email: "", roleIds: defaultRoleIds }}
-      submitLabel="Create account"
+      submitLabel={t("dialog.createAccount")}
       fieldOf={(refusal) => (refusal.code === "access.identity_taken" ? "username" : null)}
       onSubmit={async (values) => {
         const result = await create.run(values);
@@ -444,8 +463,8 @@ export function NewLocalAccountDialog({
               title: `${result.value.name} created`,
               text:
                 held.length === 0
-                  ? "No role: they will see nothing until given one."
-                  : `Holds ${held.map(names.role).join(", ")}. They set a password at first login.`,
+                  ? t("dialog.noRoleUntilGiven")
+                  : t("dialog.holdsRolesSetPassword", { roles: held.map(names.role).join(", ") }),
             },
             result.value.id,
           );
@@ -458,34 +477,34 @@ export function NewLocalAccountDialog({
         const roleIds = form.watch("roleIds");
         return (
           <>
-            <p className="text-muted-foreground">
-              For somebody with no institutional account. People with one appear by themselves the
-              first time they log in; agents are created with their plugin.
-            </p>
+            <p className="text-muted-foreground">{t("dialog.localAccountHelp")}</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-3">
-                <Field id={`${id}-name`} label="Name">
+                <Field id={`${id}-name`} label={t("dialog.name")}>
                   <Input id={`${id}-name`} {...form.register("name")} />
                 </Field>
                 <FieldError message={errors.name?.message} />
               </div>
               <div className="grid gap-3">
-                <Field id={`${id}-username`} label="Username">
+                <Field id={`${id}-username`} label={t("dialog.username")}>
                   <Input id={`${id}-username`} {...form.register("username")} />
                 </Field>
                 <FieldError message={errors.username?.message} />
               </div>
             </div>
-            <Field id={`${id}-email`} label="Email">
+            <Field id={`${id}-email`} label={t("dialog.email")}>
               <Input id={`${id}-email`} placeholder="name@example.cz" {...form.register("email")} />
             </Field>
             <fieldset className="grid">
               <legend className="mb-1 text-sm font-medium">
-                Roles{" "}
+                {t("dialog.roles")}{" "}
                 <span className="font-normal text-muted-foreground">
-                  — by hand; {local?.name ?? "Local accounts"} gives{" "}
-                  {local?.defaultRoleId == null ? "no role" : names.role(local.defaultRoleId)} by
-                  default
+                  — {t("dialog.byHand")}; {local?.name ?? t("dialog.localAccounts")}{" "}
+                  {t("dialog.gives")}{" "}
+                  {local?.defaultRoleId == null
+                    ? t("dialog.noRole")
+                    : names.role(local.defaultRoleId)}{" "}
+                  {t("dialog.byDefault")}
                 </span>
               </legend>
               {index.roles.map((role) => (
@@ -544,19 +563,22 @@ export function GroupEditorDialog({
     <FormDialog<RecordDraft>
       isOpen={isOpen}
       onClose={onClose}
-      title={group === null ? "New group" : `Edit group ${group.name}`}
-      description="A group's name and what it is for"
+      title={group === null ? t("dialog.newGroup") : t("dialog.editGroup", { name: group.name })}
+      description={t("dialog.groupDescription")}
       schema={recordDraftSchema}
       defaultValues={{ name: group?.name ?? "", description: group?.description ?? "" }}
-      submitLabel={group === null ? "Create group" : "Save group"}
+      submitLabel={group === null ? t("dialog.createGroup") : t("dialog.saveGroup")}
       fieldOf={(refusal) => (refusal.code === "access.name_taken" ? "name" : null)}
       onSubmit={async (draft) => {
         const result = await save.run(draft);
         if (result.isDone) {
           onSaved(
             group === null
-              ? { title: `Group ${result.value.name} created`, text: "Add members next." }
-              : { title: `Group ${result.value.name} saved`, text: "" },
+              ? {
+                  title: t("dialog.groupCreated", { name: result.value.name }),
+                  text: t("dialog.addMembersNext"),
+                }
+              : { title: t("dialog.groupSaved", { name: result.value.name }), text: "" },
             result.value.id,
           );
         }
@@ -565,16 +587,19 @@ export function GroupEditorDialog({
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
-            <Input id={`${id}-name`} placeholder="e.g. Maps Curators" {...form.register("name")} />
+          <Field id={`${id}-name`} label={t("dialog.name")}>
+            <Input
+              id={`${id}-name`}
+              placeholder={t("dialog.groupNameExample")}
+              {...form.register("name")}
+            />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
-          <Field id={`${id}-description`} label="What it is for">
+          <Field id={`${id}-description`} label={t("dialog.groupPurpose")}>
             <Input id={`${id}-description`} {...form.register("description")} />
           </Field>
           <p className="text-xs text-muted-foreground">
-            {noRoleText} Once it exists: category custody on Categories, projects on Projects,
-            request custody from the custody here.
+            {noRoleText} {t("dialog.groupAfterCreation")}
           </p>
         </>
       )}
@@ -599,25 +624,28 @@ export function GroupMembersDialog({
     <PickerDialog<AccessUser>
       isOpen={isOpen}
       onClose={onClose}
-      title={`Members: ${group.name}`}
-      description={`Who is in ${group.name}`}
+      title={t("dialog.groupMembersTitle", { name: group.name })}
+      description={t("dialog.groupMembersDescription", { name: group.name })}
       sections={[{ items: index.users }]}
       itemId={(user) => user.id}
       itemText={(user) => user.name}
       renderItem={(user) => <PersonOption user={user} names={names} />}
       initiallyPicked={new Set(group.memberIds)}
       consequenceOf={() => (
-        <StatusNote tone="blue" title="Each person added gets">
+        <StatusNote tone="blue" title={t("dialog.eachPersonGets")}>
           {groupConfersText(group, index, names)}.
         </StatusNote>
       )}
-      submitLabel="Save members"
+      submitLabel={t("dialog.saveMembers")}
       onSave={async (picked) => {
         const result = await save.run({ recordId: group.id, body: { userIds: [...picked] } });
         if (result.isDone) {
           onSaved({
-            title: "Members saved",
-            text: `${plural(result.value.memberIds.length, "person", "people")} in ${group.name}.`,
+            title: t("dialog.membersSaved"),
+            text: t("dialog.membersInGroup", {
+              count: result.value.memberIds.length,
+              name: group.name,
+            }),
           });
         }
 
@@ -634,7 +662,7 @@ function PersonOption({ user, names }: { user: AccessUser; names: AccessNames })
       <b className="font-medium">{user.name}</b>
       {user.kind === "agent" && <AgentBadge />}
       <span className="text-muted-foreground">
-        — {roleIds.length === 0 ? "no role" : roleIds.map(names.role).join(", ")}
+        — {roleIds.length === 0 ? t("record.noRole") : roleIds.map(names.role).join(", ")}
       </span>
     </span>
   );
@@ -665,11 +693,15 @@ export function CustodyEditorDialog({
     <FormDialog<RecordDraft>
       isOpen={isOpen}
       onClose={onClose}
-      title={custody === null ? "New request custody" : `Edit ${custody.name}`}
-      description="A request custody's name and what it covers"
+      title={
+        custody === null
+          ? t("dialog.newRequestCustody")
+          : t("dialog.editCustody", { name: custody.name })
+      }
+      description={t("dialog.custodyDescription")}
       schema={recordDraftSchema}
       defaultValues={{ name: custody?.name ?? "", description: custody?.description ?? "" }}
-      submitLabel={custody === null ? "Create custody" : "Save"}
+      submitLabel={custody === null ? t("dialog.createCustody") : t("dialog.save")}
       fieldOf={(refusal) =>
         refusal.code === "access.name_taken" || refusal.code === "access.fallback" ? "name" : null
       }
@@ -679,10 +711,10 @@ export function CustodyEditorDialog({
           onSaved(
             custody === null
               ? {
-                  title: `Custody ${result.value.name} created`,
-                  text: "Add members, then name it in a Custody rule.",
+                  title: t("dialog.custodyCreated", { name: result.value.name }),
+                  text: t("dialog.custodyCreatedDescription"),
                 }
-              : { title: `Custody ${result.value.name} saved`, text: "" },
+              : { title: t("dialog.custodySaved", { name: result.value.name }), text: "" },
             result.value.id,
           );
         }
@@ -691,24 +723,24 @@ export function CustodyEditorDialog({
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
+          <Field id={`${id}-name`} label={t("dialog.name")}>
             <Input
               id={`${id}-name`}
-              placeholder="e.g. Maps"
+              placeholder={t("dialog.custodyNameExample")}
               disabled={custody?.isFallback === true}
               {...form.register("name")}
             />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
-          <Field id={`${id}-description`} label="What it covers">
+          <Field id={`${id}-description`} label={t("dialog.custodyCoverage")}>
             <Input id={`${id}-description`} {...form.register("description")} />
           </Field>
           <p className="text-xs text-muted-foreground">
             {custody === null
-              ? "It holds nothing until a Custody rule on Plugins returns this name."
+              ? t("dialog.custodyRuleNeeded")
               : custody.isFallback
-                ? "The fallback keeps its name."
-                : "Renaming it: rules that return the old name stop placing proposals here until they are changed."}
+                ? t("dialog.fallbackKeepsName")
+                : t("dialog.renameCustodyDescription")}
           </p>
         </>
       )}
@@ -721,8 +753,6 @@ type CustodyMember = { kind: "group"; group: AccessGroup } | { kind: "user"; use
 
 const memberIdOf = (member: CustodyMember) =>
   member.kind === "group" ? `group:${member.group.id}` : `user:${member.user.id}`;
-
-const reachTexts = { decides: "would decide", sees: "would see only" } as const;
 
 export function CustodyMembersDialog({
   isOpen,
@@ -746,11 +776,11 @@ export function CustodyMembersDialog({
     <PickerDialog<CustodyMember>
       isOpen={isOpen}
       onClose={onClose}
-      title={`Members: ${custody.name}`}
-      description={`The groups and people in ${custody.name}`}
+      title={t("dialog.custodyMembersTitle", { name: custody.name })}
+      description={t("dialog.custodyMembersDescription", { name: custody.name })}
       sections={[
-        { title: "Groups", items: groups },
-        { title: "People", items: people },
+        { title: t("record.groups"), items: groups },
+        { title: t("dialog.people"), items: people },
       ]}
       itemId={memberIdOf}
       itemText={(member) => (member.kind === "group" ? member.group.name : member.user.name)}
@@ -760,7 +790,7 @@ export function CustodyMembersDialog({
             <span className="text-sm">
               <b className="font-medium">{member.group.name}</b>{" "}
               <span className="text-muted-foreground">
-                — {plural(member.group.memberIds.length, "member")}
+                — {t("record.memberCount", { count: member.group.memberIds.length })}
               </span>
             </span>
           );
@@ -773,7 +803,7 @@ export function CustodyMembersDialog({
             <span
               className={reach === null ? "text-tone-amber-foreground" : "text-muted-foreground"}
             >
-              — {reach === null ? "no role reaches proposals" : reachTexts[reach]}
+              — {reach === null ? t("dialog.noRoleReachesProposals") : t(`dialog.reach.${reach}`)}
             </span>
           </span>
         );
@@ -784,7 +814,7 @@ export function CustodyMembersDialog({
           ...custody.memberIds.map((userId) => `user:${userId}`),
         ])
       }
-      submitLabel="Save members"
+      submitLabel={t("dialog.saveMembers")}
       onSave={async (picked) => {
         const idsOf = (prefix: string) =>
           [...picked].filter((id) => id.startsWith(prefix)).map((id) => id.slice(prefix.length));
@@ -794,8 +824,12 @@ export function CustodyMembersDialog({
         });
         if (result.isDone) {
           onSaved({
-            title: "Members saved",
-            text: `${plural(result.value.memberIds.length, "person", "people")} and ${plural(result.value.groupIds.length, "group")} in ${custody.name}.`,
+            title: t("dialog.membersSaved"),
+            text: t("dialog.membersInCustody", {
+              people: result.value.memberIds.length,
+              groups: result.value.groupIds.length,
+              name: custody.name,
+            }),
           });
         }
 
@@ -826,22 +860,25 @@ export function DeleteCustodyDialog({
       ? undefined
       : [
           {
-            text: `Every open proposal is placed again, as when a rule changes. The ${plural(impact.openCount, "open proposal")} in it lose this custody.`,
+            text: t("dialog.deleteCustodyImpact", { count: impact.openCount }),
           },
           ...(impact.toFallbackCount > 0
             ? [
                 {
                   text:
                     impact.toFallbackCount === 1
-                      ? "1 of them is in no other custody and lands in the Fallback."
-                      : `${impact.toFallbackCount} of them are in no other custody and land in the Fallback.`,
+                      ? t("dialog.deleteCustodyFallbackOne")
+                      : t("dialog.deleteCustodyFallbackMany", { count: impact.toFallbackCount }),
                   tone: "amber" as const,
                 },
               ]
             : []),
           ...impact.ruleIds.map(
             (ruleId): Consequence => ({
-              text: `${names.instance(ruleId)} still returns ${custody.name}: it shows a warning on Plugins until it is changed.`,
+              text: t("dialog.deleteCustodyRuleImpact", {
+                instance: names.instance(ruleId),
+                name: custody.name,
+              }),
             }),
           ),
         ];
@@ -850,17 +887,17 @@ export function DeleteCustodyDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${custody.name}?`}
-      description={`What deleting the request custody ${custody.name} does to its proposals`}
+      title={t("dialog.deleteCustodyTitle", { name: custody.name })}
+      description={t("dialog.deleteCustodyDescription", { name: custody.name })}
       consequences={consequences}
-      confirmLabel="Delete custody"
+      confirmLabel={t("dialog.deleteCustody")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(custody.id);
         if (result.isDone) {
           onDeleted({
-            title: `${custody.name} deleted`,
-            text: "Its proposals were placed again.",
+            title: t("dialog.custodyDeleted", { name: custody.name }),
+            text: t("dialog.custodyDeletedDescription"),
           });
         }
 

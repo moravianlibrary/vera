@@ -11,6 +11,7 @@ import { isShared, watchlistViewSchema } from "@vera/domain/entities";
 import { hasPermission } from "@vera/domain/permissions";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router";
 import { listWatchlists } from "@/api/watchlists";
 import { DataTable } from "@/components/data-table";
@@ -37,12 +38,13 @@ import { useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { useWatchlistMutations, watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 import type { PushPermission } from "@/lib/push";
 import { allowPush, pushPermission, registerThisBrowser } from "@/lib/push";
 
 function viewLabel(view: WatchlistView): string {
-  if (view === "my-documents") return "My Documents";
-  return navigationEntries.find((entry) => entry.id === view)?.label ?? view;
+  const key = navigationEntries.find((entry) => entry.id === view)?.label;
+  return key === undefined ? view : i18n.t(key);
 }
 
 function watchlistHref(watchlist: WatchlistSummary): string {
@@ -56,11 +58,12 @@ function watchlistHref(watchlist: WatchlistSummary): string {
 }
 
 export function WatchlistsPage() {
+  const { t } = useTranslation("preferences");
   const [params] = useSearchParams();
 
   return (
     <>
-      <PageHeader title="System watchlists" />
+      <PageHeader title={t("watchlists.systemTitle")} />
       <PageContent className="bg-muted/20">
         <div className="mx-auto max-w-6xl">
           <WatchlistDirectory selectedId={params.get("watchlist")} mode="system" />
@@ -82,6 +85,7 @@ function WatchlistDirectory({
   selectedId: string | null;
   mode: "system" | "preferences";
 }) {
+  const { t } = useTranslation("preferences");
   const isSystem = mode === "system";
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
@@ -148,7 +152,7 @@ function WatchlistDirectory({
     try {
       await updateViewer.mutateAsync({ watchlistId: watchlist.id, change });
     } catch {
-      setError("Could not save the watchlist preference.");
+      setError(t("watchlists.savePreferenceError"));
     }
   };
   const move = async (items: WatchlistSummary[], index: number, offset: number) => {
@@ -167,14 +171,14 @@ function WatchlistDirectory({
       });
       await queryClient.invalidateQueries({ queryKey: watchlistsQueryKey });
     } catch {
-      setError("Could not reorder watchlists.");
+      setError(t("watchlists.reorderError"));
     }
   };
 
   const columnsOf = (entries: WatchlistSummary[]): ColumnDefinition<WatchlistSummary>[] => {
     const nameColumn: ColumnDefinition<WatchlistSummary> = {
       key: "watchlist",
-      header: "Watchlist",
+      header: t("watchlists.watchlistColumn"),
       track: isSystem ? "70%" : "44%",
       cell: (watchlist) => (
         <div className="min-w-0 break-words whitespace-normal">
@@ -190,23 +194,23 @@ function WatchlistDirectory({
                   });
                   setEditing(null);
                 } catch {
-                  setError("Could not rename watchlist.");
+                  setError(t("watchlists.renameError"));
                 }
               }}
               className="flex flex-wrap gap-2"
             >
               <Input
-                aria-label="Watchlist name"
+                aria-label={t("watchlists.nameLabel")}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={100}
                 required
               />
               <Button type="submit" size="sm" disabled={busy || !name.trim()}>
-                Save
+                {t("watchlists.save")}
               </Button>
               <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(null)}>
-                Cancel
+                {t("watchlists.cancel")}
               </Button>
             </form>
           ) : (
@@ -219,17 +223,21 @@ function WatchlistDirectory({
                 ) : (
                   <strong className="font-medium">{watchlist.name}</strong>
                 )}
-                {isShared(watchlist) && <ToneBadge tone="slate">System</ToneBadge>}
+                {isShared(watchlist) && (
+                  <ToneBadge tone="slate">{t("watchlists.system")}</ToneBadge>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 {Object.entries(watchlist.filter)
                   .map(([key, value]) => `${key}: ${value}`)
-                  .join(" · ") || "No filter"}
+                  .join(" · ") || t("watchlists.noFilter")}
                 {" · "}
-                {watchlist.itemCount} items
-                {watchlist.newCount > 0 ? ` · ${watchlist.newCount} new` : ""}
+                {t("watchlists.items", { count: watchlist.itemCount })}
+                {watchlist.newCount > 0
+                  ? ` · ${t("watchlists.newItems", { count: watchlist.newCount })}`
+                  : ""}
                 {isSystem
-                  ? ` · Created by ${users.find((user) => user.id === watchlist.createdBy)?.name ?? watchlist.createdBy} · ${watchlist.subscriberCount} subscribers`
+                  ? ` · ${t("watchlists.createdBy", { name: users.find((user) => user.id === watchlist.createdBy)?.name ?? watchlist.createdBy })} · ${t("watchlists.subscribers", { count: watchlist.subscriberCount })}`
                   : ""}
               </p>
             </>
@@ -239,7 +247,7 @@ function WatchlistDirectory({
     };
     const delivery: ColumnDefinition<WatchlistSummary> = {
       key: "delivery",
-      header: "Delivery",
+      header: t("watchlists.deliveryColumn"),
       track: "25%",
       cell: (watchlist) =>
         !isSystem && visibleIds.has(watchlist.id) ? (
@@ -250,7 +258,10 @@ function WatchlistDirectory({
               return (
                 <span key={channel.id} className="flex items-center gap-2">
                   <Switch
-                    aria-label={`${watchlist.name} ${channel.name} notifications`}
+                    aria-label={t("watchlists.channelNotifications", {
+                      watchlist: watchlist.name,
+                      channel: channel.name,
+                    })}
                     checked={isOn}
                     disabled={busy || (why !== null && !isOn)}
                     onCheckedChange={(isChecked) =>
@@ -263,21 +274,21 @@ function WatchlistDirectory({
                   {channel.name}
                   {why !== null && <span className="text-muted-foreground">{why}</span>}
                   {why === null && isOn && isOffForAll(userSettings, channel.id) && (
-                    <span className="text-tone-amber-foreground">Off for all watchlists</span>
+                    <span className="text-tone-amber-foreground">{t("watchlists.offForAll")}</span>
                   )}
                 </span>
               );
             })}
             <span className="flex items-center gap-2">
               <Switch
-                aria-label={`${watchlist.name} browser notifications`}
+                aria-label={t("watchlists.browserNotifications", { watchlist: watchlist.name })}
                 checked={watchlist.viewer.push}
                 disabled={busy}
                 onCheckedChange={(push) => changeViewer(watchlist, { push })}
               />
-              {pushChannelName}
+              {i18n.t(pushChannelName)}
               {watchlist.viewer.push && isPushOffForAll(userSettings) && (
-                <span className="text-tone-amber-foreground">Off for all watchlists</span>
+                <span className="text-tone-amber-foreground">{t("watchlists.offForAll")}</span>
               )}
             </span>
             {(Object.values(watchlist.viewer.channels).some((channel) => channel.isOn) ||
@@ -291,7 +302,7 @@ function WatchlistDirectory({
                     changeViewer(watchlist, { confirmedFilter: String(watchlist.filterVersion) })
                   }
                 >
-                  Review changed filter and resume
+                  {t("watchlists.reviewResume")}
                 </Button>
               )}
           </div>
@@ -299,7 +310,7 @@ function WatchlistDirectory({
     };
     const actions: ColumnDefinition<WatchlistSummary> = {
       key: "actions",
-      header: "Actions",
+      header: t("watchlists.actionsColumn"),
       track: isSystem ? "30%" : "31%",
       cell: (watchlist) => {
         const index = entries.indexOf(watchlist);
@@ -309,8 +320,8 @@ function WatchlistDirectory({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={`Move ${watchlist.name} up`}
-                title="Move up"
+                aria-label={t("watchlists.moveUp", { name: watchlist.name })}
+                title={t("watchlists.moveUpTitle")}
                 disabled={busy || index === 0 || !visibleIds.has(watchlist.id)}
                 onClick={() => move(entries, index, -1)}
               >
@@ -321,8 +332,8 @@ function WatchlistDirectory({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={`Move ${watchlist.name} down`}
-                title="Move down"
+                aria-label={t("watchlists.moveDown", { name: watchlist.name })}
+                title={t("watchlists.moveDownTitle")}
                 disabled={busy || index === entries.length - 1 || !visibleIds.has(watchlist.id)}
                 onClick={() => move(entries, index, 1)}
               >
@@ -333,8 +344,13 @@ function WatchlistDirectory({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={`${isShared(watchlist) ? "Audience for" : "Create system copy of"} ${watchlist.name}`}
-                title={isShared(watchlist) ? "Change audience" : "Create system copy"}
+                aria-label={t(
+                  isShared(watchlist) ? "watchlists.audienceFor" : "watchlists.createSystemCopyOf",
+                  { name: watchlist.name },
+                )}
+                title={t(
+                  isShared(watchlist) ? "watchlists.changeAudience" : "watchlists.createSystemCopy",
+                )}
                 disabled={busy}
                 onClick={() => setSharing(watchlist)}
               >
@@ -345,8 +361,8 @@ function WatchlistDirectory({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={`Rename ${watchlist.name}`}
-                title="Rename"
+                aria-label={t("watchlists.rename", { name: watchlist.name })}
+                title={t("watchlists.renameTitle")}
                 disabled={busy}
                 onClick={() => {
                   setEditing(watchlist.id);
@@ -360,8 +376,8 @@ function WatchlistDirectory({
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={`Delete ${watchlist.name}`}
-                title="Delete"
+                aria-label={t("watchlists.delete", { name: watchlist.name })}
+                title={t("watchlists.deleteTitle")}
                 disabled={busy}
                 onClick={() => setDeleting(watchlist)}
               >
@@ -378,20 +394,18 @@ function WatchlistDirectory({
   return (
     <section>
       <h2 className="text-lg font-semibold">
-        {isSystem ? "System watchlist definitions" : "Your watchlists"}
+        {isSystem ? t("watchlists.definitionsTitle") : t("watchlists.personalTitle")}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        {isSystem
-          ? "Shared saved searches, grouped by source view. Open one to change its filter, or manage its audience here."
-          : "Personal watchlists and system watchlists you can use. Open one to change its filter; delivery choices here are yours alone."}
+        {isSystem ? t("watchlists.definitionsDescription") : t("watchlists.personalDescription")}
       </p>
       {!isSystem && userSettings?.notifications?.doNotSend && (
         <p className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
-          External notifications are paused by your{" "}
+          {t("watchlists.externalNotificationsPaused")}{" "}
           <Link to="/preferences/notifications" className="underline">
-            Do not send notifications
+            {t("notifications.doNotSend")}
           </Link>{" "}
-          preference. Watchlist badges still update.
+          {t("watchlists.badgesStillUpdate")}
         </p>
       )}
       {!isSystem && <PushPermissionLine />}
@@ -401,13 +415,13 @@ function WatchlistDirectory({
         </p>
       )}
       {(isSystem ? systemPending : isPending) && (
-        <p className="mt-5 text-sm text-muted-foreground">Loading watchlists…</p>
+        <p className="mt-5 text-sm text-muted-foreground">{t("watchlists.loading")}</p>
       )}
       {(isSystem ? systemError : isError) && (
         <QueryError
           failure={
-            failureOf(isSystem ? systemQuery : visibleQuery, "Could not load watchlists.") ?? {
-              text: "Could not load watchlists.",
+            failureOf(isSystem ? systemQuery : visibleQuery, t("watchlists.loadError")) ?? {
+              text: t("watchlists.loadError"),
               onRetry: () => void (isSystem ? systemQuery : visibleQuery).refetch(),
             }
           }
@@ -416,9 +430,7 @@ function WatchlistDirectory({
       )}
       {!(isSystem ? systemPending || systemError : isPending || isError) && groups.length === 0 && (
         <p className="mt-5 text-sm text-muted-foreground">
-          {isSystem
-            ? "No system watchlists yet. Create one from a source view’s filter bar."
-            : "No watchlists yet. Save one from a view’s filter bar."}
+          {isSystem ? t("watchlists.noDefinitions") : t("watchlists.noneYet")}
         </p>
       )}
       <div ref={tableRef} className="mt-5 space-y-6">
@@ -427,7 +439,7 @@ function WatchlistDirectory({
             key={view}
             id={`watchlists-${view}`}
             aria-labelledby={`watchlists-${view}-heading`}
-            aria-label={isSystem ? `${viewLabel(view)} system watchlists` : undefined}
+            aria-label={isSystem ? t("watchlists.viewLabel", { view: viewLabel(view) }) : undefined}
             className="overflow-hidden rounded-lg border bg-background"
           >
             <h3
@@ -442,7 +454,7 @@ function WatchlistDirectory({
                 rows={entries}
                 rowId={(watchlist) => watchlist.id}
                 columns={{ notebook: columnsOf(entries) }}
-                emptyText="No watchlists."
+                emptyText={t("watchlists.empty")}
                 focusedId={selectedId}
                 isHeadless={isSystem}
                 flush
@@ -465,15 +477,17 @@ function WatchlistDirectory({
         <ConsequenceDialog
           isOpen
           onClose={() => setDeleting(null)}
-          title={`Delete “${deleting.name}”?`}
-          description={`The watchlist “${deleting.name}” is deleted.`}
-          confirmLabel="Delete watchlist"
+          title={t("watchlists.deleteConfirmTitle", { name: deleting.name })}
+          description={t("watchlists.deleteConfirmDescription", { name: deleting.name })}
+          confirmLabel={t("watchlists.deleteConfirm")}
           isDestructive
           consequences={[
             {
-              text: `The saved filter is removed${isShared(deleting) ? " for everyone who sees it" : ""}.`,
+              text: t(
+                isShared(deleting) ? "watchlists.deleteFilterShared" : "watchlists.deleteFilter",
+              ),
             },
-            { text: "The records it matched stay in place." },
+            { text: t("watchlists.deleteRecordsStay") },
           ]}
           onConfirm={async (): Promise<ActionResult<undefined>> => {
             try {
@@ -482,7 +496,7 @@ function WatchlistDirectory({
             } catch {
               return {
                 isDone: false,
-                refusal: { status: null, code: null, message: "Could not delete watchlist." },
+                refusal: { status: null, code: null, message: t("watchlists.deleteError") },
               };
             }
           }}
@@ -496,6 +510,7 @@ function WatchlistDirectory({
 // browser. Once allowed, this browser is registered again on every visit, so a subscription the
 // server lost is made again.
 function PushPermissionLine() {
+  const { t } = useTranslation("preferences");
   const [permission, setPermission] = useState<PushPermission>(pushPermission);
   const [isAsking, setIsAsking] = useState(false);
   useEffect(() => {
@@ -506,13 +521,12 @@ function PushPermissionLine() {
 
   return (
     <p className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-      {permission === "granted" && "Browser notifications reach this browser."}
-      {permission === "denied" &&
-        "This browser blocks VERA's notifications; allow them in its site settings to be notified here."}
-      {permission === "unsupported" && "This browser cannot show notifications."}
+      {permission === "granted" && t("push.granted")}
+      {permission === "denied" && t("push.denied")}
+      {permission === "unsupported" && t("push.unsupported")}
       {permission === "default" && (
         <>
-          Browser notifications start once you allow them here.
+          {t("push.default")}
           <Button
             size="sm"
             variant="outline"
@@ -523,7 +537,7 @@ function PushPermissionLine() {
               setIsAsking(false);
             }}
           >
-            Allow notifications in this browser
+            {t("push.allow")}
           </Button>
         </>
       )}

@@ -9,7 +9,7 @@ export interface NavigationEntry {
   readonly id: string;
   readonly path: string;
   readonly rail: string;
-  // TODO(rrandiak): move labels to i18n once it is set up.
+  // The key stays stable when the UI language changes.
   readonly label: string;
   // Shown instead of `label` to someone whose reach is only their own records.
   readonly ownLabel?: string;
@@ -24,21 +24,21 @@ export const navigationEntries: readonly NavigationEntry[] = [
     id: "my-documents",
     path: "/my-documents",
     rail: "MD",
-    label: "My Documents",
+    label: "common:navigation.entry.my-documents",
     requires: ["request.read_mine"],
   },
   {
     id: "documents",
     path: "/documents",
     rail: "Do",
-    label: "Documents",
+    label: "common:navigation.entry.documents",
     requires: ["iteration.read"],
   },
   {
     id: "requests",
     path: "/requests",
     rail: "Rq",
-    label: "Requests",
+    label: "common:navigation.entry.requests",
     // Read-only without `request.decide` (VIEW-requests).
     requires: ["request.read"],
   },
@@ -46,64 +46,94 @@ export const navigationEntries: readonly NavigationEntry[] = [
     id: "validations",
     path: "/review/documents",
     rail: "DV",
-    label: "Documents Validations",
+    label: "common:navigation.entry.validations",
     requires: ["validation.approve", "validation.deny", "validation.revoke"],
   },
-  { id: "lists", path: "/lists", rail: "DL", label: "Digitization Lists", requires: ["list.read"] },
+  {
+    id: "lists",
+    path: "/lists",
+    rail: "DL",
+    label: "common:navigation.entry.lists",
+    requires: ["list.read"],
+  },
   {
     id: "projects",
     path: "/projects",
     rail: "Pj",
-    label: "Projects",
+    label: "common:navigation.entry.projects",
     requires: ["project.read"],
   },
   {
     id: "categories",
     path: "/categories",
     rail: "Ca",
-    label: "Categories",
+    label: "common:navigation.entry.categories",
     requires: ["category.read"],
   },
-  { id: "mixes", path: "/mixes", rail: "Mx", label: "Category mixes", requires: ["mix.read"] },
+  {
+    id: "mixes",
+    path: "/mixes",
+    rail: "Mx",
+    label: "common:navigation.entry.mixes",
+    requires: ["mix.read"],
+  },
   {
     id: "intentions",
     path: "/intentions",
     rail: "In",
-    label: "Intentions",
+    label: "common:navigation.entry.intentions",
     requires: ["intention.read"],
   },
   {
     id: "tasks",
     path: "/tasks",
     rail: "Ta",
-    label: "Tasks",
-    ownLabel: "My Tasks",
+    label: "common:navigation.entry.tasks",
+    ownLabel: "common:navigation.entry.tasksOwn",
     ownUnless: "task.read",
     requires: ["task.read_own", "task.read"],
   },
-  { id: "schedules", path: "/schedules", rail: "Sc", label: "Schedules", requires: ["task.read"] },
+  {
+    id: "schedules",
+    path: "/schedules",
+    rail: "Sc",
+    label: "common:navigation.entry.schedules",
+    requires: ["task.read"],
+  },
   {
     id: "access",
     path: "/access",
     rail: "UM",
-    label: "Users management",
+    label: "common:navigation.entry.access",
     requires: ["access.read"],
   },
-  { id: "plugins", path: "/plugins", rail: "Pl", label: "Plugins", requires: ["plugin.read"] },
+  {
+    id: "plugins",
+    path: "/plugins",
+    rail: "Pl",
+    label: "common:navigation.entry.plugins",
+    requires: ["plugin.read"],
+  },
   // DOC-property: defined by an admin only.
   {
     id: "properties",
     path: "/properties",
     rail: "Pr",
-    label: "Properties",
+    label: "common:navigation.entry.properties",
     requires: ["property.define"],
   },
-  { id: "hooks", path: "/hooks", rail: "Ho", label: "Hooks", requires: ["hook.read"] },
+  {
+    id: "hooks",
+    path: "/hooks",
+    rail: "Ho",
+    label: "common:navigation.entry.hooks",
+    requires: ["hook.read"],
+  },
   {
     id: "watchlists",
     path: "/watchlists",
     rail: "WL",
-    label: "System watchlists",
+    label: "common:navigation.entry.watchlists",
     requires: ["watchlist.manage_system"],
   },
 ];

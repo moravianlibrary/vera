@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 import {
   getPublicNotificationPreferences,
@@ -11,6 +12,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 
 // A limited email link: it can change only notification choices for its recipient.
 export function EmailNotificationsPage() {
+  const { t } = useTranslation("preferences");
   const { token = "" } = useParams();
   const { data: session } = useSessionQuery();
   const preferencesQuery = useQuery({
@@ -25,14 +27,14 @@ export function EmailNotificationsPage() {
     onSuccess: () => void refetch(),
   });
 
-  if (isPending) return <div className="mx-auto max-w-xl p-8">Loading notification choices…</div>;
+  if (isPending) return <div className="mx-auto max-w-xl p-8">{t("emailLink.loading")}</div>;
   if (isError || data === undefined)
     return (
       <div className="mx-auto max-w-xl p-8">
         <QueryError
           failure={
-            failureOf(preferencesQuery, "This notification link is invalid or expired.") ?? {
-              text: "This notification link is invalid or expired.",
+            failureOf(preferencesQuery, t("emailLink.invalid")) ?? {
+              text: t("emailLink.invalid"),
               onRetry: () => void preferencesQuery.refetch(),
             }
           }
@@ -42,11 +44,11 @@ export function EmailNotificationsPage() {
   if (session?.user.id === data.userId) {
     return (
       <div className="mx-auto max-w-xl space-y-3 p-8">
-        <h1 className="text-xl font-semibold">Email notifications</h1>
-        <p>You are signed in as {data.email}. Manage these choices in your preferences.</p>
+        <h1 className="text-xl font-semibold">{t("emailLink.title")}</h1>
+        <p>{t("emailLink.signedIn", { email: data.email })}</p>
         <Button asChild>
           <Link to={`/preferences/notifications?hook=${encodeURIComponent(data.focusedHookId)}`}>
-            Open preferences
+            {t("emailLink.openPreferences")}
           </Link>
         </Button>
       </div>
@@ -55,7 +57,7 @@ export function EmailNotificationsPage() {
   if (session !== undefined) {
     return (
       <div className="mx-auto max-w-xl p-8">
-        This link belongs to another account. Sign in as {data.email} to manage its notifications.
+        {t("emailLink.wrongAccount", { email: data.email })}
       </div>
     );
   }
@@ -64,32 +66,30 @@ export function EmailNotificationsPage() {
   return (
     <main className="mx-auto max-w-xl space-y-6 p-6 sm:p-10">
       <div>
-        <h1 className="text-xl font-semibold">Email notifications</h1>
+        <h1 className="text-xl font-semibold">{t("emailLink.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Choices for {data.email}. This link changes only automatic Hook emails.
+          {t("emailLink.choicesFor", { email: data.email })}
         </p>
       </div>
       {save.isError && (
         <p role="alert" className="text-sm text-destructive">
-          Could not save your choices.
+          {t("emailLink.saveError")}
         </p>
       )}
       <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
         <div>
-          <p className="font-medium">Do not send notifications</p>
-          <p className="text-xs text-muted-foreground">
-            Also suppresses enabled watchlist delivery. Individual choices stay saved.
-          </p>
+          <p className="font-medium">{t("notifications.doNotSend")}</p>
+          <p className="text-xs text-muted-foreground">{t("emailLink.doNotSendDescription")}</p>
         </div>
         <Switch
-          aria-label="Do not send notifications"
+          aria-label={t("notifications.doNotSend")}
           checked={choices.doNotSend}
           disabled={save.isPending}
           onCheckedChange={(doNotSend) => save.mutate({ ...choices, doNotSend })}
         />
       </div>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Hook emails</h2>
+        <h2 className="font-semibold">{t("notifications.hookEmails")}</h2>
         <Button
           size="sm"
           variant="outline"
@@ -104,7 +104,7 @@ export function EmailNotificationsPage() {
             })
           }
         >
-          Turn off all current Hook emails
+          {t("emailLink.turnOffAll")}
         </Button>
       </div>
       <div className="divide-y rounded-lg border">
@@ -113,11 +113,13 @@ export function EmailNotificationsPage() {
             <div>
               <p className="font-medium">{hook.label}</p>
               <p className="text-xs text-muted-foreground">
-                {hook.events.join(" · ")} · {hook.defaultEnabled ? "On" : "Off"} by default
+                {hook.events.join(" · ")} ·{" "}
+                {t(hook.defaultEnabled ? "emailLink.on" : "emailLink.off")}{" "}
+                {t("emailLink.byDefault")}
               </p>
             </div>
             <Switch
-              aria-label={`${hook.label} email`}
+              aria-label={t("emailLink.hookEmail", { name: hook.label })}
               checked={choices.hooks[hook.id] ?? hook.defaultEnabled}
               disabled={save.isPending}
               onCheckedChange={(enabled) =>
