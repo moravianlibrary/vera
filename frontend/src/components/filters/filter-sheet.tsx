@@ -3,11 +3,12 @@
 // bottom. Each field is a list of its values with their counts, the quick ones and those in use
 // open; each range is a section with the same editor as the bar's chip (range-filter.tsx). Every
 // pick applies at once, so the sheet only needs closing.
-// TODO(rrandiak): Back closes the sheet (navigation.md §3.1); labels move to i18n.
+// TODO(rrandiak): Back closes the sheet (navigation.md §3.1).
 
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import type { FilterField } from "@/components/filters/filter-controls";
 import type { AnyRange } from "@/components/filters/range-filter";
 import { RangeEditor, rangeOf, rangeSummaryOf } from "@/components/filters/range-filter";
@@ -49,14 +50,14 @@ export function FilterSheet<Query>({
   onRangeChange,
   onClear,
 }: FilterSheetProps<Query>) {
+  // Labels may be keys or server text; missing keys stay plain text.
+  const { t } = useTranslation("common");
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[85dvh] gap-0 rounded-t-xl p-0">
         <SheetHeader className="border-b px-5 py-4 text-left">
-          <SheetTitle>Filter</SheetTitle>
-          <SheetDescription className="sr-only">
-            Choose the values each field matches; every pick applies at once.
-          </SheetDescription>
+          <SheetTitle>{t("filter.button")}</SheetTitle>
+          <SheetDescription className="sr-only">{t("filter.sheetDescription")}</SheetDescription>
         </SheetHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-3">
@@ -81,10 +82,10 @@ export function FilterSheet<Query>({
 
         <SheetFooter className="flex-row border-t px-5 py-3">
           <Button variant="outline" className="flex-1" onClick={onClear}>
-            Clear all
+            {t("filter.clearAll")}
           </Button>
           <Button className="flex-1" onClick={() => onOpenChange(false)}>
-            Done
+            {t("filter.done")}
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -93,25 +94,28 @@ export function FilterSheet<Query>({
 }
 
 function FieldSection({ field, isOpenAtFirst }: { field: FilterField; isOpenAtFirst: boolean }) {
+  const { t } = useTranslation("common");
   const id = useId();
   const toggle = (value: string, isChecked: boolean) => {
     const rest = field.selected.filter((selected) => selected !== value);
     field.onChange(isChecked ? [...rest, value] : rest);
   };
   const summary = field.selected
-    .map((value) => field.options.find((option) => option.value === value)?.label ?? value)
+    .map((value) => t(field.options.find((option) => option.value === value)?.label ?? value))
     .join(", ");
 
   return (
     <Collapsible defaultOpen={isOpenAtFirst} className="group border-b last:border-b-0">
       <CollapsibleTrigger className="flex w-full items-center gap-2 py-3 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        <span className="font-medium">{field.label}</span>
-        <span className="min-w-0 flex-1 truncate text-muted-foreground">{summary || "any"}</span>
+        <span className="font-medium">{t(field.label)}</span>
+        <span className="min-w-0 flex-1 truncate text-muted-foreground">
+          {summary || t("filter.any")}
+        </span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="grid gap-0.5 pb-3">
         {field.options.length === 0 && (
-          <p className="py-1 text-xs text-muted-foreground">Nothing to choose here.</p>
+          <p className="py-1 text-xs text-muted-foreground">{t("filter.noOptions")}</p>
         )}
         {field.options.map((option) => {
           const optionId = `${id}-${option.value}`;
@@ -126,7 +130,7 @@ function FieldSection({ field, isOpenAtFirst }: { field: FilterField; isOpenAtFi
                 checked={field.selected.includes(option.value)}
                 onCheckedChange={(state) => toggle(option.value, state === true)}
               />
-              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              <span className="min-w-0 flex-1 truncate">{t(option.label)}</span>
               {option.count !== null && (
                 <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
               )}
@@ -145,12 +149,13 @@ interface RangeSectionProps<Query> {
 }
 
 function RangeSection<Query>({ field, range, onChange }: RangeSectionProps<Query>) {
+  const { t } = useTranslation("common");
   return (
     <Collapsible defaultOpen={range !== undefined} className="group border-b last:border-b-0">
       <CollapsibleTrigger className="flex w-full items-center gap-2 py-3 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50">
-        <span className="font-medium">{field.label}</span>
+        <span className="font-medium">{t(field.label)}</span>
         <span className="min-w-0 flex-1 truncate text-muted-foreground">
-          {range === undefined ? "any" : rangeSummaryOf(field, range)}
+          {range === undefined ? t("filter.any") : rangeSummaryOf(field, range)}
         </span>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
@@ -164,7 +169,7 @@ function RangeSection<Query>({ field, range, onChange }: RangeSectionProps<Query
             className="justify-self-start"
             onClick={() => onChange(undefined)}
           >
-            Any {field.label.toLowerCase()}
+            {t("filter.anyField", { field: t(field.label).toLowerCase() })}
           </Button>
         )}
       </CollapsibleContent>

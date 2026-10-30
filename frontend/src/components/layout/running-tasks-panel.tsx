@@ -2,10 +2,10 @@
 // person sees going and its progress, since a bar says whether to wait thirty seconds or go and
 // do something else. Absent while nothing runs. On the rail it is one filled dot with the count.
 // It reads what Tasks reads, in the same reach: everything for `task.read`, else the person's own.
-// TODO(rrandiak): labels move to i18n.
 
 import type { Session } from "@vera/domain/entities";
 import { hasAnyPermission } from "@vera/domain/permissions";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { percentOf, RunProgress } from "@/components/visualizations/run-progress";
 import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
@@ -22,6 +22,7 @@ export function RunningTasksPanel({
   isShowingLabels,
   onNavigate,
 }: RunningTasksPanelProps) {
+  const { t } = useTranslation("common");
   const canReadRuns =
     session !== undefined && hasAnyPermission(session, ["task.read_own", "task.read"]);
   const { data } = useRunningRunsQuery({ isEnabled: canReadRuns });
@@ -31,7 +32,7 @@ export function RunningTasksPanel({
     return null;
   }
 
-  const countText = `${runs.length} ${runs.length === 1 ? "task" : "tasks"} running`;
+  const countText = t("runningTasks.count", { count: runs.length });
 
   if (!isShowingLabels) {
     return (
@@ -50,13 +51,13 @@ export function RunningTasksPanel({
   }
 
   return (
-    <section aria-label="Tasks running" className="mb-3 min-w-0 px-1.5">
+    <section aria-label={t("runningTasks.title")} className="mb-3 min-w-0 px-1.5">
       <Link
         to="/tasks"
         onClick={onNavigate}
         className="flex items-center justify-between text-xs font-medium text-sidebar-accent-foreground hover:underline"
       >
-        Tasks running
+        {t("runningTasks.title")}
         <span className="tabular-nums">{runs.length}</span>
       </Link>
       <ul className="mt-2 grid gap-2">

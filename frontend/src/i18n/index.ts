@@ -8,13 +8,15 @@
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import csAccess from "@/i18n/locales/cs/access.json";
+import csCommon from "@/i18n/locales/cs/common.json";
 import csSystem from "@/i18n/locales/cs/system.json";
 import enAccess from "@/i18n/locales/en/access.json";
+import enCommon from "@/i18n/locales/en/common.json";
 import enSystem from "@/i18n/locales/en/system.json";
 
 export const resources = {
-  en: { access: enAccess, system: enSystem },
-  cs: { access: csAccess, system: csSystem },
+  en: { access: enAccess, common: enCommon, system: enSystem },
+  cs: { access: csAccess, common: csCommon, system: csSystem },
 } as const;
 
 export const i18n = i18next.createInstance();
@@ -23,7 +25,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: "en",
   fallbackLng: "en",
-  ns: ["access", "system"],
+  ns: ["access", "common", "system"],
   defaultNS: "access",
   keySeparator: false,
   initAsync: false,

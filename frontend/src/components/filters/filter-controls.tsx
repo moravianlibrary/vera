@@ -4,9 +4,10 @@
 // empty. Any other field becomes a chip once a value is picked; clicking the chip reopens its
 // values, and × strikes the whole field off. A range is added from the same picker, as a chip
 // that reads "any" until it is given one (range-filter.tsx).
-// TODO(rrandiak): labels move to i18n.
+// Labels may be server text; a missing translation key is returned unchanged.
 
 import { ChevronDown, Plus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -40,8 +41,9 @@ interface QuickFilterProps {
 }
 
 export function QuickFilter({ field }: QuickFilterProps) {
+  const { t } = useTranslation("common");
   const isActive = field.selected.length > 0;
-  const summary = isActive ? selectedLabelsOf(field) : "any";
+  const summary = isActive ? selectedLabelsOf(field, (key) => t(key)) : t("filter.any");
 
   return (
     <DropdownMenu>
@@ -54,7 +56,7 @@ export function QuickFilter({ field }: QuickFilterProps) {
         )}
       >
         <span className="truncate">
-          {field.label}: <b className={cn(isActive && "font-semibold")}>{summary}</b>
+          {t(field.label)}: <b className={cn(isActive && "font-semibold")}>{summary}</b>
         </span>
         <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
@@ -64,7 +66,7 @@ export function QuickFilter({ field }: QuickFilterProps) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => field.onChange([])} className="text-xs">
-              Any {field.label.toLowerCase()}
+              {t("filter.anyField", { field: t(field.label).toLowerCase() })}
             </DropdownMenuItem>
           </>
         )}
@@ -78,12 +80,14 @@ interface FilterChipProps {
 }
 
 export function FilterChip({ field }: FilterChipProps) {
+  const { t } = useTranslation("common");
   return (
     <span className="inline-flex h-7 items-center rounded-md border bg-secondary text-xs text-secondary-foreground">
       <DropdownMenu>
         <DropdownMenuTrigger className="inline-flex h-full max-w-72 items-center gap-1 rounded-l-md pr-1 pl-2 outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
           <span className="truncate">
-            {field.label} <b className="font-semibold">{selectedLabelsOf(field)}</b>
+            {t(field.label)}{" "}
+            <b className="font-semibold">{selectedLabelsOf(field, (key) => t(key))}</b>
           </span>
           <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
         </DropdownMenuTrigger>
@@ -95,8 +99,8 @@ export function FilterChip({ field }: FilterChipProps) {
       <button
         type="button"
         onClick={() => field.onChange([])}
-        aria-label={`Remove the ${field.label} filter`}
-        title="Remove this filter"
+        aria-label={t("filter.removeNamed", { field: t(field.label) })}
+        title={t("filter.remove")}
         className="grid h-full place-items-center rounded-r-md px-1.5 text-muted-foreground outline-none hover:text-destructive focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <X className="size-3.5" />
@@ -121,6 +125,7 @@ interface AddFilterMenuProps {
 }
 
 export function AddFilterMenu({ fields, ranges = [], onAddRange }: AddFilterMenuProps) {
+  const { t } = useTranslation("common");
   if (fields.length === 0 && ranges.length === 0) {
     return null;
   }
@@ -129,14 +134,14 @@ export function AddFilterMenu({ fields, ranges = [], onAddRange }: AddFilterMenu
     <DropdownMenu>
       <DropdownMenuTrigger className="inline-flex h-7 items-center gap-1 rounded-md border border-dashed px-2 text-xs text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50">
         <Plus className="size-3.5" />
-        Add filter
+        {t("filter.add")}
       </DropdownMenuTrigger>
       {/* The range chip a pick adds opens its own editor; focus stays there. */}
       <DropdownMenuContent align="start" onCloseAutoFocus={(event) => event.preventDefault()}>
         {fields.map((field) => (
           <DropdownMenuSub key={field.key}>
             <DropdownMenuSubTrigger disabled={field.options.length === 0} className="text-xs">
-              {field.label}
+              {t(field.label)}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
               <FilterOptionItems field={field} />
@@ -198,9 +203,9 @@ export function byOrderOf(order: readonly string[]) {
 
 // ---------------------------------------------------------------- labels
 
-function selectedLabelsOf(field: FilterField): string {
+function selectedLabelsOf(field: FilterField, t: (key: string) => string): string {
   const labelOf = (value: string) =>
-    field.options.find((option) => option.value === value)?.label ?? value;
+    t(field.options.find((option) => option.value === value)?.label ?? value);
   return field.selected.map(labelOf).join(", ");
 }
 
@@ -210,6 +215,7 @@ interface FilterOptionItemsProps {
 
 // Several values can be picked in one go, so a pick keeps the menu open.
 function FilterOptionItems({ field }: FilterOptionItemsProps) {
+  const { t } = useTranslation("common");
   const toggle = (value: string, isChecked: boolean) => {
     const rest = field.selected.filter((selected) => selected !== value);
     field.onChange(isChecked ? [...rest, value] : rest);
@@ -225,7 +231,7 @@ function FilterOptionItems({ field }: FilterOptionItemsProps) {
           onSelect={(event) => event.preventDefault()}
           className="text-xs"
         >
-          <span className="min-w-0 flex-1 truncate">{option.label}</span>
+          <span className="min-w-0 flex-1 truncate">{t(option.label)}</span>
           {option.count !== null && (
             <span className="ml-3 text-muted-foreground tabular-nums">{option.count}</span>
           )}

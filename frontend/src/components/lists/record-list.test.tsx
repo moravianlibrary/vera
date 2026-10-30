@@ -2,8 +2,10 @@
 
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
+import { I18nextProvider } from "react-i18next";
 import { describe, expect, it, vi } from "vitest";
 import { RecordList } from "@/components/lists/record-list";
+import { i18n } from "@/i18n";
 
 function PickingList() {
   const [picked, setPicked] = useState<ReadonlySet<string> | null>(null);
@@ -55,7 +57,11 @@ describe("RecordList phone picking", () => {
       removeListener: () => {},
       dispatchEvent: () => false,
     });
-    render(<PickingList />);
+    render(
+      <I18nextProvider i18n={i18n}>
+        <PickingList />
+      </I18nextProvider>,
+    );
     const first = screen.getByRole("button", { name: "one one" });
     fireEvent.pointerDown(first, { pointerType: "touch", clientX: 20, clientY: 20 });
     act(() => vi.advanceTimersByTime(500));

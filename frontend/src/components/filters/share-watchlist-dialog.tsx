@@ -3,11 +3,11 @@
 // roles. Before it is saved it says, from the server, how many people the audience reaches, how
 // many in it cannot open the view, and how many of the reached already keep the same filter as
 // their own. Only `watchlist.manage_system` may save a system audience.
-// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { Watchlist, WatchlistAudience } from "@vera/domain/entities";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getWatchlistReach } from "@/api/watchlists";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,28 +15,27 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useRolesQuery } from "@/hooks/use-reference-query";
-import { plural } from "@/lib/plural";
 
 const audienceKinds = ["personal", "everyone", "some"] as const;
 type AudienceKind = (typeof audienceKinds)[number];
 
 const audienceLabels = {
-  personal: "Only me",
-  everyone: "Everyone who opens the view",
-  some: "Some groups and roles",
+  personal: "watchlist.onlyMe",
+  everyone: "watchlist.everyone",
+  some: "watchlist.someGroupsRoles",
 } as const satisfies Record<AudienceKind, string>;
 
 export const viewLabels = {
-  documents: "Documents",
-  "my-documents": "My Documents",
-  requests: "Requests",
-  validations: "Documents Validations",
-  lists: "Digitization Lists",
-  projects: "Projects",
-  categories: "Categories",
-  mixes: "Category mixes",
-  intentions: "Intentions",
-  tasks: "Tasks",
+  documents: "watchlist.view.documents",
+  "my-documents": "watchlist.view.myDocuments",
+  requests: "watchlist.view.requests",
+  validations: "watchlist.view.validations",
+  lists: "watchlist.view.lists",
+  projects: "watchlist.view.projects",
+  categories: "watchlist.view.categories",
+  mixes: "watchlist.view.mixes",
+  intentions: "watchlist.view.intentions",
+  tasks: "watchlist.view.tasks",
 } as const satisfies Record<Watchlist["view"], string>;
 
 export function isEmptyWatchlistAudience(audience: WatchlistAudience): boolean {
@@ -54,6 +53,8 @@ export function WatchlistAudiencePicker({
   view: Watchlist["view"];
   allowPersonal?: boolean;
 }) {
+  // Labels may be message keys or server text; missing keys remain unchanged.
+  const { t } = useTranslation("common");
   const id = useId();
   const { data: groups = [] } = useGroupsQuery();
   const { data: roles = [] } = useRolesQuery();
@@ -80,7 +81,7 @@ export function WatchlistAudiencePicker({
   return (
     <div className="grid gap-4">
       <RadioGroup
-        aria-label="Who sees it"
+        aria-label={t("watchlist.whoSeesIt")}
         value={audience.kind}
         onValueChange={(value) => {
           const kind = audienceKinds.find((candidate) => candidate === value);
@@ -96,11 +97,11 @@ export function WatchlistAudiencePicker({
               <Label htmlFor={`${id}-${kind}`} className="grid gap-0.5 font-normal">
                 <span>
                   {kind === "everyone"
-                    ? `Everyone who opens ${viewLabels[view]}`
-                    : audienceLabels[kind]}
+                    ? t("watchlist.everyoneOpens", { view: t(viewLabels[view]) })
+                    : t(audienceLabels[kind])}
                 </span>
                 {kind !== "personal" && (
-                  <span className="text-xs text-muted-foreground">System watchlist</span>
+                  <span className="text-xs text-muted-foreground">{t("watchlist.system")}</span>
                 )}
               </Label>
             </div>
@@ -110,7 +111,9 @@ export function WatchlistAudiencePicker({
       {audience.kind === "some" && (
         <div className="grid gap-4 sm:grid-cols-2">
           <fieldset className="grid content-start gap-1.5">
-            <legend className="mb-1 text-xs font-semibold text-muted-foreground">Groups</legend>
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">
+              {t("watchlist.groups")}
+            </legend>
             {groups.map((group) => (
               <label
                 key={group.id}
@@ -124,13 +127,15 @@ export function WatchlistAudiencePicker({
                 />
                 {group.name}
                 <span className="text-xs text-muted-foreground">
-                  {plural(group.peopleCount, "person", "people")}
+                  {t("watchlist.people", { count: group.peopleCount })}
                 </span>
               </label>
             ))}
           </fieldset>
           <fieldset className="grid content-start gap-1.5">
-            <legend className="mb-1 text-xs font-semibold text-muted-foreground">Roles</legend>
+            <legend className="mb-1 text-xs font-semibold text-muted-foreground">
+              {t("watchlist.roles")}
+            </legend>
             {roles.map((role) => (
               <label
                 key={role.id}
@@ -145,9 +150,7 @@ export function WatchlistAudiencePicker({
                 {role.name}
               </label>
             ))}
-            <p className="text-xs text-muted-foreground">
-              Holders by hand or mapped by an identity provider, alike.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("watchlist.roleHolders")}</p>
           </fieldset>
         </div>
       )}
@@ -170,6 +173,8 @@ export function ShareWatchlistDialog({
   mode = "audience",
   onSave,
 }: ShareWatchlistDialogProps) {
+  // The watchlist name is record data; the surrounding copy is translated here.
+  const { t } = useTranslation("common");
   const [audience, setAudience] = useState<WatchlistAudience>(
     watchlist.audience.kind === "personal" ? { kind: "everyone" } : watchlist.audience,
   );
@@ -210,16 +215,18 @@ export function ShareWatchlistDialog({
     <DialogShell
       isOpen={isOpen}
       onClose={close}
-      title={`${mode === "publish" ? "Create system watchlist from" : "Audience for"} “${watchlist.name}”`}
+      title={t(mode === "publish" ? "watchlist.createFrom" : "watchlist.audienceFor", {
+        name: watchlist.name,
+      })}
       description={
         mode === "publish"
-          ? "This creates a separate system watchlist for the selected audience. Your personal watchlist stays."
-          : `Who can see the system watchlist ${watchlist.name}`
+          ? t("watchlist.createDescription")
+          : t("watchlist.audienceDescription", { name: watchlist.name })
       }
       isDirty={JSON.stringify(audience) !== JSON.stringify(watchlist.audience)}
       refusal={refusal}
       primary={{
-        label: mode === "publish" ? "Create system watchlist" : "Save audience",
+        label: t(mode === "publish" ? "watchlist.create" : "watchlist.saveAudience"),
         isPending,
         isDisabled: isEmpty,
         onSelect: () => void save(),
@@ -234,9 +241,7 @@ export function ShareWatchlistDialog({
           viewLabel={viewLabels[watchlist.view]}
           reach={reach}
         />
-        <p className="text-xs text-muted-foreground">
-          Watchlist managers are always included if they can open this view.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("watchlist.managersIncluded")}</p>
       </div>
     </DialogShell>
   );
@@ -253,37 +258,33 @@ function ReachLine({
   viewLabel: string;
   reach: { userCount: number; outOfViewCount: number; duplicateCount: number } | undefined;
 }) {
+  const { t } = useTranslation("common");
   if (audience.kind === "personal") {
-    return (
-      <p className="text-xs text-muted-foreground">
-        Only you see it: it becomes your own, and nobody else keeps it.
-      </p>
-    );
+    return <p className="text-xs text-muted-foreground">{t("watchlist.personalDescription")}</p>;
   }
 
   if (isEmpty) {
-    return <p className="text-xs text-tone-amber-foreground">Pick a group or a role.</p>;
+    return <p className="text-xs text-tone-amber-foreground">{t("watchlist.pickAudience")}</p>;
   }
 
   if (reach === undefined) {
-    return <p className="text-xs text-muted-foreground">Working out who it reaches…</p>;
+    return <p className="text-xs text-muted-foreground">{t("watchlist.calculatingReach")}</p>;
   }
 
   return (
     <div className="grid gap-1 text-sm">
-      <p>
-        Reaches <b className="font-semibold">{plural(reach.userCount, "person", "people")}</b>.
-      </p>
+      <p>{t("watchlist.reaches", { count: reach.userCount, outOfViewCount: "" })}</p>
       {reach.duplicateCount > 0 && (
         <p className="text-xs text-tone-amber-foreground">
-          {reach.duplicateCount} of the {reach.userCount} already keep this filter as their own, and
-          will see both until they delete theirs.
+          {t("watchlist.duplicates", {
+            duplicateCount: reach.duplicateCount,
+            count: reach.userCount,
+          })}
         </p>
       )}
       {reach.outOfViewCount > 0 && (
         <p className="text-xs text-muted-foreground">
-          {plural(reach.outOfViewCount, "more person is", "more people are")} in the audience but
-          cannot open {viewLabel}, so they do not see it.
+          {t("watchlist.outOfView", { count: reach.outOfViewCount, view: t(viewLabel) })}
         </p>
       )}
     </div>

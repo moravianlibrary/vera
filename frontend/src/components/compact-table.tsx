@@ -1,6 +1,7 @@
 // A small comparison table inside a dialog or detail card; unlike DataTable, rows do not open.
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export interface CompactColumn<Row> {
@@ -24,8 +25,13 @@ export function CompactTable<Row>({
   label?: string;
   className?: string;
 }) {
+  // A missing label key is returned as the plain label.
+  const { t } = useTranslation("common");
   return (
-    <table aria-label={label} className={cn("w-full text-xs", className)}>
+    <table
+      aria-label={label === undefined ? undefined : t(label)}
+      className={cn("w-full text-xs", className)}
+    >
       <thead className="text-muted-foreground">
         <tr>
           {columns.map((column) => (

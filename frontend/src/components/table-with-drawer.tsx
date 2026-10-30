@@ -3,7 +3,6 @@
 // sits under it, and the open row's drawer at the right, 28rem at every tier and full width on a
 // phone. The drawer does not hold the page: another row opens in it at once, and Escape or ×
 // closes it. The open row comes from the URL (`?run=`), which the page owns.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import type { DataTableProps } from "@/components/data-table";

@@ -15,10 +15,22 @@ import {
 } from "@/i18n/language";
 
 describe("messages", () => {
-  it("has the same keys in Czech as in English", () => {
-    expect(Object.keys(resources.cs.access).sort()).toEqual(
-      Object.keys(resources.en.access).sort(),
-    );
+  it("has the same keys in Czech as in English, accounting for Czech plurals", () => {
+    for (const namespace of Object.keys(resources.en) as (keyof typeof resources.en)[]) {
+      const english = Object.keys(resources.en[namespace]);
+      const czech = Object.keys(resources.cs[namespace]);
+      const englishBases = [...new Set(english.map((key) => key.replace(/_(one|other)$/, "")))];
+      expect(
+        [...new Set(czech.map((key) => key.replace(/_(one|few|many|other)$/, "")))].sort(),
+      ).toEqual(englishBases.sort());
+      for (const base of new Set(czech.map((key) => key.replace(/_(one|few|many|other)$/, "")))) {
+        if (czech.includes(`${base}_one`)) {
+          expect(czech).toEqual(
+            expect.arrayContaining([`${base}_one`, `${base}_few`, `${base}_many`, `${base}_other`]),
+          );
+        }
+      }
+    }
   });
 
   it("gives every permission a line", () => {

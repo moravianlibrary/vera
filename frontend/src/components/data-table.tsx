@@ -117,7 +117,8 @@ export function DataTable<Row>({
   stickyHeaderClassName,
   flush = false,
 }: DataTableProps<Row>) {
-  const { t } = useTranslation("system");
+  // Labels may be keys or plain text; i18next leaves missing keys unchanged.
+  const { t } = useTranslation("common");
   const tier = useTier();
   const shown = valueForTier(columns, tier);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -134,7 +135,11 @@ export function DataTable<Row>({
         role={isLoading ? "status" : undefined}
         className={cn("text-sm text-muted-foreground", flush && "px-4 py-5 sm:px-6")}
       >
-        {isLoading ? (loadingText ?? t("query.loading")) : emptyText}
+        {isLoading
+          ? loadingText === undefined
+            ? t("query.loading")
+            : t(loadingText)
+          : t(emptyText)}
       </p>
     );
   }
@@ -350,7 +355,7 @@ export function DataTable<Row>({
                     column.isNumeric && "text-right",
                   )}
                 >
-                  {column.header}
+                  {t(column.header)}
                 </th>
               ))}
             </tr>

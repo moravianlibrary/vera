@@ -5,12 +5,12 @@
 // one more field in "+ Add filter", not an Advanced editor (decided 2026-10-06): added, it is a
 // chip reading "any" until it is given a range, and only then is it in the URL. A phone keeps
 // the search and one Filter button, and the rest opens as a sheet (filter-sheet.tsx).
-// TODO(rrandiak): labels move to i18n.
 
 import { hasPermission } from "@vera/domain/permissions";
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { FilterField } from "@/components/filters/filter-controls";
 import {
   AddFilterMenu,
@@ -73,6 +73,8 @@ export function FilterBar<Query extends FilterableQuery>({
   activeExtraCount = 0,
   properties,
 }: FilterBarProps<Query>) {
+  // Labels may be keys or server text; missing keys stay plain text.
+  const { t } = useTranslation("common");
   const tier = useTier();
   const propertyChips = usePropertyChips(properties);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -165,9 +167,9 @@ export function FilterBar<Query extends FilterableQuery>({
       <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
-        aria-label={searchLabel}
+        aria-label={t(searchLabel)}
         className="h-8 pl-8"
-        placeholder={searchPlaceholder}
+        placeholder={t(searchPlaceholder)}
         defaultValue={query.search}
         onChange={(event) => onQueryChange({ ...query, search: event.target.value })}
       />
@@ -197,7 +199,7 @@ export function FilterBar<Query extends FilterableQuery>({
           onClick={() => setIsSheetOpen(true)}
         >
           <SlidersHorizontal />
-          Filter
+          {t("filter.button")}
           {activeCount > 0 && <b className="tabular-nums">{activeCount}</b>}
         </Button>
         <FilterSheet

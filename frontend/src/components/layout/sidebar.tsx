@@ -4,7 +4,7 @@
 // and has no toggle. The rail's hover-expand (§4.2) is the shell's: it passes `isPeeking` while
 // the rail is open over the content, and the toggle still answers for the remembered choice.
 // After a rule at the foot comes what is running, while anything is (§6).
-// User options live in a dropdown at the foot; labels move to i18n.
+// User options live in a dropdown at the foot.
 
 import { useQuery } from "@tanstack/react-query";
 import type { Session } from "@vera/domain/entities";
@@ -22,6 +22,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NavLink, useNavigate } from "react-router";
 import { logout } from "@/api/session";
 import { listWatchlists } from "@/api/watchlists";
@@ -67,6 +68,7 @@ export function Sidebar({
   onUserMenuOpenChange,
   className,
 }: SidebarProps) {
+  const { t } = useTranslation("common");
   const navigate = useNavigate();
   const [menuError, setMenuError] = useState("");
   const { appearance, setAppearance } = useAppearance();
@@ -117,8 +119,8 @@ export function Sidebar({
           {...sidebarImmediateAttribute}
           onClick={onToggle}
           aria-expanded={isExpanded}
-          aria-label={isExpanded ? "Collapse navigation" : "Expand navigation"}
-          title={isExpanded ? "Collapse navigation" : "Expand navigation"}
+          aria-label={t(isExpanded ? "navigation.collapse" : "navigation.expand")}
+          title={t(isExpanded ? "navigation.collapse" : "navigation.expand")}
           className="mx-2 mb-3 flex h-8 shrink-0 items-center justify-center rounded-md text-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         >
           <ChevronsRight
@@ -135,7 +137,7 @@ export function Sidebar({
               key={entry.id}
               to={entry.path}
               onClick={onNavigate}
-              title={entry.visibleLabel}
+              title={t(entry.visibleLabel)}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-sm whitespace-nowrap",
@@ -151,14 +153,20 @@ export function Sidebar({
                   <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />
                 )}
               </span>
-              <span className={labelClassName}>{entry.visibleLabel}</span>
+              <span className={labelClassName}>{t(entry.visibleLabel)}</span>
               {badgeCount > 0 && isShowingLabels && (
                 <span
                   className="ml-auto rounded-full bg-sidebar-primary/15 px-2 py-0.5 text-xs font-semibold tabular-nums"
-                  title={`${badgeCount} watchlists with new items in ${entry.visibleLabel}`}
+                  title={t("navigation.newWatchlistsIn", {
+                    count: badgeCount,
+                    view: t(entry.visibleLabel),
+                  })}
                 >
                   {badgeCount}
-                  <span className="sr-only"> watchlists with new items</span>
+                  <span className="sr-only">
+                    {" "}
+                    {t("navigation.newWatchlists", { count: badgeCount })}
+                  </span>
                 </span>
               )}
             </NavLink>
@@ -176,7 +184,7 @@ export function Sidebar({
           <DropdownMenuTrigger asChild disabled={session === undefined || isLoggingOut}>
             <button
               type="button"
-              aria-label="User menu"
+              aria-label={t("navigation.userMenu")}
               title={session?.user.name}
               className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-1 text-left hover:bg-sidebar-accent focus-visible:outline-2 focus-visible:outline-sidebar-ring"
             >
@@ -189,7 +197,7 @@ export function Sidebar({
                   !isShowingLabels && "sr-only",
                 )}
               >
-                {session?.user.name ?? "Loading user…"}
+                {session?.user.name ?? t("navigation.loadingUser")}
               </span>
             </button>
           </DropdownMenuTrigger>
@@ -202,16 +210,22 @@ export function Sidebar({
                 </span>
               )}
               <span className="block text-xs text-muted-foreground">
-                Roles: {session?.roleIds.join(", ") || "none"}
+                {t("navigation.roles", {
+                  roles: session?.roleIds.join(", ") || t("navigation.none"),
+                })}
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Preferences</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("navigation.preferences")}</DropdownMenuLabel>
             {[
-              { path: "/preferences/watchlists", label: "Watchlists", Icon: Bookmark },
-              { path: "/preferences/notifications", label: "Notifications", Icon: Bell },
-              { path: "/preferences/display", label: "Display", Icon: SlidersHorizontal },
-              { path: "/preferences/account", label: "Account", Icon: ShieldCheck },
+              { path: "/preferences/watchlists", label: "navigation.watchlists", Icon: Bookmark },
+              { path: "/preferences/notifications", label: "navigation.notifications", Icon: Bell },
+              {
+                path: "/preferences/display",
+                label: "navigation.display",
+                Icon: SlidersHorizontal,
+              },
+              { path: "/preferences/account", label: "navigation.account", Icon: ShieldCheck },
             ].map(({ path, label, Icon }) => (
               <DropdownMenuItem
                 key={path}
@@ -220,19 +234,17 @@ export function Sidebar({
                   onMenuNavigate?.();
                 }}
               >
-                <Icon /> {label}
+                <Icon /> {t(label)}
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("appearance.label")}</DropdownMenuLabel>
             {/* The same choice as Preferences → Display (UI-user-menu); the menu stays open. */}
             <DropdownMenuRadioGroup
               value={appearance}
               onValueChange={(value) => {
                 setMenuError("");
-                setAppearance(value as Appearance).catch(() =>
-                  setMenuError("Could not change the appearance. Try again."),
-                );
+                setAppearance(value as Appearance).catch(() => setMenuError(t("appearance.error")));
               }}
             >
               {appearanceChoices.map(({ value, label, Icon }) => (
@@ -241,7 +253,7 @@ export function Sidebar({
                   value={value}
                   onSelect={(event) => event.preventDefault()}
                 >
-                  <Icon /> {label}
+                  <Icon /> {t(label)}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
@@ -259,12 +271,12 @@ export function Sidebar({
                   await logout();
                   window.location.assign("/signed-out");
                 } catch {
-                  setMenuError("Could not sign out. Try again.");
+                  setMenuError(t("navigation.signOutError"));
                   setIsLoggingOut(false);
                 }
               }}
             >
-              <LogOut /> Sign out
+              <LogOut /> {t("navigation.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -274,7 +286,7 @@ export function Sidebar({
 }
 
 const appearanceChoices = [
-  { value: "system", label: "System", Icon: Monitor },
-  { value: "light", label: "Light", Icon: Sun },
-  { value: "dark", label: "Dark", Icon: Moon },
+  { value: "system", label: "appearance.system", Icon: Monitor },
+  { value: "light", label: "appearance.light", Icon: Sun },
+  { value: "dark", label: "appearance.dark", Icon: Moon },
 ] as const satisfies readonly { value: Appearance; label: string; Icon: typeof Sun }[];

@@ -1,21 +1,24 @@
 // Dates as the views print them: a day, "21 Jun 2026", in the demos' en-GB order, or without the
 // year where the year goes without saying, "21 Jun".
-// TODO(rrandiak): the locale comes from i18n.
+import { i18n } from "@/i18n";
 
-const dayFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
+const localeOf = () => (i18n.language === "cs" ? "cs-CZ" : "en-GB");
+const dayFormat = () =>
+  new Intl.DateTimeFormat(localeOf(), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
-const shortDayFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
+const shortDayFormat = () =>
+  new Intl.DateTimeFormat(localeOf(), { day: "numeric", month: "short" });
 
 export function formatDay(timestamp: string): string {
   if (typeof document !== "undefined" && document.documentElement.dataset.dateFormat === "iso") {
     const date = new Date(timestamp);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   }
-  return dayFormat.format(new Date(timestamp));
+  return dayFormat().format(new Date(timestamp));
 }
 
 // A calendar day, YYYY-MM-DD, read at noon so that no time zone moves it to its neighbour.
@@ -23,12 +26,12 @@ export function formatCalendarDay(date: string): string {
   if (typeof document !== "undefined" && document.documentElement.dataset.dateFormat === "iso") {
     return date.slice(0, 10);
   }
-  return dayFormat.format(new Date(`${date}T12:00:00`));
+  return dayFormat().format(new Date(`${date}T12:00:00`));
 }
 
 export function formatShortCalendarDay(date: string): string {
   if (typeof document !== "undefined" && document.documentElement.dataset.dateFormat === "iso") {
     return date.slice(0, 10);
   }
-  return shortDayFormat.format(new Date(`${date}T12:00:00`));
+  return shortDayFormat().format(new Date(`${date}T12:00:00`));
 }

@@ -4,7 +4,6 @@
 // own, reading "any" until it is given a range, or text it contains, starts with or ends with; it
 // too takes *No value*.
 // Each property the person may read is offered under "+ Add filter".
-// TODO(rrandiak): labels move to i18n.
 
 import type { PropertyFacets, PropertyParams } from "@vera/contract/properties";
 import { conditionsOf, withCondition, withoutCondition } from "@vera/contract/properties";
@@ -14,14 +13,13 @@ import {
   propertyNameOf,
   textConditionOf,
   textMatches,
-  textMatchLabels,
-  textSummaryOf,
   withTextCondition,
   yesNoValues,
 } from "@vera/domain/properties";
 import type { DayRange, ValueRange } from "@vera/domain/value-range";
 import { ChevronDown, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { FilterField } from "@/components/filters/filter-controls";
 import {
   AddFilterMenu,
@@ -41,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
@@ -54,7 +53,7 @@ export interface PropertyFilterProps {
 
 // The option *No value* stands for in a field of values.
 const noValueOption = "\u0000none";
-const noValueLabel = "No value";
+const noValueLabel = "filter.noValue";
 
 export function isValuedProperty(definition: PropertyDefinition): boolean {
   return definition.type.kind === "enum" || definition.type.kind === "yesNo";
@@ -127,16 +126,25 @@ function summaryOf(definition: PropertyDefinition, condition: PropertyCondition 
   }
 
   const parts = [
-    textSummaryOf(condition),
+    (() => {
+      const textCondition = textConditionOf(condition);
+      return textCondition.text.trim() === ""
+        ? null
+        : i18n.t("filter.textSummary", {
+            ns: "common",
+            match: i18n.t(`filter.match.${textCondition.match}`, { ns: "common" }).toLowerCase(),
+            text: textCondition.text.trim(),
+          });
+    })(),
     condition.numberRange === undefined
       ? null
       : rangeSummaryOf(rangeFieldOf(definition), condition.numberRange),
     condition.dayRange === undefined
       ? null
       : rangeSummaryOf(rangeFieldOf(definition), condition.dayRange),
-    condition.hasNoValue === true ? "no value" : null,
+    condition.hasNoValue === true ? i18n.t("filter.noValueLower", { ns: "common" }) : null,
   ].filter((part) => part !== null);
-  return parts.length === 0 ? null : parts.join(" or ");
+  return parts.length === 0 ? null : parts.join(` ${i18n.t("filter.or", { ns: "common" })} `);
 }
 
 interface PropertyChipProps {
@@ -154,6 +162,8 @@ export function PropertyChip({
   onChange,
   onRemove,
 }: PropertyChipProps) {
+  // Property names come from the server and stay unchanged when they have no message key.
+  const { t } = useTranslation("common");
   const id = useId();
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState(() => textConditionOf(condition).text);
@@ -183,7 +193,8 @@ export function PropertyChip({
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger className="inline-flex h-full min-w-0 items-center gap-1 rounded-l-md pr-1 pl-2 outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
           <span className="truncate">
-            {label} <b className={cn(summary !== null && "font-semibold")}>{summary ?? "any"}</b>
+            {t(label)}{" "}
+            <b className={cn(summary !== null && "font-semibold")}>{summary ?? t("filter.any")}</b>
           </span>
           <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
         </PopoverTrigger>
@@ -205,20 +216,24 @@ export function PropertyChip({
                 }}
               >
                 <Select value={match} onValueChange={(value) => setMatch(value as TextMatch)}>
-                  <SelectTrigger aria-label={`How ${label} matches`} size="sm" className="w-fit">
+                  <SelectTrigger
+                    aria-label={t("filter.howMatches", { field: t(label) })}
+                    size="sm"
+                    className="w-fit"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {textMatches.map((candidate) => (
                       <SelectItem key={candidate} value={candidate}>
-                        {textMatchLabels[candidate]}
+                        {t(`filter.match.${candidate}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Input
                   id={`${id}-text`}
-                  aria-label={`${label} ${textMatchLabels[match].toLocaleLowerCase()}`}
+                  aria-label={`${t(label)} ${t(`filter.match.${match}`).toLocaleLowerCase()}`}
                   className="h-8"
                   value={text}
                   onChange={(event) => setText(event.target.value)}
@@ -229,7 +244,7 @@ export function PropertyChip({
                   className="justify-self-start"
                   disabled={text.trim() === ""}
                 >
-                  Apply
+                  {t("filter.apply")}
                 </Button>
               </form>
             ) : (
@@ -256,7 +271,7 @@ export function PropertyChip({
                   onChange({ ...(condition ?? { key }), hasNoValue: checked === true || undefined })
                 }
               />
-              Or no value
+              {t("filter.orNoValue")}
             </label>
           </div>
         </PopoverContent>
@@ -264,8 +279,8 @@ export function PropertyChip({
       <button
         type="button"
         onClick={onRemove}
-        aria-label={`Remove the ${label} filter`}
-        title="Remove this filter"
+        aria-label={t("filter.removeNamed", { field: t(label) })}
+        title={t("filter.remove")}
         className="grid h-full place-items-center rounded-r-md px-1.5 text-muted-foreground outline-none hover:text-destructive focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
         <X className="size-3.5" />

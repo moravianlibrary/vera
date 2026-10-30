@@ -4,6 +4,7 @@ import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/http";
 import { getWatchlistReach } from "@/api/watchlists";
 import {
@@ -21,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { plural } from "@/lib/plural";
 
 type Filter = WatchlistSummary["filter"];
 
@@ -54,6 +54,7 @@ export function WatchlistEditorPopover({
   onUpdate,
   onOpen,
 }: Props) {
+  const { t } = useTranslation("common");
   const nameId = useId();
   const targetIdLabel = useId();
   const [open, setOpen] = useState(false);
@@ -152,12 +153,17 @@ export function WatchlistEditorPopover({
               <p>
                 {reach === undefined
                   ? "Working out who it reaches…"
-                  : `Reaches ${plural(reach.userCount, "person", "people")}${reach.outOfViewCount > 0 ? `; ${reach.outOfViewCount} cannot open this view` : ""}.`}
+                  : t("watchlist.reaches", {
+                      count: reach.userCount,
+                      outOfViewCount: reach.outOfViewCount
+                        ? `; ${t("watchlist.cannotOpen", { count: reach.outOfViewCount })}`
+                        : "",
+                    })}
               </p>
               {reach !== undefined && reach.duplicateCount > 0 && (
                 <p className="text-tone-amber-foreground">
-                  {plural(reach.duplicateCount, "person already keeps", "people already keep")} this
-                  filter as their own.
+                  {t("watchlist.peopleKeep", { count: reach.duplicateCount })} this filter as their
+                  own.
                 </p>
               )}
             </div>

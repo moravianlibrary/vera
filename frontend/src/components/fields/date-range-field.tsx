@@ -1,10 +1,10 @@
 // Days between two ends, either open: the Asked filter's custom range now, Tasks' Started and the
 // lists' dates later (component-interfaces.md §7, DateRange). Native date inputs, so a phone gets
 // its own picker. The presets are the filter's (components/filters/range-filter.tsx).
-// TODO(rrandiak): labels move to i18n.
 
 import type { ValueRange } from "@vera/domain/value-range";
 import { parseDay } from "@vera/domain/value-range";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 
 interface DateRangeFieldProps {
@@ -16,6 +16,8 @@ interface DateRangeFieldProps {
 }
 
 export function DateRangeField({ id, label, value, onChange }: DateRangeFieldProps) {
+  // Labels may be message keys or plain text; missing keys remain unchanged.
+  const { t } = useTranslation("common");
   const endOf = (raw: string) => parseDay(raw) ?? undefined;
 
   return (
@@ -23,7 +25,7 @@ export function DateRangeField({ id, label, value, onChange }: DateRangeFieldPro
       <Input
         id={id}
         type="date"
-        aria-label={`${label} from`}
+        aria-label={t("range.from", { field: t(label) })}
         className="w-40"
         value={value.from ?? ""}
         max={value.to}
@@ -32,7 +34,7 @@ export function DateRangeField({ id, label, value, onChange }: DateRangeFieldPro
       <span className="text-muted-foreground">–</span>
       <Input
         type="date"
-        aria-label={`${label} until`}
+        aria-label={t("range.until", { field: t(label) })}
         className="w-40"
         value={value.to ?? ""}
         min={value.from}

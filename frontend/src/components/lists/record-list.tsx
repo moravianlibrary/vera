@@ -13,6 +13,7 @@
 import { Check } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Fragment, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type { ListToolbarProps } from "@/components/lists/list-toolbar";
 import { ListToolbar } from "@/components/lists/list-toolbar";
 import type { QueryFailure } from "@/components/query-state";
@@ -118,6 +119,8 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
   failure,
   loadingMoreText,
 }: RecordListProps<Row, Group, Grouping>) {
+  // Labels may be keys or plain text; i18next leaves missing keys unchanged.
+  const { t } = useTranslation("common");
   const sentinelRef = useLoadMore(paging.hasMore, paging.isLoadingMore, paging.onLoadMore);
   const tier = useTier();
   const longPressId = useRef<string | null>(null);
@@ -175,7 +178,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                 key={column.key}
                 className={cn("px-2.5 py-2 first:pl-4 last:pr-4", column.isNumeric && "text-right")}
               >
-                {column.header}
+                {t(column.header)}
               </span>
             ))}
           </div>

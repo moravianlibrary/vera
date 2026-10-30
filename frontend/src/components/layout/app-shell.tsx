@@ -5,10 +5,10 @@
 // (navigation.md §4.2): the aside keeps the rail's width in the layout and the bar inside it
 // grows, so the content never moves. The tier is stamped on <html> as `data-tier`, which sets
 // the root size.
-// TODO(rrandiak): labels move to i18n.
 
 import { loginPathFor } from "@vera/contract/return-to";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Outlet, useLocation, useMatches, useNavigate } from "react-router";
 import { ApiError } from "@/api/http";
 import { visibleNavigation } from "@/components/layout/navigation";
@@ -31,6 +31,7 @@ import { recordPageView, setTelemetryUser } from "@/lib/telemetry/telemetry";
 import { cn } from "@/lib/utils";
 
 export function AppShell() {
+  const { t } = useTranslation("common");
   const { data: session, error, refetch } = useSessionQuery();
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export function AppShell() {
   const swipe = useSwipeBetween({
     items: navigation,
     idOf: (entry) => entry.id,
-    labelOf: (entry) => entry.visibleLabel,
+    labelOf: (entry) => t(entry.visibleLabel),
     currentId: currentNavigation?.id ?? null,
     onSelect: (id) => {
       const entry = navigation.find((item) => item.id === id);
@@ -143,8 +144,8 @@ export function AppShell() {
 
       <Sheet open={isSheetOpen && !isDocked} onOpenChange={setIsSheetOpen}>
         <SheetContent side="left" showCloseButton={false} className="w-auto gap-0 border-0 p-0">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SheetDescription className="sr-only">The views this account can open.</SheetDescription>
+          <SheetTitle className="sr-only">{t("navigation.title")}</SheetTitle>
+          <SheetDescription className="sr-only">{t("navigation.description")}</SheetDescription>
           <Sidebar
             session={session}
             isExpanded

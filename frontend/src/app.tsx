@@ -1,8 +1,9 @@
 // The application: providers and routes. Every navigation entry is a route, gated by the same
 // permissions that reveal it in the sidebar.
-// TODO(rrandiak): the remaining views (frontend/continuation.md); labels move to i18n.
+// TODO(rrandiak): the remaining views (frontend/continuation.md).
 
 import { QueryClientProvider } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { AppShell } from "@/components/layout/app-shell";
 import {
@@ -47,17 +48,19 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { queryClient } from "@/lib/query-client";
 
 function Placeholder({ title }: { title: string }) {
+  const { t } = useTranslation("common");
   return (
     <>
       <PageHeader title={title} />
       <PageContent>
-        <p className="text-sm text-muted-foreground">This view is planned for a later milestone.</p>
+        <p className="text-sm text-muted-foreground">{t("app.viewPlanned")}</p>
       </PageContent>
     </>
   );
 }
 
 function EntryPage({ entryId, label }: { entryId: string; label: string }) {
+  const { t } = useTranslation("common");
   switch (entryId) {
     case "documents":
       return <DocumentsPage perspective="staff" />;
@@ -92,7 +95,7 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
     case "watchlists":
       return <WatchlistsPage />;
     default:
-      return <Placeholder title={label} />;
+      return <Placeholder title={t(label)} />;
   }
 }
 
@@ -108,6 +111,7 @@ function Landing() {
 }
 
 function Gate({ entryId, children }: { entryId: string; children: React.ReactNode }) {
+  const { t } = useTranslation("common");
   const { data: session } = useSessionQuery();
   if (session === undefined) {
     return null;
@@ -117,7 +121,7 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
     children
   ) : (
     <ForbiddenPage
-      page={navigationEntries.find((entry) => entry.id === entryId)?.label ?? entryId}
+      page={t(navigationEntries.find((entry) => entry.id === entryId)?.label ?? entryId)}
     />
   );
 }

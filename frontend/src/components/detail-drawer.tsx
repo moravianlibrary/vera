@@ -1,6 +1,7 @@
 import { XIcon } from "lucide-react";
 import { Dialog as DrawerPrimitive } from "radix-ui";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { SwipePeekPill } from "@/components/swipe-peek-pill";
 import { Button } from "@/components/ui/button";
 import type { RecordSwipe } from "@/hooks/use-swipe-between";
@@ -24,6 +25,7 @@ export function DetailDrawer<Item>({
   children,
   swipe,
 }: DetailDrawerProps<Item>) {
+  const { t } = useTranslation("common");
   const isPhone = useTier() === "phone";
   const swiping = useSwipeBetween({
     ...(swipe ?? {
@@ -52,14 +54,19 @@ export function DetailDrawer<Item>({
           <div {...closeGesture} className="flex items-start gap-3 border-b px-5 py-3.5">
             <div className="min-w-0 flex-1">
               <DrawerPrimitive.Title className="text-title font-semibold leading-snug">
-                {title}
+                {t(title)}
               </DrawerPrimitive.Title>
               <DrawerPrimitive.Description className="mt-0.5 text-xs text-muted-foreground">
                 {subtitle}
               </DrawerPrimitive.Description>
             </div>
             <DrawerPrimitive.Close asChild>
-              <Button variant="ghost" size="icon" className="-mr-2 size-8" aria-label="Close">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-mr-2 size-8"
+                aria-label={t("drawer.close")}
+              >
                 <XIcon />
               </Button>
             </DrawerPrimitive.Close>

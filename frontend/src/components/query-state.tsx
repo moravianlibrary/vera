@@ -23,12 +23,13 @@ export function failureOf(
 
 export function QueryError({ failure, className }: { failure: QueryFailure; className?: string }) {
   const { t } = useTranslation("system");
+  const { t: tCommon } = useTranslation("common");
   return (
     <div
       role="alert"
       className={cn("flex flex-wrap items-center gap-3 p-4 text-sm text-destructive", className)}
     >
-      <span>{failure.text}</span>
+      <span>{tCommon(failure.text)}</span>
       <Button size="sm" variant="outline" onClick={failure.onRetry}>
         {t("action.tryAgain")}
       </Button>
@@ -54,7 +55,7 @@ export function QueryState({
   emptyText,
   children,
 }: QueryStateProps) {
-  const { t } = useTranslation("system");
+  const { t: tCommon } = useTranslation("common");
   if (failure !== undefined) {
     return <QueryError failure={failure} />;
   }
@@ -62,13 +63,17 @@ export function QueryState({
   if (isLoading) {
     return (
       <p role="status" className="p-4 text-sm text-muted-foreground">
-        {loadingText ?? t("query.loading")}
+        {loadingText === undefined ? tCommon("query.loading") : tCommon(loadingText)}
       </p>
     );
   }
 
   if (isEmpty) {
-    return <p className="p-4 text-sm text-muted-foreground">{emptyText}</p>;
+    return (
+      <p className="p-4 text-sm text-muted-foreground">
+        {emptyText === undefined ? undefined : tCommon(emptyText)}
+      </p>
+    );
   }
 
   return children;
