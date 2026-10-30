@@ -4,21 +4,21 @@ Audit of 2026-10-30 at base `9896a989`. Measured against docs/reference and the 
 
 ## Summary
 
-Disposition counts: actionable 1; blocked: question 6; blocked: engine 8; later by choice 3; superseded 2; done 11. Candidate counts: A (Session F) 18; B (non-i18n TODOs) 24; C (rules/open notes) 31; D (ledger entries whose arrow names frontend outside Done) 4. Candidates overlap; duplicate subjects share one row.
+Disposition counts (after the answers of 2026-10-30): actionable 3; blocked: question 0; blocked: engine 8; later by choice 4; superseded 2; done 14. Candidate counts: A (Session F) 18; B (non-i18n TODOs) 24; C (rules/open notes) 31; D (ledger entries whose arrow names frontend outside Done) 4. Candidates overlap; duplicate subjects share one row.
 
-Proposed sessions: U7d Messaging (no actionable rows: G4 and G32 are done; G31 is blocked by a product question); U7e Documents cards (G6).
+Proposed sessions: U7e Document card reach and message text (G6, G31, and the stale TODOs of G20, G26, G28); U7f Defects by their instance (G23).
 
 ## Gaps
 
 | # | Gap | Source | Evidence | Expected (rule) | Disposition | Size | Session |
 |---|---|---|---|---|---|---|---|
 | G6 | A curator can follow a project or list link when they hold the read permission only at another scope. | A: Reach; C: ACT-out-of-reach | [frontend/src/features/documents/document-detail.tsx:388](src/features/documents/document-detail.tsx) checks `project.read` without a scope; [line 406](src/features/documents/document-detail.tsx) renders its link; [line 422](src/features/documents/document-detail.tsx) similarly checks `list.read` without a scope | [SCOPE-project](../docs/reference/access/scopes.md#scope-project), [SCOPE-list](../docs/reference/access/scopes.md#scope-list): evaluate each linked record at its own scope | actionable | M | U7e |
-| G20 | It is unclear whether Retry failed should be in the phone batch header menu. | A: Adding retry; B: document-group-header TODO | [frontend/src/features/documents/document-group-header.tsx:8](src/features/documents/document-group-header.tsx) asks for retry to move into the phone header’s menu; [line 62](src/features/documents/document-group-header.tsx) currently passes it as the inline action; [acts.md § Request review](../docs/reference/access/acts.md#request-review) specifies the retry act but not its phone placement | [acts.md § Request review](../docs/reference/access/acts.md#request-review) | blocked: question | S | — |
-| G23 | A curator cannot tell which plugin instance supplied a document defect. | B: use-reference-labels TODO; C: UI-record-pane | [frontend/src/hooks/use-reference-labels.ts:76](src/hooks/use-reference-labels.ts) says instance naming is unfinished and `:77` returns the ID; no reference rule specifies whether the defect label uses the instance name or ID | [UI-record-pane](../docs/reference/ui/pages.md#ui-record-pane) | blocked: question | S | — |
-| G27 | It is unclear whether range filters should support “not”, “empty”, or a field reached through another record. | B: range-filter TODO | [frontend/src/components/filters/range-filter.tsx:8](src/components/filters/range-filter.tsx) names the missing operators; a search of [UI-filters](../docs/reference/ui/pages.md#ui-filters) for those operators and related-record fields finds none | [UI-filters](../docs/reference/ui/pages.md#ui-filters) | blocked: question | M | — |
-| G28 | It is unclear what brings a list within custody or project scope for `list.read`. | B: mocks/lists TODO; C: VIEW-lists | [frontend/src/mocks/lists.ts:77](src/mocks/lists.ts) says the permission rules do not define what brings a list within those scopes; [line 80](src/mocks/lists.ts) implements an assumed rule | [VIEW-lists](../docs/reference/access/views.md#view-lists), [SCOPE-list](../docs/reference/access/scopes.md#scope-list) | blocked: question | M | — |
-| G31 | A person cannot enter message text in VERA before handing off to a self-sending Message instance. | B: message-dialog TODO; C: MSG-handoff | [frontend/src/components/dialogs/message-dialog.tsx:8](src/components/dialogs/message-dialog.tsx) records the TODO; [MSG-handoff](../docs/reference/integrations/messaging.md#msg-handoff) describes a redirect handoff but does not require VERA to collect text | [MSG-handoff](../docs/reference/integrations/messaging.md#msg-handoff) | blocked: question | M | — |
-| G26 | Project approval skips an ask whose copy check has not answered. | B: mocks/projects TODO; C: LC-PROJ-after-approval | [frontend/src/mocks/projects.ts:122](src/mocks/projects.ts) asks whether an ask still being checked is skipped too, rather than held until the check answers; [LC-PROJ-after-approval](../docs/reference/lifecycles/project.md#lc-proj-after-approval) describes the approval outcome | [LC-PROJ-after-approval](../docs/reference/lifecycles/project.md#lc-proj-after-approval) | blocked: question | M | — |
+| G20 | It is unclear whether Retry failed should be in the phone batch header menu. | A: Adding retry; B: document-group-header TODO | [frontend/src/features/documents/document-group-header.tsx:8](src/features/documents/document-group-header.tsx) asks for retry to move into the phone header’s menu; [line 62](src/features/documents/document-group-header.tsx) currently passes it as the inline action; [acts.md § Request review](../docs/reference/access/acts.md#request-review) specifies the retry act but not its phone placement | [acts.md § Request review](../docs/reference/access/acts.md#request-review); answered 2026-10-30: stays inline on the phone; the TODO goes (U7e) | done | S | — |
+| G23 | A curator cannot tell which plugin instance supplied a document defect. | B: use-reference-labels TODO; C: UI-record-pane | [frontend/src/hooks/use-reference-labels.ts:76](src/hooks/use-reference-labels.ts) says instance naming is unfinished and `:77` returns the ID; no reference rule specifies whether the defect label uses the instance name or ID | [UI-record-pane](../docs/reference/ui/pages.md#ui-record-pane); answered 2026-10-30: the instance's name, per [STAT-defect-key](../docs/reference/model/status.md#stat-defect-key); defects carry an implementation name today, not the instance | actionable | S | U7f |
+| G27 | It is unclear whether range filters should support “not”, “empty”, or a field reached through another record. | B: range-filter TODO | [frontend/src/components/filters/range-filter.tsx:8](src/components/filters/range-filter.tsx) names the missing operators; a search of [UI-filters](../docs/reference/ui/pages.md#ui-filters) for those operators and related-record fields finds none | [UI-filters](../docs/reference/ui/pages.md#ui-filters); answered 2026-10-30: not now | later by choice | M | —; trigger: a rule asking for them |
+| G28 | It is unclear what brings a list within custody or project scope for `list.read`. | B: mocks/lists TODO; C: VIEW-lists | [frontend/src/mocks/lists.ts:77](src/mocks/lists.ts) says the permission rules do not define what brings a list within those scopes; [line 80](src/mocks/lists.ts) implements an assumed rule | [VIEW-lists](../docs/reference/access/views.md#view-lists), [SCOPE-list](../docs/reference/access/scopes.md#scope-list); [SCOPE-list](../docs/reference/access/scopes.md#scope-list) already gives the mock's reading; the TODO is stale (U7e) | done | M | — |
+| G31 | A person cannot enter message text in VERA before handing off to a self-sending Message instance. | B: message-dialog TODO; C: MSG-handoff | [frontend/src/components/dialogs/message-dialog.tsx:8](src/components/dialogs/message-dialog.tsx) records the TODO; [MSG-handoff](../docs/reference/integrations/messaging.md#msg-handoff) describes a redirect handoff but does not require VERA to collect text | [MSG-handoff](../docs/reference/integrations/messaging.md#msg-handoff); answered 2026-10-30: yes, [MSG-handoff](../docs/reference/integrations/messaging.md#msg-handoff) now has the *sent* result | actionable | M | U7e |
+| G26 | Project approval skips an ask whose copy check has not answered. | B: mocks/projects TODO; C: LC-PROJ-after-approval | [frontend/src/mocks/projects.ts:122](src/mocks/projects.ts) asks whether an ask still being checked is skipped too, rather than held until the check answers; [LC-PROJ-after-approval](../docs/reference/lifecycles/project.md#lc-proj-after-approval) describes the approval outcome | [LC-PROJ-after-approval](../docs/reference/lifecycles/project.md#lc-proj-after-approval); [LC-PROJ-decide](../docs/reference/lifecycles/project.md#lc-proj-decide) already leaves unchecked asks Pending for review, as the mock does; the TODO is stale (U7e) | done | M | — |
 | G30 | A curator's Custody rule switched on or off does not place the open proposals again. | B: mocks/plugins TODO; C: ACCESS-custody-live; D: L8 | [frontend/src/mocks/plugins.ts:463](src/mocks/plugins.ts) places them only on delete, at once | [ACCESS-custody-live](../docs/reference/access/custody.md#access-custody-live), [L8](../docs/ledger.md#l8-placing-again-is-a-run): decided 2026-10-15, placing again is a run on Tasks | blocked: engine | L | — |
 | G11 | A person cannot see the correct public event wording for all recorded acts. | B: mocks/documents TODO; C: LOG-public; D: L23 | [frontend/src/mocks/documents.ts:638](src/mocks/documents.ts) waits for typed event codes; [frontend/src/lib/status-notes.ts:140](src/lib/status-notes.ts) maps free-text event names | [LOG-public](../docs/reference/model/log.md#log-public), [L23](../docs/ledger.md#l23-event-codes) | blocked: engine | L | — |
 | G12 | A curator cannot configure arbitrary hook conditions from a typed builder. | B: mocks/hooks TODO; C: Open L33; D: L33 | [frontend/src/mocks/hooks.ts:76](src/mocks/hooks.ts) limits accepted conditions to two phrases; [frontend/src/mocks/hooks.ts:84](src/mocks/hooks.ts) refuses others | [HOOK-condition](../docs/reference/integrations/hooks.md#hook-condition), [L33](../docs/ledger.md#l33-hook-events) | blocked: engine | L | — |
@@ -46,22 +46,25 @@ Proposed sessions: U7d Messaging (no actionable rows: G4 and G32 are done; G31 i
 
 ## Proposed sessions
 
-### U7d — Messaging
+### U7e — Card reach and message text
 
-Rows: none remain actionable. G4 and G32 are done; G31 is blocked by a product question.
+Rows: G6, G31; removes the stale TODOs of G20, G26 and G28. Files: `document-detail.tsx`,
+`message-dialog.tsx`, the messages contract and mock, and their tests. Depends on: none. Project
+and list links in a document card follow that record's own scope; a Message instance that sends
+on its own asks for the text and says it was sent.
 
-### U7e — Scope links in document cards
+### U7f — Defects by their instance
 
-Rows: G6. Files: `frontend/src/features/documents/document-detail.tsx` and its tests. Depends on: none. Project and list links in a document card respect the particular record's scope.
+Rows: G23. Files: the defect schema in `domain/src/entities.ts`, the seeds' defects, the
+validation mocks and views, `use-reference-labels.ts`. Depends on: none. A defect belongs to the
+plugin instance that found it, as STAT-defect-key says, and is shown by that instance's name.
 
 ## Questions
 
-Q1 (G26): Should an ask still being checked be skipped too, rather than held until the check answers?
-Q2 (G23): Should a document defect show its plugin instance's name or its stable plugin ID? The answer changes the label shown to the curator.
-
-Q3 (G27): Should range filters support “not”, “empty”, and fields reached through another record? The answer changes which operators and fields the client offers.
-
-Q4 (G28): What brings a list within a person's custody or project scope for `list.read`? The answer determines whether list reach follows any member's category/project or a different rule.
-
-Q5 (G31): Should a Message instance that sends on its own ask for the message text in VERA before handoff? The answer determines whether MessageDialog needs a text field and whether the handoff contract carries that text.
-Q6 (G20): Should Retry failed move into the phone batch header menu, or is the current inline action enough? The reference specifies the retry act but not its phone placement.
+Answered on 2026-10-30:
+- Q1 (G26): already settled by LC-PROJ-decide: an unchecked ask stays Pending for review.
+- Q2 (G23): the instance's name.
+- Q3 (G27): not now.
+- Q4 (G28): the mock's reading, which SCOPE-list already states.
+- Q5 (G31): yes; MSG-handoff now has the *sent* result.
+- Q6 (G20): Retry failed stays inline on the phone.

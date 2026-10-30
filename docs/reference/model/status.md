@@ -36,7 +36,8 @@ and the later row wins. A curator is shown only what is outstanding, D minus A.
 #### STAT-defect-key
 
 A defect's key is stable across check runs: plugin instance, rule code and subject, never the
-value. A verdict on a key therefore still stands when the checks find the same defect again,
+value. A defect is shown by its instance's name and the rule code (*Default ruleset R07*), never
+the instance's id. A verdict on a key therefore still stands when the checks find the same defect again,
 and a defect the checks no longer find needs no verdict.
 
 #### STAT-denial-lapses

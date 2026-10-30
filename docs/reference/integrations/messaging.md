@@ -6,8 +6,13 @@ hands it to a Message plugin, which opens a mail or a chat where people already 
 #### MSG-handoff
 
 A Message instance is given the recipients VERA resolved, the record with a link back to it, why
-the message is about it, and who is writing. It answers with a redirect (a pre-filled `mailto:`
-or a chat deep link) that opens in the person's own tool.
+the message is about it, and who is writing. It answers in one of two ways, fixed by its
+implementation:
+- **a redirect** (a pre-filled `mailto:` or a chat deep link) that opens in the person's own
+  tool, where they write and send it;
+- **sent**: the instance posts the message itself, to a chat channel or a ticket queue. For such
+  an instance the dialog asks for the text first, and the instance is given it with the rest; the
+  dialog then says it was sent, or why the instance refused.
 
 #### MSG-recipients
 
@@ -32,7 +37,8 @@ failed runs.
 
 #### MSG-keeps-nothing
 
-VERA keeps nothing of a message, and a redirect is not logged: VERA cannot know it was sent.
+VERA keeps nothing of a message, the text a sending instance was given included, and neither
+result is logged: after a redirect VERA cannot know it was sent.
 *Message…* needs no permission of its own beyond seeing the record.
 
 #### MSG-order
