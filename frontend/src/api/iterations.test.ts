@@ -113,12 +113,12 @@ describe("setting where it is available", () => {
   it("replaces a link in place and refuses an unknown link (ACT-link-replace)", async () => {
     signInAs("curator");
     const before = (await currentIterationOf("D50"))?.links[0];
-    expect(before).toBeDefined();
-    const changed = await replaceLink("IT34", before!.id, {
+    if (before === undefined) throw new Error("D50 has a link to replace");
+    const changed = await replaceLink("IT34", before.id, {
       link: "https://example.org/replacement",
     });
     expect(changed.links[0]).toMatchObject({
-      id: before!.id,
+      id: before.id,
       url: "https://example.org/replacement",
       isPrimary: true,
     });
@@ -131,11 +131,11 @@ describe("setting where it is available", () => {
     signInAs("curator");
     const initial = await currentIterationOf("D1");
     const other = initial?.links.find((link) => !link.isPrimary);
-    expect(other).toBeDefined();
-    const changed = await makeLinkPrimary("IT1", other!.id);
-    expect(changed.links.find((link) => link.id === other!.id)?.isPrimary).toBe(true);
-    expect(changed.links.find((link) => link.id !== other!.id)?.isPrimary).toBe(false);
-    expect(await statusOf(makeLinkPrimary("IT1", other!.id))).toBe(409);
+    if (other === undefined) throw new Error("D1 has a second link to make primary");
+    const changed = await makeLinkPrimary("IT1", other.id);
+    expect(changed.links.find((link) => link.id === other.id)?.isPrimary).toBe(true);
+    expect(changed.links.find((link) => link.id !== other.id)?.isPrimary).toBe(false);
+    expect(await statusOf(makeLinkPrimary("IT1", other.id))).toBe(409);
   });
 
   it("removes the primary, promotes the oldest remaining link, and keeps Published (ACT-link-remove)", async () => {
@@ -143,13 +143,13 @@ describe("setting where it is available", () => {
     const initial = await currentIterationOf("D1");
     const primary = initial?.links.find((link) => link.isPrimary);
     const remaining = initial?.links.find((link) => !link.isPrimary);
-    expect(primary).toBeDefined();
-    expect(remaining).toBeDefined();
-    const changed = await removeLink("IT1", primary!.id);
+    if (primary === undefined) throw new Error("D1 has a primary link to remove");
+    if (remaining === undefined) throw new Error("D1 has a remaining link to promote");
+    const changed = await removeLink("IT1", primary.id);
     expect(changed.links).toHaveLength(1);
-    expect(changed.links[0]).toMatchObject({ id: remaining!.id, isPrimary: true });
+    expect(changed.links[0]).toMatchObject({ id: remaining.id, isPrimary: true });
     expect(changed.progress).toBe("Published");
-    expect(await statusOf(removeLink("IT1", remaining!.id))).toBe(409);
+    expect(await statusOf(removeLink("IT1", remaining.id))).toBe(409);
   });
 
   it("adds a link to a published item without replacing its existing link", async () => {
@@ -198,13 +198,17 @@ describe("setting where it is available", () => {
       "iteration.link_added",
       "iteration.link_changed",
     ] as const;
-    const testHooks = hookEvents.map((event, index) => ({
-      ...hookTemplate,
-      id: hookIds[index]!,
-      name: `Link act test ${index}`,
-      event,
-      filter: "",
-    }));
+    const testHooks = hookEvents.map((event, index) => {
+      const id = hookIds[index];
+      if (id === undefined) throw new Error(`Missing hook ID for link act ${index}`);
+      return {
+        ...hookTemplate,
+        id,
+        name: `Link act test ${index}`,
+        event,
+        filter: "",
+      };
+    });
     const logStart = database.statusLog.length;
     const deliveryStart = database.hookDeliveries.length;
     database.hooks.push(...testHooks);

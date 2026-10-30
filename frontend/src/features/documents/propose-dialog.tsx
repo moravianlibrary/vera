@@ -527,60 +527,58 @@ function ItemsStep({
   ];
 
   return (
-    <>
-      <div>
-        <ChoiceTabs value={way} onChange={setWay} label="Ways to add items" panels={panels} />
+    <div>
+      <ChoiceTabs value={way} onChange={setWay} label="Ways to add items" panels={panels} />
 
-        {notice !== null && (
-          <StatusNote tone="amber" title="Not everything was added" className="mt-3">
-            {notice}
-          </StatusNote>
-        )}
+      {notice !== null && (
+        <StatusNote tone="amber" title="Not everything was added" className="mt-3">
+          {notice}
+        </StatusNote>
+      )}
 
-        {dailyRemaining === 0 && (
-          <StatusNote tone="red" title="Daily proposal limit reached" className="mt-3">
-            No more proposals today.
-          </StatusNote>
-        )}
+      {dailyRemaining === 0 && (
+        <StatusNote tone="red" title="Daily proposal limit reached" className="mt-3">
+          No more proposals today.
+        </StatusNote>
+      )}
 
-        {dailyRemaining !== null && dailyRemaining > 0 && dailyRemaining <= 10 && (
-          <StatusNote tone="amber" title="Approaching daily limit" className="mt-3">
-            {dailyRemaining} left today.
-          </StatusNote>
-        )}
+      {dailyRemaining !== null && dailyRemaining > 0 && dailyRemaining <= 10 && (
+        <StatusNote tone="amber" title="Approaching daily limit" className="mt-3">
+          {dailyRemaining} left today.
+        </StatusNote>
+      )}
 
-        <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 text-xs">
-          <span className="font-semibold">
-            {items.length === 0
-              ? "No items yet"
-              : `${items.length} ${items.length === 1 ? "item" : "items"}`}
-            {Number.isFinite(limit) && (
-              <span className="font-normal text-muted-foreground"> · at most {limit} at once</span>
-            )}
-          </span>
-          {items.length > 0 && (
-            <span className="text-muted-foreground">
-              {tally.new} new · {tally.inVera} already in VERA
-              {tally.open > 0 && ` · ${tally.open} to resolve`}
-              {tally.skip > 0 && ` · ${tally.skip} will be skipped`}
-            </span>
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 text-xs">
+        <span className="font-semibold">
+          {items.length === 0
+            ? "No items yet"
+            : `${items.length} ${items.length === 1 ? "item" : "items"}`}
+          {Number.isFinite(limit) && (
+            <span className="font-normal text-muted-foreground"> · at most {limit} at once</span>
           )}
-        </div>
-
-        <ol>
-          {items.map((item, index) => (
-            <ItemRow
-              key={item.key}
-              item={item}
-              number={index + 1}
-              onChange={(patch) => onChange(item.key, patch)}
-              onPickRecords={(catalogIds) => onPickRecords(item.key, catalogIds)}
-              onRemove={() => onRemove(item.key)}
-            />
-          ))}
-        </ol>
+        </span>
+        {items.length > 0 && (
+          <span className="text-muted-foreground">
+            {tally.new} new · {tally.inVera} already in VERA
+            {tally.open > 0 && ` · ${tally.open} to resolve`}
+            {tally.skip > 0 && ` · ${tally.skip} will be skipped`}
+          </span>
+        )}
       </div>
-    </>
+
+      <ol>
+        {items.map((item, index) => (
+          <ItemRow
+            key={item.key}
+            item={item}
+            number={index + 1}
+            onChange={(patch) => onChange(item.key, patch)}
+            onPickRecords={(catalogIds) => onPickRecords(item.key, catalogIds)}
+            onRemove={() => onRemove(item.key)}
+          />
+        ))}
+      </ol>
+    </div>
   );
 }
 
@@ -1028,116 +1026,112 @@ function DetailsStep({
   });
 
   return (
-    <>
-      <div className="grid content-start gap-4">
-        {isStaff && isBatch && (
-          <Field id={`${fieldId}-batch`} label="Batch name" hint="optional">
-            <Input
-              id={`${fieldId}-batch`}
-              value={batchName}
-              placeholder={defaultBatchNameOf(new Date())}
-              onChange={(event) => setBatchName(event.target.value)}
-            />
-          </Field>
-        )}
-
-        <Field
-          id={`${fieldId}-reason`}
-          label="Why"
-          hint={`optional${items.length > 1 ? "; an item's own reason wins" : ""}`}
-        >
-          <Textarea
-            id={`${fieldId}-reason`}
-            rows={3}
-            value={reason}
-            maxLength={entryReasonLimit}
-            onChange={(event) => setReason(event.target.value)}
-            placeholder="Research, exhibition, a reader's request…"
+    <div className="grid content-start gap-4">
+      {isStaff && isBatch && (
+        <Field id={`${fieldId}-batch`} label="Batch name" hint="optional">
+          <Input
+            id={`${fieldId}-batch`}
+            value={batchName}
+            placeholder={defaultBatchNameOf(new Date())}
+            onChange={(event) => setBatchName(event.target.value)}
           />
         </Field>
+      )}
 
-        {proposable.length > 0 && (
-          <Field
-            id={`${fieldId}-project`}
-            label="Project"
-            hint="optional; the ones you are a member of"
-          >
-            <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger id={`${fieldId}-project`} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={noProject}>No project</SelectItem>
-                {proposable.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name} · {project.state.toLowerCase()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Into a proposed project, it is approved with the project. Into an approved one, it is
-              decided on its own.
-            </p>
-          </Field>
-        )}
+      <Field
+        id={`${fieldId}-reason`}
+        label="Why"
+        hint={`optional${items.length > 1 ? "; an item's own reason wins" : ""}`}
+      >
+        <Textarea
+          id={`${fieldId}-reason`}
+          rows={3}
+          value={reason}
+          maxLength={entryReasonLimit}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="Research, exhibition, a reader's request…"
+        />
+      </Field>
 
-        {canDecide && newCount > 0 && (
-          <div className="grid gap-3 rounded-lg border p-3">
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id={`${fieldId}-approve`}
-                checked={isApprovedNow}
-                onCheckedChange={(isChecked) => setIsApprovedNow(isChecked === true)}
-              />
-              <Label
-                htmlFor={`${fieldId}-approve`}
-                className="block text-sm leading-snug font-normal"
-              >
-                <b className="font-semibold">Approve now</b> — the {newCount} new skip review.{" "}
-                <span className="text-muted-foreground">
-                  Any with an existing copy waits in Requests like any other.
-                </span>
-              </Label>
-            </div>
-            {isApprovedNow && (
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-                <Field id={`${fieldId}-category`} label="Category" hint={`for the ${newCount} new`}>
-                  <CategorySelect
-                    id={`${fieldId}-category`}
-                    value={categoryId}
-                    onChange={setCategoryId}
-                  />
-                </Field>
-                <Field id={`${fieldId}-priority`} label="Priority">
-                  <PrioritySelect
-                    id={`${fieldId}-priority`}
-                    value={priority}
-                    onChange={setPriority}
-                  />
-                </Field>
-              </div>
-            )}
-          </div>
-        )}
-
-        <p className="text-xs text-muted-foreground">
-          {newCount} to propose · {joinCount} to join{skipCount > 0 && ` · ${skipCount} skipped`}
-        </p>
-
-        {rateLimit?.perDay !== null && rateLimit?.perDay !== undefined && (
+      {proposable.length > 0 && (
+        <Field
+          id={`${fieldId}-project`}
+          label="Project"
+          hint="optional; the ones you are a member of"
+        >
+          <Select value={projectId} onValueChange={setProjectId}>
+            <SelectTrigger id={`${fieldId}-project`} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={noProject}>No project</SelectItem>
+              {proposable.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name} · {project.state.toLowerCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <p className="text-xs text-muted-foreground">
-            Daily proposal limit · {rateLimit.perDay} left today
+            Into a proposed project, it is approved with the project. Into an approved one, it is
+            decided on its own.
           </p>
-        )}
+        </Field>
+      )}
 
-        {isFailed && (
-          <p className="text-xs text-destructive">
-            The proposal could not be submitted. Try again.
-          </p>
-        )}
-      </div>
-    </>
+      {canDecide && newCount > 0 && (
+        <div className="grid gap-3 rounded-lg border p-3">
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id={`${fieldId}-approve`}
+              checked={isApprovedNow}
+              onCheckedChange={(isChecked) => setIsApprovedNow(isChecked === true)}
+            />
+            <Label
+              htmlFor={`${fieldId}-approve`}
+              className="block text-sm leading-snug font-normal"
+            >
+              <b className="font-semibold">Approve now</b> — the {newCount} new skip review.{" "}
+              <span className="text-muted-foreground">
+                Any with an existing copy waits in Requests like any other.
+              </span>
+            </Label>
+          </div>
+          {isApprovedNow && (
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
+              <Field id={`${fieldId}-category`} label="Category" hint={`for the ${newCount} new`}>
+                <CategorySelect
+                  id={`${fieldId}-category`}
+                  value={categoryId}
+                  onChange={setCategoryId}
+                />
+              </Field>
+              <Field id={`${fieldId}-priority`} label="Priority">
+                <PrioritySelect
+                  id={`${fieldId}-priority`}
+                  value={priority}
+                  onChange={setPriority}
+                />
+              </Field>
+            </div>
+          )}
+        </div>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        {newCount} to propose · {joinCount} to join{skipCount > 0 && ` · ${skipCount} skipped`}
+      </p>
+
+      {rateLimit?.perDay !== null && rateLimit?.perDay !== undefined && (
+        <p className="text-xs text-muted-foreground">
+          Daily proposal limit · {rateLimit.perDay} left today
+        </p>
+      )}
+
+      {isFailed && (
+        <p className="text-xs text-destructive">The proposal could not be submitted. Try again.</p>
+      )}
+    </div>
   );
 }
 
@@ -1158,49 +1152,45 @@ function ReportStep({ report, skipped, viewTitle }: ReportStepProps) {
   const held = report.proposed - report.approved;
 
   return (
-    <>
-      <div className="grid content-start gap-3">
-        <div className="flex items-start gap-2 border-l-[3px] border-tone-green-foreground bg-tone-green/50 px-3.5 py-2 text-sm">
-          <Check className="mt-0.5 size-4 shrink-0 text-tone-green-foreground" />
-          <p>
-            {report.batch === null || !isShownAsBatch(report.batch) ? (
-              <b className="font-semibold">Submitted.</b>
-            ) : (
-              <>
-                <b className="font-semibold">Submitted as {report.batch.id}</b>{" "}
-                <span className="text-muted-foreground">{report.batch.name}</span>
-              </>
-            )}
-          </p>
-        </div>
-
-        <ul className="text-sm">
-          {report.approved > 0 && (
-            <ReportLine count={report.approved}>approved — being added</ReportLine>
+    <div className="grid content-start gap-3">
+      <div className="flex items-start gap-2 border-l-[3px] border-tone-green-foreground bg-tone-green/50 px-3.5 py-2 text-sm">
+        <Check className="mt-0.5 size-4 shrink-0 text-tone-green-foreground" />
+        <p>
+          {report.batch === null || !isShownAsBatch(report.batch) ? (
+            <b className="font-semibold">Submitted.</b>
+          ) : (
+            <>
+              <b className="font-semibold">Submitted as {report.batch.id}</b>{" "}
+              <span className="text-muted-foreground">{report.batch.name}</span>
+            </>
           )}
-          {held > 0 && <ReportLine count={held}>proposed — waiting for review</ReportLine>}
-          {report.joined > 0 && (
-            <ReportLine count={report.joined}>
-              joined work already in VERA — you follow it
-            </ReportLine>
-          )}
-          {skippedValues.length > 0 && (
-            <ReportLine count={skippedValues.length} isMuted>
-              skipped
-              <Button
-                size="sm"
-                variant="outline"
-                className="ml-2 h-7"
-                onClick={() => downloadText("skipped.txt", skippedValues.join("\n"))}
-              >
-                Download skipped
-              </Button>
-            </ReportLine>
-          )}
-        </ul>
-        <p className="text-xs text-muted-foreground">You find them in {viewTitle}.</p>
+        </p>
       </div>
-    </>
+
+      <ul className="text-sm">
+        {report.approved > 0 && (
+          <ReportLine count={report.approved}>approved — being added</ReportLine>
+        )}
+        {held > 0 && <ReportLine count={held}>proposed — waiting for review</ReportLine>}
+        {report.joined > 0 && (
+          <ReportLine count={report.joined}>joined work already in VERA — you follow it</ReportLine>
+        )}
+        {skippedValues.length > 0 && (
+          <ReportLine count={skippedValues.length} isMuted>
+            skipped
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-2 h-7"
+              onClick={() => downloadText("skipped.txt", skippedValues.join("\n"))}
+            >
+              Download skipped
+            </Button>
+          </ReportLine>
+        )}
+      </ul>
+      <p className="text-xs text-muted-foreground">You find them in {viewTitle}.</p>
+    </div>
   );
 }
 
