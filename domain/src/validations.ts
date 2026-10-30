@@ -63,7 +63,7 @@ export function waitingSinceOf(iteration: Iteration): string {
   return findings.map((defect) => defect.firstSeenAt).toSorted()[0] ?? "";
 }
 
-// What is still to rule on: a defect already accepted does not put an item under its plugin, so
+// What is still to rule on: a defect already accepted does not put an item under its instance, so
 // an accepted page count leaves a page-count watchlist (page-validation.js).
 export function defectsToRuleOn(iteration: Iteration): Defect[] {
   return validationOf(iteration) === "Needed" ? outstandingDefects(iteration) : iteration.defects;
@@ -90,7 +90,10 @@ export function isFoundAfterScan(iteration: Iteration): boolean {
 // the checks again (decided 2026-10-06). Every other defect is repaired in the catalog.
 export const pagesSubject = "pages";
 
-// A defect's own name, "PageCount R03".
-export function defectNameOf(defect: Defect): string {
-  return `${defect.plugin} ${defect.ruleCode}`;
+// A defect's own name, such as "Page count R03".
+export function defectNameOf(
+  defect: Defect,
+  instanceNameOf: (id: string) => string = (id) => id,
+): string {
+  return `${instanceNameOf(defect.instanceId)} ${defect.ruleCode}`;
 }

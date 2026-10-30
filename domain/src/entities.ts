@@ -327,11 +327,12 @@ export const cancellationSchema = z.object({
 });
 export type Cancellation = z.infer<typeof cancellationSchema>;
 
-// A finding that makes metadata not good enough to digitize against. `key` is stable across
-// check runs: plugin instance, rule code and subject, never the value (status-model.md §2).
+// A finding that makes metadata not good enough to digitize against, by the plugin instance that
+// found it. `key` is stable across check runs: instance, rule code and subject, never the value;
+// shown by the instance's name and the rule code (STAT-defect-key).
 export const defectSchema = z.object({
   key: z.string(),
-  plugin: z.string(),
+  instanceId: id,
   ruleCode: z.string(),
   subject: z.string(),
   ...reasonTexts,

@@ -35,7 +35,7 @@ describe("validationOf", () => {
     const outstanding = outstandingDefects(changedUpstream);
 
     expect(validationOf(changedUpstream)).toBe("Needed");
-    expect(outstanding.map((defect) => defect.key)).toEqual(["CatalogValidity:R07:260$c"]); // only D \ A
+    expect(outstanding.map((defect) => defect.key)).toEqual(["pi9:R07:260$c"]); // only D \ A
   });
 
   it("needs review again once an acceptance is revoked, the table only appended to", () => {
@@ -45,7 +45,7 @@ describe("validationOf", () => {
       verdicts: [
         ...accepted.verdicts,
         {
-          defectKeys: ["PageCount:R02:pages"],
+          defectKeys: ["pi44:R02:pages"],
           verdict: "Revoked",
           actorId: "u1",
           at: "2026-06-24T09:00:00Z",

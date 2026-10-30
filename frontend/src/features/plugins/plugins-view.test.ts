@@ -59,7 +59,7 @@ describe("shownPluginsOf", () => {
   });
 
   it("keeps an implementation by its name only while no State is picked", () => {
-    expect(shownPluginsOf(index, { search: "PageCount" }).implementations).toHaveLength(1);
+    expect(shownPluginsOf(index, { search: "PageCount" }).implementations).toHaveLength(2);
     expect(
       shownPluginsOf(index, { search: "PageCount", states: ["disabled"] }).implementations,
     ).toHaveLength(0);

@@ -41,11 +41,13 @@ describe("iterationNoteOf", () => {
   it("lists the outstanding defects for staff, in the plugin's terms", () => {
     const attempt = iteration("IT18");
 
-    const note = iterationNoteOf(attempt, originOf(attempt), "staff");
+    const note = iterationNoteOf(attempt, originOf(attempt), "staff", (id) =>
+      id === "pi9" ? "Default ruleset" : id,
+    );
 
     expect(note?.title).toBe("Review needed");
     expect(note?.tone).toBe("amber");
-    expect(note?.text).toContain("CatalogValidity R07");
+    expect(note?.text).toContain("Default ruleset R07");
   });
 
   it("tells a requester only that it is being checked, in public words", () => {

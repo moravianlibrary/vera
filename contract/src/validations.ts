@@ -36,8 +36,8 @@ export interface ValidationQuery {
   // Whether a rule forbade it: Yes, No, or either.
   readonly forbidden?: readonly Answer[];
   readonly categoryIds?: readonly string[];
-  // The plugin that found a defect still to rule on.
-  readonly plugins?: readonly string[];
+  // The instance that found a defect still to rule on.
+  readonly instances?: readonly string[];
   readonly priorities?: readonly Priority[];
   readonly projectIds?: readonly string[];
   // Advanced, a range rather than values (filtering.md §6): the day it started waiting.
@@ -59,7 +59,7 @@ export const validationQueryParams = {
   reviews: "review",
   forbidden: "forbidden",
   categoryIds: "category",
-  plugins: "defect",
+  instances: "defect",
   priorities: "priority",
   projectIds: "project",
   waiting: "since",
@@ -72,7 +72,7 @@ const validationFieldSchemas = {
   reviews: reviewedStateSchema,
   forbidden: answerSchema,
   categoryIds: idValueSchema,
-  plugins: idValueSchema,
+  instances: idValueSchema,
   priorities: prioritySchema,
   projectIds: idValueSchema,
 } as const satisfies Record<ValidationListField, z.ZodType<string>>;
@@ -141,7 +141,7 @@ export function isSameValidationQuery(first: ValidationQuery, second: Validation
 // ---------------------------------------------------------------- grouping
 
 // How the rows may be grouped; presentation, never part of the filter or a watchlist
-// (filtering.md §3.4). By the item's category, or by the plugin of the defects still to rule on.
+// (filtering.md §3.4). By the item's category, or by the instance of the defects still to rule on.
 export const validationGroupings = ["category", "defect"] as const;
 
 export const validationGroupingSchema = z.enum(validationGroupings);
@@ -181,8 +181,8 @@ export function parseValidationSliceParams(params: URLSearchParams): {
 
 // ---------------------------------------------------------------- responses
 
-// The defect group of a row whose defects to rule on come from more than one plugin.
-export const severalPlugins = "several";
+// The defect group of a row whose defects to rule on come from more than one instance.
+export const severalInstances = "several";
 
 const groupCounts = {
   // Rows of the group matching the whole filter, across every slice.
@@ -191,14 +191,14 @@ const groupCounts = {
   rowCount: z.number().int(),
 };
 
-// A group header. By defect, a row whose defects to rule on come from several plugins is filed
+// A group header. By defect, a row whose defects to rule on come from several instances is filed
 // under none of them but under "several", and one with none to rule on (forbidden, or accepted)
 // under null: a row is in one group only.
 export const validationGroupSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("category"), categoryId: z.string(), ...groupCounts }),
   z.object({
     kind: z.literal("defect"),
-    plugin: z.union([z.string(), z.literal(severalPlugins)]).nullable(),
+    instanceId: z.union([z.string(), z.literal(severalInstances)]).nullable(),
     ...groupCounts,
   }),
 ]);
@@ -218,7 +218,7 @@ export const validationPageSchema = z.object({
     reviews: facetCountsOf(reviewedStateSchema),
     forbidden: facetCountsOf(answerSchema),
     categoryIds: facetCountsOf(z.string()),
-    plugins: facetCountsOf(z.string()),
+    instances: facetCountsOf(z.string()),
     priorities: facetCountsOf(prioritySchema),
     projectIds: facetCountsOf(z.string()),
   } satisfies Record<ValidationListField, z.ZodType>),

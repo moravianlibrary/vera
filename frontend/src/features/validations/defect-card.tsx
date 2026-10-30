@@ -8,7 +8,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RecheckResult } from "@vera/contract/iterations";
 import type { Defect, Iteration } from "@vera/domain/entities";
-import { defectNameOf } from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -20,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
+import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { formatDay } from "@/lib/format-date";
 
 interface DefectRowProps {
@@ -30,10 +30,13 @@ interface DefectRowProps {
 }
 
 export function DefectRow({ defect, aside, children }: DefectRowProps) {
+  const references = useReferenceLabels(["pluginInstances"]);
   return (
     <div className="border-b py-3 first:pt-0 last:border-b-0 last:pb-0">
       <div className="flex flex-wrap items-baseline gap-x-2">
-        <b className="font-semibold">{defectNameOf(defect)}</b>
+        <b className="font-semibold">
+          {references.pluginInstances(defect.instanceId)} {defect.ruleCode}
+        </b>
         <span className="font-mono text-xs text-muted-foreground">{defect.subject}</span>
         <span className="ml-auto text-xs text-muted-foreground">
           {aside ?? `found ${formatDay(defect.firstSeenAt)}`}

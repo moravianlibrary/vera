@@ -250,7 +250,7 @@ export const runs: readonly StoredRun[] = [
     changes: [
       {
         label: "1 document newly failing a rule",
-        path: "/review/documents?defect=CatalogValidity",
+        path: "/review/documents?defect=pi9",
       },
     ],
   },
@@ -320,7 +320,7 @@ export const runs: readonly StoredRun[] = [
     changes: [
       {
         label: "3 documents newly failing a rule",
-        path: "/review/documents?defect=CatalogValidity",
+        path: "/review/documents?defect=pi9",
       },
     ],
   },

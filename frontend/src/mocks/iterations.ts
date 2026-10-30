@@ -337,7 +337,7 @@ function applyRecheck(
       entry.detail,
       cleared.length === 0
         ? null
-        : `The checks no longer find ${cleared.map(defectNameOf).join(", ")}.`,
+        : `The checks no longer find ${cleared.map((defect) => defectNameOf(defect, (id) => database.pluginInstances.find((instance) => instance.id === id)?.name ?? id)).join(", ")}.`,
       progressNote(iteration.progress, progress),
     ]
       .filter((sentence) => sentence !== null)

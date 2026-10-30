@@ -28,7 +28,6 @@ export const referenceKinds = [
   "categories",
   "batches",
   "requestCustodies",
-  "defectPlugins",
   "pluginInstances",
 ] as const;
 export type ReferenceKind = (typeof referenceKinds)[number];
@@ -72,9 +71,6 @@ export function useReferenceLabels(
       return batch === undefined ? id : `${batch.id} · ${batch.name}`;
     },
     requestCustodies: nameOf(custodies),
-    // A plugin is named by itself in a defect.
-    // TODO(rrandiak): the instance's name once the Plugins resource exists (plugins.md).
-    defectPlugins: (id) => id,
     pluginInstances: nameOf(instances),
   };
 }
@@ -107,7 +103,6 @@ export function useReferenceValues(
     categories: idsOf(categories),
     batches: idsOf(batches),
     requestCustodies: idsOf(custodies),
-    defectPlugins: [],
     pluginInstances: idsOf(instances),
   };
 }

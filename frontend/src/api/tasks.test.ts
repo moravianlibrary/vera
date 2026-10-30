@@ -118,7 +118,7 @@ describe("listRuns", () => {
     const sweep = (await listRuns({})).finished.find((run) => run.id === "T-9905");
 
     expect(sweep).toMatchObject({ state: "DoneWithErrors", errorCount: 3 });
-    expect(sweep?.changes?.[0]?.path).toBe("/review/documents?defect=CatalogValidity");
+    expect(sweep?.changes?.[0]?.path).toBe("/review/documents?defect=pi9");
   });
 
   it("gives task.read_own only the runs its holder started, and no schedules", async () => {

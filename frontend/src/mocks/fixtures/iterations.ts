@@ -23,8 +23,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "CatalogValidity:R07:260$c",
-        plugin: "CatalogValidity",
+        key: "pi9:R07:260$c",
+        instanceId: "pi9",
         ruleCode: "R07",
         subject: "260$c",
         publicText: "Publication year is unclear on the record.",
@@ -92,8 +92,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "PageCount:R02:pages",
-        plugin: "PageCount",
+        key: "pi44:R02:pages",
+        instanceId: "pi44",
         ruleCode: "R02",
         subject: "pages",
         publicText: "The page count on file differs from the catalogue.",
@@ -103,7 +103,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["PageCount:R02:pages"],
+        defectKeys: ["pi44:R02:pages"],
         verdict: "Approved",
         actorId: "u1",
         at: "2026-06-20T14:02:00Z",
@@ -311,8 +311,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "CatalogValidity:R03:245$a",
-        plugin: "CatalogValidity",
+        key: "pi9:R03:245$a",
+        instanceId: "pi9",
         ruleCode: "R03",
         subject: "245$a",
         publicText: "The title on the record needs checking.",
@@ -320,8 +320,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
         firstSeenAt: "2026-06-19T09:00:00Z",
       },
       {
-        key: "LanguageCheck:R01:041$a",
-        plugin: "LanguageCheck",
+        key: "pi10:R01:041$a",
+        instanceId: "pi10",
         ruleCode: "R01",
         subject: "041$a",
         publicText: "The language of the item is not recorded.",
@@ -351,8 +351,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "PageCount:R01:pages",
-        plugin: "PageCount",
+        key: "pi44:R01:pages",
+        instanceId: "pi44",
         ruleCode: "R01",
         subject: "pages",
         publicText: "No page count could be established.",
@@ -362,7 +362,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["PageCount:R01:pages"],
+        defectKeys: ["pi44:R01:pages"],
         verdict: "Denied",
         actorId: "u1",
         at: "2026-06-20T09:00:00Z",
@@ -391,8 +391,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "CatalogValidity:R11:300$a",
-        plugin: "CatalogValidity",
+        key: "pi9:R11:300$a",
+        instanceId: "pi9",
         ruleCode: "R11",
         subject: "300$a",
         publicText: "The extent recorded does not match what was scanned.",
@@ -422,8 +422,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "CatalogValidity:R07:260$c",
-        plugin: "CatalogValidity",
+        key: "pi9:R07:260$c",
+        instanceId: "pi9",
         ruleCode: "R07",
         subject: "260$c",
         publicText: "The publication years are unclear on the record.",
@@ -431,8 +431,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
         firstSeenAt: "2026-06-21T09:00:00Z",
       },
       {
-        key: "PageCount:R04:pages",
-        plugin: "PageCount",
+        key: "pi44:R04:pages",
+        instanceId: "pi44",
         ruleCode: "R04",
         subject: "pages",
         publicText: "The page count looks unusually high for the years covered.",
@@ -468,8 +468,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "LanguageCheck:R01:041$a",
-        plugin: "LanguageCheck",
+        key: "pi10:R01:041$a",
+        instanceId: "pi10",
         ruleCode: "R01",
         subject: "041$a",
         publicText: "The language of the item is not recorded.",
@@ -520,8 +520,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "PageCount:R03:pages",
-        plugin: "PageCount",
+        key: "pi44:R03:pages",
+        instanceId: "pi44",
         ruleCode: "R03",
         subject: "pages",
         publicText: "The page count is an estimate, not a count.",
@@ -551,8 +551,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "PageCount:R03:pages",
-        plugin: "PageCount",
+        key: "pi44:R03:pages",
+        instanceId: "pi44",
         ruleCode: "R03",
         subject: "pages",
         publicText: "The page count is an estimate, not a count.",
@@ -560,8 +560,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
         firstSeenAt: "2026-06-17T09:00:00Z",
       },
       {
-        key: "CatalogValidity:R07:260$c",
-        plugin: "CatalogValidity",
+        key: "pi9:R07:260$c",
+        instanceId: "pi9",
         ruleCode: "R07",
         subject: "260$c",
         publicText: "The publication year is unclear on the record.",
@@ -572,7 +572,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["PageCount:R03:pages"],
+        defectKeys: ["pi44:R03:pages"],
         verdict: "Approved",
         actorId: "u1",
         at: "2026-06-18T10:20:00Z",
@@ -601,8 +601,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "CatalogLink:R01:record",
-        plugin: "CatalogLink",
+        key: "pi45:R01:record",
+        instanceId: "pi45",
         ruleCode: "R01",
         subject: "record",
         publicText: "The catalogue record for this volume could not be found.",
@@ -747,8 +747,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "PageCount:R02:pages",
-        plugin: "PageCount",
+        key: "pi44:R02:pages",
+        instanceId: "pi44",
         ruleCode: "R02",
         subject: "pages",
         publicText: "The page count does not match the catalog.",

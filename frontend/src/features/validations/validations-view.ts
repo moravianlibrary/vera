@@ -54,7 +54,11 @@ export const validationsView: ViewDefinition<ValidationQuery, ValidationGrouping
       isQuick: true,
     },
     { key: "forbidden", label: "Forbidden", field: vocabulary(answers, answerLabels) },
-    { key: "plugins", label: "Defect", field: { kind: "reference", reference: "defectPlugins" } },
+    {
+      key: "instances",
+      label: "Defect",
+      field: { kind: "reference", reference: "pluginInstances" },
+    },
     {
       key: "priorities",
       label: "Priority",

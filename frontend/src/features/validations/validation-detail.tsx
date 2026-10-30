@@ -46,6 +46,7 @@ import {
 } from "@/features/validations/validation-actions";
 import { IterationStatus } from "@/features/validations/validation-list";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
+import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
@@ -257,6 +258,7 @@ interface LastRecheck {
 
 // What the checks found when they ran again, while something is still left to rule on.
 function RecheckNote({ defects, result }: LastRecheck) {
+  const references = useReferenceLabels(["pluginInstances"]);
   const cleared = defects.filter((defect) => result.clearedKeys.includes(defect.key));
   if (cleared.length === 0) {
     return (
@@ -268,7 +270,9 @@ function RecheckNote({ defects, result }: LastRecheck) {
 
   return (
     <StatusNote tone="green" className="mb-3" title="Rechecked">
-      The checks no longer find {cleared.map(defectNameOf).join(", ")}; the rest are still there.
+      The checks no longer find{" "}
+      {cleared.map((defect) => defectNameOf(defect, references.pluginInstances)).join(", ")}; the
+      rest are still there.
     </StatusNote>
   );
 }
@@ -304,6 +308,7 @@ interface RowProps {
 }
 
 function ReviewNote({ row, nameOf }: RowProps) {
+  const references = useReferenceLabels(["pluginInstances"]);
   const { iteration } = row;
 
   if (row.review === "Forbidden" && iteration.restriction !== null) {
@@ -334,8 +339,12 @@ function ReviewNote({ row, nameOf }: RowProps) {
       >
         {denial?.note && `${denial.note} `}
         {denial?.publicText && `They were told: “${denial.publicText}” `}
-        Over {deniedDefectsOf(iteration).map(defectNameOf).join(", ")}. The denial lapses on its own
-        once the defect is gone — repair it in the catalog, then Recheck.
+        Over{" "}
+        {deniedDefectsOf(iteration)
+          .map((defect) => defectNameOf(defect, references.pluginInstances))
+          .join(", ")}
+        . The denial lapses on its own once the defect is gone — repair it in the catalog, then
+        Recheck.
       </StatusNote>
     );
   }

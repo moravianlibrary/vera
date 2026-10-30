@@ -42,6 +42,7 @@ export function iterationNoteOf(
   iteration: Iteration,
   request: Request | null,
   audience: Audience,
+  instanceNameOf: (id: string) => string = (id) => id,
 ): StatusNote | null {
   const { cancellation } = iteration;
   if (cancellation !== null) {
@@ -99,7 +100,7 @@ export function iterationNoteOf(
         .map((defect) =>
           audience === "public"
             ? defect.publicText
-            : `${defect.plugin} ${defect.ruleCode} — ${textFor(audience, defect)}`,
+            : `${instanceNameOf(defect.instanceId)} ${defect.ruleCode} — ${textFor(audience, defect)}`,
         )
         .join(" "),
       actedBy: null,
@@ -130,11 +131,14 @@ export function iterationNoteOf(
 }
 
 // The note at the top of a staff member's record.
-export function staffRecordNoteOf(record: DocumentRecord): StatusNote | null {
+export function staffRecordNoteOf(
+  record: DocumentRecord,
+  instanceNameOf: (id: string) => string = (id) => id,
+): StatusNote | null {
   const current = currentIterationOf(record);
   if (current !== null) {
     const origin = record.requests.find((request) => request.id === current.requestId) ?? null;
-    return iterationNoteOf(current, origin, "staff");
+    return iterationNoteOf(current, origin, "staff", instanceNameOf);
   }
 
   // An undecided ask, approve now included, says nothing yet (LC-REQ-approve-now).

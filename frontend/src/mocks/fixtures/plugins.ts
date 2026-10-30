@@ -526,6 +526,39 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       declares: { inputMode: null },
     },
   ),
+  implementation(
+    "pt33",
+    "PageCountCheck",
+    "Validation",
+    "Flags a page count that is missing or disagrees between its sources.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-10-30",
+      triggers: catalogTriggers,
+      declares: {
+        rules: [
+          { code: "R01", label: "page count present" },
+          { code: "R02", label: "page count agrees" },
+          { code: "R03", label: "page count recorded" },
+          { code: "R04", label: "page count agrees" },
+        ],
+      },
+      fields: ["severity"],
+    },
+  ),
+  implementation(
+    "pt34",
+    "CatalogLinkCheck",
+    "Validation",
+    "Flags a record whose catalog link no longer resolves.",
+    {
+      version: "1.0.0",
+      installedAt: "2026-10-30",
+      triggers: catalogTriggers,
+      declares: { rules: [{ code: "R01", label: "catalog link resolves" }] },
+      fields: ["severity"],
+    },
+  ),
 ];
 
 // ---------------------------------------------------------------- instances
@@ -719,7 +752,7 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
   }),
   instance({
     id: "pi10",
-    name: "Default",
+    name: "Language check",
     implementationId: "pt7",
     configuration: { severity: "advisory" },
     triggers: ["OnIngest"],
@@ -1059,6 +1092,24 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     },
     triggers: ["OnDemand"],
     createdAt: "2026-10-29",
+    lastRunAt: null,
+  }),
+  instance({
+    id: "pi44",
+    name: "Page count",
+    implementationId: "pt33",
+    configuration: { severity: "blocking" },
+    triggers: ["OnIngest"],
+    createdAt: "2026-10-30",
+    lastRunAt: null,
+  }),
+  instance({
+    id: "pi45",
+    name: "Catalog link",
+    implementationId: "pt34",
+    configuration: { severity: "blocking" },
+    triggers: ["OnIngest"],
+    createdAt: "2026-10-30",
     lastRunAt: null,
   }),
 ];

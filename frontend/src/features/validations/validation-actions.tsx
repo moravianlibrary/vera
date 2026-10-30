@@ -37,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
+import { useReferenceLabels } from "@/hooks/use-reference-labels";
 
 const verdictRefusals = {
   403: "You may no longer give this verdict.",
@@ -209,6 +210,7 @@ function DefectPick({
   pickedKeys: readonly string[];
   onChange: (keys: readonly string[]) => void;
 }) {
+  const references = useReferenceLabels(["pluginInstances"]);
   const id = useId();
 
   return (
@@ -230,7 +232,7 @@ function DefectPick({
               }
             />
             <Label htmlFor={`${id}-${defect.key}`} className="font-normal">
-              {defectNameOf(defect)}{" "}
+              {defectNameOf(defect, references.pluginInstances)}{" "}
               <span className="font-mono text-xs text-muted-foreground">{defect.subject}</span>
             </Label>
           </div>

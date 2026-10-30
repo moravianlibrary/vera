@@ -9,6 +9,7 @@ import {
   parseValidationSearchParams,
   toValidationSearchParams,
 } from "@vera/contract/validations";
+import { outstandingDefects } from "@vera/domain/status";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
@@ -88,11 +89,18 @@ describe("listValidations", () => {
     expect(await idsOf({ forbidden: ["No"] })).not.toContain("IT14");
   });
 
-  it("files an item under a plugin only for what is still to rule on", async () => {
+  it("filters to rows with defects to rule on from the selected instance", async () => {
     signInAs("curator");
 
-    const ids = await idsOf({ reviews: ["Needed"], plugins: ["PageCount"] });
+    const page = await listValidations({ reviews: ["Needed"], instances: ["pi44"] });
 
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(
+      page.items.every((row) =>
+        outstandingDefects(row.iteration).some((defect) => defect.instanceId === "pi44"),
+      ),
+    ).toBe(true);
+    const ids = page.items.map((row) => row.iteration.id);
     expect(ids).toContain("IT16");
     expect(ids).not.toContain("IT18"); // its page count was accepted; only 260$c is outstanding
   });
@@ -134,7 +142,7 @@ describe("verdicts", () => {
     signInAs("curator");
 
     const result = await acceptDefects("IT16", {
-      defectKeys: ["PageCount:R03:pages"],
+      defectKeys: ["pi44:R03:pages"],
       note: "An estimate is enough here.",
     });
     const detail = await findValidation("IT16");
@@ -148,17 +156,13 @@ describe("verdicts", () => {
     signInAs("curator");
 
     expect(
-      await statusOf(acceptDefects("IT19", { defectKeys: ["PageCount:R01:pages"], note: null })),
+      await statusOf(acceptDefects("IT19", { defectKeys: ["pi44:R01:pages"], note: null })),
     ).toBe(409);
     expect(
-      await statusOf(
-        acceptDefects("IT14", { defectKeys: ["LanguageCheck:R01:041$a"], note: null }),
-      ),
+      await statusOf(acceptDefects("IT14", { defectKeys: ["pi10:R01:041$a"], note: null })),
     ).toBe(409);
     expect(
-      await statusOf(
-        acceptDefects("IT10", { defectKeys: ["CatalogValidity:R03:245$a"], note: null }),
-      ),
+      await statusOf(acceptDefects("IT10", { defectKeys: ["pi9:R03:245$a"], note: null })),
     ).toBe(404);
   });
 
@@ -166,7 +170,7 @@ describe("verdicts", () => {
     signInAs("curator");
 
     const result = await denyDefects("IT13", {
-      defectKeys: ["CatalogValidity:R07:260$c"],
+      defectKeys: ["pi9:R07:260$c"],
       publicText: "The publication years are unclear on the record.",
       internalText: null,
     });
@@ -175,33 +179,88 @@ describe("verdicts", () => {
 
     expect(result.review).toBe("Denied");
     expect(result.askerCount).toBeGreaterThan(0);
-    expect(verdict?.defectKeys).toEqual(["CatalogValidity:R07:260$c"]);
+    expect(verdict?.defectKeys).toEqual(["pi9:R07:260$c"]);
     expect(verdict?.publicText).toBe("The publication years are unclear on the record.");
   });
 
   it("revokes an acceptance: the defect is outstanding again and Ready is undone", async () => {
     signInAs("curator");
 
-    const result = await revokeAcceptance("IT3", { defectKeys: ["PageCount:R02:pages"] });
+    const result = await revokeAcceptance("IT3", { defectKeys: ["pi44:R02:pages"] });
 
     expect(result.review).toBe("Needed");
     expect(result.progress).toBe("Enqueued"); // a gate fails after Ready (V14)
-    expect(await statusOf(revokeAcceptance("IT3", { defectKeys: ["PageCount:R02:pages"] }))).toBe(
-      409,
-    ); // nothing is accepted now
+    expect(await statusOf(revokeAcceptance("IT3", { defectKeys: ["pi44:R02:pages"] }))).toBe(409); // nothing is accepted now
   });
 });
 
 describe("grouping", () => {
-  it("files each row in one defect group, several plugins apart and forbidden last", async () => {
+  it("groups by each defect instance and files rows with multiple instances under several", async () => {
     signInAs("admin");
 
     const page = await listValidations({}, { grouping: "defect" });
-    const plugins = page.groups.map((group) => (group.kind === "defect" ? group.plugin : "?"));
+    const expectedInstances = new Set(
+      page.items.flatMap((row) => {
+        if (row.review === "Forbidden" || row.review === "Approved") return [];
+        const instances = new Set(
+          (row.review === "Needed" ? outstandingDefects(row.iteration) : row.iteration.defects).map(
+            (defect) => defect.instanceId,
+          ),
+        );
+        const instanceId = instances.values().next().value as string | undefined;
+        return instanceId === undefined ? [] : [instances.size === 1 ? instanceId : "several"];
+      }),
+    );
+    const groupInstances = new Set(
+      page.groups.flatMap((group) =>
+        group.kind === "defect" && group.instanceId !== null ? [group.instanceId] : [],
+      ),
+    );
+
+    expect(groupInstances).toEqual(expectedInstances);
+    expect(
+      page.items.some((row) => {
+        const instances = new Set(
+          (row.review === "Needed" ? outstandingDefects(row.iteration) : row.iteration.defects).map(
+            (defect) => defect.instanceId,
+          ),
+        );
+        return row.review !== "Forbidden" && row.review !== "Approved" && instances.size > 1;
+      }),
+    ).toBe(true);
+    expect(
+      page.groups.some((group) => group.kind === "defect" && group.instanceId === "several"),
+    ).toBe(true);
+  });
+
+  it("files each row in one defect group, several instances apart and forbidden last", async () => {
+    signInAs("admin");
+
+    const page = await listValidations({}, { grouping: "defect" });
+    const plugins = page.groups.map((group) => (group.kind === "defect" ? group.instanceId : "?"));
 
     expect(plugins.at(-1)).toBeNull(); // nothing left to rule on: forbidden or accepted
     expect(plugins).toContain("several");
     expect(new Set(plugins).size).toBe(plugins.length); // a group never comes back
+    const instanceGroups = plugins.filter(
+      (value): value is string => value !== null && value !== "several",
+    );
+    for (const instanceId of instanceGroups) {
+      expect(
+        page.items.some((row) => {
+          const instances = new Set(
+            outstandingDefects(row.iteration).map((defect) => defect.instanceId),
+          );
+          return instances.size === 1 && instances.has(instanceId);
+        }),
+      ).toBe(true);
+    }
+    expect(
+      page.items.some(
+        (row) =>
+          new Set(outstandingDefects(row.iteration).map((defect) => defect.instanceId)).size > 1,
+      ),
+    ).toBe(true);
     expect(page.groups.reduce((sum, group) => sum + group.rowCount, 0)).toBe(page.items.length);
     const accepted = page.items.filter((row) => row.review === "Approved").length;
     expect(page.groups.at(-1)?.rowCount).toBeGreaterThanOrEqual(accepted);
@@ -222,7 +281,7 @@ describe("page count and recheck", () => {
 
     const result = await enterPageCount("IT11", { pages: 312 });
 
-    expect(result.clearedKeys).toEqual(["PageCount:R01:pages"]);
+    expect(result.clearedKeys).toEqual(["pi44:R01:pages"]);
     expect(result.review).toBeNull(); // the denial lapsed with its defect
     expect(result.progress).toBe("Ready");
     expect(await findValidation("IT11")).toBeNull();
@@ -233,7 +292,7 @@ describe("page count and recheck", () => {
 
     const result = await recheckIteration("IT10");
 
-    expect(result.clearedKeys).toEqual(["CatalogValidity:R03:245$a"]);
+    expect(result.clearedKeys).toEqual(["pi9:R03:245$a"]);
     expect(result.review).toBe("Needed"); // 041$a is still missing in the catalog
   });
 
@@ -251,7 +310,7 @@ describe("page count and recheck", () => {
 
     const result = await recheckIteration("IT12");
 
-    expect(result.clearedKeys).toEqual(["CatalogValidity:R11:300$a"]);
+    expect(result.clearedKeys).toEqual(["pi9:R11:300$a"]);
     expect(result.progress).toBe("Digitized");
   });
 
@@ -309,7 +368,7 @@ describe("the query in the URL", () => {
     const query: ValidationQuery = {
       search: "velehrad",
       reviews: ["Needed", "Denied"],
-      plugins: ["PageCount"],
+      instances: ["pi44"],
       waiting: { from: "2026-06-01" },
     };
 

@@ -36,6 +36,23 @@ describe("volume seed generator", () => {
     for (const row of first.collections.categories) categorySchema.parse(row);
     for (const row of first.collections.documents) documentSchema.parse(row);
     for (const row of first.collections.iterations) iterationSchema.parse(row);
+    const validationIds = new Set([
+      "V-pi1",
+      ...(base.collections.pluginInstances ?? [])
+        .filter((instance: any) =>
+          (base.collections.pluginImplementations ?? []).some(
+            (implementation: any) =>
+              implementation.id === instance.implementationId &&
+              implementation.kind === "Validation",
+          ),
+        )
+        .map((instance: any) => instance.id),
+    ]);
+    for (const iteration of first.collections.iterations)
+      for (const defect of iteration.defects) {
+        expect(validationIds.has(defect.instanceId)).toBe(true);
+        expect(defect.key.startsWith(`${defect.instanceId}:`)).toBe(true);
+      }
     for (const row of first.collections.requests) requestSchema.parse(row);
     for (const row of first.collections.batches) batchSchema.parse(row);
     for (const row of first.collections.lists) digitizationListSchema.parse(row);

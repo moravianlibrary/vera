@@ -17,7 +17,7 @@ export const statusLog: readonly StatusLogEntry[] = [
     },
     correlationId: "k1",
     event: "Validation approved",
-    detail: "PageCount R02 — accepted, 22-page difference is not material.",
+    detail: "Page count R02 — accepted, 22-page difference is not material.",
   },
   {
     id: "E02",
@@ -194,7 +194,7 @@ export const statusLog: readonly StatusLogEntry[] = [
     },
     correlationId: "k8",
     event: "Validation denied",
-    detail: "PageCount R01 — cannot plan capacity without a page count.",
+    detail: "Page count R01 — cannot plan capacity without a page count.",
   },
   {
     id: "E16",
@@ -218,7 +218,7 @@ export const statusLog: readonly StatusLogEntry[] = [
     },
     correlationId: "k15",
     event: "Checks re-run — catalog record changed",
-    detail: "New: CatalogValidity R07 on 260$c. PageCount R03 found again, still accepted.",
+    detail: "New: Default ruleset R07 on 260$c. Page count R03 found again, still accepted.",
   },
   {
     id: "E18",
@@ -231,7 +231,7 @@ export const statusLog: readonly StatusLogEntry[] = [
     },
     correlationId: "k16",
     event: "Validation approved",
-    detail: "PageCount R03 — an estimate is enough to plan a regional run.",
+    detail: "Page count R03 — an estimate is enough to plan a regional run.",
   },
   {
     id: "E19",

@@ -6,7 +6,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { ValidationGroup, ValidationGrouping } from "@vera/contract/validations";
-import { severalPlugins } from "@vera/contract/validations";
+import { severalInstances } from "@vera/contract/validations";
 import { documentIdentifierOf } from "@vera/domain/documents";
 import type { Category } from "@vera/domain/entities";
 import { iterationStatusOf, outstandingDefects, statusFootnoteOf } from "@vera/domain/status";
@@ -28,6 +28,7 @@ import type { QueryFailure } from "@/components/query-state";
 import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
 import { validationsView } from "@/features/validations/validations-view";
 import type { PagedList } from "@/hooks/use-paged-list";
+import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
@@ -64,6 +65,7 @@ export function ValidationList({
   selectedId,
   onSelect,
 }: ValidationListProps) {
+  const references = useReferenceLabels(["pluginInstances"]);
   const leafOf = (categoryId: string) =>
     categories.find((category) => category.id === categoryId)?.name ?? categoryId;
   const count =
@@ -102,7 +104,7 @@ export function ValidationList({
           );
         },
       }}
-      whyOf={(row) => <WhyLine row={row} />}
+      whyOf={(row) => <WhyLine row={row} instanceNameOf={references.pluginInstances} />}
       toolbar={{
         count,
         groupings: {
@@ -114,7 +116,13 @@ export function ValidationList({
       groups={{
         items: groups,
         keyOf: groupKeyOf,
-        header: (group) => <ValidationGroupHeader group={group} categories={categories} />,
+        header: (group) => (
+          <ValidationGroupHeader
+            group={group}
+            categories={categories}
+            instanceNameOf={references.pluginInstances}
+          />
+        ),
       }}
       paging={paging}
       isLoading={isLoading}
@@ -129,25 +137,27 @@ export function ValidationList({
 }
 
 function groupKeyOf(group: ValidationGroup): string | null {
-  return group.kind === "category" ? group.categoryId : group.plugin;
+  return group.kind === "category" ? group.categoryId : group.instanceId;
 }
 
-// A category by its path; a defect by its plugin, or the rows it cannot name one for.
+// A category by its path; a defect by its instance, or the rows it cannot name one for.
 function ValidationGroupHeader({
   group,
   categories,
+  instanceNameOf,
 }: {
   group: ValidationGroup;
   categories: readonly Category[];
+  instanceNameOf: (id: string) => string;
 }) {
   const title =
     group.kind === "category"
       ? categoryLabelOf(categories, group.categoryId)
-      : group.plugin === null
+      : group.instanceId === null
         ? "Nothing left to rule on"
-        : group.plugin === severalPlugins
+        : group.instanceId === severalInstances
           ? "Defects of several kinds"
-          : group.plugin;
+          : instanceNameOf(group.instanceId);
 
   return (
     <GroupHeader
@@ -230,7 +240,13 @@ export function IterationStatus({ row }: { row: ValidationRow }) {
   );
 }
 
-function WhyLine({ row }: { row: ValidationRow }) {
+function WhyLine({
+  row,
+  instanceNameOf,
+}: {
+  row: ValidationRow;
+  instanceNameOf: (id: string) => string;
+}) {
   const { iteration } = row;
 
   if (row.review === "Forbidden" && iteration.restriction !== null) {
@@ -251,7 +267,9 @@ function WhyLine({ row }: { row: ValidationRow }) {
         <b className="font-semibold text-tone-red-foreground">Denied:</b>{" "}
         {denial?.note || denial?.publicText || "ruled substantial"}
         {" · "}
-        {deniedDefectsOf(iteration).map(defectNameOf).join(", ")}
+        {deniedDefectsOf(iteration)
+          .map((defect) => defectNameOf(defect, instanceNameOf))
+          .join(", ")}
       </>
     );
   }
@@ -281,11 +299,11 @@ function WhyLine({ row }: { row: ValidationRow }) {
     outstanding.length > 1 || onlyDefect === undefined ? (
       <span key="defects">
         <b className="font-semibold">{plural(outstanding.length, "defect")}</b> —{" "}
-        {outstanding.map(defectNameOf).join(", ")}
+        {outstanding.map((defect) => defectNameOf(defect, instanceNameOf)).join(", ")}
       </span>
     ) : (
       <span key="defects">
-        <b className="font-semibold">{defectNameOf(onlyDefect)}</b> ·{" "}
+        <b className="font-semibold">{defectNameOf(onlyDefect, instanceNameOf)}</b> ·{" "}
         {onlyDefect.internalText ?? onlyDefect.publicText}
       </span>
     ),

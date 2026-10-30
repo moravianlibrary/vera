@@ -27,6 +27,23 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("document detail publication links", () => {
+  it("shows a defect by its plugin instance name and rule code", async () => {
+    server.use(...createHandlers("curator"));
+    const detail = await findDocument("D1");
+    if (detail === null) throw new Error("D1 is in the fixtures");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <DocumentDetailPane detail={detail} session={resolveSession("curator")} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText("Default ruleset R07")).toBeInTheDocument();
+  });
+
   it("shows both fixture links with the primary first and marked", async () => {
     server.use(...createHandlers("curator"));
     const detail = await findDocument("D1");
@@ -46,6 +63,7 @@ describe("document detail publication links", () => {
       name: "www.digitalniknihovna.cz/mzk/uuid/it1",
     });
     expect(screen.getByText("primary")).toBeInTheDocument();
+    expect(await screen.findByText("Default ruleset R07")).toBeInTheDocument();
     expect(primary.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

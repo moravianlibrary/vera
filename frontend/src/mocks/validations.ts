@@ -18,7 +18,7 @@ import type {
   VerdictResult,
 } from "@vera/contract/validations";
 import {
-  severalPlugins,
+  severalInstances,
   validationPageSchema,
   validationSliceSize,
 } from "@vera/contract/validations";
@@ -125,7 +125,7 @@ const listFields = [
   "reviews",
   "forbidden",
   "categoryIds",
-  "plugins",
+  "instances",
   "priorities",
   "projectIds",
 ] as const satisfies readonly ValidationListField[];
@@ -136,7 +136,9 @@ const fieldValues = {
   forbidden: (row) => [row.review === "Forbidden" ? "Yes" : "No"],
   // A category holds every category above it too, so it matches its whole subtree.
   categoryIds: (row) => categoryLineageOf(database.categories, row.iteration.categoryId),
-  plugins: (row) => [...new Set(defectsToRuleOn(row.iteration).map((defect) => defect.plugin))],
+  instances: (row) => [
+    ...new Set(defectsToRuleOn(row.iteration).map((defect) => defect.instanceId)),
+  ],
   priorities: (row) => [row.iteration.priority],
   projectIds: (row) => (row.iteration.projectId === null ? [] : [row.iteration.projectId]),
 } as const satisfies Record<ValidationListField, (row: ValidationRow) => readonly string[]>;
@@ -244,7 +246,13 @@ function matchesSearch(row: ValidationRow, search: string): boolean {
     document.catalogId,
     document.unit?.value,
     document.shelfMark,
-    ...iteration.defects.flatMap((defect) => [defectNameOf(defect), defect.subject]),
+    ...iteration.defects.flatMap((defect) => [
+      defectNameOf(
+        defect,
+        (id) => database.pluginInstances.find((instance) => instance.id === id)?.name ?? id,
+      ),
+      defect.subject,
+    ]),
   ];
   const ids = [iteration.id, document.id].map((id) => id.toLowerCase());
   return texts.some((text) => text?.toLowerCase().includes(needle)) || ids.includes(needle);
@@ -263,8 +271,8 @@ function byUrgency(first: ValidationRow, second: ValidationRow): number {
 
 // ---------------------------------------------------------------- grouping
 
-// By category in the tree's order; by defect, the plugins in name order, then the rows whose
-// defects come from several, then those with none left to rule on. Within a group the list's own
+// By category in the tree's order; by defect, the instances in name order, then the rows whose
+// defects come from several instances, then those with none left to rule on. Within a group the list's own
 // order holds.
 function arrangementOf(
   grouping: ValidationGrouping,
@@ -283,22 +291,26 @@ function arrangementOf(
     );
   }
 
-  const plugins = [...new Set(reachable.flatMap(fieldValues.plugins))].toSorted();
-  return groupedBy(defectGroupOf, [...plugins, severalPlugins], (plugin, total, rowCount) => ({
-    kind: "defect",
-    plugin,
-    total,
-    rowCount,
-  }));
+  const instances = [...new Set(reachable.flatMap(fieldValues.instances))].toSorted();
+  return groupedBy(
+    defectGroupOf,
+    [...instances, severalInstances],
+    (instanceId, total, rowCount) => ({
+      kind: "defect",
+      instanceId,
+      total,
+      rowCount,
+    }),
+  );
 }
 
 function defectGroupOf(row: ValidationRow): string | null {
-  const plugins = fieldValues.plugins(row);
-  if (row.review === "Forbidden" || row.review === "Approved" || plugins.length === 0) {
+  const instances = fieldValues.instances(row);
+  if (row.review === "Forbidden" || row.review === "Approved" || instances.length === 0) {
     return null;
   }
 
-  return plugins.length === 1 ? (plugins[0] ?? null) : severalPlugins;
+  return instances.length === 1 ? (instances[0] ?? null) : severalInstances;
 }
 
 // The iteration's own story, newest first.
@@ -454,7 +466,12 @@ function appendVerdict(
 
   const names = row.iteration.defects
     .filter((defect) => verdict.defectKeys.includes(defect.key))
-    .map(defectNameOf)
+    .map((defect) =>
+      defectNameOf(
+        defect,
+        (id) => database.pluginInstances.find((instance) => instance.id === id)?.name ?? id,
+      ),
+    )
     .join(", ");
   writeLog({
     subjectKind: "iteration",

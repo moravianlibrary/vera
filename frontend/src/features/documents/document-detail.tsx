@@ -71,6 +71,7 @@ import { RetryFailedButton } from "@/features/documents/document-group-header";
 import { PropertiesCard } from "@/features/properties/properties-card";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
+import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import {
   useBatchesQuery,
   useCategoriesQuery,
@@ -111,7 +112,11 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
   const current = currentIterationOf(record);
   const { data: users = [] } = useUsersQuery();
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
-  const note = staffRecordNoteOf(record);
+  const { data: pluginInstances = [] } = usePluginInstancesQuery();
+  const note = staffRecordNoteOf(
+    record,
+    (id) => pluginInstances.find((instance) => instance.id === id)?.name ?? id,
+  );
 
   return (
     <>
@@ -243,6 +248,7 @@ function whereNowOf(record: DocumentRecord, session: Session): Stat {
 // ---------------------------------------------------------------- cards
 
 function DefectsCard({ iteration, session }: { iteration: Iteration; session: Session }) {
+  const references = useReferenceLabels(["pluginInstances"]);
   const validation = validationOf(iteration);
   if (validation === "NotRequired" || validation === "Approved") {
     return null;
@@ -267,7 +273,7 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
       {outstanding.map((defect) => (
         <DetailRow key={defect.key}>
           <b className="font-semibold">
-            {defect.plugin} {defect.ruleCode}
+            {references.pluginInstances(defect.instanceId)} {defect.ruleCode}
           </b>{" "}
           <Muted>{defect.subject}</Muted>
           <div className="text-muted-foreground">{defect.internalText ?? defect.publicText}</div>

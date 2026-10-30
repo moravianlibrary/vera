@@ -589,7 +589,12 @@ function newestRunnable(implementation: StoredPluginImplementation): PluginVersi
 }
 
 // Approvals of defects under the retired rule codes, which then cover nothing.
-function coveredApprovalCountOf(implementationName: string, retiredCodes: readonly string[]) {
+function coveredApprovalCountOf(implementationId: string, retiredCodes: readonly string[]) {
+  const instanceIds = new Set(
+    database.pluginInstances
+      .filter((instance) => instance.implementationId === implementationId)
+      .map((instance) => instance.id),
+  );
   const approvedKeys = database.iterations.flatMap((iteration) =>
     iteration.verdicts
       .filter((verdict) => verdict.verdict === "Approved")
@@ -598,7 +603,7 @@ function coveredApprovalCountOf(implementationName: string, retiredCodes: readon
         iteration.defects.some(
           (defect) =>
             defect.key === key &&
-            defect.plugin === implementationName &&
+            instanceIds.has(defect.instanceId) &&
             retiredCodes.includes(defect.ruleCode),
         ),
       ),
@@ -636,7 +641,7 @@ export function instanceUpgrade(session: Session, instanceId: string): Outcome<I
       toVersion: to.version,
       difference,
       coveredApprovalCount: coveredApprovalCountOf(
-        implementation.name,
+        implementation.id,
         difference.retired.filter((name) => name.kind === "rule").map((name) => name.name),
       ),
     },

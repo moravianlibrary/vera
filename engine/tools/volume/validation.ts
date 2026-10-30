@@ -72,8 +72,8 @@ export function addValidation(random: Random, iterations: any[], staff: string[]
             Math.floor(random() * 600000),
         );
         defect = defectSchema.parse({
-          key: `CatalogValidity:${code}:${subject}`,
-          plugin: "CatalogValidity",
+          key: `V-pi1:${code}:${subject}`,
+          instanceId: "V-pi1",
           ruleCode: code,
           subject,
           publicText: pick(

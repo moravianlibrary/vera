@@ -35,7 +35,7 @@ const sharedLenses: readonly Lens[] = [
   { name: "Review needed", filter: { review: "Needed" }, view: "validations" },
   {
     name: "Page counts",
-    filter: { review: "Needed", defect: "PageCount" },
+    filter: { review: "Needed", defect: "pi44" },
     view: "validations",
     audience: { kind: "some", groupIds: [], roleIds: ["curator"] },
   },
