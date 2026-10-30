@@ -173,6 +173,14 @@ export function RequestsPage() {
             select(null);
           }
         }}
+        swipe={{
+          items: proposals.items ?? [],
+          idOf: (row) => row.record.document.id,
+          labelOf: (row) => row.record.document.title,
+          currentId: selectedId,
+          onSelect: select,
+          onNearEnd: proposals.paging.onLoadMore,
+        }}
       />
 
       <BulkApproveDialog group={bulkGroup} onClose={() => setBulkGroup(null)} />

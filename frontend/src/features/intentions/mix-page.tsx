@@ -39,6 +39,7 @@ export function IntentionMixPage() {
   const { data: liveCategories } = useCategoriesQuery();
   const { data: session } = useSessionQuery();
   const [isRootOpen, setIsRootOpen] = useState(false);
+  const [swipeRows, setSwipeRows] = useState<readonly Category[]>([]);
   // A phone's header has no room for the action beside the title.
   const isInMenu = useTier() === "phone";
   const backToIndex = {
@@ -128,6 +129,7 @@ export function IntentionMixPage() {
             offered={mixTreeValues}
             selectedId={categoryId}
             onSelect={select}
+            onVisibleRowsChange={setSwipeRows}
           />
         }
         detail={
@@ -146,6 +148,13 @@ export function IntentionMixPage() {
             setIsRootOpen(false);
             setParams({});
           }
+        }}
+        swipe={{
+          items: swipeRows,
+          idOf: (category) => category.id,
+          labelOf: (category) => category.name,
+          currentId: categoryId,
+          onSelect: select,
         }}
       />
     </>

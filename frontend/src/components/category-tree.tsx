@@ -13,7 +13,7 @@ import type { CategoryTreeValue } from "@vera/domain/categories";
 import { categoryTreeValues, isOutsideScope, searchedCategoriesOf } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
 import type { ReactNode } from "react";
-import { useId, useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import {
   categoryTreeValueLabels,
   isMixValue,
@@ -46,6 +46,7 @@ interface CategoryTreeProps {
   offered: readonly CategoryTreeValue[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  onVisibleRowsChange?: (rows: readonly Category[]) => void;
 }
 
 export function CategoryTree({
@@ -58,6 +59,7 @@ export function CategoryTree({
   offered,
   selectedId,
   onSelect,
+  onVisibleRowsChange,
 }: CategoryTreeProps) {
   const id = useId();
   const { data: settings } = useUserSettingsQuery();
@@ -88,6 +90,23 @@ export function CategoryTree({
       ? null
       : `${formatPercent(unallocated)} of its share is unallocated in ${mixNameOf(mix)}`;
   const roots = childrenOf(null);
+  const visibleRows: Category[] = [];
+  const appendRows = (nodes: readonly Category[]) => {
+    for (const node of nodes) {
+      visibleRows.push(node);
+      if (expandedIds.has(node.id)) appendRows(childrenOf(node.id));
+    }
+  };
+  appendRows(roots);
+  const visibleKey = visibleRows.map((category) => category.id).join("\u0000");
+  const lastVisibleKey = useRef<string | null>(null);
+  const notifyVisibleRows = useEffectEvent(() => {
+    if (lastVisibleKey.current !== visibleKey) {
+      lastVisibleKey.current = visibleKey;
+      onVisibleRowsChange?.(visibleRows);
+    }
+  });
+  useEffect(() => notifyVisibleRows());
 
   return (
     <div>

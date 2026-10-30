@@ -5,7 +5,8 @@
 
 import type { Watchlist } from "@vera/domain/entities";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
+import { useTier } from "@/hooks/use-tier";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { parseGrouping } from "@/lib/view-definition";
 
@@ -40,6 +41,9 @@ export function useViewUrlState<Query, Grouping extends string>(
   selectedParam = "id",
 ): ViewUrlState<Query, Grouping> {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tier = useTier();
   const [filterReplacements, setFilterReplacements] = useState(0);
   const query = definition.parseSearchParams(params);
   // What the view keeps of its URL when the filter changes.
@@ -53,6 +57,28 @@ export function useViewUrlState<Query, Grouping extends string>(
 
   const setParam = (name: string, value: string | null) =>
     replaceParams((next) => (value === null ? next.delete(name) : next.set(name, value)));
+
+  const select = (id: string | null) => {
+    if (tier !== "phone") {
+      setParam(selectedParam, id);
+      return;
+    }
+    if (id === null) {
+      if ((location.state as { openedRecord?: boolean } | null)?.openedRecord) {
+        navigate(-1);
+      } else {
+        setParam(selectedParam, null);
+      }
+      return;
+    }
+    const next = new URLSearchParams(params);
+    next.set(selectedParam, id);
+    if (params.get(selectedParam) === null) {
+      setParams(next, { state: { openedRecord: true } });
+    } else {
+      setParams(next, { replace: true, state: location.state });
+    }
+  };
 
   const setQuery = (nextQuery: Query, openedWatchlistId?: string | null) => {
     const next = definition.toSearchParams(nextQuery);
@@ -83,7 +109,7 @@ export function useViewUrlState<Query, Grouping extends string>(
     filter: Object.fromEntries(definition.toSearchParams(query)),
     setQuery,
     selectedId: params.get(selectedParam),
-    select: (id) => setParam(selectedParam, id),
+    select,
     grouping: parseGrouping(definition, params),
     setGrouping: (grouping) => setParam(definition.groupingParam, grouping),
     watchlistId: params.get(watchlistParam),

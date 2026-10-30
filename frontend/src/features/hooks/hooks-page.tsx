@@ -287,6 +287,13 @@ export function HooksPage() {
         onDetailOpenChange={(open) => {
           if (!open) view.select(null);
         }}
+        swipe={{
+          items: shown,
+          idOf: (hook) => hook.id,
+          labelOf: (hook) => hook.name,
+          currentId: view.selectedId,
+          onSelect: view.select,
+        }}
       />
       {editor !== null && index !== undefined && (
         <HookEditor

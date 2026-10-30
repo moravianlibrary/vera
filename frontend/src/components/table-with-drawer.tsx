@@ -9,6 +9,7 @@ import type { ReactNode } from "react";
 import type { DataTableProps } from "@/components/data-table";
 import { DataTable } from "@/components/data-table";
 import { DetailDrawer } from "@/components/detail-drawer";
+import type { RecordSwipe } from "@/hooks/use-swipe-between";
 
 interface TableWithDrawerProps<Row> {
   table: DataTableProps<Row>;
@@ -24,6 +25,7 @@ interface TableWithDrawerProps<Row> {
     header: ReactNode;
     className: string;
   };
+  swipe?: RecordSwipe<Row>;
 }
 
 export function TableWithDrawer<Row>({
@@ -36,6 +38,7 @@ export function TableWithDrawer<Row>({
   above,
   below,
   tableSection,
+  swipe,
 }: TableWithDrawerProps<Row>) {
   const tableAndNote = (
     <>
@@ -60,6 +63,7 @@ export function TableWithDrawer<Row>({
         onClose={onClose}
         title={drawerTitle}
         subtitle={drawerSubtitle}
+        swipe={swipe}
       >
         {drawer}
       </DetailDrawer>

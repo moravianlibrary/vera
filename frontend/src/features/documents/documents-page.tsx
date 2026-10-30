@@ -194,6 +194,14 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             select(null);
           }
         }}
+        swipe={{
+          items: documents.items ?? [],
+          idOf: (row) => row.document.id,
+          labelOf: (row) => row.document.title,
+          currentId: selectedId,
+          onSelect: select,
+          onNearEnd: documents.paging.onLoadMore,
+        }}
       />
 
       {bulk.dialog}

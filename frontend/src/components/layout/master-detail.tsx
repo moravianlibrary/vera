@@ -7,6 +7,7 @@
 // over the list.
 
 import type { ReactNode } from "react";
+import { SwipePeekPill } from "@/components/swipe-peek-pill";
 import {
   Sheet,
   SheetContent,
@@ -14,10 +15,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import type { RecordSwipe } from "@/hooks/use-swipe-between";
+import { useSwipeBetween, useSwipeToClose } from "@/hooks/use-swipe-between";
 import { useTier } from "@/hooks/use-tier";
 import { cn } from "@/lib/utils";
 
-interface MasterDetailProps {
+interface MasterDetailProps<Item> {
   master: ReactNode;
   detail: ReactNode;
   detailTitle: string;
@@ -27,9 +30,10 @@ interface MasterDetailProps {
   // Half for a list read as a table; a tree keeps 20rem on the small tier and 24rem above it.
   masterWidth?: "half" | "tree";
   className?: string;
+  swipe?: RecordSwipe<Item>;
 }
 
-export function MasterDetail({
+export function MasterDetail<Item>({
   master,
   detail,
   detailTitle,
@@ -38,9 +42,22 @@ export function MasterDetail({
   onDetailOpenChange,
   masterWidth = "half",
   className,
-}: MasterDetailProps) {
+  swipe,
+}: MasterDetailProps<Item>) {
   // The sheet is modal; left open on a wide screen it would dim and block the docked pane.
   const isSplit = useTier() !== "phone";
+  const sheetBody = useSwipeBetween({
+    ...(swipe ?? {
+      items: [],
+      currentId: null,
+      idOf: () => "",
+      labelOf: () => "",
+      onSelect: () => undefined,
+      onNearEnd: undefined,
+    }),
+    isEnabled: !isSplit && detailOpen,
+  });
+  const closeGesture = useSwipeToClose(() => onDetailOpenChange(false));
 
   return (
     <div className={cn("flex min-h-0 flex-1", className)}>
@@ -63,11 +80,16 @@ export function MasterDetail({
 
       <Sheet open={detailOpen && !isSplit} onOpenChange={onDetailOpenChange}>
         <SheetContent side="right" className="w-full max-w-none gap-0 p-0 md:hidden sm:max-w-none">
-          <SheetHeader className="border-b px-5 py-4 text-left">
+          <SheetHeader {...closeGesture} className="border-b px-5 py-4 text-left">
             <SheetTitle>{detailTitle}</SheetTitle>
             {detailDescription ? <SheetDescription>{detailDescription}</SheetDescription> : null}
           </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto p-5">{detail}</div>
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <SwipePeekPill peek={sheetBody.peek} />
+            <div {...sheetBody.bind} className="min-h-0 flex-1 touch-pan-y overflow-y-auto p-5">
+              {detail}
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
     </div>

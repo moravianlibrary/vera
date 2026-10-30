@@ -136,6 +136,14 @@ export function ValidationsPage() {
             select(null);
           }
         }}
+        swipe={{
+          items: validations.items ?? [],
+          idOf: (row) => row.iteration.id,
+          labelOf: (row) => row.document.title,
+          currentId: selectedId,
+          onSelect: select,
+          onNearEnd: validations.paging.onLoadMore,
+        }}
       />
     </>
   );

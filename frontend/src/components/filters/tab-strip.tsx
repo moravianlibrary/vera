@@ -14,6 +14,7 @@ export function TabStrip({
   return (
     <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
       <nav
+        data-swipe="off"
         ref={navRef}
         aria-label={label}
         className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"

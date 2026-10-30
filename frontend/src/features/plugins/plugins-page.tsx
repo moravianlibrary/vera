@@ -331,6 +331,13 @@ function PluginTable({
             : onOpenImplementation(id),
         emptyText: isFiltered ? "Nothing matches." : "No plugin is installed.",
       }}
+      swipe={{
+        items: shown.instances,
+        idOf: (instance) => instance.id,
+        labelOf: (instance) => instance.name,
+        currentId: selection?.kind === "instance" ? selection.instance.id : null,
+        onSelect: onOpenInstance,
+      }}
     />
   );
 }

@@ -4,9 +4,12 @@
 import { act, renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation } from "react-router";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { documentsView } from "@/features/documents/documents-view";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+
+const tier = vi.hoisted(() => ({ value: "large" as "phone" | "large" }));
+vi.mock("@/hooks/use-tier", () => ({ useTier: () => tier.value }));
 
 function renderAt(url: string) {
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -18,6 +21,39 @@ function renderAt(url: string) {
 }
 
 describe("useViewUrlState", () => {
+  afterEach(() => {
+    tier.value = "large";
+  });
+
+  it("pushes the first phone record, replaces later records, then Back closes them", () => {
+    tier.value = "phone";
+    const { result } = renderAt("/documents?q=listy");
+    const listEntryKey = result.current.location.key;
+    act(() => result.current.state.select("D3"));
+    expect(result.current.location.search).toBe("?q=listy&id=D3");
+    act(() => result.current.state.select("D4"));
+    expect(result.current.location.search).toBe("?q=listy&id=D4");
+    act(() => result.current.state.select(null));
+    expect(result.current.location.search).toBe("?q=listy");
+    expect(result.current.location.key).toBe(listEntryKey);
+  });
+
+  it("replaces a directly linked phone record when it closes", () => {
+    tier.value = "phone";
+    const { result } = renderAt("/documents?id=D3");
+    act(() => result.current.state.select(null));
+    expect(result.current.location.search).toBe("");
+  });
+
+  it("keeps replacing the selected record on large", () => {
+    tier.value = "large";
+    const { result } = renderAt("/documents?q=listy");
+    act(() => result.current.state.select("D3"));
+    expect(result.current.location.search).toBe("?q=listy&id=D3");
+    act(() => result.current.state.select("D4"));
+    expect(result.current.location.search).toBe("?q=listy&id=D4");
+  });
+
   it("reads the filter, the open record, the grouping and the tab from the URL", () => {
     const { result } = renderAt("/documents?q=listy&id=D3&group=batch&watchlist=W1");
 

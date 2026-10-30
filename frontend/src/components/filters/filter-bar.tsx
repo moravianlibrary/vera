@@ -240,7 +240,7 @@ export function FilterBar<Query extends FilterableQuery>({
       {(chipFields.length > 0 ||
         rangeDefinitions.length > 0 ||
         propertyChips.addable.length > 0) && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div data-swipe="off" className="flex flex-wrap items-center gap-2">
           {activeChipFields.map((field) => (
             <FilterChip key={field.key} field={field} />
           ))}

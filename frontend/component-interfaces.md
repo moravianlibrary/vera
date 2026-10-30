@@ -148,7 +148,7 @@ nothing fixed at the bottom of the screen: no tab bar and no action bar.
 ### 1.2 `MasterDetail` (✅, to extend)
 
 ```ts
-export interface MasterDetailProps {
+export interface MasterDetailProps<Item> {
   master: ReactNode;
   detail: ReactNode;
   // Names the pane, and the sheet's heading on a phone.
@@ -162,6 +162,8 @@ export interface MasterDetailProps {
   masterWidth?: PerTier<"half" | { rem: number }>;
   // What the pane shows with nothing selected; never shown on a phone.
   emptyDetail?: ReactNode;
+  // Phone sheet only: loaded rows in visible list order for horizontal swiping.
+  swipe?: RecordSwipe<Item>;
 }
 ```
 
@@ -307,6 +309,8 @@ export interface TableWithDrawerProps<Row> {
   drawer: ReactNode;
   // Running runs on top, tiles, the timeline.
   above?: ReactNode;
+  // Phone drawer only: loaded rows in visible list order for horizontal swiping.
+  swipe?: RecordSwipe<Row>;
 }
 ```
 
@@ -638,6 +642,11 @@ export interface TreeProps<Node> {
   onExpandedChange: (ids: ReadonlySet<string>) => void;
   // "All categories", above the roots.
   virtualRoot?: { label: string; value?: ReactNode };
+}
+
+// CategoryTree reports only rows currently visible after search and collapse state, in tree order.
+export interface CategoryTreeProps {
+  onVisibleRowsChange?: (rows: readonly Category[]) => void;
 }
 ```
 
@@ -1265,19 +1274,34 @@ Closing is never a horizontal swipe, so the two never compete.
   peeks in from the side ("Proposals ›", "D24 ›"), and at an end nothing moves.
 
 ```ts
-// A horizontal swipe between neighbours, shared by the entry and record layers.
-export function useSwipeBetween<Item>(options: {
+export type RecordSwipe<Item> = {
   items: readonly Item[];                 // entries, or the list's loaded rows
-  currentId: string | null;
   idOf: (item: Item) => string;
   labelOf: (item: Item) => string;        // the name that peeks in
+  currentId: string | null;
   onSelect: (id: string) => void;
   onNearEnd?: () => void;                 // the record layer loads the next slice
+};
+
+// A horizontal swipe between neighbours, shared by the entry and record layers.
+export function useSwipeBetween<Item>(options: RecordSwipe<Item> & {
   isEnabled: boolean;
-}): { bind: SwipeHandlers; previous?: Item; next?: Item };
+}): { bind: SwipeHandlers; peek: { side: "previous" | "next"; label: string } | null; previous?: Item; next?: Item };
 
 // Swipe down from a sheet's head to close it, beside the system's Back and the ‹.
 export function useSwipeToClose(onClose: () => void): SwipeHandlers;
+
+// The neighbour label stays at the wrapper's side while the record body moves beneath it.
+export function SwipePeekPill({ peek }: { peek: SwipePeek | null }): ReactNode;
+
+// Spread on the element: pointer handlers and its follow/settle style.
+export interface SwipeHandlers {
+  onPointerDown: PointerEventHandler;
+  onPointerMove: PointerEventHandler;
+  onPointerUp: PointerEventHandler;
+  onPointerCancel: PointerEventHandler;
+  style?: CSSProperties;
+}
 ```
 
 ---

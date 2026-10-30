@@ -16,6 +16,7 @@ import {
   visibleCategoryIds,
 } from "@vera/contract/category-filters";
 import { scopeOfCategory } from "@vera/domain/categories";
+import type { Category } from "@vera/domain/entities";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
@@ -66,6 +67,7 @@ export function CategoriesPage() {
     enabled: session !== undefined && can(session, "mix.read"),
   });
   const [isRootOpen, setIsRootOpen] = useState(false);
+  const [swipeRows, setSwipeRows] = useState<readonly Category[]>([]);
   const [notice, setNotice] = useState<CategoryNotice | null>(null);
 
   if (session === undefined) {
@@ -187,6 +189,7 @@ export function CategoriesPage() {
               }
               selectedId={categoryId}
               onSelect={select}
+              onVisibleRowsChange={setSwipeRows}
             />
           </QueryState>
         }
@@ -230,6 +233,13 @@ export function CategoriesPage() {
             setIsRootOpen(false);
             setCategoryParams(null);
           }
+        }}
+        swipe={{
+          items: swipeRows,
+          idOf: (category) => category.id,
+          labelOf: (category) => category.name,
+          currentId: categoryId,
+          onSelect: select,
         }}
       />
     </>

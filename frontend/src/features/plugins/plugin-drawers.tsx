@@ -386,7 +386,10 @@ export function InstanceDrawer({
       )}
 
       <DetailCard title="Configuration">
-        <pre className="mb-3 overflow-x-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap">
+        <pre
+          data-swipe="off"
+          className="mb-3 overflow-x-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap"
+        >
           {configuration.length === 0
             ? "—"
             : configuration.map(([key, value]) => `${key} = ${value}`).join("\n")}

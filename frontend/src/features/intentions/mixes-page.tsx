@@ -514,6 +514,17 @@ export function MixesPage() {
         onDetailOpenChange={(open) => {
           if (!open) navigate({ pathname: "/mixes", search: location.search });
         }}
+        swipe={{
+          items: filtered,
+          idOf: (mix) => mix.id,
+          labelOf: (mix) => mix.name,
+          currentId: current?.id ?? null,
+          onSelect: (id) => {
+            setRevision(null);
+            setSelectedCategoryId(null);
+            navigate({ pathname: `/mixes/${id}`, search: location.search });
+          },
+        }}
       />
       {current !== null && editor === "set" && (
         <SetEditorDialog<{ id: string; name: string; share: number | null }>

@@ -768,7 +768,7 @@ export function AccessPage() {
                   </span>
                   <span>{shown.length} shown</span>
                 </div>
-                <div className="overflow-x-auto">
+                <div data-swipe="off" className="overflow-x-auto">
                   <DataTable
                     rows={shown}
                     rowId={(row) => row.id}
@@ -828,6 +828,21 @@ export function AccessPage() {
         detailOpen={selected !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) open(null);
+        }}
+        swipe={{
+          items: shown,
+          idOf: (row) => row.id,
+          labelOf: (row) => row.title,
+          currentId: selected?.id ?? null,
+          onSelect: (id) => {
+            const row = shown.find((item) => item.id === id);
+            if (row !== undefined) open({ kind: row.kind, id: row.id });
+          },
+          onNearEnd: () => {
+            if (shown.length < visible.length) {
+              setLoaded({ key: listKey, count: loadedCount + loadSize });
+            }
+          },
         }}
       />
       {dialog && index && names && (

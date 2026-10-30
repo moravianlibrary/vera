@@ -229,6 +229,13 @@ export function PropertiesPage() {
         onDetailOpenChange={(open) => {
           if (!open) select(null);
         }}
+        swipe={{
+          items: definitions,
+          idOf: (definition) => definition.key,
+          labelOf: propertyNameOf,
+          currentId: selectedKey,
+          onSelect: (key) => select(key),
+        }}
       />
       {editing !== null && (
         <PropertyEditor

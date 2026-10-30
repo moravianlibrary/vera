@@ -123,6 +123,14 @@ export function ListsPage() {
             select(null);
           }
         }}
+        swipe={{
+          items: lists.items ?? [],
+          idOf: (row) => row.list.id,
+          labelOf: (row) => row.list.name,
+          currentId: selectedId,
+          onSelect: select,
+          onNearEnd: lists.paging.onLoadMore,
+        }}
       />
     </>
   );

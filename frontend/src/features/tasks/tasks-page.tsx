@@ -241,6 +241,18 @@ export function TasksPage() {
               ),
               className: index.running.length > 0 ? "pt-4" : "",
             }}
+            swipe={{
+              items: index.finished.slice(0, visibleFinishedCount),
+              idOf: (run) => run.id,
+              labelOf: (run) => run.what,
+              currentId: openRunId,
+              onSelect: select,
+              onNearEnd: () =>
+                setVisibleFinished({
+                  key: filterKey,
+                  count: Math.min(visibleFinishedCount + 40, index.finished.length),
+                }),
+            }}
             below={
               <p className="sticky bottom-0 z-20 border-t bg-background py-2.5 text-xs leading-relaxed text-muted-foreground">
                 Runs are kept for <b className="font-semibold">{daysText(index.retention.days)}</b>,
