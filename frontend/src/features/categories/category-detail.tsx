@@ -7,8 +7,6 @@
 // (intentions.md §2.4). Whoever may change this part of the tree gets *Edit…*, *+ Child category*
 // (*+ Top-level category* on the root, at `any`), *Refine…* on a leaf that holds documents,
 // *Delete…* on an empty leaf, and *Grant custody…* on the custody card (permissions.md §3).
-// TODO(rrandiak): labels move to i18n.
-
 import { skipToken, useQuery } from "@tanstack/react-query";
 import type { CategoryIndex, CategoryNode, CategoryTotals } from "@vera/contract/categories";
 import type { MixTree } from "@vera/contract/mixes";
@@ -39,8 +37,12 @@ import {
   DeleteCategoryDialog,
 } from "@/features/categories/category-dialogs";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import { i18n } from "@/i18n";
 import { formatCount, formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "categories", ...options });
 
 // How many of a leaf's documents the pane lists before *Open in Documents*.
 const documentPreviewSize = 8;
@@ -91,17 +93,22 @@ export function CategoryPane({
   const isFull = isLeaf && holdsDocuments(category.id);
   const actions: ViewAction[] = [
     ...(documentsHref !== null && !isLeaf
-      ? [{ id: "documents", label: "Open in Documents", href: documentsHref }]
+      ? [{ id: "documents", label: message("categoryPane.openDocuments"), href: documentsHref }]
       : []),
     ...(canEdit && category !== null
-      ? [{ id: "edit", label: "Edit…", onSelect: () => setDialog("edit") }]
+      ? [{ id: "edit", label: message("categoryPane.edit"), onSelect: () => setDialog("edit") }]
       : []),
-    ...(canEdit && isFull ? [{ id: "refine", label: "Refine…", onSelect: onRefine }] : []),
+    ...(canEdit && isFull
+      ? [{ id: "refine", label: message("categoryPane.refine"), onSelect: onRefine }]
+      : []),
     ...(canEdit && !isFull
       ? [
           {
             id: "child",
-            label: category === null ? "+ Top-level category" : "+ Child category",
+            label:
+              category === null
+                ? message("categoryPane.addTopLevel")
+                : message("categoryPane.addChild"),
             onSelect: () => setDialog("child"),
           },
         ]
@@ -110,7 +117,7 @@ export function CategoryPane({
       ? [
           {
             id: "delete",
-            label: "Delete…",
+            label: message("categoryPane.delete"),
             isDestructive: true,
             isInMenu: true,
             onSelect: () => setDialog("delete"),
@@ -127,16 +134,30 @@ export function CategoryPane({
           {category !== null && (
             <Breadcrumb categories={categories} category={category} onSelect={onSelect} />
           )}
-          <h2 className="text-xl leading-7 font-semibold">{category?.name ?? "All categories"}</h2>
+          <h2 className="text-xl leading-7 font-semibold">
+            {category?.name ?? message("categoriesPage.allCategories")}
+          </h2>
           <p className="mt-1 text-xs text-muted-foreground">
             {category === null
-              ? `${plural(categories.length, "category", "categories")} · ${plural(categories.filter((candidate) => !categories.some((child) => child.parentId === candidate.id)).length, "leaf", "leaves")} · not a category itself`
+              ? message("categoryPane.rootSummary", {
+                  categories: plural(categories.length, "category", "categories"),
+                  leaves: plural(
+                    categories.filter(
+                      (candidate) => !categories.some((child) => child.parentId === candidate.id),
+                    ).length,
+                    "leaf",
+                    "leaves",
+                  ),
+                })
               : isLeaf
-                ? `Level ${levelOf(categories, category.id)} · leaf — classifies documents`
-                : `Level ${levelOf(categories, category.id)} · splits its share among ${plural(children.length, "child", "children")}`}
+                ? message("categoryPane.leafSummary", { level: levelOf(categories, category.id) })
+                : message("categoryPane.branchSummary", {
+                    level: levelOf(categories, category.id),
+                    children: plural(children.length, "child", "children"),
+                  })}
           </p>
         </header>
-        <ActionBar actions={actions} menuLabel="More" className="mb-4" />
+        <ActionBar actions={actions} menuLabel={message("categoryPane.more")} className="mb-4" />
       </div>
 
       {notice !== null && (
@@ -165,7 +186,7 @@ export function CategoryPane({
             }
             action={
               <Button asChild size="sm" variant="outline">
-                <Link to={`/mixes/${mix.mixId ?? ""}`}>Open mix</Link>
+                <Link to={`/mixes/${mix.mixId ?? ""}`}>{message("categoryPane.openMix")}</Link>
               </Button>
             }
           />
@@ -187,12 +208,7 @@ export function CategoryPane({
           session={session}
           onGrant={canGrant ? () => setDialog("custody") : undefined}
         />
-        <FinePrint>
-          <b className="font-semibold">A category is a line of work.</b> It classifies the attempt
-          and gives custody; it holds no share of its own. The shares shown belong to the selected
-          mix and are edited on Mixes. Documents sit on leaves only; custody attaches anywhere and
-          reaches everything under it.
-        </FinePrint>
+        <FinePrint>{message("categoryPane.finePrint")}</FinePrint>
       </div>
 
       {/* Mounted while open, so each starts from what the page has now. */}
@@ -250,11 +266,14 @@ export function Breadcrumb({
 }) {
   const above = categoryPathOf(categories, category.id).slice(0, -1);
   const crumbs: { id: string | null; name: string }[] = [
-    { id: null, name: "All categories" },
+    { id: null, name: message("categoriesPage.allCategories") },
     ...above,
   ];
   return (
-    <nav aria-label="Where it sits" className="mb-1 text-xs text-muted-foreground">
+    <nav
+      aria-label={message("categoryPane.breadcrumbLabel")}
+      className="mb-1 text-xs text-muted-foreground"
+    >
       {crumbs.map((crumb, position) => (
         <Fragment key={crumb.id ?? ""}>
           {position > 0 && <span className="mx-1 opacity-50">›</span>}
@@ -280,20 +299,26 @@ function shareStats(categories: readonly Category[], mix: MixTree, category: Cat
   const actual = mixNode?.actual ?? null;
   return [
     {
-      label: "Share of parent",
+      label: message("categoryPane.shareOfParent"),
       value: share === null ? "—" : `${share}%`,
       foot:
         share === null
-          ? `no share in ${mixNameOf(mix)}`
-          : `of ${parent?.name ?? "All categories"} · ${mixNameOf(mix)}`,
+          ? message("categoryPane.noShareIn", { mix: mixNameOf(mix) })
+          : message("categoryPane.shareOf", {
+              parent: parent?.name ?? message("categoriesPage.allCategories"),
+              mix: mixNameOf(mix),
+            }),
     },
     {
-      label: "Of the whole",
+      label: message("categoryPane.ofWhole"),
       value: ofWhole === null ? "—" : formatPercent(ofWhole),
       foot:
         actual === null
-          ? `${mix.intention.name} has no output yet`
-          : `actual ${formatPercent(actual)} of ${mix.intention.name}'s output`,
+          ? message("categoryPane.noOutput", { name: mix.intention.name })
+          : message("categoryPane.actualOutput", {
+              actual: formatPercent(actual),
+              name: mix.intention.name,
+            }),
     },
   ];
 }
@@ -305,19 +330,21 @@ function countStats(totals: CategoryTotals | undefined): Stat[] {
 
   return [
     {
-      label: "Documents",
+      label: message("categoryPane.documents"),
       value: totals.documentCount,
-      foot: `${formatCount(totals.pages)} pages`,
+      foot: message("categoryPane.pages", { count: formatCount(totals.pages) }),
     },
     {
-      label: "Delivered",
+      label: message("categoryPane.delivered"),
       value: `${formatCount(totals.deliveredPages)} pp`,
-      foot: `${totals.pages === 0 ? 0 : Math.round((totals.deliveredPages / totals.pages) * 100)}% of its pages`,
+      foot: message("categoryPane.percentOfPages", {
+        percent: totals.pages === 0 ? 0 : Math.round((totals.deliveredPages / totals.pages) * 100),
+      }),
     },
     {
-      label: "Ready",
+      label: message("categoryPane.ready"),
       value: `${formatCount(totals.readyPages)} pp`,
-      foot: "approved, on no list",
+      foot: message("categoryPane.approvedNoList"),
     },
   ];
 }
@@ -332,7 +359,7 @@ interface AttentionCardProps {
 function AttentionCard({ categories, index, onSelect }: AttentionCardProps) {
   const nameOf = (id: string | null) =>
     id === null
-      ? "All categories"
+      ? message("categoriesPage.allCategories")
       : (categories.find((category) => category.id === id)?.name ?? id);
   const { mix } = index;
   const sets =
@@ -358,16 +385,14 @@ function AttentionCard({ categories, index, onSelect }: AttentionCardProps) {
     ...index.unheldIds.map((id) => ({
       key: `custody-${id}`,
       name: nameOf(id),
-      what: "custody",
-      issue: "nobody holds it",
+      what: message("categoryPane.custody"),
+      issue: message("categoryPane.nobodyHolds"),
       id,
     })),
   ];
   return (
-    <DetailCard title="Needs attention">
-      {rows.length === 0 && (
-        <Muted>Nothing. Every set adds up to 100 and every branch has somebody.</Muted>
-      )}
+    <DetailCard title={message("categoryPane.needsAttention")}>
+      {rows.length === 0 && <Muted>{message("categoryPane.noAttentionNeeded")}</Muted>}
       {rows.map((row) => (
         <DetailRow
           key={row.key}
@@ -413,26 +438,27 @@ function DocumentsHereCard({
   const action =
     documentsHref === null ? undefined : (
       <Button asChild size="sm" variant="outline">
-        <Link to={documentsHref}>Open in Documents</Link>
+        <Link to={documentsHref}>{message("categoryPane.openDocuments")}</Link>
       </Button>
     );
   if (documentCount === 0) {
     return (
-      <DetailCard title="Documents here" action={action}>
-        <Muted>
-          None. It is a leaf, so it can classify documents; nothing has been approved into it yet.
-        </Muted>
+      <DetailCard title={message("categoryPane.documentsHere")} action={action}>
+        <Muted>{message("categoryPane.noDocumentsYet")}</Muted>
       </DetailCard>
     );
   }
 
   const rest = documentCount - (page?.items.length ?? 0);
   return (
-    <DetailCard title={`Documents here — ${documentCount}`} action={action}>
+    <DetailCard
+      title={message("categoryPane.documentsCount", { count: documentCount })}
+      action={action}
+    >
       <QueryState
         isLoading={documentsQuery.isLoading}
-        failure={failureOf(documentsQuery, "Could not load these documents.")}
-        loadingText="Loading documents…"
+        failure={failureOf(documentsQuery, message("categoryPane.loadDocumentsError"))}
+        loadingText={message("categoryPane.loadingDocuments")}
       >
         {page?.items.map((record) => {
           const iteration = currentIterationOf(record);
@@ -449,11 +475,15 @@ function DocumentsHereCard({
             </DetailRow>
           );
         })}
-        {page !== undefined && rest > 0 && <FinePrint>and {rest} more.</FinePrint>}
+        {page !== undefined && rest > 0 && (
+          <FinePrint>{message("categoryPane.andMore", { count: rest })}</FinePrint>
+        )}
       </QueryState>
       <FinePrint>
-        Documents sit on leaves only, so a category under {category.name} means moving these{" "}
-        {documentCount} into it — that is <b className="font-semibold">Refine</b>.
+        {message("categoryPane.refineExplanation", {
+          category: category.name,
+          count: documentCount,
+        })}
       </FinePrint>
     </DetailCard>
   );
@@ -471,61 +501,64 @@ function CustodyCard({ category, node, session, onGrant }: CustodyCardProps): Re
   if (category === null || node === undefined) {
     return (
       <DetailCard
-        title="Custody"
+        title={message("categoryPane.custody")}
         action={
           visibleNavigation(session).some((entry) => entry.id === "access") ? (
             <Button asChild size="sm" variant="outline">
-              <Link to="/access">Users management</Link>
+              <Link to="/access">{message("categoryPane.userManagement")}</Link>
             </Button>
           ) : undefined
         }
       >
-        <Muted>
-          Custody over the whole tree is the <code>any</code> scope, a role granted in{" "}
-          <b className="font-semibold">Users &amp; Groups</b>, not a grant here. Custody is granted
-          on a category and reaches everything under it.
-        </Muted>
+        <Muted>{message("categoryPane.rootCustodyExplanation")}</Muted>
       </DetailCard>
     );
   }
 
   return (
     <DetailCard
-      title="Custody"
+      title={message("categoryPane.custody")}
       action={
         onGrant === undefined ? undefined : (
           <Button size="sm" variant="outline" onClick={onGrant}>
-            Grant custody…
+            {message("categoryPane.grantCustody")}
           </Button>
         )
       }
     >
       <div className="grid gap-x-8 gap-y-4 @md:grid-cols-2">
         <div>
-          <div className="text-xs text-muted-foreground">Granted here</div>
-          {node.grants.length === 0 && <div className="mt-1 text-muted-foreground">nothing</div>}
+          <div className="text-xs text-muted-foreground">{message("categoryPane.grantedHere")}</div>
+          {node.grants.length === 0 && (
+            <div className="mt-1 text-muted-foreground">{message("categoryPane.nothing")}</div>
+          )}
           {node.grants.map((grant) => (
             <div key={`${grant.kind}-${grant.id}`} className="mt-1">
               {grant.name}
-              {grant.kind === "group" && <Muted> · group</Muted>}
+              {grant.kind === "group" && <Muted> · {message("categoryPane.group")}</Muted>}
             </div>
           ))}
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Who it reaches</div>
+          <div className="text-xs text-muted-foreground">
+            {message("categoryPane.whoItReaches")}
+          </div>
           {node.reach.length === 0 && (
             <div className="mt-1 text-tone-amber-foreground">
-              nobody — nobody&apos;s validation queue holds it
+              {message("categoryPane.noOneReached")}
             </div>
           )}
           {node.reach.map((reach) => {
             const where =
-              reach.grantedOn.id === category.id ? "here" : `on ${reach.grantedOn.name}`;
+              reach.grantedOn.id === category.id
+                ? message("categoryPane.here")
+                : message("categoryPane.onCategory", { name: reach.grantedOn.name });
             return (
               <div key={reach.userId} className="mt-1">
                 {reach.name}{" "}
                 <Muted>
-                  · {reach.group === null ? "direct" : reach.group.name}, {where}
+                  · {reach.group === null ? message("categoryPane.direct") : reach.group.name},{" "}
+                  {where}
                 </Muted>
               </div>
             );
@@ -533,8 +566,7 @@ function CustodyCard({ category, node, session, onGrant }: CustodyCardProps): Re
         </div>
       </div>
       <FinePrint>
-        Custody inherits <b className="font-semibold">downward</b>: granted here, it also reaches
-        every category under {category.name}.
+        {message("categoryPane.custodyInheritance", { category: category.name })}
       </FinePrint>
     </DetailCard>
   );

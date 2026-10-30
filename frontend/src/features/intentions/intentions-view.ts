@@ -1,37 +1,35 @@
 // Words and chart presentation for intention cards. The board's filtering and ordering live in
 // intentions-board-view.ts.
-// TODO(rrandiak): labels move to i18n.
-
 import type { IntentionRow, MixRowView } from "@vera/contract/intentions";
 import type { Intention, RepeatEvery } from "@vera/domain/entities";
 import type { TargetVerdict } from "@vera/domain/intentions";
 import { mixBand } from "@vera/domain/intentions";
 import type { Tone } from "@/components/status-badge";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 export const intentionColumns = ["target", "track"] as const;
 export type IntentionColumn = (typeof intentionColumns)[number];
 
 export const columnTitles = {
-  target: "Targets",
-  track: "Output",
+  target: "intentions:column.targets",
+  track: "intentions:column.output",
 } as const satisfies Record<IntentionColumn, string>;
 
 export const columnOf = (intention: Pick<Intention, "targetPages">): IntentionColumn =>
   intention.targetPages === null ? "track" : "target";
 
 export const everyLabels = {
-  week: "Weekly",
-  month: "Monthly",
-  quarter: "Quarterly",
+  week: "intentions:repeat.weekly",
+  month: "intentions:repeat.monthly",
+  quarter: "intentions:repeat.quarterly",
 } as const satisfies Record<RepeatEvery, string>;
 
 export const periodNouns = {
-  week: "week",
-  month: "month",
-  quarter: "quarter",
+  week: "intentions:period.week",
+  month: "intentions:period.month",
+  quarter: "intentions:period.quarter",
 } as const satisfies Record<RepeatEvery, string>;
 
 // ---------------------------------------------------------------- words
@@ -53,12 +51,14 @@ export function verdictBadgeOf(row: IntentionRow): { text: string; tone: Tone } 
   const shortBy = (row.intention.targetPages ?? 0) - row.deliveredPages;
   const isEnded = row.state === "Ended";
   const labels = {
-    onPace: "On pace",
-    behindPace: "Behind pace",
-    targetMet: isEnded ? "Ended — target met" : "Target met",
-    short: `Ended — ${formatCount(shortBy)} pp short`,
-    fullyPlanned: "Fully planned",
-  } as const satisfies Record<TargetVerdict, string>;
+    onPace: i18n.t("intentions:verdict.onPace"),
+    behindPace: i18n.t("intentions:verdict.behindPace"),
+    targetMet: i18n.t(
+      isEnded ? "intentions:verdict.endedTargetMet" : "intentions:verdict.targetMet",
+    ),
+    short: i18n.t("intentions:verdict.short", { count: shortBy }),
+    fullyPlanned: i18n.t("intentions:verdict.fullyPlanned"),
+  } satisfies Record<TargetVerdict, string>;
   return { text: labels[row.verdict], tone: verdictTones[row.verdict] };
 }
 
@@ -66,7 +66,7 @@ export function windowTextOf(row: Pick<IntentionRow, "intention" | "state">): st
   const { intention } = row;
   const from = formatCalendarDay(intention.countsFrom);
   if (intention.isOverall) {
-    return `Counting since ${from} · everything, no end`;
+    return i18n.t("intentions:window.overall", { from });
   }
 
   if (intention.endsOn !== null) {
@@ -74,14 +74,14 @@ export function windowTextOf(row: Pick<IntentionRow, "intention" | "state">): st
   }
 
   return row.state === "Upcoming"
-    ? `Counts from ${from} · no end`
-    : `Counting since ${from} · no end`;
+    ? i18n.t("intentions:window.upcoming", { from })
+    : i18n.t("intentions:window.running", { from });
 }
 
 // Short, for a row in a fold or on a project.
 export function shortWindowOf(intention: Pick<Intention, "countsFrom" | "endsOn">): string {
   return intention.endsOn === null
-    ? `since ${formatCalendarDay(intention.countsFrom)}`
+    ? i18n.t("intentions:window.since", { from: formatCalendarDay(intention.countsFrom) })
     : `${formatCalendarDay(intention.countsFrom)} → ${formatCalendarDay(intention.endsOn)}`;
 }
 
@@ -89,7 +89,7 @@ export function metaOf(row: IntentionRow): string {
   const target = row.intention.targetPages;
   return target === null
     ? windowTextOf(row)
-    : `${windowTextOf(row)} · target ${formatCount(target)} pp`;
+    : i18n.t("intentions:meta.target", { window: windowTextOf(row), count: formatCount(target) });
 }
 
 export const scopePathOf = (path: readonly string[]) => path.join(" / ");
@@ -97,25 +97,30 @@ export const scopePathOf = (path: readonly string[]) => path.join(" / ");
 export function timeLabelOf(row: IntentionRow): string {
   switch (row.state) {
     case "Upcoming":
-      return `starts in ${plural(row.daysToStart, "day")}`;
+      return i18n.t("intentions:time.startsIn", { count: row.daysToStart });
     case "Ended":
-      return `ended ${formatCalendarDay(row.intention.endsOn ?? row.intention.countsFrom)}`;
+      return i18n.t("intentions:time.ended", {
+        date: formatCalendarDay(row.intention.endsOn ?? row.intention.countsFrom),
+      });
     case "Running":
-      return `${Math.round((row.timeElapsed ?? 0) * 100)}% · ${plural(row.daysLeft ?? 0, "day")} left`;
+      return i18n.t("intentions:time.running", {
+        percent: Math.round((row.timeElapsed ?? 0) * 100),
+        count: row.daysLeft ?? 0,
+      });
   }
 }
 
 // What the strip under a card calls the mix it reads.
 export function mixLabelOf(row: IntentionRow): string {
-  if (row.mix === null) return "No mix";
+  if (row.mix === null) return i18n.t("intentions:mix.none");
   return row.mix.name;
 }
 
 export function mixSourceOf(row: IntentionRow): string {
-  if (row.mix === null) return "no mix selected";
+  if (row.mix === null) return i18n.t("intentions:mix.notSelected");
   return row.intention.mixRevision == null
-    ? "follows latest"
-    : `revision ${row.intention.mixRevision} snapshot`;
+    ? i18n.t("intentions:mix.latest")
+    : i18n.t("intentions:mix.revision", { revision: row.intention.mixRevision });
 }
 
 // What a tracking card's mix is measured on.
@@ -126,15 +131,18 @@ export function outputBasisOf(row: IntentionRow): string | null {
   }
 
   return row.state === "Upcoming"
-    ? `Counts from ${formatCalendarDay(intention.countsFrom)} — no output yet`
-    : "No output yet — nothing matching has been digitized in its window";
+    ? i18n.t("intentions:output.upcoming", { from: formatCalendarDay(intention.countsFrom) })
+    : i18n.t("intentions:output.none");
 }
 
 export function outputSinceOf(row: IntentionRow): string {
   const { intention } = row;
   return intention.endsOn === null
-    ? `Output since ${formatCalendarDay(intention.countsFrom)}`
-    : `Output ${formatCalendarDay(intention.countsFrom)} → ${formatCalendarDay(intention.endsOn)}`;
+    ? i18n.t("intentions:output.since", { from: formatCalendarDay(intention.countsFrom) })
+    : i18n.t("intentions:output.window", {
+        from: formatCalendarDay(intention.countsFrom),
+        to: formatCalendarDay(intention.endsOn),
+      });
 }
 
 // The category furthest from its share.
@@ -155,8 +163,8 @@ const percentText = (value: number) => `${Math.round(value * 10) / 10}%`;
 
 export function shareTextOf(share: number | null): string {
   if (share === null) {
-    return "unallocated";
+    return i18n.t("intentions:share.unallocated");
   }
 
-  return share === 0 ? "excluded" : percentText(share);
+  return share === 0 ? i18n.t("intentions:share.excluded") : percentText(share);
 }

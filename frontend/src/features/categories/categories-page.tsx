@@ -7,8 +7,6 @@
 // *All categories* opens too. Watchlists and the shared filter bar narrow the tree while keeping
 // ancestor paths; they leave the selected pane and the tree's Show preference intact. A change
 // to the tree leaves a note in the pane it opens; Refine replaces it (`&refine=1`).
-// TODO(rrandiak): labels move to i18n.
-
 import { useQuery } from "@tanstack/react-query";
 import {
   categoryFacets,
@@ -19,6 +17,7 @@ import { scopeOfCategory } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { listMixes } from "@/api/mix-catalog";
 import { CategoryTree } from "@/components/category-tree";
@@ -43,6 +42,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function CategoriesPage() {
+  const { t } = useTranslation("categories");
   const [params, setParams] = useSearchParams();
   const view = useViewUrlState(categoriesView, "c");
   const url = categoriesUrlStateOf(params);
@@ -54,7 +54,7 @@ export function CategoriesPage() {
   const categoriesFailure =
     categoriesQuery.isError || indexQuery.isError
       ? {
-          text: "Could not load categories.",
+          text: t("categoriesPage.loadError"),
           onRetry: () => {
             void categoriesQuery.refetch();
             void indexQuery.refetch();
@@ -77,11 +77,11 @@ export function CategoriesPage() {
   if (categories === undefined || index === undefined) {
     return (
       <>
-        <PageHeader title="Categories" />
+        <PageHeader title={t("categoriesPage.title")} />
         <QueryState
           isLoading={categoriesQuery.isLoading || indexQuery.isLoading}
           failure={categoriesFailure}
-          loadingText="Loading categories…"
+          loadingText={t("categoriesPage.loading")}
         >
           {null}
         </QueryState>
@@ -128,13 +128,14 @@ export function CategoriesPage() {
     can(session, "category.edit", scopeOfCategory(categories, category.id));
   const name =
     categoryId === null
-      ? "All categories"
-      : (categories.find((category) => category.id === categoryId)?.name ?? "Category");
+      ? t("categoriesPage.allCategories")
+      : (categories.find((category) => category.id === categoryId)?.name ??
+        t("categoriesPage.category"));
   const selectedMixId = view.query.mixId ?? mixes.find((mix) => mix.isPrimary)?.id;
 
   return (
     <>
-      <PageHeader title="Categories" />
+      <PageHeader title={t("categoriesPage.title")} />
       {can(session, "watch") && (
         <WatchlistTabs
           view="categories"
@@ -157,8 +158,8 @@ export function CategoriesPage() {
         query={view.query}
         facets={facets}
         onQueryChange={view.setQuery}
-        searchLabel="Search categories"
-        searchPlaceholder="Search categories — name, ID"
+        searchLabel={t("categoriesPage.searchLabel")}
+        searchPlaceholder={t("categoriesPage.searchPlaceholder")}
       />
       <MasterDetail
         masterWidth="tree"
@@ -166,7 +167,7 @@ export function CategoriesPage() {
           <QueryState
             isLoading={false}
             failure={categoriesFailure}
-            loadingText="Loading categories…"
+            loadingText={t("categoriesPage.loading")}
           >
             <CategoryTree
               categories={categories}

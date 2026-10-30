@@ -12,6 +12,7 @@ import {
   intentionsView,
   matchingIntentions,
 } from "@/features/intentions/intentions-board-view";
+import { i18n } from "@/i18n";
 
 const intention = (id: string, changes: Partial<Intention> = {}): Intention => ({
   id,
@@ -196,9 +197,9 @@ describe("Intentions board", () => {
     expect(
       intentionsView.fields
         .filter((field) => "isQuick" in field && field.isQuick)
-        .map((field) => field.label),
+        .map((field) => i18n.t(field.label)),
     ).toEqual(["Type", "State", "Pace / attention"]);
-    expect(intentionsView.fields.map((field) => field.label)).not.toContain("Funding");
+    expect(intentionsView.fields.map((field) => i18n.t(field.label))).not.toContain("Funding");
     expect(parseIntentionsSearchParams(new URLSearchParams("funding=project")).projects).toEqual([
       "__project_funding__",
     ]);

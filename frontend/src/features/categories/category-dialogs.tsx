@@ -4,8 +4,6 @@
 // renamed or moved; and deleting an empty leaf, with what it leaves behind as the server counts it.
 // Nothing here edits a mix: a category entering a set has no share there, and one leaving it
 // leaves its share unallocated, flagged where the mix is edited.
-// TODO(rrandiak): labels move to i18n.
-
 import type { CategoryNode, CustodyGrant } from "@vera/contract/categories";
 import { categoryPathOf, isInSubtree, placesFor, scopeOfCategory } from "@vera/domain/categories";
 import type { Category, Session } from "@vera/domain/entities";
@@ -39,16 +37,17 @@ import {
 } from "@/features/categories/use-categories-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useUsersQuery } from "@/hooks/use-reference-query";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 
-const refusalTexts = {
-  "category.name_taken": "A category beside it already has that name.",
-  "category.holds_documents":
-    "It holds documents, so it cannot take a child. Refine it instead, which moves them.",
-  "category.has_children": "It has categories under it now.",
-  "category.scope": "An intention is scoped to it. Change that intention's categories first.",
-  403: "You may no longer change this part of the tree.",
-} as const;
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "categories", ...options });
+const refusalTexts = () => ({
+  "category.name_taken": message("categoryDialog.nameTaken"),
+  "category.holds_documents": message("categoryDialog.holdsDocuments"),
+  "category.has_children": message("categoryDialog.hasChildren"),
+  "category.scope": message("categoryDialog.intentionScoped"),
+  403: message("categoryDialog.forbidden"),
+});
 
 // Done, and what to say in the pane about it.
 export interface CategoryNotice {
@@ -59,7 +58,7 @@ export interface CategoryNotice {
 const pathTextOf = (categories: readonly Category[], categoryId: string) =>
   categoryPathOf(categories, categoryId)
     .map((step) => step.name)
-    .join(" › ");
+    .join(` ${message("categoryDialog.pathSeparator")} `);
 
 // ---------------------------------------------------------------- custody
 
@@ -94,7 +93,7 @@ export function CustodyDialog({
         userIds: grants.filter((grant) => grant.kind === "person").map((grant) => grant.id),
       }),
     invalidates: categoryInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTexts(),
   });
   const leafCount = categories.filter(
     (candidate) =>
@@ -110,8 +109,8 @@ export function CustodyDialog({
     <SetEditorDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Custody — ${category.name}`}
-      description={`Who holds custody granted on ${category.name}, the whole set.`}
+      title={message("categoryDialog.custodyTitle", { name: category.name })}
+      description={message("categoryDialog.custodyDescription", { name: category.name })}
       entries={node.grants}
       renderEntries={(grants, onChange) => {
         const picked = (kind: CustodyGrant["kind"]) =>
@@ -132,15 +131,15 @@ export function CustodyDialog({
         return (
           <>
             <GrantList
-              title="Groups"
-              hint="everyone in one, while they are in it"
+              title={message("categoryDialog.groups")}
+              hint={message("categoryDialog.groupHint")}
               grants={picked("group")}
-              noneText="No group."
+              noneText={message("categoryDialog.noGroup")}
               onRemove={remove}
             />
             {freeGroups.length > 0 && (
               <AddSelect
-                placeholder="Add a group…"
+                placeholder={message("categoryDialog.addGroup")}
                 options={freeGroups.map((group) => ({ value: group.id, label: group.name }))}
                 onAdd={(groupId) =>
                   onChange([
@@ -155,15 +154,15 @@ export function CustodyDialog({
               />
             )}
             <GrantList
-              title="People"
-              hint="directly"
+              title={message("categoryDialog.people")}
+              hint={message("categoryDialog.directly")}
               grants={picked("person")}
-              noneText="Nobody directly."
+              noneText={message("categoryDialog.noPeopleDirectly")}
               onRemove={remove}
             />
             {freePeople.length > 0 && (
               <AddSelect
-                placeholder="Add a person…"
+                placeholder={message("categoryDialog.addPerson")}
                 options={freePeople.map((user) => ({ value: user.id, label: user.name }))}
                 onAdd={(userId) =>
                   onChange([
@@ -182,21 +181,27 @@ export function CustodyDialog({
       }}
       summaryOf={() => (
         <p className="text-xs text-muted-foreground">
-          It reaches {category.name} and everything under it — {plural(leafCount, "leaf", "leaves")}
-          . It makes them responsible; what they may <i>do</i> there is their role.
+          {message("categoryDialog.custodySummary", { name: category.name, count: leafCount })}
           {isBounded &&
             held.length > 0 &&
-            ` You grant it only inside ${held.map((heldCategory) => heldCategory.name).join(", ")}, which ${held.length === 1 ? "is" : "are"} yours.`}
+            message("categoryDialog.boundedGrant", {
+              names: held.map((heldCategory) => heldCategory.name).join(", "),
+              verb: held.length === 1 ? "is" : "are",
+            })}
         </p>
       )}
       invalidReasonOf={() => null}
-      submitLabel="Save custody"
+      submitLabel={message("categoryDialog.saveCustody")}
       onSave={async (grants) => {
         const result = await save.run(grants);
         if (result.isDone) {
           onSaved({
-            title: "Custody saved",
-            text: `${plural(result.value.grants.length, "grant")} on ${category.name}, was ${node.grants.length}.`,
+            title: message("categoryDialog.custodySaved"),
+            text: message("categoryDialog.custodySavedText", {
+              count: result.value.grants.length,
+              name: category.name,
+              previous: node.grants.length,
+            }),
           });
         }
 
@@ -227,7 +232,10 @@ function GrantList({ title, hint, grants, noneText, onRemove }: GrantListProps) 
           {grants.map((grant) => (
             <li key={grant.id} className="flex items-center gap-2 px-3 py-1.5">
               <span className="min-w-0 flex-1">{grant.name}</span>
-              <RemoveButton label={`Remove ${grant.name}`} onSelect={() => onRemove(grant)} />
+              <RemoveButton
+                label={message("categoryDialog.removeGrant", { name: grant.name })}
+                onSelect={() => onRemove(grant)}
+              />
             </li>
           ))}
         </ul>
@@ -241,11 +249,12 @@ function GrantList({ title, hint, grants, noneText, onRemove }: GrantListProps) 
 // The top level in a select, which cannot hold an empty value.
 const topLevel = "top";
 
-const categoryFormSchema = z.object({
-  name: z.string().trim().min(1, "A category needs a name."),
-  parentId: z.string(),
-});
-type CategoryForm = z.infer<typeof categoryFormSchema>;
+const categoryFormSchemaOf = () =>
+  z.object({
+    name: z.string().trim().min(1, message("categoryDialog.nameRequired")),
+    parentId: z.string(),
+  });
+type CategoryForm = z.infer<ReturnType<typeof categoryFormSchemaOf>>;
 
 const parentIdOf = (value: string) => (value === topLevel ? null : value);
 
@@ -276,17 +285,18 @@ export function CategoryFormDialog({
   onSaved,
 }: CategoryFormDialogProps) {
   const id = useId();
+  const schema = categoryFormSchemaOf();
   const save = useActionMutation({
     call: (form: CategoryForm) => {
       const draft = { name: form.name, parentId: parentIdOf(form.parentId) };
       return category === null ? createCategory(draft) : saveCategory(category.id, draft);
     },
     invalidates: categoryInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTexts(),
   });
   const nameOf = (categoryId: string | null) =>
     categoryId === null
-      ? "the top level"
+      ? message("categoryDialog.topLevel")
       : (categories.find((candidate) => candidate.id === categoryId)?.name ?? categoryId);
   const parent = category === null ? parentId : category.parentId;
   const places =
@@ -304,17 +314,21 @@ export function CategoryFormDialog({
       onClose={onClose}
       title={
         category !== null
-          ? `Edit — ${category.name}`
+          ? message("categoryDialog.editTitle", { name: category.name })
           : parentId === null
-            ? "New top-level category"
-            : `New category under ${nameOf(parentId)}`
+            ? message("categoryDialog.newTopLevel")
+            : message("categoryDialog.newUnder", { name: nameOf(parentId) })
       }
       description={
-        category === null ? "A line of work, under its parent." : "Rename it, or move it."
+        category === null
+          ? message("categoryDialog.newDescription")
+          : message("categoryDialog.editDescription")
       }
-      schema={categoryFormSchema}
+      schema={schema}
       defaultValues={{ name: category?.name ?? "", parentId: parent ?? topLevel }}
-      submitLabel={category === null ? "Create" : "Save"}
+      submitLabel={
+        category === null ? message("categoryDialog.create") : message("categoryDialog.save")
+      }
       fieldOf={(refusal) => (refusal.code === "category.name_taken" ? "name" : null)}
       onSubmit={async (form) => {
         const result = await save.run(form);
@@ -324,14 +338,16 @@ export function CategoryFormDialog({
             result.value,
             category === null
               ? {
-                  title: `Created ${result.value.name}`,
-                  text: `Under ${nameOf(parentId)}, with no share in any mix yet, so its set is flagged until somebody gives it one.`,
+                  title: message("categoryDialog.createdTitle", { name: result.value.name }),
+                  text: message("categoryDialog.createdText", { parent: nameOf(parentId) }),
                 }
               : {
-                  title: "Saved",
+                  title: message("categoryDialog.saved"),
                   text: isMoved
-                    ? `Now under ${nameOf(parentIdOf(form.parentId))}, with no share there in any mix. Where it was, its share is unallocated.`
-                    : "Renamed.",
+                    ? message("categoryDialog.movedText", {
+                        parent: nameOf(parentIdOf(form.parentId)),
+                      })
+                    : message("categoryDialog.renamed"),
                 },
           );
         }
@@ -341,26 +357,23 @@ export function CategoryFormDialog({
       warningOf={(form) =>
         category !== null && parentIdOf(form.parentId) !== category.parentId ? (
           <p className="text-xs text-tone-amber-foreground">
-            <b className="font-semibold">It starts with no share in its new place</b>, in every mix
-            — it cannot take from shares somebody already set there. Where it was, its share becomes{" "}
-            <b className="font-semibold">unallocated</b> and is flagged. Custody follows the tree:
-            whoever holds its new place holds it.
+            {message("categoryDialog.moveWarning")}
           </p>
         ) : undefined
       }
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
+          <Field id={`${id}-name`} label={message("categoryDialog.name")}>
             <Input
               id={`${id}-name`}
-              placeholder="The line of work it stands for"
+              placeholder={message("categoryDialog.namePlaceholder")}
               autoFocus
               {...form.register("name")}
             />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
           {category !== null && (
-            <Field id={`${id}-parent`} label="Under">
+            <Field id={`${id}-parent`} label={message("categoryDialog.under")}>
               <Select
                 value={form.watch("parentId")}
                 onValueChange={(value) => form.setValue("parentId", value, { shouldDirty: true })}
@@ -372,7 +385,7 @@ export function CategoryFormDialog({
                   {places.map((placeId) => (
                     <SelectItem key={placeId ?? topLevel} value={placeId ?? topLevel}>
                       {placeId === null
-                        ? "All categories — top level"
+                        ? message("categoryDialog.allCategoriesTopLevel")
                         : pathTextOf(categories, placeId)}
                     </SelectItem>
                   ))}
@@ -383,13 +396,12 @@ export function CategoryFormDialog({
           <p className="text-xs text-muted-foreground">
             {category === null ? (
               <>
-                It starts with <b className="font-semibold">no share in any mix</b> — it cannot take
-                from shares somebody already set. Give it one on Mixes.
+                {message("categoryDialog.newCategoryHelp")}
                 {isParentLeaf &&
-                  ` ${nameOf(parentId)} holds no documents, so it simply stops being a leaf; nothing moves.`}
+                  ` ${message("categoryDialog.parentLeafHelp", { parent: nameOf(parentId) })}`}
               </>
             ) : (
-              "Moving it takes everything under it along. A leaf that holds documents cannot take a child, so it is not offered."
+              message("categoryDialog.moveHelp")
             )}
           </p>
         </>
@@ -421,47 +433,52 @@ export function DeleteCategoryDialog({
   const remove = useActionMutation({
     call: () => deleteCategory(category.id),
     invalidates: categoryInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTexts(),
   });
   const parentName =
-    categories.find((candidate) => candidate.id === category.parentId)?.name ?? "the top level";
+    categories.find((candidate) => candidate.id === category.parentId)?.name ??
+    message("categoryDialog.topLevel");
   const consequences: Consequence[] | undefined =
     impact === undefined
       ? undefined
       : [
-          { text: "It holds no documents, so nothing moves." },
+          { text: message("categoryDialog.deleteNoDocuments") },
           ...impact.shares.map(
             (share): Consequence => ({
-              text: `${share.mix.name}: its ${share.share}% becomes unallocated in ${parentName}'s set${
-                share.intentionCount > 0
-                  ? `, for ${plural(share.intentionCount, "intention")} using it too`
-                  : ""
-              }.`,
+              text:
+                message("categoryDialog.deleteShare", {
+                  mix: share.mix.name,
+                  share: share.share,
+                  parent: parentName,
+                  count: share.intentionCount,
+                }) +
+                (share.intentionCount > 0
+                  ? message("categoryDialog.deleteShareIntentions", { count: share.intentionCount })
+                  : ""),
               tone: "amber",
             }),
           ),
           ...(impact.otherMixCount > 0
             ? [
                 {
-                  text: `${plural(impact.otherMixCount, "more mix", "more mixes")} you cannot read ${impact.otherMixCount === 1 ? "gives" : "give"} it a share, unallocated there too.`,
+                  text: message("categoryDialog.otherMixShare", { count: impact.otherMixCount }),
                   tone: "amber" as const,
                 },
               ]
             : []),
           ...(impact.shares.length === 0 && impact.otherMixCount === 0
-            ? [{ text: "It has no share in any mix, so no set changes." }]
+            ? [{ text: message("categoryDialog.noMixShare") }]
             : []),
           ...(impact.grantCount > 0
-            ? [{ text: `Custody granted on it (${impact.grantCount}) goes with it.` }]
+            ? [{ text: message("categoryDialog.grantsGoWith", { count: impact.grantCount }) }]
             : []),
           ...(impact.scopedIntentionCount > 0
             ? [
                 {
-                  text: `${plural(impact.scopedIntentionCount, "intention is", "intentions are")} scoped to it${
-                    impact.scopedIntentions.length > 0
-                      ? ` (${impact.scopedIntentions.map((intention) => intention.name).join(", ")})`
-                      : ""
-                  }, so it cannot be deleted yet.`,
+                  text: message("categoryDialog.scopedIntentions", {
+                    count: impact.scopedIntentionCount,
+                    names: impact.scopedIntentions.map((intention) => intention.name).join(", "),
+                  }),
                   tone: "red" as const,
                 },
               ]
@@ -472,20 +489,20 @@ export function DeleteCategoryDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${category.name}?`}
-      description="An empty leaf, removed from the tree."
+      title={message("categoryDialog.deleteTitle", { name: category.name })}
+      description={message("categoryDialog.deleteDescription")}
       consequences={consequences}
-      confirmLabel="Delete"
+      confirmLabel={message("categoryDialog.delete")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(undefined);
         if (result.isDone) {
           onDeleted({
-            title: `Deleted ${category.name}`,
+            title: message("categoryDialog.deletedTitle", { name: category.name }),
             text:
               impact !== undefined && impact.shares.length + impact.otherMixCount > 0
-                ? "Its share is unallocated here, and flagged."
-                : "No set changed.",
+                ? message("categoryDialog.deletedShare")
+                : message("categoryDialog.noSetChanged"),
           });
         }
 

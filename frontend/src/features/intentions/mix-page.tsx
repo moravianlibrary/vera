@@ -5,8 +5,6 @@
 // Read-only: the mix is its own record, edited on Mixes (PLAN-mix, ACT-mix-save), which the header
 // links to. A scoped intention shows its subtree, the rest dimmed and unused.
 // `?c=` is the category open, pushing a history entry. On a phone the pane is a sheet.
-// TODO(rrandiak): labels move to i18n.
-
 import type { MixTree } from "@vera/contract/mixes";
 import { categoryPathOf, isOutsideScope } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
@@ -28,8 +26,17 @@ import { useIntentionMixQuery } from "@/features/intentions/use-intentions-query
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { formatPercent } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, {
+    ns:
+      key.startsWith("categoriesPage.") || key.startsWith("categoryPane.")
+        ? "categories"
+        : "intentions",
+    ...options,
+  });
 
 export function IntentionMixPage() {
   const { intentionId = null } = useParams();
@@ -43,18 +50,16 @@ export function IntentionMixPage() {
   // A phone's header has no room for the action beside the title.
   const isInMenu = useTier() === "phone";
   const backToIndex = {
-    label: "Intentions",
+    label: message("intentionsPage.title"),
     href: intentionId === null ? "/intentions" : `/intentions?i=${encodeURIComponent(intentionId)}`,
   };
 
   if (detail === null) {
     return (
       <>
-        <PageHeader title="Mix" breadcrumb={backToIndex} />
+        <PageHeader title={message("mixPage.title")} breadcrumb={backToIndex} />
         <PageContent>
-          <p className="text-sm text-muted-foreground">
-            No such intention, or it is not yours to see.
-          </p>
+          <p className="text-sm text-muted-foreground">{message("mixPage.notVisible")}</p>
         </PageContent>
       </>
     );
@@ -63,8 +68,11 @@ export function IntentionMixPage() {
   if (detailQuery.isError) {
     return (
       <>
-        <PageHeader title="Mix" breadcrumb={backToIndex} />
-        <QueryState isLoading={false} failure={failureOf(detailQuery, "Could not load this mix.")}>
+        <PageHeader title={message("mixPage.title")} breadcrumb={backToIndex} />
+        <QueryState
+          isLoading={false}
+          failure={failureOf(detailQuery, message("mixPage.loadError"))}
+        >
           <span />
         </QueryState>
       </>
@@ -74,11 +82,11 @@ export function IntentionMixPage() {
   if (detail === undefined || liveCategories === undefined || session === undefined) {
     return (
       <>
-        <PageHeader title="Mix" breadcrumb={backToIndex} />
+        <PageHeader title={message("mixPage.title")} breadcrumb={backToIndex} />
         <QueryState
           isLoading={detailQuery.isLoading}
-          failure={failureOf(detailQuery, "Could not load this mix.")}
-          loadingText="Loading the mix…"
+          failure={failureOf(detailQuery, message("mixPage.loadError"))}
+          loadingText={message("mixPage.loading")}
         >
           <span />
         </QueryState>
@@ -99,23 +107,27 @@ export function IntentionMixPage() {
   const headerActions: ViewAction[] = [
     {
       id: "mix",
-      label: can(session, "mix.edit") ? "Edit mix" : "Open mix",
+      label: can(session, "mix.edit") ? message("mixPage.editMix") : message("mixPage.openMix"),
       href: `/mixes/${encodeURIComponent(mix.mixId)}`,
       isInMenu,
     },
   ];
   const name =
     categoryId === null
-      ? "All categories"
-      : (categories.find((category) => category.id === categoryId)?.name ?? "Category");
+      ? message("categoriesPage.allCategories")
+      : (categories.find((category) => category.id === categoryId)?.name ??
+        message("categoriesPage.category"));
 
   return (
     <>
       <PageHeader
-        title={`${intention.name} — mix`}
+        title={message("mixPage.intentionMixTitle", { name: intention.name })}
         breadcrumb={{
           ...backToIndex,
-          detail: scope === undefined ? "over the whole tree" : `within ${scope.name}`,
+          detail:
+            scope === undefined
+              ? message("mixPage.wholeTree")
+              : message("mixPage.within", { name: scope.name }),
         }}
         actions={headerActions}
       />
@@ -184,26 +196,31 @@ function MixPane({ categories, mix, categoryId, onSelect }: MixPaneProps) {
         {category !== null && (
           <Breadcrumb categories={categories} category={category} onSelect={onSelect} />
         )}
-        <h2 className="text-xl leading-7 font-semibold">{category?.name ?? "All categories"}</h2>
+        <h2 className="text-xl leading-7 font-semibold">
+          {category?.name ?? message("categoriesPage.allCategories")}
+        </h2>
         <p className="mt-1 text-xs text-muted-foreground">
           {category === null
             ? scope === undefined
-              ? "the top level splits 100% of the whole"
-              : `${intention.name} reads only ${scope.name}`
+              ? message("mixPage.topLevelSummary")
+              : message("mixPage.scopedSummary", { intention: intention.name, scope: scope.name })
             : isLeaf
-              ? "a leaf — its share divides no further"
-              : `splits its share among ${plural(children.length, "child", "children")}`}
+              ? message("mixPage.leafSummary")
+              : message("mixPage.branchSummary", { count: children.length })}
         </p>
       </header>
 
       <div className="grid gap-4">
         {scope !== undefined && isOutside && (
-          <StatusNote tone="slate" title={`Outside ${intention.name}'s scope`}>
-            It reads only{" "}
-            {categoryPathOf(categories, scope.id)
-              .map((step) => step.name)
-              .join(" › ")}
-            ; shares here are not used by it.
+          <StatusNote
+            tone="slate"
+            title={message("mixPage.outsideScope", { intention: intention.name })}
+          >
+            {message("mixPage.outsideScopeText", {
+              path: categoryPathOf(categories, scope.id)
+                .map((step) => step.name)
+                .join(" › "),
+            })}
           </StatusNote>
         )}
 
@@ -226,19 +243,13 @@ function MixPane({ categories, mix, categoryId, onSelect }: MixPaneProps) {
             className="justify-self-start"
             onClick={() => onSelect(scope.id)}
           >
-            Open {scope.name}
+            {message("mixPage.openScope", { name: scope.name })}
           </Button>
         )}
         {category === null && (
           <UnallocatedCard categories={categories} mix={mix} onSelect={onSelect} />
         )}
-        <FinePrint>
-          <b className="font-semibold">Shares are recursive.</b> <i>Share of parent</i> is what is
-          stored; <i>of the whole</i> is it times its parent&apos;s, worked out on read. They are
-          percentages, not weights: a share set to 30% is 30% tomorrow. <b>No share</b> is
-          unallocated and flagged; <b>0%</b> is a deliberate exclusion. A category holds no share of
-          its own: these numbers are {mixNameOf(mix)}.
-        </FinePrint>
+        <FinePrint>{message("mixPage.explainer", { mix: mixNameOf(mix) })}</FinePrint>
       </div>
     </article>
   );
@@ -255,11 +266,14 @@ function Breadcrumb({
 }) {
   const above = categoryPathOf(categories, category.id).slice(0, -1);
   const crumbs: { id: string | null; name: string }[] = [
-    { id: null, name: "All categories" },
+    { id: null, name: message("categoriesPage.allCategories") },
     ...above,
   ];
   return (
-    <nav aria-label="Where it sits" className="mb-1 text-xs text-muted-foreground">
+    <nav
+      aria-label={message("categoryPane.breadcrumbLabel")}
+      className="mb-1 text-xs text-muted-foreground"
+    >
       {crumbs.map((crumb, position) => (
         <Fragment key={crumb.id ?? ""}>
           {position > 0 && <span className="mx-1 opacity-50">›</span>}
@@ -285,22 +299,30 @@ function shareStats(categories: readonly Category[], mix: MixTree, category: Cat
   const actual = mixNode?.actual ?? null;
   return [
     {
-      label: "Share of parent",
+      label: message("categoryPane.shareOfParent"),
       value: share === null ? "—" : `${share}%`,
-      foot: share === null ? "no share" : `of ${parent?.name ?? "All categories"}`,
+      foot:
+        share === null
+          ? message("intentionCard.noShare")
+          : message("mixPage.shareOf", {
+              parent: parent?.name ?? message("categoriesPage.allCategories"),
+            }),
     },
     {
-      label: scope === undefined ? "Of the whole" : `Of ${scope.name}`,
+      label:
+        scope === undefined
+          ? message("categoryPane.ofWhole")
+          : message("mixPage.of", { name: scope.name }),
       value: ofWhole === null ? "—" : formatPercent(ofWhole),
-      foot: "worked out on read",
+      foot: message("mixPage.workedOutOnRead"),
     },
     {
-      label: "Actual",
+      label: message("mixPage.actual"),
       value: actual === null ? "—" : formatPercent(actual),
       foot:
         actual === null
-          ? `${mix.intention.name} has no output yet`
-          : `of ${mix.intention.name}'s output`,
+          ? message("categoryPane.noOutput", { name: mix.intention.name })
+          : message("mixPage.ofOutput", { name: mix.intention.name }),
     },
   ];
 }
@@ -317,21 +339,21 @@ function UnallocatedCard({
 }) {
   const nameOf = (id: string | null) =>
     id === null
-      ? "All categories"
+      ? message("categoriesPage.allCategories")
       : (categories.find((category) => category.id === id)?.name ?? id);
   const sets = [
     { categoryId: null, unallocated: mix.unallocated, noShareIds: mix.noShareIds },
     ...mix.nodes,
   ].filter((set) => set.unallocated > 0);
   return (
-    <DetailCard title="Sets under 100">
-      {sets.length === 0 && <Muted>None. Every set this mix uses adds up to 100.</Muted>}
+    <DetailCard title={message("mixPage.setsUnder100")}>
+      {sets.length === 0 && <Muted>{message("mixPage.allSetsTotal100")}</Muted>}
       {sets.map((set) => (
         <DetailRow
           key={set.categoryId ?? ""}
           aside={
             <span className="text-tone-amber-foreground">
-              {formatPercent(set.unallocated)} unallocated
+              {message("mixPage.unallocated", { percent: formatPercent(set.unallocated) })}
             </span>
           }
         >
@@ -343,7 +365,10 @@ function UnallocatedCard({
             <b className="font-semibold">{nameOf(set.categoryId)}</b>
           </button>
           {set.noShareIds.length > 0 && (
-            <Muted> · {set.noShareIds.map(nameOf).join(", ")} no share</Muted>
+            <Muted>
+              {" "}
+              · {message("mixPage.noShareNames", { names: set.noShareIds.map(nameOf).join(", ") })}
+            </Muted>
           )}
         </DetailRow>
       ))}

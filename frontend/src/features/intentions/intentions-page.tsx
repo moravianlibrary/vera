@@ -6,8 +6,6 @@
 // pages a behind-pace target is short, or a correcting run's allocation for a tracking card out
 // of the band. Its mix line links to Categories with its `?i=`: *Edit mix* where the person may
 // edit the owner's, *Proportions* otherwise.
-// TODO(rrandiak): labels move to i18n.
-
 import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@vera/contract/intentions";
 import type { Session } from "@vera/domain/entities";
 import { scopeOfIntention } from "@vera/domain/intentions";
@@ -58,10 +56,14 @@ import { useProjectsQuery } from "@/hooks/use-reference-query";
 import { useSectionPreferences } from "@/hooks/use-section-preferences";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import type { NoteTone } from "@/lib/status-notes";
 import { cn } from "@/lib/utils";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "intentions", ...options });
 
 type OpenDialog =
   | { kind: "intention"; source: IntentionSource }
@@ -91,7 +93,7 @@ export interface IntentionActs {
 export function IntentionsPage() {
   const view = useViewUrlState(intentionsView, "i");
   const indexQuery = useIntentionIndexQuery();
-  const indexFailure = failureOf(indexQuery, "Could not load intentions.");
+  const indexFailure = failureOf(indexQuery, message("intentionsPage.loadError"));
   const { data: index } = indexQuery;
   const { data: session } = useSessionQuery();
   const { data: projects = [] } = useProjectsQuery();
@@ -129,7 +131,7 @@ export function IntentionsPage() {
     if (!result.isDone) {
       setNote({
         tone: "red",
-        title: `${intention.name} was not changed`,
+        title: message("intentionsPage.notChanged", { name: intention.name }),
         text: result.refusal.message,
       });
       return;
@@ -137,8 +139,8 @@ export function IntentionsPage() {
 
     focus(intention.id, {
       tone: "green",
-      title: `Archived ${intention.name}.`,
-      text: "Its definition and displayed results are preserved.",
+      title: message("intentionsPage.archived", { name: intention.name }),
+      text: message("intentionsPage.archivedText"),
     });
   };
   const generateActionOf = (row: IntentionRow): ViewAction | null => {
@@ -156,7 +158,7 @@ export function IntentionsPage() {
     if (isTracking && row.outputPages > 0 && row.outOfBandCount > 0) {
       return {
         id: "generate",
-        label: "Generate correcting list…",
+        label: message("intentionsPage.generateCorrection"),
         onSelect: () => setDialog({ kind: "correct", row }),
       };
     }
@@ -166,10 +168,10 @@ export function IntentionsPage() {
       id: "generate",
       label:
         catchUp > 0
-          ? `Generate catch-up — ${formatCount(catchUp)} pp`
+          ? message("intentionsPage.generateCatchUp", { count: formatCount(catchUp) })
           : isTracking && row.mix !== null
-            ? "Generate against this mix"
-            : "Generate a list",
+            ? message("intentionsPage.generateAgainstMix")
+            : message("intentionsPage.generateList"),
       href: generationHrefOf({
         intentionId: intention.id,
         pages: catchUp > 0 ? catchUp : null,
@@ -192,11 +194,17 @@ export function IntentionsPage() {
           ? [
               {
                 id: "edit",
-                label: "Edit",
+                label: message("intentionsPage.edit"),
                 onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
               },
               ...(isArchivable
-                ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
+                ? [
+                    {
+                      id: "archive",
+                      label: message("intentionsPage.archive"),
+                      onSelect: () => void toggleArchived(row),
+                    },
+                  ]
                 : []),
             ]
           : [];
@@ -212,7 +220,7 @@ export function IntentionsPage() {
       }
 
       return {
-        label: "View output comparison",
+        label: message("intentionsPage.viewOutputComparison"),
         href: intentionMixHrefOf(row.intention.id, row.intention.scopeCategoryId),
       };
     },
@@ -225,7 +233,7 @@ export function IntentionsPage() {
             ? [
                 {
                   id: "repeat",
-                  label: "New repeat",
+                  label: message("intentionsPage.newRepeat"),
                   onSelect: () => setDialog({ kind: "template", row: null }),
                 },
               ]
@@ -234,7 +242,7 @@ export function IntentionsPage() {
             ? [
                 {
                   id: "new",
-                  label: "New intention",
+                  label: message("intentionsPage.newIntention"),
                   isPrimary: true,
                   onSelect: () => setDialog({ kind: "intention", source: { kind: "new" } }),
                 },
@@ -245,7 +253,7 @@ export function IntentionsPage() {
 
   return (
     <>
-      <PageHeader title="Intentions" actions={headerActions} />
+      <PageHeader title={message("intentionsPage.title")} actions={headerActions} />
       {session !== undefined && hasPermission(session, "watch") && (
         <WatchlistTabs
           view="intentions"
@@ -263,8 +271,8 @@ export function IntentionsPage() {
         query={view.query}
         facets={index === undefined ? undefined : intentionFacets(index, view.query)}
         onQueryChange={view.setQuery}
-        searchLabel="Search intentions"
-        searchPlaceholder="Search intentions and repeats"
+        searchLabel={message("intentionsPage.searchLabel")}
+        searchPlaceholder={message("intentionsPage.searchPlaceholder")}
       />
       <PageContent>
         {indexFailure !== undefined ? (
@@ -354,8 +362,8 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
         onDeleted={() =>
           onDone(null, {
             tone: "green",
-            title: `Deleted ${intention.name}.`,
-            text: "No list changed.",
+            title: message("intentionsPage.deleted", { name: intention.name }),
+            text: message("intentionsPage.noListChanged"),
           })
         }
       />
@@ -383,13 +391,16 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
           edited === null
             ? {
                 tone: "green",
-                title: `Created ${row.intention.name}.`,
-                text: `${columnTitles[columnOf(row.intention)]} · ${row.state.toLowerCase()}. Nothing to attach — whatever matches its scope counts.`,
+                title: message("intentionsPage.created", { name: row.intention.name }),
+                text: message("intentionsPage.createdText", {
+                  column: i18n.t(columnTitles[columnOf(row.intention)]),
+                  state: message(`state.${row.state.toLowerCase()}`),
+                }),
               }
             : {
                 tone: "green",
-                title: `Saved ${row.intention.name}.`,
-                text: "Its counts are worked out again over its whole window.",
+                title: message("intentionsPage.saved", { name: row.intention.name }),
+                text: message("intentionsPage.savedText"),
               },
           row,
         )
@@ -458,20 +469,18 @@ function IntentionBoard({
     onOpenChange: (open) => setOpen(id, open),
   });
   const cardSections: CardSection<BoardItem>[] = [
-    repeatSection("repeats", "Repeats"),
-    intentionSection("running", "Running"),
-    intentionSection("upcoming", "Upcoming"),
-    intentionSection("ended", "Ended"),
-    intentionSection("archived", "Archived"),
+    repeatSection("repeats", message("intentionsPage.repeats")),
+    intentionSection("running", message("intentions:state.running")),
+    intentionSection("upcoming", message("intentions:state.upcoming")),
+    intentionSection("ended", message("intentions:state.ended")),
+    intentionSection("archived", message("intentions:state.archived")),
   ];
 
   return (
     <div className="grid gap-6">
       {visibleCount === 0 ? (
         <p className="text-sm text-muted-foreground">
-          {isFiltered
-            ? "No intentions or repeats match these filters"
-            : "No intentions or repeats yet."}
+          {isFiltered ? message("intentionsPage.noMatches") : message("intentionsPage.empty")}
         </p>
       ) : (
         <CardSections
@@ -499,18 +508,7 @@ function IntentionBoard({
         />
       )}
       <p className="rounded-md border border-dashed bg-card px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-        <b className="text-foreground">Nothing is attached to an intention.</b> An item counts
-        towards every intention whose project scope and category it matches, when its list starts
-        inside the window — so one page can count towards a grant, a regional target and Overall
-        output at once. Those figures overlap and are never added.
-        <br />
-        <b className="text-foreground">Planned and delivered are plan completion</b>: what was put
-        on lists in the window, and how much of that was digitized in it.{" "}
-        <b className="text-foreground">Output</b> is everything digitized in the window, whenever it
-        was planned — what a mix is measured on.
-        <br />
-        <b className="text-foreground">The counting start is fixed once created.</b> To count from
-        another date, make a new intention from the old one.
+        {message("intentionsPage.explainer")}
       </p>
     </div>
   );
@@ -529,11 +527,13 @@ function RepeatLine({
   const { template } = row;
   const [before, after = ""] = template.namePattern.split("{period}");
   const parts: ReactNode[] = [
-    everyLabels[template.every].toLowerCase(),
-    template.targetPages === null ? null : `${formatCount(template.targetPages)} pp`,
-    row.mix === null ? "no mix" : row.mix.name,
-    `next ${formatCalendarDay(template.nextOn)}`,
-    template.isArchivingPrevious ? "archives the previous one" : null,
+    i18n.t(everyLabels[template.every]).toLocaleLowerCase(),
+    template.targetPages === null
+      ? null
+      : message("intentionsPage.targetPages", { count: formatCount(template.targetPages) }),
+    row.mix === null ? message("intentionsPage.noMix") : row.mix.name,
+    message("intentionsPage.next", { date: formatCalendarDay(template.nextOn) }),
+    template.isArchivingPrevious ? message("intentionsPage.archivesPrevious") : null,
   ].filter((part) => part !== null);
   return (
     <div
@@ -546,13 +546,17 @@ function RepeatLine({
         ↻{" "}
         <b className="font-semibold">
           {before}
-          <i>{periodNouns[template.every]}</i>
+          <i>{i18n.t(periodNouns[template.every])}</i>
           {after}
         </b>{" "}
         <span className="text-muted-foreground">· {parts.join(" · ")}</span>
       </span>
       {onEdit !== null && (
-        <ActionBar actions={[{ id: "edit", label: "Edit", onSelect: () => onEdit(row) }]} />
+        <ActionBar
+          actions={[
+            { id: "edit", label: message("intentionsPage.edit"), onSelect: () => onEdit(row) },
+          ]}
+        />
       )}
     </div>
   );

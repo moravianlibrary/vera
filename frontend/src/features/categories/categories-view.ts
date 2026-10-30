@@ -25,29 +25,40 @@ export const categoriesView: ViewDefinition<CategoryQuery> = {
   fields: [
     {
       key: "kinds",
-      label: "Kind",
-      field: vocabulary(categoryKinds, { Branch: "Branch", Leaf: "Leaf" }),
+      label: "categories:filter.kind",
+      field: vocabulary(categoryKinds, {
+        Branch: "categories:kind.branch",
+        Leaf: "categories:kind.leaf",
+      }),
       isQuick: true,
     },
     {
       key: "custodies",
-      label: "Custody",
+      label: "categories:filter.custody",
       field: vocabulary(categoryCustodies, {
-        Unheld: "Without custody",
-        Direct: "Direct grant",
-        Inherited: "Inherited",
+        Unheld: "categories:custody.unheld",
+        Direct: "categories:custody.direct",
+        Inherited: "categories:custody.inherited",
       }),
     },
     {
       key: "attentions",
-      label: "Needs attention",
+      label: "categories:filter.attention",
       field: vocabulary(categoryAttentions, {
-        Unallocated: "Unallocated share",
-        NoShare: "No share",
+        Unallocated: "categories:attention.unallocated",
+        NoShare: "categories:attention.noShare",
       }),
     },
-    { key: "documents", label: "Documents", field: { kind: "numberRange", unit: "documents" } },
-    { key: "readyPages", label: "Ready pages", field: { kind: "numberRange", unit: "pages" } },
+    {
+      key: "documents",
+      label: "categories:filter.documents",
+      field: { kind: "numberRange", unit: "categories:unit.documents" },
+    },
+    {
+      key: "readyPages",
+      label: "categories:filter.readyPages",
+      field: { kind: "numberRange", unit: "categories:unit.pages" },
+    },
   ],
   groupings: [],
   groupingParam: "group",

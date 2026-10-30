@@ -19,7 +19,9 @@ describe("messages", () => {
     for (const namespace of Object.keys(resources.en) as (keyof typeof resources.en)[]) {
       const english = Object.keys(resources.en[namespace]);
       const czech = Object.keys(resources.cs[namespace]);
-      const englishBases = [...new Set(english.map((key) => key.replace(/_(one|other)$/, "")))];
+      const englishBases = [
+        ...new Set(english.map((key) => key.replace(/_(one|few|many|other)$/, ""))),
+      ];
       expect(
         [...new Set(czech.map((key) => key.replace(/_(one|few|many|other)$/, "")))].sort(),
       ).toEqual(englishBases.sort());

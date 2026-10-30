@@ -6,8 +6,6 @@
 // of the ±5 band; opened, the drift per category. Under both, the mix it reads and whose it is.
 // Its acts sit in the foot, beside what the Overall intention cannot have done to it; the mix line
 // links to its Mix.
-// TODO(rrandiak): labels move to i18n.
-
 import type { FillRowView, IntentionRow, MixRowView } from "@vera/contract/intentions";
 import { mixBand } from "@vera/domain/intentions";
 import type { ReactNode } from "react";
@@ -38,10 +36,13 @@ import {
 import { conditionTextOf } from "@/features/properties/scope-conditions-field";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "intentions", ...options });
 
 // *Edit mix* or *Proportions*, to its Mix.
 export interface MixLink {
@@ -91,9 +92,7 @@ export function IntentionCard({ row, repeatEvery, isOpen, actions, mixLink }: In
       foot={
         intention.isOverall || actions.length > 0 ? (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            {intention.isOverall && (
-              <span>The default mix for generating. Cannot be archived or deleted.</span>
-            )}
+            {intention.isOverall && <span>{message("intentionCard.overallFoot")}</span>}
             <ActionBar actions={actions} className="ml-auto" />
           </div>
         ) : undefined
@@ -113,14 +112,18 @@ function IntentionBadges({
   return (
     <>
       {row.intention.targetPages === null ? (
-        <ToneBadge tone="slate">Output</ToneBadge>
+        <ToneBadge tone="slate">{message("kind.output")}</ToneBadge>
       ) : (
-        <ToneBadge tone="blue">Target</ToneBadge>
+        <ToneBadge tone="blue">{message("kind.targets")}</ToneBadge>
       )}
-      {row.intention.isOverall && <ToneBadge tone="purple">Overall</ToneBadge>}
-      {row.intention.projectId !== null && <ToneBadge tone="blue">Project</ToneBadge>}
-      {row.state === "Upcoming" && <ToneBadge tone="slate">Upcoming</ToneBadge>}
-      {row.outOfBandCount > 0 && <ToneBadge tone="red">Out of band</ToneBadge>}
+      {row.intention.isOverall && (
+        <ToneBadge tone="purple">{message("intentionCard.overall")}</ToneBadge>
+      )}
+      {row.intention.projectId !== null && (
+        <ToneBadge tone="blue">{message("intentions:filter.project")}</ToneBadge>
+      )}
+      {row.state === "Upcoming" && <ToneBadge tone="slate">{message("state.upcoming")}</ToneBadge>}
+      {row.outOfBandCount > 0 && <ToneBadge tone="red">{message("pace.outOfBand")}</ToneBadge>}
       {verdict !== null && <ToneBadge tone={verdict.tone}>{verdict.text}</ToneBadge>}
       {repeatEvery !== null && <ToneBadge tone="slate">↻ {everyLabels[repeatEvery]}</ToneBadge>}
     </>
@@ -132,7 +135,7 @@ function ScopeLine({ row }: { row: IntentionRow }) {
   const { data: propertyIndex } = usePropertiesQuery();
   const parts: { key: string; part: ReactNode }[] = [];
   if (funding.kind === "none") {
-    parts.push({ key: "funding", part: "Counts work without a project" });
+    parts.push({ key: "funding", part: message("intentionCard.noProject") });
   }
 
   if (row.project !== null) {
@@ -140,7 +143,9 @@ function ScopeLine({ row }: { row: IntentionRow }) {
       key: "funding",
       part: (
         <>
-          {row.intention.projectId === null ? "Project: " : "The project's own: "}
+          {row.intention.projectId === null
+            ? message("intentionCard.project")
+            : message("intentionCard.ownProject")}
           <Link
             to={`/projects/${encodeURIComponent(row.project.id)}`}
             className="underline underline-offset-2 hover:text-foreground"
@@ -153,7 +158,10 @@ function ScopeLine({ row }: { row: IntentionRow }) {
   }
 
   if (row.scope !== null) {
-    parts.push({ key: "scope", part: `Only ${scopePathOf(row.scope.path)}` });
+    parts.push({
+      key: "scope",
+      part: message("intentionCard.onlyScope", { scope: scopePathOf(row.scope.path) }),
+    });
   }
 
   // PLAN-scope: its conditions on properties.
@@ -200,19 +208,19 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
       />
       {row.pagesPerWeekNeeded !== null && intention.endsOn !== null && (
         <p className="text-ui text-muted-foreground">
-          Needs{" "}
-          <b className="font-semibold text-foreground">
-            {formatCount(row.pagesPerWeekNeeded)} pp/week
-          </b>{" "}
-          to reach it by {formatCalendarDay(intention.endsOn)}
+          {message("intentionCard.pagesPerWeekNeeded", {
+            pages: formatCount(row.pagesPerWeekNeeded),
+            date: formatCalendarDay(intention.endsOn),
+          })}
         </p>
       )}
       {isOpenEndedShort && (
         <p className="text-ui text-muted-foreground">
           <b className="font-semibold text-foreground">
-            {formatCount(target - row.deliveredPages)} pp
-          </b>{" "}
-          to go · no end, so no pace
+            {message("intentionCard.pagesToGo", {
+              pages: formatCount(target - row.deliveredPages),
+            })}
+          </b>
         </p>
       )}
       {row.outOfBandCount > 0 && (
@@ -221,25 +229,26 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           <OutOfBandDetail row={row} />
         </div>
       )}
-      <Expansion label="Per category and lists" isOpen={isOpen}>
+      <Expansion label={message("intentionCard.perCategoryAndLists")} isOpen={isOpen}>
         <DataTable
           rows={row.fill}
           rowId={(fill) => fill.categoryId}
           columns={{ notebook: fillColumns(row) }}
-          emptyText="No category in its scope."
+          emptyText={message("intentionCard.noCategoryScope")}
         />
         <Fine>
-          A planned figure in amber is short of its share. Shares are read{" "}
-          {row.scope === null
-            ? "of the whole tree"
-            : `inside ${row.scope.path.at(-1)} — it is 100% here, whatever it gets globally`}
-          .
+          {message(
+            row.scope === null
+              ? "intentionCard.plannedShareWhole"
+              : "intentionCard.plannedShareScoped",
+            { scope: row.scope?.path.at(-1) },
+          )}
         </Fine>
         <h4 className="mt-3 mb-1 text-xs font-semibold text-muted-foreground">
-          Lists starting in its window
+          {message("intentionCard.listsInWindow")}
         </h4>
         {row.lists.length === 0 ? (
-          <Fine>None yet.</Fine>
+          <Fine>{message("intentionCard.noListsYet")}</Fine>
         ) : (
           <ul className="grid gap-1 text-ui">
             {row.lists.map((list) => (
@@ -254,7 +263,10 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
                   <span className="font-mono text-xs text-muted-foreground">{list.id}</span>
                 </span>
                 <span className="text-muted-foreground">
-                  {plural(list.itemCount, "item")} · {formatCount(list.pages)} pp
+                  {message("intentionCard.listItemsAndPages", {
+                    count: list.itemCount,
+                    pages: formatCount(list.pages),
+                  })}
                 </span>
               </li>
             ))}
@@ -281,11 +293,13 @@ function fillColumns(row: IntentionRow): ColumnDefinition<FillRowView>[] {
   const columns: ColumnDefinition<FillRowView>[] = [
     {
       key: "category",
-      header: row.scope === null ? "Category" : `Within ${row.scope.path.at(-1)}`,
+      header: message(row.scope === null ? "category.column" : "category.within", {
+        scope: row.scope?.path.at(-1),
+      }),
       track: "minmax(8rem,1fr)",
       cell: (fill) => scopePathOf(fill.path),
     },
-    pagesColumn("share", "Share", (fill) => (
+    pagesColumn("share", message("intentionCard.share"), (fill) => (
       <span
         className={cn(
           fill.share === null && "text-tone-amber-foreground",
@@ -295,15 +309,17 @@ function fillColumns(row: IntentionRow): ColumnDefinition<FillRowView>[] {
         {shareTextOf(fill.share)}
       </span>
     )),
-    pagesColumn("target", "Target pp", (fill) =>
+    pagesColumn("target", message("intentionCard.targetPages"), (fill) =>
       fill.targetPages === null ? "—" : formatCount(fill.targetPages),
     ),
-    pagesColumn("planned", "Planned", (fill) => (
+    pagesColumn("planned", message("intentionCard.planned"), (fill) => (
       <span className={cn(fill.isShort && "font-semibold text-tone-amber-foreground")}>
         {formatCount(fill.plannedPages)}
       </span>
     )),
-    pagesColumn("delivered", "Delivered", (fill) => formatCount(fill.deliveredPages)),
+    pagesColumn("delivered", message("intentionCard.delivered"), (fill) =>
+      formatCount(fill.deliveredPages),
+    ),
   ];
   return row.mix === null
     ? columns.filter((column) => ["category", "planned", "delivered"].includes(column.key))
@@ -313,11 +329,11 @@ function fillColumns(row: IntentionRow): ColumnDefinition<FillRowView>[] {
 // ---------------------------------------------------------------- tracking the mix
 
 const flagBadges = {
-  inBand: { text: "In band", tone: "green" },
-  over: { text: "Over", tone: "red" },
-  under: { text: "Under", tone: "blue" },
-  excludedUsed: { text: "Excluded category used", tone: "red" },
-  noShare: { text: "No share", tone: "amber" },
+  inBand: { text: "intentionCard.inBand", tone: "green" },
+  over: { text: "intentionCard.over", tone: "red" },
+  under: { text: "intentionCard.under", tone: "blue" },
+  excludedUsed: { text: "intentionCard.excludedUsed", tone: "red" },
+  noShare: { text: "intentionCard.noShare", tone: "amber" },
 } as const;
 
 function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
@@ -327,9 +343,11 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
       <p className="text-ui text-muted-foreground">
         {basis ?? (
           <>
-            {outputSinceOf(row)} ·{" "}
-            <b className="font-semibold text-foreground">{formatCount(row.outputPages)} pp</b>{" "}
-            digitized{row.scope === null ? "" : ` in ${row.scope.path.at(-1)}`}
+            {message("intentionCard.digitizedOutput", {
+              period: outputSinceOf(row),
+              pages: formatCount(row.outputPages),
+              scope: row.scope?.path.at(-1),
+            })}
           </>
         )}
       </p>
@@ -352,30 +370,35 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
         row.outputPages > 0 &&
         row.mix !== null && (
           <p className="text-ui text-tone-green-foreground">
-            Every category within {bandText} points.
+            {message("intentionCard.allWithinBand", { band: bandText })}
           </p>
         )
       )}
       {row.unallocated > 0.5 && (
         <p className="text-ui text-tone-amber-foreground">
-          {Math.round(row.unallocated)}% of the mix is unallocated
+          {message("intentionCard.mixUnallocated", { percent: Math.round(row.unallocated) })}
         </p>
       )}
-      <Expansion label={row.mix === null ? "Output by category" : "Per category"} isOpen={isOpen}>
+      <Expansion
+        label={message(
+          row.mix === null ? "intentionCard.outputByCategory" : "intentionCard.perCategory",
+        )}
+        isOpen={isOpen}
+      >
         <DataTable
           rows={row.mixRows}
           rowId={(mixRow) => mixRow.categoryId}
           columns={{ notebook: driftColumns(row) }}
-          emptyText="One category, all of it."
+          emptyText={message("intentionCard.oneCategoryAll")}
         />
         {row.mix !== null && (
           <Fine>
-            Intended is the mix{row.scope === null ? "" : ` within ${row.scope.path.at(-1)}`}
-            {"; "}
-            planned is over the {formatCount(row.plannedPages)} pp on lists starting in its window;
-            output is over the {formatCount(row.outputPages)} pp digitized in it, whenever they were
-            planned. Drift is output minus intended, in points; {bandText} is display tolerance, not
-            a change to the mix.
+            {message("intentionCard.mixExplanation", {
+              scope: row.scope?.path.at(-1),
+              planned: formatCount(row.plannedPages),
+              output: formatCount(row.outputPages),
+              band: bandText,
+            })}
           </Fine>
         )}
         <NotCounted row={row} />
@@ -388,11 +411,10 @@ function OutOfBandDetail({ row }: { row: IntentionRow }) {
   const worst = worstDriftOf(row.mixRows);
   return (
     <p className="text-ui text-tone-red-foreground">
-      {plural(row.outOfBandCount, "category", "categories")} out of the {bandText} band
+      {message("intentionCard.outOfBand", { count: row.outOfBandCount, band: bandText })}
       {worst !== null && worst.drift !== null && (
         <>
-          {" "}
-          · worst:{" "}
+          {message("intentionCard.worstDrift")}
           <b className="font-semibold">
             {worst.name} {signedPoints(worst.drift)} pts
           </b>
@@ -430,9 +452,9 @@ function DriftLine({
           >
             {mixRow.name}{" "}
             {mixRow.flag === "excludedUsed"
-              ? "excluded, used"
+              ? message("intentionCard.excludedUsedShort")
               : mixRow.flag === "noShare"
-                ? "no share"
+                ? message("intentionCard.noShare")
                 : signedPoints(mixRow.drift ?? 0)}
           </span>
         </span>
@@ -453,20 +475,22 @@ function driftColumns(row: IntentionRow): ColumnDefinition<MixRowView>[] {
   const columns: ColumnDefinition<MixRowView>[] = [
     {
       key: "category",
-      header: row.scope === null ? "Category" : `Within ${row.scope.path.at(-1)}`,
+      header: message(row.scope === null ? "category.column" : "category.within", {
+        scope: row.scope?.path.at(-1),
+      }),
       track: "minmax(7rem,1fr)",
       cell: (mixRow) => mixRow.name,
     },
-    numeric("intended", "Intended", (mixRow) =>
+    numeric("intended", message("intentionCard.intended"), (mixRow) =>
       mixRow.intended === null ? (
         <span className="text-tone-amber-foreground">—</span>
       ) : (
         percentCell(mixRow.intended)
       ),
     ),
-    numeric("planned", "Planned", (mixRow) => percentCell(mixRow.planned)),
-    numeric("output", "Output", (mixRow) => percentCell(mixRow.output)),
-    numeric("drift", "Drift", (mixRow) =>
+    numeric("planned", message("intentionCard.planned"), (mixRow) => percentCell(mixRow.planned)),
+    numeric("output", message("intentionCard.output"), (mixRow) => percentCell(mixRow.output)),
+    numeric("drift", message("intentionCard.drift"), (mixRow) =>
       mixRow.drift === null ? null : (
         <span
           className={cn(
@@ -487,7 +511,9 @@ function driftColumns(row: IntentionRow): ColumnDefinition<MixRowView>[] {
       track: "max-content",
       cell: (mixRow) =>
         mixRow.flag === null ? null : (
-          <ToneBadge tone={flagBadges[mixRow.flag].tone}>{flagBadges[mixRow.flag].text}</ToneBadge>
+          <ToneBadge tone={flagBadges[mixRow.flag].tone}>
+            {message(flagBadges[mixRow.flag].text)}
+          </ToneBadge>
         ),
     },
   ];
@@ -527,8 +553,8 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
         <span className="text-muted-foreground">
           {row.mixRows.length === 0
             ? row.mix === null
-              ? "— output only"
-              : "— one category, all of it"
+              ? `— ${message("intentionCard.outputOnly")}`
+              : `— ${message("intentionCard.oneCategoryAll")}`
             : shown.map((mixRow, index) => (
                 <span key={mixRow.categoryId}>
                   {index > 0 && " · "}
@@ -546,11 +572,11 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
                   )}
                 </span>
               ))}
-          {hidden > 0 && ` · +${hidden} more`}
+          {hidden > 0 && ` · ${message("intentionCard.moreHidden", { count: hidden })}`}
           {row.unallocated > 0.5 && (
             <span className="text-tone-amber-foreground">
               {" "}
-              · {Math.round(row.unallocated)}% unallocated
+              · {message("intentionCard.unallocated", { percent: Math.round(row.unallocated) })}
             </span>
           )}
         </span>
@@ -569,7 +595,7 @@ function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
               {" "}
               ·{" "}
               <Link to={`/mixes/${row.mix.id}`} className="text-foreground hover:underline">
-                View shared mix
+                {message("intentionCard.viewSharedMix")}
               </Link>
             </>
           )}
@@ -606,10 +632,12 @@ function Fine({ children }: { children: ReactNode }) {
 
 function NotCounted({ row }: { row: IntentionRow }) {
   const parts = [
-    row.noDateCount > 0
-      ? `${plural(row.noDateCount, "item")} digitized with no date recorded`
+    row.noDateCount > 0 ? message("intentionCard.noDateItems", { count: row.noDateCount }) : null,
+    row.noPagesCount > 0
+      ? message("intentionCard.noPageCountItems", { count: row.noPagesCount })
       : null,
-    row.noPagesCount > 0 ? `${plural(row.noPagesCount, "item")} with no page count` : null,
   ].filter((part) => part !== null);
-  return parts.length === 0 ? null : <Fine>{parts.join("; ")} — not counted.</Fine>;
+  return parts.length === 0 ? null : (
+    <Fine>{message("intentionCard.notCounted", { details: parts.join("; ") })}</Fine>
+  );
 }

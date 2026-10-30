@@ -4,8 +4,6 @@
 // new category's name, then what moves, as the server counts it. The child takes all of the leaf's
 // share in each mix that gives it one, since it holds everything that was there; left with none,
 // the branch would drop out of generation. Routed as `?c=ID&refine=1`.
-// TODO(rrandiak): labels move to i18n.
-
 import type { CategoryNode } from "@vera/contract/categories";
 import { isNameTaken } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
@@ -23,10 +21,11 @@ import {
 } from "@/features/categories/use-categories-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
+import { i18n } from "@/i18n";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
-const steps = ["Name the new category", "What moves"];
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "categories", ...options });
 
 interface RefineWizardProps {
   categories: readonly Category[];
@@ -46,6 +45,7 @@ export function RefineWizard({
   onRefined,
 }: RefineWizardProps) {
   const id = useId();
+  const steps = [message("refine.stepName"), message("refine.stepMoves")];
   const [stepIndex, setStepIndex] = useState(0);
   const [name, setName] = useState("");
   const [isTouched, setIsTouched] = useState(false);
@@ -55,17 +55,17 @@ export function RefineWizard({
     call: (childName: string) => refineCategory(category.id, { name: childName }),
     invalidates: categoryInvalidations,
     refusalTexts: {
-      "category.name_taken": "A category beside it already has that name.",
-      "category.has_children": "It has a category under it now; it is no longer a leaf.",
-      403: "You may no longer change this part of the tree.",
+      "category.name_taken": message("categoryDialog.nameTaken"),
+      "category.has_children": message("refine.hasChildren"),
+      403: message("categoryDialog.forbidden"),
     },
   });
   const trimmed = name.trim();
   const nameProblem =
     trimmed === ""
-      ? "The new category needs a name."
+      ? message("refine.nameRequired")
       : isNameTaken(categories, category.id, trimmed, null)
-        ? "A category beside it already has that name."
+        ? message("categoryDialog.nameTaken")
         : null;
   const { documentCount } = node;
 
@@ -77,15 +77,15 @@ export function RefineWizard({
     }
 
     onRefined(result.value, {
-      title: `Moved ${plural(documentCount, "document")} into ${result.value.name}`,
-      text: `${category.name} is now a branch, and ${result.value.name} holds its whole share.`,
+      title: message("refine.movedTitle", { count: documentCount, name: result.value.name }),
+      text: message("refine.movedText", { category: category.name, name: result.value.name }),
     });
   };
 
   return (
     <PaneWizard
-      title={`Refine ${category.name}`}
-      description="a leaf that holds documents gains a child"
+      title={message("refine.title", { name: category.name })}
+      description={message("refine.description")}
       breadcrumb={breadcrumb}
       steps={steps}
       currentIndex={stepIndex}
@@ -102,7 +102,7 @@ export function RefineWizard({
       primary={
         stepIndex === 0
           ? {
-              label: "Next — see what moves",
+              label: message("refine.next"),
               onSelect: () => {
                 setIsTouched(true);
                 if (nameProblem === null) {
@@ -111,20 +111,20 @@ export function RefineWizard({
               },
             }
           : {
-              label: `Refine and move ${plural(documentCount, "document")}`,
+              label: message("refine.submit", { count: documentCount }),
               isPending: refine.isPending,
               onSelect: () => void submit(),
             }
       }
     >
       {stepIndex === 0 ? (
-        <DetailCard title="Name the new category">
-          <Field id={`${id}-name`} label="Name">
+        <DetailCard title={message("refine.stepName")}>
+          <Field id={`${id}-name`} label={message("categoryDialog.name")}>
             <Input
               id={`${id}-name`}
               autoFocus
               value={name}
-              placeholder={`e.g. ${category.name} — before 1918`}
+              placeholder={message("refine.placeholder", { name: category.name })}
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
@@ -140,50 +140,45 @@ export function RefineWizard({
             <p className="mt-1.5 text-xs text-destructive">{nameProblem}</p>
           )}
           <FinePrint>
-            Documents sit on leaves only, so {category.name} cannot hold documents and a child at
-            once. All {documentCount} of them move into the new category, and {category.name}{" "}
-            becomes a branch. Sort them into further categories afterwards.
+            {message("refine.nameStepHelp", { category: category.name, count: documentCount })}
           </FinePrint>
         </DetailCard>
       ) : (
-        <DetailCard title="What this moves">
+        <DetailCard title={message("refine.stepMoves")}>
           <DetailRow>
-            <b className="font-semibold">{plural(documentCount, "document")}</b> ·{" "}
-            {formatCount(node.pages)} pages
+            {message("refine.documentsAndPages", {
+              count: documentCount,
+              pages: formatCount(node.pages),
+            })}
             <span className="block text-xs text-muted-foreground">
-              {category.name} → {category.name} ›{" "}
-              <b className="font-semibold text-foreground">{trimmed}</b>
+              {message("refine.path", { category: category.name, name: trimmed })}
             </span>
           </DetailRow>
           {impact?.shares.map((share) => (
             <DetailRow key={share.mix.id}>
               {share.mix.name}
               {share.intentionCount > 0 && (
-                <Muted> · and {plural(share.intentionCount, "intention")} using it</Muted>
+                <Muted>
+                  {" "}
+                  · {message("refine.intentionsUsing", { count: share.intentionCount })}
+                </Muted>
               )}
               <span className="block text-xs text-muted-foreground">
-                {trimmed} gets <b className="font-semibold text-foreground">100%</b> of{" "}
-                {category.name}&apos;s {share.share}%
+                {message("refine.shareMoved", {
+                  name: trimmed,
+                  category: category.name,
+                  share: share.share,
+                })}
               </span>
             </DetailRow>
           ))}
           {impact !== undefined && impact.otherMixCount > 0 && (
             <DetailRow>
-              <Muted>
-                {plural(impact.otherMixCount, "more mix", "more mixes")} you cannot read, the same
-                way
-              </Muted>
+              <Muted>{message("refine.otherMixes", { count: impact.otherMixCount })}</Muted>
             </DetailRow>
           )}
-          <FinePrint>
-            The new category takes <b className="font-semibold">all</b> of {category.name}&apos;s
-            share in each mix, since it holds everything that was there. Left with none, the whole
-            branch would drop out of generation. Custody on {category.name} still reaches them: it
-            inherits down.
-          </FinePrint>
-          <FinePrint>
-            Their status does not change. Each one&apos;s history records the move.
-          </FinePrint>
+          <FinePrint>{message("refine.mixExplanation", { category: category.name })}</FinePrint>
+          <FinePrint>{message("refine.historyExplanation")}</FinePrint>
         </DetailCard>
       )}
     </PaneWizard>

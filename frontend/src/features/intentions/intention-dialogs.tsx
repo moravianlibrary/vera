@@ -6,8 +6,6 @@
 // beside the ones it reads now, all from the server's preview. Deleting says what was generated
 // with it; a repeat changes only the occurrences still to come. A correcting run shows the
 // allocation it would hand to the list editor before anything is generated.
-// TODO(rrandiak): labels move to i18n.
-
 import { useQuery } from "@tanstack/react-query";
 import type {
   IntentionDraft,
@@ -54,7 +52,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { columnTitles, everyLabels, shareTextOf } from "@/features/intentions/intentions-view";
+import { everyLabels, shareTextOf } from "@/features/intentions/intentions-view";
 import { intentionInvalidations } from "@/features/intentions/use-intentions-query";
 import {
   ScopeConditionsField,
@@ -63,18 +61,27 @@ import {
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery, useProjectsQuery } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
-const refusalTexts = {
-  "intention.name": "Another intention already has that name.",
-  "intention.counts_from": "The counting start is fixed once created.",
-  "intention.project":
-    "Its name, project scope, window and target are its project's; change them there.",
-  403: "You may no longer change this intention.",
-} as const;
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, {
+    ns:
+      key.startsWith("categoriesPage.") ||
+      key.startsWith("categoryPane.") ||
+      key.startsWith("categoryDialog.")
+        ? "categories"
+        : "intentions",
+    ...options,
+  });
+const refusalTexts = () => ({
+  "intention.name": message("intentionDialog.nameTaken"),
+  "intention.counts_from": message("intentionDialog.fixedStart"),
+  "intention.project": message("intentionDialog.projectOwn"),
+  403: message("intentionDialog.forbidden"),
+});
 
 // ---------------------------------------------------------------- shared fields
 
@@ -123,10 +130,10 @@ function ProjectScopeSelect({
       </SelectTrigger>
       <SelectContent>
         {(canUnscoped || value === fundingAny) && (
-          <SelectItem value={fundingAny}>All work — with or without a project</SelectItem>
+          <SelectItem value={fundingAny}>{message("intentionDialog.allWork")}</SelectItem>
         )}
         {(canUnscoped || value === fundingNone) && (
-          <SelectItem value={fundingNone}>No project</SelectItem>
+          <SelectItem value={fundingNone}>{message("intentionDialog.noProject")}</SelectItem>
         )}
         {offered.map((project) => (
           <SelectItem key={project.id} value={project.id}>
@@ -163,7 +170,7 @@ function ScopeSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={allCategories}>All categories</SelectItem>
+        <SelectItem value={allCategories}>{message("categoriesPage.allCategories")}</SelectItem>
         {rows.map(({ category, depth }) => (
           <SelectItem
             key={category.id}
@@ -203,14 +210,16 @@ function MixSelect({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="none">No mix — count output only</SelectItem>
-        <SelectItem value="primary">Use Primary mix</SelectItem>
+        <SelectItem value="none">{message("intentionDialog.noMixOutputOnly")}</SelectItem>
+        <SelectItem value="primary">{message("intentionDialog.usePrimary")}</SelectItem>
         {mixes
           .filter((mix) => mix.archivedAt === null)
           .map((mix) => (
             <SelectItem key={`use:${mix.id}`} value={`use:${mix.id}`}>
-              Follow latest: {mix.name}
-              {mix.isPrimary ? " (Primary)" : ""}
+              {message("intentionDialog.followLatest", {
+                name: mix.name,
+                primary: mix.isPrimary ? ` (${message("intentionDialog.primary")})` : "",
+              })}
             </SelectItem>
           ))}
         {mixes
@@ -223,7 +232,10 @@ function MixSelect({
                   key={`use:${mix.id}:${revision.revision}`}
                   value={`use:${mix.id}:${revision.revision}`}
                 >
-                  Use snapshot: {revision.label} · {mix.name}
+                  {message("intentionDialog.useSnapshot", {
+                    label: revision.label,
+                    name: mix.name,
+                  })}
                 </SelectItem>
               )),
           )}
@@ -239,24 +251,25 @@ export type IntentionSource =
   | { kind: "edit"; row: IntentionRow }
   | { kind: "copy"; row: IntentionRow };
 
-const intentionFormSchema = z
-  .object({
-    name: z.string().trim().min(1, "An intention needs a name"),
-    description: z.string(),
-    funding: z.string(),
-    scope: z.string(),
-    mix: z.string(),
-    targetPages: z.string().regex(pagesText, "A target is a number of pages, or none"),
-    countsFrom: z.string().min(1, "Say when it starts counting"),
-    endsOn: z.string(),
-    // PLAN-scope: conditions on the items' properties.
-    conditions: z.array(propertyConditionSchema),
-  })
-  .refine((values) => values.endsOn === "" || values.endsOn >= values.countsFrom, {
-    message: "It cannot end before it starts counting",
-    path: ["endsOn"],
-  });
-type IntentionForm = z.infer<typeof intentionFormSchema>;
+const intentionFormSchemaOf = () =>
+  z
+    .object({
+      name: z.string().trim().min(1, message("intentionDialog.nameRequired")),
+      description: z.string(),
+      funding: z.string(),
+      scope: z.string(),
+      mix: z.string(),
+      targetPages: z.string().regex(pagesText, message("intentionDialog.targetPagesError")),
+      countsFrom: z.string().min(1, message("intentionDialog.countsFromRequired")),
+      endsOn: z.string(),
+      // PLAN-scope: conditions on the items' properties.
+      conditions: z.array(propertyConditionSchema),
+    })
+    .refine((values) => values.endsOn === "" || values.endsOn >= values.countsFrom, {
+      message: message("intentionDialog.endBeforeStart"),
+      path: ["endsOn"],
+    });
+type IntentionForm = z.infer<ReturnType<typeof intentionFormSchemaOf>>;
 
 const draftOf = (values: IntentionForm): IntentionDraft => ({
   name: values.name.trim(),
@@ -293,7 +306,7 @@ function defaultsOf(source: IntentionSource): IntentionForm {
       ? "none"
       : `use:${intention.distributionId}${intention.mixRevision ? `:${intention.mixRevision}` : ""}`;
   return {
-    name: isCopy ? `${intention.name} (copy)` : intention.name,
+    name: isCopy ? message("intentionDialog.copyName", { name: intention.name }) : intention.name,
     description: intention.description,
     funding: fundingValueOf(intention.funding),
     scope: intention.scopeCategoryId ?? allCategories,
@@ -335,28 +348,31 @@ export function IntentionFormDialog({
     call: (draft: IntentionDraft) =>
       edited === null ? createIntention(draft) : saveIntention(edited.intention.id, draft),
     invalidates: intentionInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTexts(),
   });
   const title =
     source.kind === "new"
-      ? "New intention"
+      ? message("intentionsPage.newIntention")
       : source.kind === "copy"
-        ? `New intention from ${source.row.intention.name}`
-        : `Edit ${source.row.intention.name}`;
+        ? message("intentionDialog.copyTitle", { name: source.row.intention.name })
+        : message("intentionDialog.editTitle", { name: source.row.intention.name });
+  const schema = intentionFormSchemaOf();
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      description="What it counts, the mix it reads, its target and its window."
-      schema={intentionFormSchema}
+      description={message("intentionDialog.formDescription")}
+      schema={schema}
       defaultValues={defaultsOf(source)}
-      submitLabel={edited === null ? "Create intention" : "Save"}
+      submitLabel={
+        edited === null ? message("intentionDialog.create") : message("intentionDialog.save")
+      }
       secondary={
         onDelete === undefined
           ? undefined
-          : { label: "Delete…", isDestructive: true, onSelect: onDelete }
+          : { label: message("intentionDialog.delete"), isDestructive: true, onSelect: onDelete }
       }
       onSubmit={async (values) => {
         const result = await save.run(draftOf(values));
@@ -371,10 +387,10 @@ export function IntentionFormDialog({
         <>
           {ownProject === null ? (
             <>
-              <Field id={`${id}-name`} label="Name">
+              <Field id={`${id}-name`} label={message("categoryDialog.name")}>
                 <Input
                   id={`${id}-name`}
-                  placeholder="e.g. Regional weeklies 2027"
+                  placeholder={message("intentionDialog.namePlaceholder")}
                   {...form.register("name")}
                 />
               </Field>
@@ -382,24 +398,27 @@ export function IntentionFormDialog({
             </>
           ) : (
             <p className="rounded-md bg-tone-blue px-3 py-2 text-ui text-tone-blue-foreground">
-              <b className="font-semibold">{ownProject.name}&apos;s own intention.</b> Its name,
-              project scope, window and target are the project&apos;s:{" "}
+              {message("intentionDialog.ownProjectNote", { name: ownProject.name })}{" "}
               <Link
                 to={`/projects/${encodeURIComponent(ownProject.id)}`}
                 className="font-medium underline underline-offset-2"
               >
-                change them there
+                {message("intentionDialog.changeThere")}
               </Link>
-              . Its category scope and optional mix can be changed here.
+              {message("intentionDialog.scopeMixHere")}
             </p>
           )}
-          <Field id={`${id}-description`} label="Description" hint="optional">
+          <Field
+            id={`${id}-description`}
+            label={message("intentionDialog.description")}
+            hint={message("intentionDialog.optional")}
+          >
             <Textarea id={`${id}-description`} rows={2} {...form.register("description")} />
           </Field>
           {edited !== null && isOverall ? (
             <div className="space-y-3">
               <OverallNote row={edited} />
-              <Field id={`${id}-mix`} label="Compare output with mix">
+              <Field id={`${id}-mix`} label={message("intentionDialog.compareOutputMix")}>
                 <MixSelect
                   id={`${id}-mix`}
                   value={form.watch("mix")}
@@ -426,9 +445,9 @@ export function IntentionFormDialog({
 function OverallNote({ row }: { row: IntentionRow }) {
   return (
     <p className="text-xs text-muted-foreground">
-      Overall counts everything from {formatCalendarDay(row.intention.countsFrom)}, with no target
-      or end. Choosing a different mix changes this output comparison; it does not change which mix
-      is Primary. Edit percentages in Mixes.
+      {message("intentionDialog.overallNote", {
+        date: formatCalendarDay(row.intention.countsFrom),
+      })}
     </p>
   );
 }
@@ -461,14 +480,18 @@ function IntentionFields({
     return (
       <>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id={`${id}-scope`} label="Categories" hint="one subtree">
+          <Field
+            id={`${id}-scope`}
+            label={message("intentionDialog.categories")}
+            hint={message("intentionDialog.oneSubtree")}
+          >
             <ScopeSelect
               id={`${id}-scope`}
               value={values.scope}
               onChange={(value) => form.setValue("scope", value, touched)}
             />
           </Field>
-          <Field id={`${id}-mix`} label="Mix">
+          <Field id={`${id}-mix`} label={message("intentionDialog.mix")}>
             <MixSelect
               id={`${id}-mix`}
               value={values.mix}
@@ -482,11 +505,19 @@ function IntentionFields({
           onChange={(conditions) => form.setValue("conditions", conditions, touched)}
         />
         <p className="text-xs text-muted-foreground">
-          Counts {formatCalendarDay(intention.countsFrom)} →{" "}
-          {intention.endsOn === null ? "no end" : formatCalendarDay(intention.endsOn)} ·{" "}
-          {intention.targetPages === null
-            ? "no target"
-            : `target ${formatCount(intention.targetPages)} pp`}
+          {message("intentionDialog.windowSummary", {
+            from: formatCalendarDay(intention.countsFrom),
+            to:
+              intention.endsOn === null
+                ? message("intentionDialog.noEnd")
+                : formatCalendarDay(intention.endsOn),
+            target:
+              intention.targetPages === null
+                ? message("intentionDialog.noTarget")
+                : message("intentionDialog.targetValue", {
+                    count: formatCount(intention.targetPages),
+                  }),
+          })}
         </p>
         <LandingNote values={values} edited={edited} />
       </>
@@ -496,7 +527,7 @@ function IntentionFields({
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id={`${id}-funding`} label="Project">
+        <Field id={`${id}-funding`} label={message("intentions:filter.project")}>
           <ProjectScopeSelect
             id={`${id}-funding`}
             value={values.funding}
@@ -511,7 +542,11 @@ function IntentionFields({
             }}
           />
         </Field>
-        <Field id={`${id}-scope`} label="Categories" hint="one subtree">
+        <Field
+          id={`${id}-scope`}
+          label={message("intentionDialog.categories")}
+          hint={message("intentionDialog.oneSubtree")}
+        >
           <ScopeSelect
             id={`${id}-scope`}
             value={values.scope}
@@ -525,18 +560,22 @@ function IntentionFields({
         onChange={(conditions) => form.setValue("conditions", conditions, touched)}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id={`${id}-mix`} label="Mix">
+        <Field id={`${id}-mix`} label={message("intentionDialog.mix")}>
           <MixSelect
             id={`${id}-mix`}
             value={values.mix}
             onChange={(value) => form.setValue("mix", value, touched)}
           />
         </Field>
-        <Field id={`${id}-target`} label="Target pages" hint="none: it only counts output">
+        <Field
+          id={`${id}-target`}
+          label={message("intentionDialog.targetPages")}
+          hint={message("intentionDialog.targetHint")}
+        >
           <Input
             id={`${id}-target`}
             inputMode="numeric"
-            placeholder="e.g. 4,000"
+            placeholder={message("intentionDialog.pagesPlaceholder")}
             {...form.register("targetPages")}
           />
         </Field>
@@ -544,15 +583,19 @@ function IntentionFields({
       <FieldError message={errors.targetPages?.message} />
       <div className="grid gap-4 sm:grid-cols-2">
         {edited === null ? (
-          <Field id={`${id}-from`} label="Counts from" hint="fixed once created">
+          <Field
+            id={`${id}-from`}
+            label={message("intentionDialog.countsFrom")}
+            hint={message("intentionDialog.fixedOnceCreated")}
+          >
             <Input id={`${id}-from`} type="date" {...form.register("countsFrom")} />
           </Field>
         ) : (
           <div className="grid gap-1.5 text-sm">
-            <span className="font-medium">Counts from</span>
+            <span className="font-medium">{message("intentionDialog.countsFrom")}</span>
             <span>
               {formatCalendarDay(edited.intention.countsFrom)}{" "}
-              <span className="text-muted-foreground">· fixed</span>
+              <span className="text-muted-foreground">· {message("intentionDialog.fixed")}</span>
             </span>
             {onCopy !== undefined && (
               <button
@@ -560,12 +603,16 @@ function IntentionFields({
                 className="text-left text-xs text-primary underline-offset-2 hover:underline"
                 onClick={onCopy}
               >
-                Count from another date — make a new intention from this one
+                {message("intentionDialog.countFromAnother")}
               </button>
             )}
           </div>
         )}
-        <Field id={`${id}-ends`} label="Ends" hint="empty: no end">
+        <Field
+          id={`${id}-ends`}
+          label={message("intentionDialog.ends")}
+          hint={message("intentionDialog.emptyNoEnd")}
+        >
           <Input id={`${id}-ends`} type="date" {...form.register("endsOn")} />
         </Field>
       </div>
@@ -607,17 +654,21 @@ function LandingNote({ values, edited }: { values: IntentionForm; edited: Intent
   }
 
   const target = pagesOf(values.targetPages);
-  const where = target === null ? "track" : "target";
+  const where = target === null ? message("column.output") : message("column.targets");
   const pace =
-    target === null ? "" : request.endsOn === null ? " — no end, so no pace" : ", with a pace";
+    target === null
+      ? ""
+      : request.endsOn === null
+        ? message("intentionDialog.noPace")
+        : message("intentionDialog.withPace");
   const changes =
     edited === null || preview === undefined
       ? []
       : (
           [
-            ["Planned", edited.plannedPages, preview.plannedPages],
-            ["Delivered", edited.deliveredPages, preview.deliveredPages],
-            ["Output", edited.outputPages, preview.outputPages],
+            [message("intentionCard.planned"), edited.plannedPages, preview.plannedPages],
+            [message("intentionCard.delivered"), edited.deliveredPages, preview.deliveredPages],
+            [message("intentionCard.output"), edited.outputPages, preview.outputPages],
           ] as const
         ).filter(([, before, after]) => before !== after);
   const isMixChanged =
@@ -626,15 +677,18 @@ function LandingNote({ values, edited }: { values: IntentionForm; edited: Intent
   return (
     <div className="grid gap-2 rounded-md border border-dashed px-3 py-2 text-xs">
       <p>
-        Lands in <b className="font-semibold">{columnTitles[where]}</b>
+        {message("intentionDialog.landsIn", { column: where })}
         {pace}.
         {edited !== null && changes.length === 0 && preview !== undefined && (
-          <span className="text-muted-foreground"> Its counts do not change.</span>
+          <span className="text-muted-foreground">
+            {" "}
+            {message("intentionDialog.countsUnchanged")}
+          </span>
         )}
       </p>
       {changes.length > 0 && (
         <div className="text-tone-amber-foreground">
-          <b className="font-semibold">Saving recounts it, over its whole window:</b>
+          <b className="font-semibold">{message("intentionDialog.savingRecounts")}</b>
           {changes.map(([label, before, after]) => (
             <div key={label}>
               {label}: {formatCount(before)} → <b className="font-semibold">{formatCount(after)}</b>{" "}
@@ -649,11 +703,20 @@ function LandingNote({ values, edited }: { values: IntentionForm; edited: Intent
           rowKey={(row) => row.categoryId}
           className="max-w-sm"
           columns={[
-            { key: "name", header: "Mix within the scope", cell: (row) => row.name },
-            { key: "before", header: "Now", align: "end", cell: (row) => shareTextOf(row.before) },
+            {
+              key: "name",
+              header: message("intentionDialog.mixWithinScope"),
+              cell: (row) => row.name,
+            },
+            {
+              key: "before",
+              header: message("intentionDialog.now"),
+              align: "end",
+              cell: (row) => shareTextOf(row.before),
+            },
             {
               key: "after",
-              header: "After",
+              header: message("intentionDialog.after"),
               align: "end",
               cell: (row) => (
                 <span className={cn(row.before !== row.after && "font-semibold")}>
@@ -693,7 +756,7 @@ export function DeleteIntentionDialog({
   const remove = useActionMutation({
     call: deleteIntention,
     invalidates: intentionInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTexts(),
   });
   const generated = deletion?.generatedLists ?? [];
 
@@ -701,33 +764,36 @@ export function DeleteIntentionDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${intention.name}?`}
-      description="Delete an intention; nothing attached to it moves, since nothing is."
+      title={message("intentionDialog.deleteTitle", { name: intention.name })}
+      description={message("intentionDialog.deleteDescription")}
       consequences={
         deletion === undefined
           ? undefined
           : [
               {
-                text: "Nothing is attached to an intention, so no list changes and no item moves.",
+                text: message("intentionDialog.deleteNothingAttached"),
               },
               ...(generated.length === 0
                 ? []
                 : [
                     {
-                      text: `${plural(generated.length, "list was", "lists were")} generated with it (${generated.map((list) => list.name).join(", ")}); ${generated.length === 1 ? "its" : "their"} history keeps that, with the mix as it was then.`,
+                      text: message("intentionDialog.generatedLists", {
+                        count: generated.length,
+                        names: generated.map((list) => list.name).join(", "),
+                      }),
                     },
                   ]),
               ...(intention.archived === null
                 ? [
                     {
-                      text: "Archive it instead if you only want it off the page: archiving keeps its result.",
+                      text: message("intentionDialog.archiveInstead"),
                       tone: "amber" as const,
                     },
                   ]
                 : []),
             ]
       }
-      confirmLabel="Delete"
+      confirmLabel={message("intentionDialog.delete")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(intention.id);
@@ -743,20 +809,21 @@ export function DeleteIntentionDialog({
 
 // ---------------------------------------------------------------- repeats
 
-const templateFormSchema = z.object({
-  namePattern: z
-    .string()
-    .trim()
-    .includes("{period}", { message: "Put {period} in the name, so each one is told apart" }),
-  every: repeatEverySchema,
-  funding: z.string(),
-  scope: z.string(),
-  mix: z.string(),
-  targetPages: z.string().regex(pagesText, "A target is a number of pages, or none"),
-  isArchivingPrevious: z.boolean(),
-  conditions: z.array(propertyConditionSchema),
-});
-type TemplateForm = z.infer<typeof templateFormSchema>;
+const templateFormSchemaOf = () =>
+  z.object({
+    namePattern: z
+      .string()
+      .trim()
+      .includes("{period}", { message: message("intentionDialog.periodRequired") }),
+    every: repeatEverySchema,
+    funding: z.string(),
+    scope: z.string(),
+    mix: z.string(),
+    targetPages: z.string().regex(pagesText, message("intentionDialog.targetPagesError")),
+    isArchivingPrevious: z.boolean(),
+    conditions: z.array(propertyConditionSchema),
+  });
+type TemplateForm = z.infer<ReturnType<typeof templateFormSchemaOf>>;
 
 const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
   namePattern: values.namePattern.trim(),
@@ -787,6 +854,7 @@ export function TemplateFormDialog({
   session,
 }: TemplateFormDialogProps) {
   const id = useId();
+  const schema = templateFormSchemaOf();
   const template = row?.template ?? null;
   const madeCount =
     template === null
@@ -798,16 +866,20 @@ export function TemplateFormDialog({
         ? createIntentionTemplate(draft)
         : saveIntentionTemplate(template.id, draft),
     invalidates: intentionInvalidations,
-    refusalTexts: { 403: "You may no longer set repeats." },
+    refusalTexts: { 403: message("intentionDialog.forbiddenRepeat") },
   });
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={template === null ? "New repeat" : `Edit repeat — ${template.namePattern}`}
-      description="A repeat makes one intention per period, each with its own window and progress."
-      schema={templateFormSchema}
+      title={
+        template === null
+          ? message("intentionsPage.newRepeat")
+          : message("intentionDialog.editRepeat", { name: template.namePattern })
+      }
+      description={message("intentionDialog.repeatDescription")}
+      schema={schema}
       defaultValues={{
         namePattern: template?.namePattern ?? "",
         every: template?.every ?? "month",
@@ -824,23 +896,31 @@ export function TemplateFormDialog({
         isArchivingPrevious: template?.isArchivingPrevious ?? true,
         conditions: [...(template?.scopeConditions ?? [])],
       }}
-      submitLabel={template === null ? "Create repeat" : "Save"}
+      submitLabel={
+        template === null
+          ? message("intentionDialog.createRepeat")
+          : message("intentionDialog.save")
+      }
       onSubmit={(values) => save.run(templateDraftOf(values))}
       render={(form) => {
         const values = form.watch();
         const touched = { shouldDirty: true } as const;
         return (
           <>
-            <Field id={`${id}-name`} label="Name" hint="{period} becomes e.g. July 2026">
+            <Field
+              id={`${id}-name`}
+              label={message("categoryDialog.name")}
+              hint={message("intentionDialog.periodHint")}
+            >
               <Input
                 id={`${id}-name`}
-                placeholder="e.g. Monthly output — {period}"
+                placeholder={message("intentionDialog.repeatNamePlaceholder")}
                 {...form.register("namePattern")}
               />
             </Field>
             <FieldError message={form.formState.errors.namePattern?.message} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id={`${id}-every`} label="Every">
+              <Field id={`${id}-every`} label={message("intentionDialog.every")}>
                 <Select
                   value={values.every}
                   onValueChange={(value) =>
@@ -853,24 +933,28 @@ export function TemplateFormDialog({
                   <SelectContent>
                     {repeatEverySchema.options.map((every) => (
                       <SelectItem key={every} value={every}>
-                        {everyLabels[every]}
+                        {i18n.t(everyLabels[every])}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
-              <Field id={`${id}-target`} label="Target pages" hint="none: it only counts output">
+              <Field
+                id={`${id}-target`}
+                label={message("intentionDialog.targetPages")}
+                hint={message("intentionDialog.targetHint")}
+              >
                 <Input
                   id={`${id}-target`}
                   inputMode="numeric"
-                  placeholder="e.g. 3,000"
+                  placeholder={message("intentionDialog.repeatPagesPlaceholder")}
                   {...form.register("targetPages")}
                 />
               </Field>
             </div>
             <FieldError message={form.formState.errors.targetPages?.message} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id={`${id}-funding`} label="Project">
+              <Field id={`${id}-funding`} label={message("intentionDialog.project")}>
                 <ProjectScopeSelect
                   id={`${id}-funding`}
                   value={values.funding}
@@ -878,7 +962,7 @@ export function TemplateFormDialog({
                   onChange={(value) => form.setValue("funding", value, touched)}
                 />
               </Field>
-              <Field id={`${id}-scope`} label="Categories">
+              <Field id={`${id}-scope`} label={message("intentionDialog.categories")}>
                 <ScopeSelect
                   id={`${id}-scope`}
                   value={values.scope}
@@ -891,7 +975,11 @@ export function TemplateFormDialog({
               value={values.conditions}
               onChange={(conditions) => form.setValue("conditions", conditions, touched)}
             />
-            <Field id={`${id}-mix`} label="Mix" hint="each occurrence keeps this selection">
+            <Field
+              id={`${id}-mix`}
+              label={message("intentionDialog.mix")}
+              hint={message("intentionDialog.mixRepeatHint")}
+            >
               <MixSelect
                 id={`${id}-mix`}
                 value={values.mix}
@@ -907,17 +995,16 @@ export function TemplateFormDialog({
                 }
               />
               <span>
-                Archive the previous one when the next is made{" "}
+                {message("intentionDialog.archivePrevious")}{" "}
                 <span className="text-muted-foreground">
-                  — it only leaves the page; its result stays
+                  — {message("intentionDialog.archivePreviousHint")}
                 </span>
               </span>
             </label>
             <p className="text-xs text-muted-foreground">
-              Each period gets its own intention, with its own window and progress — nothing is
-              reset.
+              {message("intentionDialog.repeatHelp")}
               {madeCount > 0 &&
-                ` Changes apply from the next one; the ${madeCount} already made keep their definition — edit them one by one.`}
+                ` ${message("intentionDialog.repeatChanges", { count: madeCount })}`}
             </p>
           </>
         );
@@ -962,11 +1049,11 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
     <DialogShell
       isOpen={isOpen}
       onClose={onClose}
-      title={`Correcting list — ${intention.name}`}
-      description="The allocation a correcting list would take, before it is generated."
+      title={message("intentionDialog.correctTitle", { name: intention.name })}
+      description={message("intentionDialog.correctDescription")}
       width="wide"
       primary={{
-        label: "Generate draft with this allocation",
+        label: message("intentionDialog.generateDraftAllocation"),
         isDisabled: pages === null || preview === undefined,
         onSelect: () => {
           if (pages === null || preview === undefined) {
@@ -984,12 +1071,13 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
     >
       <div className="grid gap-4">
         <p className="text-xs text-muted-foreground">
-          Output{within === null ? "" : ` in ${within}`} so far:{" "}
-          <b className="font-semibold text-foreground">{formatCount(row.outputPages)} pp</b> since{" "}
-          {formatCalendarDay(intention.countsFrom)}. The new pages go where the output is short of
-          the mix{within === null ? "" : ` within ${within}`}.
+          {message("intentionDialog.correctionSummary", {
+            scope: within,
+            output: formatCount(row.outputPages),
+            since: formatCalendarDay(intention.countsFrom),
+          })}
         </p>
-        <Field id={`${id}-pages`} label="Pages for the list">
+        <Field id={`${id}-pages`} label={message("intentionDialog.pagesForList")}>
           <Input
             id={`${id}-pages`}
             inputMode="numeric"
@@ -1007,30 +1095,34 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
                 columns={[
                   {
                     key: "name",
-                    header: within === null ? "Category" : `Within ${within}`,
+                    header: message(within === null ? "category.column" : "category.within", {
+                      scope: within,
+                    }),
                     cell: (row) => row.name,
                   },
                   {
                     key: "intended",
-                    header: "Intended",
+                    header: message("intentionCard.intended"),
                     align: "end",
                     cell: (row) =>
                       row.intended === null ? (
-                        <span className="text-tone-amber-foreground">no share</span>
+                        <span className="text-tone-amber-foreground">
+                          {message("intentionCard.noShare")}
+                        </span>
                       ) : (
                         shareTextOf(row.intended)
                       ),
                   },
                   {
                     key: "output",
-                    header: "Output now",
+                    header: message("intentionDialog.outputNow"),
                     align: "end",
                     isHiddenOnPhone: true,
                     cell: (row) => (row.output === null ? "—" : `${Math.round(row.output)}%`),
                   },
                   {
                     key: "new",
-                    header: "New pages",
+                    header: message("intentionDialog.newPages"),
                     align: "end",
                     cell: (row) => (
                       <span className="font-semibold">{formatCount(row.newPages)}</span>
@@ -1038,7 +1130,7 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
                   },
                   {
                     key: "after",
-                    header: "After",
+                    header: message("intentionDialog.after"),
                     align: "end",
                     cell: (correction) => {
                       const drift =
@@ -1067,7 +1159,7 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
                   },
                   {
                     key: "ready",
-                    header: "Ready",
+                    header: message("intentionDialog.ready"),
                     align: "end",
                     isHiddenOnPhone: true,
                     cell: (row) => (
@@ -1085,27 +1177,30 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
             </div>
             {preview.unallocated > 0.5 && (
               <p className="text-xs text-tone-amber-foreground">
-                {Math.round(preview.unallocated)}% of the mix is unallocated — nothing is drawn for
-                it.
+                {message("intentionDialog.unallocatedCorrection", {
+                  percent: Math.round(preview.unallocated),
+                })}
               </p>
             )}
             {short.length > 0 && (
               <p className="rounded-md border border-tone-amber-foreground/30 bg-tone-amber px-3 py-2 text-xs text-tone-amber-foreground">
-                <b className="font-semibold">Short:</b>{" "}
+                <b className="font-semibold">{message("intentionDialog.short")}</b>{" "}
                 {short
-                  .map(
-                    (correction) =>
-                      `${correction.name} needs ${formatCount(correction.newPages)} pp, ${formatCount(correction.readyPages)} are ready`,
+                  .map((correction) =>
+                    message("intentionDialog.shortCategory", {
+                      name: correction.name,
+                      needed: formatCount(correction.newPages),
+                      ready: formatCount(correction.readyPages),
+                    }),
                   )
                   .join(" · ")}
-                . The draft stays short there and says so; it does not move those pages elsewhere.
+                {message("intentionDialog.shortWarning")}
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Each category gets what it lacks against its share of the output plus these pages
-              {preview.isCut ? ", cut in proportion because the gaps add up to more" : ""}. The
-              draft is not saved, and the list counts towards whatever it matches — not towards this
-              intention by being generated from it.
+              {message("intentionDialog.correctionHelp", {
+                cut: preview.isCut ? message("intentionDialog.cutProportion") : "",
+              })}
             </p>
           </>
         )}

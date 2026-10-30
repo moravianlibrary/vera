@@ -50,9 +50,12 @@ import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 
 const mixQueryKey = ["mixes"] as const;
 type Editor = "new" | "copy" | "snapshot" | "archive" | "delete" | "set" | null;
+const msg = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: key.startsWith("categoriesPage.") ? "categories" : "intentions", ...options });
 
 export function MixesPage() {
   const { mixId } = useParams();
@@ -70,7 +73,7 @@ export function MixesPage() {
     enabled: mixId !== undefined,
   });
   const { data: selected } = selectedQuery;
-  const selectedFailure = failureOf(selectedQuery, "Could not load this mix.");
+  const selectedFailure = failureOf(selectedQuery, msg("mixesPage.loadError"));
   const current = selected ?? mixes.find((mix) => mix.id === mixId) ?? null;
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categorySearch, setCategorySearch] = useState("");
@@ -163,7 +166,7 @@ export function MixesPage() {
     run: () => Promise<{ isDone: boolean; value?: MixRecord; refusal?: { message: string } }>,
   ) => {
     const result = await run();
-    if (!result.isDone) setMessage(result.refusal?.message ?? "The change could not be saved.");
+    if (!result.isDone) setMessage(result.refusal?.message ?? msg("mixesPage.saveError"));
     else {
       setMessage(null);
       setEditor(null);
@@ -185,13 +188,13 @@ export function MixesPage() {
   return (
     <>
       <PageHeader
-        title="Category mixes"
+        title={msg("mixesPage.title")}
         actions={[
           ...(mayEdit
             ? [
                 {
                   id: "new",
-                  label: "New mix",
+                  label: msg("mixesPage.newMix"),
                   isPrimary: true,
                   onSelect: () => {
                     setName("");
@@ -219,16 +222,16 @@ export function MixesPage() {
         query={view.query}
         facets={facets}
         onQueryChange={view.setQuery}
-        searchLabel="Search category mixes"
-        searchPlaceholder="Search category mixes"
+        searchLabel={msg("mixesPage.searchLabel")}
+        searchPlaceholder={msg("mixesPage.searchPlaceholder")}
       />
       <MasterDetail
         masterWidth="tree"
         master={
           <QueryState
             isLoading={mixesQuery.isLoading}
-            failure={failureOf(mixesQuery, "Could not load mixes.")}
-            loadingText="Loading mixes…"
+            failure={failureOf(mixesQuery, msg("mixesPage.loadMixesError"))}
+            loadingText={msg("mixesPage.loadingMixes")}
           >
             <div>
               {current === null && message !== null && (
@@ -255,21 +258,25 @@ export function MixesPage() {
                       {mix.name}{" "}
                       {mix.isPrimary && (
                         <span className="ml-2 rounded-xs bg-primary/10 px-2 py-0.5 text-xs text-primary">
-                          Primary
+                          {msg("mixesPage.primary")}
                         </span>
                       )}
                     </span>
                     <span className="mt-1 block text-xs text-muted-foreground">
-                      {mix.archivedAt === null ? `Revision ${mix.revision}` : "Archived"} ·{" "}
-                      {mix.usageCount} intentions ·{" "}
-                      {complete(mix) ? "Complete" : "Has unallocated shares"}
+                      {mix.archivedAt === null
+                        ? msg("mixesPage.revision", { revision: mix.revision })
+                        : msg("mixesPage.archived")}{" "}
+                      · {msg("mixesPage.intentionsCount", { count: mix.usageCount })} ·{" "}
+                      {complete(mix)
+                        ? msg("mixesPage.complete")
+                        : msg("mixesPage.unallocatedShares")}
                     </span>
                   </Link>
                 ))}
               </div>
               {filtered.length === 0 && (
                 <p className="px-4 py-6 text-sm text-muted-foreground">
-                  No mixes match this search.
+                  {msg("mixesPage.noSearchMatches")}
                 </p>
               )}
             </div>
@@ -279,15 +286,15 @@ export function MixesPage() {
           selectedFailure !== undefined ? (
             <QueryError failure={selectedFailure} />
           ) : current === null ? (
-            <p className="text-sm text-muted-foreground">
-              Select a mix to see its definition and proportions.
-            </p>
+            <p className="text-sm text-muted-foreground">{msg("mixesPage.selectPrompt")}</p>
           ) : (
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl leading-7 font-semibold">{current.name}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {current.archivedAt === null ? `Revision ${current.revision}` : "Archived"}
+                  {current.archivedAt === null
+                    ? msg("mixesPage.revision", { revision: current.revision })
+                    : msg("mixesPage.archived")}
                 </p>
                 {(mayEdit || mayManage) && (
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -296,12 +303,12 @@ export function MixesPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setName(`${current.name} copy`);
+                          setName(msg("mixesPage.copyName", { name: current.name }));
                           setRevision((selected) => selected ?? current.revision);
                           setEditor("copy");
                         }}
                       >
-                        Create editable copy
+                        {msg("mixesPage.createCopy")}
                       </Button>
                     )}
                     {mayManage && current.archivedAt === null && !current.isPrimary && (
@@ -311,10 +318,10 @@ export function MixesPage() {
                           variant="outline"
                           onClick={() => void act(() => primary.run(current.id))}
                         >
-                          Make Primary
+                          {msg("mixesPage.makePrimary")}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => setEditor("archive")}>
-                          Archive
+                          {msg("mixesPage.archive")}
                         </Button>
                       </>
                     )}
@@ -327,7 +334,7 @@ export function MixesPage() {
                           setEditor("delete");
                         }}
                       >
-                        Delete…
+                        {msg("mixesPage.delete")}
                       </Button>
                     )}
                   </div>
@@ -341,30 +348,29 @@ export function MixesPage() {
                   {message}
                 </p>
               )}
-              <DetailCard title="Definition">
+              <DetailCard title={msg("mixesPage.definition")}>
                 <p>
                   {current.isPrimary
-                    ? "Primary mix · default for new mix selections"
-                    : "Reusable mix"}
+                    ? msg("mixesPage.primaryDefinition")
+                    : msg("mixesPage.reusable")}
                 </p>
                 <p className="mt-2 text-muted-foreground">
                   {complete(current)
-                    ? "All category sets total 100%."
-                    : "Some category sets have unallocated shares."}
+                    ? msg("mixesPage.allSetsTotal100")
+                    : msg("mixesPage.someSetsUnallocated")}
                 </p>
-                <FinePrint>
-                  Editing proportions creates a new immutable revision. Intentions following latest
-                  will read it; snapshots stay on their selected revision.
-                </FinePrint>
+                <FinePrint>{msg("mixesPage.definitionHelp")}</FinePrint>
               </DetailCard>
-              <DetailCard title="Where used">
+              <DetailCard title={msg("mixesPage.whereUsed")}>
                 {current.followers.length === 0 ? (
-                  <p className="text-muted-foreground">No visible intentions use this mix.</p>
+                  <p className="text-muted-foreground">{msg("mixesPage.noIntentionsUse")}</p>
                 ) : (
                   current.followers.map((follower) => (
                     <DetailRow
                       key={follower.id}
-                      aside={follower.isArchived ? "Archived" : "Active"}
+                      aside={
+                        follower.isArchived ? msg("mixesPage.archived") : msg("mixesPage.active")
+                      }
                     >
                       <Link
                         className="text-primary hover:underline"
@@ -377,7 +383,7 @@ export function MixesPage() {
                 )}
               </DetailCard>
               <DetailCard
-                title="Revisions and snapshots"
+                title={msg("mixesPage.revisionsAndSnapshots")}
                 action={
                   mayEdit && current.archivedAt === null ? (
                     <Button
@@ -389,7 +395,7 @@ export function MixesPage() {
                         setEditor("snapshot");
                       }}
                     >
-                      Name snapshot
+                      {msg("mixesPage.nameSnapshot")}
                     </Button>
                   ) : undefined
                 }
@@ -404,34 +410,32 @@ export function MixesPage() {
                       onClick={() => setRevision(version.revision)}
                       className="text-primary hover:underline"
                     >
-                      Revision {version.revision}
+                      {msg("mixesPage.revision", { revision: version.revision })}
                     </button>
                   </DetailRow>
                 ))}
-                <FinePrint>
-                  Choose a revision, then Create editable copy to start another mix from it.
-                </FinePrint>
+                <FinePrint>{msg("mixesPage.revisionHelp")}</FinePrint>
               </DetailCard>
               <div className="overflow-hidden rounded-lg border bg-card">
                 <div className="border-b px-4 py-3">
                   <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                    Category proportions
+                    {msg("mixesPage.categoryProportions")}
                   </h2>
                   <Input
                     type="search"
-                    aria-label="Search mix categories"
-                    placeholder="Search categories…"
+                    aria-label={msg("mixesPage.searchCategories")}
+                    placeholder={msg("mixesPage.searchCategoriesPlaceholder")}
                     value={categorySearch}
                     onChange={(event) => setCategorySearch(event.target.value)}
                     className="mt-3"
                   />
                   <div className="mt-2 flex justify-end gap-3 pr-4 text-xs text-muted-foreground">
-                    <span className="w-14 text-right">In parent</span>
-                    <span className="w-14 text-right">Overall</span>
+                    <span className="w-14 text-right">{msg("mixesPage.inParent")}</span>
+                    <span className="w-14 text-right">{msg("intentionCard.overall")}</span>
                   </div>
                 </div>
                 <Tree
-                  ariaLabel="Mix category proportions"
+                  ariaLabel={msg("mixesPage.treeLabel")}
                   roots={visibleChildrenOf(null)}
                   childrenOf={(category) => visibleChildrenOf(category.id)}
                   nodeId={(category) => category.id}
@@ -454,7 +458,10 @@ export function MixesPage() {
                     const unallocated = unallocatedOf(current, category.id);
                     return categories.some((child) => child.parentId === category.id) &&
                       unallocated > 0
-                      ? `${unallocated}% unallocated within ${category.name}`
+                      ? msg("mixesPage.unallocatedWithin", {
+                          percent: unallocated,
+                          name: category.name,
+                        })
                       : null;
                   }}
                   selectedId={selectedCategoryId}
@@ -466,7 +473,7 @@ export function MixesPage() {
                     )
                   }
                   virtualRoot={{
-                    label: "All categories",
+                    label: msg("categoriesPage.allCategories"),
                     value: (
                       <span className="flex gap-3">
                         <span className="w-14 text-right">100%</span>
@@ -475,41 +482,48 @@ export function MixesPage() {
                     ),
                     warning:
                       unallocatedOf(current, null) > 0
-                        ? `${unallocatedOf(current, null)}% unallocated at top level`
+                        ? msg("mixesPage.unallocatedTopLevel", {
+                            percent: unallocatedOf(current, null),
+                          })
                         : null,
                   }}
                 />
                 {visibleCategoryIds?.size === 0 && (
-                  <p className="px-4 py-5 text-sm text-muted-foreground">No categories match.</p>
+                  <p className="px-4 py-5 text-sm text-muted-foreground">
+                    {msg("mixesPage.noCategoriesMatch")}
+                  </p>
                 )}
               </div>
               <DetailCard
                 title={
                   categoryId === null
-                    ? "Top-level proportions"
-                    : `Within ${categories.find((category) => category.id === categoryId)?.name ?? "category"}`
+                    ? msg("mixesPage.topLevelProportions")
+                    : msg("mixesPage.within", {
+                        name:
+                          categories.find((category) => category.id === categoryId)?.name ??
+                          msg("mixesPage.category"),
+                      })
                 }
                 action={
                   mayEdit && current.archivedAt === null && children.length > 0 ? (
                     <Button size="sm" variant="outline" onClick={() => setEditor("set")}>
-                      Edit proportions
+                      {msg("mixesPage.editProportions")}
                     </Button>
                   ) : undefined
                 }
               >
                 <p>
-                  {children.length} {children.length === 1 ? "category" : "categories"} ·{" "}
-                  {unallocatedOf(current, categoryId)}% unallocated
+                  {msg("mixesPage.childrenAndUnallocated", {
+                    count: children.length,
+                    percent: unallocatedOf(current, categoryId),
+                  })}
                 </p>
-                <FinePrint>
-                  Select a branch to edit its children, or a leaf to edit its siblings. Each edit
-                  creates a new revision.
-                </FinePrint>
+                <FinePrint>{msg("mixesPage.proportionsHelp")}</FinePrint>
               </DetailCard>
             </div>
           )
         }
-        detailTitle={current?.name ?? "Mix details"}
+        detailTitle={current?.name ?? msg("mixesPage.details")}
         detailOpen={mixId !== undefined && current !== null}
         onDetailOpenChange={(open) => {
           if (!open) navigate({ pathname: "/mixes", search: location.search });
@@ -531,8 +545,8 @@ export function MixesPage() {
           key={`${current.id}:${categoryId ?? "root"}:${current.revision}`}
           isOpen
           onClose={() => setEditor(null)}
-          title="Edit proportions"
-          description={`Changes to ${current.name} will create a new revision.`}
+          title={msg("mixesPage.editProportions")}
+          description={msg("mixesPage.editDescription", { name: current.name })}
           entries={children.map((category) => ({
             id: category.id,
             name: category.name,
@@ -573,17 +587,19 @@ export function MixesPage() {
                 entry.share !== null &&
                 (!Number.isFinite(entry.share) || entry.share < 0 || entry.share > 100),
             )
-              ? "Use percentages from 0 to 100."
+              ? msg("mixesPage.percentageRangeError")
               : entries.reduce((sum, entry) => sum + (entry.share ?? 0), 0) > 100
-                ? "A set cannot exceed 100%."
+                ? msg("mixesPage.setExceeds100Error")
                 : null
           }
           summaryOf={(entries) => (
             <p className="text-sm text-muted-foreground">
-              Unallocated: {100 - entries.reduce((sum, entry) => sum + (entry.share ?? 0), 0)}%
+              {msg("mixesPage.unallocatedSummary", {
+                percent: 100 - entries.reduce((sum, entry) => sum + (entry.share ?? 0), 0),
+              })}
             </p>
           )}
-          submitLabel="Save new revision"
+          submitLabel={msg("mixesPage.saveRevision")}
           onSave={async (entries) =>
             saveSet.run({
               mixId: current.id,
@@ -598,10 +614,10 @@ export function MixesPage() {
         <DialogShell
           isOpen
           onClose={() => setEditor(null)}
-          title={editor === "copy" ? "Create editable copy" : "New mix"}
-          description="A reusable category allocation."
+          title={editor === "copy" ? msg("mixesPage.createCopy") : msg("mixesPage.newMix")}
+          description={msg("mixesPage.newDescription")}
           primary={{
-            label: "Create mix",
+            label: msg("mixesPage.createMix"),
             isDisabled: name.trim() === "",
             isPending: create.isPending,
             onSelect: () => void createCurrent(),
@@ -612,11 +628,13 @@ export function MixesPage() {
               {message}
             </p>
           )}
-          <Label htmlFor="mix-name">Name</Label>
+          <Label htmlFor="mix-name">{msg("mixesPage.name")}</Label>
           <Input id="mix-name" value={name} onChange={(event) => setName(event.target.value)} />
           {editor === "copy" && (
             <div className="mt-3 space-y-2">
-              <Label htmlFor="copy-revision">Copy revision from {current?.name}</Label>
+              <Label htmlFor="copy-revision">
+                {msg("mixesPage.copyRevisionFrom", { name: current?.name })}
+              </Label>
               <Select
                 value={String(revision ?? current?.revision ?? 1)}
                 onValueChange={(value) => setRevision(Number(value))}
@@ -627,7 +645,7 @@ export function MixesPage() {
                 <SelectContent>
                   {current?.revisions.toReversed().map((version) => (
                     <SelectItem key={version.revision} value={String(version.revision)}>
-                      Revision {version.revision}
+                      {msg("mixesPage.revision", { revision: version.revision })}
                       {version.label ? ` · ${version.label}` : ""}
                     </SelectItem>
                   ))}
@@ -641,10 +659,10 @@ export function MixesPage() {
         <DialogShell
           isOpen
           onClose={() => setEditor(null)}
-          title="Name snapshot"
-          description="Name an immutable revision for later reuse."
+          title={msg("mixesPage.nameSnapshot")}
+          description={msg("mixesPage.nameSnapshotDescription")}
           primary={{
-            label: "Save snapshot",
+            label: msg("mixesPage.saveSnapshot"),
             isDisabled: label.trim() === "",
             isPending: snapshot.isPending,
             onSelect: () =>
@@ -662,8 +680,10 @@ export function MixesPage() {
               {message}
             </p>
           )}
-          <p className="mb-3 text-sm">Revision {revision ?? current.revision}</p>
-          <Label htmlFor="snapshot-label">Snapshot name</Label>
+          <p className="mb-3 text-sm">
+            {msg("mixesPage.revision", { revision: revision ?? current.revision })}
+          </p>
+          <Label htmlFor="snapshot-label">{msg("mixesPage.snapshotName")}</Label>
           <Input
             id="snapshot-label"
             value={label}
@@ -675,10 +695,10 @@ export function MixesPage() {
         <DialogShell
           isOpen
           onClose={() => setEditor(null)}
-          title={`Archive ${current.name}?`}
-          description="The final revision remains readable. Active followers are pinned to it."
+          title={msg("mixesPage.archiveTitle", { name: current.name })}
+          description={msg("mixesPage.archiveDescription")}
           primary={{
-            label: "Archive mix",
+            label: msg("mixesPage.archiveMix"),
             isDestructive: true,
             isPending: archive.isPending,
             onSelect: () => void act(() => archive.run(current.id)),
@@ -689,22 +709,17 @@ export function MixesPage() {
               {message}
             </p>
           )}
-          <p className="text-sm">
-            This mix will no longer be offered for new selections. {current.usageCount} visible
-            intentions currently use it.
-          </p>
+          <p className="text-sm">{msg("mixesPage.archiveNote", { count: current.usageCount })}</p>
         </DialogShell>
       )}
       {current !== null && (
         <ConsequenceDialog
           isOpen={editor === "delete"}
           onClose={() => setEditor(null)}
-          title={`Delete ${current.name}?`}
-          description="This permanently removes the unused mix and its revisions."
-          consequences={[
-            { text: "No intention, repeat or list has used it, so nothing else changes." },
-          ]}
-          confirmLabel="Delete mix"
+          title={msg("mixesPage.deleteTitle", { name: current.name })}
+          description={msg("mixesPage.deleteDescription")}
+          consequences={[{ text: msg("mixesPage.deleteConsequence") }]}
+          confirmLabel={msg("mixesPage.deleteMix")}
           isDestructive
           onConfirm={async () => {
             const result = await remove.run(current.id);
