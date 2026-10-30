@@ -22,6 +22,7 @@ decision record keeps the *why*; the rules it led to are in the [reference](../r
 | [DEC-0015](DEC-0015-public-requests-by-entry-link.md) | The public asks through entry links, with Google or Seznam |
 | [DEC-0016](DEC-0016-local-sign-up.md) | A person may create their own local account |
 | [DEC-0017](DEC-0017-observability.md) | VERA is observed through OpenTelemetry, into ClickHouse, read in HyperDX |
+| [DEC-0018](DEC-0018-one-event-catalogue.md) | One event catalogue, taken in part by the log, hooks and an audit stream |
 
 A new record takes the next number as its ID, `DEC-NNNN`, and its file is named
 `DEC-NNNN-title.md`. Cite a decision by its ID, as you would a rule. A record is never edited to

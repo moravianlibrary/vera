@@ -379,6 +379,7 @@ const prefixes = [
   "REL",
   "DOC",
   "STAT",
+  "EVENT",
   "LOG",
   "LC-REQ",
   "LC-ITER",

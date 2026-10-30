@@ -7,7 +7,7 @@ rather than smoothed over here.
 
 | Area | Files |
 |---|---|
-| Model | [entities](model/entities.md) · [relationships](model/relationships.md) · [documents](model/documents.md) · [status](model/status.md) · [log](model/log.md) |
+| Model | [entities](model/entities.md) · [relationships](model/relationships.md) · [documents](model/documents.md) · [status](model/status.md) · [events](model/events.md) · [log](model/log.md) |
 | Lifecycles | [request](lifecycles/request.md) · [iteration](lifecycles/iteration.md) · [list](lifecycles/list.md) · [project](lifecycles/project.md) · [intention](lifecycles/intention.md) |
 | Planning | [categories](planning/categories.md) · [mixes](planning/mixes.md) · [intentions](planning/intentions.md) · [generation](planning/generation.md) |
 | Access | [permissions](access/permissions.md) · [scopes](access/scopes.md) · [roles](access/roles.md) · [people](access/people.md) · [custody](access/custody.md) · [views](access/views.md) · [acts](access/acts.md) |
@@ -31,7 +31,7 @@ not reused.
 | Prefix | Where |
 |---|---|
 | `ENT`, `REL` | `model/entities.md`, `model/relationships.md` |
-| `DOC`, `STAT`, `LOG` | `model/documents.md`, `model/status.md`, `model/log.md` |
+| `DOC`, `STAT`, `EVENT`, `LOG` | `model/documents.md`, `model/status.md`, `model/events.md`, `model/log.md` |
 | `LC-REQ`, `LC-ITER`, `LC-LIST`, `LC-PROJ`, `LC-INT` | `lifecycles/` |
 | `PLAN` | `planning/` |
 | `PERM`, `SCOPE`, `ROLE`, `ACCESS`, `VIEW`, `ACT` | `access/` |

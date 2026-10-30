@@ -41,11 +41,18 @@ yet. → engine, then frontend.
 ### L7: Access and planning changes are not logged
 
 Rules: [ACCESS-provenance](reference/access/people.md#access-provenance),
-[LOG-subjects](reference/model/log.md#log-subjects).
+[LOG-subjects](reference/model/log.md#log-subjects),
+[OBS-audit](reference/integrations/observability.md#obs-audit),
+[OBS-audit-delivery](reference/integrations/observability.md#obs-audit-delivery).
 
-The log has subjects of four kinds only: iteration, request, list, project. Changes on Users &
-Groups, Categories, Intentions, mixes, Plugins, Hooks and Schedules are not logged
-(`TODO(rrandiak)` in `mocks/access.ts`). → engine.
+Changes on Users & Groups, Categories, Intentions, mixes, Plugins, Hooks and Schedules are
+recorded nowhere (`TODO(rrandiak)` in `mocks/access.ts`).
+
+Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): they go to the
+Audit stream in ClickStack, not to the log, with the configuration codes of the
+[catalogue](reference/model/events.md#configuration); no History card on the admin pages. Needs:
+the engine's outbox and its job, the collector's audit table with no expiry, and the ready-made
+HyperDX dashboards. The mock records nothing. → engine, then deployment.
 
 ### L10: The library day
 
@@ -60,8 +67,14 @@ engine.
 Rules: [LOG-public](reference/model/log.md#log-public).
 
 Log events are free text (`TODO(rrandiak)` in `domain/entities.ts`), and the public wording is
-matched by prefix. The engine needs event codes, each with its subject kind, its detail fields
-and its public wording. → engine, then frontend.
+matched by prefix.
+
+Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): one
+[catalogue](reference/model/events.md) of codes, each with its data, its public wording and
+the destinations that take it; an entry is a code, data and the two reasons, worded by the
+client. The engine writes codes from step 3; the client words them and the mock and the seeds
+(`engine/seeds/base.json`, `engine/tools/volume/history.ts`) move to them. → engine, then
+frontend.
 
 ### L25: Ingest
 
@@ -86,6 +99,11 @@ The mock fires only `iteration.published` and `list.created`, and accepts two co
 `list.started` and `list.done` were added at the user's request on 2026-10-15
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)); the frontend's
 event list (`api/hooks.ts`) does not offer them yet.
+
+Since [DEC-0018](decisions/DEC-0018-one-event-catalogue.md) (2026-10-30) a hook subscribes to
+one or more catalogue codes: `contract/src/hooks.ts` (`hookEventSchema`, a single `event`) and
+the hook editor still use the earlier names (`request.decided`, `iteration.validated`,
+`iteration.classified`, `list.dates_changed`, `list.done`, `task.*`).
 The engine fires every event from the act or job that causes it, with a typed condition
 builder. The act matrix then names each act's event. → engine, then docs.
 
@@ -100,8 +118,10 @@ only.
 A list event carries every member as a whole document (decided on 2026-10-15), so a delivery
 plugin can turn it into, say, a list of documents for staff to prepare.
 
-The field names and event type names are settled with the engine, together with
-[L23](#l23-event-codes). → engine.
+The field names and event type names were settled on 2026-10-30, together with
+[L23](#l23-event-codes) ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): `type` is the
+code, `changes` a list, machine values in snake case, times in UTC, the staff actor named.
+→ engine.
 
 ### L35: Watchlist engine
 
@@ -173,7 +193,10 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 - a local stack for development (collector, ClickHouse, HyperDX) in a compose file, and its
   production counterpart beside the deployment;
 - the Java application and its workers: the OpenTelemetry Java agent and structured logs, when
-  the backend is built.
+  the backend is built;
+- the Audit stream ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md),
+  [OBS-audit](reference/integrations/observability.md#obs-audit)): see
+  [L7](#l7-access-and-planning-changes-are-not-logged).
 
 → frontend and engine, then deployment.
 

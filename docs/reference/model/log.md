@@ -1,6 +1,8 @@
 # The status log
 
-One append-only log across entities, which says why each thing is as it is.
+One append-only log across entities, which says why each thing is as it is. Its entries are
+events from the [catalogue](events.md), the ones marked for History
+([EVENT-destinations](events.md#event-destinations)).
 
 #### LOG-cause
 
@@ -17,11 +19,12 @@ Entries are never changed or removed. A correction is a new entry.
 
 #### LOG-subjects
 
-An entry is about one subject: an iteration, a request, a list or a project.
+An entry is about one subject: a request, an iteration, a document, a list or a project.
+Changes to access, categories, intentions, mixes, plugins, hooks and schedules are not in the
+log; they go to the Audit stream ([OBS-audit](../integrations/observability.md#obs-audit)).
 
-> **Open — [L7](../../ledger.md#l7-access-and-planning-changes-are-not-logged).** Changes to access,
-> categories, intentions, mixes, plugins, hooks and schedules are not logged yet; the log has no
-> subject for them.
+> **Open — [L7](../../ledger.md#l7-access-and-planning-changes-are-not-logged).** No admin change
+> is recorded yet: the Audit stream is not built.
 
 #### LOG-actor
 
@@ -36,30 +39,23 @@ it once.
 
 #### LOG-two-texts
 
-An entry has an event and a detail. The detail carries the internal reason and is withheld from
-anyone who may read only the public story.
+An entry has a code, its data and a reason in two texts ([EVENT-shape](events.md#event-shape)).
+The internal reason is withheld from anyone who may read only the public story.
 
 #### LOG-public
 
-A requester reads their request's story in plain words: only the steps that move it forward or
-hold it, with no actor named and no detail.
+A requester reads their request's story in plain words: only the codes that have a public
+wording in the [catalogue](events.md) (*Asked*, *Accepted*, *On hold*, *Digitized*…), with no
+actor named and no internal reason.
 
-| Event | A requester reads |
-|---|---|
-| Approved | Accepted |
-| Declined | Not accepted |
-| Forbidden | Not available for digitization |
-| Cancelled | On hold |
-| Digitized | Digitized |
-| Published | Available to read |
-
-> **Open — [L23](../../ledger.md#l23-event-codes).** Events are free text today
-> (`TODO(rrandiak)` in `domain/entities.ts`). The engine needs event codes, each with its public
-> wording, its subject kind and its detail fields.
+> **Open — [L23](../../ledger.md#l23-event-codes).** Entries are free text today
+> (`TODO(rrandiak)` in `domain/entities.ts`), and the public wording is matched by prefix. The
+> catalogue is decided; the engine and the client do not use it yet.
 
 #### LOG-ingest-detail
 
-The detail of an ingest entry (the failure text) is withheld from anyone without `request.read_ingest`.
+The error in an ingest entry's data (the failure text) is withheld from anyone without
+`request.read_ingest`.
 
 #### LOG-where-read
 

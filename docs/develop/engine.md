@@ -143,7 +143,8 @@ Decided on 2026-10-15:
 - **E5. Vocabulary:** event codes, log subjects and the hook payload's fields
   ([L7](../ledger.md#l7-access-and-planning-changes-are-not-logged),
   [L23](../ledger.md#l23-event-codes), [L49](../ledger.md#l49-hook-payload)) are settled in one
-  pass before step 3.
+  pass before step 3. Settled on 2026-10-30 in [DEC-0018](../decisions/DEC-0018-one-event-catalogue.md):
+  the [event catalogue](../reference/model/events.md).
 - **E6. Volume:** a large seed variant for lists and generation at volume. Seeds are later
   reshaped after looking at production databases.
 
