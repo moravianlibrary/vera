@@ -3,9 +3,9 @@
 // where an even pace would be by today. Delivered is a part of planned and the two are never
 // added. Every number is the server's; this only draws them. Labels sit beside the bars where the
 // room allows and the value drops under the bar where it does not.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,7 @@ export function PaceBars({
   evenPace = null,
   density = "card",
 }: PaceBarsProps) {
+  const { t } = useTranslation("common");
   const ofTarget = (value: number) => (
     <>
       {formatCount(value)} / {formatCount(target)} pp ·{" "}
@@ -42,14 +43,19 @@ export function PaceBars({
   return (
     <div className={cn("@container grid gap-2", density === "detail" ? "text-ui" : "text-xs")}>
       {timeElapsed !== null && (
-        <PaceBar label="Time" fill={timeElapsed} tone="bg-muted-foreground" density={density}>
+        <PaceBar
+          label={t("pace.time")}
+          fill={timeElapsed}
+          tone="bg-muted-foreground"
+          density={density}
+        >
           {timeLabel}
         </PaceBar>
       )}
       {pages !== null && (
         <>
           <PaceBar
-            label="Planned"
+            label={t("pace.planned")}
             fill={share(pages.planned, target)}
             mark={evenPace}
             tone="bg-chart-1"
@@ -59,12 +65,12 @@ export function PaceBars({
             {pages.planned > target && (
               <span className="text-muted-foreground">
                 {" "}
-                · {formatCount(pages.planned - target)} over
+                · {t("pace.over", { count: formatCount(pages.planned - target) })}
               </span>
             )}
           </PaceBar>
           <PaceBar
-            label="Delivered"
+            label={t("pace.delivered")}
             fill={share(pages.delivered, target)}
             mark={evenPace}
             tone="bg-chart-3"
@@ -88,6 +94,7 @@ interface PaceBarProps {
 }
 
 function PaceBar({ label, fill, mark = null, tone, density, children }: PaceBarProps) {
+  const { t } = useTranslation("common");
   return (
     <div
       className={cn(
@@ -112,7 +119,7 @@ function PaceBar({ label, fill, mark = null, tone, density, children }: PaceBarP
           <b
             className="absolute -top-0.75 -bottom-0.75 -ml-px w-0.5 rounded-full bg-foreground"
             style={{ left: `${Math.min(100, Math.max(0, mark * 100))}%` }}
-            title="Where it would be by today at an even pace"
+            title={t("pace.evenPace")}
           />
         )}
       </div>

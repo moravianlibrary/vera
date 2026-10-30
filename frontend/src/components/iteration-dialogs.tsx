@@ -2,7 +2,6 @@
 // §6.4): Reclassify (More ▾ in Documents and Validations, flows.md V13). Each runs its own endpoint, says a
 // refusal in the dialog and refetches what the caller names, since each view shows the change in
 // its own lists.
-// TODO(rrandiak): labels move to i18n.
 
 import type { QueryKey } from "@tanstack/react-query";
 import type { Reclassification, ReclassificationResult } from "@vera/contract/iterations";
@@ -12,6 +11,7 @@ import { scopeOfIteration } from "@vera/domain/iterations";
 import { can } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { reclassifyIteration } from "@/api/iterations";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
@@ -43,33 +43,37 @@ export function ReclassifyDialog({
   session,
 }: IterationDialogProps<ReclassificationResult> & { session: Session }) {
   const id = useId();
+  const { t } = useTranslation("common");
   const { data: categories = [] } = useCategoriesQuery();
   const reclassify = useActionMutation({
     call: (change: Reclassification) => reclassifyIteration(iteration.id, change),
     invalidates,
     refusalTexts: {
-      403: "You may no longer reclassify it.",
-      409: "It has been scanned meanwhile; its category and priority stay.",
-      422: "Choose a category with no subcategories.",
+      403: t("reclassify.forbidden"),
+      409: t("reclassify.scannedMeanwhile"),
+      422: t("reclassify.leafCategory"),
     },
   });
   const schema = z
-    .object({ categoryId: z.string().min(1, "Choose a category"), priority: prioritySchema })
+    .object({
+      categoryId: z.string().min(1, t("classification.chooseCategory")),
+      priority: prioritySchema,
+    })
     .refine(
       (values) =>
         values.categoryId !== iteration.categoryId || values.priority !== iteration.priority,
-      { message: "Change the category or the priority", path: ["categoryId"] },
+      { message: t("reclassify.changeCategoryOrPriority"), path: ["categoryId"] },
     );
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Reclassify — ${title}`}
-      description="Change the category and the priority of the document's current iteration."
+      title={t("reclassify.title", { title })}
+      description={t("reclassify.description")}
       schema={schema}
       defaultValues={{ categoryId: iteration.categoryId, priority: iteration.priority }}
-      submitLabel="Save"
+      submitLabel={t("dialog.save")}
       onSubmit={async (values) => {
         const result = await reclassify.run(values);
         if (result.isDone) {
@@ -81,13 +85,12 @@ export function ReclassifyDialog({
       warningOf={({ categoryId }) =>
         can(session, "iteration.classify", scopeOfIteration(categories, categoryId))
           ? null
-          : "Outside your custody, it is handed over: it leaves your queues for whoever holds " +
-            "that category, and you cannot move it back."
+          : t("reclassify.handedOver")
       }
       render={(form) => (
         <>
           <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
-            <Field id={`${id}-category`} label="Category">
+            <Field id={`${id}-category`} label={t("mixSet.category")}>
               <CategorySelect
                 id={`${id}-category`}
                 value={form.watch("categoryId")}
@@ -96,7 +99,7 @@ export function ReclassifyDialog({
                 }
               />
             </Field>
-            <Field id={`${id}-priority`} label="Priority">
+            <Field id={`${id}-priority`} label={t("reclassify.priority")}>
               <PrioritySelect
                 id={`${id}-priority`}
                 value={form.watch("priority")}
@@ -107,7 +110,7 @@ export function ReclassifyDialog({
             </Field>
           </div>
           <FieldError message={form.formState.errors.categoryId?.message} />
-          <p className="text-xs text-muted-foreground">The history records the change.</p>
+          <p className="text-xs text-muted-foreground">{t("reclassify.historyNote")}</p>
         </>
       )}
     />

@@ -1,7 +1,6 @@
 // Kind C (component-interfaces.md §6.4): an editor of a few fields. Zod checks the values,
 // React Hook Form holds them; a warning computed from the values sits above the footer, and a
 // refusal naming a field shows under it. Typed changes make closing ask first.
-// TODO(rrandiak): labels move to i18n.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { ReactNode } from "react";

@@ -2,7 +2,6 @@
 // is selected, nothing while the record loads, a line when the record has left the view, the
 // outcome once an action took it off the list, or the record itself. On a phone the pane is a
 // sheet that is closed while nothing is selected, so "none" never shows there.
-// TODO(rrandiak): labels move to i18n.
 
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";

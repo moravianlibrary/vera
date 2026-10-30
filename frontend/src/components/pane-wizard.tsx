@@ -3,9 +3,9 @@
 // goes back to the record, Back from the second step on, and the server's refusal said inline
 // above the primary. The page routes it (Categories: `?refine=1`), so a phone gets it in its
 // full-screen pane sheet. Refine on Categories is the first.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { StepIndicator } from "@/components/dialogs/step-indicator";
 import { Button } from "@/components/ui/button";
 import type { Refusal } from "@/hooks/use-action-mutation";
@@ -38,6 +38,7 @@ export function PaneWizard({
   breadcrumb,
   children,
 }: PaneWizardProps) {
+  const { t } = useTranslation("common");
   return (
     <article className="@container max-w-3xl">
       <div className="flex flex-wrap items-start justify-between gap-x-4">
@@ -45,11 +46,11 @@ export function PaneWizard({
           {breadcrumb}
           <h2 className="text-xl leading-7 font-semibold">{title}</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Step {currentIndex + 1} of {steps.length} · {description}
+            {t("paneWizard.step", { current: currentIndex + 1, total: steps.length, description })}
           </p>
         </header>
         <Button size="sm" variant="outline" className="mb-3" onClick={onCancel}>
-          Cancel
+          {t("dialog.cancel")}
         </Button>
       </div>
       <div className="mb-4">
@@ -65,7 +66,7 @@ export function PaneWizard({
         <div className="flex flex-wrap justify-end gap-2">
           {onBack !== undefined && (
             <Button variant="outline" onClick={onBack}>
-              Back
+              {t("dialog.back")}
             </Button>
           )}
           <Button

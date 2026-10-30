@@ -4,10 +4,10 @@
 // reason. Where the change reaches others, Save first shows whom, as a second step with Back;
 // the instance owns whatever is chosen there. Proportions on an intention's Mix is the first
 // instance; category custody and the role editor follow.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { StepIndicator } from "@/components/dialogs/step-indicator";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
@@ -41,8 +41,6 @@ export interface SetEditorDialogProps<Entry> {
   onSave: (entries: readonly Entry[]) => Promise<ActionResult<unknown>>;
 }
 
-const steps = ["The set", "Who it reaches"];
-
 export function SetEditorDialog<Entry>({
   isOpen,
   onClose,
@@ -57,6 +55,7 @@ export function SetEditorDialog<Entry>({
   submitLabel,
   onSave,
 }: SetEditorDialogProps<Entry>) {
+  const { t } = useTranslation("common");
   const [entries, setEntries] = useState<readonly Entry[]>(stored);
   const [isReaching, setIsReaching] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -95,7 +94,10 @@ export function SetEditorDialog<Entry>({
       refusal={refusal}
       head={
         reach === null ? undefined : (
-          <StepIndicator steps={steps} currentIndex={isOnReach ? 1 : 0} />
+          <StepIndicator
+            steps={[t("setEditor.theSet"), t("setEditor.whoItReaches")]}
+            currentIndex={isOnReach ? 1 : 0}
+          />
         )
       }
       onBack={isOnReach ? () => setIsReaching(false) : undefined}
@@ -103,7 +105,7 @@ export function SetEditorDialog<Entry>({
         isOnReach
           ? { label: reach.submitLabel, isPending, onSelect: () => void save() }
           : {
-              label: reach === null ? submitLabel : "Next",
+              label: reach === null ? submitLabel : t("dialog.next"),
               isPending,
               isDisabled: invalidReason !== null,
               onSelect: () => (reach === null ? void save() : setIsReaching(true)),

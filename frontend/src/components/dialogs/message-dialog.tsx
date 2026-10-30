@@ -10,6 +10,7 @@
 
 import type { MessageSubject } from "@vera/contract/messages";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ export function MessageDialog({
   label,
   recipientLabel,
 }: MessageDialogProps) {
+  const { t } = useTranslation("common");
   const fieldId = useId();
   const { data: channels = [] } = useMessageChannelsQuery();
   const handOffQuery = useMessageHandOffQuery(isOpen ? subject : null);
@@ -75,30 +77,35 @@ export function MessageDialog({
     <DialogShell
       isOpen={isOpen}
       onClose={onClose}
-      title={`Message about ${label}`}
-      description={`Write to ${recipientLabel} about ${label}`}
+      title={t("message.title", { label })}
+      description={t("message.description", { recipient: recipientLabel, label })}
       refusal={
         refusal ??
         (handOffQuery.isError
-          ? { status: null, code: null, message: "Who it goes to could not be found. Try again." }
+          ? { status: null, code: null, message: t("message.recipientLookupError") }
           : null)
       }
       primary={{
-        label: sentNames !== null ? "Close" : isSending ? "Send" : `Open in ${channelName}`,
+        label:
+          sentNames !== null
+            ? t("dialog.close")
+            : isSending
+              ? t("message.send")
+              : t("message.openIn", { channel: channelName }),
         href: !isSending && sentNames === null ? (channelHandOff?.href ?? undefined) : undefined,
         isDisabled:
           sentNames === null &&
           (isSending ? text.trim() === "" : (channelHandOff?.href ?? null) === null),
-        disabledReason: isSending && text.trim() === "" ? "Write the message first" : undefined,
+        disabledReason: isSending && text.trim() === "" ? t("message.writeFirst") : undefined,
         isPending: mutation.isPending,
         onSelect: sentNames !== null ? onClose : isSending ? () => void send() : onClose,
       }}
       cancelLabel={sentNames !== null ? null : undefined}
     >
       {sentNames !== null ? (
-        <p>Sent to {sentNames.join(", ")}.</p>
+        <p>{t("message.sentTo", { names: sentNames.join(", ") })}</p>
       ) : handOff === undefined ? (
-        <p className="text-muted-foreground">Finding who it goes to…</p>
+        <p className="text-muted-foreground">{t("message.findingRecipients")}</p>
       ) : (
         <div className="grid gap-4">
           <section>
@@ -106,7 +113,7 @@ export function MessageDialog({
               To <span className="font-normal text-muted-foreground">— {recipientLabel}</span>
             </h3>
             {reachable.length === 0 ? (
-              <p className="text-muted-foreground">Nobody this way.</p>
+              <p className="text-muted-foreground">{t("message.noRecipients")}</p>
             ) : (
               <ul className="flex flex-wrap gap-1.5">
                 {reachable.map((recipient) => (
@@ -120,21 +127,23 @@ export function MessageDialog({
             )}
             {unreachable.length > 0 && (
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Not reachable by {channelName}:{" "}
-                {unreachable.map((recipient) => recipient.name).join(", ")} — left out.
+                {t("message.unreachable", {
+                  channel: channelName,
+                  names: unreachable.map((recipient) => recipient.name).join(", "),
+                })}
               </p>
             )}
           </section>
 
           <section>
-            <h3 className="mb-1 text-xs font-semibold">About</h3>
+            <h3 className="mb-1 text-xs font-semibold">{t("message.about")}</h3>
             <p>{handOff.context}</p>
           </section>
 
           {channels.length > 1 && (
             <section>
               <h3 id={`${fieldId}-channels`} className="mb-1.5 text-xs font-semibold">
-                Send with
+                {t("message.sendWith")}
               </h3>
               <RadioGroup
                 aria-labelledby={`${fieldId}-channels`}
@@ -159,7 +168,7 @@ export function MessageDialog({
           )}
 
           {isSending && (
-            <Field id={`${fieldId}-message`} label="Message">
+            <Field id={`${fieldId}-message`} label={t("message.message")}>
               <Textarea
                 id={`${fieldId}-message`}
                 rows={4}
@@ -173,11 +182,7 @@ export function MessageDialog({
             </Field>
           )}
 
-          {!isSending && (
-            <p className="text-xs text-muted-foreground">
-              You write and send it yourself. VERA keeps none of the text.
-            </p>
-          )}
+          {!isSending && <p className="text-xs text-muted-foreground">{t("message.privacy")}</p>}
         </div>
       )}
     </DialogShell>

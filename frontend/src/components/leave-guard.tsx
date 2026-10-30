@@ -1,9 +1,9 @@
 // Asks "Discard changes?" before leaving a page that holds a draft (component-interfaces.md §9.5,
 // page-composition.md §1): a route change waits for the answer, and the browser asks on its own
 // before a reload or a closed tab.
-// TODO(rrandiak): labels move to i18n.
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useBlocker } from "react-router";
 import {
   AlertDialog,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function LeaveGuard({ isDirty }: { isDirty: boolean }) {
+  const { t } = useTranslation("common");
   const blocker = useBlocker(isDirty);
 
   useEffect(() => {
@@ -40,14 +41,14 @@ export function LeaveGuard({ isDirty }: { isDirty: boolean }) {
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Nothing you changed here is saved if you leave.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{t("dialog.discardTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("dialog.discardDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
-          <AlertDialogAction onClick={() => blocker.proceed?.()}>Discard</AlertDialogAction>
+          <AlertDialogCancel>{t("dialog.keepEditing")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => blocker.proceed?.()}>
+            {t("dialog.discard")}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

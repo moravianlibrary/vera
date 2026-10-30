@@ -1,8 +1,8 @@
 // Kind A (component-interfaces.md §6.2): "Delete X?" and what happens if you do, as the server's
 // dry run counts it, never as the client works it out. No reason is asked for.
-// TODO(rrandiak): labels move to i18n.
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 
@@ -44,6 +44,7 @@ export function ConsequenceDialog({
   isDestructive,
   onConfirm,
 }: ConsequenceDialogProps) {
+  const { t } = useTranslation("common");
   const [isPending, setIsPending] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
 
@@ -76,7 +77,7 @@ export function ConsequenceDialog({
       }}
     >
       {consequences === undefined ? (
-        <p className="text-muted-foreground">Working out what this changes…</p>
+        <p className="text-muted-foreground">{t("dialog.workingOutChanges")}</p>
       ) : (
         <ul className="grid list-disc gap-1.5 pl-5">
           {consequences.map((consequence) => (

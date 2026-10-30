@@ -3,9 +3,9 @@
 // bar, so the intended mix and the output read against each other; what no category has a share
 // of is left hatched. Every number is the server's; this only draws them. Where a row has no room
 // for bars, as on Categories, the markers form says only how far outside the ±5 band it is.
-// TODO(rrandiak): labels move to i18n.
 
 import { mixBand } from "@vera/domain/intentions";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const shareTones = ["bg-chart-5", "bg-chart-3", "bg-chart-2", "bg-chart-1", "bg-tone-blue"];
@@ -28,6 +28,7 @@ interface MixBarProps {
 }
 
 export function MixBar({ shares, unallocated = 0, className }: MixBarProps) {
+  const { t } = useTranslation("common");
   return (
     <div className={cn("flex h-2 overflow-hidden rounded-full bg-secondary", className)}>
       {shares.map((share, index) =>
@@ -36,7 +37,10 @@ export function MixBar({ shares, unallocated = 0, className }: MixBarProps) {
             key={share.id}
             className={cn("h-full border-r border-background last:border-r-0", shareToneOf(index))}
             style={{ width: `${share.value}%` }}
-            title={`${share.label} ${Math.round(share.value)}%`}
+            title={t("mixBars.sharePercent", {
+              label: share.label,
+              percent: Math.round(share.value),
+            })}
           />
         ),
       )}
@@ -44,7 +48,7 @@ export function MixBar({ shares, unallocated = 0, className }: MixBarProps) {
         <i
           className="h-full bg-[repeating-linear-gradient(45deg,var(--color-tone-amber)_0_4px,var(--color-amber-300)_4px_6px)]"
           style={{ width: `${unallocated}%` }}
-          title={`${Math.round(unallocated)}% unallocated`}
+          title={t("mixBars.unallocated", { percent: Math.round(unallocated) })}
         />
       )}
     </div>
@@ -64,9 +68,18 @@ interface MixBarsProps {
 
 // The intended mix over the actual one, labelled, on one scale.
 export function MixBars({ categories }: MixBarsProps) {
+  const { t } = useTranslation("common");
   const bars = [
-    { key: "intended", label: "Intended", valueOf: (category: MixCategory) => category.intended },
-    { key: "actual", label: "Output", valueOf: (category: MixCategory) => category.actual },
+    {
+      key: "intended",
+      label: t("mixBars.intended"),
+      valueOf: (category: MixCategory) => category.intended,
+    },
+    {
+      key: "actual",
+      label: t("mixBars.output"),
+      valueOf: (category: MixCategory) => category.actual,
+    },
   ];
   return (
     <div className="grid grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-xs">
@@ -94,6 +107,7 @@ interface DriftMarkerProps {
 
 // ▲ over the mix, ▼ under it, in whole points; nothing inside the band.
 export function DriftMarker({ intended, actual }: DriftMarkerProps) {
+  const { t } = useTranslation("common");
   if (intended === null || actual === null) {
     return null;
   }
@@ -110,7 +124,7 @@ export function DriftMarker({ intended, actual }: DriftMarkerProps) {
         "ml-1 text-xs font-semibold tabular-nums",
         isOver ? "text-tone-red-foreground" : "text-tone-blue-foreground",
       )}
-      title={`${Math.abs(drift)} points ${isOver ? "over" : "under"} the mix`}
+      title={t(isOver ? "mixBars.pointsOver" : "mixBars.pointsUnder", { count: Math.abs(drift) })}
     >
       {isOver ? "▲" : "▼"}
       {Math.abs(drift)}

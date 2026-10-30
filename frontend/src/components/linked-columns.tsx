@@ -5,7 +5,6 @@
 // away. A line runs from the right edge of a record to the left edge of one in a later column,
 // solid or dashed. The selected record is shown underneath. A phone has no room for lines: each
 // section is a tab, and a link shows only as the tag on the record.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";

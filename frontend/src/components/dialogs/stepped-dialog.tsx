@@ -2,10 +2,10 @@
 // Leaving a step may ask the server first (Generate's preview), and its refusal is said beside
 // what was entered, which stays. The last step's primary submits; with a result screen it then
 // shows what was done, else it closes. Anything entered makes closing ask first.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { StepIndicator } from "@/components/dialogs/step-indicator";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
@@ -50,6 +50,7 @@ export function SteppedDialog<State>({
   onSubmit,
   result,
 }: SteppedDialogProps<State>) {
+  const { t } = useTranslation("common");
   const [state, setState] = useState(initialState);
   const [index, setIndex] = useState(0);
   const [isPending, setIsPending] = useState(false);
@@ -121,7 +122,7 @@ export function SteppedDialog<State>({
         description={description}
         width={width}
         cancelLabel={null}
-        primary={{ label: "Done", onSelect: close }}
+        primary={{ label: t("dialog.done"), onSelect: close }}
       >
         {result(state)}
       </DialogShell>
@@ -147,7 +148,7 @@ export function SteppedDialog<State>({
       }
       refusal={refusal}
       primary={{
-        label: isLast ? submitLabel(state) : (step.advanceLabel ?? "Continue"),
+        label: isLast ? submitLabel(state) : (step.advanceLabel ?? t("dialog.continue")),
         isPending,
         isDisabled: !step.canAdvance(state),
         onSelect: () => void advance(),

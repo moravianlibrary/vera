@@ -4,11 +4,11 @@
 // provider maps): it says so under the row, and the box is only this dialog's own way. What the
 // pick gives, "Each person added gets …", sits above the list and follows the ticks. Typed
 // changes make closing ask first.
-// TODO(rrandiak): a role per picked item (a project's manager) when Projects moves onto it;
-// labels move to i18n.
+// TODO(rrandiak): a role per picked item (a project's manager) when Projects moves onto it.
 
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -58,6 +58,7 @@ export function PickerDialog<Item>({
   submitLabel,
   onSave,
 }: PickerDialogProps<Item>) {
+  const { t } = useTranslation("common");
   const [picked, setPicked] = useState<ReadonlySet<string>>(initiallyPicked);
   const [search, setSearch] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -114,8 +115,8 @@ export function PickerDialog<Item>({
         {itemCount > searchableFrom && (
           <Input
             id={searchId}
-            aria-label="Search the list"
-            placeholder="Search…"
+            aria-label={t("picker.search")}
+            placeholder={t("picker.searchPlaceholder")}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -132,7 +133,7 @@ export function PickerDialog<Item>({
                 </h3>
               )}
               {items.length === 0 && (
-                <p className="py-1 text-xs text-muted-foreground">Nothing matches.</p>
+                <p className="py-1 text-xs text-muted-foreground">{t("picker.nothingMatches")}</p>
               )}
               {items.map((item) => {
                 const id = itemId(item);

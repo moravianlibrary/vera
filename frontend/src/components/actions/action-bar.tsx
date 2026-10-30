@@ -4,10 +4,10 @@
 // is never primary-styled on a phone (§5.3). The caller passes only what the person may do to
 // this record: an action they may not is absent, never disabled (§5.1). A pane names its menu,
 // "More ▾", and keeps the record's rarer acts in it whatever the cap.
-// TODO(rrandiak): labels move to i18n.
 
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +53,7 @@ interface ActionBarProps {
 }
 
 export function ActionBar({ actions, cap, menuLabel, className }: ActionBarProps) {
+  const { t } = useTranslation("common");
   const tier = useTier();
   if (actions.length === 0) {
     return null;
@@ -72,7 +73,7 @@ export function ActionBar({ actions, cap, menuLabel, className }: ActionBarProps
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             {menuLabel === undefined ? (
-              <Button variant="outline" size="icon-sm" aria-label="More actions">
+              <Button variant="outline" size="icon-sm" aria-label={t("actionBar.moreActions")}>
                 <MoreHorizontal />
               </Button>
             ) : (

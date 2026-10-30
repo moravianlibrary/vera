@@ -2,10 +2,9 @@
 // under it the count, the errors so far and the time left, on a running card; the bar alone
 // under the name in the sidebar's panel, where progress is the whole message. The numbers are
 // the server's.
-// TODO(rrandiak): labels move to i18n.
 
+import { useTranslation } from "react-i18next";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 interface RunProgressProps {
@@ -22,6 +21,7 @@ export function percentOf(done: number, total: number): number {
 }
 
 export function RunProgress({ done, total, errors, timeLeft, form }: RunProgressProps) {
+  const { t } = useTranslation("common");
   const percent = percentOf(done, total);
   const bar = (
     <div
@@ -29,7 +29,7 @@ export function RunProgress({ done, total, errors, timeLeft, form }: RunProgress
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
-      aria-label={`${percent}% done`}
+      aria-label={t("runProgress.percentDone", { percent })}
       className={cn(
         "overflow-hidden rounded-full",
         form === "card" ? "h-1.5 bg-secondary" : "h-1 bg-sidebar-accent",
@@ -53,7 +53,10 @@ export function RunProgress({ done, total, errors, timeLeft, form }: RunProgress
         <span className="tabular-nums">
           <b className="font-semibold">{formatCount(done)}</b> / {formatCount(total)} · {percent}%
           {errors > 0 && (
-            <span className="text-tone-red-foreground"> · {plural(errors, "error")} so far</span>
+            <span className="text-tone-red-foreground">
+              {" "}
+              · {t("runProgress.errorsSoFar", { count: errors })}
+            </span>
           )}
         </span>
         {timeLeft !== undefined && <span className="text-muted-foreground">{timeLeft}</span>}

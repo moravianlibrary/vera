@@ -2,18 +2,17 @@
 // that read a mix, and the three that count what a subtree holds. A page offers the ones it has:
 // Categories all six with Overall's mix and the counts alone without it, an intention's Mix the
 // three of the mix. The pick is remembered per viewer and falls back to the first one offered.
-// TODO(rrandiak): labels move to i18n.
 
 import type { MixTree } from "@vera/contract/mixes";
 import type { CategoryTreeValue } from "@vera/domain/categories";
 
 export const categoryTreeValueLabels = {
-  share: "Share of parent",
-  whole: "Of the whole",
-  mix: "Intended vs actual",
-  documents: "Documents",
-  pages: "Pages",
-  ready: "Ready",
+  share: "common:categoryTreeValue.share",
+  whole: "common:categoryTreeValue.whole",
+  mix: "common:categoryTreeValue.mix",
+  documents: "common:categoryTreeValue.documents",
+  pages: "common:categoryTreeValue.pages",
+  ready: "common:categoryTreeValue.ready",
 } as const satisfies Record<CategoryTreeValue, string>;
 
 export const mixTreeValues = ["share", "whole", "mix"] as const satisfies CategoryTreeValue[];

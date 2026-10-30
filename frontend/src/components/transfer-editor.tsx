@@ -3,11 +3,11 @@
 // time or picked together, and nothing is saved until Save. Side by side from notebook up, each
 // pane a table where it has the width; stacked below, the target over the source, so the moves
 // read up and down. Leaving with changes asks first (LeaveGuard).
-// TODO(rrandiak): the phone's long-press to start picking (view-rules.md §5.5); labels move to
-// i18n.
+// TODO(rrandiak): the phone's long-press to start picking (view-rules.md §5.5).
 
 import type { CSSProperties, ReactNode } from "react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { LeaveGuard } from "@/components/leave-guard";
@@ -21,6 +21,7 @@ import { useLoadMore } from "@/hooks/use-load-more";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { usePicked } from "@/hooks/use-picked";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 export type TransferSide = "target" | "source";
@@ -80,6 +81,7 @@ export function TransferEditor<Item>({
   onSave,
   onDiscard,
 }: TransferEditorProps<Item>) {
+  const { t } = useTranslation("common");
   const tier = useTier();
   const isStacked = tier === "phone" || tier === "small";
   const added = [...draft.current].filter((id) => !draft.original.has(id)).length;
@@ -123,7 +125,7 @@ export function TransferEditor<Item>({
               Discard
             </Button>
             <Button size="sm" disabled={!canSave || isSaving} onClick={onSave}>
-              {isSaving ? "Saving…" : "Save"}
+              {isSaving ? t("transfer.saving") : t("dialog.save")}
             </Button>
           </div>
         </div>
@@ -156,12 +158,19 @@ export function TransferEditor<Item>({
 
 // The words on a move: across to the other pane, or up and down when they are stacked.
 function moveLabelOf(side: TransferSide, isStacked: boolean, count: number | null): string {
-  const counted = count === null ? "" : ` ${count}`;
   if (side === "target") {
-    return `Take off${counted} ${isStacked ? "↓" : "→"}`;
+    return i18n.t(count === null ? "transfer.takeOffAll" : "transfer.takeOffCounted", {
+      ns: "common",
+      count,
+      arrow: isStacked ? "↓" : "→",
+    });
   }
 
-  return `${isStacked ? "↑" : "←"} Add${counted}`;
+  return i18n.t(count === null ? "transfer.addAll" : "transfer.addCounted", {
+    ns: "common",
+    count,
+    arrow: isStacked ? "↑" : "←",
+  });
 }
 
 interface PaneColumnProps<Item> {
@@ -173,6 +182,7 @@ interface PaneColumnProps<Item> {
 }
 
 function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnProps<Item>) {
+  const { t } = useTranslation("common");
   const items = pane.items ?? [];
   const ids = items.map(rowId);
   const picked = usePicked(ids, pane.resetKey ?? null);
@@ -242,7 +252,7 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
             >
               <span className="pl-4">
                 <Checkbox
-                  aria-label={`Pick every row in ${pane.title}`}
+                  aria-label={t("transfer.pickEveryRow", { title: pane.title })}
                   checked={isAllPicked}
                   onCheckedChange={(state) => picked.setMany(ids, state === true)}
                 />
@@ -273,7 +283,7 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
                   >
                     <span className="pt-0.5 @2xl:pt-0 @2xl:pl-4">
                       <Checkbox
-                        aria-label={`Pick ${id}`}
+                        aria-label={t("transfer.pick", { name: id })}
                         checked={isPicked}
                         onClick={(event) => {
                           event.preventDefault();
@@ -343,7 +353,9 @@ function PaneColumn<Item>({ pane, side, rowId, isStacked, onMove }: PaneColumnPr
 
         <div ref={sentinelRef} aria-hidden />
         {pane.paging?.isLoadingMore === true && (
-          <p className="p-4 text-center text-xs text-muted-foreground">Loading more…</p>
+          <p className="p-4 text-center text-xs text-muted-foreground">
+            {t("transfer.loadingMore")}
+          </p>
         )}
         {pane.footnote !== undefined && (
           <div className="px-4 py-3 text-xs leading-relaxed text-muted-foreground">

@@ -1,7 +1,6 @@
 // Status, priority and registry badges in the palette's status tones. The staff and public vocabularies each
 // carry their own colours, so a public label never borrows an internal one (view-map.md §4).
 // Tones follow docs/demos/shared/vera-model.js.
-// TODO(rrandiak): labels move to i18n.
 
 import type { RecordStatus } from "@vera/contract/documents";
 import type { Priority, Project, RegistryRecord, RegistryState } from "@vera/domain/entities";
@@ -9,6 +8,7 @@ import type { ListState } from "@vera/domain/lists";
 import type { StatusFootnote } from "@vera/domain/status";
 import { cva } from "class-variance-authority";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -45,18 +45,20 @@ export function ToneBadge({ tone, className, children }: ToneBadgeProps) {
 }
 
 export function AgentBadge() {
+  const { t } = useTranslation("common");
   return (
     <ToneBadge tone="purple" className="px-1.5 py-0 text-2xs">
-      agent
+      {t("badge.agent")}
     </ToneBadge>
   );
 }
 
 // ACCESS-suspend.
 export function SuspendedBadge() {
+  const { t } = useTranslation("common");
   return (
     <ToneBadge tone="red" className="px-1.5 py-0 text-2xs">
-      suspended
+      {t("badge.suspended")}
     </ToneBadge>
   );
 }
@@ -74,9 +76,10 @@ export function ProjectStateBadge({
   state: Project["state"];
   className?: string;
 }) {
+  const { t } = useTranslation("common");
   return (
     <ToneBadge tone={projectStateTones[state]} className={className}>
-      {state}
+      {t(`progress.${state}`)}
     </ToneBadge>
   );
 }
@@ -122,45 +125,14 @@ interface StatusBadgeProps {
 }
 
 // The precedence table's labels (status-model.md §4), then the requester's (view-map.md §4).
-const statusLabels = {
-  Declined: "Declined",
-  Withdrawn: "Withdrawn",
-  AwaitingReview: "Awaiting a decision",
-  BeingAdded: "Being added",
-  Cancelled: "Cancelled",
-  NotDigitizable: "Could not be digitized",
-  Forbidden: "Forbidden",
-  ValidationDenied: "Denied in review",
-  ReviewNeeded: "Review needed",
-  Enqueued: "Enqueued",
-  IngestFailed: "Could not be added",
-  Ready: "Ready",
-  Planned: "Planned",
-  InProgress: "In progress",
-  Digitized: "Digitized",
-  Published: "Published",
-  WaitingForReview: "Waiting for review",
-  NotAccepted: "Not accepted",
-  BeingChecked: "Being checked",
-  WaitingToBeScheduled: "Waiting to be scheduled",
-  Scheduled: "Scheduled",
-  Available: "Available",
-  OnHold: "On hold",
-  NotAvailable: "Not available",
-} as const satisfies Record<RecordStatus, string>;
-
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const { t } = useTranslation("common");
   return (
     <Badge className={cn(toneVariants({ tone: statusTones[status] }), className)}>
-      {statusLabels[status]}
+      {t(`progress.${status}`)}
     </Badge>
   );
 }
-
-const footnoteLabels = {
-  ReviewNeeded: "review needed",
-  ValidationDenied: "denied in review",
-} as const satisfies Record<StatusFootnote, string>;
 
 interface StatusWithFootnoteProps {
   status: RecordStatus;
@@ -169,11 +141,14 @@ interface StatusWithFootnoteProps {
 }
 
 export function StatusWithFootnote({ status, footnote }: StatusWithFootnoteProps) {
+  const { t } = useTranslation("common");
   return (
     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
       <StatusBadge status={status} />
       {footnote !== null && (
-        <span className="text-caption text-muted-foreground">· {footnoteLabels[footnote]}</span>
+        <span className="text-caption text-muted-foreground">
+          · {t(`statusFootnote.${footnote}`)}
+        </span>
       )}
     </span>
   );
@@ -185,9 +160,10 @@ interface PriorityBadgeProps {
 }
 
 export function PriorityBadge({ priority, className }: PriorityBadgeProps) {
+  const { t } = useTranslation("common");
   return (
     <Badge className={cn(toneVariants({ tone: priorityTones[priority] }), className)}>
-      {priority}
+      {t(`priority.${priority}`)}
     </Badge>
   );
 }
@@ -216,12 +192,6 @@ export function RegistryBadge({ record, className }: RegistryBadgeProps) {
   );
 }
 
-const listStateLabels = {
-  Planned: "Planned",
-  InProgress: "In progress",
-  Done: "Done",
-} as const satisfies Record<ListState, string>;
-
 const listStateTones = {
   Planned: "blue",
   InProgress: "blue",
@@ -230,5 +200,6 @@ const listStateTones = {
 
 // A digitization list's state, wherever a list is named: its own page and a project's.
 export function ListStateBadge({ state }: { state: ListState }) {
-  return <ToneBadge tone={listStateTones[state]}>{listStateLabels[state]}</ToneBadge>;
+  const { t } = useTranslation("common");
+  return <ToneBadge tone={listStateTones[state]}>{t(`listState.${state}`)}</ToneBadge>;
 }

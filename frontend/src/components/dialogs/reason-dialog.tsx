@@ -2,7 +2,6 @@
 // the record is told, required whenever one can see it (view-rules.md §5.4), and an internal
 // note only staff read, as the two texts of one reason. Fields a particular action needs (the
 // rule, the defects, the cause) come before the texts, and a line says whom it reaches.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useId, useState } from "react";

@@ -5,10 +5,11 @@
 // a full-screen sheet on a phone (decided 2026-10-06), where × in its head is the Cancel and
 // an irreversible primary is outlined rather than filled (view-rules.md §5.3).
 // A stepped dialog puts its steps under the title and a Back before the primary (§6.7).
-// TODO(rrandiak): Back closing it on a phone (§8.1); labels move to i18n.
+// TODO(rrandiak): Back closing it on a phone (§8.1).
 
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,13 +86,14 @@ export function DialogShell({
   width = "regular",
   isDirty = false,
   primary,
-  cancelLabel = "Cancel",
+  cancelLabel,
   secondary,
   head,
   onBack,
   refusal = null,
   children,
 }: DialogShellProps) {
+  const { t } = useTranslation("common");
   const isPhone = useTier() === "phone";
   const [isConfirmingDiscard, setIsConfirmingDiscard] = useState(false);
   const isFilled = primary.isDestructive !== true || !isPhone;
@@ -158,12 +160,12 @@ export function DialogShell({
               )}
               {!isPhone && cancelLabel !== null && (
                 <Button variant="outline" onClick={requestClose} disabled={primary.isPending}>
-                  {cancelLabel}
+                  {cancelLabel ?? t("dialog.cancel")}
                 </Button>
               )}
               {onBack !== undefined && (
                 <Button variant="outline" onClick={onBack} disabled={primary.isPending}>
-                  Back
+                  {t("dialog.back")}
                 </Button>
               )}
               <PrimaryButton primary={primary} isFilled={isFilled} isPhone={isPhone} />
@@ -175,11 +177,11 @@ export function DialogShell({
       <AlertDialog open={isConfirmingDiscard} onOpenChange={setIsConfirmingDiscard}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard changes?</AlertDialogTitle>
-            <AlertDialogDescription>What you typed here is not kept.</AlertDialogDescription>
+            <AlertDialogTitle>{t("dialog.discardTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("dialog.discardDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{t("dialog.keepEditing")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
@@ -187,7 +189,7 @@ export function DialogShell({
                 onClose();
               }}
             >
-              Discard
+              {t("dialog.discard")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

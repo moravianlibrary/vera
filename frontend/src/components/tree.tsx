@@ -4,11 +4,11 @@
 // roots, selected when nothing else is; it is always open. Dimmed rows stay selectable. One row
 // is in the tab order; the arrow keys move between rows, open and close branches, Home and End
 // jump, and Enter or Space selects (WAI-ARIA tree view).
-// TODO(rrandiak): labels move to i18n.
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 export interface TreeProps<Node> {
@@ -62,6 +62,7 @@ export function Tree<Node>({
   onExpandedChange,
   virtualRoot,
 }: TreeProps<Node>) {
+  const { t } = useTranslation("common");
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const selectedKey = selectedId ?? rootKey;
   const [focusKey, setFocusKey] = useState<string | null>(null);
@@ -201,7 +202,7 @@ export function Tree<Node>({
               <button
                 type="button"
                 tabIndex={-1}
-                aria-label={row.isExpanded ? "Collapse" : "Expand"}
+                aria-label={row.isExpanded ? t("tree.collapse") : t("tree.expand")}
                 className="grid size-5 shrink-0 place-items-center rounded-xs text-muted-foreground hover:bg-background hover:text-foreground"
                 onClick={(event) => {
                   event.stopPropagation();

@@ -3,11 +3,11 @@
 // got of the intention's output, with the drift marker outside the band; what the set leaves
 // unallocated, flagged, never scaled. Categories and an intention's Mix show the mix read-only; it
 // is edited on Mixes (ACT-mix-save), which Categories links to as the card's action.
-// TODO(rrandiak): labels move to i18n.
 
 import type { MixTree } from "@vera/contract/mixes";
 import type { Category } from "@vera/domain/entities";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { mixNameOf } from "@/components/category-tree-values";
 import { DetailCard, FinePrint, Muted } from "@/components/detail-card";
 import { StatusNote } from "@/components/status-note";
@@ -35,6 +35,7 @@ export function MixSetCard({
   documentCountOf,
   action,
 }: MixSetCardProps) {
+  const { t } = useTranslation("common");
   const children = categories.filter((candidate) => candidate.parentId === categoryId);
   const parent = categories.find((candidate) => candidate.id === categoryId);
   const set =
@@ -44,24 +45,31 @@ export function MixSetCard({
   const mixNodeOf = (id: string) => mix.nodes.find((candidate) => candidate.categoryId === id);
   return (
     <DetailCard
-      title={`${categoryId === null ? "Top level" : "Children"} — ${mixNameOf(mix)}`}
+      title={t(categoryId === null ? "mixSet.topLevel" : "mixSet.children", {
+        name: mixNameOf(mix),
+      })}
       action={action}
     >
       <table className="w-full text-sm">
         <thead className="text-caption tracking-wide text-muted-foreground uppercase">
           <tr className="border-b">
-            <th className="py-1.5 text-left font-semibold">Category</th>
+            <th className="py-1.5 text-left font-semibold">{t("mixSet.category")}</th>
             <th className="text-right font-semibold">
-              Share
-              {parent !== undefined && <span className="hidden @md:inline"> of {parent.name}</span>}
+              {t("mixSet.share")}
+              {parent !== undefined && (
+                <span className="hidden @md:inline">
+                  {" "}
+                  {t("mixSet.ofParent", { name: parent.name })}
+                </span>
+              )}
             </th>
             <th className="text-right font-semibold">
-              <span className="hidden @md:inline">Of the whole</span>
-              <span className="@md:hidden">Whole</span>
+              <span className="hidden @md:inline">{t("mixSet.ofWhole")}</span>
+              <span className="@md:hidden">{t("mixSet.whole")}</span>
             </th>
-            {showActual && <th className="text-right font-semibold">Actual</th>}
+            {showActual && <th className="text-right font-semibold">{t("mixSet.actual")}</th>}
             {documentCountOf !== undefined && (
-              <th className="hidden text-right font-semibold @sm:table-cell">Docs</th>
+              <th className="hidden text-right font-semibold @sm:table-cell">{t("mixSet.docs")}</th>
             )}
           </tr>
         </thead>
@@ -91,9 +99,9 @@ export function MixSetCard({
                 </td>
                 <td className="text-right tabular-nums">
                   {share === null ? (
-                    <span className="text-tone-amber-foreground">no share</span>
+                    <span className="text-tone-amber-foreground">{t("mixSet.noShare")}</span>
                   ) : share === 0 ? (
-                    <Muted>0% — excluded</Muted>
+                    <Muted>{t("mixSet.zeroExcluded")}</Muted>
                   ) : (
                     `${share}%`
                   )}
@@ -121,19 +129,18 @@ export function MixSetCard({
         <StatusNote
           tone="amber"
           className="mt-3"
-          title={`${formatPercent(unallocated)} unallocated`}
+          title={t("mixSet.unallocated", { percent: formatPercent(unallocated) })}
         >
           {noShare.length > 0 &&
-            `${noShare.map((child) => child.name).join(", ")} ${noShare.length === 1 ? "has" : "have"} no share. `}
-          Generation allocates only what is allocated and reports the rest — it does not scale the
-          others up.
+            t("mixSet.noShareNote", {
+              names: noShare.map((child) => child.name).join(", "),
+              count: noShare.length,
+            })}
+          {t("mixSet.generationNote")}
         </StatusNote>
       )}
       {showActual && (
-        <FinePrint>
-          <i>Actual</i> is its share of {mix.intention.name}&apos;s output, beside what the mix says
-          it should be.
-        </FinePrint>
+        <FinePrint>{t("mixSet.actualExplanation", { name: mix.intention.name })}</FinePrint>
       )}
     </DetailCard>
   );

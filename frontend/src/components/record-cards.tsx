@@ -2,7 +2,7 @@
 // the existing copies, the catalog record and the history, under the record's heading
 // (docs/demos/shared/page-documents.js and page-proposals.js). Each takes the record as the
 // server sent it, already withheld to what the caller may read.
-// TODO(rrandiak): Open in catalog; labels move to i18n.
+// TODO(rrandiak): Open in catalog.
 
 import type { DocumentRecord } from "@vera/domain/documents";
 import { currentIterationOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
@@ -18,11 +18,13 @@ import type { SourcedValue } from "@vera/domain/properties";
 import { valuesOf } from "@vera/domain/properties";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { DetailCard, DetailRow, FactGrid, Muted } from "@/components/detail-card";
 import type { Tone } from "@/components/status-badge";
 import { RegistryBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { publicWordingOf, wordingOf } from "@/lib/event-wording";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
@@ -37,6 +39,7 @@ export function AskersCard({
   users: readonly User[];
   action?: ReactNode;
 }) {
+  const { t } = useTranslation("common");
   const current = currentIterationOf(record);
   const { data: projects = [] } = useProjectsQuery();
   const isShownBatch = useIsShownBatch();
@@ -44,7 +47,7 @@ export function AskersCard({
   const askerCount = new Set(record.requests.map((request) => request.requesterId)).size;
 
   return (
-    <DetailCard title={`Asked by ${askerCount}`} action={action}>
+    <DetailCard title={t("recordCards.askedBy", { count: askerCount })} action={action}>
       {requests.map((request) => {
         const user = users.find((candidate) => candidate.id === request.requesterId);
         const project = projects.find((candidate) => candidate.id === request.projectId);
@@ -61,16 +64,16 @@ export function AskersCard({
             }
           >
             <b className="font-semibold">{user?.name ?? request.requesterId}</b>{" "}
-            {user?.kind === "agent" && <ToneBadge tone="purple">agent</ToneBadge>}{" "}
+            {user?.kind === "agent" && <ToneBadge tone="purple">{t("badge.agent")}</ToneBadge>}{" "}
             <AskTag request={request} record={record} />
             {request.reason !== null && (
               <div className="text-muted-foreground">“{request.reason}”</div>
             )}
             {project !== undefined && (current === null || request.decision === "Pending") && (
               <div className="text-muted-foreground">
-                for {project.name}
+                {t("recordCards.forProject", { name: project.name })}
                 {request.decision === "Pending" && request.isAfterProjectApproval
-                  ? ", after its approval"
+                  ? t("recordCards.afterApprovalSuffix")
                   : ""}
               </div>
             )}
@@ -89,36 +92,37 @@ function isFollowing(request: Request): boolean {
 }
 
 function AskTag({ request, record }: { request: Request; record: DocumentRecord }) {
+  const { t } = useTranslation("common");
   const current = currentIterationOf(record);
   const tag = (tone: Tone, label: string) => <ToneBadge tone={tone}>{label}</ToneBadge>;
 
   if (isFollowing(request)) {
-    return tag("slate", "following");
+    return tag("slate", t("recordCards.following"));
   }
 
   if (request.decision === "Pending") {
-    return tag("amber", "awaiting a decision");
+    return tag("amber", t("recordCards.awaitingDecision"));
   }
 
   if (request.decision === "Denied") {
-    return tag("red", "declined");
+    return tag("red", t("recordCards.declined"));
   }
 
   if (request.decision === "Withdrawn") {
-    return tag("slate", "withdrawn");
+    return tag("slate", t("recordCards.withdrawn"));
   }
 
   if (request.decision !== "Approved" || request.iteration === null) {
-    return tag("slate", "being added");
+    return tag("slate", t("recordCards.beingAdded"));
   }
 
   const iterationId = request.iteration.id;
   if (iterationId === current?.id) {
-    return tag("blue", "originated");
+    return tag("blue", t("recordCards.originated"));
   }
 
   const attempt = record.iterations.find((iteration) => iteration.id === iterationId)?.attempt;
-  return tag("slate", `iteration ${attempt ?? 1}`);
+  return tag("slate", t("recordCards.iteration", { count: attempt ?? 1 }));
 }
 
 // The copies the checks found, a rescan approved over them, and what each registry answered.
@@ -129,6 +133,7 @@ export function CopiesCard({
   record: DocumentRecord;
   nameOf: (userId: string) => string;
 }) {
+  const { t } = useTranslation("common");
   const copies = existingCopiesOf(record.requests);
   const registries = record.document.registryRecords.filter((entry) => entry.state !== "NotFound");
   const rescan = record.requests.find(
@@ -140,16 +145,16 @@ export function CopiesCard({
       (request) => request.decision === "Pending" && request.checkedAt === null,
     );
     return (
-      <DetailCard title="Existing copies">
+      <DetailCard title={t("recordCards.existingCopies")}>
         <p className="text-xs text-muted-foreground">
-          {isChecking ? "Not checked yet." : "No copy found."}
+          {isChecking ? t("recordCards.notCheckedYet") : t("recordCards.noCopyFound")}
         </p>
       </DetailCard>
     );
   }
 
   return (
-    <DetailCard title="Existing copies">
+    <DetailCard title={t("recordCards.existingCopies")}>
       {copies.map((copy) => (
         <DetailRow
           key={`${copy.source}-${copy.iterationId}`}
@@ -157,8 +162,12 @@ export function CopiesCard({
         >
           <b className="font-semibold">{copy.source}</b>{" "}
           <Muted>
-            seen {formatDay(copy.seenAt)}
-            {copy.foundAfterApproval ? " · after approval" : ""}
+            {t(
+              copy.foundAfterApproval
+                ? "recordCards.copySeenAfterApproval"
+                : "recordCards.copySeen",
+              { date: formatDay(copy.seenAt) },
+            )}
           </Muted>
         </DetailRow>
       ))}
@@ -166,7 +175,10 @@ export function CopiesCard({
         <StatusNote
           tone="blue"
           className="mt-2"
-          title={`Approved as rescan by ${nameOf(rescan.rescan.actorId)}, ${formatDay(rescan.rescan.at)}`}
+          title={t("recordCards.approvedRescan", {
+            name: nameOf(rescan.rescan.actorId),
+            date: formatDay(rescan.rescan.at),
+          })}
         >
           {rescan.rescan.note}
         </StatusNote>
@@ -190,8 +202,8 @@ export function CopiesCard({
               {entry.registry}{" "}
               <Muted>
                 {entry.state === "CheckFailed"
-                  ? `unreachable — last answer ${formatDay(entry.observedAt)}`
-                  : `observed ${formatDay(entry.observedAt)}`}
+                  ? t("recordCards.registryUnreachable", { date: formatDay(entry.observedAt) })
+                  : t("recordCards.registryObserved", { date: formatDay(entry.observedAt) })}
               </Muted>
             </DetailRow>
           ))}
@@ -226,16 +238,20 @@ const unitTypeLabels = {
 // The title, type and shelf mark come from the catalog adapter, each with its sources
 // (DOC-property-predefined); one row says it for all three when they were read together.
 const catalogFactLabels = [
-  ["material_type", "Type"],
-  ["shelf_mark", "Shelf mark"],
-  ["title", "Title"],
+  ["material_type", "recordCards.type"],
+  ["shelf_mark", "recordCards.shelfMark"],
+  ["title", "recordCards.title"],
 ] as const;
 
 function catalogFactSourcesOf(document: Document) {
   const rows = new Map<string, { what: string[]; name: string; source: SourcedValue }>();
-  for (const [key, label] of catalogFactLabels) {
+  for (const [key, labelKey] of catalogFactLabels) {
+    const label = i18n.t(labelKey, { ns: "common" });
     for (const source of valuesOf(document.properties, key)?.sources ?? []) {
-      const name = source.source.kind === "hand" ? "By hand" : source.source.instanceName;
+      const name =
+        source.source.kind === "hand"
+          ? i18n.t("recordCards.byHand", { ns: "common" })
+          : source.source.instanceName;
       const rowKey = `${name}|${source.tier}|${source.observedAt}`;
       const row = rows.get(rowKey) ?? { what: [], name, source };
       row.what.push(label);
@@ -248,12 +264,15 @@ function catalogFactSourcesOf(document: Document) {
 
 // "Type", "Type and title", "Type, shelf mark and title".
 function joinWords(words: readonly string[]): string {
-  const [first = "", ...rest] = words.map((word, index) =>
-    index === 0 ? word : word.toLocaleLowerCase(),
+  const [first = "", second = "", third = ""] = words.map((word, index) =>
+    index === 0 ? word : word.toLocaleLowerCase(i18n.language),
   );
-  return rest.length === 0
-    ? first
-    : `${[first, ...rest.slice(0, -1)].join(", ")} and ${rest[rest.length - 1]}`;
+  return i18n.t(`recordCards.factList_${words.length}`, {
+    ns: "common",
+    first,
+    second,
+    third,
+  });
 }
 
 export function CatalogCard({
@@ -266,13 +285,14 @@ export function CatalogCard({
   // Where the record opens in the catalog, to repair it there.
   link?: string | null;
 }) {
+  const { t } = useTranslation("common");
   const inUse = effectivePageCount(document);
   const pageSources = document.pageSources.toSorted((first, second) => second.tier - first.tier);
   const catalogSources = catalogFactSourcesOf(document);
 
   return (
     <DetailCard
-      title="Catalog record"
+      title={t("recordCards.catalogRecord")}
       action={
         link ? (
           <a
@@ -281,32 +301,35 @@ export function CatalogCard({
             rel="noreferrer"
             className="text-xs font-medium underline-offset-4 hover:underline"
           >
-            Open in the catalog ↗
+            {t("recordCards.openCatalog")}
           </a>
         ) : undefined
       }
     >
       <FactGrid
         facts={[
-          { label: "Type", value: document.type },
+          { label: t("recordCards.type"), value: document.type },
           {
-            label: "Unit",
+            label: t("recordCards.unit"),
             value:
               document.unit === null ? (
-                "whole record"
+                t("recordCards.wholeRecord")
               ) : (
                 <>
                   {document.unit.value} <Muted>({unitTypeLabels[document.unit.type]})</Muted>
                 </>
               ),
           },
-          { label: "Shelf mark", value: document.shelfMark ?? "—" },
-          { label: "Catalog ID", value: <span className="font-mono">{document.catalogId}</span> },
+          { label: t("recordCards.shelfMark"), value: document.shelfMark ?? "—" },
+          {
+            label: t("recordCards.catalogId"),
+            value: <span className="font-mono">{document.catalogId}</span>,
+          },
         ]}
       />
       <div className="mt-3.5">
         {pageSources.length === 0 ? (
-          <p className="text-muted-foreground">No page count</p>
+          <p className="text-muted-foreground">{t("recordCards.noPageCount")}</p>
         ) : (
           pageSources.map((source) => (
             <DetailRow
@@ -314,14 +337,14 @@ export function CatalogCard({
               aside={
                 <span className="tabular-nums">
                   {source.value.toLocaleString("en-GB")}{" "}
-                  {source === inUse && <ToneBadge tone="green">in use</ToneBadge>}
+                  {source === inUse && <ToneBadge tone="green">{t("recordCards.inUse")}</ToneBadge>}
                 </span>
               }
             >
-              Pages — {source.source}{" "}
+              {t("recordCards.pagesSource", { source: source.source })}{" "}
               <Muted>
                 {joinDetails([
-                  `tier ${source.tier}`,
+                  t("recordCards.tier", { count: source.tier }),
                   source.setBy === null ? null : nameOf(source.setBy),
                 ])}
               </Muted>
@@ -333,11 +356,11 @@ export function CatalogCard({
         <div className="mt-3.5">
           {catalogSources.map((row) => (
             <DetailRow key={row.key}>
-              {row.what} — {row.name}{" "}
+              {t("recordCards.factSources", { facts: row.what, source: row.name })}{" "}
               <Muted>
                 {joinDetails([
-                  `tier ${row.source.tier}`,
-                  `observed ${formatDay(row.source.observedAt)}`,
+                  t("recordCards.tier", { count: row.source.tier }),
+                  t("recordCards.observed", { date: formatDay(row.source.observedAt) }),
                   row.source.setBy === null ? null : nameOf(row.source.setBy),
                 ])}
               </Muted>
@@ -359,13 +382,18 @@ export function HistoryCard({
   nameOf: (userId: string) => string;
   isPublic: boolean;
 }) {
+  const { t } = useTranslation("common");
   const events = log.toSorted((first, second) => second.at.localeCompare(first.at));
   const actorName = (actor: Actor) =>
-    actor.kind === "user" ? nameOf(actor.userId) : actor.kind === "system" ? "System" : null;
+    actor.kind === "user"
+      ? nameOf(actor.userId)
+      : actor.kind === "system"
+        ? t("recordCards.system")
+        : null;
 
   return (
-    <DetailCard title={isPublic ? "What has happened" : "History"}>
-      {events.length === 0 && <Muted>Nothing recorded yet.</Muted>}
+    <DetailCard title={isPublic ? t("recordCards.whatHappened") : t("recordCards.history")}>
+      {events.length === 0 && <Muted>{t("recordCards.nothingRecorded")}</Muted>}
       {events.map((entry) => (
         <DetailRow
           key={entry.id}

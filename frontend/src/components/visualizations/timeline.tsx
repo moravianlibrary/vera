@@ -3,7 +3,6 @@
 // runs are too dense to show one by one, and hatching where a schedule is paused. The moments are
 // the server's; the axis starts at its now. A phone ticks every 6 hours, 2 days or 10 days, and
 // draws a band sooner.
-// TODO(rrandiak): labels move to i18n.
 
 import { useTier } from "@/hooks/use-tier";
 import { cn } from "@/lib/utils";

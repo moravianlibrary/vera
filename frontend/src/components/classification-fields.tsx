@@ -1,12 +1,12 @@
 // The fields that classify an item as it is approved, its category and its priority, and the
 // labelled field they sit in. Approving is the one place a person classifies (view-map.md §2),
 // whether one proposal, a batch at once or a curator's own items as they are proposed.
-// TODO(rrandiak): labels move to i18n.
 
 import { categoryPathOf, leafCategoriesOf } from "@vera/domain/categories";
 import type { Priority } from "@vera/domain/entities";
 import { priorities, prioritySchema } from "@vera/domain/entities";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -49,11 +49,12 @@ interface CategorySelectProps {
 
 // Every category with no subcategories, by its whole path.
 export function CategorySelect({ id, value, onChange }: CategorySelectProps) {
+  const { t } = useTranslation("common");
   const { data: categories = [] } = useCategoriesQuery();
   return (
     <Select value={value ?? undefined} onValueChange={onChange}>
       <SelectTrigger id={id} className="w-full">
-        <SelectValue placeholder="Choose a category…" />
+        <SelectValue placeholder={t("classification.chooseCategory")} />
       </SelectTrigger>
       <SelectContent>
         {leafCategoriesOf(categories).map((category) => (
@@ -85,6 +86,7 @@ interface PrioritySelectProps {
 
 // Highest first.
 export function PrioritySelect({ id, value, onChange }: PrioritySelectProps) {
+  const { t } = useTranslation("common");
   return (
     <Select value={value} onValueChange={(picked) => onChange(prioritySchema.parse(picked))}>
       <SelectTrigger id={id} className="w-full">
@@ -93,7 +95,7 @@ export function PrioritySelect({ id, value, onChange }: PrioritySelectProps) {
       <SelectContent>
         {priorities.toReversed().map((option) => (
           <SelectItem key={option} value={option}>
-            {option}
+            {t(`priority.${option}`)}
           </SelectItem>
         ))}
       </SelectContent>
