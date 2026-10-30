@@ -49,3 +49,53 @@ describe("document detail publication links", () => {
     expect(primary.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
+
+describe("document detail scoped links", () => {
+  async function renderD1(session: ReturnType<typeof resolveSession>) {
+    server.use(...createHandlers("admin"));
+    const detail = await findDocument("D1");
+    if (detail === null) throw new Error("D1 is in the fixtures");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <DocumentDetailPane detail={detail} session={session} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("links a list in custody", async () => {
+    const session = {
+      ...resolveSession("curator"),
+      grants: [{ permission: "list.read" as const, scope: "custody" as const }],
+      custodyCategoryIds: ["c22"],
+    };
+    await renderD1(session);
+    expect(await screen.findByRole("link", { name: "Moravica — June" })).toBeInTheDocument();
+  });
+
+  it("keeps a list name plain when its member is outside custody", async () => {
+    const session = {
+      ...resolveSession("curator"),
+      grants: [{ permission: "list.read" as const, scope: "custody" as const }],
+      custodyCategoryIds: ["c1"],
+    };
+    await renderD1(session);
+    const name = await screen.findByText("Moravica — June");
+    expect(name.closest("a")).toBeNull();
+  });
+
+  it("keeps a project name plain when project.read only reaches another project", async () => {
+    const base = resolveSession("curator");
+    const session = {
+      ...base,
+      user: { ...base.user, id: "outside" },
+      groupIds: [],
+      grants: [{ permission: "project.read" as const, scope: "project" as const }],
+    };
+    await renderD1(session);
+    const name = await screen.findByText("NDK Periodika");
+    expect(name.closest("a")).toBeNull();
+  });
+});

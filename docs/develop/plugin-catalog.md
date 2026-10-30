@@ -103,7 +103,8 @@ iteration may hold several links ([DEC-0014](../decisions/DEC-0014-several-publi
 
 ## Message
 
-`MailtoMessage` · `SlackMessage`.
+`MailtoMessage` · `SlackMessage` · `SlackBotMessage` (VERA's Slack app posts a direct message to
+the recipients; its result is *sent*).
 
 ## Delivery channel
 

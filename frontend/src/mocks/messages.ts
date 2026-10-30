@@ -1,7 +1,8 @@
 // What the server does for *Message…* (messaging.md): offers the enabled Message instances in
 // their order, resolves who a message about a record goes to (MSG-recipients) and lets each
-// instance say whom it can reach and where it hands off to (§2). It keeps nothing: a redirect is not logged,
-// since VERA cannot know it was sent (§4). A record the caller cannot see is not found.
+// instance say whom it can reach and where it hands off to (§2). It keeps nothing: a redirect
+// is not logged, since VERA cannot know it was sent (§4). A record the caller cannot see is not
+// found.
 
 import type { MessageChannel, MessageHandOff, MessageSubject } from "@vera/contract/messages";
 import { documentIdentifierOf } from "@vera/domain/documents";
@@ -23,6 +24,7 @@ import { findReachableValidation } from "@/mocks/validations";
 const channelDescriptions = {
   mailto: "opens your mail, pre-filled",
   slack: "opens a Slack message",
+  slackBot: "sends a Slack direct message",
 } as const satisfies Record<MessageImplementation, string>;
 
 interface MessageInstance {
@@ -35,6 +37,7 @@ interface MessageInstance {
 const implementationsByName: Readonly<Record<string, MessageImplementation>> = {
   MailtoMessage: "mailto",
   SlackMessage: "slack",
+  SlackBotMessage: "slackBot",
 };
 
 function enabledInstances(): MessageInstance[] {
@@ -51,6 +54,7 @@ export function messageChannels(): MessageChannel[] {
     id,
     name,
     description: channelDescriptions[implementation],
+    result: implementation === "slackBot" ? "sent" : "redirect",
   }));
 }
 
@@ -183,7 +187,7 @@ export function prepareMessage(session: Session, subject: MessageSubject): Outco
           channelId: instance.id,
           reachableIds: reachable.map(({ id }) => id),
           href:
-            reachable.length === 0
+            reachable.length === 0 || instance.implementation === "slackBot"
               ? null
               : hrefOf(instance, reachable, {
                   subject: `[VERA] ${resolved.label}`,
@@ -202,7 +206,48 @@ function originOf(): string {
 }
 
 function canReach(instance: MessageInstance, user: User): boolean {
-  return instance.implementation === "slack" ? user.id in slackHandles : user.email !== null;
+  return instance.implementation === "slack" || instance.implementation === "slackBot"
+    ? user.id in slackHandles
+    : user.email !== null;
+}
+
+export function sendMessage(
+  session: Session,
+  subject: MessageSubject,
+  channelId: string,
+  text: string,
+): Outcome<{ reachedIds: string[] }> {
+  if (text.trim() === "") {
+    return { refusal: { status: 422, message: "Write the message first" } };
+  }
+  const instance = enabledInstances().find((candidate) => candidate.id === channelId);
+  if (instance === undefined || instance.implementation !== "slackBot") {
+    return {
+      refusal: { status: 422, code: "message.not_sending", message: "This instance redirects." },
+    };
+  }
+  const resolved = resolveSubject(session, subject);
+  if (resolved === null) {
+    return { refusal: { status: 404, message: "Nothing to message about here" } };
+  }
+  const reachedIds = resolved.recipientIds
+    .filter((userId) => userId !== session.user.id)
+    .map((userId) => database.users.find((user) => user.id === userId))
+    .filter(
+      (user): user is User =>
+        user !== undefined && user.kind === "person" && canReach(instance, user),
+    )
+    .map(({ id }) => id);
+  if (reachedIds.length === 0) {
+    return {
+      refusal: {
+        status: 422,
+        code: "message.unreachable",
+        message: "This instance reaches nobody.",
+      },
+    };
+  }
+  return { value: { reachedIds } };
 }
 
 interface Prefill {

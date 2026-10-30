@@ -65,6 +65,7 @@ export const apiRoutes = {
   validations: "/validations",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
+  messageSend: "/messages/send",
   // Every instance by name, for other records to point at; and where a new one is made.
   pluginInstances: "/plugin-instances",
   // Plugins, the page: every implementation and instance with what it declares and runs.
@@ -200,7 +201,8 @@ export function iterationLinkRoute(
   return action === undefined ? base : `${base}/${action}`;
 }
 
-// Every failed addition of a batch, retried at once: the batch is the unit retried (ACT-retry-batch).
+// Every failed addition of a batch, retried at once: the batch is the unit retried
+// (ACT-retry-batch).
 export function batchRetryRoute(batchId: string): string {
   return `${apiRoutes.batches}/${encodeURIComponent(batchId)}/retry`;
 }

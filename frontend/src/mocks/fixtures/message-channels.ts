@@ -3,7 +3,7 @@
 // from the user record; Slack needs a handle, the `slack_id` claim of the person's MZK Keycloak
 // identity, which only those who sign in with it carry. Both hand off as a redirect, pre-filled.
 
-export type MessageImplementation = "mailto" | "slack";
+export type MessageImplementation = "mailto" | "slack" | "slackBot";
 
 // The `slack_id` claim, by user: everyone signing in with MZK Keycloak (vera-data.js users).
 export const slackHandles: Readonly<Record<string, string>> = {

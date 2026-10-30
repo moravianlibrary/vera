@@ -5,7 +5,7 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import { listMessageChannels, prepareMessage } from "@/api/messages";
+import { listMessageChannels, prepareMessage, sendMessage } from "@/api/messages";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -34,7 +34,41 @@ describe("listMessageChannels", () => {
 
     const channels = await listMessageChannels();
 
-    expect(channels.map((channel) => channel.name)).toEqual(["Email", "MZK Slack"]);
+    expect(channels.map((channel) => channel.name)).toEqual([
+      "Email",
+      "MZK Slack",
+      "MZK Slack bot",
+    ]);
+  });
+});
+
+describe("sendMessage", () => {
+  it("answers the ids reached by the bot", async () => {
+    signInAs("admin");
+    await expect(
+      sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi43", text: "Please help" }),
+    ).resolves.toEqual({ reachedIds: ["u4"] });
+  });
+
+  it("refuses a redirect instance", async () => {
+    signInAs("admin");
+    await expect(
+      sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi26", text: "Please help" }),
+    ).rejects.toMatchObject({ problem: { code: "message.not_sending" } });
+  });
+
+  it("refuses when nobody is reachable", async () => {
+    signInAs("admin");
+    await expect(
+      sendMessage({ kind: "proposal", id: "D22" }, { channelId: "pi43", text: "Please help" }),
+    ).rejects.toMatchObject({ problem: { code: "message.unreachable" } });
+  });
+
+  it("refuses empty text", async () => {
+    signInAs("admin");
+    expect(
+      await statusOf(sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi43", text: "" })),
+    ).toBe(422);
   });
 });
 

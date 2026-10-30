@@ -53,7 +53,11 @@ import {
   signUpSchema,
   tokenSchema,
 } from "@vera/contract/login";
-import { messageSubjectKindSchema, messageSubjectParams } from "@vera/contract/messages";
+import {
+  messageSubjectKindSchema,
+  messageSubjectParams,
+  sendMessageBodySchema,
+} from "@vera/contract/messages";
 import {
   mixDraftSchema,
   mixSetChangeSchema,
@@ -219,7 +223,7 @@ import {
   saveList,
   startListNow,
 } from "@/mocks/lists";
-import { messageChannels, prepareMessage } from "@/mocks/messages";
+import { messageChannels, prepareMessage, sendMessage } from "@/mocks/messages";
 import {
   archiveMixRecord,
   createMixRecord,
@@ -1642,6 +1646,24 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       return outcomeResponse(prepareMessage(currentSession(), { kind: kind.data, id }));
+    }),
+
+    http.post(route(apiRoutes.messageSend), async ({ request }) => {
+      const params = new URL(request.url).searchParams;
+      const subject = messageSubjectKindSchema.safeParse(params.get(messageSubjectParams.kind));
+      const id = params.get(messageSubjectParams.id);
+      const body = sendMessageBodySchema.safeParse(await request.json());
+      if (!subject.success || id === null || id === "" || !body.success) {
+        return problemResponse({ status: 422, message: "Say what to send and whom it is about" });
+      }
+      return outcomeResponse(
+        sendMessage(
+          currentSession(),
+          { kind: subject.data, id },
+          body.data.channelId,
+          body.data.text,
+        ),
+      );
     }),
 
     http.get(route(apiRoutes.watchlists), ({ request }) => {

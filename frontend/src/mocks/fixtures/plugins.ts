@@ -432,6 +432,13 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       fields: ["workspace", "handle"],
     },
   ),
+  implementation(
+    "pt39",
+    "SlackBotMessage",
+    "Message",
+    "Posts a direct message to reachable Slack recipients.",
+    { version: "1.0.0", installedAt: "2026-10-30", triggers: ["OnDemand"], fields: ["workspace"] },
+  ),
   implementation("pt13", "SmtpMailer", "DeliveryChannel", "Sends mail through an SMTP server.", {
     version: "1.1.0",
     installedAt: "2026-01-15",
@@ -920,6 +927,16 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     triggers: ["OnDemand"],
     settings: { kind: "Message", order: 2 },
     createdAt: "2026-06-24",
+    lastRunAt: null,
+  }),
+  instance({
+    id: "pi43",
+    name: "MZK Slack bot",
+    implementationId: "pt39",
+    configuration: { workspace: "mzk" },
+    triggers: ["OnDemand"],
+    settings: { kind: "Message", order: 3 },
+    createdAt: "2026-10-30",
     lastRunAt: null,
   }),
   instance({

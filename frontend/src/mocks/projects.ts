@@ -117,10 +117,7 @@ const pendingAsksOf = (documentId: string) =>
       request.documentId === documentId && request.decision === "Pending",
   );
 
-// A copy exists, or the copy check has not answered: either way it is decided on its own, as a
-// rescan if it is one (flows.md D11).
-// TODO(rrandiak): the design names only the copy as a reason to skip; confirm that an ask still
-// being checked is skipped too, rather than held until the check answers.
+// A copy or unanswered copy check is left out of approval (LC-PROJ-decide).
 function isSkipped(documentId: string): boolean {
   const asks = pendingAsksOf(documentId);
   return existingCopiesOf(asks).length > 0 || asks.some((request) => request.checkedAt === null);

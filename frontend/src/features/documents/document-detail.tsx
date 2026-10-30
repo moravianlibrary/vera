@@ -25,8 +25,9 @@ import {
   recordStatusOf,
 } from "@vera/domain/documents";
 import type { Iteration, Session } from "@vera/domain/entities";
-import { primaryLinkOf } from "@vera/domain/iterations";
-import { hasPermission } from "@vera/domain/permissions";
+import { primaryLinkOf, scopeOfIteration } from "@vera/domain/iterations";
+import { can, hasPermission } from "@vera/domain/permissions";
+import { scopeOfProject } from "@vera/domain/projects";
 import {
   isProgressAtLeast,
   iterationStatusOf,
@@ -385,7 +386,13 @@ function DigitizationCard({
   const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const project = projects.find((candidate) => candidate.id === iteration.projectId);
   const list = lists.find((candidate) => candidate.id === iteration.listId);
-  const canOpenProjects = hasPermission(session, "project.read");
+  const { data: categories = [] } = useCategoriesQuery();
+  const canOpenProject =
+    project !== undefined && can(session, "project.read", scopeOfProject(project));
+  const canOpenList =
+    list !== undefined &&
+    (can(session, "list.read", scopeOfIteration(categories, iteration.categoryId)) ||
+      (project !== undefined && can(session, "list.read", scopeOfProject(project))));
   const { cancellation } = iteration;
 
   const facts: Fact[] = [
@@ -403,7 +410,7 @@ function DigitizationCard({
       value:
         project === undefined ? (
           "—"
-        ) : canOpenProjects ? (
+        ) : canOpenProject ? (
           <Link
             to={`/projects?id=${encodeURIComponent(project.id)}`}
             className="underline underline-offset-4"
@@ -419,7 +426,7 @@ function DigitizationCard({
       value:
         list !== undefined ? (
           <>
-            {hasPermission(session, "list.read") ? (
+            {canOpenList ? (
               <Link to="/lists" className="underline underline-offset-4">
                 {list.name}
               </Link>

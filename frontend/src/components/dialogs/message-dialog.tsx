@@ -5,16 +5,23 @@
 // recipient the chosen instance cannot reach is named and left out.
 // Unlike the sketch, the dialog asks for the recipients and the instances itself, so each
 // *Message…* only names its record.
-// TODO(rrandiak): instances that send on their own ask for the text first (messaging.md §2);
-// labels move to i18n.
+// A sending instance gets the typed text and reports who it reached; VERA keeps neither
+// (MSG-handoff, MSG-keeps-nothing).
 
 import type { MessageSubject } from "@vera/contract/messages";
 import { useId, useState } from "react";
+import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useMessageChannelsQuery, useMessageHandOffQuery } from "@/hooks/use-message-query";
+import { Textarea } from "@/components/ui/textarea";
+import type { Refusal } from "@/hooks/use-action-mutation";
+import {
+  useMessageChannelsQuery,
+  useMessageHandOffQuery,
+  useSendMessage,
+} from "@/hooks/use-message-query";
 
 interface MessageDialogProps {
   isOpen: boolean;
@@ -37,6 +44,9 @@ export function MessageDialog({
   const { data: channels = [] } = useMessageChannelsQuery();
   const handOffQuery = useMessageHandOffQuery(isOpen ? subject : null);
   const [pickedId, setPickedId] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [sentNames, setSentNames] = useState<string[] | null>(null);
+  const [refusal, setRefusal] = useState<Refusal | null>(null);
 
   const channel = channels.find((candidate) => candidate.id === pickedId) ?? channels[0];
   const handOff = handOffQuery.data;
@@ -45,6 +55,21 @@ export function MessageDialog({
   const reachable = handOff?.recipients.filter(({ userId }) => reachableIds.has(userId)) ?? [];
   const unreachable = handOff?.recipients.filter(({ userId }) => !reachableIds.has(userId)) ?? [];
   const channelName = channel?.name ?? "";
+  const isSending = channel?.result === "sent";
+  const mutation = useSendMessage(subject);
+  const send = async () => {
+    if (channel === undefined) return;
+    const result = await mutation.run({ channelId: channel.id, text: text.trim() });
+    if (result.isDone) {
+      setSentNames(
+        result.value.reachedIds.map(
+          (id) => handOff?.recipients.find((recipient) => recipient.userId === id)?.name ?? id,
+        ),
+      );
+    } else {
+      setRefusal(result.refusal);
+    }
+  };
 
   return (
     <DialogShell
@@ -53,18 +78,26 @@ export function MessageDialog({
       title={`Message about ${label}`}
       description={`Write to ${recipientLabel} about ${label}`}
       refusal={
-        handOffQuery.isError
+        refusal ??
+        (handOffQuery.isError
           ? { status: null, code: null, message: "Who it goes to could not be found. Try again." }
-          : null
+          : null)
       }
       primary={{
-        label: `Open in ${channelName}`,
-        href: channelHandOff?.href ?? undefined,
-        isDisabled: (channelHandOff?.href ?? null) === null,
-        onSelect: onClose,
+        label: sentNames !== null ? "Close" : isSending ? "Send" : `Open in ${channelName}`,
+        href: !isSending && sentNames === null ? (channelHandOff?.href ?? undefined) : undefined,
+        isDisabled:
+          sentNames === null &&
+          (isSending ? text.trim() === "" : (channelHandOff?.href ?? null) === null),
+        disabledReason: isSending && text.trim() === "" ? "Write the message first" : undefined,
+        isPending: mutation.isPending,
+        onSelect: sentNames !== null ? onClose : isSending ? () => void send() : onClose,
       }}
+      cancelLabel={sentNames !== null ? null : undefined}
     >
-      {handOff === undefined ? (
+      {sentNames !== null ? (
+        <p>Sent to {sentNames.join(", ")}.</p>
+      ) : handOff === undefined ? (
         <p className="text-muted-foreground">Finding who it goes to…</p>
       ) : (
         <div className="grid gap-4">
@@ -106,7 +139,10 @@ export function MessageDialog({
               <RadioGroup
                 aria-labelledby={`${fieldId}-channels`}
                 value={channel?.id}
-                onValueChange={setPickedId}
+                onValueChange={(id) => {
+                  setPickedId(id);
+                  setRefusal(null);
+                }}
                 className="gap-2"
               >
                 {channels.map((each) => (
@@ -122,10 +158,26 @@ export function MessageDialog({
             </section>
           )}
 
-          <p className="text-xs text-muted-foreground">
-            You write and send it yourself. VERA keeps none of the text, and does not log a message
-            it only opened for you.
-          </p>
+          {isSending && (
+            <Field id={`${fieldId}-message`} label="Message">
+              <Textarea
+                id={`${fieldId}-message`}
+                rows={4}
+                required
+                value={text}
+                onChange={(event) => {
+                  setText(event.target.value);
+                  setRefusal(null);
+                }}
+              />
+            </Field>
+          )}
+
+          {!isSending && (
+            <p className="text-xs text-muted-foreground">
+              You write and send it yourself. VERA keeps none of the text.
+            </p>
+          )}
         </div>
       )}
     </DialogShell>

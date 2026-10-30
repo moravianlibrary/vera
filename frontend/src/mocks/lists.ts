@@ -74,9 +74,7 @@ function membersOf(listId: string): Iteration[] {
   return database.iterations.filter((iteration) => iteration.listId === listId);
 }
 
-// TODO(rrandiak): permissions.md §3 gives `list.read` the scopes custody and project without
-// saying what brings a list within them; read here as any member in the caller's custody, or
-// funded by a project they are on. An empty list is then reached only at `any`.
+// SCOPE-list: custody or project reaches a list through any reached member; empty lists need `any`.
 function isInReach(session: Session, list: DigitizationList): boolean {
   if (scopesOf(session, "list.read").includes("any")) {
     return true;

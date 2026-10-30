@@ -2,9 +2,9 @@
 // a record goes to and hands off to a Message plugin instance, which opens a mail or a chat,
 // pre-filled, in the person's own tool. VERA keeps none of the text and needs no permission of
 // its own: a message about a record can be started by anyone who can see the record, and there
-// is no *Message…* at all with no Message instance enabled (§4).
-// TODO(rrandiak): instances whose result is *sent* (§2), for which the dialog asks for the text
-// and VERA logs that a message was started; none is configured yet.
+// is no *Message…* at all with no Message instance enabled (MSG-keeps-nothing, MSG-order).
+// MSG-handoff: redirect instances open the writer's tool; sending instances receive text and report
+// their result.
 
 import { z } from "zod";
 
@@ -40,6 +40,8 @@ export const messageChannelSchema = z.object({
   name: z.string(),
   // What opening it does: "opens your mail, pre-filled".
   description: z.string(),
+  // redirect: opens the writer's own tool; sent: the instance posts it itself (MSG-handoff).
+  result: z.enum(["redirect", "sent"]),
 });
 
 export type MessageChannel = z.infer<typeof messageChannelSchema>;
@@ -70,3 +72,11 @@ export const messageHandOffSchema = z.object({
 });
 
 export type MessageHandOff = z.infer<typeof messageHandOffSchema>;
+
+// Refusals: message.not_sending, message.unreachable, message.refused.
+export const sendMessageBodySchema = z.object({
+  channelId: z.string(),
+  text: z.string().trim().min(1).max(4000),
+});
+
+export const sendMessageResponseSchema = z.object({ reachedIds: z.array(z.string()) });

@@ -5,8 +5,7 @@
 // as being added, and the parts add up to the batch), the unit retried; a project says its state
 // and how many of its documents match. A holder of `request.retry` retries a batch's failed
 // additions in their scope from its header (ACT-retry-batch), at once and without a dialog: a retry only sends them back to ingest.
-// TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
-// §2.3); labels move to i18n.
+// Retry failed stays inline on a phone (ACT-retry-batch).
 
 import type { DocumentGroup } from "@vera/contract/documents";
 import type { AdditionState } from "@vera/domain/documents";
