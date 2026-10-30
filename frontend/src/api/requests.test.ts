@@ -230,13 +230,17 @@ describe("listRequests", () => {
 const byValue = (first: { value: string }, second: { value: string }) =>
   first.value.localeCompare(second.value);
 
-// The approval's entry on the iteration it created.
+// The approval entry belongs to each request.
 function approvalEntryOf(documentId: string) {
-  const iteration = database.iterations.find((candidate) => candidate.documentId === documentId);
+  const request = database.requests.find((candidate) => candidate.documentId === documentId);
   const entry = database.statusLog.find(
-    (entry) => entry.subjectKind === "iteration" && entry.subjectId === iteration?.id,
+    (entry) =>
+      !isLegacyEntry(entry) &&
+      entry.subjectKind === "request" &&
+      entry.subjectId === request?.id &&
+      entry.code === "request.approved",
   );
-  return entry !== undefined && isLegacyEntry(entry) ? entry : undefined;
+  return entry !== undefined && !isLegacyEntry(entry) ? entry : undefined;
 }
 
 describe("deciding", () => {
@@ -257,10 +261,10 @@ describe("deciding", () => {
     expect(detail?.record.iterations).toHaveLength(1);
     expect(relations).toEqual(["Originates", "Tracks", "Tracks", "Tracks"]);
     expect(await findRequest("D20")).toBeNull();
-    expect(approvalEntryOf("D20")?.detail).toContain(
+    expect(approvalEntryOf("D20")?.reason.internal).toContain(
       "Material type suggested Periodicals / National",
     );
-    expect(approvalEntryOf("D20")?.detail).toContain("— kept.");
+    expect(approvalEntryOf("D20")?.reason.internal).toContain("— kept.");
   });
 
   it("asks why a document with a copy is scanned again", async () => {
@@ -271,7 +275,7 @@ describe("deciding", () => {
     expect(
       await approveProposal("D30", { ...approval, rescanNote: "The existing scan is 150 dpi." }),
     ).toMatchObject({ decision: "Approved" });
-    expect(approvalEntryOf("D30")?.detail).toContain("Regional press suggested");
+    expect(approvalEntryOf("D30")?.reason.internal).toContain("Regional press suggested");
   });
 
   it("waits for the checks, and approves only into a category with no subcategories", async () => {
@@ -365,8 +369,10 @@ describe("deciding", () => {
 
     await approveProposal("D32", { categoryId: "c21", priority: "Normal", rescanNote: null });
 
-    expect(approvalEntryOf("D32")?.detail).toContain("says otherwise”) — overruled.");
-    expect(approvalEntryOf("D28")?.detail).toContain("— overridden by the batch's category.");
+    expect(approvalEntryOf("D32")?.reason.internal).toContain("says otherwise”) — overruled.");
+    expect(approvalEntryOf("D28")?.reason.internal).toContain(
+      "— overridden by the batch's category.",
+    );
   });
 });
 

@@ -474,8 +474,15 @@ export function refineCategory(
       at,
       actor: { kind: "user", userId: session.user.id },
       correlationId,
-      event: "Reclassified",
-      detail: `Category ${path(categoryId)} → ${path(child.id)}, as ${category.name} was refined.`,
+      code: "iteration.reclassified",
+      data: {
+        category: {
+          from: { id: categoryId, name: path(categoryId) },
+          to: { id: child.id, name: path(child.id) },
+        },
+        priority: null,
+      },
+      reason: { public: null, internal: `As ${category.name} was refined.` },
     });
   }
 

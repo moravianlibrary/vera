@@ -53,8 +53,13 @@ export function canonicalLinkOf(typed: string): { url: string; instanceId: strin
 function announce(
   iteration: Iteration,
   actor: Actor,
-  event: string,
-  detail: string,
+  code:
+    | "iteration.published"
+    | "iteration.link_added"
+    | "iteration.link_changed"
+    | "iteration.link_made_primary"
+    | "iteration.link_removed",
+  data: unknown,
   hook: "iteration.published" | "iteration.link_added" | "iteration.link_changed",
   link: string,
 ): void {
@@ -64,8 +69,9 @@ function announce(
     at: new Date().toISOString(),
     actor,
     correlationId: crypto.randomUUID(),
-    event,
-    detail,
+    code,
+    data: data as never,
+    reason: { public: null, internal: null },
   });
   const publicText =
     hook === "iteration.published"
@@ -108,8 +114,8 @@ export function addLink(
   announce(
     next,
     actor,
-    isFirst ? "Published" : "Link added",
-    link.url,
+    isFirst ? "iteration.published" : "iteration.link_added",
+    { link: { id: added.id, url: link.url } },
     isFirst ? "iteration.published" : "iteration.link_added",
     link.url,
   );
@@ -142,8 +148,8 @@ export function replaceLink(
   announce(
     next,
     actor,
-    "Link changed",
-    `From ${old.url} to ${link.url}.`,
+    "iteration.link_changed",
+    { link: { id: old.id, url: link.url }, url: { from: old.url, to: link.url } },
     "iteration.link_changed",
     link.url,
   );
@@ -162,7 +168,14 @@ export function makePrimary(iteration: Iteration, linkId: string, actor: Actor):
     })),
   };
   replaceIteration(next);
-  announce(next, actor, "Primary link changed", link.url, "iteration.link_changed", link.url);
+  announce(
+    next,
+    actor,
+    "iteration.link_made_primary",
+    { link: { id: link.id, url: link.url } },
+    "iteration.link_changed",
+    link.url,
+  );
   return next;
 }
 
@@ -181,7 +194,22 @@ export function removeLink(iteration: Iteration, linkId: string, actor: Actor): 
   }
   const next = { ...iteration, links: remaining };
   replaceIteration(next);
-  announce(next, actor, "Link removed", removed.url, "iteration.link_changed", removed.url);
+  announce(
+    next,
+    actor,
+    "iteration.link_removed",
+    {
+      link: { id: removed.id, url: removed.url },
+      primary: remaining.find((candidate) => candidate.isPrimary)
+        ? {
+            id: remaining.find((candidate) => candidate.isPrimary)?.id ?? "",
+            url: remaining.find((candidate) => candidate.isPrimary)?.url ?? "",
+          }
+        : null,
+    },
+    "iteration.link_changed",
+    removed.url,
+  );
   return next;
 }
 

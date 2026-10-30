@@ -445,12 +445,6 @@ export function revokeAcceptance(
   };
 }
 
-const verdictEvents = {
-  Approved: "Validation approved",
-  Denied: "Validation denied",
-  Revoked: "Validation revoked",
-} as const satisfies Record<ValidationVerdict["verdict"], string>;
-
 function appendVerdict(
   session: Session,
   row: ValidationRow,
@@ -479,14 +473,35 @@ function appendVerdict(
     at: now,
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: verdictEvents[verdict.verdict],
-    detail: [
-      verdict.note === "" ? names : `${names} — ${verdict.note}`,
-      verdict.publicText === null ? null : `They were told: “${verdict.publicText}”`,
-      progressNote(row.iteration.progress, progress),
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code:
+      verdict.verdict === "Approved"
+        ? "iteration.verdict_accepted"
+        : verdict.verdict === "Denied"
+          ? "iteration.verdict_denied"
+          : "iteration.verdict_revoked",
+    data: {
+      defects: row.iteration.defects
+        .filter((defect) => verdict.defectKeys.includes(defect.key))
+        .map((defect) => ({
+          instance: {
+            id: defect.instanceId,
+            name:
+              database.pluginInstances.find((instance) => instance.id === defect.instanceId)
+                ?.name ?? defect.instanceId,
+          },
+          rule: defect.ruleCode,
+        })),
+    },
+    reason: {
+      public: verdict.publicText,
+      internal:
+        [
+          verdict.note === "" ? names : `${names} — ${verdict.note}`,
+          progressNote(row.iteration.progress, progress),
+        ]
+          .filter((sentence) => sentence !== null)
+          .join(" ") || null,
+    },
   });
 
   return {

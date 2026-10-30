@@ -585,12 +585,12 @@ export function declineProposal(
       at: now,
       actor: { kind: "user", userId: session.user.id },
       correlationId,
-      event: asksOf(row).length > 1 ? `Declined — ${asksOf(row).length} requests` : "Declined",
-      detail: joinSentences([
-        `They were told: “${decline.publicText}”`,
-        decline.internalText,
-        custodyNote(row),
-      ]),
+      code: "request.declined",
+      data: { batchSize: asksOf(row).length > 1 ? asksOf(row).length : null },
+      reason: {
+        public: decline.publicText,
+        internal: joinSentences([decline.internalText, custodyNote(row)]) || null,
+      },
     });
   }
 
@@ -625,8 +625,9 @@ export function withdrawAsk(session: Session, documentId: string): Outcome<Withd
     at: now,
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Withdrawn",
-    detail: "Withdrawn by the asker.",
+    code: "request.withdrawn",
+    data: {},
+    reason: { public: null, internal: null },
   });
   return { value: { documentId, requestId: ask.id } };
 }
@@ -730,23 +731,31 @@ function approveRow(
     });
   }
 
-  const categoryPath = categoryPathOf(database.categories, approval.categoryId)
-    .map((category) => category.name)
-    .join(" / ");
-  writeLog({
-    subjectKind: "iteration",
-    subjectId: iteration.id,
-    at: now,
-    actor: { kind: "user", userId: session.user.id },
-    correlationId: crypto.randomUUID(),
-    event: joinEvent(rescan === null ? "Approved" : "Approved as rescan", asks.length),
-    detail: joinSentences([
-      rescan === null ? null : `Over ${copiesLineOf(row)}. ${rescan.note}`,
-      `Category ${categoryPath}, priority ${approval.priority}`,
-      suggestionNote(row, approval.categoryId, decidedBy),
-      custodyNote(row),
-    ]),
-  });
+  const correlationId = crypto.randomUUID();
+  for (const ask of asks) {
+    writeLog({
+      subjectKind: "request",
+      subjectId: ask.id,
+      at: now,
+      actor: { kind: "user", userId: session.user.id },
+      correlationId,
+      code: "request.approved",
+      data: {
+        iterationId: iteration.id,
+        isRescan: rescan !== null,
+        batchSize: asks.length > 1 ? asks.length : null,
+      },
+      reason: {
+        public: null,
+        internal:
+          joinSentences([
+            rescan === null ? null : `Over ${copiesLineOf(row)}. ${rescan.note}`,
+            suggestionNote(row, approval.categoryId, decidedBy),
+            custodyNote(row),
+          ]) || null,
+      },
+    });
+  }
 }
 
 // The suggestion, its instance and whether the decider kept it go on the approval's entry, so a
@@ -767,10 +776,6 @@ function suggestionNote(row: RequestRow, categoryId: string, decidedBy: Approved
         ? "overridden by the batch's category"
         : "overruled";
   return `${suggestion.classifier.name} suggested ${name} (“${suggestion.reason}”) — ${verdict}`;
-}
-
-function joinEvent(event: string, askCount: number): string {
-  return askCount > 1 ? `${event} — ${askCount} requests` : event;
 }
 
 function copiesLineOf(row: RequestRow): string {

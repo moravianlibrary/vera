@@ -89,16 +89,21 @@ export function reclassifyIteration(
     at: new Date().toISOString(),
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Reclassified",
-    detail: [
-      categoryId === iteration.categoryId
-        ? null
-        : `Category ${categoryNameOf(iteration.categoryId)} → ${categoryNameOf(categoryId)}.`,
-      priority === iteration.priority ? null : `Priority ${iteration.priority} → ${priority}.`,
-      isHandedOver ? "Handed over to the custody that holds the new category." : null,
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: "iteration.reclassified",
+    data: {
+      category:
+        categoryId === iteration.categoryId
+          ? null
+          : {
+              from: { id: iteration.categoryId, name: categoryNameOf(iteration.categoryId) },
+              to: { id: categoryId, name: categoryNameOf(categoryId) },
+            },
+      priority: priority === iteration.priority ? null : { from: iteration.priority, to: priority },
+    },
+    reason: {
+      public: null,
+      internal: isHandedOver ? "Handed over to the custody that holds the new category." : null,
+    },
   });
 
   return { value: { categoryId, priority, isHandedOver } };
@@ -245,8 +250,14 @@ export function enterPageCount(
 
   return {
     value: applyRecheck(session, iteration, [pagesSubject], {
-      event: "Page count entered",
-      detail: `${pageCount.pages.toLocaleString("en-GB")} pages, counted.`,
+      code: "iteration.page_count_entered",
+      data: {
+        pages: pageCount.pages,
+        previous:
+          document.pageSources.toSorted((first, second) => second.tier - first.tier)[0]?.value ??
+          null,
+      },
+      reason: { public: null, internal: null },
     }),
   };
 }
@@ -273,10 +284,15 @@ export function recheckIteration(
     ...document,
     properties: withCatalogReading(document, new Date().toISOString()),
   });
+  const repairedSubjects = repairedSubjectsOf(document.catalogId);
+  const gone = iteration.defects.filter((defect) =>
+    repairedSubjects.includes(defect.subject),
+  ).length;
   return {
-    value: applyRecheck(session, iteration, repairedSubjectsOf(document.catalogId), {
-      event: "Rechecked",
-      detail: "The record was read from the catalog again.",
+    value: applyRecheck(session, iteration, repairedSubjects, {
+      code: "iteration.rechecked",
+      data: { by: "catalog_change", found: iteration.defects.length - gone, gone },
+      reason: { public: null, internal: "The record was read from the catalog again." },
     }),
   };
 }
@@ -319,7 +335,11 @@ function applyRecheck(
   session: Session,
   iteration: Iteration,
   repairedSubjects: readonly string[],
-  entry: { event: string; detail: string },
+  entry: {
+    code: "iteration.page_count_entered" | "iteration.rechecked";
+    data: unknown;
+    reason: { public: string | null; internal: string | null };
+  },
 ): RecheckResult {
   const rechecked = recheck(iteration, repairedSubjects);
   // Once scanned, progress never moves back (C10).
@@ -332,16 +352,21 @@ function applyRecheck(
     at: new Date().toISOString(),
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: entry.event,
-    detail: [
-      entry.detail,
-      cleared.length === 0
-        ? null
-        : `The checks no longer find ${cleared.map((defect) => defectNameOf(defect, (id) => database.pluginInstances.find((instance) => instance.id === id)?.name ?? id)).join(", ")}.`,
-      progressNote(iteration.progress, progress),
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: entry.code,
+    data: entry.data as never,
+    reason: {
+      ...entry.reason,
+      internal:
+        [
+          entry.reason.internal,
+          cleared.length === 0
+            ? null
+            : `The checks no longer find ${cleared.map((defect) => defectNameOf(defect, (id) => database.pluginInstances.find((instance) => instance.id === id)?.name ?? id)).join(", ")}.`,
+          progressNote(iteration.progress, progress),
+        ]
+          .filter((sentence) => sentence !== null)
+          .join(" ") || entry.reason.internal,
+    },
   });
 
   return {
@@ -394,14 +419,19 @@ export function cancelIteration(
     at: now,
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Cancelled",
-    detail: [
-      `They were told: “${cancellation.publicText}”`,
-      cancellation.internalText,
-      iteration.listId === null ? null : `Taken off ${iteration.listId}.`,
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: "iteration.cancelled",
+    data: {
+      list:
+        iteration.listId === null
+          ? null
+          : {
+              id: iteration.listId,
+              name:
+                database.lists.find((list) => list.id === iteration.listId)?.name ??
+                iteration.listId,
+            },
+    },
+    reason: { public: cancellation.publicText, internal: cancellation.internalText || null },
   });
 
   const askerIds = database.requests
@@ -441,13 +471,18 @@ export function resumeIteration(
     at: new Date().toISOString(),
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Resumed",
-    detail: [
-      iteration.listId === null ? null : `Taken off ${iteration.listId}.`,
-      progressNote(iteration.progress, progress),
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: "iteration.resumed",
+    data: {},
+    reason: {
+      public: null,
+      internal:
+        [
+          iteration.listId === null ? null : `Taken off ${iteration.listId}.`,
+          progressNote(iteration.progress, progress),
+        ]
+          .filter((sentence) => sentence !== null)
+          .join(" ") || null,
+    },
   });
   return { value: { progress } };
 }
@@ -485,14 +520,24 @@ export function overruleRestriction(
     at: now,
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Restriction overruled",
-    detail: [
-      `${iteration.restriction?.rule ?? "The rule"} no longer stops it.`,
-      overrule.note,
-      progressNote(iteration.progress, progress),
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: "iteration.restriction_overruled",
+    data: {
+      rule: {
+        id: iteration.restriction?.rule ?? "unknown",
+        name: iteration.restriction?.rule ?? "Unknown rule",
+      },
+    },
+    reason: {
+      public: null,
+      internal:
+        [
+          `${iteration.restriction?.rule ?? "The rule"} no longer stops it.`,
+          overrule.note,
+          progressNote(iteration.progress, progress),
+        ]
+          .filter((sentence) => sentence !== null)
+          .join(" ") || null,
+    },
   });
   return { value: { progress } };
 }

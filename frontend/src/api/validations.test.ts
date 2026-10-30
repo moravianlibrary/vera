@@ -1,4 +1,3 @@
-import { legacyEntry } from "./legacy-log-test";
 // Documents Validations end to end against the mock server over HTTP: whose iterations each
 // curator reviews (category custody), what the filters and facets read, the verdicts and what each
 // refuses, and the fixes in place and Cancel that the pane offers beside them. Verdicts change the
@@ -24,6 +23,7 @@ import {
 } from "@/api/validations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
+import { eventEntry, legacyEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -133,9 +133,7 @@ describe("findValidation", () => {
     const outside = await findValidation("IT10");
 
     expect(detail?.row.review).toBe("Denied");
-    expect(detail?.log.some((entry) => legacyEntry(entry).event === "Validation denied")).toBe(
-      true,
-    );
+    expect(legacyEntry(detail?.log[0]).event).toBe("Validation denied");
     expect(outside).toBeNull();
   });
 });
@@ -152,7 +150,7 @@ describe("verdicts", () => {
 
     expect(result.review).toBe("Approved");
     expect(result.progress).toBe("Ready");
-    expect(legacyEntry(detail?.log[0]).event).toBe("Validation approved");
+    expect(eventEntry(detail?.log[0]).code).toBe("iteration.verdict_accepted");
   });
 
   it("refuses a set that changed meanwhile, a forbidden item and one outside custody", async () => {

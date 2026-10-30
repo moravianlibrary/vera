@@ -1,4 +1,3 @@
-import { legacyEntry } from "./legacy-log-test";
 // Retrying a batch's failed additions end to end against the mock server over HTTP: the batch's
 // failures within the scope of `request.retry` at once (ACT-retry-batch), and what is retried is being added
 // again, with its attempt counted and logged.
@@ -11,6 +10,7 @@ import { findDocument, listDocuments } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
+import { eventEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -48,7 +48,11 @@ describe("retrying a batch", () => {
     expect(result.retriedIds).toEqual(["IT17"]);
     expect(retried?.progress).toBe("Enqueued");
     expect(retried?.ingestFailure?.attempts).toBe(2);
-    expect(legacyEntry(detail?.log[0]).event).toBe("Ingest retried");
+    expect(eventEntry(detail?.log[0])).toMatchObject({
+      code: "request.ingest_retried",
+      data: { attempt: 2 },
+      reason: { public: null, internal: null },
+    });
   });
 
   it("leaves the batch's header being added, not added, and refuses a second retry", async () => {

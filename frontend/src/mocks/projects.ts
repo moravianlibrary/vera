@@ -44,9 +44,6 @@ import {
 } from "@vera/domain/projects";
 import { isProgressAtLeast } from "@vera/domain/status";
 import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import { formatCalendarDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import {
@@ -479,8 +476,9 @@ export function createProject(session: Session, draft: ProjectDraft): Outcome<Pr
     project,
     crypto.randomUUID(),
     new Date().toISOString(),
-    "Created",
-    `${periodText(project, targetPages)} · proposed`,
+    "project.created",
+    {},
+    null,
   );
   return { value: detailOf(project) };
 }
@@ -534,19 +532,19 @@ export function saveProject(
   replaceIntention(intentionFollowing(saved, targetPages, intention));
   const correlationId = crypto.randomUUID();
   const now = new Date().toISOString();
-  const moves = [
-    saved.startsOn === project.startsOn
-      ? null
-      : `starts ${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(saved.startsOn)}`,
-    saved.endsOn === project.endsOn
-      ? null
-      : `ends ${formatCalendarDay(project.endsOn)} → ${formatCalendarDay(saved.endsOn)}`,
-    targetPages === intention.targetPages
-      ? null
-      : `target ${targetText(intention.targetPages)} → ${targetText(targetPages)}`,
-  ].filter((move) => move !== null);
-  if (moves.length > 0) {
-    logProject(session, saved, correlationId, now, "Dates or target changed", moves.join(" · "));
+  const changes = [
+    ...(saved.startsOn === project.startsOn
+      ? []
+      : [{ field: "startsOn", from: project.startsOn, to: saved.startsOn }]),
+    ...(saved.endsOn === project.endsOn
+      ? []
+      : [{ field: "endsOn", from: project.endsOn, to: saved.endsOn }]),
+    ...(targetPages === intention.targetPages
+      ? []
+      : [{ field: "targetPages", from: intention.targetPages, to: targetPages }]),
+  ];
+  if (changes.length > 0) {
+    logProject(session, saved, correlationId, now, "project.dates_changed", { changes }, null);
   }
 
   if (saved.name !== project.name || saved.description !== project.description) {
@@ -555,8 +553,18 @@ export function saveProject(
       saved,
       correlationId,
       now,
-      "Details changed",
-      saved.name === project.name ? null : `${project.name} → ${saved.name}`,
+      "project.details_changed",
+      {
+        changes: [
+          ...(saved.name === project.name
+            ? []
+            : [{ field: "name", from: project.name, to: saved.name }]),
+          ...(saved.description === project.description
+            ? []
+            : [{ field: "description", from: project.description, to: saved.description }]),
+        ],
+      },
+      null,
     );
   }
 
@@ -598,26 +606,42 @@ export function saveProjectMembers(
 
   const correlationId = crypto.randomUUID();
   const now = new Date().toISOString();
-  const log = (event: string, detail: string) =>
-    logProject(session, saved, correlationId, now, event, detail);
+  const log = (code: "project.member_added" | "project.member_removed", userId: string) =>
+    logProject(session, saved, correlationId, now, code, { userId }, null);
   for (const userId of memberIds.filter((userId) => !project.memberIds.includes(userId))) {
-    log("Member added", nameOf(userId));
+    log("project.member_added", userId);
   }
 
   for (const userId of project.memberIds.filter((userId) => !memberIds.includes(userId))) {
-    log("Member removed", `${nameOf(userId)} — their proposals stay in the project`);
+    log("project.member_removed", userId);
   }
 
-  for (const groupId of memberGroupIds.filter((id) => !project.memberGroupIds.includes(id))) {
-    log("Member added", `${groupNameOf(groupId)} (group)`);
-  }
-
-  for (const groupId of project.memberGroupIds.filter((id) => !memberGroupIds.includes(id))) {
-    log("Member removed", `${groupNameOf(groupId)} (group)`);
+  if (memberGroupIds.join("\u0000") !== project.memberGroupIds.join("\u0000")) {
+    logProject(
+      session,
+      saved,
+      correlationId,
+      now,
+      "project.details_changed",
+      {
+        changes: [{ field: "memberGroupIds", from: project.memberGroupIds, to: memberGroupIds }],
+      },
+      null,
+    );
   }
 
   if (saved.managerId !== project.managerId) {
-    log("Manager changed", `${nameOf(project.managerId)} → ${nameOf(saved.managerId)}`);
+    logProject(
+      session,
+      saved,
+      correlationId,
+      now,
+      "project.manager_changed",
+      {
+        userId: { from: project.managerId, to: saved.managerId },
+      },
+      null,
+    );
   }
 
   return { value: detailOf(saved) };
@@ -677,7 +701,7 @@ export function approveProject(
         iteration: null,
         rescan: null,
       });
-      logRequest(session, ask, correlationId, now, `Approved with ${project.name}`, null);
+      // Project decisions are recorded on the project; ingest has not created an iteration yet.
     }
   }
 
@@ -695,14 +719,9 @@ export function approveProject(
     approved,
     correlationId,
     now,
-    "Approved",
-    [
-      `priority ${approval.priority}`,
-      `${plural(taken.length, "proposal")} approved`,
-      skipped > 0 ? `${skipped} skipped (a copy exists)` : null,
-    ]
-      .filter((part) => part !== null)
-      .join(" · "),
+    "project.approved",
+    { priority: approval.priority, approved: taken.length },
+    skipped > 0 ? { public: null, internal: `${skipped} skipped because a copy exists.` } : null,
   );
   return { value: detailOf(approved) };
 }
@@ -736,7 +755,14 @@ export function rejectProject(
         internalText: null,
       },
     });
-    logRequest(session, ask, correlationId, now, `Declined with ${project.name}`, rejection.reason);
+    logRequest(
+      session,
+      ask,
+      correlationId,
+      now,
+      asks.length > 1 ? asks.length : null,
+      rejection.reason,
+    );
   }
 
   const rejected: Project = {
@@ -753,7 +779,18 @@ export function rejectProject(
     ...intention,
     archived: intention.archived ?? { actor: { kind: "user", userId: session.user.id }, at: now },
   });
-  logProject(session, rejected, correlationId, now, "Rejected", rejection.reason);
+  logProject(
+    session,
+    rejected,
+    correlationId,
+    now,
+    "project.rejected",
+    { declined: asks.length },
+    {
+      public: null,
+      internal: rejection.reason,
+    },
+  );
   return { value: detailOf(rejected) };
 }
 
@@ -784,8 +821,9 @@ export function deleteProject(session: Session, projectId: string): Outcome<null
     project,
     crypto.randomUUID(),
     new Date().toISOString(),
-    "Deleted",
-    "it had no proposals",
+    "project.deleted",
+    {},
+    { public: null, internal: "It had no proposals." },
   );
   return { value: null };
 }
@@ -797,22 +835,6 @@ function nextProjectId(): string {
   return `p${Math.max(0, ...numbers) + 1}`;
 }
 
-function periodText(project: Pick<Project, "startsOn" | "endsOn">, targetPages: number | null) {
-  return `${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(project.endsOn)} · ${targetText(targetPages)}`;
-}
-
-function targetText(targetPages: number | null): string {
-  return targetPages === null ? "no target" : `${formatCount(targetPages)} pp`;
-}
-
-function nameOf(userId: string): string {
-  return database.users.find((user) => user.id === userId)?.name ?? userId;
-}
-
-function groupNameOf(groupId: string): string {
-  return database.groups.find((group) => group.id === groupId)?.name ?? groupId;
-}
-
 // LOG-one-act-one-story: every entry of one act shares its correlation ID and its time, so the
 // log keeps them in the order they were written.
 function logProject(
@@ -820,8 +842,18 @@ function logProject(
   project: Project,
   correlationId: string,
   at: string,
-  event: string,
-  detail: string | null,
+  code:
+    | "project.created"
+    | "project.details_changed"
+    | "project.dates_changed"
+    | "project.member_added"
+    | "project.member_removed"
+    | "project.manager_changed"
+    | "project.approved"
+    | "project.rejected"
+    | "project.deleted",
+  data: unknown,
+  reason: { public: string | null; internal: string | null } | null,
 ): void {
   writeLog({
     subjectKind: "project",
@@ -829,8 +861,9 @@ function logProject(
     at,
     actor: { kind: "user", userId: session.user.id },
     correlationId,
-    event,
-    detail,
+    code,
+    data: data as never,
+    reason: reason ?? { public: null, internal: null },
   });
 }
 
@@ -839,7 +872,7 @@ function logRequest(
   request: Request,
   correlationId: string,
   at: string,
-  event: string,
+  batchSize: number | null,
   detail: string | null,
 ): void {
   writeLog({
@@ -848,8 +881,9 @@ function logRequest(
     at,
     actor: { kind: "user", userId: session.user.id },
     correlationId,
-    event,
-    detail,
+    code: "request.declined",
+    data: { batchSize },
+    reason: { public: detail, internal: null },
   });
 }
 

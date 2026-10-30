@@ -479,15 +479,28 @@ export function enterPropertyValue(
       : { subjectKind: "document" as const, subjectId: document.id };
   const isRechecked = iteration !== null && isReadByRules(key);
   if (isRechecked && iteration !== null) {
-    recheckFor(session, iteration, key, detail);
+    recheckFor(
+      session,
+      iteration,
+      key,
+      {
+        from: before?.value ?? null,
+        to: after?.value ?? null,
+      },
+      detail,
+    );
   } else {
     writeLog({
       ...logSubject,
       at: mockNow().toISOString(),
       actor: { kind: "user", userId: session.user.id },
       correlationId: crypto.randomUUID(),
-      event: "Property changed",
-      detail,
+      code:
+        logSubject.subjectKind === "document"
+          ? "document.property_changed"
+          : "iteration.property_changed",
+      data: { key, value: { from: before?.value ?? null, to: after?.value ?? null } },
+      reason: { public: null, internal: "Changed by hand." },
     });
   }
 
@@ -501,7 +514,13 @@ export function enterPropertyValue(
 }
 
 // The mock's check run: a defect on the property is gone once a value is entered.
-function recheckFor(session: Session, iteration: Iteration, key: string, detail: string): void {
+function recheckFor(
+  session: Session,
+  iteration: Iteration,
+  key: string,
+  value: { from: unknown; to: unknown },
+  detail: string,
+): void {
   const current =
     database.iterations.find((candidate) => candidate.id === iteration.id) ?? iteration;
   const rechecked = {
@@ -517,10 +536,15 @@ function recheckFor(session: Session, iteration: Iteration, key: string, detail:
     at: mockNow().toISOString(),
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
-    event: "Property changed",
-    detail: [detail, "The checks ran again.", progressNote(current.progress, progress)]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
+    code: "iteration.property_changed",
+    data: { key, value },
+    reason: {
+      public: null,
+      internal:
+        [detail, "The checks ran again.", progressNote(current.progress, progress)]
+          .filter((sentence) => sentence !== null)
+          .join(" ") || null,
+    },
   });
 }
 

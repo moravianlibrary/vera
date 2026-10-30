@@ -20,8 +20,9 @@ import type {
 import { listAttentions, listSliceSize } from "@vera/contract/lists";
 import { categoryLineageOf, categoryPathOf } from "@vera/domain/categories";
 import { effectivePageCount } from "@vera/domain/documents";
-import type { DigitizationList, Iteration, LegacyLogEntry, Session } from "@vera/domain/entities";
+import type { DigitizationList, Iteration, Session } from "@vera/domain/entities";
 import { priorities } from "@vera/domain/entities";
+import type { HistoryCode } from "@vera/domain/events";
 import { progressAfterGates, scopeOfIteration } from "@vera/domain/iterations";
 import type { ListState } from "@vera/domain/lists";
 import {
@@ -39,8 +40,6 @@ import { scopeOfProject } from "@vera/domain/projects";
 import { pageCountKey } from "@vera/domain/properties";
 import { isRestricted, statusFootnoteOf, validationOf } from "@vera/domain/status";
 import { dayOf, isReversedRange, resolveDayRange } from "@vera/domain/value-range";
-import { formatShortCalendarDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import { recordHookEvent } from "@/mocks/hooks";
@@ -392,8 +391,23 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
   };
   database.lists.push(list);
   const correlationId = crypto.randomUUID();
-  logList(session, list, correlationId, "Created", datesOf(list));
-  logGeneration(session, list, correlationId);
+  logList(
+    session,
+    list,
+    correlationId,
+    "list.created",
+    {
+      generator:
+        list.generated === null
+          ? null
+          : {
+              name: list.generated.generator.replace(/\s+\d+(?:\.\d+)*$/, ""),
+              version: list.generated.generator.match(/\d+(?:\.\d+)*$/)?.[0] ?? "",
+            },
+      members: draft.memberIds.length,
+    },
+    null,
+  );
   moveMembers(session, list, draft.memberIds, correlationId);
   recordHookEvent("list.created", list.id, "", `New list ${list.name} starts ${list.startsOn}`);
   return { value: detailOf(list) };
@@ -442,15 +456,28 @@ export function saveList(session: Session, listId: string, draft: ListDraft): Ou
   database.lists.splice(database.lists.indexOf(list), 1, saved);
   const correlationId = crypto.randomUUID();
   if (saved.startsOn !== list.startsOn || saved.endsOn !== list.endsOn) {
-    logList(session, saved, correlationId, "Dates moved", `${datesOf(list)} → ${datesOf(saved)}`);
+    logList(
+      session,
+      saved,
+      correlationId,
+      "list.dates_moved",
+      {
+        starts: { from: list.startsOn, to: saved.startsOn },
+        ends: { from: list.endsOn, to: saved.endsOn },
+      },
+      null,
+    );
   }
 
   if (saved.name !== list.name) {
-    logList(session, saved, correlationId, "Renamed", `${list.name} → ${saved.name}`);
-  }
-
-  if (draft.generated !== undefined) {
-    logGeneration(session, saved, correlationId);
+    logList(
+      session,
+      saved,
+      correlationId,
+      "list.renamed",
+      { name: { from: list.name, to: saved.name } },
+      null,
+    );
   }
 
   moveMembers(session, saved, draft.memberIds, correlationId);
@@ -497,6 +524,8 @@ function moveMembers(
   const progress = progressOnList(list, today());
   let added = 0;
   let removed = 0;
+  const addedIds: string[] = [];
+  const removedIds: string[] = [];
 
   for (const iteration of before.filter((member) => !wanted.has(member.id))) {
     if (isScanned(iteration)) {
@@ -504,6 +533,7 @@ function moveMembers(
     }
 
     removed += 1;
+    removedIds.push(iteration.id);
     replaceIteration({
       ...iteration,
       listId: null,
@@ -513,8 +543,9 @@ function moveMembers(
       session,
       iteration,
       correlationId,
-      "Taken off a list",
-      `Back in the pool · ${list.id}`,
+      "iteration.unlisted",
+      { list: { id: list.id, name: list.name }, why: "edited" },
+      { public: null, internal: "Back in the pool." },
     );
   }
 
@@ -526,14 +557,29 @@ function moveMembers(
 
     if (iteration.listId !== list.id) {
       added += 1;
-      logIteration(session, iteration, correlationId, "Listed", list.id);
+      addedIds.push(iteration.id);
+      logIteration(
+        session,
+        iteration,
+        correlationId,
+        "iteration.listed",
+        { list: { id: list.id, name: list.name } },
+        null,
+      );
     }
 
     replaceIteration({ ...iteration, listId: list.id, progress });
   }
 
   if (added > 0 || removed > 0) {
-    logList(session, list, correlationId, "Members moved", `+${added} −${removed}`);
+    logList(
+      session,
+      list,
+      correlationId,
+      "list.members_changed",
+      { added: addedIds, removed: removedIds },
+      null,
+    );
   }
 }
 
@@ -605,6 +651,7 @@ export function startListNow(session: Session, listId: string): Outcome<ListDeta
     };
   }
 
+  const oldStart = list.startsOn;
   const started: DigitizationList = { ...list, startsOn: today() };
   database.lists.splice(database.lists.indexOf(list), 1, started);
   const progress = progressOnList(started, today());
@@ -612,7 +659,7 @@ export function startListNow(session: Session, listId: string): Outcome<ListDeta
     replaceIteration({ ...iteration, progress });
   }
 
-  logList(session, started, crypto.randomUUID(), "Started early", `was to start ${list.startsOn}`);
+  logList(session, started, crypto.randomUUID(), "list.started_early", { starts: oldStart }, null);
   return { value: detailOf(started) };
 }
 
@@ -656,7 +703,14 @@ export function markListDone(session: Session, listId: string): Outcome<ListDeta
   const moving = members.filter(isOpenMember);
   for (const iteration of moving) {
     replaceIteration({ ...iteration, progress: "Digitized", digitizedAt: now });
-    logIteration(session, iteration, correlationId, "Digitized", `${list.id} marked Done`);
+    logIteration(
+      session,
+      iteration,
+      correlationId,
+      "iteration.digitized",
+      { list: { id: list.id, name: list.name } },
+      null,
+    );
   }
 
   const done: DigitizationList = { ...list, done: { actorId: session.user.id, at: now } };
@@ -668,13 +722,18 @@ export function markListDone(session: Session, listId: string): Outcome<ListDeta
     session,
     done,
     correlationId,
-    "Marked Done",
-    [
-      `${moving.length} moved to Digitized`,
-      notDigitizable > 0 ? `${notDigitizable} could not be digitized` : null,
-    ]
-      .filter((part) => part !== null)
-      .join(" · "),
+    "list.marked_done",
+    { digitized: moving.length },
+    {
+      public: null,
+      internal:
+        [
+          `${moving.length} moved to Digitized`,
+          notDigitizable > 0 ? `${notDigitizable} could not be digitized` : null,
+        ]
+          .filter((part) => part !== null)
+          .join(" · ") || null,
+    },
   );
   return { value: detailOf(done) };
 }
@@ -716,20 +775,25 @@ export function deleteList(session: Session, listId: string): Outcome<null> {
 
   const list = found.value;
   const correlationId = crypto.randomUUID();
-  for (const iteration of membersOf(list.id)) {
+  const members = membersOf(list.id);
+  for (const iteration of members) {
     const progress = progressOffList(iteration);
     replaceIteration({ ...iteration, listId: null, formerListName: list.name, progress });
     logIteration(
       session,
       iteration,
       correlationId,
-      "List deleted",
-      `${list.id} · ${progress === "Enqueued" ? "Enqueued until its gate clears" : "keeps its status"}`,
+      "iteration.unlisted",
+      { list: { id: list.id, name: list.name }, why: "list_deleted" },
+      {
+        public: null,
+        internal: progress === "Enqueued" ? "Enqueued until its gate clears." : "Keeps its status.",
+      },
     );
   }
 
   database.lists.splice(database.lists.indexOf(list), 1);
-  logList(session, list, correlationId, "Deleted", datesOf(list));
+  logList(session, list, correlationId, "list.deleted", { returned: members.length }, null);
   return { value: null };
 }
 
@@ -777,8 +841,9 @@ export function markNotDigitizable(
     session,
     iteration,
     crypto.randomUUID(),
-    "Could not be digitized",
-    `${request.message} · on ${list.id}`,
+    "iteration.not_digitizable",
+    { list: { id: list.id, name: list.name } },
+    { public: request.message, internal: null },
   );
   return { value: detailOf(list) };
 }
@@ -791,62 +856,45 @@ function nextListId(): string {
   return `L-${year}-${String(Math.max(0, ...numbers) + 1).padStart(3, "0")}`;
 }
 
-function datesOf(list: DigitizationList): string {
-  return `${formatShortCalendarDay(list.startsOn)} → ${formatShortCalendarDay(list.endsOn)}`;
-}
-
 function logList(
   session: Session,
   list: DigitizationList,
   correlationId: string,
-  event: string,
-  detail: string,
+  code: HistoryCode,
+  data: unknown,
+  reason: { public: string | null; internal: string | null } | null,
 ): void {
-  writeLog(entryOf(session, "list", list.id, correlationId, event, detail));
-}
-
-// Which generator and which inputs drafted it: for an AI generator the only way to say afterwards
-// why a list looks the way it does (intentions.md §4.3).
-function logGeneration(session: Session, list: DigitizationList, correlationId: string): void {
-  if (list.generated === null) {
-    return;
-  }
-
-  const { generator, pages } = list.generated;
-  logList(
-    session,
-    list,
-    correlationId,
-    `Generated — ${generator}`,
-    `${formatCount(pages)} pp asked`,
-  );
+  writeLog(entryOf(session, "list", list.id, correlationId, code, data, reason));
 }
 
 function logIteration(
   session: Session,
   iteration: Iteration,
   correlationId: string,
-  event: string,
-  detail: string,
+  code: HistoryCode,
+  data: unknown,
+  reason: { public: string | null; internal: string | null } | null,
 ): void {
-  writeLog(entryOf(session, "iteration", iteration.id, correlationId, event, detail));
+  writeLog(entryOf(session, "iteration", iteration.id, correlationId, code, data, reason));
 }
 
 function entryOf(
   session: Session,
-  subjectKind: LegacyLogEntry["subjectKind"],
+  subjectKind: "list" | "iteration",
   subjectId: string,
   correlationId: string,
-  event: string,
-  detail: string,
-): Omit<LegacyLogEntry, "id"> {
+  code: HistoryCode,
+  data: unknown,
+  reason: { public: string | null; internal: string | null } | null,
+): Parameters<typeof writeLog>[0] {
   return {
     subjectKind,
     subjectId,
     at: new Date().toISOString(),
     actor: { kind: "user", userId: session.user.id },
     correlationId,
-    event,
-    detail,
-  };
+    code,
+    data: data as never,
+    reason: reason ?? { public: null, internal: null },
+  } as unknown as Parameters<typeof writeLog>[0];
 }

@@ -55,7 +55,7 @@ describe("detectPublications", () => {
     expect(after).toMatchObject({ progress: "Published" });
     expect(after?.links[0]?.url).toMatch(/^https:\/\/www\.digitalniknihovna\.cz\/mzk\/uuid\/uuid:/);
     expect(entry).toMatchObject({
-      event: "Published",
+      code: "iteration.published",
       actor: { kind: "user", userId: publicationDetectorAgentId },
     });
   });

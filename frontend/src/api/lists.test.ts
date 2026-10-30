@@ -1,4 +1,3 @@
-import { legacyEntry } from "./legacy-log-test";
 // Digitization Lists end to end against the mock server over HTTP: who reads lists, what state
 // and counts each one has from its dates and members, the pool and what review holds back, and
 // saving the editor's draft. Saving changes the mock's state, so each test lists its own items.
@@ -27,6 +26,7 @@ import {
 } from "@/api/lists";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
+import { eventEntries, legacyEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -167,7 +167,7 @@ describe("findList", () => {
     expect(detail?.members.find((item) => item.iteration.id === "IT25")?.blocker).toBe(
       "ReviewNeeded",
     );
-    expect(detail?.log.map((entry) => legacyEntry(entry).event)).toContain("Created");
+    expect(legacyEntry(detail?.log[0]).event).toBe("Created");
     const ranks = detail?.members.map((item) => item.iteration.priority) ?? [];
     expect(ranks.indexOf("Normal")).toBeGreaterThan(ranks.indexOf("High"));
   });
@@ -234,8 +234,8 @@ describe("saving a list", () => {
     expect(detail.row.state).toBe("Planned");
     expect(detail.members.map((item) => item.iteration.progress)).toEqual(["Planned", "Planned"]);
     expect(pool.items.map((item) => item.iteration.id)).not.toContain("IT30");
-    expect(detail.log.map((entry) => legacyEntry(entry).event)).toEqual(
-      expect.arrayContaining(["Created", "Members moved"]),
+    expect(eventEntries(detail.log).map((entry) => entry.code)).toEqual(
+      expect.arrayContaining(["list.created", "list.members_changed"]),
     );
   });
 
@@ -274,10 +274,11 @@ describe("saving a list", () => {
     );
     expect(pool.items[0]?.iteration.progress).toBe("Ready");
     expect(
-      detail.log.find((entry) => legacyEntry(entry).event === "Members moved") &&
-        legacyEntry(detail.log.find((entry) => legacyEntry(entry).event === "Members moved"))
-          .detail,
-    ).toBe("+1 −1");
+      eventEntries(detail.log).find((entry) => entry.code === "list.members_changed")?.data,
+    ).toEqual({
+      added: ["IT27"],
+      removed: ["IT23"],
+    });
   });
 
   it("refuses an item another list already took", async () => {
@@ -452,9 +453,12 @@ describe("generating a draft", () => {
     });
 
     expect(detail.row.list.generated?.generator).toBe("PriorityThenMix 1.2.0");
-    expect(detail.log.map((entry) => legacyEntry(entry).event)).toContain(
-      "Generated — PriorityThenMix 1.2.0",
-    );
+    expect(
+      eventEntries(detail.log).some(
+        (entry) =>
+          entry.code === "list.created" && entry.data?.generator?.name === "PriorityThenMix",
+      ),
+    ).toBe(true);
   });
 });
 
@@ -635,7 +639,7 @@ describe("acting on a list", () => {
         .filter((item) => item.iteration.cancellation?.cause === "NotDigitizable")
         .every((item) => item.iteration.progress !== "Digitized"),
     ).toBe(true);
-    expect(detail.log.map((entry) => legacyEntry(entry).event)).toContain("Marked Done");
+    expect(eventEntries(detail.log).map((entry) => entry.code)).toContain("list.marked_done");
     expect(await statusOf(markDone("L-2026-014"))).toBe(409);
   });
 });
@@ -648,7 +652,7 @@ describe("ACT-list-start", () => {
 
     expect(detail.row.state).toBe("InProgress");
     expect(detail.row.list.startsOn).toBe("2026-06-25"); // LC-LIST-start-now
-    expect(detail.log.map((entry) => legacyEntry(entry).event)).toContain("Started early");
+    expect(eventEntries(detail.log).map((entry) => entry.code)).toContain("list.started_early");
     expect(await statusOf(startList("L-2026-016"))).toBe(409);
   });
 

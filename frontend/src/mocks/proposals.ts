@@ -38,6 +38,7 @@ import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
 import { catalogPropertyValuesOf } from "@/mocks/fixtures/properties";
+import { writeLog } from "@/mocks/mutations";
 import { waysInOf } from "@/mocks/ways-in";
 
 // The mock library's calendar day is Prague time. Both proposal limits belong to roles.
@@ -340,6 +341,7 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
   let proposed = 0;
   let approved = 0;
   let joined = 0;
+  const correlationId = crypto.randomUUID();
   for (const { item, check } of accepted) {
     if (batch === null || (check.kind !== "new" && check.kind !== "inVera")) {
       continue;
@@ -367,7 +369,9 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
     };
 
     if (check.kind === "inVera") {
-      database.requests.push(joiningRequestOf(recordOf(document), base));
+      const request = joiningRequestOf(recordOf(document), base);
+      database.requests.push(request);
+      logCreatedRequest(request, batch, correlationId);
       joined += 1;
       continue;
     }
@@ -375,16 +379,34 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
     proposed += 1;
     if (draft.approval !== null && base.existingCopies.length === 0) {
       approve(base, document, draft.approval);
+      const request = database.requests.find((candidate) => candidate.id === base.id);
+      if (request !== undefined) {
+        logCreatedRequest(request, batch, correlationId);
+        if (request.decision === "Approved" && request.iteration !== null) {
+          writeLog({
+            subjectKind: "request",
+            subjectId: request.id,
+            at: now,
+            actor: { kind: "user", userId: session.user.id },
+            correlationId,
+            code: "request.approved",
+            data: { iterationId: request.iteration.id, isRescan: false, batchSize: null },
+            reason: { public: null, internal: null },
+          });
+        }
+      }
       approved += 1;
       continue;
     }
 
-    database.requests.push({
+    const request: Request = {
       ...base,
       // With a copy found, approve now leaves it Pending like any other (LC-REQ-approve-now).
       decision: "Pending",
       isAfterProjectApproval: project?.state === "Approved",
-    });
+    };
+    database.requests.push(request);
+    logCreatedRequest(request, batch, correlationId);
   }
 
   // Record submissions for rate limiting (after all items are processed).
@@ -402,6 +424,24 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
       .filter(({ check }) => check.kind !== "new" && check.kind !== "inVera")
       .map(({ item }) => ({ type: item.type, value: item.value, unit: item.unit })),
   };
+}
+
+// A batch's correlation ID groups the asks made by one submission.
+function logCreatedRequest(request: Request, batch: StoredBatch, correlationId: string): void {
+  writeLog({
+    subjectKind: "request",
+    subjectId: request.id,
+    at: request.at,
+    actor: { kind: "user", userId: request.requesterId },
+    correlationId,
+    code: "request.created",
+    data: {
+      batch: { id: batch.id, name: batch.name },
+      source:
+        batch.source == null ? null : { id: batch.source.instanceId, name: batch.source.name },
+    },
+    reason: { public: request.reason, internal: null },
+  });
 }
 
 type RequestBase = Omit<

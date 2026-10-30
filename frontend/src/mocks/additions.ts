@@ -49,13 +49,14 @@ export function retryBatch(session: Session, batchId: string): Outcome<BatchRetr
       ingestFailure: { attempts, error: iteration.ingestFailure?.error ?? null },
     });
     writeLog({
-      subjectKind: "iteration",
-      subjectId: iteration.id,
+      subjectKind: "request",
+      subjectId: iteration.requestId,
       at: now,
       actor: { kind: "user", userId: session.user.id },
       correlationId,
-      event: "Ingest retried",
-      detail: `With batch ${batchId}; attempt ${attempts}.`,
+      code: "request.ingest_retried",
+      data: { attempt: attempts },
+      reason: { public: null, internal: null },
     });
   }
 

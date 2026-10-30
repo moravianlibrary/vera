@@ -4,7 +4,8 @@
 // reads only its own rules.
 
 import { categoryPathOf, leafCategoriesOf } from "@vera/domain/categories";
-import type { Iteration, LegacyLogEntry } from "@vera/domain/entities";
+import type { Iteration } from "@vera/domain/entities";
+import type { EventEntry } from "@vera/domain/events";
 import { database } from "@/mocks/database";
 
 // Answered as RFC 9457 Problem Details (problem.ts): the message is its detail, and the code, when
@@ -12,8 +13,13 @@ import { database } from "@/mocks/database";
 export type Refusal = { status: 403 | 404 | 409 | 410 | 422 | 429; message: string; code?: string };
 export type Outcome<Value> = { value: Value } | { refusal: Refusal };
 
-// E3T1c moves this writer to event entries.
-export function writeLog(entry: Omit<LegacyLogEntry, "id">): void {
+type EventEntryInput = EventEntry extends infer Entry
+  ? Entry extends { id: string }
+    ? Omit<Entry, "id">
+    : never
+  : never;
+
+export function writeLog(entry: EventEntryInput): void {
   database.statusLog.push({ ...entry, id: `E-${crypto.randomUUID()}` });
 }
 

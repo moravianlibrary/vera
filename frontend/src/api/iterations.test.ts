@@ -1,4 +1,3 @@
-import { legacyEntries, legacyEntry } from "./legacy-log-test";
 // The Documents pane's More ▾ end to end against the mock server over HTTP: reclassifying a
 // document's iteration, setting where its scan is available, resuming a held one and overruling
 // a restriction,
@@ -21,6 +20,7 @@ import {
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
+import { eventEntries, eventEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -108,7 +108,9 @@ describe("setting where it is available", () => {
       "https://kramerius.mzk.cz/view/uuid:d12",
     );
     expect(await statusOf(addLink("IT12", { link: "https://example.org/second" }))).toBe(422);
-    expect(detail?.log.some((entry) => legacyEntry(entry).event === "Published")).toBe(true);
+    expect(
+      eventEntries(detail?.log ?? []).some((entry) => entry.code === "iteration.published"),
+    ).toBe(true);
   });
 
   it("replaces a link in place and refuses an unknown link (ACT-link-replace)", async () => {
@@ -159,7 +161,7 @@ describe("setting where it is available", () => {
     await addLink("IT34", { link: "https://kramerius.mzk.cz/view/uuid:d50-new" });
     const detail = await findDocument("D50");
 
-    expect(legacyEntry(detail?.log[0]).event).toBe("Link added");
+    expect(eventEntry(detail?.log[0]).code).toBe("iteration.link_added");
     expect(detail?.record.iterations.at(-1)?.links).toHaveLength(2);
   });
 
@@ -229,9 +231,13 @@ describe("setting where it is available", () => {
       await removeLink("IT12", secondId);
 
       expect(first.links[0]?.isPrimary).toBe(true);
-      expect(legacyEntries(database.statusLog.slice(logStart)).map((entry) => entry.event)).toEqual(
-        ["Published", "Link added", "Link changed", "Primary link changed", "Link removed"],
-      );
+      expect(eventEntries(database.statusLog.slice(logStart)).map((entry) => entry.code)).toEqual([
+        "iteration.published",
+        "iteration.link_added",
+        "iteration.link_changed",
+        "iteration.link_made_primary",
+        "iteration.link_removed",
+      ]);
       expect(
         database.hookDeliveries
           .slice(deliveryStart)
@@ -266,7 +272,7 @@ describe("ACT-resume", () => {
     expect(result.progress).toBe("Ready");
     expect(current?.cancellation).toBeNull();
     expect(current?.listId).toBeNull(); // LC-ITER-resume
-    expect(legacyEntry(detail?.log[0]).event).toBe("Resumed");
+    expect(eventEntry(detail?.log[0]).code).toBe("iteration.resumed");
     expect(await statusOf(resumeIteration("IT9"))).toBe(409); // no longer held
   });
 
@@ -293,7 +299,7 @@ describe("ACT-overrule", () => {
 
     expect(current?.restriction).not.toBeNull();
     expect(current?.restrictionOverride?.note).toBe("Rights cleared in writing.");
-    expect(legacyEntry(detail?.log[0]).event).toBe("Restriction overruled");
+    expect(eventEntry(detail?.log[0]).code).toBe("iteration.restriction_overruled");
     expect(await statusOf(overruleRestriction("IT14", { note: "Again." }))).toBe(409);
   });
 });
