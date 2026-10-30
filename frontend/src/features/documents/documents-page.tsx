@@ -3,11 +3,11 @@
 // document, `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // A link from elsewhere names a document by searching for it: a search with exactly one match
 // opens that match.
-// TODO(rrandiak): labels move to i18n.
 
 import { hasPermission, proposeActOf } from "@vera/domain/permissions";
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
@@ -32,6 +32,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) {
+  const { t } = useTranslation("documents");
   const isMy = perspective === "my";
   const view = useViewUrlState(isMy ? myDocumentsView : documentsView);
   const { query, selectedId, grouping, select } = view;
@@ -82,18 +83,18 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
     : documentsView.groupings.filter(
         (option) => option.value !== "batch" || hasPermission(session, "request.read_ingest"),
       );
-  const title = isMy ? "My Documents" : "Documents";
+  const title = t(isMy ? "page.myTitle" : "page.title");
 
   const detailPane = (
     <Pane
       state={paneStateOf(
         selectedId,
         detail,
-        "This document is not within your reach",
-        failureOf(documentQuery, "Could not load this document."),
+        t("page.gone"),
+        failureOf(documentQuery, t("page.loadDocumentError")),
       )}
       emptyIcon={BookOpen}
-      emptyText="Select a document"
+      emptyText={t("page.selectDocument")}
       render={(ready) => <DocumentDetailPane detail={ready} session={session} />}
     />
   );
@@ -143,10 +144,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
         query={query}
         facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
-        searchLabel="Search documents"
-        searchPlaceholder={
-          isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, shelf mark, NBN…"
-        }
+        searchLabel={t("page.searchLabel")}
+        searchPlaceholder={isPublic ? t("page.searchMinePlaceholder") : t("page.searchPlaceholder")}
         properties={{
           definitions: filterablePropertiesOf(propertyIndex?.definitions, isPublic),
           params: query.properties,
@@ -172,7 +171,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             groups={documents.slices?.flatMap((slice) => slice.groups) ?? []}
             total={summary?.total}
             isLoading={documents.isLoading}
-            failure={failureOf(documents, "Could not load documents.")}
+            failure={failureOf(documents, t("page.loadError"))}
             paging={documents.paging}
             groupings={groupings}
             grouping={grouping}
@@ -188,7 +187,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
           />
         }
         detail={detailPane}
-        detailTitle={detail?.record.document.title ?? "Document detail"}
+        detailTitle={detail?.record.document.title ?? t("page.detailTitle")}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {
@@ -239,7 +238,7 @@ function MineToggle({ isChecked, onChange }: MineToggleProps) {
     <div className="flex h-7 items-center gap-1.5 px-1">
       <Checkbox id={id} checked={isChecked} onCheckedChange={(state) => onChange(state === true)} />
       <Label htmlFor={id} className="text-xs font-normal">
-        Mine
+        {useTranslation("documents").t("page.mine")}
       </Label>
     </div>
   );

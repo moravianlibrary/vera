@@ -5,7 +5,7 @@
 // its own endpoint; Reclassify is shared with Validations (components/iteration-dialogs.tsx). Each
 // is offered only where the caller's grant reaches the current iteration's category and its state
 // allows it; the server decides again (view-rules.md §5.1).
-// TODO(rrandiak): Ask for this too beside the menu; labels move to i18n. No Edit descriptive
+// TODO(rrandiak): Ask for this too beside the menu. No Edit descriptive
 // metadata: VERA corrects no catalog data (decided 2026-10-06).
 
 import type { CancellationRequest, Overrule, Publication } from "@vera/contract/iterations";
@@ -22,6 +22,7 @@ import {
 } from "@vera/domain/iterations";
 import { can, hasPermission } from "@vera/domain/permissions";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { addLink, cancelIteration, overruleRestriction, resumeIteration } from "@/api/iterations";
 import { withdrawAsk } from "@/api/requests";
@@ -38,6 +39,7 @@ import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 
 // A change to an iteration shows in the list, the record and what each watchlist counts.
 export const iterationInvalidations = [documentsQueryKey, watchlistsQueryKey];
@@ -60,6 +62,7 @@ export function DocumentActions({
   isOwn = false,
   className,
 }: DocumentActionsProps) {
+  useTranslation("documents");
   const { data: categories = [] } = useCategoriesQuery();
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
   const iteration = currentIterationOf(record);
@@ -73,7 +76,11 @@ export function DocumentActions({
     (request) => request.requesterId === session.user.id && request.decision === "Pending",
   );
   if (isOwnPending && hasPermission(session, "request.withdraw_own")) {
-    actions.push({ id: "withdraw", label: "Withdraw…", onSelect: open("withdraw") });
+    actions.push({
+      id: "withdraw",
+      label: i18n.t("actions.withdraw", { ns: "documents" }),
+      onSelect: open("withdraw"),
+    });
   }
 
   const withdrawDialog = (
@@ -87,7 +94,11 @@ export function DocumentActions({
   if (iteration === null || isOwn) {
     return (
       <>
-        <ActionBar actions={actions} menuLabel="More" className={className} />
+        <ActionBar
+          actions={actions}
+          menuLabel={i18n.t("actions.more", { ns: "documents" })}
+          className={className}
+        />
         {withdrawDialog}
       </>
     );
@@ -104,7 +115,7 @@ export function DocumentActions({
   if (mayDo("iteration.classify") && isReclassifiable(iteration)) {
     actions.push({
       id: "reclassify",
-      label: "Reclassify — category, priority…",
+      label: i18n.t("actions.reclassify", { ns: "documents" }),
       isInMenu: true,
       onSelect: open("reclassify"),
     });
@@ -113,7 +124,7 @@ export function DocumentActions({
   if (mayDo("iteration.publish") && isPublishable(iteration)) {
     actions.push({
       id: "publish",
-      label: "Add link…",
+      label: i18n.t("actions.addLink", { ns: "documents" }),
       isInMenu: true,
       onSelect: open("publish"),
     });
@@ -123,7 +134,7 @@ export function DocumentActions({
   if (mayDo("restriction.overrule") && isOverrulable(iteration)) {
     actions.push({
       id: "overrule",
-      label: "Overrule restriction…",
+      label: i18n.t("actions.overrule", { ns: "documents" }),
       isInMenu: true,
       isDestructive: true,
       onSelect: open("overrule"),
@@ -131,11 +142,16 @@ export function DocumentActions({
   }
 
   if (mayDo("iteration.resume") && isResumable(iteration)) {
-    actions.push({ id: "resume", label: "Resume…", isInMenu: true, onSelect: open("resume") });
+    actions.push({
+      id: "resume",
+      label: i18n.t("actions.resume", { ns: "documents" }),
+      isInMenu: true,
+      onSelect: open("resume"),
+    });
   } else if (mayDo("iteration.cancel") && isCancellable(iteration)) {
     actions.push({
       id: "cancel",
-      label: "Cancel…",
+      label: i18n.t("actions.cancel", { ns: "documents" }),
       isInMenu: true,
       isDestructive: true,
       onSelect: open("cancel"),
@@ -144,7 +160,11 @@ export function DocumentActions({
 
   return (
     <>
-      <ActionBar actions={actions} menuLabel="More" className={className} />
+      <ActionBar
+        actions={actions}
+        menuLabel={i18n.t("actions.more", { ns: "documents" })}
+        className={className}
+      />
       {withdrawDialog}
 
       <ReclassifyDialog
@@ -203,20 +223,20 @@ function WithdrawDialog({
   const withdraw = useActionMutation({
     call: withdrawAsk,
     invalidates: withdrawalInvalidations,
-    refusalTexts: { 409: "It has been decided meanwhile; there is nothing to withdraw." },
+    refusalTexts: { 409: i18n.t("actions.withdraw409", { ns: "documents" }) },
   });
   return (
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Withdraw your ask — ${title}?`}
-      description="Nobody reviews it any more."
+      title={i18n.t("actions.withdrawTitle", { ns: "documents", title })}
+      description={i18n.t("actions.withdrawDescription", { ns: "documents" })}
       consequences={[
-        { text: "It shows Withdrawn; other people's asks for it stand." },
-        { text: "This is final: asking again later makes a new request." },
+        { text: i18n.t("actions.withdrawConsequenceStatus", { ns: "documents" }) },
+        { text: i18n.t("actions.withdrawConsequenceFinal", { ns: "documents" }) },
       ]}
-      confirmLabel="Withdraw"
-      cancelLabel="Keep it"
+      confirmLabel={i18n.t("actions.withdraw", { ns: "documents" })}
+      cancelLabel={i18n.t("actions.keepIt", { ns: "documents" })}
       isDestructive
       onConfirm={() => withdraw.run(documentId)}
     />
@@ -236,7 +256,10 @@ interface ActionDialogProps {
 // A web address, or a PID or a viewer's address that a Link plugin turns into the canonical link
 // (PLG-kinds); the server says which it could not read.
 const publishFormSchema = z.object({
-  link: z.string().trim().min(1, "Enter where the scan opens"),
+  link: z
+    .string()
+    .trim()
+    .min(1, { error: () => i18n.t("actions.enterScanAddress", { ns: "documents" }) }),
 });
 type PublishForm = z.infer<typeof publishFormSchema>;
 
@@ -247,9 +270,9 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
     act: "ACT-publish",
     invalidates: iterationInvalidations,
     refusalTexts: {
-      409: "It is not digitized yet.",
-      "iteration.link_unread": "That is no web address, and no Link plugin reads it as a PID.",
-      422: "That link is already there.",
+      409: i18n.t("actions.notDigitized", { ns: "documents" }),
+      "iteration.link_unread": i18n.t("actions.linkUnread", { ns: "documents" }),
+      422: i18n.t("actions.linkExists", { ns: "documents" }),
     },
   });
   const defaultValues: PublishForm = { link: "" };
@@ -258,24 +281,28 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Add link — ${title}`}
-      description="Add a link where a reader opens the scan."
+      title={i18n.t("actions.addLinkTitle", { ns: "documents", title })}
+      description={i18n.t("actions.addLinkDescription", { ns: "documents" })}
       schema={publishFormSchema}
       defaultValues={defaultValues}
-      submitLabel="Save"
+      submitLabel={i18n.t("actions.save", { ns: "documents" })}
       onSubmit={(values) => publish.run(values)}
       render={(form) => (
         <>
           <Field
             id={`${id}-link`}
-            label="Link"
-            hint="where a reader opens the scan: its address, or its PID"
+            label={i18n.t("detail.link", { ns: "documents" })}
+            hint={i18n.t("actions.linkHint", { ns: "documents" })}
           >
-            <Input id={`${id}-link`} placeholder="https://… or uuid:…" {...form.register("link")} />
+            <Input
+              id={`${id}-link`}
+              placeholder={i18n.t("actions.linkPlaceholder", { ns: "documents" })}
+              {...form.register("link")}
+            />
           </Field>
           <FieldError message={form.formState.errors.link?.message} />
           <p className="text-xs text-muted-foreground">
-            Saving makes it <b>Published</b>: everyone who asked is told, with the link.
+            {i18n.t("actions.publishNotice", { ns: "documents" })}
           </p>
         </>
       )}
@@ -291,22 +318,22 @@ function OverruleDialog({ isOpen, onClose, title, iteration }: ActionDialogProps
   const overrule = useActionMutation({
     call: (body: Overrule) => overruleRestriction(iteration.id, body),
     invalidates: iterationInvalidations,
-    refusalTexts: { 409: "No restriction stands on it any more." },
+    refusalTexts: { 409: i18n.t("actions.noRestriction", { ns: "documents" }) },
   });
-  const rule = iteration.restriction?.rule ?? "A rule";
+  const rule = iteration.restriction?.rule ?? i18n.t("actions.aRule", { ns: "documents" });
   return (
     <ReasonDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Overrule restriction — ${title}`}
-      description={`${rule} forbids digitizing it. Overruled, it no longer stops it, and the gates say where it goes next.`}
+      title={i18n.t("actions.overruleTitle", { ns: "documents", title })}
+      description={i18n.t("actions.overruleDescription", { ns: "documents", rule })}
       internalNote={{
-        label: "Why",
-        hint: "staff only; kept beside the rule's finding",
+        label: i18n.t("actions.why", { ns: "documents" }),
+        hint: i18n.t("actions.internalRuleHint", { ns: "documents" }),
         isRequired: true,
-        placeholder: "e.g. The rights holder agreed in writing on 2 Oct.",
+        placeholder: i18n.t("actions.overrulePlaceholder", { ns: "documents" }),
       }}
-      confirmLabel="Overrule"
+      confirmLabel={i18n.t("actions.overruleConfirm", { ns: "documents" })}
       isDestructive
       onConfirm={({ internalNote }) => overrule.run({ note: internalNote })}
     />
@@ -325,26 +352,33 @@ function CancelDialog({
   const cancel = useActionMutation({
     call: (cancellation: CancellationRequest) => cancelIteration(iteration.id, cancellation),
     invalidates: iterationInvalidations,
-    refusalTexts: { 409: "It is already held, or it has been scanned meanwhile." },
+    refusalTexts: { 409: i18n.t("actions.cancel409", { ns: "documents" }) },
   });
   return (
     <ReasonDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Cancel — ${title}`}
+      title={i18n.t("actions.cancelTitle", { ns: "documents", title })}
       description={
         iteration.listId === null
-          ? "Hold it where it is. Resume lets it through again."
-          : "Hold it where it is; it comes off its list. Resume lets it through again."
+          ? i18n.t("actions.cancelDescription", { ns: "documents" })
+          : i18n.t("actions.cancelListDescription", { ns: "documents" })
       }
       publicText={{
-        label: "Reason",
-        hint: askerCount <= 1 ? "the asker reads this" : `all ${askerCount} askers read this`,
+        label: i18n.t("actions.reason", { ns: "documents" }),
+        hint:
+          askerCount <= 1
+            ? i18n.t("actions.oneAskerReads", { ns: "documents" })
+            : i18n.t("actions.askersRead", { ns: "documents", count: askerCount }),
         isRequired: true,
-        placeholder: "e.g. Postponed — will be scheduled next quarter.",
+        placeholder: i18n.t("actions.cancelPlaceholder", { ns: "documents" }),
       }}
-      internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
-      confirmLabel="Cancel it"
+      internalNote={{
+        label: i18n.t("actions.internalNote", { ns: "documents" }),
+        hint: i18n.t("actions.optionalStaffOnly", { ns: "documents" }),
+        isRequired: false,
+      }}
+      confirmLabel={i18n.t("actions.cancelConfirm", { ns: "documents" })}
       isDestructive
       onConfirm={({ publicText, internalNote }) =>
         cancel.run({ publicText, internalText: internalNote || null })
@@ -358,24 +392,24 @@ function ResumeDialog({ isOpen, onClose, title, iteration }: ActionDialogProps) 
   const resume = useActionMutation({
     call: () => resumeIteration(iteration.id),
     invalidates: iterationInvalidations,
-    refusalTexts: { 409: "It is no longer held, or it has been scanned meanwhile." },
+    refusalTexts: { 409: i18n.t("actions.resume409", { ns: "documents" }) },
   });
   return (
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Resume — ${title}?`}
-      description="The hold is lifted."
+      title={i18n.t("actions.resumeTitle", { ns: "documents", title })}
+      description={i18n.t("actions.resumeDescription", { ns: "documents" })}
       consequences={[
         {
           text:
             iteration.listId === null
-              ? "It returns to the pool, Ready once every gate passes."
-              : "It comes off its list and returns to the pool, Ready once every gate passes.",
+              ? i18n.t("actions.resumeConsequence", { ns: "documents" })
+              : i18n.t("actions.resumeListConsequence", { ns: "documents" }),
         },
-        { text: "Its askers no longer read the reason it was held." },
+        { text: i18n.t("actions.resumeAskers", { ns: "documents" }) },
       ]}
-      confirmLabel="Resume"
+      confirmLabel={i18n.t("actions.resume", { ns: "documents" })}
       isDestructive={false}
       onConfirm={() => resume.run(undefined)}
     />

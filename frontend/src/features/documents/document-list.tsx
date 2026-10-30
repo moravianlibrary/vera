@@ -1,6 +1,6 @@
 // The Documents list on RecordList (components/lists/record-list.tsx): the columns each audience
 // reads, and a header over each batch or project when grouped.
-// TODO(rrandiak): the one-line reason under a row; labels move to i18n.
+// TODO(rrandiak): the one-line reason under a row.
 
 import type { DocumentGroup, DocumentGrouping } from "@vera/contract/documents";
 import { categoryPathOf } from "@vera/domain/categories";
@@ -18,6 +18,7 @@ import {
 import type { Category } from "@vera/domain/entities";
 import { statusFootnoteOf } from "@vera/domain/status";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
@@ -31,6 +32,7 @@ import {
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
 import type { ViewGroupingOption } from "@/lib/view-definition";
 
@@ -79,6 +81,7 @@ export function DocumentList({
   onLongPress,
   toolbarActions,
 }: DocumentListProps) {
+  useTranslation("documents");
   const isPublic = audience === "public";
   const { data: categories = [] } = useCategoriesQuery({ isEnabled: !isPublic });
   const { data: users = [] } = useUsersQuery({ isEnabled: grouping === "batch" });
@@ -109,7 +112,10 @@ export function DocumentList({
         },
       }}
       toolbar={{
-        count: total === undefined ? "Documents" : `${total} documents`,
+        count:
+          total === undefined
+            ? i18n.t("list.title", { ns: "documents" })
+            : i18n.t("list.count", { ns: "documents", count: total }),
         groupings: { options: groupings, value: grouping, onChange: onGroupingChange },
         actions: toolbarActions,
       }}
@@ -132,9 +138,9 @@ export function DocumentList({
       onSelect={onSelect}
       picking={picking}
       onLongPress={onLongPress}
-      loadingText="Loading documents…"
-      emptyText="Nothing matches. Clear a filter to see more."
-      loadingMoreText="Loading more documents…"
+      loadingText={i18n.t("list.loading", { ns: "documents" })}
+      emptyText={i18n.t("list.empty", { ns: "documents" })}
+      loadingMoreText={i18n.t("list.loadingMore", { ns: "documents" })}
     />
   );
 }
@@ -148,19 +154,19 @@ export function staffDocumentColumns(
   return [
     {
       key: "document",
-      header: "Document",
+      header: i18n.t("list.document", { ns: "documents" }),
       track: "minmax(9rem,1fr)",
       cell: (record) => <DocumentCell record={record} categories={categories} />,
     },
     {
       key: "status",
-      header: "Status",
+      header: i18n.t("field.status", { ns: "documents" }),
       track: "fit-content(8.5rem)",
       cell: (record) => <StatusCell record={record} isPublic={false} userId={null} />,
     },
     {
       key: "priority",
-      header: "Priority",
+      header: i18n.t("field.priority", { ns: "documents" }),
       track: "max-content",
       cell: (record) => {
         const priority = currentIterationOf(record)?.priority;
@@ -169,7 +175,7 @@ export function staffDocumentColumns(
     },
     {
       key: "pages",
-      header: "Pages",
+      header: i18n.t("field.pages", { ns: "documents" }),
       track: "max-content",
       isNumeric: true,
       cell: (record) => {
@@ -179,14 +185,14 @@ export function staffDocumentColumns(
     },
     {
       key: "askers",
-      header: "Askers",
+      header: i18n.t("list.askers", { ns: "documents" }),
       track: "max-content",
       isNumeric: true,
       cell: (record) => askersOf(record).length,
     },
     {
       key: "copy",
-      header: "Existing copy",
+      header: i18n.t("field.existingCopy", { ns: "documents" }),
       track: "fit-content(9rem)",
       cell: (record) => {
         const registry = strongestRegistryRecord(record.document);
@@ -200,19 +206,19 @@ export function publicDocumentColumns(userId: string): ColumnDefinition<Document
   return [
     {
       key: "document",
-      header: "Document",
+      header: i18n.t("list.document", { ns: "documents" }),
       track: "minmax(9rem,1fr)",
       cell: (record) => <DocumentCell record={record} categories={[]} />,
     },
     {
       key: "status",
-      header: "Status",
+      header: i18n.t("field.status", { ns: "documents" }),
       track: "fit-content(8.5rem)",
       cell: (record) => <StatusCell record={record} isPublic userId={userId} />,
     },
     {
       key: "copy",
-      header: "Copy",
+      header: i18n.t("list.copy", { ns: "documents" }),
       track: "fit-content(9rem)",
       cell: (record) => {
         const readable = record.document.registryRecords.find(
@@ -222,14 +228,14 @@ export function publicDocumentColumns(userId: string): ColumnDefinition<Document
           <Muted>—</Muted>
         ) : (
           <ToneBadge tone="purple" className="px-2 py-0.5 text-xs">
-            Read it in {readable.registry}
+            {i18n.t("list.readItIn", { ns: "documents", registry: readable.registry })}
           </ToneBadge>
         );
       },
     },
     {
       key: "asked",
-      header: "Asked",
+      header: i18n.t("field.asked", { ns: "documents" }),
       track: "max-content",
       isNumeric: true,
       cell: (record) => {

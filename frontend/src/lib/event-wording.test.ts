@@ -1,5 +1,6 @@
-import type { EventCode, EventEntry } from "@vera/domain/events";
+import { type EventCode, type EventEntry, historyCodes } from "@vera/domain/events";
 import { describe, expect, it } from "vitest";
+import { resources } from "@/i18n";
 import { publicWordingOf, wordingOf } from "@/lib/event-wording";
 
 function entry(
@@ -21,6 +22,13 @@ function entry(
 }
 
 describe("event wording", () => {
+  it("has an English title for every History code", () => {
+    for (const code of historyCodes) {
+      expect(Object.keys(resources.en.history)).toContain(code);
+      expect(resources.en.history[code as keyof typeof resources.en.history]).toBeTruthy();
+    }
+  });
+
   it("words representative entries for each subject kind", () => {
     expect(
       wordingOf(

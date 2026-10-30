@@ -8,7 +8,6 @@
 // that the plugin reads on the server. A photo is read and matched to catalog records, and nothing is added
 // until one is picked. Each way is shown only while its plugin is enabled
 // (PERM-absent-not-disabled); the dialog decides which.
-// TODO(rrandiak): labels move to i18n.
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { PhotoReading, ProposalSettings } from "@vera/contract/proposals";
@@ -16,6 +15,7 @@ import type { ProposalLine } from "@vera/domain/proposals";
 import { readIdentifier } from "@vera/domain/proposals";
 import { Camera, ExternalLink, ScanBarcode } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/http";
 import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/api/proposals";
 import { useFilePicker } from "@/components/fields/file-picker";
@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIdentifierRules } from "@/features/documents/identifier-rules";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 type Add = (lines: ProposalLine[], source: string) => void;
@@ -54,6 +54,7 @@ export function CatalogSearchWay({
   linkCatalogs,
   onAdd,
 }: CatalogSearchWayProps) {
+  useTranslation("documents");
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [catalogId, setCatalogId] = useState(allCatalogs);
@@ -77,20 +78,24 @@ export function CatalogSearchWay({
             }}
           >
             <Input
-              aria-label="Search the catalog"
-              placeholder="title, author or record ID"
+              aria-label={i18n.t("proposeWays.searchCatalog", { ns: "documents" })}
+              placeholder={i18n.t("proposeWays.searchPlaceholder", { ns: "documents" })}
               value={text}
               onChange={(event) => setText(event.target.value)}
               className="h-8 min-w-48 flex-1"
             />
             {catalogs.length > 1 && (
               <Select value={catalogId} onValueChange={setCatalogId}>
-                <SelectTrigger size="sm" aria-label="Catalog" className="w-48">
+                <SelectTrigger
+                  size="sm"
+                  aria-label={i18n.t("proposeWays.catalog", { ns: "documents" })}
+                  className="w-48"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={allCatalogs}>
-                    All searchable catalogs ({catalogs.length})
+                    {i18n.t("proposeWays.allCatalogs", { ns: "documents", count: catalogs.length })}
                   </SelectItem>
                   {catalogs.map((catalog) => (
                     <SelectItem key={catalog.id} value={catalog.id}>
@@ -101,11 +106,13 @@ export function CatalogSearchWay({
               </Select>
             )}
             <Button type="submit" size="sm" variant="outline" disabled={text.trim() === ""}>
-              Search
+              {i18n.t("proposeWays.search", { ns: "documents" })}
             </Button>
           </form>
           {query !== "" && hits !== undefined && hits.length === 0 && !isFetching && (
-            <p className="text-xs text-muted-foreground">Nothing found for “{query}”.</p>
+            <p className="text-xs text-muted-foreground">
+              {i18n.t("proposeWays.nothingFound", { ns: "documents", query })}
+            </p>
           )}
           {hits !== undefined && hits.length > 0 && (
             <ul>
@@ -120,7 +127,11 @@ export function CatalogSearchWay({
                     {hit.units.length > 0 && (
                       <span className="text-xs text-muted-foreground">
                         {" "}
-                        · {plural(hit.units.length, "volume or issue", "volumes or issues")}
+                        ·{" "}
+                        {i18n.t("proposeWays.volumeOrIssue", {
+                          ns: "documents",
+                          count: hit.units.length,
+                        })}
                       </span>
                     )}{" "}
                     {catalogs.length > 1 && (
@@ -133,10 +144,16 @@ export function CatalogSearchWay({
                     size="sm"
                     variant="outline"
                     onClick={() =>
-                      onAdd([catalogLine(hit.catalogId)], `catalog search · ${hit.catalog.name}`)
+                      onAdd(
+                        [catalogLine(hit.catalogId)],
+                        i18n.t("proposeWays.catalogSearchSource", {
+                          ns: "documents",
+                          name: hit.catalog.name,
+                        }),
+                      )
                     }
                   >
-                    Add
+                    {i18n.t("proposeWays.add", { ns: "documents" })}
                   </Button>
                 </li>
               ))}
@@ -169,34 +186,43 @@ function RecordLinkWay({
   const read = useMutation({
     mutationFn: readRecordLink,
     onSuccess: ({ catalogId: recordId }) => {
-      onAdd([catalogLine(recordId)], `record link · ${catalog?.name ?? ""}`);
+      onAdd(
+        [catalogLine(recordId)],
+        i18n.t("proposeWays.recordLinkSource", { ns: "documents", name: catalog?.name ?? "" }),
+      );
       setLink("");
     },
   });
   const refusal =
     read.error instanceof ApiError && read.error.status === 422
-      ? `${catalog?.name ?? "The catalog"} reads no record in that. Paste the address of the record's page, or its ID.`
+      ? i18n.t("proposeWays.recordNotFound", {
+          ns: "documents",
+          catalog: catalog?.name ?? i18n.t("proposeWays.theCatalog", { ns: "documents" }),
+        })
       : read.isError
-        ? "It could not be read. Try again."
+        ? i18n.t("proposeWays.couldNotRead", { ns: "documents" })
         : null;
 
   return (
     <div className={cn("grid gap-2", hasSearch && "border-t pt-3")}>
       <b className="text-xs font-semibold">
-        {hasSearch ? "Or paste a record's link or ID" : "Paste a record's link or ID"}
+        {hasSearch
+          ? i18n.t("proposeWays.orPasteRecord", { ns: "documents" })
+          : i18n.t("proposeWays.pasteRecord", { ns: "documents" })}
       </b>
       {catalogs.map((each) => (
         <div key={each.id} className="flex flex-wrap items-center gap-2 text-sm">
           <span className="min-w-0 flex-1">
             {each.name}{" "}
             <span className="text-muted-foreground">
-              — find it there, then copy the address of the record's page
+              — {i18n.t("proposeWays.findAndCopy", { ns: "documents" })}
             </span>
           </span>
           {each.opacUrl !== null && (
             <Button size="sm" variant="outline" asChild>
               <a href={each.opacUrl} target="_blank" rel="noopener noreferrer">
-                Open {each.name} <ExternalLink className="size-3.5" />
+                {i18n.t("proposeWays.openCatalog", { ns: "documents", name: each.name })}{" "}
+                <ExternalLink className="size-3.5" />
               </a>
             </Button>
           )}
@@ -213,8 +239,8 @@ function RecordLinkWay({
       >
         <Input
           id={`${id}-link`}
-          aria-label="Record link or ID"
-          placeholder="Paste the record link, or its ID"
+          aria-label={i18n.t("proposeWays.recordLink", { ns: "documents" })}
+          placeholder={i18n.t("proposeWays.recordLinkPlaceholder", { ns: "documents" })}
           value={link}
           onChange={(event) => {
             setLink(event.target.value);
@@ -224,7 +250,11 @@ function RecordLinkWay({
         />
         {catalogs.length > 1 && (
           <Select value={catalog?.id} onValueChange={setCatalogId}>
-            <SelectTrigger size="sm" aria-label="In the catalog" className="w-40">
+            <SelectTrigger
+              size="sm"
+              aria-label={i18n.t("proposeWays.inCatalog", { ns: "documents" })}
+              className="w-40"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -242,7 +272,7 @@ function RecordLinkWay({
           variant="outline"
           disabled={link.trim() === "" || read.isPending}
         >
-          Add
+          {i18n.t("proposeWays.add", { ns: "documents" })}
         </Button>
       </form>
       {refusal !== null && <p className="text-xs text-destructive">{refusal}</p>}
@@ -261,6 +291,7 @@ export function BarcodeWay({
   canScanWithCamera: boolean;
   onAdd: Add;
 }) {
+  useTranslation("documents");
   const rules = useIdentifierRules();
   const [mode, setMode] = useState<ScanMode | null>(null);
   const [scanned, setScanned] = useState(0);
@@ -275,7 +306,9 @@ export function BarcodeWay({
 
     onAdd(
       [{ ...readIdentifier(rules, value, null), unit: null, reason: null }],
-      mode === "camera" ? "barcode · camera" : "barcode",
+      i18n.t(mode === "camera" ? "proposeWays.barcodeCameraSource" : "proposeWays.barcodeSource", {
+        ns: "documents",
+      }),
     );
     setScanned((count) => count + 1);
     setLast(value);
@@ -285,10 +318,11 @@ export function BarcodeWay({
     return (
       <div className="grid place-items-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center">
         <ScanBarcode className="size-6 text-muted-foreground" />
-        <b className="text-sm font-semibold">Scan one book after another</b>
+        <b className="text-sm font-semibold">
+          {i18n.t("proposeWays.scanBooks", { ns: "documents" })}
+        </b>
         <span className="max-w-md text-xs text-muted-foreground">
-          Each scan is added as it arrives, with nothing to click between books. A scanner works as
-          it is: it types the code and presses Enter.
+          {i18n.t("proposeWays.scannerDescription", { ns: "documents" })}
         </span>
         <div className="mt-1 flex flex-wrap justify-center gap-2">
           <Button
@@ -299,7 +333,7 @@ export function BarcodeWay({
               setLast(null);
             }}
           >
-            Start scanning
+            {i18n.t("proposeWays.startScanning", { ns: "documents" })}
           </Button>
           {canScanWithCamera && (
             <Button
@@ -311,7 +345,7 @@ export function BarcodeWay({
                 setLast(null);
               }}
             >
-              <Camera className="size-3.5" /> Use the camera
+              <Camera className="size-3.5" /> {i18n.t("proposeWays.useCamera", { ns: "documents" })}
             </Button>
           )}
         </div>
@@ -323,8 +357,11 @@ export function BarcodeWay({
     <div className="grid gap-2 rounded-lg border px-4 py-3">
       <p className="text-sm" aria-live="polite">
         <span className="mr-1.5 inline-block size-2 animate-pulse rounded-full bg-tone-green-foreground" />
-        Scanning{mode === "camera" ? " with the camera" : ""} ·{" "}
-        <b className="tabular-nums">{scanned}</b> this session
+        {i18n.t(mode === "camera" ? "proposeWays.scanningCamera" : "proposeWays.scanning", {
+          ns: "documents",
+        })}{" "}
+        · <b className="tabular-nums">{scanned}</b>{" "}
+        {i18n.t("proposeWays.thisSession", { ns: "documents" })}
       </p>
       {mode === "scanner" ? (
         <ScannerField onScan={scan} onStop={() => setMode(null)} />
@@ -332,13 +369,17 @@ export function BarcodeWay({
         <CameraScanner onScan={scan} />
       )}
       <p className="font-mono text-xs text-muted-foreground">
-        {last === null ? "Scan the first book." : `${last} added`}
+        {last === null
+          ? i18n.t("proposeWays.scanFirst", { ns: "documents" })
+          : i18n.t("proposeWays.added", { ns: "documents", value: last })}
       </p>
       <div className="flex items-center gap-2">
         <Button size="sm" variant="outline" onClick={() => setMode(null)}>
-          Stop scanning
+          {i18n.t("proposeWays.stopScanning", { ns: "documents" })}
         </Button>
-        <span className="text-xs text-muted-foreground">or Esc</span>
+        <span className="text-xs text-muted-foreground">
+          {i18n.t("proposeWays.orEsc", { ns: "documents" })}
+        </span>
       </div>
     </div>
   );
@@ -353,10 +394,10 @@ function ScannerField({ onScan, onStop }: { onScan: (code: string) => void; onSt
     <div className="grid gap-1">
       <Input
         autoFocus
-        aria-label="Barcode"
+        aria-label={i18n.t("proposeWays.barcode", { ns: "documents" })}
         autoComplete="off"
         spellCheck={false}
-        placeholder="waiting for a barcode…"
+        placeholder={i18n.t("proposeWays.waitingBarcode", { ns: "documents" })}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         onFocus={() => setIsFocused(true)}
@@ -378,7 +419,7 @@ function ScannerField({ onScan, onStop }: { onScan: (code: string) => void; onSt
       />
       {!isFocused && (
         <p className="text-xs text-tone-amber-foreground">
-          Paused: the field lost focus. Click it to go on scanning.
+          {i18n.t("proposeWays.pausedScanning", { ns: "documents" })}
         </p>
       )}
     </div>
@@ -462,6 +503,7 @@ function CameraScanner({ onScan }: { onScan: (code: string) => void }) {
 // One photo per book, its barcode read by the plugin on the server; each code goes into the same
 // loop as a scan, and the next photo is a tap away.
 export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => void }) {
+  useTranslation("documents");
   const [isUnread, setIsUnread] = useState(false);
   const read = useMutation({
     mutationFn: readBarcode,
@@ -475,25 +517,30 @@ export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => voi
   const picker = useFilePicker({
     accept: "image/*",
     capture: "environment",
-    label: "Photo of a barcode",
+    label: i18n.t("proposeWays.photoBarcode", { ns: "documents" }),
     onFile: (photo) => read.mutate(photo),
   });
   return (
     <div className="grid justify-items-start gap-1.5">
       {picker.input}
       <Button size="sm" onClick={picker.open} disabled={read.isPending} autoFocus>
-        <Camera className="size-3.5" /> {read.isPending ? "Reading…" : "Photograph a barcode"}
+        <Camera className="size-3.5" />{" "}
+        {read.isPending
+          ? i18n.t("proposeWays.reading", { ns: "documents" })
+          : i18n.t("proposeWays.photographBarcode", { ns: "documents" })}
       </Button>
       <p className="text-xs text-muted-foreground">
-        This browser does not read the camera as it goes, so each book takes one photo.
+        {i18n.t("proposeWays.browserNeedsPhoto", { ns: "documents" })}
       </p>
       {isUnread && (
         <p className="text-xs text-tone-amber-foreground">
-          No barcode was read on that photo. Take another, closer and straight on.
+          {i18n.t("proposeWays.noBarcodePhoto", { ns: "documents" })}
         </p>
       )}
       {read.isError && (
-        <p className="text-xs text-destructive">The photo could not be read. Take another.</p>
+        <p className="text-xs text-destructive">
+          {i18n.t("proposeWays.photoUnreadable", { ns: "documents" })}
+        </p>
       )}
     </div>
   );
@@ -505,6 +552,7 @@ export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => voi
 // text if there are none, and matched to catalog records. Reading can be wrong, so the
 // candidates come back with why each matched, and nothing is added until one is picked.
 export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInstead?: () => void }) {
+  useTranslation("documents");
   const read = useMutation({ mutationFn: readPhoto });
   const picker = useFilePicker({
     accept: "image/*",
@@ -520,7 +568,9 @@ export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInste
         {fileInput}
         <PhotoResult
           reading={read.data}
-          onAdd={(catalogId) => onAdd([catalogLine(catalogId)], "photo")}
+          onAdd={(catalogId) =>
+            onAdd([catalogLine(catalogId)], i18n.t("proposeWays.photoSource", { ns: "documents" }))
+          }
           onRetake={take}
           onSearchInstead={onSearchInstead}
         />
@@ -532,16 +582,21 @@ export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInste
     <div className="grid place-items-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center">
       {fileInput}
       <Camera className="size-6 text-muted-foreground" />
-      <b className="text-sm font-semibold">A photo of a cover, title page or catalog card</b>
+      <b className="text-sm font-semibold">
+        {i18n.t("proposeWays.photoWhat", { ns: "documents" })}
+      </b>
       <span className="max-w-md text-xs text-muted-foreground">
-        It is read, the identifiers if there are any and the title, author and year if there are
-        not, and matched to catalog records for you to pick from.
+        {i18n.t("proposeWays.photoDescription", { ns: "documents" })}
       </span>
       <Button size="sm" variant="outline" onClick={take} disabled={read.isPending}>
-        {read.isPending ? "Reading…" : "Take photo"}
+        {read.isPending
+          ? i18n.t("proposeWays.reading", { ns: "documents" })
+          : i18n.t("proposeWays.takePhoto", { ns: "documents" })}
       </Button>
       {read.isError && (
-        <p className="text-xs text-destructive">The photo could not be read. Take another.</p>
+        <p className="text-xs text-destructive">
+          {i18n.t("proposeWays.photoUnreadable", { ns: "documents" })}
+        </p>
       )}
     </div>
   );
@@ -564,7 +619,7 @@ function PhotoResult({
     <div className="grid gap-3 rounded-lg border px-4 py-3 text-sm">
       <div>
         <h3 className="text-xs font-semibold">
-          Read from the photo{" "}
+          {i18n.t("proposeWays.readFromPhoto", { ns: "documents" })}{" "}
           <span className="font-normal text-muted-foreground">— {reading.seen}</span>
         </h3>
         <dl className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
@@ -584,14 +639,18 @@ function PhotoResult({
         </dl>
         {!reading.hasIdentifiers && (
           <p className="mt-1 text-xs text-muted-foreground">
-            No ISBN, ISSN or barcode on it: matched by the text.
+            {i18n.t("proposeWays.noIdMatchedText", { ns: "documents" })}
           </p>
         )}
       </div>
       <div>
-        <h3 className="text-xs font-semibold">Records that match</h3>
+        <h3 className="text-xs font-semibold">
+          {i18n.t("proposeWays.matchingRecords", { ns: "documents" })}
+        </h3>
         {reading.candidates.length === 0 ? (
-          <p className="text-xs text-muted-foreground">None.</p>
+          <p className="text-xs text-muted-foreground">
+            {i18n.t("proposeWays.none", { ns: "documents" })}
+          </p>
         ) : (
           <ul>
             {reading.candidates.map((candidate) => (
@@ -617,11 +676,11 @@ function PhotoResult({
       <div className="flex flex-wrap gap-2">
         {onSearchInstead !== undefined && (
           <Button size="sm" variant="outline" onClick={onSearchInstead}>
-            None of these: search the catalog
+            {i18n.t("proposeWays.noneSearchCatalog", { ns: "documents" })}
           </Button>
         )}
         <Button size="sm" variant="outline" onClick={onRetake}>
-          Take another
+          {i18n.t("proposeWays.takeAnother", { ns: "documents" })}
         </Button>
       </div>
     </div>

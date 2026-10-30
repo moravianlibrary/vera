@@ -64,6 +64,7 @@ import { validationColumns } from "../../frontend/src/features/validations/valid
 import { validationsView } from "../../frontend/src/features/validations/validations-view.ts";
 import type { PerTier } from "../../frontend/src/hooks/use-tier.ts";
 import { tiers, valueForTier } from "../../frontend/src/hooks/use-tier.ts";
+import { i18n } from "../../frontend/src/i18n/index.ts";
 import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
 
 // L11: the shipped roles are what the engine installs, not a mock fixture.
@@ -229,7 +230,7 @@ function fieldText(field: FilterFieldDefinition<unknown>): string {
   const kind = field.field.kind;
   const where = "isQuick" in field && field.isQuick === true ? " (on the bar)" : "";
   const range = kind === "numberRange" || kind === "dateRange" ? " (range)" : "";
-  return `${field.label}${where}${range}`;
+  return `${i18n.t(field.label, { lng: "en" })}${where}${range}`;
 }
 
 function pageFiltersTable(): string {
@@ -243,7 +244,7 @@ function pageFiltersTable(): string {
           ? ["each property (by its type)"]
           : []),
       ];
-      const groupings = definition.groupings.map((option) => option.label);
+      const groupings = definition.groupings.map((option) => i18n.t(option.label, { lng: "en" }));
       return `| ${page} | ${definition.view === undefined ? "no" : `\`${definition.view}\``} | ${fields.join(" · ") || "—"} | ${groupings.join(" · ") || "—"} |`;
     }),
   ].join("\n");

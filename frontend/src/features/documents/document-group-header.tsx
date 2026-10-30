@@ -22,7 +22,7 @@ import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 
 interface DocumentGroupHeaderProps {
   group: DocumentGroup;
@@ -56,7 +56,10 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
     <BatchGroupHeader
       batch={batch}
       users={users}
-      lone={{ title: "One at a time", meta: "asked for on its own, or still a proposal" }}
+      lone={{
+        title: i18n.t("group.oneAtATime", { ns: "documents" }),
+        meta: i18n.t("group.oneAtATimeMeta", { ns: "documents" }),
+      }}
       counts={<AdditionCounts size={size} additions={additions} />}
       action={
         batch !== null && additions.failed > 0 && canRetryAdditions ? (
@@ -73,16 +76,16 @@ interface AdditionCountsProps {
 }
 
 const additionLabels = {
-  awaiting: "awaiting a decision",
-  declined: "declined",
-  withdrawn: "withdrawn",
-  forbidden: "forbidden",
-  reviewNeeded: "review needed",
-  deniedInReview: "denied in review",
-  adding: "being added",
-  failed: "could not be added",
-  added: "added",
-  cancelled: "cancelled",
+  awaiting: "group.awaiting",
+  declined: "group.declined",
+  withdrawn: "group.withdrawn",
+  forbidden: "group.forbidden",
+  reviewNeeded: "group.reviewNeeded",
+  deniedInReview: "group.deniedInReview",
+  adding: "group.adding",
+  failed: "group.failed",
+  added: "group.added",
+  cancelled: "group.cancelled",
 } as const satisfies Record<AdditionState, string>;
 
 // "4 awaiting a decision · 1 forbidden · 12 being added · 3 could not be added · 28 added", each
@@ -90,7 +93,7 @@ const additionLabels = {
 // is in.
 function AdditionCounts({ size, additions }: AdditionCountsProps) {
   if (additions.added === size) {
-    return `${size} added`;
+    return i18n.t("group.addedCount", { ns: "documents", count: size });
   }
 
   const parts = additionStates
@@ -98,16 +101,16 @@ function AdditionCounts({ size, additions }: AdditionCountsProps) {
     .map((state) =>
       state === "failed" ? (
         <b key={state} className="font-semibold text-tone-red-foreground">
-          {additions[state]} {additionLabels[state]}
+          {i18n.t(additionLabels[state], { ns: "documents", count: additions[state] })}
         </b>
       ) : (
         <span key={state}>
-          {additions[state]} {additionLabels[state]}
+          {i18n.t(additionLabels[state], { ns: "documents", count: additions[state] })}
         </span>
       ),
     );
   if (parts.length === 0) {
-    return "none added";
+    return i18n.t("group.noneAdded", { ns: "documents" });
   }
 
   return parts.flatMap((part, index) => (index === 0 ? [part] : [" · ", part]));
@@ -120,8 +123,8 @@ export function RetryFailedButton({ batchId, failed }: { batchId: string; failed
     call: retryBatch,
     invalidates: [documentsQueryKey, watchlistsQueryKey],
     refusalTexts: {
-      403: "What failed is outside your custody.",
-      409: "Nothing in this batch is waiting for a retry any more.",
+      403: i18n.t("group.retry403", { ns: "documents" }),
+      409: i18n.t("group.retry409", { ns: "documents" }),
     },
   });
 
@@ -142,7 +145,11 @@ export function RetryFailedButton({ batchId, failed }: { batchId: string; failed
         disabled={retry.isPending}
         onClick={() => void run()}
       >
-        {retry.isPending ? "Retrying…" : failed === 1 ? "Retry the failed one" : "Retry failed"}
+        {retry.isPending
+          ? i18n.t("group.retrying", { ns: "documents" })
+          : failed === 1
+            ? i18n.t("group.retryOne", { ns: "documents" })
+            : i18n.t("group.retryFailed", { ns: "documents" })}
       </Button>
       {refusal !== null && (
         <span role="alert" className="text-destructive">
@@ -160,9 +167,9 @@ interface ProjectHeaderProps {
 
 function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
   const { project, total } = group;
-  const count = plural(total, "document");
+  const count = i18n.t("group.documentCount", { ns: "documents", count: total });
   if (project === null) {
-    return <GroupHeader title="No project" meta={count} />;
+    return <GroupHeader title={i18n.t("group.noProject", { ns: "documents" })} meta={count} />;
   }
 
   return (
@@ -186,7 +193,7 @@ function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
                 to={`/projects?id=${encodeURIComponent(project.id)}`}
                 className="underline underline-offset-2 hover:text-foreground"
               >
-                open the project
+                {i18n.t("group.openProject", { ns: "documents" })}
               </Link>
             </>
           )}

@@ -7,7 +7,6 @@
 // category, priority and approving at once), and a report of what was done. Anybody without
 // `request.decide` adds at most the deployment's limit at once; what does not fit is reported,
 // never dropped silently.
-// TODO(rrandiak): labels move to i18n.
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -33,6 +32,7 @@ import { defaultBatchNameOf, parseProposalLines, readIdentifier } from "@vera/do
 import { Check, FileUp, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/http";
 import {
   checkProposalItems,
@@ -68,9 +68,15 @@ import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
+import { i18n } from "@/i18n";
 import { recordAct } from "@/lib/telemetry/telemetry";
 import { cn } from "@/lib/utils";
 
+const stepLabels = [
+  "proposal.stepItems",
+  "proposal.stepDetails",
+  "proposal.stepSubmitted",
+] as const;
 const steps = ["Items", "Details", "Submitted"] as const;
 type Step = (typeof steps)[number];
 
@@ -147,6 +153,7 @@ interface ProposeFlowProps {
 }
 
 function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
+  useTranslation("documents");
   const [step, setStep] = useState<Step>("Items");
   const [items, setItems] = useState<DraftItem[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -235,9 +242,8 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
 
     setNotice(
       [
-        overLimit > 0 &&
-          `${overLimit} not added: at most ${limit} at once. Submit these, then propose the rest.`,
-        duplicates > 0 && `${duplicates} already on the list, added once.`,
+        overLimit > 0 && i18n.t("proposal.overLimit", { ns: "documents", count: overLimit, limit }),
+        duplicates > 0 && i18n.t("proposal.duplicates", { ns: "documents", count: duplicates }),
       ]
         .filter(Boolean)
         .join(" ") || null,
@@ -256,34 +262,38 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
     if (ask === undefined || askLanded.current || settings === undefined) return;
     askLanded.current = true;
     if (ask.record === null && ask.identifier === null) {
-      setNotice("This link names no item to propose. Add one below.");
+      setNotice(i18n.t("proposal.linkNoItem", { ns: "documents" }));
       return;
     }
     if (ask.record !== null) {
       const catalog = settings.linkCatalogs[0];
       if (catalog === undefined) {
-        setNotice("This link's record cannot be read here. Add an item below.");
+        setNotice(i18n.t("proposal.linkRecordUnreadable", { ns: "documents" }));
         return;
       }
       void readRecordLink({ catalogInstanceId: catalog.id, link: ask.record })
         .then(({ catalogId }) => {
           addFromAsk(
             [{ type: "catalogId", value: catalogId, unit: ask.unit, reason: null }],
-            `record link · ${catalog.name}`,
+            i18n.t("proposeWays.recordLinkSource", { ns: "documents", name: catalog.name }),
           );
         })
-        .catch(() => setNotice(`${catalog.name} could not read this record. Add an item below.`));
+        .catch(() =>
+          setNotice(
+            i18n.t("proposal.catalogCannotRead", { ns: "documents", catalog: catalog.name }),
+          ),
+        );
       return;
     }
     const parsedType = identifierTypeSchema.safeParse(ask.identifier?.type);
     if (ask.identifier === null) {
-      setNotice("This link's identifier type cannot be read. Add an item below.");
+      setNotice(i18n.t("proposal.linkTypeUnreadable", { ns: "documents" }));
       return;
     }
     if (!parsedType.success) {
       addFromAsk(
         [{ type: null, value: ask.identifier.value, unit: ask.unit, reason: null }],
-        "Type it",
+        i18n.t("proposal.typeIt", { ns: "documents" }),
       );
       return;
     }
@@ -295,7 +305,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
           reason: null,
         },
       ],
-      "Type it",
+      i18n.t("proposal.typeIt", { ns: "documents" }),
     );
   }, [ask, settings, rules]);
 
@@ -314,7 +324,12 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
         unit: picked.unit,
         reason: picked.reason,
       })),
-      `${picked.source} · ${identifierLabelOf(rules, picked.type)} ${picked.value}`,
+      i18n.t("proposal.pickedSource", {
+        ns: "documents",
+        source: picked.source,
+        type: identifierLabelOf(rules, picked.type),
+        value: picked.value,
+      }),
     );
     setItems((current) => current.flatMap((item) => (item.key === key ? added : [item])));
   };
@@ -340,34 +355,40 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
   const hasSubmittable = tally.new + tally.inVera > 0;
   const continueRefusal =
     tally.open > 0
-      ? "Choose the volume, or remove the item"
+      ? i18n.t("proposal.resolveUnit", { ns: "documents" })
       : hasSubmittable
         ? null
-        : "Nothing to submit yet";
-  const description = `${proposeActOf(session)} documents for digitization, one or several at once.`;
+        : i18n.t("proposal.nothingToSubmit", { ns: "documents" });
+  const description = i18n.t("proposal.description", {
+    ns: "documents",
+    action: proposeActOf(session),
+  });
   const entrySource = (settings?.entrySources ?? []).find((entry) => entry.id === ask?.sourceId);
   const returnTo = allowedReturn(ask?.returnTo ?? null, entrySource?.allowedOrigins ?? []);
   const backToSource =
     entrySource !== undefined && returnTo !== null
-      ? { label: `Back to ${entrySource.name}`, href: returnTo }
+      ? {
+          label: i18n.t("proposal.backToSource", { ns: "documents", source: entrySource.name }),
+          href: returnTo,
+        }
       : undefined;
   const primary =
     step === "Items"
       ? {
-          label: "Continue",
+          label: i18n.t("proposal.continue", { ns: "documents" }),
           isDisabled: continueRefusal !== null,
           disabledReason: continueRefusal ?? undefined,
           onSelect: () => setStep("Details"),
         }
       : step === "Details"
         ? {
-            label: "Submit",
+            label: i18n.t("proposal.submit", { ns: "documents" }),
             isPending: submit.isPending,
             isDisabled: submitRefusal !== null,
             disabledReason: submitRefusal ?? undefined,
             onSelect: () => detailsSubmit.current?.(),
           }
-        : { label: "Done", onSelect: onClose };
+        : { label: i18n.t("proposal.done", { ns: "documents" }), onSelect: onClose };
 
   return (
     <IdentifierRulesContext value={rules}>
@@ -378,9 +399,14 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
         description={description}
         width="wide"
         isDirty={items.length > 0 && step !== "Submitted"}
-        head={<StepIndicator steps={steps} currentIndex={steps.indexOf(step)} />}
+        head={
+          <StepIndicator
+            steps={stepLabels.map((key) => i18n.t(key, { ns: "documents" }))}
+            currentIndex={steps.indexOf(step)}
+          />
+        }
         onBack={step === "Details" ? () => setStep("Items") : undefined}
-        cancelLabel={step === "Submitted" ? null : "Cancel"}
+        cancelLabel={step === "Submitted" ? null : i18n.t("proposal.cancel", { ns: "documents" })}
         primary={primary}
         secondary={step === "Submitted" && report !== null ? backToSource : undefined}
       >
@@ -473,14 +499,21 @@ function ItemsStep({
   const panels: ChoicePanel<Way>[] = [
     {
       value: "typed",
-      label: "Type it",
-      content: <TypedWay onAdd={(line) => onAdd([line], "typed")} />,
+      label: i18n.t("proposal.typeIt", { ns: "documents" }),
+      content: (
+        <TypedWay
+          onAdd={(line) => onAdd([line], i18n.t("proposal.typedSource", { ns: "documents" }))}
+        />
+      ),
     },
     ...(hasCatalogWay
       ? [
           {
             value: "catalog" as const,
-            label: searchCatalogs.length > 0 ? "Catalog search" : "Record link",
+            label: i18n.t(
+              searchCatalogs.length > 0 ? "proposal.catalogSearch" : "proposal.recordLink",
+              { ns: "documents" },
+            ),
             content: (
               <CatalogSearchWay
                 searchCatalogs={searchCatalogs}
@@ -493,19 +526,23 @@ function ItemsStep({
       : []),
     {
       value: "pasted",
-      label: "Paste list",
+      label: i18n.t("proposal.pasteList", { ns: "documents" }),
       content: (
         <PastedWay
           key={String(canDetectTypes)}
           canDetectTypes={canDetectTypes}
-          onAdd={(lines) => onAdd(lines, "pasted")}
+          onAdd={(lines) => onAdd(lines, i18n.t("proposal.pastedSource", { ns: "documents" }))}
         />
       ),
     },
-    { value: "file", label: "File upload", content: <FileWay onAdd={onAdd} /> },
+    {
+      value: "file",
+      label: i18n.t("proposal.fileUpload", { ns: "documents" }),
+      content: <FileWay onAdd={onAdd} />,
+    },
     {
       value: "barcode",
-      label: "Barcode scan",
+      label: i18n.t("proposal.barcodeScan", { ns: "documents" }),
       content: (
         <BarcodeWay canScanWithCamera={settings?.canScanWithCamera === true} onAdd={onAdd} />
       ),
@@ -514,7 +551,7 @@ function ItemsStep({
       ? [
           {
             value: "photo" as const,
-            label: "Photo capture",
+            label: i18n.t("proposal.photoCapture", { ns: "documents" }),
             content: (
               <PhotoWay
                 onAdd={onAdd}
@@ -528,40 +565,63 @@ function ItemsStep({
 
   return (
     <div>
-      <ChoiceTabs value={way} onChange={setWay} label="Ways to add items" panels={panels} />
+      <ChoiceTabs
+        value={way}
+        onChange={setWay}
+        label={i18n.t("proposal.waysLabel", { ns: "documents" })}
+        panels={panels}
+      />
 
       {notice !== null && (
-        <StatusNote tone="amber" title="Not everything was added" className="mt-3">
+        <StatusNote
+          tone="amber"
+          title={i18n.t("proposal.notEverythingAdded", { ns: "documents" })}
+          className="mt-3"
+        >
           {notice}
         </StatusNote>
       )}
 
       {dailyRemaining === 0 && (
-        <StatusNote tone="red" title="Daily proposal limit reached" className="mt-3">
-          No more proposals today.
+        <StatusNote
+          tone="red"
+          title={i18n.t("proposal.dailyLimit", { ns: "documents" })}
+          className="mt-3"
+        >
+          {i18n.t("proposal.noMoreToday", { ns: "documents" })}
         </StatusNote>
       )}
 
       {dailyRemaining !== null && dailyRemaining > 0 && dailyRemaining <= 10 && (
-        <StatusNote tone="amber" title="Approaching daily limit" className="mt-3">
-          {dailyRemaining} left today.
+        <StatusNote
+          tone="amber"
+          title={i18n.t("proposal.approachingLimit", { ns: "documents" })}
+          className="mt-3"
+        >
+          {i18n.t("proposal.leftToday", { ns: "documents", count: dailyRemaining })}
         </StatusNote>
       )}
 
       <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-b pb-2 text-xs">
         <span className="font-semibold">
           {items.length === 0
-            ? "No items yet"
-            : `${items.length} ${items.length === 1 ? "item" : "items"}`}
+            ? i18n.t("proposal.noItems", { ns: "documents" })
+            : i18n.t("proposal.itemCount", { ns: "documents", count: items.length })}
           {Number.isFinite(limit) && (
-            <span className="font-normal text-muted-foreground"> · at most {limit} at once</span>
+            <span className="font-normal text-muted-foreground">
+              {" "}
+              · {i18n.t("proposal.atMost", { ns: "documents", count: limit })}
+            </span>
           )}
         </span>
         {items.length > 0 && (
           <span className="text-muted-foreground">
-            {tally.new} new · {tally.inVera} already in VERA
-            {tally.open > 0 && ` · ${tally.open} to resolve`}
-            {tally.skip > 0 && ` · ${tally.skip} will be skipped`}
+            {i18n.t("proposal.tallyNew", { ns: "documents", count: tally.new })} ·{" "}
+            {i18n.t("proposal.tallyInVera", { ns: "documents", count: tally.inVera })}
+            {tally.open > 0 &&
+              ` · ${i18n.t("proposal.tallyResolve", { ns: "documents", count: tally.open })}`}
+            {tally.skip > 0 &&
+              ` · ${i18n.t("proposal.tallySkip", { ns: "documents", count: tally.skip })}`}
           </span>
         )}
       </div>
@@ -612,21 +672,21 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
         }}
       />
       <Input
-        aria-label="Identifier"
-        placeholder="value"
+        aria-label={i18n.t("proposal.identifier", { ns: "documents" })}
+        placeholder={i18n.t("proposal.value", { ns: "documents" })}
         value={value}
         onChange={(event) => setValue(event.target.value)}
         className="h-8 w-44 flex-1 font-mono"
       />
       <Input
-        aria-label="Volume or issue"
-        placeholder="volume or issue — optional"
+        aria-label={i18n.t("proposal.volumeIssue", { ns: "documents" })}
+        placeholder={i18n.t("proposal.volumeIssueOptional", { ns: "documents" })}
         value={unit}
         onChange={(event) => setUnit(event.target.value)}
         className="h-8 w-48 flex-1"
       />
       <Button type="submit" size="sm" variant="outline" disabled={trimmed === ""}>
-        Add
+        {i18n.t("proposal.add", { ns: "documents" })}
       </Button>
     </form>
   );
@@ -646,16 +706,16 @@ function PastedWay({
   return (
     <div className="grid gap-2">
       <Textarea
-        aria-label="Items, one per line"
+        aria-label={i18n.t("proposal.itemsOnePerLine", { ns: "documents" })}
         rows={5}
         value={text}
         onChange={(event) => setText(event.target.value)}
-        placeholder={"MZK01-001622010;1889;why\ncnb001388120"}
+        placeholder={i18n.t("proposal.pasteExample", { ns: "documents" })}
         className="font-mono text-xs"
       />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground">
-          One per line: identifier ; volume or issue ; why
+          {i18n.t("proposal.pasteHelp", { ns: "documents" })}
         </span>
         <IdentifierTypeSelect
           value={type}
@@ -672,7 +732,7 @@ function PastedWay({
             setText("");
           }}
         >
-          Add these
+          {i18n.t("proposal.addThese", { ns: "documents" })}
         </Button>
       </div>
     </div>
@@ -687,22 +747,30 @@ function FileWay({ onAdd }: { onAdd: (lines: ProposalLine[], source: string) => 
     onFile: async (file) => {
       const text = await file.text().catch(() => null);
       setIsUnreadable(text === null);
-      if (text !== null) onAdd(parseProposalLines(text, null, rules), `file · ${file.name}`);
+      if (text !== null)
+        onAdd(
+          parseProposalLines(text, null, rules),
+          i18n.t("proposal.fileSource", { ns: "documents", name: file.name }),
+        );
     },
   });
 
   return (
     <div className="grid place-items-center gap-1.5 rounded-lg border border-dashed px-4 py-6 text-center">
       <FileUp className="size-6 text-muted-foreground" />
-      <b className="text-sm font-semibold">A CSV or TXT file</b>
+      <b className="text-sm font-semibold">{i18n.t("proposal.csvOrTxt", { ns: "documents" })}</b>
       <span className="text-xs text-muted-foreground">
-        columns: identifier ; volume or issue ; why
+        {i18n.t("proposal.fileColumns", { ns: "documents" })}
       </span>
       {picker.input}
       <Button size="sm" variant="outline" onClick={picker.open}>
-        Choose file…
+        {i18n.t("proposal.chooseFile", { ns: "documents" })}
       </Button>
-      {isUnreadable && <p className="text-xs text-destructive">The file could not be read.</p>}
+      {isUnreadable && (
+        <p className="text-xs text-destructive">
+          {i18n.t("proposal.fileUnreadable", { ns: "documents" })}
+        </p>
+      )}
     </div>
   );
 }
@@ -734,11 +802,19 @@ function IdentifierTypeSelect({
         }
       }}
     >
-      <SelectTrigger size="sm" aria-label="Identifier type" className={cn("w-36", className)}>
+      <SelectTrigger
+        size="sm"
+        aria-label={i18n.t("proposal.identifierType", { ns: "documents" })}
+        className={cn("w-36", className)}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {canDetect && <SelectItem value={autoDetect}>Detect the type</SelectItem>}
+        {canDetect && (
+          <SelectItem value={autoDetect}>
+            {i18n.t("proposal.detectType", { ns: "documents" })}
+          </SelectItem>
+        )}
         {rules.map(({ type }) => (
           <SelectItem key={type} value={type}>
             {identifierLabelOf(rules, type)}
@@ -783,7 +859,7 @@ function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowPro
       </span>
       <button
         type="button"
-        aria-label={`Remove ${item.value}`}
+        aria-label={i18n.t("proposal.remove", { ns: "documents", value: item.value })}
         onClick={onRemove}
         className="col-start-3 row-start-1 grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground sm:col-start-4"
       >
@@ -805,8 +881,10 @@ function ItemOutcome({
   if (item.type === null) {
     return (
       <>
-        <ToneBadge tone="red">Not a known identifier</ToneBadge>
-        <Muted>pick its type</Muted>
+        <ToneBadge tone="red">
+          {i18n.t("proposal.unknownIdentifier", { ns: "documents" })}
+        </ToneBadge>
+        <Muted>{i18n.t("proposal.pickItsType", { ns: "documents" })}</Muted>
         <TypeFix item={item} onChange={onChange} />
       </>
     );
@@ -815,47 +893,53 @@ function ItemOutcome({
   if (item.isCheckFailed) {
     return (
       <>
-        <ToneBadge tone="red">Could not be checked</ToneBadge>
-        <Muted>remove it and add it again</Muted>
+        <ToneBadge tone="red">{i18n.t("proposal.couldNotCheck", { ns: "documents" })}</ToneBadge>
+        <Muted>{i18n.t("proposal.removeAndAdd", { ns: "documents" })}</Muted>
       </>
     );
   }
 
   const { check } = item;
   if (check === null) {
-    return <Muted>Checking…</Muted>;
+    return <Muted>{i18n.t("proposal.checking", { ns: "documents" })}</Muted>;
   }
 
   switch (check.kind) {
     case "new":
       return (
         <>
-          <ToneBadge tone="green">New</ToneBadge>
-          {check.isAskedBefore && <Muted>asked before, nothing moving</Muted>}
+          <ToneBadge tone="green">{i18n.t("proposal.new", { ns: "documents" })}</ToneBadge>
+          {check.isAskedBefore && (
+            <Muted>{i18n.t("proposal.askedBefore", { ns: "documents" })}</Muted>
+          )}
         </>
       );
     case "inVera":
       return (
         <>
-          <ToneBadge tone="blue">In VERA</ToneBadge>
+          <ToneBadge tone="blue">{i18n.t("proposal.inVera", { ns: "documents" })}</ToneBadge>
           <StatusBadge status={check.status} className="px-1.5 py-0 text-caption" />
-          <Muted>· ask for this too</Muted>
+          <Muted>· {i18n.t("proposal.askForThisToo", { ns: "documents" })}</Muted>
         </>
       );
     case "mine":
       return (
         <>
-          <ToneBadge tone="slate">Already yours</ToneBadge>
-          <Muted>you ask for it already; skipped</Muted>
+          <ToneBadge tone="slate">{i18n.t("proposal.alreadyYours", { ns: "documents" })}</ToneBadge>
+          <Muted>{i18n.t("proposal.alreadyAskedSkipped", { ns: "documents" })}</Muted>
         </>
       );
     case "whichUnit":
       return (
         <>
-          <ToneBadge tone="amber">Which volume?</ToneBadge>
+          <ToneBadge tone="amber">{i18n.t("proposal.whichVolume", { ns: "documents" })}</ToneBadge>
           <Select onValueChange={(unit) => onChange({ unit })}>
-            <SelectTrigger size="sm" aria-label="Volume or issue" className="h-7 w-32">
-              <SelectValue placeholder="choose…" />
+            <SelectTrigger
+              size="sm"
+              aria-label={i18n.t("proposal.volumeIssue", { ns: "documents" })}
+              className="h-7 w-32"
+            >
+              <SelectValue placeholder={i18n.t("proposal.choose", { ns: "documents" })} />
             </SelectTrigger>
             <SelectContent>
               {check.units.map((unit) => (
@@ -872,8 +956,8 @@ function ItemOutcome({
     case "notInCatalog":
       return (
         <>
-          <ToneBadge tone="red">Not in the catalog</ToneBadge>
-          <Muted>will be skipped</Muted>
+          <ToneBadge tone="red">{i18n.t("proposal.notInCatalog", { ns: "documents" })}</ToneBadge>
+          <Muted>{i18n.t("proposal.willBeSkipped", { ns: "documents" })}</Muted>
         </>
       );
   }
@@ -892,8 +976,10 @@ function RecordPick({
   return (
     <span className="flex w-full flex-col gap-1.5">
       <span className="flex items-center gap-1.5">
-        <ToneBadge tone="amber">Which records?</ToneBadge>
-        <Muted>{records.length} in the catalog</Muted>
+        <ToneBadge tone="amber">{i18n.t("proposal.whichRecords", { ns: "documents" })}</ToneBadge>
+        <Muted>
+          {i18n.t("proposal.recordsInCatalog", { ns: "documents", count: records.length })}
+        </Muted>
       </span>
       {records.map(({ catalogId, title }) => (
         <span key={catalogId} className="flex items-center gap-2">
@@ -920,7 +1006,9 @@ function RecordPick({
         disabled={picked.length === 0}
         onClick={() => onPick([...picked])}
       >
-        Add {picked.length === 0 ? "the picked" : picked.length}
+        {picked.length === 0
+          ? i18n.t("proposal.addPickedNone", { ns: "documents" })
+          : i18n.t("proposal.addPicked", { ns: "documents", count: picked.length })}
       </Button>
     </span>
   );
@@ -949,8 +1037,12 @@ function TypeFix({
         onChange({ type, value: normalisedOf(rules, type, item.value) });
       }}
     >
-      <SelectTrigger size="sm" aria-label="Identifier type" className="h-7 w-32">
-        <SelectValue placeholder="type…" />
+      <SelectTrigger
+        size="sm"
+        aria-label={i18n.t("proposal.identifierType", { ns: "documents" })}
+        className="h-7 w-32"
+      >
+        <SelectValue placeholder={i18n.t("proposal.type", { ns: "documents" })} />
       </SelectTrigger>
       <SelectContent>
         {fitting.map((type) => (
@@ -1013,7 +1105,10 @@ function DetailsStep({
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [priority, setPriority] = useState<Priority>("Normal");
   const isApproving = canDecide && newCount > 0 && isApprovedNow;
-  const submitRefusal = isApproving && categoryId === null ? "Choose a category" : null;
+  const submitRefusal =
+    isApproving && categoryId === null
+      ? i18n.t("proposal.chooseCategory", { ns: "documents" })
+      : null;
   useEffect(() => onRefusalChange(submitRefusal), [onRefusalChange, submitRefusal]);
   useEffect(() => {
     submitRef.current = () =>
@@ -1028,7 +1123,11 @@ function DetailsStep({
   return (
     <div className="grid content-start gap-4">
       {isStaff && isBatch && (
-        <Field id={`${fieldId}-batch`} label="Batch name" hint="optional">
+        <Field
+          id={`${fieldId}-batch`}
+          label={i18n.t("proposal.batchName", { ns: "documents" })}
+          hint={i18n.t("proposal.optional", { ns: "documents" })}
+        >
           <Input
             id={`${fieldId}-batch`}
             value={batchName}
@@ -1040,8 +1139,10 @@ function DetailsStep({
 
       <Field
         id={`${fieldId}-reason`}
-        label="Why"
-        hint={`optional${items.length > 1 ? "; an item's own reason wins" : ""}`}
+        label={i18n.t("proposal.why", { ns: "documents" })}
+        hint={i18n.t(items.length > 1 ? "proposal.optionalReasonBatch" : "proposal.optional", {
+          ns: "documents",
+        })}
       >
         <Textarea
           id={`${fieldId}-reason`}
@@ -1049,32 +1150,34 @@ function DetailsStep({
           value={reason}
           maxLength={entryReasonLimit}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Research, exhibition, a reader's request…"
+          placeholder={i18n.t("proposal.reasonPlaceholder", { ns: "documents" })}
         />
       </Field>
 
       {proposable.length > 0 && (
         <Field
           id={`${fieldId}-project`}
-          label="Project"
-          hint="optional; the ones you are a member of"
+          label={i18n.t("proposal.project", { ns: "documents" })}
+          hint={i18n.t("proposal.projectHint", { ns: "documents" })}
         >
           <Select value={projectId} onValueChange={setProjectId}>
             <SelectTrigger id={`${fieldId}-project`} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={noProject}>No project</SelectItem>
+              <SelectItem value={noProject}>
+                {i18n.t("proposal.noProject", { ns: "documents" })}
+              </SelectItem>
               {proposable.map((project) => (
                 <SelectItem key={project.id} value={project.id}>
-                  {project.name} · {project.state.toLowerCase()}
+                  {project.name} ·{" "}
+                  {i18n.t(`proposal.projectState.${project.state}`, { ns: "documents" })}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            Into a proposed project, it is approved with the project. Into an approved one, it is
-            decided on its own.
+            {i18n.t("proposal.projectDescription", { ns: "documents" })}
           </p>
         </Field>
       )}
@@ -1091,22 +1194,30 @@ function DetailsStep({
               htmlFor={`${fieldId}-approve`}
               className="block text-sm leading-snug font-normal"
             >
-              <b className="font-semibold">Approve now</b> — the {newCount} new skip review.{" "}
+              <b className="font-semibold">{i18n.t("proposal.approveNow", { ns: "documents" })}</b>{" "}
+              — {i18n.t("proposal.newSkipReview", { ns: "documents", count: newCount })}{" "}
               <span className="text-muted-foreground">
-                Any with an existing copy waits in Requests like any other.
+                {i18n.t("proposal.existingCopyWaits", { ns: "documents" })}
               </span>
             </Label>
           </div>
           {isApprovedNow && (
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-              <Field id={`${fieldId}-category`} label="Category" hint={`for the ${newCount} new`}>
+              <Field
+                id={`${fieldId}-category`}
+                label={i18n.t("field.category", { ns: "documents" })}
+                hint={i18n.t("proposal.categoryForNew", { ns: "documents", count: newCount })}
+              >
                 <CategorySelect
                   id={`${fieldId}-category`}
                   value={categoryId}
                   onChange={setCategoryId}
                 />
               </Field>
-              <Field id={`${fieldId}-priority`} label="Priority">
+              <Field
+                id={`${fieldId}-priority`}
+                label={i18n.t("field.priority", { ns: "documents" })}
+              >
                 <PrioritySelect
                   id={`${fieldId}-priority`}
                   value={priority}
@@ -1119,17 +1230,27 @@ function DetailsStep({
       )}
 
       <p className="text-xs text-muted-foreground">
-        {newCount} to propose · {joinCount} to join{skipCount > 0 && ` · ${skipCount} skipped`}
+        {i18n.t("proposal.totals", {
+          ns: "documents",
+          proposed: newCount,
+          joined: joinCount,
+          skipped:
+            skipCount > 0
+              ? ` · ${i18n.t("proposal.skippedCount", { ns: "documents", count: skipCount })}`
+              : "",
+        })}
       </p>
 
       {rateLimit?.perDay !== null && rateLimit?.perDay !== undefined && (
         <p className="text-xs text-muted-foreground">
-          Daily proposal limit · {rateLimit.perDay} left today
+          {i18n.t("proposal.dailyLimitRemaining", { ns: "documents", count: rateLimit.perDay })}
         </p>
       )}
 
       {isFailed && (
-        <p className="text-xs text-destructive">The proposal could not be submitted. Try again.</p>
+        <p className="text-xs text-destructive">
+          {i18n.t("proposal.submitError", { ns: "documents" })}
+        </p>
       )}
     </div>
   );
@@ -1157,10 +1278,12 @@ function ReportStep({ report, skipped, viewTitle }: ReportStepProps) {
         <Check className="mt-0.5 size-4 shrink-0 text-tone-green-foreground" />
         <p>
           {report.batch === null || !isShownAsBatch(report.batch) ? (
-            <b className="font-semibold">Submitted.</b>
+            <b className="font-semibold">{i18n.t("proposal.submitted", { ns: "documents" })}</b>
           ) : (
             <>
-              <b className="font-semibold">Submitted as {report.batch.id}</b>{" "}
+              <b className="font-semibold">
+                {i18n.t("proposal.submittedAs", { ns: "documents", id: report.batch.id })}
+              </b>{" "}
               <span className="text-muted-foreground">{report.batch.name}</span>
             </>
           )}
@@ -1169,27 +1292,37 @@ function ReportStep({ report, skipped, viewTitle }: ReportStepProps) {
 
       <ul className="text-sm">
         {report.approved > 0 && (
-          <ReportLine count={report.approved}>approved — being added</ReportLine>
+          <ReportLine count={report.approved}>
+            {i18n.t("proposal.approvedBeingAdded", { ns: "documents", count: report.approved })}
+          </ReportLine>
         )}
-        {held > 0 && <ReportLine count={held}>proposed — waiting for review</ReportLine>}
+        {held > 0 && (
+          <ReportLine count={held}>
+            {i18n.t("proposal.proposedWaiting", { ns: "documents", count: held })}
+          </ReportLine>
+        )}
         {report.joined > 0 && (
-          <ReportLine count={report.joined}>joined work already in VERA — you follow it</ReportLine>
+          <ReportLine count={report.joined}>
+            {i18n.t("proposal.joinedWork", { ns: "documents", count: report.joined })}
+          </ReportLine>
         )}
         {skippedValues.length > 0 && (
           <ReportLine count={skippedValues.length} isMuted>
-            skipped
+            {i18n.t("proposal.skipped", { ns: "documents" })}
             <Button
               size="sm"
               variant="outline"
               className="ml-2 h-7"
               onClick={() => downloadText("skipped.txt", skippedValues.join("\n"))}
             >
-              Download skipped
+              {i18n.t("proposal.downloadSkipped", { ns: "documents" })}
             </Button>
           </ReportLine>
         )}
       </ul>
-      <p className="text-xs text-muted-foreground">You find them in {viewTitle}.</p>
+      <p className="text-xs text-muted-foreground">
+        {i18n.t("proposal.findThemIn", { ns: "documents", view: viewTitle })}
+      </p>
     </div>
   );
 }

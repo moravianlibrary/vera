@@ -1,105 +1,100 @@
 // Client wording for event codes (EVENT-wording).
-import type { EventCode, EventEntry, HistoryCode } from "@vera/domain/events";
+import type { EventCode, EventEntry } from "@vera/domain/events";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { joinDetails } from "@/lib/join-details";
 
 const refName = (value: { name: string } | null | undefined) => value?.name ?? null;
 const changeLine = (value: { from: unknown; to: unknown } | null | undefined) =>
-  value ? `${String(value.from ?? "—")} → ${String(value.to)}` : null;
+  value
+    ? i18n.t("change", {
+        ns: "history",
+        from: String(value.from ?? "—"),
+        to: String(value.to),
+      })
+    : null;
 
 export function wordingOf(
   entry: EventEntry,
   nameOf: (userId: string) => string,
 ): { title: string; line: string | null } {
-  const titles: Record<HistoryCode, string> = {
-    "request.created": "Asked for",
-    "request.approved": "Approved",
-    "request.declined": "Declined",
-    "request.held": "Held",
-    "request.withdrawn": "Withdrawn",
-    "request.ingest_retried": "Ingest retried",
-    "iteration.ingested": "Ingested",
-    "iteration.ingest_failed": "Ingest failed",
-    "iteration.rechecked": "Rechecked",
-    "iteration.page_count_entered": "Page count entered",
-    "iteration.verdict_accepted": "Validation approved",
-    "iteration.verdict_denied": "Validation denied",
-    "iteration.verdict_revoked": "Validation revoked",
-    "iteration.restricted": "Restricted",
-    "iteration.restriction_overruled": "Restriction overruled",
-    "iteration.reclassified": "Reclassified",
-    "iteration.cancelled": "Cancelled",
-    "iteration.not_digitizable": "Could not be digitized",
-    "iteration.resumed": "Resumed",
-    "iteration.listed": "Listed",
-    "iteration.unlisted": "Taken off a list",
-    "iteration.digitized": "Digitized",
-    "iteration.published": "Published",
-    "iteration.link_added": "Link added",
-    "iteration.link_changed": "Link changed",
-    "iteration.link_made_primary": "Primary link changed",
-    "iteration.link_removed": "Link removed",
-    "iteration.copy_found": "Copy found",
-    "iteration.property_changed": "Property changed",
-    "document.relinked": "Relinked",
-    "document.property_changed": "Property changed",
-    "document.registry_changed": "Registry changed",
-    "list.created": "Created",
-    "list.renamed": "Renamed",
-    "list.dates_moved": "Dates moved",
-    "list.members_changed": "Members moved",
-    "list.started_early": "Started early",
-    "list.marked_done": "Marked Done",
-    "list.deleted": "Deleted",
-    "project.created": "Created",
-    "project.details_changed": "Details changed",
-    "project.dates_changed": "Dates or target changed",
-    "project.member_added": "Member added",
-    "project.member_removed": "Member removed",
-    "project.manager_changed": "Manager changed",
-    "project.approved": "Approved",
-    "project.rejected": "Rejected",
-    "project.deleted": "Deleted",
-  };
-  let title = titles[entry.code];
+  let title = i18n.t(entry.code, { ns: "history" });
   let line: string | null = null;
   if (entry.data === null) return { title, line };
 
   switch (entry.code) {
     case "request.held":
-      title =
-        entry.data.why === "copy_exists" ? "Held: a copy exists" : "Held: checks still running";
+      title = i18n.t(
+        entry.data.why === "copy_exists" ? "request.held.copyExists" : "request.held.checksRunning",
+        { ns: "history" },
+      );
       break;
     case "iteration.restricted":
-      title = `${entry.data.outcome === "forbidden" ? "Forbidden" : "Restricted"} by ${entry.data.rule.name}`;
+      title = i18n.t("iteration.restricted.by", {
+        ns: "history",
+        restriction: i18n.t(
+          entry.data.outcome === "forbidden"
+            ? "iteration.restricted.forbidden"
+            : "iteration.restricted.restricted",
+          { ns: "history" },
+        ),
+        rule: entry.data.rule.name,
+      });
       break;
     case "request.created":
       line = refName(entry.data.batch);
       break;
     case "request.approved":
       line = joinDetails([
-        entry.data.isRescan ? "as a rescan" : null,
-        entry.data.batchSize === null ? null : `${formatCount(entry.data.batchSize)} requests`,
+        entry.data.isRescan ? i18n.t("request.rescan", { ns: "history" }) : null,
+        entry.data.batchSize === null
+          ? null
+          : i18n.t("request.count", {
+              ns: "history",
+              count: entry.data.batchSize,
+              formatted: formatCount(entry.data.batchSize),
+            }),
       ]);
       break;
     case "request.declined":
-      line = entry.data.batchSize === null ? null : `${formatCount(entry.data.batchSize)} requests`;
+      line =
+        entry.data.batchSize === null
+          ? null
+          : i18n.t("request.count", {
+              ns: "history",
+              count: entry.data.batchSize,
+              formatted: formatCount(entry.data.batchSize),
+            });
       break;
     case "request.ingest_retried":
-      line = `attempt ${entry.data.attempt}`;
+      line = i18n.t("attempt", { ns: "history", count: entry.data.attempt });
       break;
     case "iteration.ingest_failed":
-      line = joinDetails([`attempt ${entry.data.attempt}`, entry.data.error]);
+      line = joinDetails([
+        i18n.t("attempt", { ns: "history", count: entry.data.attempt }),
+        entry.data.error,
+      ]);
       break;
     case "iteration.rechecked":
       line = joinDetails([
-        entry.data.by === "catalog_change" ? "after a catalog change" : null,
-        `${formatCount(entry.data.found)} defects found, ${formatCount(entry.data.gone)} gone`,
+        entry.data.by === "catalog_change"
+          ? i18n.t("iteration.rechecked.catalogChange", { ns: "history" })
+          : null,
+        i18n.t("iteration.rechecked.count", {
+          ns: "history",
+          found: formatCount(entry.data.found),
+          gone: formatCount(entry.data.gone),
+          count: entry.data.found,
+        }),
       ]);
       break;
     case "iteration.page_count_entered":
-      line = `${entry.data.previous ?? "—"} → ${entry.data.pages}`;
+      line = i18n.t("change", {
+        ns: "history",
+        from: String(entry.data.previous ?? "—"),
+        to: String(entry.data.pages),
+      });
       break;
     case "iteration.verdict_accepted":
     case "iteration.verdict_denied":
@@ -115,7 +110,9 @@ export function wordingOf(
       line = joinDetails([changeLine(entry.data.category), changeLine(entry.data.priority)]);
       break;
     case "iteration.cancelled":
-      line = entry.data.list ? `taken off ${entry.data.list.name}` : null;
+      line = entry.data.list
+        ? i18n.t("iteration.cancelled.list", { ns: "history", list: entry.data.list.name })
+        : null;
       break;
     case "iteration.not_digitizable":
     case "iteration.listed":
@@ -125,7 +122,9 @@ export function wordingOf(
     case "iteration.unlisted":
       line = joinDetails([
         refName(entry.data.list),
-        entry.data.why === "list_deleted" ? "list deleted" : null,
+        entry.data.why === "list_deleted"
+          ? i18n.t("iteration.unlisted.deleted", { ns: "history" })
+          : null,
       ]);
       break;
     case "iteration.published":
@@ -138,14 +137,26 @@ export function wordingOf(
       line = changeLine(entry.data.url);
       break;
     case "iteration.copy_found":
-      line = `${entry.data.registry}: ${entry.data.state}`;
+      line = i18n.t("iteration.copyFound", {
+        ns: "history",
+        registry: entry.data.registry,
+        state: entry.data.state,
+      });
       break;
     case "document.registry_changed":
-      line = `${entry.data.registry}: ${String(entry.data.state.to)}`;
+      line = i18n.t("document.registryChanged", {
+        ns: "history",
+        registry: entry.data.registry,
+        state: String(entry.data.state.to),
+      });
       break;
     case "iteration.property_changed":
     case "document.property_changed":
-      line = `${entry.data.key}: ${changeLine(entry.data.value)}`;
+      line = i18n.t("property.changed", {
+        ns: "history",
+        key: entry.data.key,
+        change: changeLine(entry.data.value),
+      });
       break;
     case "document.relinked":
       line = changeLine(entry.data.catalogId);
@@ -153,9 +164,17 @@ export function wordingOf(
     case "list.created":
       line = joinDetails([
         entry.data.generator
-          ? `generated by ${entry.data.generator.name} ${entry.data.generator.version}`
+          ? i18n.t("list.generatedBy", {
+              ns: "history",
+              name: entry.data.generator.name,
+              version: entry.data.generator.version,
+            })
           : null,
-        `${formatCount(entry.data.members)} members`,
+        i18n.t("list.members", {
+          ns: "history",
+          count: entry.data.members,
+          formatted: formatCount(entry.data.members),
+        }),
       ]);
       break;
     case "list.renamed":
@@ -168,16 +187,31 @@ export function wordingOf(
       ]);
       break;
     case "list.members_changed":
-      line = `${formatCount(entry.data.added.length)} added, ${formatCount(entry.data.removed.length)} removed`;
+      line = i18n.t("list.membersChanged", {
+        ns: "history",
+        added: entry.data.added.length,
+        removed: entry.data.removed.length,
+      });
       break;
     case "list.started_early":
-      line = `was to start ${formatCalendarDay(entry.data.starts)}`;
+      line = i18n.t("list.startedEarly", {
+        ns: "history",
+        day: formatCalendarDay(entry.data.starts),
+      });
       break;
     case "list.marked_done":
-      line = `${formatCount(entry.data.digitized)} digitized`;
+      line = i18n.t("list.digitized", {
+        ns: "history",
+        count: entry.data.digitized,
+        formatted: formatCount(entry.data.digitized),
+      });
       break;
     case "list.deleted":
-      line = `${formatCount(entry.data.returned)} back in the pool`;
+      line = i18n.t("list.returned", {
+        ns: "history",
+        count: entry.data.returned,
+        formatted: formatCount(entry.data.returned),
+      });
       break;
     case "project.member_added":
     case "project.member_removed":
@@ -187,33 +221,37 @@ export function wordingOf(
       line = nameOf(entry.data.userId.to);
       break;
     case "project.approved":
-      line = `${formatCount(entry.data.approved)} proposals approved`;
+      line = i18n.t("project.approvedCount", {
+        ns: "history",
+        count: entry.data.approved,
+        formatted: formatCount(entry.data.approved),
+      });
       break;
     case "project.rejected":
-      line = `${formatCount(entry.data.declined)} declined`;
+      line = i18n.t("project.rejectedCount", {
+        ns: "history",
+        count: entry.data.declined,
+        formatted: formatCount(entry.data.declined),
+      });
       break;
     case "project.details_changed":
     case "project.dates_changed":
       line =
         entry.data.changes
-          .map((change) => `${change.field}: ${String(change.from)} → ${String(change.to)}`)
+          .map((change) =>
+            i18n.t("project.change", {
+              ns: "history",
+              field: change.field,
+              from: String(change.from),
+              to: String(change.to),
+            }),
+          )
           .join(", ") || null;
       break;
   }
   return { title, line };
 }
 
-const publicWords: Partial<Record<EventCode, string>> = {
-  "request.created": "Asked",
-  "request.approved": "Accepted",
-  "request.declined": "Not accepted",
-  "request.withdrawn": "Withdrawn",
-  "iteration.restricted": "Not available for digitization",
-  "iteration.cancelled": "On hold",
-  "iteration.not_digitizable": "Could not be digitized",
-  "iteration.digitized": "Digitized",
-  "iteration.published": "Available to read",
-};
 export function publicWordingOf(code: EventCode): string {
-  return publicWords[code] ?? "";
+  return i18n.t(`${code}.public`, { ns: "history", defaultValue: "" });
 }

@@ -3,7 +3,6 @@
 // status is made from, Decision and Progress on the bar, and on the advanced ranges Pages and
 // Asked (filtering.md §6); a requester has only the status of their own ask, in the public
 // vocabulary, and the other fields do not exist for them.
-// TODO(rrandiak): labels move to i18n.
 
 import type { DocumentGrouping, DocumentQuery } from "@vera/contract/documents";
 import {
@@ -24,47 +23,47 @@ import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
 const publicStatusLabels = {
-  WaitingForReview: "Waiting for review",
-  NotAccepted: "Not accepted",
-  Withdrawn: "Withdrawn",
-  BeingAdded: "Being added",
-  BeingChecked: "Being checked",
-  WaitingToBeScheduled: "Waiting to be scheduled",
-  Scheduled: "Scheduled",
-  Available: "Available",
-  OnHold: "On hold",
-  NotAvailable: "Not available",
+  WaitingForReview: "documents:status.WaitingForReview",
+  NotAccepted: "documents:status.NotAccepted",
+  Withdrawn: "documents:status.Withdrawn",
+  BeingAdded: "documents:status.BeingAdded",
+  BeingChecked: "documents:status.BeingChecked",
+  WaitingToBeScheduled: "documents:status.WaitingToBeScheduled",
+  Scheduled: "documents:status.Scheduled",
+  Available: "documents:status.Available",
+  OnHold: "documents:status.OnHold",
+  NotAvailable: "documents:status.NotAvailable",
 } as const satisfies Record<PublicStatus, string>;
 
 const decisionLabels = {
-  Pending: "Pending",
-  Approved: "Approved",
-  Denied: "Denied",
-  Withdrawn: "Withdrawn",
+  Pending: "documents:decision.Pending",
+  Approved: "documents:decision.Approved",
+  Denied: "documents:decision.Denied",
+  Withdrawn: "documents:decision.Withdrawn",
 } as const satisfies Record<AskDecision, string>;
 
 const progressLabels = {
-  Enqueued: "Being added",
-  IngestFailed: "Could not be added",
-  Ready: "Ready",
-  Planned: "Planned",
-  InProgress: "In progress",
-  Digitized: "Digitized",
-  Published: "Published",
+  Enqueued: "documents:progress.Enqueued",
+  IngestFailed: "documents:progress.IngestFailed",
+  Ready: "documents:progress.Ready",
+  Planned: "documents:progress.Planned",
+  InProgress: "documents:progress.InProgress",
+  Digitized: "documents:progress.Digitized",
+  Published: "documents:progress.Published",
 } as const satisfies Record<Progress, string>;
 
 const validationLabels = {
-  Needed: "Needed",
-  Denied: "Denied",
-  Approved: "Approved",
-  NotRequired: "Not required",
+  Needed: "documents:validation.Needed",
+  Denied: "documents:validation.Denied",
+  Approved: "documents:validation.Approved",
+  NotRequired: "documents:validation.NotRequired",
 } as const satisfies Record<Validation, string>;
 
 const priorityLabels = {
-  Urgent: "Urgent",
-  High: "High",
-  Normal: "Normal",
-  Low: "Low",
+  Urgent: "documents:priority.Urgent",
+  High: "documents:priority.High",
+  Normal: "documents:priority.Normal",
+  Low: "documents:priority.Low",
 } as const satisfies Record<Priority, string>;
 
 export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
@@ -76,76 +75,76 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
   fields: [
     {
       key: "statuses",
-      label: "Status",
+      label: "documents:field.status",
       field: vocabulary(publicStatuses, publicStatusLabels),
       isQuick: true,
       audience: "public",
     },
     {
       key: "decisions",
-      label: "Decision",
+      label: "documents:field.decision",
       field: vocabulary(askDecisions, decisionLabels),
       isQuick: true,
       audience: "staff",
     },
     {
       key: "progress",
-      label: "Progress",
+      label: "documents:field.progress",
       field: vocabulary(progressValues, progressLabels),
       isQuick: true,
       audience: "staff",
     },
     {
       key: "validations",
-      label: "Validation",
+      label: "documents:field.validation",
       field: vocabulary(validations, validationLabels),
       audience: "staff",
     },
     {
       key: "forbidden",
-      label: "Forbidden",
+      label: "documents:field.forbidden",
       field: vocabulary(answers, answerLabels),
       audience: "staff",
     },
     {
       key: "cancelled",
-      label: "Cancelled",
+      label: "documents:field.cancelled",
       field: vocabulary(answers, answerLabels),
       audience: "staff",
     },
     {
       key: "categoryIds",
-      label: "Category",
+      label: "documents:field.category",
       field: { kind: "reference", reference: "categories" },
       audience: "staff",
     },
     {
       key: "projectIds",
-      label: "Project",
+      label: "documents:field.project",
       field: { kind: "reference", reference: "projects" },
       audience: "staff",
     },
     {
       key: "priorities",
-      label: "Priority",
+      label: "documents:field.priority",
       field: vocabulary(priorities.toReversed(), priorityLabels),
       audience: "staff",
     },
     {
       key: "existingCopies",
-      label: "Existing copy",
+      label: "documents:field.existingCopy",
       field: vocabulary(existingCopyStates.toReversed(), existingCopyLabels),
       audience: "staff",
     },
     {
       key: "askerIds",
-      label: "Asked by",
+      label: "documents:field.askedBy",
       field: { kind: "reference", reference: "users" },
       audience: "staff",
     },
     {
       key: "pages",
-      label: "Pages",
+      label: "documents:field.pages",
       field: {
         kind: "numberRange",
         unit: "pages",
@@ -155,14 +154,14 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
     },
     {
       key: "asked",
-      label: "Asked",
+      label: "documents:field.asked",
       field: { kind: "dateRange" },
       audience: "staff",
     },
   ],
   groupings: [
-    { value: "batch", label: "Group by batch" },
-    { value: "project", label: "Group by project" },
+    { value: "batch", label: "documents:grouping.batch" },
+    { value: "project", label: "documents:grouping.project" },
   ],
   groupingParam: documentGroupingParam,
 };

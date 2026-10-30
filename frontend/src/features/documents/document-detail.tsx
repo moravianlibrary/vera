@@ -8,7 +8,7 @@
 // Its acts sit beside the heading (document-actions.tsx); a requester's is withdrawing their ask.
 // TODO(rrandiak): Ask for this too; Retry and Raw payload on Adding, Message on
 // Digitization and Open in catalog; the cards' links check grants at any scope, not against
-// custody or project; labels move to i18n.
+// custody or project.
 
 import type { DocumentDetail } from "@vera/contract/documents";
 import type { Publication } from "@vera/contract/iterations";
@@ -37,6 +37,7 @@ import {
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { z } from "zod";
 import { makeLinkPrimary, removeLink, replaceLink } from "@/api/iterations";
@@ -80,7 +81,9 @@ import {
   useProjectsQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 import { joinDetails } from "@/lib/join-details";
 import type { StatusNote as StatusNoteParts } from "@/lib/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/lib/status-notes";
@@ -93,6 +96,7 @@ interface DocumentDetailPaneProps {
 }
 
 export function DocumentDetailPane({ detail, session }: DocumentDetailPaneProps) {
+  useTranslation("documents");
   return (
     <article className="@container max-w-5xl">
       {detail.audience === "staff" ? (
@@ -174,7 +178,7 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
   const { data: categories = [] } = useCategoriesQuery();
   const status = recordStatusOf(record);
   const statusStat: Stat = {
-    label: "Status",
+    label: i18n.t("field.status", { ns: "documents" }),
     value: status === null ? "—" : <StatusBadge status={status} />,
     isText: true,
   };
@@ -182,7 +186,15 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
 
   if (current === null) {
     const askerCount = new Set(record.requests.map((request) => request.requesterId)).size;
-    return <StatTiles stats={[statusStat, { label: "Askers", value: askerCount }, where]} />;
+    return (
+      <StatTiles
+        stats={[
+          statusStat,
+          { label: i18n.t("list.askers", { ns: "documents" }), value: askerCount },
+          where,
+        ]}
+      />
+    );
   }
 
   const pages = effectivePageCount(record.document);
@@ -193,15 +205,30 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
     <StatTiles
       stats={[
         statusStat,
-        { label: "Category", value: categoryPath || current.categoryId, isText: true },
-        { label: "Priority", value: <PriorityBadge priority={current.priority} />, isText: true },
         {
-          label: "Page count",
-          value: pages === null ? "—" : pages.value.toLocaleString("en-GB"),
-          foot: pages === null ? "no source answered" : `${pages.source} · tier ${pages.tier}`,
+          label: i18n.t("field.category", { ns: "documents" }),
+          value: categoryPath || current.categoryId,
+          isText: true,
+        },
+        {
+          label: i18n.t("field.priority", { ns: "documents" }),
+          value: <PriorityBadge priority={current.priority} />,
+          isText: true,
+        },
+        {
+          label: i18n.t("detail.pageCount", { ns: "documents" }),
+          value: pages === null ? "—" : formatCount(pages.value),
+          foot:
+            pages === null
+              ? i18n.t("detail.noPageSource", { ns: "documents" })
+              : i18n.t("detail.pageSource", {
+                  ns: "documents",
+                  source: pages.source,
+                  tier: pages.tier,
+                }),
         },
         where,
-        { label: "Iteration", value: current.attempt },
+        { label: i18n.t("detail.iteration", { ns: "documents" }), value: current.attempt },
       ]}
     />
   );
@@ -209,18 +236,18 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
 
 // The view whose queue holds it, as a link only for whoever may open that view.
 function whereNowOf(record: DocumentRecord, session: Session): Stat {
-  const label = "Where it is now";
+  const label = i18n.t("detail.whereNow", { ns: "documents" });
   const desk = deskOf(record);
   if (desk === null) {
-    return { label, value: "Nobody", isText: true };
+    return { label, value: i18n.t("detail.nobody", { ns: "documents" }), isText: true };
   }
 
   if (desk === "documents") {
     const isFailed = currentIterationOf(record)?.progress === "IngestFailed";
     return {
       label,
-      value: "Here",
-      foot: isFailed ? "ingest failed" : "being added",
+      value: i18n.t("detail.here", { ns: "documents" }),
+      foot: i18n.t(isFailed ? "detail.ingestFailed" : "detail.beingAdded", { ns: "documents" }),
       isText: true,
     };
   }
@@ -258,7 +285,7 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
   const denial = iteration.verdicts.findLast((verdict) => verdict.verdict === "Denied");
   return (
     <DetailCard
-      title={`Defects — ${outstanding.length} outstanding`}
+      title={i18n.t("detail.defects", { ns: "documents", count: outstanding.length })}
       action={
         hasPermission(session, "validation.approve") && (
           <Button asChild size="sm" variant="outline">
@@ -281,8 +308,10 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
       ))}
       {validation === "Denied" && (
         <FinePrint>
-          <b>Denied in review</b>
-          {denial === undefined ? "" : `: ${denial.note}`}
+          <b>{i18n.t("detail.deniedInReview", { ns: "documents" })}</b>
+          {denial === undefined
+            ? ""
+            : i18n.t("detail.denialNote", { ns: "documents", note: denial.note })}
         </FinePrint>
       )}
     </DetailCard>
@@ -314,21 +343,21 @@ function AddingCard({
   const isFailed = iteration.progress === "IngestFailed";
   const canRetry = hasPermission(session, "request.retry");
   const ingest = isFailed ? (
-    <ToneBadge tone="red">Failed</ToneBadge>
+    <ToneBadge tone="red">{i18n.t("detail.failed", { ns: "documents" })}</ToneBadge>
   ) : iteration.progress === "Enqueued" ? (
-    <ToneBadge tone="slate">Waiting</ToneBadge>
+    <ToneBadge tone="slate">{i18n.t("detail.waiting", { ns: "documents" })}</ToneBadge>
   ) : (
-    <ToneBadge tone="green">Ingested</ToneBadge>
+    <ToneBadge tone="green">{i18n.t("detail.ingested", { ns: "documents" })}</ToneBadge>
   );
 
   return (
-    <DetailCard title="Adding">
+    <DetailCard title={i18n.t("detail.adding", { ns: "documents" })}>
       <FactGrid
         facts={[
           ...(isShown
             ? [
                 {
-                  label: "Batch",
+                  label: i18n.t("detail.batch", { ns: "documents" }),
                   value: (
                     <>
                       <span className="font-mono">{batch.id}</span> <Muted>{batch.name}</Muted>
@@ -338,16 +367,23 @@ function AddingCard({
               ]
             : []),
           {
-            label: "Submitted",
+            label: i18n.t("detail.submitted", { ns: "documents" }),
             value: joinDetails([formatDay(batch.submittedAt), nameOf(batch.submittedBy)]),
           },
-          { label: "Ingest", value: ingest },
-          { label: "Attempts", value: iteration.ingestFailure?.attempts ?? 1 },
+          { label: i18n.t("detail.ingest", { ns: "documents" }), value: ingest },
+          {
+            label: i18n.t("detail.attempts", { ns: "documents" }),
+            value: iteration.ingestFailure?.attempts ?? 1,
+          },
         ]}
       />
       {isFailed && (
-        <StatusNote tone="red" className="mt-3" title="Could not be added">
-          {iteration.ingestFailure?.error ?? "the error is not recorded."}
+        <StatusNote
+          tone="red"
+          className="mt-3"
+          title={i18n.t("detail.couldNotBeAdded", { ns: "documents" })}
+        >
+          {iteration.ingestFailure?.error ?? i18n.t("detail.errorNotRecorded", { ns: "documents" })}
         </StatusNote>
       )}
       {isFailed && canRetry && !isShown && (
@@ -357,15 +393,9 @@ function AddingCard({
       )}
       {isFailed && !canRetry && (
         <FinePrint>
-          Only a curator in its custody or an administrator can retry{" "}
-          {isShown ? (
-            <>
-              batch <b className="font-mono">{batch.id}</b>
-            </>
-          ) : (
-            "it"
-          )}
-          .
+          {isShown
+            ? i18n.t("detail.retryPermissionBatch", { ns: "documents", id: batch.id })
+            : i18n.t("detail.retryPermissionIt", { ns: "documents" })}
         </FinePrint>
       )}
     </DetailCard>
@@ -403,16 +433,18 @@ function DigitizationCard({
 
   const facts: Fact[] = [
     {
-      label: "Progress",
+      label: i18n.t("field.progress", { ns: "documents" }),
       value: (
         <>
-          {iteration.progress}
-          {cancellation !== null && <Muted> · held here</Muted>}
+          {i18n.t(`progress.${iteration.progress}`, { ns: "documents" })}
+          {cancellation !== null && (
+            <Muted> · {i18n.t("detail.heldHere", { ns: "documents" })}</Muted>
+          )}
         </>
       ),
     },
     {
-      label: "Project",
+      label: i18n.t("field.project", { ns: "documents" }),
       value:
         project === undefined ? (
           "—"
@@ -428,7 +460,7 @@ function DigitizationCard({
         ),
     },
     {
-      label: "List",
+      label: i18n.t("detail.list", { ns: "documents" }),
       value:
         list !== undefined ? (
           <>
@@ -444,17 +476,17 @@ function DigitizationCard({
             </Muted>
           </>
         ) : (
-          (iteration.formerListName ?? "not on a list")
+          (iteration.formerListName ?? i18n.t("detail.notOnAList", { ns: "documents" }))
         ),
     },
   ];
 
   if (isProgressAtLeast(iteration.progress, "Digitized")) {
     facts.push({
-      label: "Available at",
+      label: i18n.t("detail.availableAt", { ns: "documents" }),
       value:
         iteration.links.length === 0 ? (
-          <Muted>not set yet — setting it makes it Published</Muted>
+          <Muted>{i18n.t("detail.notSetPublishing", { ns: "documents" })}</Muted>
         ) : (
           <div className="grid gap-3">
             {[...iteration.links]
@@ -471,14 +503,16 @@ function DigitizationCard({
                       {link.url.replace(/^https?:\/\//, "")}
                     </a>
                     {iteration.links.length > 1 && link.isPrimary && (
-                      <ToneBadge tone="purple">primary</ToneBadge>
+                      <ToneBadge tone="purple">
+                        {i18n.t("detail.primary", { ns: "documents" })}
+                      </ToneBadge>
                     )}
                   </div>
                   <Muted>
                     {link.instanceId === null
-                      ? "web address"
+                      ? i18n.t("detail.webAddress", { ns: "documents" })
                       : (pluginInstances.find((instance) => instance.id === link.instanceId)
-                          ?.name ?? "plugin")}
+                          ?.name ?? i18n.t("detail.plugin", { ns: "documents" }))}
                     {" · "}
                     {nameOf(link.setBy)}
                     {" · "}
@@ -495,13 +529,15 @@ function DigitizationCard({
   }
 
   facts.push({
-    label: "Cancelled",
+    label: i18n.t("detail.cancelled", { ns: "documents" }),
     value:
       cancellation === null ? (
-        <Muted>no</Muted>
+        <Muted>{i18n.t("detail.no", { ns: "documents" })}</Muted>
       ) : (
         joinDetails([
-          cancellation.cause === "Decided" ? "yes" : "could not be digitized",
+          cancellation.cause === "Decided"
+            ? i18n.t("detail.yes", { ns: "documents" })
+            : i18n.t("detail.couldNotDigitize", { ns: "documents" }),
           `${nameOf(cancellation.actorId)}, ${formatDay(cancellation.at)}`,
         ])
       ),
@@ -513,11 +549,11 @@ function DigitizationCard({
     list !== undefined && messageChannels.length > 0 && list.createdBy !== session.user.id;
   return (
     <DetailCard
-      title="Digitization"
+      title={i18n.t("detail.digitization", { ns: "documents" })}
       action={
         canMessageAuthor ? (
           <Button size="sm" variant="outline" onClick={() => setIsMessaging(true)}>
-            Message list author…
+            {i18n.t("detail.messageListAuthor", { ns: "documents" })}
           </Button>
         ) : undefined
       }
@@ -529,7 +565,7 @@ function DigitizationCard({
           onClose={() => setIsMessaging(false)}
           subject={{ kind: "listedItem", id: iteration.id }}
           label={title}
-          recipientLabel="who made the list"
+          recipientLabel={i18n.t("detail.listAuthor", { ns: "documents" })}
         />
       )}
     </DetailCard>
@@ -552,23 +588,29 @@ function PublicationLinkActions({
     call: () => makeLinkPrimary(iteration.id, link.id),
     invalidates: iterationInvalidations,
     act: "ACT-link-primary",
-    refusalTexts: { 404: "That link is gone.", 409: "It is already the primary link." },
+    refusalTexts: {
+      404: i18n.t("detail.linkGone", { ns: "documents" }),
+      409: i18n.t("detail.alreadyPrimary", { ns: "documents" }),
+    },
   });
   const replacement = useActionMutation({
     call: (publication: Publication) => replaceLink(iteration.id, link.id, publication),
     invalidates: iterationInvalidations,
     act: "ACT-link-replace",
     refusalTexts: {
-      404: "That link is gone.",
-      "iteration.link_unread": "That is no web address, and no Link plugin reads it as a PID.",
-      422: "That link is already there.",
+      404: i18n.t("detail.linkGone", { ns: "documents" }),
+      "iteration.link_unread": i18n.t("actions.linkUnread", { ns: "documents" }),
+      422: i18n.t("actions.linkExists", { ns: "documents" }),
     },
   });
   const removal = useActionMutation({
     call: () => removeLink(iteration.id, link.id),
     invalidates: iterationInvalidations,
     act: "ACT-link-remove",
-    refusalTexts: { 404: "That link is gone.", 409: "The last link stays; replace it instead." },
+    refusalTexts: {
+      404: i18n.t("detail.linkGone", { ns: "documents" }),
+      409: i18n.t("detail.lastLink", { ns: "documents" }),
+    },
   });
   const oldest = iteration.links
     .filter((candidate) => candidate.id !== link.id)
@@ -585,7 +627,7 @@ function PublicationLinkActions({
             setPrimaryRefusal(result.isDone ? null : result.refusal.message);
           }}
         >
-          Make primary
+          {i18n.t("detail.makePrimary", { ns: "documents" })}
         </Button>
       )}
       {primaryRefusal !== null && (
@@ -594,25 +636,33 @@ function PublicationLinkActions({
         </p>
       )}
       <Button size="sm" variant="outline" onClick={() => setIsReplacing(true)}>
-        Replace link…
+        {i18n.t("detail.replaceLinkAction", { ns: "documents" })}
       </Button>
       {iteration.links.length > 1 && (
         <Button size="sm" variant="outline" onClick={() => setIsRemoving(true)}>
-          Remove link…
+          {i18n.t("detail.removeLinkAction", { ns: "documents" })}
         </Button>
       )}
       <FormDialog
         isOpen={isReplacing}
         onClose={() => setIsReplacing(false)}
-        title={`Replace link — ${title}`}
-        description="Enter the new address for this link."
-        schema={z.object({ link: z.string().trim().min(1, "Enter where the scan opens") })}
+        title={i18n.t("detail.replaceLinkTitle", { ns: "documents", title })}
+        description={i18n.t("detail.enterNewAddress", { ns: "documents" })}
+        schema={z.object({
+          link: z
+            .string()
+            .trim()
+            .min(1, { error: () => i18n.t("actions.enterScanAddress", { ns: "documents" }) }),
+        })}
         defaultValues={{ link: link.url }}
-        submitLabel="Replace link"
+        submitLabel={i18n.t("detail.replaceLink", { ns: "documents" })}
         onSubmit={(values) => replacement.run(values)}
         render={(form) => (
           <>
-            <Field id={`replace-link-${link.id}`} label="Link">
+            <Field
+              id={`replace-link-${link.id}`}
+              label={i18n.t("detail.link", { ns: "documents" })}
+            >
               <Input id={`replace-link-${link.id}`} {...form.register("link")} />
             </Field>
             <FieldError message={form.formState.errors.link?.message} />
@@ -622,15 +672,22 @@ function PublicationLinkActions({
       <ConsequenceDialog
         isOpen={isRemoving}
         onClose={() => setIsRemoving(false)}
-        title="Remove link?"
-        description="This link will no longer be available from the record."
+        title={i18n.t("detail.removeLink", { ns: "documents" })}
+        description={i18n.t("detail.removeLinkDescription", { ns: "documents" })}
         consequences={[
-          { text: "The link is removed." },
+          { text: i18n.t("detail.linkRemoved", { ns: "documents" }) },
           ...(link.isPrimary && oldest
-            ? [{ text: `${oldest.url.replace(/^https?:\/\//, "")} becomes primary.` }]
+            ? [
+                {
+                  text: i18n.t("detail.becomesPrimary", {
+                    ns: "documents",
+                    url: oldest.url.replace(/^https?:\/\//, ""),
+                  }),
+                },
+              ]
             : []),
         ]}
-        confirmLabel="Remove link"
+        confirmLabel={i18n.t("detail.removeLinkConfirm", { ns: "documents" })}
         isDestructive
         onConfirm={() => removal.run(undefined)}
       />
@@ -645,15 +702,22 @@ function EarlierCard({ record }: { record: DocumentRecord }) {
   }
 
   return (
-    <DetailCard title={`Earlier iterations — ${earlier.length}`}>
+    <DetailCard
+      title={i18n.t("detail.earlierIterations", { ns: "documents", count: earlier.length })}
+    >
       {earlier.map((iteration) => (
         <DetailRow key={iteration.id} aside={<StatusBadge status={iterationStatusOf(iteration)} />}>
-          <b className="font-semibold">Iteration {iteration.attempt}</b>{" "}
+          <b className="font-semibold">
+            {i18n.t("detail.iterationNumber", { ns: "documents", count: iteration.attempt })}
+          </b>{" "}
           <Muted>
             {joinDetails([
               iteration.formerListName,
               iteration.scanDpi === null ? null : `${iteration.scanDpi} dpi`,
-              `digitized ${iteration.digitizedAt === null ? "—" : formatDay(iteration.digitizedAt)}`,
+              i18n.t("detail.digitizedAt", {
+                ns: "documents",
+                day: iteration.digitizedAt === null ? "—" : formatDay(iteration.digitizedAt),
+              }),
             ])}
           </Muted>
         </DetailRow>
@@ -679,7 +743,11 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
         <RecordHeading
           title={document.title}
           identifier={documentIdentifierOf(document)}
-          details={[latest === undefined ? null : `asked ${formatDay(latest.at)}`]}
+          details={[
+            latest === undefined
+              ? null
+              : i18n.t("detail.askedAt", { ns: "documents", day: formatDay(latest.at) }),
+          ]}
         />
         <DocumentActions record={record} session={session} isOwn className="mb-4" />
       </div>
@@ -687,20 +755,20 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
       <StatTiles
         stats={[
           {
-            label: "Status",
+            label: i18n.t("field.status", { ns: "documents" }),
             value: status === null ? "—" : <StatusBadge status={status} />,
             isText: true,
           },
           {
-            label: "Asked",
+            label: i18n.t("field.asked", { ns: "documents" }),
             value: latest === undefined ? "—" : formatDay(latest.at),
             isText: true,
           },
           {
-            label: "Read it",
+            label: i18n.t("detail.readIt", { ns: "documents" }),
             value:
               readingLink === null ? (
-                "Not yet"
+                i18n.t("detail.notYet", { ns: "documents" })
               ) : (
                 <a
                   href={readingLink.url}
@@ -719,9 +787,9 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
 
       <div className="mt-4 grid gap-4">
         {latest !== undefined && latest.reason !== null && (
-          <DetailCard title="Why I asked">
+          <DetailCard title={i18n.t("detail.whyIAsked", { ns: "documents" })}>
             <p>{latest.reason}</p>
-            <FinePrint>Only you and the curator deciding read this.</FinePrint>
+            <FinePrint>{i18n.t("detail.askReasonPrivacy", { ns: "documents" })}</FinePrint>
           </DetailCard>
         )}
         <PropertiesCard record={record} audience="public" nameOf={() => ""} />
@@ -757,7 +825,12 @@ function RecordNote({
   const title: ReactNode =
     note.actedBy === null
       ? note.title
-      : `${note.title} by ${nameOf(note.actedBy.actorId)}, ${formatDay(note.actedBy.at)}`;
+      : i18n.t("detail.noteActedBy", {
+          ns: "documents",
+          title: note.title,
+          name: nameOf(note.actedBy.actorId),
+          day: formatDay(note.actedBy.at),
+        });
   return (
     <StatusNote tone={note.tone} title={title} className="mb-4">
       {note.text}
