@@ -28,7 +28,7 @@ import {
 import { listGroups } from "@/api/reference";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntries } from "./legacy-log-test";
+import { eventEntries } from "./event-entries-test";
 
 const server = setupServer();
 

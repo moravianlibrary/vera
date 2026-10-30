@@ -23,7 +23,7 @@ import {
 } from "@/api/validations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntry } from "./legacy-log-test";
+import { eventEntry } from "./event-entries-test";
 
 const server = setupServer();
 

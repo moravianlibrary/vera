@@ -1,4 +1,4 @@
-import { eventEntry } from "./legacy-log-test";
+import { eventEntry } from "./event-entries-test";
 // The Documents resource end to end: typed API calls against the mock server over HTTP, as the
 // views will make them, for a requester and for a curator.
 
@@ -9,7 +9,6 @@ import {
   parseDocumentSearchParams,
   toDocumentSearchParams,
 } from "@vera/contract/documents";
-import { isLegacyEntry } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument, listDocuments } from "@/api/documents";
@@ -47,9 +46,9 @@ describe("listDocuments as a reader", () => {
     try {
       signInAs("reader");
       const detail = await findDocument(request.documentId);
-      const result = detail?.log.find((entry) => !isLegacyEntry(entry) && entry.id === event.id);
+      const result = detail?.log.find((entry) => entry.id === event.id);
       expect(result).toBeDefined();
-      if (result === undefined || isLegacyEntry(result)) return;
+      if (result === undefined) return;
       expect(result.data).toBeNull();
       expect(result.reason.internal).toBeNull();
       expect(result.reason.public).toBe("Received");

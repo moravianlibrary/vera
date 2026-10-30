@@ -14,7 +14,6 @@ import type {
   StatusLogEntry,
   User,
 } from "@vera/domain/entities";
-import { isLegacyEntry } from "@vera/domain/entities";
 import type { SourcedValue } from "@vera/domain/properties";
 import { valuesOf } from "@vera/domain/properties";
 import { ArrowUpRight } from "lucide-react";
@@ -350,34 +349,17 @@ export function CatalogCard({
   );
 }
 
-interface HistoryAsk {
-  key: string;
-  at: string;
-  actor: Actor;
-}
-
-// The status log, with the asks of a document's record that it does not hold, newest first. A
-// record that is not a document, such as a list, has only its log.
+// The status log, newest first.
 export function HistoryCard({
-  record,
   log,
   nameOf,
   isPublic,
 }: {
-  record?: DocumentRecord;
   log: readonly StatusLogEntry[];
   nameOf: (userId: string) => string;
   isPublic: boolean;
 }) {
-  const asks: HistoryAsk[] = (record?.requests ?? []).map((request) => ({
-    key: `asked-${request.id}`,
-    at: request.at,
-    actor: { kind: "user", userId: request.requesterId },
-  }));
-  const events = [
-    ...log.map((entry) => ({ key: entry.id, at: entry.at, actor: entry.actor, entry })),
-    ...asks.map((ask) => ({ ...ask, entry: null })),
-  ].toSorted((first, second) => second.at.localeCompare(first.at));
+  const events = log.toSorted((first, second) => second.at.localeCompare(first.at));
   const actorName = (actor: Actor) =>
     actor.kind === "user" ? nameOf(actor.userId) : actor.kind === "system" ? "System" : null;
 
@@ -386,37 +368,28 @@ export function HistoryCard({
       {events.length === 0 && <Muted>Nothing recorded yet.</Muted>}
       {events.map((entry) => (
         <DetailRow
-          key={entry.key}
+          key={entry.id}
           aside={
             <Muted>
               {joinDetails([formatDay(entry.at), isPublic ? null : actorName(entry.actor)])}
             </Muted>
           }
         >
-          {entry.entry === null ? (
-            <b className="font-semibold">Asked for</b>
-          ) : isLegacyEntry(entry.entry) ? (
-            <>
-              <b className="font-semibold">{entry.entry.event}</b>
-              {!isPublic && entry.entry.detail !== null && (
-                <div className="text-muted-foreground">{entry.entry.detail}</div>
-              )}
-            </>
-          ) : isPublic ? (
-            <b className="font-semibold">{publicWordingOf(entry.entry.code)}</b>
+          {isPublic ? (
+            <b className="font-semibold">{publicWordingOf(entry.code)}</b>
           ) : (
             (() => {
-              const wording = wordingOf(entry.entry, nameOf);
+              const wording = wordingOf(entry, nameOf);
               return (
                 <>
                   <b className="font-semibold">{wording.title}</b>
                   {wording.line && <div className="text-muted-foreground">{wording.line}</div>}
-                  {entry.entry.reason.internal && (
-                    <div className="text-muted-foreground">{entry.entry.reason.internal}</div>
+                  {entry.reason.internal && (
+                    <div className="text-muted-foreground">{entry.reason.internal}</div>
                   )}
-                  {entry.entry.reason.public && (
+                  {entry.reason.public && (
                     <div className="text-muted-foreground">
-                      Told the asker: {entry.entry.reason.public}
+                      Told the asker: {entry.reason.public}
                     </div>
                   )}
                 </>

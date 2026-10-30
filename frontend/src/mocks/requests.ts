@@ -31,6 +31,7 @@ import type {
   Session,
   StatusLogEntry,
 } from "@vera/domain/entities";
+import { oncePerCause } from "@vera/domain/events";
 import { hasPermission, isWithinScope, scopesOf } from "@vera/domain/permissions";
 import { scopeOfProject } from "@vera/domain/projects";
 import type { RequestRow } from "@vera/domain/requests";
@@ -53,7 +54,7 @@ import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";
 import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
-import { oncePerCause, publicPropertiesOf } from "@/mocks/documents";
+import { publicPropertiesOf } from "@/mocks/documents";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/request-custodies";
 import type { Outcome } from "@/mocks/mutations";

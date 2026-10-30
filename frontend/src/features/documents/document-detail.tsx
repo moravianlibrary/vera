@@ -163,7 +163,7 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
         )}
         <CatalogCard document={document} nameOf={nameOf} />
         <PropertiesCard record={record} audience="staff" nameOf={nameOf} />
-        <HistoryCard record={record} log={log} nameOf={nameOf} isPublic={false} />
+        <HistoryCard log={log} nameOf={nameOf} isPublic={false} />
       </div>
     </>
   );
@@ -725,7 +725,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
           </DetailCard>
         )}
         <PropertiesCard record={record} audience="public" nameOf={() => ""} />
-        <HistoryCard record={record} log={log} nameOf={() => ""} isPublic />
+        <HistoryCard log={log} nameOf={() => ""} isPublic />
       </div>
     </>
   );

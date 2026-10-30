@@ -26,7 +26,7 @@ import {
 } from "@/api/lists";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntries, eventEntry } from "./legacy-log-test";
+import { eventEntries, eventEntry } from "./event-entries-test";
 
 const server = setupServer();
 

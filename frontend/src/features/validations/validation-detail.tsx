@@ -230,12 +230,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
           audience="staff"
           nameOf={nameOf}
         />
-        <HistoryCard
-          record={{ document, iterations: [iteration], requests: [] }}
-          log={log}
-          nameOf={nameOf}
-          isPublic={false}
-        />
+        <HistoryCard log={log} nameOf={nameOf} isPublic={false} />
       </div>
 
       {more.dialogs}

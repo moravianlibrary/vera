@@ -10,7 +10,6 @@ import {
   parseRequestSearchParams,
   toRequestSearchParams,
 } from "@vera/contract/requests";
-import { isLegacyEntry } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
@@ -235,12 +234,11 @@ function approvalEntryOf(documentId: string) {
   const request = database.requests.find((candidate) => candidate.documentId === documentId);
   const entry = database.statusLog.find(
     (entry) =>
-      !isLegacyEntry(entry) &&
       entry.subjectKind === "request" &&
       entry.subjectId === request?.id &&
       entry.code === "request.approved",
   );
-  return entry !== undefined && !isLegacyEntry(entry) ? entry : undefined;
+  return entry;
 }
 
 describe("deciding", () => {

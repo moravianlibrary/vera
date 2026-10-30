@@ -132,7 +132,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
         <CopiesCard record={record} nameOf={nameOf} />
         <CatalogCard document={document} nameOf={nameOf} />
         <PropertiesCard record={record} audience="staff" nameOf={nameOf} />
-        <HistoryCard record={record} log={log} nameOf={nameOf} isPublic={false} />
+        <HistoryCard log={log} nameOf={nameOf} isPublic={false} />
       </div>
 
       <MessageDialog

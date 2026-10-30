@@ -20,7 +20,7 @@ import {
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntries, eventEntry } from "./legacy-log-test";
+import { eventEntries, eventEntry } from "./event-entries-test";
 
 const server = setupServer();
 

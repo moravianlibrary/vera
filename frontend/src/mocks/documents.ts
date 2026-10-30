@@ -40,10 +40,9 @@ import type {
   Session,
   StatusLogEntry,
 } from "@vera/domain/entities";
-import { isLegacyEntry } from "@vera/domain/entities";
 import {
   isPublicEntry,
-  oncePerCause as oncePerEventCause,
+  oncePerCause,
   publicEntryOf,
   withoutIngestError as withoutEventIngestError,
 } from "@vera/domain/events";
@@ -600,70 +599,9 @@ function logOf(record: DocumentRecord, session: Session, audience: Audience): St
     return oncePerCause(
       hasPermission(session, "request.read_ingest")
         ? entries
-        : entries.map((entry) =>
-            isLegacyEntry(entry)
-              ? isIngestEvent(entry)
-                ? { ...entry, detail: null }
-                : entry
-              : withoutEventIngestError(entry),
-          ),
+        : entries.map(withoutEventIngestError),
     );
   }
 
-  return entries.flatMap<StatusLogEntry>((entry) => {
-    if (isLegacyEntry(entry)) {
-      const event = publicEventOf(entry.event);
-      return event === null
-        ? []
-        : [
-            {
-              ...entry,
-              event,
-              actor: entry.actor.kind === "system" ? entry.actor : { kind: "undisclosed" },
-              detail: null,
-            },
-          ];
-    }
-    return isPublicEntry(entry) ? [publicEntryOf(entry)] : [];
-  });
-}
-
-// One decision on several asks is written once per ask, so each asker's history holds it; staff
-// read it once.
-export function oncePerCause(entries: readonly StatusLogEntry[]): StatusLogEntry[] {
-  const eventEntries = entries.filter(
-    (entry): entry is import("@vera/domain/events").EventEntry => !isLegacyEntry(entry),
-  );
-  const uniqueEvents = new Set(oncePerEventCause(eventEntries).map((entry) => entry.id));
-  const seen = new Set<string>();
-  return entries.filter((entry) => {
-    if (!isLegacyEntry(entry)) return uniqueEvents.has(entry.id);
-    const cause = `${entry.correlationId}|${entry.event}`;
-    if (seen.has(cause)) {
-      return false;
-    }
-
-    seen.add(cause);
-    return true;
-  });
-}
-
-function isIngestEvent(entry: StatusLogEntry): boolean {
-  return isLegacyEntry(entry) && entry.event.startsWith("Ingest");
-}
-
-// A requester reads their request's story in plain language (status-log.md §7): what moved it
-// forward or held it, never the checks, retries and corrections behind it.
-// TODO(rrandiak): carry the public wording on the event codes once the log contract exists.
-const publicEvents = [
-  { prefix: "Approved", wording: "Accepted" },
-  { prefix: "Declined", wording: "Not accepted" },
-  { prefix: "Forbidden", wording: "Not available for digitization" },
-  { prefix: "Cancelled", wording: "On hold" },
-  { prefix: "Digitized", wording: "Digitized" },
-  { prefix: "Published", wording: "Available to read" },
-] as const;
-
-function publicEventOf(event: string): string | null {
-  return publicEvents.find((entry) => event.startsWith(entry.prefix))?.wording ?? null;
+  return entries.filter(isPublicEntry).map(publicEntryOf);
 }
