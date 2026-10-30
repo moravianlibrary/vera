@@ -21,7 +21,7 @@ import {
   timeLabelOf,
 } from "@/features/projects/projects-view";
 import { i18n } from "@/i18n";
-import { formatCount } from "@/lib/format-number";
+import { formatPages } from "@/lib/format-number";
 
 interface ProjectCardProps {
   row: ProjectRow;
@@ -120,7 +120,7 @@ function ProjectFoot({ row }: { row: ProjectRow }) {
           part:
             waiting.itemCount === 0 ? null : (
               <>
-                <b className="font-medium text-foreground">{formatCount(waiting.pages)} pp</b>{" "}
+                <b className="font-medium text-foreground">{formatPages(waiting.pages)}</b>{" "}
                 {t("projectCard.approvedNotListed")}
               </>
             ),

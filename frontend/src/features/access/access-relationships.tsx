@@ -9,8 +9,11 @@ import {
 import { Link } from "react-router";
 import type { AccessNames } from "@/features/access/access-records";
 import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";
+import { i18n } from "@/i18n";
 
 type Kind = "users" | "roles" | "groups" | "custodies" | "categories";
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 export interface RelationshipSelection {
   kind: Kind;
   id: string;
@@ -39,49 +42,57 @@ export function AccessRelationships({
     const user = index.users.find((item) => item.id === selected.id);
     if (user) {
       add(
-        "Roles",
+        message("relationships.roles"),
         heldRolesOf(user).map(({ roleId, ways }) => ({
           kind: "roles",
           id: roleId,
           title: names.role(roleId),
           source: ways
             .map((way) =>
-              way.by === "hand" ? "by hand" : `mapped by ${names.instance(way.instanceId)}`,
+              way.by === "hand"
+                ? message("relationships.byHand")
+                : message("relationships.mappedBy", { name: names.instance(way.instanceId) }),
             )
             .join(" · "),
         })),
       );
       add(
-        "Groups",
+        message("relationships.groups"),
         user.groupIds.map((id) => ({
           kind: "groups",
           id,
           title: names.group(id),
-          source: "member",
+          source: message("relationships.member"),
         })),
       );
       add(
-        "Request custody sets",
+        message("relationships.requestCustodySets"),
         requestCustodyOf(user.id, index.groups, index.custodies).map(({ custodyId, via }) => ({
           kind: "custodies",
           id: custodyId,
           title: names.custody(custodyId),
-          source: via === null ? "direct member" : `via ${names.group(via)}`,
+          source:
+            via === null
+              ? message("relationships.directMember")
+              : message("relationships.viaGroup", { name: names.group(via) }),
         })),
       );
       add(
-        "Category custody",
+        message("relationships.categoryCustody"),
         categoryCustodyOf(user.id, index.groups, index.categoryMemberships).map(
           ({ categoryId, via }) => ({
             kind: "categories",
             id: categoryId,
             title: categoryPath(index, categoryId),
-            source: via === null ? "direct" : `via ${names.group(via)}`,
+            source:
+              via === null
+                ? message("relationships.direct")
+                : message("relationships.viaGroup", { name: names.group(via) }),
           }),
         ),
       );
       add(
-        "Projects",
+        message("relationships.projects"),
         projectsOf(user.id, index.groups, index.projects).map(({ projectId, via }) => ({
           kind: "users",
           id: user.id,
@@ -89,23 +100,25 @@ export function AccessRelationships({
           title: names.project(projectId),
           source:
             via === "manager"
-              ? "manager"
+              ? message("relationships.manager")
               : via === "member"
-                ? "direct member"
-                : `via ${names.group(via.groupId)}`,
+                ? message("relationships.directMember")
+                : message("relationships.viaGroup", { name: names.group(via.groupId) }),
         })),
       );
     }
   } else if (selected.kind === "roles") {
     add(
-      "Holders",
+      message("relationships.holders"),
       holdersOf(index.users, selected.id).map(({ user, ways }) => ({
         kind: "users",
         id: user.id,
         title: names.user(user.id),
         source: ways
           .map((way) =>
-            way.by === "hand" ? "by hand" : `mapped by ${names.instance(way.instanceId)}`,
+            way.by === "hand"
+              ? message("relationships.byHand")
+              : message("relationships.mappedBy", { name: names.instance(way.instanceId) }),
           )
           .join(" · "),
       })),
@@ -114,36 +127,36 @@ export function AccessRelationships({
     const group = index.groups.find((item) => item.id === selected.id);
     if (group) {
       add(
-        "Members",
+        message("relationships.members"),
         group.memberIds.map((id) => ({
           kind: "users",
           id,
           title: names.user(id),
-          source: "member",
+          source: message("relationships.member"),
         })),
       );
       add(
-        "Request custody sets",
+        message("relationships.requestCustodySets"),
         index.custodies
           .filter((item) => item.groupIds.includes(group.id))
           .map((item) => ({
             kind: "custodies",
             id: item.id,
             title: item.name,
-            source: "granted to group",
+            source: message("relationships.grantedToGroup"),
           })),
       );
       add(
-        "Category custody",
+        message("relationships.categoryCustody"),
         group.categoryIds.map((id) => ({
           kind: "categories",
           id,
           title: categoryPath(index, id),
-          source: "granted to group",
+          source: message("relationships.grantedToGroup"),
         })),
       );
       add(
-        "Projects",
+        message("relationships.projects"),
         index.projects
           .filter((item) => item.memberGroupIds.includes(group.id))
           .map((item) => ({
@@ -151,7 +164,7 @@ export function AccessRelationships({
             id: group.id,
             href: `/projects/${encodeURIComponent(item.id)}`,
             title: item.name,
-            source: "group member",
+            source: message("relationships.groupMember"),
           })),
       );
     }
@@ -159,25 +172,25 @@ export function AccessRelationships({
     const custody = index.custodies.find((item) => item.id === selected.id);
     if (custody) {
       add(
-        "Direct members",
+        message("relationships.directMembers"),
         custody.memberIds.map((id) => ({
           kind: "users",
           id,
           title: names.user(id),
-          source: "direct member",
+          source: message("relationships.directMember"),
         })),
       );
       add(
-        "Member groups",
+        message("relationships.memberGroups"),
         custody.groupIds.map((id) => ({
           kind: "groups",
           id,
           title: names.group(id),
-          source: "group member",
+          source: message("relationships.groupMember"),
         })),
       );
       add(
-        "Current plugin output · open proposals",
+        message("record.currentPluginOutput"),
         index.proposals
           .filter((item) => item.custodyIds.includes(custody.id))
           .map((item) => ({
@@ -185,31 +198,36 @@ export function AccessRelationships({
             id: item.id,
             href: `/requests?id=${encodeURIComponent(item.id)}`,
             title: item.title,
-            source: "placed by custody rule",
+            source: message("record.placedByCustodyRule"),
           })),
       );
     }
   } else {
     add(
-      "Effective custodians",
+      message("relationships.effectiveCustodians"),
       uniquePeople(categorySourcesOf(index, selected.id)).map((id) => ({
         kind: "users",
         id,
         title: names.user(id),
         source: categorySourcesOf(index, selected.id)
           .filter((item) => item.userId === id)
-          .map(
-            (item) =>
-              `${item.viaGroupId === null ? "direct" : `via ${names.group(item.viaGroupId)}`} on ${categoryPath(index, item.grantedOnId ?? selected.id)}`,
+          .map((item) =>
+            message("relationships.categorySource", {
+              source:
+                item.viaGroupId === null
+                  ? message("relationships.direct")
+                  : message("relationships.viaGroup", { name: names.group(item.viaGroupId) }),
+              category: categoryPath(index, item.grantedOnId ?? selected.id),
+            }),
           )
           .join(" · "),
       })),
     );
   }
   return (
-    <section className="space-y-4" aria-label="Focused relationships">
+    <section className="space-y-4" aria-label={message("relationships.focusedLabel")}>
       {branches.length === 0 && (
-        <p className="text-sm text-muted-foreground">No immediate relationships.</p>
+        <p className="text-sm text-muted-foreground">{message("relationships.empty")}</p>
       )}
       {branches.map((branch) => (
         <section key={branch.label} className="border-l-2 border-primary/50 pl-4">

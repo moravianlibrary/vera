@@ -31,7 +31,7 @@ import { GenerationReport, generatorClassLabels } from "@/features/lists/generat
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPages } from "@/lib/format-number";
 
 interface GenerateState {
   generatorId: string;
@@ -284,7 +284,7 @@ function AskStep({
           {Object.entries(allocation.byCategory)
             .map(
               ([categoryId, pages]) =>
-                `${categories.find((category) => category.id === categoryId)?.name ?? categoryId} ${formatCount(pages)} pp`,
+                `${categories.find((category) => category.id === categoryId)?.name ?? categoryId} ${formatPages(pages)}`,
             )
             .join(" · ")}
           . {t("generateDialog.allocationAccepted")}{" "}
@@ -364,7 +364,7 @@ function PreviewStep({ draft }: { draft: GenerationDraft }) {
                 <span className="block text-xs text-muted-foreground">{reason}</span>
               </span>
               <span className="shrink-0 text-xs tabular-nums">
-                {item.pages === null ? "—" : `${formatCount(item.pages)} pp`}
+                {item.pages === null ? "—" : formatPages(item.pages)}
               </span>
             </li>
           ))}

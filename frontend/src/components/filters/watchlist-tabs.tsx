@@ -11,6 +11,7 @@ import { isShared } from "@vera/domain/entities";
 import { Building2, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TabButton, TabStrip } from "@/components/filters/tab-strip";
 import { WatchlistEditorPopover } from "@/components/filters/watchlist-editor-popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -46,6 +47,7 @@ export function WatchlistTabs({
   onDetach,
   isBare,
 }: WatchlistTabsProps) {
+  const { t } = useTranslation("common");
   const navRef = useRef<HTMLElement>(null);
   const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
   const { create, update, markSeen } = useWatchlistMutations();
@@ -171,9 +173,9 @@ export function WatchlistTabs({
   };
 
   return (
-    <TabStrip label="Watchlists" navRef={navRef}>
+    <TabStrip label={t("watchlist.tabsLabel")} navRef={navRef}>
       <Tab id="all" isOpen={open === undefined && !isFiltered} onClick={() => onOpen(null)}>
-        All
+        {t("watchlist.all")}
       </Tab>
 
       {watchlists.map((watchlist) => (
@@ -250,6 +252,7 @@ function WatchlistTab({
   onSaved,
   onDeleted,
 }: WatchlistTabProps) {
+  const { t } = useTranslation("common");
   const { create, update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
 
@@ -258,16 +261,19 @@ function WatchlistTab({
       <Tab id={watchlist.id} isOpen={isOpen} onClick={onOpen}>
         {isShared(watchlist) && <SystemMark />}
         {watchlist.name}
-        <span className="text-xs text-muted-foreground tabular-nums" title="Current matches">
+        <span
+          className="text-xs text-muted-foreground tabular-nums"
+          title={t("watchlist.currentMatches")}
+        >
           {watchlist.itemCount}
         </span>
         {displayedNewCount > 0 && (
           <span
             className="rounded-full bg-primary/10 px-1.5 py-0.5 text-caption font-semibold tabular-nums text-primary"
-            title={`${displayedNewCount} new in ${watchlist.name}`}
+            title={t("watchlist.newIn", { count: displayedNewCount, name: watchlist.name })}
           >
             +{displayedNewCount}
-            <span className="sr-only"> new</span>
+            <span className="sr-only"> {t("watchlist.new")}</span>
           </span>
         )}
       </Tab>
@@ -331,14 +337,15 @@ function WatchlistTab({
 }
 
 function SystemMark() {
+  const { t } = useTranslation("common");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span role="img" aria-label="System watchlist" className="inline-flex">
+        <span role="img" aria-label={t("watchlist.system")} className="inline-flex">
           <Building2 className="size-3.5 text-muted-foreground" />
         </span>
       </TooltipTrigger>
-      <TooltipContent>System watchlist</TooltipContent>
+      <TooltipContent>{t("watchlist.system")}</TooltipContent>
     </Tooltip>
   );
 }

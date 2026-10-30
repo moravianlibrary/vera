@@ -46,7 +46,7 @@ import { useProjectQuery } from "@/features/projects/use-projects-query";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { formatDay, formatShortCalendarDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPageUnit } from "@/lib/format-number";
 
 const backToIndex = { label: "projects:projectPage.projects", href: "/projects" };
 const backToProjects = { label: "projects:projectPage.backToProjects", href: "/projects" };
@@ -203,8 +203,11 @@ function ProjectRecord({
             <p className="mt-2 text-ui">
               {t("projectPage.noTarget")}{" "}
               <Muted>
-                {formatCount(row.plannedPages)} pp planned · {formatCount(row.deliveredPages)}{" "}
-                delivered
+                {t("projectPage.plannedDelivered", {
+                  planned: formatCount(row.plannedPages),
+                  delivered: formatCount(row.deliveredPages),
+                  unit: formatPageUnit(),
+                })}
               </Muted>
             </p>
           ) : null}

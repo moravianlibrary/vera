@@ -38,8 +38,7 @@ import {
 } from "@/features/categories/category-dialogs";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { i18n } from "@/i18n";
-import { formatCount, formatPercent } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
+import { formatCount, formatPages, formatPercent } from "@/lib/format-number";
 
 const message = (key: string, options?: Record<string, unknown>) =>
   i18n.t(key, { ns: "categories", ...options });
@@ -140,20 +139,18 @@ export function CategoryPane({
           <p className="mt-1 text-xs text-muted-foreground">
             {category === null
               ? message("categoryPane.rootSummary", {
-                  categories: plural(categories.length, "category", "categories"),
-                  leaves: plural(
-                    categories.filter(
+                  categories: message("categoryPane.categoryCount", { count: categories.length }),
+                  leaves: message("categoryPane.leafCount", {
+                    count: categories.filter(
                       (candidate) => !categories.some((child) => child.parentId === candidate.id),
                     ).length,
-                    "leaf",
-                    "leaves",
-                  ),
+                  }),
                 })
               : isLeaf
                 ? message("categoryPane.leafSummary", { level: levelOf(categories, category.id) })
                 : message("categoryPane.branchSummary", {
                     level: levelOf(categories, category.id),
-                    children: plural(children.length, "child", "children"),
+                    children: message("categoryPane.childCount", { count: children.length }),
                   })}
           </p>
         </header>
@@ -336,14 +333,14 @@ function countStats(totals: CategoryTotals | undefined): Stat[] {
     },
     {
       label: message("categoryPane.delivered"),
-      value: `${formatCount(totals.deliveredPages)} pp`,
+      value: formatPages(totals.deliveredPages),
       foot: message("categoryPane.percentOfPages", {
         percent: totals.pages === 0 ? 0 : Math.round((totals.deliveredPages / totals.pages) * 100),
       }),
     },
     {
       label: message("categoryPane.ready"),
-      value: `${formatCount(totals.readyPages)} pp`,
+      value: formatPages(totals.readyPages),
       foot: message("categoryPane.approvedNoList"),
     },
   ];

@@ -446,6 +446,7 @@ function ScheduleCard({
   nameOf: NameOf;
   acts: ScheduleActs;
 }) {
+  const { t } = useTranslation("tasks");
   return (
     <>
       <div className="flex items-start justify-between gap-2">
@@ -454,7 +455,8 @@ function ScheduleCard({
       </div>
       <Sub>
         {cadenceText(schedule.cadence)}
-        {schedule.lastRun !== null && ` · last ${agoText(schedule.lastRun.startedAt, asOf)}`}
+        {schedule.lastRun !== null &&
+          ` · ${t("schedulesPage.lastRunTime", { time: agoText(schedule.lastRun.startedAt, asOf) })}`}
       </Sub>
       {schedule.pause !== null && (
         <p className="mt-1.5 text-xs text-muted-foreground">

@@ -9,7 +9,7 @@ import { documentIdentifierOf } from "@vera/domain/documents";
 import type { Session, User } from "@vera/domain/entities";
 import { askerIdsOf, asksOf, projectIdsOf } from "@vera/domain/requests";
 import { navigationEntries } from "@/components/layout/navigation";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 import { database } from "@/mocks/database";
 import { findDocumentDetail } from "@/mocks/documents";
 import type { MessageImplementation } from "@/mocks/fixtures/message-channels";
@@ -94,9 +94,11 @@ function resolveProposal(session: Session, documentId: string): ResolvedSubject 
   return {
     label: `${document.title} · ${documentIdentifierOf(document)}`,
     path: `${pathOf("requests")}?id=${encodeURIComponent(document.id)}`,
-    context: ["Proposed for digitization", plural(asksOf(row).length, "ask"), ...projectNames].join(
-      " · ",
-    ),
+    context: [
+      "Proposed for digitization",
+      i18n.t("message.ask", { ns: "common", count: asksOf(row).length }),
+      ...projectNames,
+    ].join(" · "),
     // A proposal's message goes to its requesters (§3).
     recipientIds: askerIdsOf(row),
   };

@@ -211,5 +211,11 @@
   "scheduleDialogs.validationName": "Give it a name: it is what a run is listed under.",
   "scheduleDialogs.validationNumber": "A whole number",
   "scheduleDialogs.validationAtLeastOne": "At least 1",
-  "scheduleDialogs.validationMinimumInterval": "Every 5 minutes is the shortest: anything faster is an event, and events are Hooks."
+  "scheduleDialogs.validationMinimumInterval": "Every 5 minutes is the shortest: anything faster is an event, and events are Hooks.",
+  "globalRun.notRerunnable": "Only a failed or cancelled plugin run is run again.",
+  "globalRun.forbidden": "You may not run this plugin.",
+  "globalRun.started": "Started {{id}}.",
+  "globalRun.unavailable": "This run is gone, or is not yours to see.",
+  "globalRun.loading": "Loading…",
+  "schedulesPage.lastRunTime": "last {{time}}"
 }

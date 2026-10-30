@@ -161,11 +161,9 @@ function Row({ aside, children }: { aside?: ReactNode; children: ReactNode }) {
   );
 }
 
-function None({ text = "None." }: { text?: string }) {
+function None({ text }: { text?: string }) {
   const { t } = useTranslation("access");
-  return (
-    <p className="text-xs text-muted-foreground">{text === "None." ? t("record.none") : text}</p>
-  );
+  return <p className="text-xs text-muted-foreground">{text ?? t("record.none")}</p>;
 }
 
 function Fine({ children }: { children: ReactNode }) {

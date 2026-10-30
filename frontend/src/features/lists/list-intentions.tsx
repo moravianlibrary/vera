@@ -7,7 +7,7 @@ import type { CountsTowardsRow, ListMix, ListMixRow } from "@vera/contract/lists
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { i18n } from "@/i18n";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPages } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
 // Over its goal by more than this reads as over.
@@ -42,7 +42,7 @@ export function CountsTowardsLine({
           ) : (
             row.name
           )}{" "}
-          <span className="text-muted-foreground tabular-nums">{formatCount(row.pages)} pp</span>
+          <span className="text-muted-foreground tabular-nums">{formatPages(row.pages)}</span>
         </span>
       ))}
     </span>
@@ -59,7 +59,7 @@ function labelOf(row: ListMixRow, total: number, hasGoal: boolean): string {
   }
 
   if (hasGoal && row.goalPages !== null) {
-    return `${formatCount(row.pages)} / ${formatCount(row.goalPages)} pp`;
+    return `${formatPages(row.pages)} / ${formatPages(row.goalPages)}`;
   }
 
   return i18n.t("lists:listIntentions.share", {

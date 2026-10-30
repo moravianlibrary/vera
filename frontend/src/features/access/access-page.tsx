@@ -52,6 +52,7 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useLoadMore } from "@/hooks/use-load-more";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { i18n } from "@/i18n";
 import type { ListFieldDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
@@ -70,6 +71,9 @@ type Row = {
 };
 const views: View[] = ["users", "roles", "groups", "custodies", "ways-in"];
 const loadSize = 25;
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
+const viewName = (view: View) => message(`managementView.${view}`);
 
 function selectionFrom(params: URLSearchParams): Selected | null {
   for (const [kind, key] of Object.entries({
@@ -118,9 +122,25 @@ function rowsOf(
           .map((id) => index.groups.find((group) => group.id === id)?.name ?? id)
           .join(", ") || "—",
       access: [
-        `${new Set(projectsOf(user.id, index.groups, index.projects).map((entry) => entry.projectId)).size} projects`,
-        `${new Set(requestCustodyOf(user.id, index.groups, index.custodies).map((entry) => entry.custodyId)).size} proposal sets`,
-        `${new Set(categoryCustodyOf(user.id, index.groups, index.categoryMemberships).map((entry) => entry.categoryId)).size} categories`,
+        message("managementRow.projects", {
+          count: new Set(
+            projectsOf(user.id, index.groups, index.projects).map((entry) => entry.projectId),
+          ).size,
+        }),
+        message("managementRow.proposalSets", {
+          count: new Set(
+            requestCustodyOf(user.id, index.groups, index.custodies).map(
+              (entry) => entry.custodyId,
+            ),
+          ).size,
+        }),
+        message("managementRow.categories", {
+          count: new Set(
+            categoryCustodyOf(user.id, index.groups, index.categoryMemberships).map(
+              (entry) => entry.categoryId,
+            ),
+          ).size,
+        }),
       ].join(" · "),
     }));
   if (view === "roles")
@@ -129,8 +149,8 @@ function rowsOf(
       kind: "roles",
       title: role.name,
       secondary: role.description,
-      third: `${role.grants.length} grants`,
-      access: `${holdersOf(index.users, role.id).length} holders${role.isShipped ? " · Shipped" : ""}`,
+      third: message("managementRow.grants", { count: role.grants.length }),
+      access: `${message("managementRow.holders", { count: holdersOf(index.users, role.id).length })}${role.isShipped ? ` · ${message("managementRow.shipped")}` : ""}`,
     }));
   if (view === "groups")
     return index.groups.map((group) => ({
@@ -138,18 +158,32 @@ function rowsOf(
       kind: "groups",
       title: group.name,
       secondary: group.description,
-      third: `${group.memberIds.length} members`,
-      access: `${index.custodies.filter((custody) => custody.groupIds.includes(group.id)).length} proposal sets · ${group.categoryIds.length} categories · ${index.projects.filter((project) => project.memberGroupIds.includes(group.id)).length} projects`,
+      third: message("managementRow.members", { count: group.memberIds.length }),
+      access: message("managementRow.groupAccess", {
+        custodies: message("managementRow.proposalSets", {
+          count: index.custodies.filter((custody) => custody.groupIds.includes(group.id)).length,
+        }),
+        categories: message("managementRow.categories", { count: group.categoryIds.length }),
+        projects: message("managementRow.projects", {
+          count: index.projects.filter((project) => project.memberGroupIds.includes(group.id))
+            .length,
+        }),
+      }),
     }));
   if (view === "ways-in")
     return index.identityInstances.map((instance) => ({
       id: instance.id,
       kind: "identity-instances",
       title: instance.name,
-      secondary: instance.isLocal ? "Form" : "Redirect",
+      secondary: message(instance.isLocal ? "managementRow.form" : "managementRow.redirect"),
       third:
-        index.roles.find((role) => role.id === instance.defaultRoleId)?.name ?? "No access yet",
-      access: `${index.users.filter((user) => user.identities.some((identity) => identity.instanceId === instance.id)).length} people log in through it`,
+        index.roles.find((role) => role.id === instance.defaultRoleId)?.name ??
+        message("record.noAccessYet"),
+      access: message("managementRow.signIns", {
+        count: index.users.filter((user) =>
+          user.identities.some((identity) => identity.instanceId === instance.id),
+        ).length,
+      }),
     }));
   if (type === "proposals")
     return index.custodies.map((custody) => ({
@@ -157,19 +191,30 @@ function rowsOf(
       kind: "custodies",
       title: custody.name,
       secondary: custody.description,
-      third: `${custody.memberIds.length} direct · ${custody.groupIds.length} groups`,
+      third: message("managementRow.custodyMembers", {
+        direct: custody.memberIds.length,
+        groups: custody.groupIds.length,
+      }),
       placement: custody.isFallback
-        ? "Fallback"
-        : custody.placedByIds.map(pluginNames).join(", ") || "No rule names it",
-      access: `${custody.openCount} open proposals${custody.isFallback ? " · Fallback" : ""}`,
+        ? message("managementRow.fallback")
+        : custody.placedByIds.map(pluginNames).join(", ") || message("managementRow.noRuleNamesIt"),
+      access: `${message("managementRow.openProposals", { count: custody.openCount })}${custody.isFallback ? ` · ${message("managementRow.fallback")}` : ""}`,
     }));
   return index.categories.map((category) => ({
     id: category.id,
     kind: "categories",
     title: categoryPath(index, category.id),
     secondary: "",
-    third: `${categorySourcesOf(index, category.id).filter((source) => source.viaGroupId === null).length} direct · ${new Set(categorySourcesOf(index, category.id).flatMap((source) => source.viaGroupId ?? [])).size} groups`,
-    access: `${uniquePeople(categorySourcesOf(index, category.id)).length} people`,
+    third: message("managementRow.categorySources", {
+      direct: categorySourcesOf(index, category.id).filter((source) => source.viaGroupId === null)
+        .length,
+      groups: new Set(
+        categorySourcesOf(index, category.id).flatMap((source) => source.viaGroupId ?? []),
+      ).size,
+    }),
+    access: message("managementRow.people", {
+      count: uniquePeople(categorySourcesOf(index, category.id)).length,
+    }),
   }));
 }
 
@@ -273,29 +318,31 @@ function fieldsFor(
     return [
       {
         key: "show" as const,
-        label: "Show",
+        label: message("managementField.show"),
         field: vocabulary(userShows, userShowLabels),
         isQuick: true,
       },
-      field("roleIds", "Role", index.roles),
-      field("groupIds", "Group", index.groups),
-      field("projectIds", "Project", index.projects),
-      field("custodyIds", "Request custody", index.custodies),
-      field("categoryIds", "Category custody", index.categories),
+      field("roleIds", message("managementField.role"), index.roles),
+      field("groupIds", message("managementField.group"), index.groups),
+      field("projectIds", message("managementField.project"), index.projects),
+      field("custodyIds", message("managementField.requestCustody"), index.custodies),
+      field("categoryIds", message("managementField.categoryCustody"), index.categories),
     ];
   if (view === "custodies")
     return [
       {
         key: "sources" as const,
-        label: "Custodians",
+        label: message("managementField.custodians"),
         field: vocabulary(["direct", "group", "none"], {
-          direct: "Direct",
-          group: "Via group",
-          none: "None",
+          direct: message("managementField.direct"),
+          group: message("managementField.viaGroup"),
+          none: message("record.none"),
         }),
         isQuick: true,
       },
-      ...(type === "proposals" ? [field("pluginIds", "Custody plugin", pluginInstances)] : []),
+      ...(type === "proposals"
+        ? [field("pluginIds", message("managementField.custodyPlugin"), pluginInstances)]
+        : []),
     ];
   return [];
 }
@@ -326,18 +373,33 @@ export function AccessPage() {
     const way = `${provider ?? identity.instanceId} ${identity.externalId}`;
     setNotice(
       result.isDone
-        ? { title: "Identity unlinked", text: `${user.name} can no longer log in with ${way}.` }
-        : { title: "Not unlinked", text: result.refusal.message, isRefusal: true },
+        ? {
+            title: message("managementNotice.identityUnlinked"),
+            text: message("managementNotice.identityUnlinkedText", { name: user.name, way }),
+          }
+        : {
+            title: message("managementNotice.notUnlinked"),
+            text: result.refusal.message,
+            isRefusal: true,
+          },
     );
   };
   // ACCESS-suspend: Restore gives back everything suspending held, so it asks nothing.
   const restoreNow = async (userId: string) => {
-    const name = index?.users.find((user) => user.id === userId)?.name ?? "They";
+    const name =
+      index?.users.find((user) => user.id === userId)?.name ?? message("managementNotice.they");
     const result = await restore.run(userId);
     setNotice(
       result.isDone
-        ? { title: `${name} restored`, text: "They can log in, and their roles count again." }
-        : { title: `${name} not restored`, text: result.refusal.message, isRefusal: true },
+        ? {
+            title: message("managementNotice.restored", { name }),
+            text: message("managementNotice.restoredText"),
+          }
+        : {
+            title: message("managementNotice.notRestored", { name }),
+            text: result.refusal.message,
+            isRefusal: true,
+          },
     );
   };
   const [exploring, setExploring] = useState(false);
@@ -506,14 +568,14 @@ export function AccessPage() {
       key: "name",
       header:
         view === "users"
-          ? "USER"
+          ? message("managementColumn.user")
           : view === "roles"
-            ? "ROLE"
+            ? message("managementColumn.role")
             : view === "groups"
-              ? "GROUP"
+              ? message("managementColumn.group")
               : type === "proposals"
-                ? "PROPOSAL CUSTODY SET"
-                : "CATEGORY",
+                ? message("managementColumn.proposalCustody")
+                : message("managementColumn.category"),
       track: "minmax(14rem,2fr)",
       cell: (row) => (
         <div>
@@ -540,12 +602,12 @@ export function AccessPage() {
       key: "third",
       header:
         view === "users"
-          ? "ROLES"
+          ? message("managementColumn.roles")
           : view === "roles"
-            ? "GRANTS"
+            ? message("managementColumn.grants")
             : view === "groups"
-              ? "MEMBERS"
-              : "MEMBERSHIP",
+              ? message("managementColumn.members")
+              : message("managementColumn.membership"),
       track: "minmax(8rem,1fr)",
       cell: (row) => row.third,
     },
@@ -553,7 +615,7 @@ export function AccessPage() {
       ? [
           {
             key: "groups",
-            header: "GROUPS",
+            header: message("managementColumn.groups"),
             track: "minmax(8rem,1fr)",
             cell: (row: Row) => row.groups ?? "—",
           },
@@ -563,7 +625,7 @@ export function AccessPage() {
       ? [
           {
             key: "placement",
-            header: "CUSTODY PLUGINS",
+            header: message("managementColumn.custodyPlugins"),
             track: "minmax(9rem,1fr)",
             cell: (row: Row) => row.placement ?? "—",
           },
@@ -571,7 +633,10 @@ export function AccessPage() {
       : []),
     {
       key: "access",
-      header: view === "users" ? "RESOURCE ACCESS" : "ACCESS",
+      header:
+        view === "users"
+          ? message("managementColumn.resourceAccess")
+          : message("managementColumn.access"),
       track: "minmax(11rem,1fr)",
       cell: (row) => row.access,
     },
@@ -589,10 +654,10 @@ export function AccessPage() {
       exploring ? (
         <div>
           <Button variant="outline" size="sm" onClick={() => setExploring(false)}>
-            Back to details
+            {message("management.backToDetails")}
           </Button>
           <h2 className="mt-4 text-base font-semibold">{selectedRow?.title ?? selected.id}</h2>
-          <p className="mt-1 text-xs text-muted-foreground">Immediate relationships</p>
+          <p className="mt-1 text-xs text-muted-foreground">{message("relationships.immediate")}</p>
           {selected.kind !== "watchlists" && selected.kind !== "identity-instances" && (
             <div className="mt-4">
               <AccessRelationships
@@ -608,9 +673,13 @@ export function AccessPage() {
         <>
           <div className="mb-3 flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => setExploring(true)}>
-              Explore relationships
+              {message("management.exploreRelationships")}
             </Button>
-            <ActionBar actions={detailActions} cap={1} menuLabel="More" />
+            <ActionBar
+              actions={detailActions}
+              cap={1}
+              menuLabel={message("categoryPane.more", { ns: "categories" })}
+            />
           </div>
           {selectedUser && (
             <UserRecord
@@ -646,33 +715,37 @@ export function AccessPage() {
                     ? [
                         {
                           id: "default-role",
-                          label: "Default role…",
+                          label: message("management.defaultRole"),
                           onSelect: () => setDefaultRoleInstance(selectedIdentity),
                         },
                       ]
                     : []
                 }
                 cap={1}
-                menuLabel="More"
+                menuLabel={message("categoryPane.more", { ns: "categories" })}
               />
               <p>
                 {selectedIdentity.defaultRoleId
                   ? index.roles.find((role) => role.id === selectedIdentity.defaultRoleId)?.name
-                  : "No access yet"}
+                  : message("record.noAccessYet")}
               </p>
-              <h3>Claim mappings</h3>
+              <h3>{message("management.claimMappings")}</h3>
               {selectedIdentity.mappings.map((mapping) => (
                 <p key={`${mapping.claim}:${mapping.roleId}`}>
                   {mapping.claim} →{" "}
                   {index.roles.find((role) => role.id === mapping.roleId)?.name ?? mapping.roleId}
                 </p>
               ))}
-              <p>{selectedIdentity.isLocal ? "Form" : "Redirect"}</p>
+              <p>
+                {message(
+                  selectedIdentity.isLocal ? "managementRow.form" : "managementRow.redirect",
+                )}
+              </p>
               <a
                 className="underline"
                 href={`/plugins?i=${encodeURIComponent(selectedIdentity.id)}`}
               >
-                Edit in Plugins
+                {message("management.editInPlugins")}
               </a>
             </section>
           )}
@@ -687,25 +760,28 @@ export function AccessPage() {
         </>
       )
     ) : (
-      <p className="text-sm text-muted-foreground">This record is no longer available.</p>
+      <p className="text-sm text-muted-foreground">{message("management.recordUnavailable")}</p>
     );
   if (!session) return null;
   return (
     <>
-      <PageHeader title="Users management" actions={canManage ? headerActionsFor(setDialog) : []} />
-      <TabStrip label="Users management views">
+      <PageHeader
+        title={message("management.title")}
+        actions={canManage ? headerActionsFor(setDialog) : []}
+      />
+      <TabStrip label={message("management.viewsLabel")}>
         {views.map((item) => (
           <TabButton key={item} selected={view === item} onClick={() => changeView(item)}>
-            {item[0].toUpperCase() + item.slice(1)}
+            {viewName(item)}
           </TabButton>
         ))}
       </TabStrip>
       {view === "custodies" && (
-        <TabStrip label="Custody resources">
+        <TabStrip label={message("management.custodyResources")}>
           {(
             [
-              ["Proposal sets", "proposals"],
-              ["Categories", "categories"],
+              [message("management.proposalSets"), "proposals"],
+              [message("management.categories"), "categories"],
             ] as const
           ).map(([label, nextType]) => (
             <TabButton
@@ -724,8 +800,8 @@ export function AccessPage() {
         query={query}
         facets={facets}
         onQueryChange={setQuery}
-        searchLabel={`Search ${view}`}
-        searchPlaceholder={`Search ${view}…`}
+        searchLabel={message("management.searchLabel", { view: viewName(view) })}
+        searchPlaceholder={message("management.searchPlaceholder", { view: viewName(view) })}
       />
       <MasterDetail
         key={listKey}
@@ -746,27 +822,27 @@ export function AccessPage() {
                 rows={[]}
                 rowId={(row) => row.id}
                 columns={{ notebook: columns }}
-                emptyText="No records match this search."
+                emptyText={message("management.noMatches")}
                 isLoading={accessQuery.isLoading}
-                loadingText="Loading users and roles…"
-                failure={failureOf(accessQuery, "Could not load users and roles.")}
+                loadingText={message("management.loading")}
+                failure={failureOf(accessQuery, message("management.loadError"))}
               />
             ) : (
               <>
                 <div className="flex items-center justify-between border-b px-4 py-2 text-xs text-muted-foreground sm:px-6">
                   <span>
                     {visible.length}{" "}
-                    {view === "users"
-                      ? "users"
-                      : view === "roles"
-                        ? "roles"
-                        : view === "groups"
-                          ? "groups"
-                          : type === "proposals"
-                            ? "request custody sets"
-                            : "categories"}
+                    {message("management.countLabel", {
+                      count: visible.length,
+                      item:
+                        view === "custodies"
+                          ? type === "proposals"
+                            ? message("management.proposalSets")
+                            : message("management.categories")
+                          : viewName(view),
+                    })}
                   </span>
-                  <span>{shown.length} shown</span>
+                  <span>{message("management.shown", { count: shown.length })}</span>
                 </div>
                 <div data-swipe="off" className="overflow-x-auto">
                   <DataTable
@@ -784,7 +860,7 @@ export function AccessPage() {
                       const row = shown.find((item) => item.id === id);
                       if (row) open({ kind: row.kind, id });
                     }}
-                    emptyText="No records match this search."
+                    emptyText={message("management.noMatches")}
                     focusedId={selected?.id}
                     cardOf={(row) => (
                       <button
@@ -806,7 +882,7 @@ export function AccessPage() {
                 <div ref={sentinelRef} className="h-px" aria-hidden="true" />
                 {shown.length < visible.length && (
                   <p className="px-4 py-3 text-center text-xs text-muted-foreground">
-                    Loading more…
+                    {message("management.loadingMore")}
                   </p>
                 )}
               </>
@@ -818,12 +894,16 @@ export function AccessPage() {
             detail
           ) : (
             <p className="text-sm text-muted-foreground">
-              Select a {view === "custodies" ? "resource" : view.slice(0, -1)} to inspect its access
-              and relationships.
+              {message("management.selectToInspect", {
+                item:
+                  view === "custodies"
+                    ? message("management.resource")
+                    : viewName(view).toLowerCase().replace(/s$/, ""),
+              })}
             </p>
           )
         }
-        detailTitle={selectedRow?.title ?? "Record unavailable"}
+        detailTitle={selectedRow?.title ?? message("management.recordUnavailable")}
         detailDescription={selectedRow?.secondary}
         detailOpen={selected !== null}
         onDetailOpenChange={(isOpen) => {

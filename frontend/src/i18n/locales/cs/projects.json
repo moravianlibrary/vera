@@ -152,6 +152,7 @@
   "projectPage.lists_other": "Seznamy — {{count}}",
   "projectPage.noFundedLists": "Nic z toho, co financuje, zatím není na seznamu.",
   "projectPage.listItemCount": "{{count}} jeho položek · {{pages}} s.",
+  "projectPage.plannedDelivered": "naplánováno {{planned}} {{unit}} · dodáno {{delivered}} {{unit}}",
   "projectPage.formerListItemCount": "{{count}} jeho položek · nezapočítáno",
   "projectPage.noLongerExists": "už neexistuje",
   "projectPage.listsFinePrint": "Seznamy s položkami, které financoval. Seznam může mít smíšené financování: počítají se tu jen strany tohoto projektu. Položky smazaného seznamu se přestávají počítat.",

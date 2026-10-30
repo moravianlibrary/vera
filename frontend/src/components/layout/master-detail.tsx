@@ -18,6 +18,7 @@ import {
 import type { RecordSwipe } from "@/hooks/use-swipe-between";
 import { useSwipeBetween, useSwipeToClose } from "@/hooks/use-swipe-between";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 interface MasterDetailProps<Item> {
@@ -62,7 +63,7 @@ export function MasterDetail<Item>({
   return (
     <div className={cn("flex min-h-0 flex-1", className)}>
       <section
-        aria-label="Items"
+        aria-label={i18n.t("masterDetail.items", { ns: "common" })}
         className={cn(
           "@container min-w-0 flex-1 overflow-y-auto bg-background md:flex-none md:border-r",
           masterWidth === "half" ? "md:w-1/2 md:min-w-86" : "md:w-80 xl:w-96",

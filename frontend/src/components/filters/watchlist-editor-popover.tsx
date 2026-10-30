@@ -83,8 +83,9 @@ export function WatchlistEditorPopover({
     } catch (failure) {
       setError(
         failure instanceof ApiError
-          ? (failure.problem?.detail ?? `Could not ${verb} the watchlist.`)
-          : `Could not ${verb} the watchlist. Try again.`,
+          ? (failure.problem?.detail ??
+              t(verb === "delete" ? "watchlist.deleteFailed" : "watchlist.saveFailed"))
+          : t(verb === "delete" ? "watchlist.deleteFailedRetry" : "watchlist.saveFailedRetry"),
       );
     } finally {
       setPending(false);
@@ -125,14 +126,14 @@ export function WatchlistEditorPopover({
         >
           <Label htmlFor={nameId} className="text-xs font-medium">
             {watchlist === null
-              ? "Save this filter as a watchlist"
+              ? t("watchlist.saveFilterAs")
               : canEdit
-                ? "Edit watchlist"
-                : "Personal copy name"}
+                ? t("watchlist.edit")
+                : t("watchlist.personalCopyName")}
           </Label>
           <Input
             id={nameId}
-            aria-label={watchlist === null ? "Save this filter as a watchlist" : "Watchlist name"}
+            aria-label={watchlist === null ? t("watchlist.saveFilterAs") : t("watchlist.nameLabel")}
             value={name}
             maxLength={100}
             onChange={(event) => setName(event.target.value)}
@@ -146,13 +147,13 @@ export function WatchlistEditorPopover({
             />
           )}
           {canEdit && emptyAudience && (
-            <p className="text-xs text-tone-amber-foreground">Pick a group or a role.</p>
+            <p className="text-xs text-tone-amber-foreground">{t("watchlist.pickAudience")}</p>
           )}
           {canEdit && audience.kind !== "personal" && !emptyAudience && (
             <div className="grid gap-1 text-xs text-muted-foreground">
               <p>
                 {reach === undefined
-                  ? "Working out who it reaches…"
+                  ? t("watchlist.calculatingReach")
                   : t("watchlist.reaches", {
                       count: reach.userCount,
                       outOfViewCount: reach.outOfViewCount
@@ -162,16 +163,13 @@ export function WatchlistEditorPopover({
               </p>
               {reach !== undefined && reach.duplicateCount > 0 && (
                 <p className="text-tone-amber-foreground">
-                  {t("watchlist.peopleKeep", { count: reach.duplicateCount })} this filter as their
-                  own.
+                  {t("watchlist.peopleKeepText", { count: reach.duplicateCount })}
                 </p>
               )}
             </div>
           )}
           {createsSystemCopy && (
-            <p className="text-xs text-muted-foreground">
-              This creates a system copy. Your personal watchlist stays.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("watchlist.systemCopyNotice")}</p>
           )}
           {error && (
             <p role="alert" className="text-xs text-destructive">
@@ -180,17 +178,16 @@ export function WatchlistEditorPopover({
           )}
           {canEdit && (
             <Button type="submit" size="sm" disabled={!name.trim() || emptyAudience || pending}>
-              {watchlist === null || createsSystemCopy ? "Save new watchlist" : "Save watchlist"}
+              {watchlist === null || createsSystemCopy
+                ? t("watchlist.saveNew")
+                : t("watchlist.save")}
             </Button>
           )}
         </form>
 
         {onCopy && (
           <div className="grid gap-2 border-t pt-3">
-            <p className="text-xs text-muted-foreground">
-              Keep this filter for yourself. The system watchlist stays available to everyone in its
-              audience.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("watchlist.keepFilterForYourself")}</p>
             <Button
               type="button"
               size="sm"
@@ -198,7 +195,7 @@ export function WatchlistEditorPopover({
               disabled={!name.trim() || pending}
               onClick={() => void run(() => onCopy(name.trim()))}
             >
-              Save a personal copy
+              {t("watchlist.savePersonalCopy")}
             </Button>
           </div>
         )}
@@ -206,11 +203,11 @@ export function WatchlistEditorPopover({
         {onUpdate && editable.length > 0 && (
           <div className="grid gap-2 border-t pt-3">
             <Label id={targetIdLabel} className="text-xs font-medium">
-              Update an existing watchlist
+              {t("watchlist.updateExisting")}
             </Label>
             <Select value={targetId} onValueChange={setTargetId}>
               <SelectTrigger aria-labelledby={targetIdLabel} className="w-full">
-                <SelectValue placeholder="Choose a watchlist" />
+                <SelectValue placeholder={t("watchlist.choose")} />
               </SelectTrigger>
               <SelectContent>
                 {editable.map((item) => (
@@ -223,7 +220,7 @@ export function WatchlistEditorPopover({
             {editable.find((item) => item.id === targetId)?.audience.kind !== "personal" &&
               targetId && (
                 <p className="text-xs text-muted-foreground">
-                  Recipients must confirm the changed filter before delivery resumes.
+                  {t("watchlist.confirmFilterChange")}
                 </p>
               )}
             <Button
@@ -236,7 +233,7 @@ export function WatchlistEditorPopover({
                 if (selected) void run(() => onUpdate(selected));
               }}
             >
-              Update watchlist
+              {t("watchlist.update")}
             </Button>
           </div>
         )}
@@ -245,9 +242,7 @@ export function WatchlistEditorPopover({
           <div className="border-t pt-3">
             {confirmDelete ? (
               <div className="grid gap-2">
-                <p className="text-xs">
-                  Delete “{watchlist?.name}”? The matched documents stay where they are.
-                </p>
+                <p className="text-xs">{t("watchlist.deletePrompt", { name: watchlist?.name })}</p>
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -255,7 +250,7 @@ export function WatchlistEditorPopover({
                     variant="outline"
                     onClick={() => setConfirmDelete(false)}
                   >
-                    Keep it
+                    {t("watchlist.keepIt")}
                   </Button>
                   <Button
                     type="button"
@@ -264,7 +259,7 @@ export function WatchlistEditorPopover({
                     disabled={pending}
                     onClick={() => void run(onDelete, "delete")}
                   >
-                    Delete watchlist
+                    {t("watchlist.delete")}
                   </Button>
                 </div>
               </div>
@@ -276,7 +271,7 @@ export function WatchlistEditorPopover({
                 className="text-destructive"
                 onClick={() => setConfirmDelete(true)}
               >
-                Delete watchlist
+                {t("watchlist.delete")}
               </Button>
             )}
           </div>

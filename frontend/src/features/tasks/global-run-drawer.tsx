@@ -4,6 +4,7 @@
 import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
 import { canCancelRun, canRunAgain, isOwnRun } from "@vera/domain/tasks";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useSearchParams } from "react-router";
 import { runAgain } from "@/api/tasks";
 import { DetailDrawer } from "@/components/detail-drawer";
@@ -17,6 +18,7 @@ import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 
 export function GlobalRunDrawer() {
+  const { t } = useTranslation("tasks");
   const location = useLocation();
   const [params, setParams] = useSearchParams();
   const { data: session } = useSessionQuery();
@@ -32,8 +34,8 @@ export function GlobalRunDrawer() {
     call: runAgain,
     invalidates: taskInvalidations,
     refusalTexts: {
-      "task.not_rerunnable": "Only a failed or cancelled plugin run is run again.",
-      403: "You may not run this plugin.",
+      "task.not_rerunnable": t("globalRun.notRerunnable"),
+      403: t("globalRun.forbidden"),
     },
   });
   const run = detail?.run;
@@ -50,7 +52,7 @@ export function GlobalRunDrawer() {
       <DetailDrawer
         open={runId !== null}
         onClose={close}
-        title={run?.what ?? "Run"}
+        title={run?.what ?? t("runDrawer.run")}
         subtitle={
           run ? (
             <>
@@ -76,7 +78,7 @@ export function GlobalRunDrawer() {
                 ? () => {
                     void rerun.run(run.id).then((result) => {
                       if (result.isDone) {
-                        setNotice(`Started ${result.value.id}.`);
+                        setNotice(t("globalRun.started", { id: result.value.id }));
                         openRun(result.value.id);
                       } else {
                         setNotice(result.refusal.message);
@@ -88,7 +90,7 @@ export function GlobalRunDrawer() {
           />
         ) : (
           <p className="text-sm text-muted-foreground">
-            {isError ? "This run is gone, or is not yours to see." : "Loading…"}
+            {isError ? t("globalRun.unavailable") : t("globalRun.loading")}
           </p>
         )}
       </DetailDrawer>

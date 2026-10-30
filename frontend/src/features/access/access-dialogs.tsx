@@ -241,7 +241,7 @@ export function UserRolesDialog({
         if (result.isDone) {
           const held = heldRoleIdsOf(result.value);
           onSaved({
-            title: `Roles saved for ${user.name}`,
+            title: t("dialog.rolesSavedFor", { name: user.name }),
             text:
               held.length === 0
                 ? t("dialog.noRoleSeeNothing")
@@ -292,7 +292,7 @@ export function UserGroupsDialog({
         const result = await save.run({ recordId: user.id, body: { groupIds: [...picked] } });
         if (result.isDone) {
           onSaved({
-            title: `Groups saved for ${user.name}`,
+            title: t("dialog.groupsSavedFor", { name: user.name }),
             text:
               result.value.groupIds.length === 0
                 ? t("dialog.noGroupNow")
@@ -493,7 +493,11 @@ export function NewLocalAccountDialog({
               </div>
             </div>
             <Field id={`${id}-email`} label={t("dialog.email")}>
-              <Input id={`${id}-email`} placeholder="name@example.cz" {...form.register("email")} />
+              <Input
+                id={`${id}-email`}
+                placeholder={t("dialog.emailExample")}
+                {...form.register("email")}
+              />
             </Field>
             <fieldset className="grid">
               <legend className="mb-1 text-sm font-medium">

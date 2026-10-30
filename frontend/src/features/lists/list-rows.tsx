@@ -16,7 +16,7 @@ import type { QueryFailure } from "@/components/query-state";
 import { ListStateBadge } from "@/components/status-badge";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatShortCalendarDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPages } from "@/lib/format-number";
 
 // "22 Jun → 10 Jul".
 export function runsOf(list: DigitizationList): string {
@@ -63,7 +63,7 @@ export function ListRows({
             <ListStateBadge state={row.state} />
             <span className="text-xs text-muted-foreground">
               {runsOf(row.list)} · {t("listRows.item", { count: row.itemCount })} ·{" "}
-              {formatCount(row.pages)} pp
+              {formatPages(row.pages)}
             </span>
           </>
         ),

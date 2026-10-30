@@ -10,6 +10,7 @@
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "@/api/http";
+import { i18n } from "@/i18n";
 import { recordAct } from "@/lib/telemetry/telemetry";
 
 export const refusalStatuses = [403, 404, 409, 422] as const;
@@ -30,14 +31,12 @@ export type ActionResult<Value> =
   | { readonly isDone: true; readonly value: Value }
   | { readonly isDone: false; readonly refusal: Refusal };
 
-const defaultRefusalTexts = {
-  403: "You may no longer do this.",
-  404: "It is no longer here.",
-  409: "Someone has changed it meanwhile.",
-  422: "The server did not accept what was entered.",
+const defaultRefusalKeys = {
+  403: "mutation.refusal.403",
+  404: "mutation.refusal.404",
+  409: "mutation.refusal.409",
+  422: "mutation.refusal.422",
 } as const satisfies Record<RefusalStatus, string>;
-
-const failureText = "It could not be saved. Try again.";
 
 interface ActionMutationOptions<Input, Value> {
   call: (input: Input) => Promise<Value>;
@@ -90,7 +89,7 @@ function refusalOf(error: unknown, texts: RefusalTexts): Refusal {
     (candidate) => error instanceof ApiError && error.status === candidate,
   );
   if (!(error instanceof ApiError) || status === undefined) {
-    return { status: null, code: null, message: failureText };
+    return { status: null, code: null, message: i18n.t("mutation.failure", { ns: "common" }) };
   }
 
   const code = error.problem?.code ?? null;
@@ -98,6 +97,6 @@ function refusalOf(error: unknown, texts: RefusalTexts): Refusal {
     (code === null ? undefined : texts[code]) ??
     error.problem?.detail ??
     texts[status] ??
-    defaultRefusalTexts[status];
+    i18n.t(defaultRefusalKeys[status], { ns: "common" });
   return { status, code, message };
 }

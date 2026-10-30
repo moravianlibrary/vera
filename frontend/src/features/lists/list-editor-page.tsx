@@ -79,7 +79,7 @@ export function ListEditorPage() {
 
   return (
     <>
-      <PageHeader title={`Edit list — ${detail.row.list.name}`} />
+      <PageHeader title={t("editorPage.editingList", { name: detail.row.list.name })} />
       <ListEditor
         key={detail.row.list.id}
         detail={detail}

@@ -132,6 +132,7 @@
   "projectPage.lists_other": "Lists — {{count}}",
   "projectPage.noFundedLists": "None of what it funds is on a list yet.",
   "projectPage.listItemCount": "{{count}} of its items · {{pages}} pp",
+  "projectPage.plannedDelivered": "{{planned}} {{unit}} planned · {{delivered}} {{unit}} delivered",
   "projectPage.formerListItemCount": "{{count}} of its items · not counted",
   "projectPage.noLongerExists": "no longer exists",
   "projectPage.listsFinePrint": "The lists carrying items it funded. A list can mix funding: only this project's pages are counted here. A deleted list's items stop counting.",

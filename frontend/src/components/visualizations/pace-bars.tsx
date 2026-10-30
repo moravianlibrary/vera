@@ -6,7 +6,7 @@
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPageUnit } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
 export interface PaceBarsProps {
@@ -35,7 +35,7 @@ export function PaceBars({
   const { t } = useTranslation("common");
   const ofTarget = (value: number) => (
     <>
-      {formatCount(value)} / {formatCount(target)} pp ·{" "}
+      {formatCount(value)} / {formatCount(target)} {formatPageUnit()} ·{" "}
       <b className="font-semibold">{Math.round(share(value, target) * 100)}%</b>
     </>
   );

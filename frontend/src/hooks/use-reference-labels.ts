@@ -9,6 +9,7 @@ import {
   noProjectFundingFilterValue,
 } from "@vera/domain/intentions";
 import { can } from "@vera/domain/permissions";
+import { useTranslation } from "react-i18next";
 import { listMixes } from "@/api/mix-catalog";
 import { categoryLabelOf } from "@/components/classification-fields";
 import {
@@ -37,6 +38,7 @@ export type LabelOf = (id: string) => string;
 export function useReferenceLabels(
   kinds: readonly ReferenceKind[],
 ): Readonly<Record<ReferenceKind, LabelOf>> {
+  const { t } = useTranslation("common");
   const isNeeded = (kind: ReferenceKind) => ({ isEnabled: kinds.includes(kind) });
   const { data: session } = useSessionQuery();
   const { data: users = [] } = useUsersQuery(isNeeded("users"));
@@ -60,11 +62,11 @@ export function useReferenceLabels(
     users: nameOf(users),
     projects: (id) =>
       id === noProjectFundingFilterValue
-        ? "No project"
+        ? t("reference.noProject")
         : id === anyProjectFundingFilterValue
-          ? "Any project"
+          ? t("reference.anyProject")
           : nameOf(projects)(id),
-    mixes: (id) => (id === noMixFilterValue ? "No mix" : nameOf(mixes)(id)),
+    mixes: (id) => (id === noMixFilterValue ? t("reference.noMix") : nameOf(mixes)(id)),
     categories: (id) => categoryLabelOf(categories, id) || id,
     batches: (id) => {
       const batch = batches.find((candidate) => candidate.id === id);

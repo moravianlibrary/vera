@@ -4,6 +4,7 @@
 
 import { skipToken, useQuery } from "@tanstack/react-query";
 import type { MessageSubject } from "@vera/contract/messages";
+import { useTranslation } from "react-i18next";
 import { listMessageChannels, prepareMessage, sendMessage } from "@/api/messages";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 
@@ -27,13 +28,14 @@ export function useMessageHandOffQuery(subject: MessageSubject | null) {
 }
 
 export function useSendMessage(subject: MessageSubject) {
+  const { t } = useTranslation("common");
   return useActionMutation({
     call: (input: { channelId: string; text: string }) => sendMessage(subject, input),
     invalidates: [],
     refusalTexts: {
-      "message.not_sending": "Choose an instance that sends messages.",
-      "message.unreachable": "This instance cannot reach anyone for this message.",
-      "message.refused": "The instance refused to send the message.",
+      "message.not_sending": t("message.notSending"),
+      "message.unreachable": t("message.unreachableRefusal"),
+      "message.refused": t("message.refused"),
     },
     act: "message.send",
   });

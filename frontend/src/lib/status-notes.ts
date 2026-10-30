@@ -19,7 +19,11 @@ import {
   passesGates,
   validationOf,
 } from "@vera/domain/status";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "documents", ...options });
 
 export type NoteTone = "slate" | "amber" | "red" | "blue" | "purple" | "green";
 
@@ -48,7 +52,11 @@ export function iterationNoteOf(
   if (cancellation !== null) {
     return {
       tone: "slate",
-      title: cancellation.cause === "Decided" ? "Cancelled" : "Could not be digitized",
+      title: message(
+        cancellation.cause === "Decided"
+          ? "statusNote.cancelled"
+          : "statusNote.couldNotBeDigitized",
+      ),
       text: textFor(audience, cancellation),
       actedBy: null,
     };
@@ -57,7 +65,7 @@ export function iterationNoteOf(
   if (isRestricted(iteration) && iteration.restriction !== null) {
     return {
       tone: "slate",
-      title: "Forbidden",
+      title: message("statusNote.forbidden"),
       text: textFor(audience, iteration.restriction),
       actedBy: null,
     };
@@ -71,8 +79,8 @@ export function iterationNoteOf(
 
     return {
       tone: "red",
-      title: "Could not be added",
-      text: iteration.ingestFailure?.error ?? "a curator or an administrator retries it.",
+      title: message("statusNote.couldNotBeAdded"),
+      text: iteration.ingestFailure?.error ?? message("statusNote.retryHelp"),
       actedBy: null,
     };
   }
@@ -82,11 +90,11 @@ export function iterationNoteOf(
     const denial = iteration.verdicts.findLast((verdict) => verdict.verdict === "Denied");
     return {
       tone: "red",
-      title: audience === "public" ? "On hold" : "Denied in review",
+      title: message(audience === "public" ? "statusNote.onHold" : "statusNote.deniedInReview"),
       text:
         audience === "public"
-          ? "A problem with the record must be fixed first."
-          : (denial?.note ?? "A defect was denied."),
+          ? message("statusNote.problemMustBeFixed")
+          : (denial?.note ?? message("statusNote.defectDenied")),
       actedBy: null,
     };
   }
@@ -95,7 +103,7 @@ export function iterationNoteOf(
     const outstanding = outstandingDefects(iteration);
     return {
       tone: "amber",
-      title: audience === "public" ? "Being checked" : "Review needed",
+      title: message(audience === "public" ? "statusNote.beingChecked" : "statusNote.reviewNeeded"),
       text: outstanding
         .map((defect) =>
           audience === "public"
@@ -114,7 +122,12 @@ export function iterationNoteOf(
   }
 
   if (request.rescan !== null) {
-    return { tone: "blue", title: "Rescan", text: request.rescan.note, actedBy: request.rescan };
+    return {
+      tone: "blue",
+      title: message("statusNote.rescan"),
+      text: request.rescan.note,
+      actedBy: request.rescan,
+    };
   }
 
   const late = request.existingCopies.find((copy) => copy.foundAfterApproval);
@@ -124,8 +137,12 @@ export function iterationNoteOf(
 
   return {
     tone: "amber",
-    title: "Copy found after approval",
-    text: `${late.source}: ${late.state.toLowerCase()}, seen ${formatDay(late.seenAt)}. Nobody has decided over it — check before listing.`,
+    title: message("statusNote.copyFoundAfterApproval"),
+    text: message("statusNote.copyFoundAfterApprovalText", {
+      source: late.source,
+      state: late.state.toLowerCase(),
+      date: formatDay(late.seenAt),
+    }),
     actedBy: null,
   };
 }
@@ -156,7 +173,7 @@ export function staffRecordNoteOf(
 
   return {
     tone: "red",
-    title: "Declined",
+    title: message("statusNote.declined"),
     text: textFor("staff", declined.decline),
     actedBy: declined.decline,
   };
@@ -172,7 +189,7 @@ export function publicRecordNoteOf(record: DocumentRecord, userId: string): Stat
   if (latest.decision === "Denied") {
     return {
       tone: "red",
-      title: "Not accepted",
+      title: message("statusNote.notAccepted"),
       text: latest.decline.publicText,
       actedBy: null,
     };
@@ -185,8 +202,8 @@ export function publicRecordNoteOf(record: DocumentRecord, userId: string): Stat
   if (latest.decision === "Duplicate") {
     return {
       tone: "blue",
-      title: "Already being digitized",
-      text: "Somebody asked for this first — you are following that work.",
+      title: message("statusNote.alreadyBeingDigitized"),
+      text: message("statusNote.duplicateText"),
       actedBy: null,
     };
   }

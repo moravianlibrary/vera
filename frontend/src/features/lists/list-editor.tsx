@@ -66,7 +66,7 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { isSameSet, useDraft } from "@/hooks/use-draft";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPages } from "@/lib/format-number";
 
 interface ListFields {
   name: string;
@@ -302,7 +302,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
       <>
         <PriorityBadge priority={item.iteration.priority} />
         <span className="text-xs text-muted-foreground">
-          {item.pages === null ? "—" : `${formatCount(item.pages)} pp`}
+          {item.pages === null ? "—" : formatPages(item.pages)}
         </span>
       </>
     ),
@@ -348,7 +348,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
         rowId={(item) => item.iteration.id}
         target={{
           title: t("listEditor.onThisList"),
-          summary: `${t("listEditor.item", { count: onList.length })} · ${formatCount(pages)} pp`,
+          summary: `${t("listEditor.item", { count: onList.length })} · ${formatPages(pages)}`,
           items: onList,
           columns,
           card,
@@ -374,8 +374,7 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
         }}
         source={{
           title: t("listEditor.readyToList"),
-          summary:
-            poolCount === null ? "" : `${poolCount.total} · ${formatCount(poolCount.pages)} pp`,
+          summary: poolCount === null ? "" : `${poolCount.total} · ${formatPages(poolCount.pages)}`,
           items: pool.items === undefined ? undefined : [...takenOff, ...ready],
           columns,
           card,

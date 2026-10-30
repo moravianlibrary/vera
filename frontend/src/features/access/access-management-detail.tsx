@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import type { AccessNames } from "@/features/access/access-records";
 import { categoryPath, categorySourcesOf, uniquePeople } from "@/features/access/access-resources";
 import type { AccessSelection } from "@/features/access/access-view";
+import { i18n } from "@/i18n";
+
+const message = (key: string, options?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "access", ...options });
 
 export type ManagementSelection =
   | Exclude<AccessSelection, { kind: "watchlists" }>
@@ -58,7 +62,13 @@ export function CategoryAccessDetail({
     items.map((source) => (
       <DetailRow
         key={`${source.grantedOnId}:${source.viaGroupId ?? "direct"}:${source.userId}`}
-        note={`${source.viaGroupId === null ? "Direct" : `via ${names.group(source.viaGroupId)}`} · ${categoryPath(index, source.grantedOnId ?? categoryId)}`}
+        note={message("managementDetail.source", {
+          source:
+            source.viaGroupId === null
+              ? message("managementDetail.direct")
+              : message("managementDetail.viaGroup", { name: names.group(source.viaGroupId) }),
+          category: categoryPath(index, source.grantedOnId ?? categoryId),
+        })}
       >
         <RecordButton onClick={() => onSelect({ kind: "users", id: source.userId })}>
           {names.user(source.userId)}
@@ -67,26 +77,33 @@ export function CategoryAccessDetail({
     ));
   return (
     <div>
-      <p className="text-sm text-muted-foreground">
-        Custody of this category includes every descendant. Inherited assignments come from an
-        ancestor branch.
-      </p>
-      <DetailSection title="Assigned here">
-        {here.length === 0 ? <p className="text-sm text-muted-foreground">None.</p> : rows(here)}
+      <p className="text-sm text-muted-foreground">{message("managementDetail.description")}</p>
+      <DetailSection title={message("managementDetail.assignedHere")}>
+        {here.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{message("record.none")}</p>
+        ) : (
+          rows(here)
+        )}
       </DetailSection>
-      <DetailSection title="Inherited from ancestors">
+      <DetailSection title={message("managementDetail.inherited")}>
         {inherited.length === 0 ? (
-          <p className="text-sm text-muted-foreground">None.</p>
+          <p className="text-sm text-muted-foreground">{message("record.none")}</p>
         ) : (
           rows(inherited)
         )}
       </DetailSection>
-      <DetailSection title={`Effective custodians · ${people.length}`}>
-        {people.length === 0 && <p className="text-sm text-muted-foreground">Nobody.</p>}
+      <DetailSection
+        title={message("managementDetail.effectiveCustodians", { count: people.length })}
+      >
+        {people.length === 0 && (
+          <p className="text-sm text-muted-foreground">{message("record.nobody")}</p>
+        )}
         {people.map((userId) => (
           <DetailRow
             key={userId}
-            note={`${sources.filter((source) => source.userId === userId).length} source(s)`}
+            note={message("managementDetail.sourceCount", {
+              count: sources.filter((source) => source.userId === userId).length,
+            })}
           >
             <RecordButton onClick={() => onSelect({ kind: "users", id: userId })}>
               {names.user(userId)}
@@ -96,7 +113,7 @@ export function CategoryAccessDetail({
       </DetailSection>
       <Button asChild variant="outline" size="sm" className="mt-5">
         <Link to={`/categories?c=${encodeURIComponent(categoryId)}`}>
-          Open category and manage custody
+          {message("managementDetail.openCategory")}
         </Link>
       </Button>
     </div>

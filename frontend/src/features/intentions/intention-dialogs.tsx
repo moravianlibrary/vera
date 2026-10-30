@@ -63,7 +63,7 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery, useProjectsQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPageUnit } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
 const message = (key: string, options?: Record<string, unknown>) =>
@@ -692,7 +692,7 @@ function LandingNote({ values, edited }: { values: IntentionForm; edited: Intent
           {changes.map(([label, before, after]) => (
             <div key={label}>
               {label}: {formatCount(before)} → <b className="font-semibold">{formatCount(after)}</b>{" "}
-              pp
+              {formatPageUnit()}
             </div>
           ))}
         </div>

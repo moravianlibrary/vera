@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { i18n } from "@/i18n";
-import { formatCount, formatPercent } from "@/lib/format-number";
+import { formatCount, formatPages, formatPercent } from "@/lib/format-number";
 
 // What each category and the whole tree hold.
 export interface CategoryCounts {
@@ -264,7 +264,7 @@ function countOf(
     case "pages":
       return formatCount(totals.pages);
     case "ready":
-      return totals.readyPages === 0 ? muted("—") : `${formatCount(totals.readyPages)} pp`;
+      return totals.readyPages === 0 ? muted("—") : formatPages(totals.readyPages);
     default:
       return totals.documentCount;
   }

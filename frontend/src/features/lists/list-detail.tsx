@@ -104,7 +104,7 @@ export function ListDetailPane({ detail, session, onDeleted }: ListDetailPanePro
       />
 
       <div className="mt-4 grid gap-4">
-        <DetailCard title={`On this list — ${members.length}`}>
+        <DetailCard title={t("listDetail.onThisList", { count: members.length })}>
           {members.length === 0 && <Muted>{t("listDetail.membersEmpty")}</Muted>}
           {members.map((item) => (
             <MemberRow
@@ -136,7 +136,7 @@ function IntentionCards({ detail, canOpen }: { detail: ListDetail; canOpen: bool
             aside={
               <Muted>
                 {t("listDetail.countedItem", { count: counted.itemCount })} ·{" "}
-                {formatCount(counted.pages)} pp
+                {t("listDetail.pagesCount", { count: formatCount(counted.pages) })}
               </Muted>
             }
           >
@@ -195,6 +195,7 @@ interface MemberRowProps {
 }
 
 function MemberRow({ item, href, actions }: MemberRowProps) {
+  const { t } = useTranslation("lists");
   const { data: categories = [] } = useCategoriesQuery();
   const { document, iteration } = item;
 
@@ -204,7 +205,9 @@ function MemberRow({ item, href, actions }: MemberRowProps) {
         <span className="flex flex-col-reverse items-end gap-1 @md:flex-row @md:items-start @md:gap-2">
           <span className="flex flex-col items-end gap-1">
             <span className="tabular-nums">
-              {item.pages === null ? "—" : `${formatCount(item.pages)} pp`}
+              {item.pages === null
+                ? "—"
+                : t("listDetail.pagesCount", { count: formatCount(item.pages) })}
             </span>
             <StatusWithFootnote
               status={iterationStatusOf(iteration)}
