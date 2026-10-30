@@ -8,6 +8,10 @@ import "@/i18n";
 
 async function prepareApp() {
   if (import.meta.env.DEV && env.VITE_API_MODE === "mock") {
+    if (env.VITE_MOCK_SEED === "volume") {
+      const { loadVolumeSeed } = await import("@/mocks/volume-seed");
+      await loadVolumeSeed();
+    }
     const { worker } = await import("@/mocks/browser");
     await worker.start({ onUnhandledRequest: "bypass" }).catch((error: unknown) => {
       console.error("Mock API could not start; rendering the application anyway.", error);

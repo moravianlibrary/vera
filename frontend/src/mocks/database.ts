@@ -7,6 +7,7 @@ import type { Category, Watchlist } from "@vera/domain/entities";
 import { env } from "@/config/env";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
+import type { CatalogRecord } from "@/mocks/fixtures/catalog";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
 import { hookAttempts, hookDeliveries, hooks } from "@/mocks/fixtures/hooks";
@@ -82,6 +83,7 @@ export const database = {
   documents: [...records.documents],
   iterations: [...records.iterations],
   requests: [...records.requests],
+  volumeCatalogRecords: [] as CatalogRecord[],
   statusLog: [...records.statusLog],
   watchlists: [...watchlists],
   // Each person's own row for a watchlist they see: seen, place and delivery.

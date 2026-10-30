@@ -19,7 +19,7 @@ export function repairedSubjectsOf(catalogId: string): readonly string[] {
 }
 
 export function knownCatalogRecords(): CatalogRecord[] {
-  return [...catalogRecords, ...heldCatalogRecords()];
+  return [...catalogRecords, ...database.volumeCatalogRecords, ...heldCatalogRecords()];
 }
 
 // The document VERA holds for a catalog ID and unit, which together are unique

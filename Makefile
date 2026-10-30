@@ -10,6 +10,8 @@ ENGINE_URL := http://127.0.0.1:$(ENGINE_PORT)
 ENGINE_PID := .engine.pid
 ENGINE_LOG := .engine.log
 SEED ?= base
+SEED_NUMBER ?= 1
+SCALE ?= 1
 # live: the dev servers talk to the engine, started for them; mock: to the in-browser mock.
 API_MODE ?= live
 api-env = VITE_API_MODE=$(API_MODE) VITE_API_PROXY_TARGET=$(ENGINE_URL)
@@ -24,7 +26,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check obs-cluster obs-up obs-status obs-down obs-cluster-delete
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -214,6 +216,9 @@ set-version: ## Set VERSION and frontend package version (VERSION=x.y.z)
 	@test -n "$(VERSION)" || { echo "Usage: make set-version VERSION=x.y.z"; exit 1; }
 	@printf '%s\n' "$(VERSION)" > VERSION
 	cd frontend && bun -e 'const p = await Bun.file("package.json").json(); p.version = "$(VERSION)"; await Bun.write("package.json", JSON.stringify(p, null, 2) + "\n")'
+
+seed-volume: ## Generate the production-sized seed (SEED_NUMBER=1 SCALE=1)
+	bun engine/tools/seed-volume.ts --seed $(SEED_NUMBER) --scale $(SCALE)
 
 open-client: dev-frontend ## Start the client
 

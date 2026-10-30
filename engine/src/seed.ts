@@ -6,6 +6,7 @@
 import type { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { extendSeed } from "@vera/contract/seed-extends";
 import {
   accessGroupSchema,
   identitySchema,
@@ -14,7 +15,6 @@ import {
 } from "@vera/domain/access";
 import { categorySchema, userSchema } from "@vera/domain/entities";
 import { z } from "zod";
-import { extendSeed } from "./seed-extends";
 
 export const seedsDir = join(import.meta.dir, "..", "seeds");
 
@@ -84,20 +84,22 @@ export class SeedNotFound extends Error {}
 
 export const seedNamePattern = /^[a-z0-9-]+$/;
 
-export function readSeed(name: string, dir: string = seedsDir): Seed {
+export function readSeed(name: string, dir: string = seedsDir, chain: string[] = []): Seed {
+  if (chain.includes(name)) {
+    throw new Error(`seed ${name} extends itself through ${[...chain, name].join(" -> ")}`);
+  }
   const path = join(dir, `${name}.json`);
   if (!seedNamePattern.test(name) || !existsSync(path)) {
     throw new SeedNotFound(`There is no seed named ${name}.`);
   }
 
   const raw = JSON.parse(readFileSync(path, "utf8"));
-  // A seed extends at most one other, which may not extend in turn (installation extends
-  // nothing); a chain would hide where a record came from.
+  // A seed may extend another that extends in turn; a loop is refused.
   if (typeof raw.extends === "string") {
-    const parent = JSON.parse(readFileSync(join(dir, `${raw.extends}.json`), "utf8"));
-    if (parent.extends !== undefined) {
-      throw new Error(`${raw.extends} extends another seed; only one level is allowed.`);
-    }
+    const parent = readSeed(raw.extends, dir, [...chain, name]) as unknown as Record<
+      string,
+      unknown
+    >;
     return seedSchema.parse(extendSeed(parent, raw));
   }
 

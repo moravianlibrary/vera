@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { extendSeed } from "./seed-extends";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { extendSeed } from "@vera/contract/seed-extends";
+import { readSeed } from "./seed";
 
 describe("seed extensions", () => {
   it("lays child records over parent collections", () => {
@@ -54,5 +58,18 @@ describe("seed extensions", () => {
 
     expect((result.collections as Record<string, unknown>).userAccess).toEqual({ u2: 2, u1: 1 });
     expect(result.fakes).toEqual({ b: 2, a: 1 });
+  });
+
+  it("refuses an extension loop and names its path", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "vera-seed-loop-"));
+    try {
+      await writeFile(join(directory, "alpha.json"), JSON.stringify({ extends: "beta" }));
+      await writeFile(join(directory, "beta.json"), JSON.stringify({ extends: "alpha" }));
+      expect(() => readSeed("alpha", directory)).toThrow(
+        "seed alpha extends itself through alpha -> beta -> alpha",
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });

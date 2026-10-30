@@ -24,6 +24,7 @@ const envSchema = z.object({
   VITE_DEFAULT_LOCALE: z.string().default("cs"),
   VITE_MOCK_USER: z.enum(mockUserProfiles).default("curator"),
   VITE_MOCK_FAULT: z.enum(mockFaults).default("none"),
+  VITE_MOCK_SEED: z.enum(["fixtures", "volume"]).default("fixtures"),
   // OBS-pipeline: where the client sends its telemetry (an OTLP/HTTP base URL, such as
   // http://localhost:4318), and the collector's ingestion key. Without an endpoint, nothing loads.
   VITE_OTEL_ENDPOINT: z.preprocess(
