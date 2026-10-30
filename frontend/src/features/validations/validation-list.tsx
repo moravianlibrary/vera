@@ -3,7 +3,6 @@
 // that forbade it, the denial, what was accepted, or the defects still to rule on, verbatim when
 // there is one and counted when there are several, so that no one of them stands for the rest.
 // Grouped, a header opens each category or defect.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ValidationGroup, ValidationGrouping } from "@vera/contract/validations";
 import { severalInstances } from "@vera/contract/validations";
@@ -19,6 +18,7 @@ import {
 } from "@vera/domain/validations";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { Muted } from "@/components/detail-card";
 import { GroupHeader } from "@/components/lists/group-header";
@@ -29,8 +29,8 @@ import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
 import { validationsView } from "@/features/validations/validations-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
-import { plural } from "@/lib/plural";
 
 interface ValidationListProps {
   items: ValidationRow[] | undefined;
@@ -65,13 +65,17 @@ export function ValidationList({
   selectedId,
   onSelect,
 }: ValidationListProps) {
+  const { t } = useTranslation("validations");
   const references = useReferenceLabels(["pluginInstances"]);
   const leafOf = (categoryId: string) =>
     categories.find((category) => category.id === categoryId)?.name ?? categoryId;
   const count =
     total === undefined
-      ? "Documents"
-      : [plural(total, "document"), outstandingTotal ? `${outstandingTotal} outstanding` : null]
+      ? t("page.title")
+      : [
+          t("count.document", { count: total }),
+          outstandingTotal ? t("list.outstandingCount", { count: outstandingTotal }) : null,
+        ]
           .filter((part) => part !== null)
           .join(" · ");
 
@@ -97,7 +101,7 @@ export function ValidationList({
               <PriorityBadge priority={row.iteration.priority} />
               {outstanding.length > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  {outstanding.length} outstanding
+                  {t("list.outstandingCount", { count: outstanding.length })}
                 </span>
               )}
             </>
@@ -129,9 +133,9 @@ export function ValidationList({
       failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
-      loadingText="Loading what waits for review…"
+      loadingText={t("list.loading")}
       emptyText={emptyTextOf(reviews)}
-      loadingMoreText="Loading more…"
+      loadingMoreText={t("list.loadingMore")}
     />
   );
 }
@@ -150,39 +154,42 @@ function ValidationGroupHeader({
   categories: readonly Category[];
   instanceNameOf: (id: string) => string;
 }) {
+  const { t } = useTranslation("validations");
   const title =
     group.kind === "category"
       ? categoryLabelOf(categories, group.categoryId)
       : group.instanceId === null
-        ? "Nothing left to rule on"
+        ? t("group.nothing")
         : group.instanceId === severalInstances
-          ? "Defects of several kinds"
+          ? t("group.several")
           : instanceNameOf(group.instanceId);
 
   return (
     <GroupHeader
       title={<b className="font-semibold">{title}</b>}
-      meta={plural(group.total, "document")}
+      meta={t("count.document", { count: group.total })}
     />
   );
 }
 
 function emptyTextOf(reviews: readonly ReviewedState[] | undefined): string {
+  const t = i18n.getFixedT(null, "validations");
   const [only] = reviews ?? [];
   if (reviews?.length === 1 && only === "Needed") {
-    return "Nothing needs review in your custody.";
+    return t("list.emptyNeeded");
   }
 
-  return "Nothing in your custody matches.";
+  return t("list.emptyMatches");
 }
 
 export function validationColumns(
   leafOf: (categoryId: string) => string,
 ): ColumnDefinition<ValidationRow>[] {
+  const t = i18n.getFixedT(null, "validations");
   return [
     {
       key: "document",
-      header: "Document",
+      header: t("column.document"),
       track: "minmax(9rem,1fr)",
       cell: (row) => (
         <>
@@ -195,13 +202,13 @@ export function validationColumns(
     },
     {
       key: "status",
-      header: "Status",
+      header: t("column.status"),
       track: "fit-content(9rem)",
       cell: (row) => <IterationStatus row={row} />,
     },
     {
       key: "defects",
-      header: "Defects",
+      header: t("column.defects"),
       track: "max-content",
       isNumeric: true,
       cell: (row) => {
@@ -211,19 +218,19 @@ export function validationColumns(
     },
     {
       key: "priority",
-      header: "Priority",
+      header: t("column.priority"),
       track: "fit-content(5rem)",
       cell: (row) => <PriorityBadge priority={row.iteration.priority} />,
     },
     {
       key: "category",
-      header: "Category",
+      header: t("column.category"),
       track: "fit-content(7rem)",
       cell: (row) => <Muted>{leafOf(row.iteration.categoryId)}</Muted>,
     },
     {
       key: "since",
-      header: "Since",
+      header: t("column.since"),
       track: "max-content",
       isNumeric: true,
       cell: (row) => <Muted>{formatDay(row.waitingSince)}</Muted>,
@@ -247,13 +254,14 @@ function WhyLine({
   row: ValidationRow;
   instanceNameOf: (id: string) => string;
 }) {
+  const { t } = useTranslation("validations");
   const { iteration } = row;
 
   if (row.review === "Forbidden" && iteration.restriction !== null) {
     return (
       <>
         <b className="font-semibold text-tone-red-foreground">
-          Forbidden by {iteration.restriction.rule}:
+          {t("list.forbiddenBy", { rule: iteration.restriction.rule })}
         </b>{" "}
         {iteration.restriction.internalText ?? iteration.restriction.publicText}
       </>
@@ -264,8 +272,8 @@ function WhyLine({
     const denial = iteration.verdicts.findLast((verdict) => verdict.verdict === "Denied");
     return (
       <>
-        <b className="font-semibold text-tone-red-foreground">Denied:</b>{" "}
-        {denial?.note || denial?.publicText || "ruled substantial"}
+        <b className="font-semibold text-tone-red-foreground">{t("decision.denied")}:</b>{" "}
+        {denial?.note || denial?.publicText || t("list.ruledSubstantial")}
         {" · "}
         {deniedDefectsOf(iteration)
           .map((defect) => defectNameOf(defect, instanceNameOf))
@@ -277,8 +285,8 @@ function WhyLine({
   if (row.review === "Approved") {
     return (
       <>
-        <b className="font-semibold">Accepted</b> — {plural(iteration.defects.length, "defect")}{" "}
-        ruled tolerable
+        <b className="font-semibold">{t("review.accepted")}</b> —{" "}
+        {t("count.defect", { count: iteration.defects.length })} {t("list.ruledTolerable")}
       </>
     );
   }
@@ -290,7 +298,7 @@ function WhyLine({
   if (isFoundAfterScan(iteration)) {
     parts.push(
       <b key="scanned" className="font-semibold text-tone-purple-foreground">
-        Found after digitization
+        {t("list.foundAfterDigitization")}
       </b>,
     );
   }
@@ -298,7 +306,7 @@ function WhyLine({
   parts.push(
     outstanding.length > 1 || onlyDefect === undefined ? (
       <span key="defects">
-        <b className="font-semibold">{plural(outstanding.length, "defect")}</b> —{" "}
+        <b className="font-semibold">{t("count.defect", { count: outstanding.length })}</b> —{" "}
         {outstanding.map((defect) => defectNameOf(defect, instanceNameOf)).join(", ")}
       </span>
     ) : (
@@ -310,7 +318,7 @@ function WhyLine({
   );
 
   if (acceptedCount > 0) {
-    parts.push(<span key="accepted">{acceptedCount} already accepted, not shown again</span>);
+    parts.push(<span key="accepted">{t("list.acceptedNotShown", { count: acceptedCount })}</span>);
   }
 
   return parts.map((part, index) => (

@@ -11,12 +11,16 @@ import csAccess from "@/i18n/locales/cs/access.json";
 import csCommon from "@/i18n/locales/cs/common.json";
 import csDocuments from "@/i18n/locales/cs/documents.json";
 import csHistory from "@/i18n/locales/cs/history.json";
+import csRequests from "@/i18n/locales/cs/requests.json";
 import csSystem from "@/i18n/locales/cs/system.json";
+import csValidations from "@/i18n/locales/cs/validations.json";
 import enAccess from "@/i18n/locales/en/access.json";
 import enCommon from "@/i18n/locales/en/common.json";
 import enDocuments from "@/i18n/locales/en/documents.json";
 import enHistory from "@/i18n/locales/en/history.json";
+import enRequests from "@/i18n/locales/en/requests.json";
 import enSystem from "@/i18n/locales/en/system.json";
+import enValidations from "@/i18n/locales/en/validations.json";
 
 export const resources = {
   en: {
@@ -25,6 +29,8 @@ export const resources = {
     system: enSystem,
     history: enHistory,
     documents: enDocuments,
+    requests: enRequests,
+    validations: enValidations,
   },
   cs: {
     access: csAccess,
@@ -32,6 +38,8 @@ export const resources = {
     system: csSystem,
     history: csHistory,
     documents: csDocuments,
+    requests: csRequests,
+    validations: csValidations,
   },
 } as const;
 
@@ -41,7 +49,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: "en",
   fallbackLng: "en",
-  ns: ["access", "common", "system", "history", "documents"],
+  ns: ["access", "common", "system", "history", "documents", "requests", "validations"],
   defaultNS: "access",
   keySeparator: false,
   initAsync: false,

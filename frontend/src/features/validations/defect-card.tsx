@@ -3,7 +3,6 @@
 // corrected here: a defect is repaired in the catalog and picked up by Recheck. The page count is
 // the one exception (decided 2026-10-06): it is entered here, and entering it runs the checks
 // again.
-// TODO(rrandiak): labels move to i18n.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RecheckResult } from "@vera/contract/iterations";
@@ -11,6 +10,7 @@ import type { Defect, Iteration } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { enterPageCount } from "@/api/iterations";
 import { FieldError } from "@/components/iteration-dialogs";
@@ -30,6 +30,7 @@ interface DefectRowProps {
 }
 
 export function DefectRow({ defect, aside, children }: DefectRowProps) {
+  const { t } = useTranslation("validations");
   const references = useReferenceLabels(["pluginInstances"]);
   return (
     <div className="border-b py-3 first:pt-0 last:border-b-0 last:pb-0">
@@ -39,11 +40,13 @@ export function DefectRow({ defect, aside, children }: DefectRowProps) {
         </b>
         <span className="font-mono text-xs text-muted-foreground">{defect.subject}</span>
         <span className="ml-auto text-xs text-muted-foreground">
-          {aside ?? `found ${formatDay(defect.firstSeenAt)}`}
+          {aside ?? t("defect.found", { date: formatDay(defect.firstSeenAt) })}
         </span>
       </div>
       {defect.internalText !== null && <p className="mt-1">{defect.internalText}</p>}
-      <p className="mt-1 text-xs text-muted-foreground">Askers read: “{defect.publicText}”</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {t("defect.askersRead")} “{defect.publicText}”
+      </p>
       {children}
     </div>
   );
@@ -51,15 +54,16 @@ export function DefectRow({ defect, aside, children }: DefectRowProps) {
 
 // ---------------------------------------------------------------- the page count
 
-const pageCountFormSchema = z.object({
-  value: z
-    .string()
-    .trim()
-    .refine((value) => Number.isInteger(pageCountOf(value)) && pageCountOf(value) > 0, {
-      message: "Enter the pages counted, a whole number",
-    }),
-});
-type PageCountForm = z.infer<typeof pageCountFormSchema>;
+const pageCountFormSchema = (errorText: string) =>
+  z.object({
+    value: z
+      .string()
+      .trim()
+      .refine((value) => Number.isInteger(pageCountOf(value)) && pageCountOf(value) > 0, {
+        message: errorText,
+      }),
+  });
+type PageCountForm = z.infer<ReturnType<typeof pageCountFormSchema>>;
 
 // "1 412" and "1412" are the same count.
 function pageCountOf(value: string): number {
@@ -72,24 +76,25 @@ interface PageCountEntryProps {
 }
 
 export function PageCountEntry({ iteration, onRechecked }: PageCountEntryProps) {
+  const { t } = useTranslation("validations");
   const id = useId();
   const [isOpen, setIsOpen] = useState(false);
   const form = useForm<PageCountForm>({
-    resolver: zodResolver(pageCountFormSchema),
+    resolver: zodResolver(pageCountFormSchema(t("decision.pageError"))),
     defaultValues: { value: "" },
   });
   const save = useActionMutation({
     call: ({ value }: PageCountForm) => enterPageCount(iteration.id, { pages: pageCountOf(value) }),
     invalidates: validationInvalidations,
     refusalTexts: {
-      "iteration.scanned": "It has been scanned meanwhile; the scan counts the pages.",
+      "iteration.scanned": t("decision.scanConflict"),
     },
   });
 
   if (!isOpen) {
     return (
       <Button size="sm" variant="outline" className="mt-2" onClick={() => setIsOpen(true)}>
-        Enter page count…
+        {t("decision.enterPages")}
       </Button>
     );
   }
@@ -108,12 +113,12 @@ export function PageCountEntry({ iteration, onRechecked }: PageCountEntryProps) 
   return (
     <form className="mt-2 grid gap-2" onSubmit={submit}>
       <div className="grid gap-1.5">
-        <Label htmlFor={`${id}-value`}>Pages, counted</Label>
+        <Label htmlFor={`${id}-value`}>{t("decision.pagesCounted")}</Label>
         <Input
           id={`${id}-value`}
           autoFocus
           inputMode="numeric"
-          placeholder="e.g. 1 412"
+          placeholder={t("decision.pagePlaceholder")}
           className="max-w-40"
           {...form.register("value")}
         />
@@ -121,10 +126,10 @@ export function PageCountEntry({ iteration, onRechecked }: PageCountEntryProps) 
       <FieldError message={form.formState.errors.value?.message} />
       <div className="flex flex-wrap gap-2">
         <Button type="submit" size="sm" disabled={save.isPending}>
-          Save and recheck
+          {t("decision.saveRecheck")}
         </Button>
         <Button type="button" size="sm" variant="outline" onClick={() => setIsOpen(false)}>
-          Cancel
+          {t("decision.cancel")}
         </Button>
       </div>
     </form>

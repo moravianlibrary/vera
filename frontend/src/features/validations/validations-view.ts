@@ -3,7 +3,6 @@
 // Category, page-validation.js), Forbidden (Yes / No, as in Documents, decided 2026-10-06),
 // Defect (the plugin), Priority and Project as chips, and the day it started waiting as a range.
 // Grouped by category or by defect (component-interfaces.md §2.2, decided 2026-10-06).
-// TODO(rrandiak): labels move to i18n.
 
 import { answers } from "@vera/contract/documents";
 import type { ValidationGrouping, ValidationQuery } from "@vera/contract/validations";
@@ -22,16 +21,16 @@ import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
 export const reviewStateLabels = {
-  Needed: "Review needed",
-  Denied: "Denied in review",
-  Approved: "Accepted",
+  Needed: "validations:review.needed",
+  Denied: "validations:review.denied",
+  Approved: "validations:review.accepted",
 } as const satisfies Record<ReviewedState, string>;
 
 const priorityLabels = {
-  Urgent: "Urgent",
-  High: "High",
-  Normal: "Normal",
-  Low: "Low",
+  Urgent: "validations:priority.urgent",
+  High: "validations:priority.high",
+  Normal: "validations:priority.normal",
+  Low: "validations:priority.low",
 } as const satisfies Record<Priority, string>;
 
 export const validationsView: ViewDefinition<ValidationQuery, ValidationGrouping> = {
@@ -43,33 +42,41 @@ export const validationsView: ViewDefinition<ValidationQuery, ValidationGrouping
   fields: [
     {
       key: "reviews",
-      label: "Review",
+      label: "validations:filter.review",
       field: vocabulary(reviewedStates, reviewStateLabels),
       isQuick: true,
     },
     {
       key: "categoryIds",
-      label: "Category",
+      label: "validations:filter.category",
       field: { kind: "reference", reference: "categories" },
       isQuick: true,
     },
-    { key: "forbidden", label: "Forbidden", field: vocabulary(answers, answerLabels) },
+    {
+      key: "forbidden",
+      label: "validations:filter.forbidden",
+      field: vocabulary(answers, answerLabels),
+    },
     {
       key: "instances",
-      label: "Defect",
+      label: "validations:filter.defect",
       field: { kind: "reference", reference: "pluginInstances" },
     },
     {
       key: "priorities",
-      label: "Priority",
+      label: "validations:filter.priority",
       field: vocabulary(priorities.toReversed(), priorityLabels),
     },
-    { key: "projectIds", label: "Project", field: { kind: "reference", reference: "projects" } },
-    { key: "waiting", label: "Waiting since", field: { kind: "dateRange" } },
+    {
+      key: "projectIds",
+      label: "validations:filter.project",
+      field: { kind: "reference", reference: "projects" },
+    },
+    { key: "waiting", label: "validations:filter.waitingSince", field: { kind: "dateRange" } },
   ],
   groupings: [
-    { value: "category", label: "Group by category" },
-    { value: "defect", label: "Group by defect" },
+    { value: "category", label: "validations:group.category" },
+    { value: "defect", label: "validations:group.defect" },
   ],
   groupingParam: validationGroupingParam,
 };

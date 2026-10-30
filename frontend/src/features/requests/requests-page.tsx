@@ -2,13 +2,13 @@
 // caller's `request.read`, its asks beside it; `request.decide` adds the decision acts. It opens on awaiting a decision;
 // its state lives in the URL like Documents': the filter, `?id=` naming the open document,
 // `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
-// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { RequestDetail, RequestGroup } from "@vera/contract/requests";
 import { hasPermission } from "@vera/domain/permissions";
 import { Inbox } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { getProposalSettings } from "@/api/proposals";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
@@ -40,6 +40,7 @@ import { vocabulary } from "@/lib/view-definition";
 type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
 export function RequestsPage() {
+  const { t } = useTranslation("requests");
   const view = useViewUrlState(requestsView);
   const { data: propertyIndex } = usePropertiesQuery();
   const { query, selectedId, grouping, select } = view;
@@ -69,7 +70,7 @@ export function RequestsPage() {
     ? [
         {
           key: "sources" as const,
-          label: "Source",
+          label: "requests:filter.source",
           field: vocabulary(
             proposalSettings.entrySources.map(({ id }) => id),
             Object.fromEntries(proposalSettings.entrySources.map(({ id, name }) => [id, name])),
@@ -86,13 +87,13 @@ export function RequestsPage() {
           outcome: {
             title: decided.title,
             tone: "green",
-            heading: "Decided",
+            heading: t("page.decided"),
             summary: decided.summary,
             next:
               documentsEntry === undefined
                 ? undefined
                 : {
-                    label: `Open in ${documentsEntry.visibleLabel}`,
+                    label: t("decision.openDocuments", { label: documentsEntry.visibleLabel }),
                     href: `${documentsEntry.path}?id=${encodeURIComponent(decided.documentId)}`,
                   },
           },
@@ -100,14 +101,14 @@ export function RequestsPage() {
       : paneStateOf(
           selectedId,
           detail,
-          "This request is no longer within your reach",
-          failureOf(requestQuery, "Could not load this request."),
+          t("page.unavailable"),
+          failureOf(requestQuery, t("page.loadError")),
         );
   const detailPane = (
     <Pane
       state={paneState}
       emptyIcon={Inbox}
-      emptyText="Select a request"
+      emptyText={t("page.select")}
       render={(ready) => (
         <RequestDetailPane detail={ready} session={session} onDecided={setDecided} />
       )}
@@ -143,8 +144,8 @@ export function RequestsPage() {
           facets: summary?.propertyFacets,
           onChange: (properties) => view.setQuery({ ...query, properties }),
         }}
-        searchLabel="Search requests"
-        searchPlaceholder="Search — title, catalog ID, volume, who asked, batch"
+        searchLabel={t("page.search")}
+        searchPlaceholder={t("page.searchPlaceholder")}
       />
 
       <MasterDetail
@@ -155,7 +156,7 @@ export function RequestsPage() {
             total={summary?.total}
             askTotal={summary?.askTotal}
             isLoading={proposals.isLoading}
-            failure={failureOf(proposals, "Could not load requests.")}
+            failure={failureOf(proposals, t("page.listLoadError"))}
             paging={proposals.paging}
             grouping={grouping}
             onGroupingChange={view.setGrouping}
@@ -166,7 +167,7 @@ export function RequestsPage() {
           />
         }
         detail={detailPane}
-        detailTitle={detail?.row.record.document.title ?? "Request"}
+        detailTitle={detail?.row.record.document.title ?? t("page.detailTitle")}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {

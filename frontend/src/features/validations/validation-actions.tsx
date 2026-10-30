@@ -6,7 +6,6 @@
 // Cancel…, each with its reason. A forbidden item has no verdict here: a rule forbade it, and
 // only an administrator overrules it, so the curator may message them. There are no bulk
 // verdicts. Each act is offered only where the caller's grant reaches the item's category.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   CancellationRequest,
@@ -23,6 +22,7 @@ import type { ValidationRow } from "@vera/domain/validations";
 import { acceptedDefectsOf, defectNameOf, isFoundAfterScan } from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cancelIteration, recheckIteration } from "@/api/iterations";
 import { acceptDefects, denyDefects, revokeAcceptance } from "@/api/validations";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -38,15 +38,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
+import { i18n } from "@/i18n";
 
-const verdictRefusals = {
-  403: "You may no longer give this verdict.",
-  404: "It no longer waits here.",
-  409: "The defects have changed meanwhile; look again.",
-} as const;
+const verdictRefusals = () => ({
+  403: i18n.t("validations:action.noVerdict"),
+  404: i18n.t("validations:action.notWaiting"),
+  409: i18n.t("validations:action.defectsChanged"),
+});
 
 function askersHint(askerCount: number): string {
-  return askerCount <= 1 ? "the asker reads this" : `all ${askerCount} askers read this`;
+  return i18n.t(
+    askerCount <= 1 ? "validations:action.askerReads_one" : "validations:action.askerReads_other",
+    { count: askerCount },
+  );
 }
 
 // ---------------------------------------------------------------- accept and deny
@@ -63,6 +67,7 @@ export function VerdictControls({
   session,
   recheck,
 }: VerdictControlsProps & { recheck: ReactNode }) {
+  const { t } = useTranslation("validations");
   const id = useId();
   const { iteration } = row;
   const outstanding = outstandingDefects(iteration);
@@ -76,12 +81,12 @@ export function VerdictControls({
     call: (keys: readonly string[]) =>
       acceptDefects(iteration.id, { defectKeys: [...keys], note: note.trim() || null }),
     invalidates: validationInvalidations,
-    refusalTexts: verdictRefusals,
+    refusalTexts: verdictRefusals(),
   });
   const deny = useActionMutation({
     call: (denial: Denial) => denyDefects(iteration.id, denial),
     invalidates: validationInvalidations,
-    refusalTexts: verdictRefusals,
+    refusalTexts: verdictRefusals(),
   });
   const [failure, setFailure] = useState<string | null>(null);
 
@@ -99,10 +104,10 @@ export function VerdictControls({
   };
   const acceptLabel =
     outstanding.length === 1
-      ? "Accept it"
+      ? t("action.acceptIt")
       : toAccept.length === outstanding.length
-        ? `Accept all ${outstanding.length}`
-        : `Accept ${toAccept.length}`;
+        ? t("action.acceptAll", { count: outstanding.length })
+        : t("action.acceptCount", { count: toAccept.length });
   const runDeny = ({ publicText, internalNote }: ReasonTexts) =>
     deny.run({
       defectKeys: picked.map((defect) => defect.key),
@@ -114,20 +119,20 @@ export function VerdictControls({
     <div className="mt-3 grid gap-3 border-t pt-3">
       {mayAccept && outstanding.length > 1 && (
         <DefectPick
-          legend="Which to accept"
+          legend={t("action.whichToAccept")}
           defects={outstanding}
           pickedKeys={acceptKeys}
           onChange={setAcceptKeys}
         />
       )}
       {mayAccept && (
-        <Field id={`${id}-note`} label="Note" hint="optional; kept with the verdict">
+        <Field id={`${id}-note`} label={t("action.note")} hint={t("action.optionalKept")}>
           <Textarea
             id={`${id}-note`}
             rows={2}
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Why this is tolerable"
+            placeholder={t("action.tolerablePlaceholder")}
           />
         </Field>
       )}
@@ -149,7 +154,7 @@ export function VerdictControls({
             className="text-destructive"
             onClick={() => setIsDenying(true)}
           >
-            Deny…
+            {t("action.denyEllipsis")}
           </Button>
         )}
         {recheck}
@@ -159,16 +164,18 @@ export function VerdictControls({
       <ReasonDialog
         isOpen={isDenying}
         onClose={() => setIsDenying(false)}
-        title={`Deny — ${row.document.title}`}
+        title={t("action.denyTitle", { title: row.document.title })}
         description={
           isFoundAfterScan(iteration)
-            ? `Rule the defects substantial. It stays ${iteration.progress} and reads denied in review.`
-            : "Rule the defects substantial. It is held until they are repaired in the catalog; the denial lapses once they are gone."
+            ? t("action.denyAfterScanDescription", {
+                progress: t(`progress.${iteration.progress}`),
+              })
+            : t("action.denyDescription")
         }
         fields={
           outstanding.length > 1 && (
             <DefectPick
-              legend="Which are substantial"
+              legend={t("action.whichSubstantial")}
               defects={outstanding}
               pickedKeys={pickedKeys}
               onChange={setPickedKeys}
@@ -176,20 +183,26 @@ export function VerdictControls({
           )
         }
         publicText={{
-          label: "What they are told",
+          label: t("action.whatTold"),
           hint: askersHint(row.askerIds.length),
           isRequired: true,
-          placeholder: "About the record, never a motive",
+          placeholder: t("action.aboutRecordPlaceholder"),
           suggestion: picked.map((defect) => defect.publicText).join(" "),
         }}
-        internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
-        confirmLabel={picked.length > 1 ? `Deny ${picked.length}` : "Deny"}
+        internalNote={{
+          label: t("action.internalNote"),
+          hint: t("action.staffOnly"),
+          isRequired: false,
+        }}
+        confirmLabel={
+          picked.length > 1 ? t("action.denyCount", { count: picked.length }) : t("action.deny")
+        }
         isDestructive
         onConfirm={(texts) =>
           picked.length === 0
             ? Promise.resolve({
                 isDone: false,
-                refusal: { status: null, code: null, message: "Pick at least one defect." },
+                refusal: { status: null, code: null, message: t("action.pickDefect") },
               })
             : runDeny(texts)
         }
@@ -245,11 +258,12 @@ function DefectPick({
 // ---------------------------------------------------------------- revoke
 
 export function RevokeButton({ row, scope, session }: VerdictControlsProps) {
+  const { t } = useTranslation("validations");
   const revoke = useActionMutation({
     call: (keys: readonly string[]) =>
       revokeAcceptance(row.iteration.id, { defectKeys: [...keys] }),
     invalidates: validationInvalidations,
-    refusalTexts: { ...verdictRefusals, 409: "Nothing is accepted now." },
+    refusalTexts: { ...verdictRefusals(), 409: t("action.nothingAccepted") },
   });
   const [failure, setFailure] = useState<string | null>(null);
   if (!can(session, "validation.revoke", scope)) {
@@ -266,7 +280,7 @@ export function RevokeButton({ row, scope, session }: VerdictControlsProps) {
     <span className="flex items-center gap-2">
       {failure !== null && <span className="text-xs text-destructive">{failure}</span>}
       <Button size="sm" variant="outline" disabled={revoke.isPending} onClick={() => void run()}>
-        Revoke
+        {t("action.revoke")}
       </Button>
     </span>
   );
@@ -280,10 +294,11 @@ interface RecheckButtonProps extends VerdictControlsProps {
 
 // Reads the record from the catalog again and runs the checks: what was repaired there is gone.
 export function RecheckButton({ row, scope, session, onRechecked }: RecheckButtonProps) {
+  const { t } = useTranslation("validations");
   const recheck = useActionMutation({
     call: () => recheckIteration(row.iteration.id),
     invalidates: validationInvalidations,
-    refusalTexts: { 404: "It no longer waits here." },
+    refusalTexts: { 404: t("action.notWaiting") },
   });
   const [failure, setFailure] = useState<string | null>(null);
   if (!can(session, "iteration.recheck", scope)) {
@@ -301,7 +316,7 @@ export function RecheckButton({ row, scope, session, onRechecked }: RecheckButto
   return (
     <>
       <Button size="sm" variant="outline" disabled={recheck.isPending} onClick={() => void run()}>
-        {recheck.isPending ? "Rechecking…" : "Recheck"}
+        {recheck.isPending ? t("action.rechecking") : t("action.recheck")}
       </Button>
       {failure !== null && <span className="text-xs text-destructive">{failure}</span>}
     </>
@@ -326,11 +341,12 @@ export function useMoreActions({
   onHandedOver,
   onCancelled,
 }: MoreActionsOptions) {
+  const { t } = useTranslation("validations");
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
   const cancel = useActionMutation({
     call: (cancellation: CancellationRequest) => cancelIteration(row.iteration.id, cancellation),
     invalidates: validationInvalidations,
-    refusalTexts: { 409: "It is already held, or it has been scanned meanwhile." },
+    refusalTexts: { 409: t("action.cancelConflict") },
   });
   const { iteration } = row;
   const isForbidden = row.review === "Forbidden";
@@ -339,7 +355,7 @@ export function useMoreActions({
   if (!isForbidden && can(session, "iteration.classify", scope) && isReclassifiable(iteration)) {
     actions.push({
       id: "reclassify",
-      label: "Reclassify — category, priority…",
+      label: t("action.reclassify"),
       isInMenu: true,
       onSelect: () => setOpenDialog("reclassify"),
     });
@@ -348,7 +364,7 @@ export function useMoreActions({
   if (!isForbidden && can(session, "iteration.cancel", scope) && isCancellable(iteration)) {
     actions.push({
       id: "cancel",
-      label: "Cancel…",
+      label: t("action.cancelEllipsis"),
       isInMenu: true,
       isDestructive: true,
       onSelect: () => setOpenDialog("cancel"),
@@ -374,16 +390,20 @@ export function useMoreActions({
       <ReasonDialog
         isOpen={openDialog === "cancel"}
         onClose={() => setOpenDialog(null)}
-        title={`Cancel — ${row.document.title}`}
-        description="Hold it at the gate. It stays in Documents, where Resume lets it through again."
+        title={t("action.cancelTitle", { title: row.document.title })}
+        description={t("action.cancelDescription")}
         publicText={{
-          label: "Reason",
+          label: t("action.reason"),
           hint: askersHint(row.askerIds.length),
           isRequired: true,
-          placeholder: "e.g. Postponed — will be scheduled next quarter.",
+          placeholder: t("action.cancelPlaceholder"),
         }}
-        internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
-        confirmLabel="Cancel it"
+        internalNote={{
+          label: t("action.internalNote"),
+          hint: t("action.staffOnly"),
+          isRequired: false,
+        }}
+        confirmLabel={t("action.cancelIt")}
         isDestructive
         onConfirm={async ({ publicText, internalNote }) => {
           const result = await cancel.run({ publicText, internalText: internalNote || null });
@@ -404,16 +424,15 @@ export function useMoreActions({
 
 // A restriction takes no verdict; the overrule is an act on the record in Documents (ACT-overrule).
 export function ForbiddenCard({ session }: { session: Session }) {
+  const { t } = useTranslation("validations");
   const mayOverrule = can(session, "restriction.overrule");
 
   return (
-    <DetailCard title="What you can do">
+    <DetailCard title={t("action.whatYouCanDo")}>
       <p className="text-muted-foreground">
-        {mayOverrule
-          ? "Overrule it from Documents — More → Overrule restriction…; the rule is re-checked on every change to the record, and a re-check that no longer finds it clears it."
-          : "Nothing here acts on a restriction. If the rule is wrong for this item, message an administrator: they can overrule it. A re-check that no longer finds it clears it by itself."}
+        {mayOverrule ? t("action.overruleAdvice") : t("action.noOverruleAdvice")}
       </p>
-      <FinePrint>A restriction is set by a rule, never by a person.</FinePrint>
+      <FinePrint>{t("action.restrictionRule")}</FinePrint>
     </DetailCard>
   );
 }

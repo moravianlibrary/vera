@@ -2,7 +2,6 @@
 // (page-proposals.js rowOf). Under each row one line says why it is here: a copy that makes
 // approving a rescan, checks still running, the project, and the askers' reason verbatim, or how
 // many reasons there are when they differ, so that no one asker's reason stands for the rest.
-// TODO(rrandiak): labels move to i18n.
 
 import type { RequestGroup, RequestGrouping } from "@vera/contract/requests";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
@@ -21,7 +20,9 @@ import {
 } from "@vera/domain/requests";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { Muted } from "@/components/detail-card";
+import { existingCopyLabels } from "@/components/filters/value-labels";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import type { QueryFailure } from "@/components/query-state";
@@ -31,8 +32,8 @@ import { RequestStatusBadge } from "@/features/requests/request-status";
 import { requestsView } from "@/features/requests/requests-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useIsShownBatch } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
-import { plural } from "@/lib/plural";
 
 export interface RequestReferences {
   users: readonly User[];
@@ -72,10 +73,11 @@ export function RequestList({
   selectedId,
   onSelect,
 }: RequestListProps) {
+  const { t } = useTranslation("requests");
   const count =
     total === undefined || askTotal === undefined
-      ? "Requests"
-      : `${plural(total, "document")} · ${plural(askTotal, "ask")}`;
+      ? t("page.title")
+      : `${t("count.document", { count: total })} · ${t("count.ask", { count: askTotal })}`;
 
   return (
     <RecordList
@@ -95,7 +97,7 @@ export function RequestList({
           <>
             <RequestStatusBadge row={row} />
             <span className="text-xs text-muted-foreground">
-              {plural(askerIdsOf(row).length, "asker")}
+              {t("count.asker", { count: askerIdsOf(row).length })}
             </span>
             {isRescan(row) && <CopyCell row={row} />}
           </>
@@ -132,18 +134,19 @@ export function RequestList({
       failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
-      loadingText="Loading requests…"
-      emptyText="Nothing is waiting for a decision."
-      loadingMoreText="Loading more requests…"
+      loadingText={t("list.loading")}
+      emptyText={t("list.empty")}
+      loadingMoreText={t("list.loadingMore")}
     />
   );
 }
 
 export function requestColumns(references: RequestReferences): ColumnDefinition<RequestRow>[] {
+  const t = i18n.getFixedT(null, "requests");
   return [
     {
       key: "document",
-      header: "Document",
+      header: t("column.document"),
       track: "minmax(9rem,1fr)",
       cell: (row) => (
         <>
@@ -159,20 +162,20 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "status",
-      header: "Status",
+      header: t("column.status"),
       track: "fit-content(9rem)",
       cell: (row) => <RequestStatusBadge row={row} />,
     },
     {
       key: "askers",
-      header: "Askers",
+      header: t("column.askers"),
       track: "max-content",
       isNumeric: true,
       cell: (row) => askerIdsOf(row).length,
     },
     {
       key: "pages",
-      header: "Pages",
+      header: t("column.pages"),
       track: "max-content",
       isNumeric: true,
       cell: (row) => {
@@ -182,7 +185,7 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "asked",
-      header: "Asked",
+      header: t("column.asked"),
       track: "max-content",
       isNumeric: true,
       cell: (row) => {
@@ -192,7 +195,7 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "copy",
-      header: "Existing copy",
+      header: t("column.existingCopy"),
       track: "fit-content(9rem)",
       cell: (row) => <CopyCell row={row} />,
     },
@@ -213,14 +216,16 @@ export function custodyNamesOf(row: RequestRow, custodies: readonly RequestCusto
         return custodyId;
       }
 
-      return custody.isFallback ? "fallback" : custody.name;
+      return custody.isFallback ? i18n.t("requests:copy.fallback") : custody.name;
     })
     .join(", ");
 }
 
 // The copy's link lives in the pane: a row is one button, and holds nothing else to press.
 function CopyBadge({ copy }: { copy: ExistingCopy }) {
-  return <ToneBadge tone="purple">{`${copy.source}: ${copy.state}`}</ToneBadge>;
+  const { t } = useTranslation("common");
+  const state = copy.state === "NotFound" ? copy.state : t(existingCopyLabels[copy.state]);
+  return <ToneBadge tone="purple">{`${copy.source}: ${state}`}</ToneBadge>;
 }
 
 interface WhyLineProps {
@@ -231,12 +236,13 @@ interface WhyLineProps {
 }
 
 function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
+  const { t } = useTranslation("requests");
   const first = firstAskOf(row);
   const isShownBatch = useIsShownBatch();
   if (row.decision === "Denied" && first?.decision === "Denied") {
     return (
       <>
-        <b className="font-semibold text-tone-red-foreground">Declined:</b>{" "}
+        <b className="font-semibold text-tone-red-foreground">{t("list.declinedPrefix")}</b>{" "}
         {first.decline.publicText}
       </>
     );
@@ -245,7 +251,7 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   if (row.decision === "Withdrawn" && first?.decision === "Withdrawn") {
     return (
       <>
-        <b className="font-semibold">Withdrawn</b> {formatDay(first.withdrawnAt)}
+        <b className="font-semibold">{t("status.withdrawn")}</b> {formatDay(first.withdrawnAt)}
         {first.reason !== null && ` — “${first.reason}”`}
       </>
     );
@@ -256,13 +262,13 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   if (copy !== undefined) {
     parts.push(
       <b key="copy" className="font-semibold text-tone-purple-foreground">
-        {copy.source} already has it
+        {t("list.copyAlreadyHas", { source: copy.source })}
       </b>,
     );
   } else if (isBeingChecked(row)) {
     parts.push(
       <b key="checking" className="font-semibold">
-        Checks still running
+        {t("list.checksRunning")}
       </b>,
     );
   }
@@ -274,9 +280,9 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
     }
 
     const note = isAfterProjectApproval(row)
-      ? "after the project's approval"
+      ? t("list.afterProjectApproval")
       : project.state === "Proposed"
-        ? "project proposed"
+        ? t("list.projectProposed")
         : null;
     parts.push(
       <span key={project.id}>
@@ -291,12 +297,12 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   parts.push(
     reasons.length > 1 ? (
       <b key="reasons" className="font-semibold">
-        {reasons.length} reasons
+        {t("list.reasonCount", { count: reasons.length })}
       </b>
     ) : onlyReason !== undefined ? (
       <span key="reasons">“{onlyReason}”</span>
     ) : (
-      <i key="reasons">no reason given</i>
+      <i key="reasons">{t("fact.noReason")}</i>
     ),
   );
 
@@ -305,7 +311,9 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
       (batchId) => batchId !== homeBatchId && isShownBatch(batchId),
     );
     if (elsewhere.length > 0) {
-      parts.push(<span key="elsewhere">also asked in {elsewhere.join(", ")}</span>);
+      parts.push(
+        <span key="elsewhere">{t("list.askedElsewhere", { batches: elsewhere.join(", ") })}</span>,
+      );
     }
   }
 

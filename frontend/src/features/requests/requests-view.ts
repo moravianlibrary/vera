@@ -1,7 +1,6 @@
 // The Requests view's declaration (component-interfaces.md §9.2): its filter in the URL, the
 // watchlist comparer, its fields (Decision and Request custody on the bar, the rest as chips,
 // and the advanced range Asked, filtering.md §6) and its groupings.
-// TODO(rrandiak): labels move to i18n.
 
 import { answers } from "@vera/contract/documents";
 import type { AskerCount, RequestGrouping, RequestQuery } from "@vera/contract/requests";
@@ -22,21 +21,21 @@ import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
 const proposalDecisionLabels = {
-  Pending: "Awaiting a decision",
-  Denied: "Declined",
-  Withdrawn: "Withdrawn",
+  Pending: "requests:status.awaitingDecision",
+  Denied: "requests:status.declined",
+  Withdrawn: "requests:status.withdrawn",
 } as const satisfies Record<ProposalDecision, string>;
 
 const documentTypeLabels = {
-  Periodical: "Periodical",
-  Monograph: "Monograph",
-  Manuscript: "Manuscript",
-  Map: "Map",
+  Periodical: "requests:material.periodical",
+  Monograph: "requests:material.monograph",
+  Manuscript: "requests:material.manuscript",
+  Map: "requests:material.map",
 } as const satisfies Record<DocumentType, string>;
 
 const askerCountLabels = {
-  One: "One",
-  Several: "More than one",
+  One: "requests:askerCount.one",
+  Several: "requests:askerCount.several",
 } as const satisfies Record<AskerCount, string>;
 
 export const requestsView: ViewDefinition<RequestQuery, RequestGrouping> = {
@@ -48,40 +47,56 @@ export const requestsView: ViewDefinition<RequestQuery, RequestGrouping> = {
   fields: [
     {
       key: "decisions",
-      label: "Decision",
+      label: "requests:filter.decision",
       field: vocabulary(proposalDecisions, proposalDecisionLabels),
       isQuick: true,
     },
     {
       key: "custodyIds",
-      label: "Request custody",
+      label: "requests:filter.custody",
       field: { kind: "reference", reference: "requestCustodies" },
       isQuick: true,
     },
     {
       key: "documentTypes",
-      label: "Material type",
+      label: "requests:filter.materialType",
       field: vocabulary(documentTypeSchema.options, documentTypeLabels),
     },
-    { key: "projectIds", label: "Project", field: { kind: "reference", reference: "projects" } },
+    {
+      key: "projectIds",
+      label: "requests:filter.project",
+      field: { kind: "reference", reference: "projects" },
+    },
     {
       key: "existingCopies",
-      label: "Existing copy",
+      label: "requests:filter.existingCopy",
       field: vocabulary(existingCopyStates.toReversed(), existingCopyLabels),
     },
-    { key: "askerIds", label: "Asked by", field: { kind: "reference", reference: "users" } },
-    { key: "batchIds", label: "Batch", field: { kind: "reference", reference: "batches" } },
-    { key: "askerCounts", label: "Askers", field: vocabulary(askerCounts, askerCountLabels) },
+    {
+      key: "askerIds",
+      label: "requests:filter.askedBy",
+      field: { kind: "reference", reference: "users" },
+    },
+    {
+      key: "batchIds",
+      label: "requests:filter.batch",
+      field: { kind: "reference", reference: "batches" },
+    },
+    {
+      key: "askerCounts",
+      label: "requests:filter.askers",
+      field: vocabulary(askerCounts, askerCountLabels),
+    },
     {
       key: "afterProjectApproval",
-      label: "After the project's approval",
+      label: "requests:filter.afterApproval",
       field: vocabulary(answers, answerLabels),
     },
-    { key: "asked", label: "Asked", field: { kind: "dateRange" } },
+    { key: "asked", label: "requests:filter.asked", field: { kind: "dateRange" } },
   ],
   groupings: [
-    { value: "batch", label: "Group by batch" },
-    { value: "requester", label: "Group by requester" },
+    { value: "batch", label: "requests:group.batch" },
+    { value: "requester", label: "requests:group.requester" },
   ],
   groupingParam: requestGroupingParam,
 };

@@ -4,7 +4,6 @@
 // of the cards; the category opens on a Classifier plugin's suggestion, when there is one
 // (plugins.md §4.13).
 // Beside the heading, *Message askers…* writes to everyone who asked (messaging.md §3).
-// TODO(rrandiak): labels move to i18n.
 
 import type { Decline, RequestDetail } from "@vera/contract/requests";
 import { documentIdentifierOf, existingCopiesOf } from "@vera/domain/documents";
@@ -22,6 +21,7 @@ import {
 } from "@vera/domain/requests";
 import { Sparkles } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/http";
 import { declineProposal } from "@/api/requests";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -36,6 +36,7 @@ import { DetailCard, DetailRow, Muted, StatTiles } from "@/components/detail-car
 import { MessageDialog } from "@/components/dialogs/message-dialog";
 import type { ReasonTexts } from "@/components/dialogs/reason-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
+import { existingCopyLabels } from "@/components/filters/value-labels";
 import { visibleNavigation } from "@/components/layout/navigation";
 import {
   AskersCard,
@@ -63,6 +64,7 @@ import {
   useRequestCustodiesQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
@@ -80,6 +82,7 @@ interface RequestDetailPaneProps {
 }
 
 export function RequestDetailPane({ detail, session, onDecided }: RequestDetailPaneProps) {
+  const { t } = useTranslation("requests");
   const { row, log, canDecide } = detail;
   const { record } = row;
   const { document } = record;
@@ -96,7 +99,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
   if (messageChannels.length > 0) {
     headingActions.push({
       id: "message",
-      label: "Message askers…",
+      label: t("decision.messageAskers"),
       onSelect: () => setIsMessaging(true),
     });
   }
@@ -104,7 +107,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
   if (documents !== undefined) {
     headingActions.push({
       id: "documents",
-      label: `Open in ${documents.visibleLabel} →`,
+      label: t("decision.openDocuments", { label: documents.visibleLabel }),
       href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
     });
   }
@@ -115,7 +118,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
         <RecordHeading
           title={document.title}
           identifier={documentIdentifierOf(document)}
-          details={[document.type, document.shelfMark]}
+          details={[t(`material.${document.type.toLowerCase()}`), document.shelfMark]}
         />
         <ActionBar actions={headingActions} className="mb-4" />
       </div>
@@ -140,7 +143,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
         onClose={() => setIsMessaging(false)}
         subject={{ kind: "proposal", id: document.id }}
         label={document.title}
-        recipientLabel="who asked"
+        recipientLabel={t("decision.whoAsked")}
       />
     </article>
   );
@@ -177,6 +180,7 @@ interface DecideCardProps {
 // One decision for every asker (status-model.md §2.7). Approving needs a category, and over a
 // copy a note on why it is scanned again; declining needs what every asker is told.
 function DecideCard({ row, projects, onDecided }: DecideCardProps) {
+  const { t } = useTranslation("requests");
   const fieldId = useId();
   const { data: categories = [] } = useCategoriesQuery();
   const { approve } = useDecisionMutations();
@@ -185,7 +189,7 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
       declineProposal(documentId, decline),
     invalidates: decisionInvalidations,
     act: "ACT-decline",
-    refusalTexts: { 409: "Someone has decided it meanwhile." },
+    refusalTexts: { 409: t("decision.decisionConflict") },
   });
   const prefilled = prefilledPriorityOf(row, projects);
   // It opens on the classifier's leaf; the decider confirms or changes it.
@@ -197,26 +201,24 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
   const documentId = row.record.document.id;
   const title = row.record.document.title;
   const askCount = asksOf(row).length;
-  const forAll = askCount > 1 ? ` for all ${askCount}` : "";
+  const forAll = askCount > 1 ? ` ${t("decision.forAll", { count: askCount })}` : "";
   const rescan = isRescan(row);
   const isSaving = approve.isPending || decline.isPending;
   const failure = approve.error;
 
   if (isBeingChecked(row)) {
     return (
-      <DetailCard title="Decide">
-        <p className="text-muted-foreground">
-          The checks have not answered yet. It can be decided once they have.
-        </p>
+      <DetailCard title={t("decision.decide")}>
+        <p className="text-muted-foreground">{t("decision.checksPending")}</p>
       </DetailCard>
     );
   }
 
   const approvalRefusal =
     categoryId === null
-      ? "Choose a category"
+      ? t("decision.chooseCategory")
       : rescan && rescanNote.trim() === ""
-        ? "Say why it is scanned again"
+        ? t("decision.rescanReason")
         : null;
 
   const submitApproval = () => {
@@ -226,10 +228,12 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
 
     const approval = { categoryId, priority, rescanNote: rescan ? rescanNote.trim() : null };
     const summary = joinDetails([
-      rescan ? "Approved as rescan" : "Approved",
+      rescan ? t("decision.approvedRescan") : t("decision.approved"),
       categoryLabelOf(categories, categoryId),
       priority,
-      askCount === 1 ? "the asker is told" : `all ${askCount} askers are told`,
+      t(askCount === 1 ? "decision.askerTold_one" : "decision.askerTold_other", {
+        count: askCount,
+      }),
     ]);
     // The promise settles even once the refetch has taken this card away; a failure shows below.
     approve
@@ -242,17 +246,17 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
     decline.run({ documentId, decline: { publicText, internalText: internalNote || null } });
 
   return (
-    <DetailCard title={`Decide${forAll}`}>
+    <DetailCard title={t("decision.decideWithCount", { forAll })}>
       <div className="grid gap-3">
         <div className="grid gap-3 @md:grid-cols-[minmax(0,1fr)_10rem]">
-          <Field id={`${fieldId}-category`} label="Category">
+          <Field id={`${fieldId}-category`} label={t("decision.category")}>
             <CategorySelect
               id={`${fieldId}-category`}
               value={categoryId}
               onChange={setCategoryId}
             />
           </Field>
-          <Field id={`${fieldId}-priority`} label="Priority">
+          <Field id={`${fieldId}-priority`} label={t("decision.priority")}>
             <PrioritySelect id={`${fieldId}-priority`} value={priority} onChange={setPriority} />
           </Field>
         </div>
@@ -266,17 +270,24 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
         )}
         {prefilled !== null && (
           <p className="text-xs text-muted-foreground">
-            Pre-filled from {prefilled.project.name}, approved at {prefilled.priority}.
+            {t("decision.prefilled", {
+              project: prefilled.project.name,
+              priority: t(`priority.${prefilled.priority.toLowerCase()}`),
+            })}
           </p>
         )}
         {rescan && (
-          <Field id={`${fieldId}-rescan`} label="Why scan it again" hint="kept in the history">
+          <Field
+            id={`${fieldId}-rescan`}
+            label={t("decision.whyRescan")}
+            hint={t("decision.keptInHistory")}
+          >
             <Textarea
               id={`${fieldId}-rescan`}
               rows={2}
               value={rescanNote}
               onChange={(event) => setRescanNote(event.target.value)}
-              placeholder="e.g. the existing scan is 150 dpi greyscale"
+              placeholder={t("decision.rescanPlaceholder")}
             />
           </Field>
         )}
@@ -287,7 +298,7 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
             disabled={isSaving || approvalRefusal !== null}
             onClick={submitApproval}
           >
-            {rescan ? "Approve as rescan" : "Approve"}
+            {rescan ? t("decision.approveRescan") : t("decision.approve")}
             {forAll}
           </Button>
           <Button
@@ -297,7 +308,7 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
             disabled={isSaving}
             onClick={() => setIsDeclining(true)}
           >
-            Decline{forAll}…
+            {t("decision.declineWithCount", { forAll })}…
           </Button>
           {approvalRefusal !== null && (
             <span className="text-xs text-muted-foreground">{approvalRefusal}</span>
@@ -307,16 +318,22 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
         <ReasonDialog
           isOpen={isDeclining}
           onClose={() => setIsDeclining(false)}
-          title={`Decline ${title}`}
-          description="Decline the proposal for every asker, with what they are told."
+          title={t("decision.declineTitle", { title })}
+          description={t("decision.declineDescription")}
           publicText={{
-            label: "What they are told",
-            hint: askCount === 1 ? "the asker reads this" : `all ${askCount} askers read this`,
+            label: t("decision.publicLabel"),
+            hint: t(askCount === 1 ? "decision.askerReads_one" : "decision.askerReads_other", {
+              count: askCount,
+            }),
             isRequired: true,
-            placeholder: "About the document, never a motive",
+            placeholder: t("decision.publicPlaceholder"),
           }}
-          internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
-          confirmLabel={`Decline${forAll}`}
+          internalNote={{
+            label: t("decision.internalLabel"),
+            hint: t("decision.staffOnly"),
+            isRequired: false,
+          }}
+          confirmLabel={t("decision.declineWithCount", { forAll })}
           isDestructive
           onConfirm={submitDecline}
         />
@@ -324,8 +341,8 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
         {failure !== null && (
           <p className="text-xs text-destructive">
             {failure instanceof ApiError && failure.status === conflictStatus
-              ? "Someone has decided it meanwhile."
-              : "The decision could not be saved. Try again."}
+              ? t("decision.decisionConflict")
+              : t("decision.saveFailure")}
           </p>
         )}
       </div>
@@ -345,6 +362,7 @@ interface SuggestionLineProps {
 // The classifier's leaf and its reason, named by the instance that made it; once changed, the
 // suggestion stays in view with a way back, and the approval logs it as overruled.
 function SuggestionLine({ suggestion, categories, categoryId, onRestore }: SuggestionLineProps) {
+  const { t } = useTranslation("requests");
   const isKept = categoryId === suggestion.categoryId;
   const leaf = categoryLabelOf(categories, suggestion.categoryId);
   return (
@@ -353,7 +371,7 @@ function SuggestionLine({ suggestion, categories, categoryId, onRestore }: Sugge
         aria-hidden
         className="mr-1 inline size-3.5 align-[-0.15em] text-tone-blue-foreground"
       />
-      {isKept ? "Suggested" : <>{leaf} was suggested</>} by{" "}
+      {isKept ? t("decision.suggested") : t("decision.leafSuggested", { leaf })} {t("decision.by")}{" "}
       <b className="font-semibold text-foreground">{suggestion.classifier.name}</b>:{" "}
       {suggestion.reason}.
       {!isKept && (
@@ -364,7 +382,7 @@ function SuggestionLine({ suggestion, categories, categoryId, onRestore }: Sugge
             className="font-medium text-foreground underline underline-offset-2"
             onClick={() => onRestore(suggestion.categoryId)}
           >
-            Use it
+            {t("decision.useSuggestion")}
           </button>
         </>
       )}
@@ -376,6 +394,7 @@ function SuggestionLine({ suggestion, categories, categoryId, onRestore }: Sugge
 
 // What stands out about the row: how it was decided, or a copy that makes approving a rescan.
 function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string) => string }) {
+  const { t } = useTranslation("requests");
   const first = firstAskOf(row);
   const [copy] = existingCopiesOf(asksOf(row));
 
@@ -385,10 +404,13 @@ function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string
       <StatusNote
         tone="red"
         className="mb-4"
-        title={`Declined by ${nameOf(decline.actorId)}, ${formatDay(decline.at)}`}
+        title={t("note.declinedBy", {
+          actor: nameOf(decline.actorId),
+          date: formatDay(decline.at),
+        })}
       >
         {decline.internalText !== null && `${decline.internalText} `}
-        They were told: “{decline.publicText}”
+        {t("note.theyWereTold")} “{decline.publicText}”
       </StatusNote>
     );
   }
@@ -398,9 +420,9 @@ function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string
       <StatusNote
         tone="slate"
         className="mb-4"
-        title={`Withdrawn by the asker, ${formatDay(first.withdrawnAt)}`}
+        title={t("note.withdrawnByAsker", { date: formatDay(first.withdrawnAt) })}
       >
-        {first.reason === null ? "No reason given." : `“${first.reason}”`}
+        {first.reason === null ? t("fact.noReason") : `“${first.reason}”`}
       </StatusNote>
     );
   }
@@ -413,31 +435,40 @@ function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string
     <StatusNote
       tone="purple"
       className="mb-4"
-      title={`${copy.source}: ${copy.state.toLowerCase()}`}
+      title={t("note.copyTitle", {
+        source: copy.source,
+        state:
+          copy.state === "NotFound"
+            ? copy.state.toLowerCase()
+            : i18n.t(existingCopyLabels[copy.state]).toLowerCase(),
+      })}
     >
-      Approving scans it again.
+      {t("fact.approvingAgain")}
     </StatusNote>
   );
 }
 
 function RequestFacts({ row }: { row: RequestRow }) {
+  const { t } = useTranslation("requests");
   const first = firstAskOf(row);
   const isShownBatch = useIsShownBatch();
   const elsewhere = batchIdsOf(row).filter(
     (batchId) => batchId !== first?.batchId && isShownBatch(batchId),
   );
   const batchLine = [
-    first === null || !isShownBatch(first.batchId) ? "asked on its own" : `in ${first.batchId}`,
-    ...elsewhere.map((batchId) => `also ${batchId}`),
+    first === null || !isShownBatch(first.batchId)
+      ? t("note.askedOnOwn")
+      : t("note.inBatch", { batch: first.batchId }),
+    ...elsewhere.map((batchId) => t("note.alsoBatch", { batch: batchId })),
   ].join(" · ");
 
   return (
     <StatTiles
       stats={[
-        { label: "Status", value: <RequestStatusBadge row={row} />, isText: true },
-        { label: "Askers", value: askerIdsOf(row).length },
+        { label: t("fact.status"), value: <RequestStatusBadge row={row} />, isText: true },
+        { label: t("fact.askers"), value: askerIdsOf(row).length },
         {
-          label: row.decision === "Pending" ? "Waiting since" : "First asked",
+          label: t(row.decision === "Pending" ? "fact.waitingSince" : "fact.firstAsked"),
           value: first === null ? "—" : formatDay(first.at),
           foot: batchLine,
           isText: true,
@@ -457,6 +488,7 @@ function PlacedCard({
   projects: readonly Project[];
   custodies: readonly RequestCustody[];
 }) {
+  const { t } = useTranslation("requests");
   const placed = row.custodyIds.map(
     (custodyId) =>
       custodies.find((custody) => custody.id === custodyId) ?? {
@@ -472,31 +504,30 @@ function PlacedCard({
   });
 
   return (
-    <DetailCard title="Placed in">
-      <div className="text-xs text-muted-foreground">Request custody</div>
+    <DetailCard title={t("fact.placedIn")}>
+      <div className="text-xs text-muted-foreground">{t("fact.requestCustody")}</div>
       <div className="mt-1 flex flex-wrap gap-1.5">
         {placed.map((custody) => (
           <ToneBadge key={custody.id} tone={custody.isFallback ? "amber" : "slate"}>
-            {custody.isFallback ? `${custody.name} · no rule placed it` : custody.name}
+            {custody.isFallback ? t("fact.fallbackCustody", { name: custody.name }) : custody.name}
           </ToneBadge>
         ))}
       </div>
 
       {asked.length > 0 && (
         <div className="mt-3.5">
-          <div className="text-xs text-muted-foreground">Project</div>
+          <div className="text-xs text-muted-foreground">{t("fact.project")}</div>
           {asked.map((project) => (
             <DetailRow
               key={project.id}
-              aside={
-                project.state === "Proposed" && <Muted>approving the project approves it too</Muted>
-              }
+              aside={project.state === "Proposed" && <Muted>{t("fact.proposedProject")}</Muted>}
             >
               <b className="font-semibold">{project.name}</b>
               <div className="text-muted-foreground">
-                {project.state}
-                {project.state === "Approved" && ` at ${project.priority}`}
-                {isAfterProjectApproval(row) && " · proposed after its approval"}
+                {t(`projectState.${project.state.toLowerCase()}`)}
+                {project.state === "Approved" &&
+                  ` at ${t(`priority.${project.priority.toLowerCase()}`)}`}
+                {isAfterProjectApproval(row) && ` · ${t("fact.proposedAfterApproval")}`}
               </div>
             </DetailRow>
           ))}

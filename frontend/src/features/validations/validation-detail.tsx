@@ -6,7 +6,6 @@
 // reads it again; only a page count is entered here. Reclassify and Cancel… sit in More ▾
 // (validation-actions.tsx). A forbidden item says what the rule said and offers *Message
 // admins…*. Then the attempt, the catalog record and the history.
-// TODO(rrandiak): labels move to i18n.
 
 import type { RecheckResult } from "@vera/contract/iterations";
 import type { ValidationDetail } from "@vera/contract/validations";
@@ -25,6 +24,7 @@ import {
 } from "@vera/domain/validations";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
@@ -50,7 +50,6 @@ import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
-import { plural } from "@/lib/plural";
 
 // What the pane says once an act has taken the item out of the view.
 export interface LeftOutcome extends Outcome {
@@ -64,6 +63,7 @@ interface ValidationDetailPaneProps {
 }
 
 export function ValidationDetailPane({ detail, session, onLeft }: ValidationDetailPaneProps) {
+  const { t } = useTranslation("validations");
   const { row, log } = detail;
   const { document, iteration } = row;
   const { data: categories = [] } = useCategoriesQuery();
@@ -82,7 +82,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
     documents === undefined
       ? undefined
       : {
-          label: `Open in ${documents.visibleLabel}`,
+          label: t("detail.openDocuments", { label: documents.visibleLabel }),
           href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
         };
   const onRechecked = (result: RecheckResult) => {
@@ -91,10 +91,10 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         iterationId: iteration.id,
         title: document.title,
         tone: "green",
-        heading: "Rechecked",
+        heading: t("decision.rechecked"),
         summary: joinDetails([
-          "The checks found nothing left to rule on",
-          result.progress === "Ready" ? "it is Ready" : null,
+          t("detail.checksClear"),
+          result.progress === "Ready" ? t(`progress.${result.progress}`) : null,
         ]),
         next,
       });
@@ -113,9 +113,8 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         iterationId: iteration.id,
         title: document.title,
         tone: "slate",
-        heading: "Handed over",
-        summary:
-          "Reclassified into a category outside your custody; whoever holds it reviews it now",
+        heading: t("detail.handedOver"),
+        summary: t("detail.handedOverSummary"),
         next,
       }),
     onCancelled: (askerCount) =>
@@ -123,10 +122,12 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         iterationId: iteration.id,
         title: document.title,
         tone: "slate",
-        heading: "Cancelled",
+        heading: t("decision.cancelled"),
         summary: joinDetails([
-          "Held where it was; it stays in Documents, with Resume",
-          askerCount === 1 ? "the asker is told" : `all ${askerCount} askers are told`,
+          t("detail.cancelledSummary"),
+          t(askerCount === 1 ? "detail.askerTold_one" : "detail.askerTold_other", {
+            count: askerCount,
+          }),
         ]),
         next,
       }),
@@ -140,7 +141,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   if (canMessage && !can(session, "restriction.overrule", scope)) {
     headingActions.push({
       id: "ask-to-overrule",
-      label: "Ask to overrule…",
+      label: t("detail.askOverrule"),
       onSelect: () => setMessaging("overrule"),
     });
   }
@@ -148,7 +149,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   if (canMessage && row.askerIds.length > 0) {
     headingActions.push({
       id: "message-askers",
-      label: "Message askers…",
+      label: t("detail.messageAskers"),
       onSelect: () => setMessaging("forbiddenAskers"),
     });
   }
@@ -175,17 +176,21 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
           identifier={documentIdentifierOf(document)}
           details={[categoryLabelOf(categories, iteration.categoryId)]}
         />
-        <ActionBar actions={headingActions} menuLabel="More" className="mb-4" />
+        <ActionBar actions={headingActions} menuLabel={t("detail.more")} className="mb-4" />
       </div>
       <ReviewNote row={row} nameOf={nameOf} />
       <ReviewFacts row={row} nameOf={nameOf} />
 
       <div className="mt-4 grid gap-4">
         {row.review !== "Forbidden" && (
-          <DetailCard title="Defects">
+          <DetailCard title={t("column.defects")}>
             {lastRecheck !== null && <RecheckNote {...lastRecheck} />}
             {row.review === "Needed" && (
-              <DefectSection title={`Outstanding — ${outstandingDefects(iteration).length}`}>
+              <DefectSection
+                title={t("detail.outstandingCount", {
+                  count: outstandingDefects(iteration).length,
+                })}
+              >
                 <div>
                   {outstandingDefects(iteration).map((defect) => (
                     <DefectRow key={defect.key} defect={defect}>
@@ -197,7 +202,9 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
               </DefectSection>
             )}
             {row.review === "Denied" && (
-              <DefectSection title={`Denied — ${deniedDefectsOf(iteration).length}`}>
+              <DefectSection
+                title={t("detail.deniedCount", { count: deniedDefectsOf(iteration).length })}
+              >
                 <div>
                   {deniedDefectsOf(iteration).map((defect) => (
                     <DefectRow key={defect.key} defect={defect}>
@@ -239,7 +246,9 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         onClose={() => setMessaging(null)}
         subject={{ kind: messaging ?? "overrule", id: iteration.id }}
         label={document.title}
-        recipientLabel={messaging === "forbiddenAskers" ? "who asked" : "who may overrule it"}
+        recipientLabel={t(
+          messaging === "forbiddenAskers" ? "detail.whoAsked" : "detail.whoMayOverrule",
+        )}
       />
     </article>
   );
@@ -253,21 +262,22 @@ interface LastRecheck {
 
 // What the checks found when they ran again, while something is still left to rule on.
 function RecheckNote({ defects, result }: LastRecheck) {
+  const { t } = useTranslation("validations");
   const references = useReferenceLabels(["pluginInstances"]);
   const cleared = defects.filter((defect) => result.clearedKeys.includes(defect.key));
   if (cleared.length === 0) {
     return (
-      <StatusNote tone="amber" className="mb-3" title="Rechecked: nothing changed">
-        The catalog record still gives the same findings. Repair it in the catalog first.
+      <StatusNote tone="amber" className="mb-3" title={t("detail.recheckedNoChange")}>
+        {t("detail.sameFindings")}
       </StatusNote>
     );
   }
 
   return (
-    <StatusNote tone="green" className="mb-3" title="Rechecked">
-      The checks no longer find{" "}
+    <StatusNote tone="green" className="mb-3" title={t("decision.rechecked")}>
+      {t("detail.checksNoLongerFind")}{" "}
       {cleared.map((defect) => defectNameOf(defect, references.pluginInstances)).join(", ")}; the
-      rest are still there.
+      {t("detail.restRemain")}
     </StatusNote>
   );
 }
@@ -303,6 +313,7 @@ interface RowProps {
 }
 
 function ReviewNote({ row, nameOf }: RowProps) {
+  const { t } = useTranslation("validations");
   const references = useReferenceLabels(["pluginInstances"]);
   const { iteration } = row;
 
@@ -312,10 +323,13 @@ function ReviewNote({ row, nameOf }: RowProps) {
       <StatusNote
         tone="red"
         className="mb-4"
-        title={`Forbidden by ${restriction.rule}, ${formatDay(restriction.foundAt)}`}
+        title={t("detail.forbiddenBy", {
+          rule: restriction.rule,
+          date: formatDay(restriction.foundAt),
+        })}
       >
         {restriction.internalText !== null && `${restriction.internalText} `}
-        Askers read: “{restriction.publicText}”
+        {t("defect.askersRead")} “{restriction.publicText}”
       </StatusNote>
     );
   }
@@ -328,35 +342,37 @@ function ReviewNote({ row, nameOf }: RowProps) {
         className="mb-4"
         title={
           denial === undefined
-            ? "Denied in review"
-            : `Denied in review by ${nameOf(denial.actorId)}, ${formatDay(denial.at)}`
+            ? t("review.denied")
+            : t("detail.deniedBy", { actor: nameOf(denial.actorId), date: formatDay(denial.at) })
         }
       >
         {denial?.note && `${denial.note} `}
-        {denial?.publicText && `They were told: “${denial.publicText}” `}
-        Over{" "}
+        {denial?.publicText && `${t("detail.theyWereTold")}: “${denial.publicText}” `}
+        {t("detail.over")}{" "}
         {deniedDefectsOf(iteration)
           .map((defect) => defectNameOf(defect, references.pluginInstances))
           .join(", ")}
-        . The denial lapses on its own once the defect is gone — repair it in the catalog, then
-        Recheck.
+        . {t("detail.denialLapses")}
       </StatusNote>
     );
   }
 
   if (row.review === "Needed" && isFoundAfterScan(iteration)) {
     return (
-      <StatusNote tone="purple" className="mb-4" title={`${iteration.progress} · review needed`}>
-        Found after the scan exists, so progress does not move back. Accepting records it as
-        tolerable; denying marks it {iteration.progress} · denied in review.
+      <StatusNote
+        tone="purple"
+        className="mb-4"
+        title={t("detail.progressReviewNeeded", { progress: t(`progress.${iteration.progress}`) })}
+      >
+        {t("detail.foundAfterScan", { progress: t(`progress.${iteration.progress}`) })}
       </StatusNote>
     );
   }
 
   if (row.review === "Approved") {
     return (
-      <StatusNote tone="green" className="mb-4" title="Accepted">
-        Every current defect has been ruled tolerable. Revoking returns it to the queue.
+      <StatusNote tone="green" className="mb-4" title={t("review.accepted")}>
+        {t("detail.allDefectsAccepted")}
       </StatusNote>
     );
   }
@@ -365,6 +381,7 @@ function ReviewNote({ row, nameOf }: RowProps) {
 }
 
 function ReviewFacts({ row, nameOf }: RowProps) {
+  const { t } = useTranslation("validations");
   const { iteration } = row;
   const outstanding = outstandingDefects(iteration);
   const acceptedCount = acceptedDefectsOf(iteration).length;
@@ -375,9 +392,9 @@ function ReviewFacts({ row, nameOf }: RowProps) {
   const third = () => {
     if (row.review === "Forbidden") {
       return {
-        label: "Forbidden since",
+        label: t("detail.forbiddenSince"),
         value: formatDay(row.waitingSince),
-        foot: "by a rule, never a person",
+        foot: t("detail.byRule"),
         isText: true,
       };
     }
@@ -390,17 +407,20 @@ function ReviewFacts({ row, nameOf }: RowProps) {
           : undefined;
     if (verdict !== undefined) {
       return {
-        label: row.review === "Denied" ? "Denied" : "Accepted",
+        label: t(row.review === "Denied" ? "decision.denied" : "review.accepted"),
         value: formatDay(verdict.at),
-        foot: `by ${nameOf(verdict.actorId)}`,
+        foot: t("detail.byActor", { actor: nameOf(verdict.actorId) }),
         isText: true,
       };
     }
 
     return {
-      label: "Waiting since",
+      label: t("filter.waitingSince"),
       value: formatDay(row.waitingSince),
-      foot: firstAskerId === undefined ? undefined : `asked by ${nameOf(firstAskerId)}`,
+      foot:
+        firstAskerId === undefined
+          ? undefined
+          : t("detail.askedBy", { actor: nameOf(firstAskerId) }),
       isText: true,
     };
   };
@@ -408,16 +428,16 @@ function ReviewFacts({ row, nameOf }: RowProps) {
   return (
     <StatTiles
       stats={[
-        { label: "Status", value: <IterationStatus row={row} />, isText: true },
+        { label: t("column.status"), value: <IterationStatus row={row} />, isText: true },
         {
-          label: "Outstanding",
+          label: t("detail.outstanding"),
           value: row.review === "Forbidden" ? "—" : outstanding.length,
           foot:
             row.review === "Forbidden"
-              ? "not reviewed while forbidden"
+              ? t("detail.notReviewedForbidden")
               : acceptedCount > 0
-                ? `${acceptedCount} already accepted`
-                : "nothing accepted yet",
+                ? t("detail.alreadyAccepted", { count: acceptedCount })
+                : t("detail.nothingAccepted"),
         },
         third(),
       ]}
@@ -427,6 +447,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
 
 // A ∩ D, each with who accepted it and when. While new defects wait, these are not asked again.
 function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode }) {
+  const { t } = useTranslation("validations");
   const { iteration } = row;
   const accepted = acceptedDefectsOf(iteration);
   if (accepted.length === 0) {
@@ -439,7 +460,7 @@ function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode
     );
 
   return (
-    <DefectSection title={`Accepted — ${accepted.length}`} action={action}>
+    <DefectSection title={t("detail.acceptedCount", { count: accepted.length })} action={action}>
       <div>
         {accepted.map((defect) => {
           const acceptance = acceptanceOf(defect);
@@ -449,12 +470,17 @@ function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode
               defect={defect}
               aside={
                 acceptance === undefined
-                  ? "accepted"
-                  : `accepted by ${nameOf(acceptance.actorId)}, ${formatDay(acceptance.at)}`
+                  ? t("review.accepted")
+                  : t("detail.acceptedBy", {
+                      actor: nameOf(acceptance.actorId),
+                      date: formatDay(acceptance.at),
+                    })
               }
             >
               {acceptance?.note && (
-                <p className="mt-1 text-xs text-muted-foreground">Note: “{acceptance.note}”</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("action.note")}: “{acceptance.note}”
+                </p>
               )}
             </DefectRow>
           );
@@ -462,8 +488,7 @@ function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode
       </div>
       {row.review === "Needed" && (
         <FinePrint>
-          Not asked again: the last check found {accepted.length === 1 ? "it" : "them"} unchanged.
-          Only what is new is outstanding.
+          {t(accepted.length === 1 ? "detail.notAskedAgain_one" : "detail.notAskedAgain_other")}
         </FinePrint>
       )}
     </DefectSection>
@@ -472,17 +497,21 @@ function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode
 
 // The attempt under review: where it is filed and how far it has come.
 function AttemptCard({ row }: { row: ValidationRow }) {
+  const { t } = useTranslation("validations");
   const { iteration } = row;
   const { data: categories = [] } = useCategoriesQuery();
 
   return (
-    <DetailCard title="This attempt">
+    <DetailCard title={t("detail.thisAttempt")}>
       <FactGrid
         facts={[
-          { label: "Category", value: categoryLabelOf(categories, iteration.categoryId) },
-          { label: "Priority", value: <PriorityBadge priority={iteration.priority} /> },
-          { label: "Progress", value: iteration.progress },
-          { label: "Asked by", value: plural(row.askerIds.length, "person", "people") },
+          { label: t("filter.category"), value: categoryLabelOf(categories, iteration.categoryId) },
+          { label: t("filter.priority"), value: <PriorityBadge priority={iteration.priority} /> },
+          { label: t("detail.progress"), value: t(`progress.${iteration.progress}`) },
+          {
+            label: t("detail.askedByLabel"),
+            value: t("count.people", { count: row.askerIds.length }),
+          },
         ]}
       />
     </DetailCard>

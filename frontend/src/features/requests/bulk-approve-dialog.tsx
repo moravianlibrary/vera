@@ -6,7 +6,6 @@
 // out again whatever changed meanwhile; the list here arrives a slice at a time as it scrolls.
 // Unlike the demo, the left out are listed in place among the rest rather than after them: with
 // the list in slices, a section after it would only be complete once every slice is loaded.
-// TODO(rrandiak): labels move to i18n.
 
 import type { BulkApprovalResult, RequestGroup } from "@vera/contract/requests";
 import { documentIdentifierOf, existingCopiesOf } from "@vera/domain/documents";
@@ -15,6 +14,7 @@ import type { RequestRow } from "@vera/domain/requests";
 import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@vera/domain/requests";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { bulkApproveProposals } from "@/api/requests";
 import {
   CategorySelect,
@@ -34,7 +34,6 @@ import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useLoadMore } from "@/hooks/use-load-more";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
-import { plural } from "@/lib/plural";
 
 type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
 
@@ -59,6 +58,7 @@ interface Classification {
 }
 
 function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => void }) {
+  const { t } = useTranslation("requests");
   const fieldId = useId();
   const batchId = group.batch?.id ?? "";
   const { data: categories = [] } = useCategoriesQuery();
@@ -67,7 +67,7 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
     call: ({ categoryId, priority, excludedIds }: Classification & { excludedIds: string[] }) =>
       bulkApproveProposals(batchId, { categoryId, priority, excludedIds }),
     invalidates: decisionInvalidations,
-    refusalTexts: { 409: "Nothing in this batch is left to approve: it was decided meanwhile." },
+    refusalTexts: { 409: t("bulk.nothingLeft") },
   });
   const sentinelRef = useLoadMore(
     batch.paging.hasMore,
@@ -122,22 +122,19 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
       <DialogShell
         isOpen
         onClose={onClose}
-        title={title("Approved")}
-        description="What the bulk approve did"
+        title={title(t("bulk.approved"))}
+        description={t("bulk.resultDescription")}
         cancelLabel={null}
-        primary={{ label: "Done", onSelect: onClose }}
+        primary={{ label: t("bulk.done"), onSelect: onClose }}
       >
         <div className="grid gap-3">
-          <StatusNote tone="green" title={`${result.approvedCount} approved`}>
-            {categoryId === null ? "" : categoryLabelOf(categories, categoryId)} · {priority}
+          <StatusNote tone="green" title={t("bulk.approvedCount", { count: result.approvedCount })}>
+            {categoryId === null ? "" : categoryLabelOf(categories, categoryId)} ·{" "}
+            {t(`priority.${priority.toLowerCase()}`)}
           </StatusNote>
           <p className="text-xs text-muted-foreground">
-            {result.approvedCount === 1 ? "It moves" : "They move"} to Documents and{" "}
-            {result.approvedCount === 1 ? "is" : "are"} added now.
-            {stayCount > 0 &&
-              ` ${stayCount === 1 ? "The one" : `The ${stayCount}`} left out ${
-                stayCount === 1 ? "stays" : "stay"
-              } here, waiting for you.`}
+            {t("bulk.resultSummary", { count: result.approvedCount })}
+            {stayCount > 0 && ` ${t("bulk.staySummary", { count: stayCount })}`}
           </p>
         </div>
       </DialogShell>
@@ -148,12 +145,12 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
     <DialogShell
       isOpen
       onClose={onClose}
-      title={title("Approve")}
-      description="Approve what the batch asked for at once"
+      title={title(t("bulk.approve"))}
+      description={t("bulk.description")}
       isDirty={categoryId !== null || unticked.size > 0}
       refusal={refusal}
       primary={{
-        label: `Approve ${pickedCount}`,
+        label: t("bulk.approveCount", { count: pickedCount }),
         isPending: approve.isPending,
         isDisabled: categoryId === null || pickedCount <= 0,
         onSelect: () => void submit(),
@@ -161,14 +158,18 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
     >
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
         <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-          <Field id={`${fieldId}-category`} label="Category" hint={`for all ${pickedCount}`}>
+          <Field
+            id={`${fieldId}-category`}
+            label={t("bulk.category")}
+            hint={t("bulk.forAll", { count: pickedCount })}
+          >
             <CategorySelect
               id={`${fieldId}-category`}
               value={categoryId}
               onChange={setCategoryId}
             />
           </Field>
-          <Field id={`${fieldId}-priority`} label="Priority">
+          <Field id={`${fieldId}-priority`} label={t("bulk.priority")}>
             <PrioritySelect id={`${fieldId}-priority`} value={priority} onChange={setPriority} />
           </Field>
         </div>
@@ -181,10 +182,12 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
         />
 
         <ItemList
-          title={`${pickedCount} of ${takeCount} to approve${
-            leftOutCount > 0 ? ` · ${leftOutCount} left out` : ""
-          }`}
-          hint="untick any to decide on its own"
+          title={t(leftOutCount > 0 ? "bulk.toApproveWithLeftOut" : "bulk.toApprove", {
+            pickedCount,
+            takeCount,
+            leftOutCount,
+          })}
+          hint={t("bulk.untickHint")}
         >
           {rows.map((row) => {
             const documentId = row.record.document.id;
@@ -192,7 +195,7 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
               <Item key={documentId} row={row}>
                 {isBulkApprovable(row) ? (
                   <Checkbox
-                    aria-label={`Approve ${row.record.document.title}`}
+                    aria-label={t("bulk.approveDocument", { title: row.record.document.title })}
                     checked={!unticked.has(documentId)}
                     onCheckedChange={(isChecked) => toggle(documentId, isChecked === true)}
                   />
@@ -205,14 +208,11 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
         </ItemList>
         <div ref={sentinelRef} aria-hidden />
         {(batch.isLoading || batch.paging.isLoadingMore) && (
-          <p className="text-muted-foreground">Loading the batch…</p>
+          <p className="text-muted-foreground">{t("bulk.loading")}</p>
         )}
 
         {leftOutCount > 0 && (
-          <p className="text-xs text-muted-foreground">
-            A rescan is decided one item at a time, never in bulk. There is no bulk decline: a
-            decline carries a reason every asker reads.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("bulk.rescanNote")}</p>
         )}
       </div>
     </DialogShell>
@@ -235,6 +235,7 @@ function SuggestionSummary({
   categoryId,
   untickedRows,
 }: SuggestionSummaryProps) {
+  const { t } = useTranslation("requests");
   const suggested = group.suggestedCounts.toSorted((first, second) => second.count - first.count);
   if (suggested.length === 0) {
     return null;
@@ -243,7 +244,7 @@ function SuggestionSummary({
   if (categoryId === null) {
     return (
       <p className="text-xs text-muted-foreground">
-        Suggested for them:{" "}
+        {t("bulk.suggestedForThem")}{" "}
         {suggested
           .map(({ value, count }) => `${categoryLabelOf(categories, value)} ×${count}`)
           .join(", ")}
@@ -260,22 +261,22 @@ function SuggestionSummary({
       .filter(({ value }) => value !== categoryId)
       .reduce((sum, { count }) => sum + count, 0) - untickedOverrides;
   return overrideCount === 0 ? (
-    <p className="text-xs text-muted-foreground">It matches every suggestion.</p>
+    <p className="text-xs text-muted-foreground">{t("bulk.matchesEverySuggestion")}</p>
   ) : (
     <p className="text-xs font-medium text-tone-amber-foreground">
-      Overrides {plural(overrideCount, "classifier suggestion")}; the history keeps{" "}
-      {overrideCount === 1 ? "it" : "each"}.
+      {t("bulk.overrides", { count: overrideCount })}
     </p>
   );
 }
 
 function LeftOutBadge({ row }: { row: RequestRow }) {
+  const { t } = useTranslation("requests");
   const [copy] = existingCopiesOf(asksOf(row));
   if (isRescan(row) && copy !== undefined) {
-    return <ToneBadge tone="purple">{copy.source} has it — a rescan</ToneBadge>;
+    return <ToneBadge tone="purple">{t("bulk.rescanBadge", { source: copy.source })}</ToneBadge>;
   }
 
-  return <ToneBadge tone="slate">still being checked</ToneBadge>;
+  return <ToneBadge tone="slate">{t("bulk.stillChecking")}</ToneBadge>;
 }
 
 function ItemList({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
@@ -291,6 +292,7 @@ function ItemList({ title, hint, children }: { title: string; hint: string; chil
 }
 
 function Item({ row, children }: { row: RequestRow; children: ReactNode }) {
+  const { t } = useTranslation("requests");
   const { data: categories = [] } = useCategoriesQuery();
   const askerCount = askerIdsOf(row).length;
   // The leaf alone, so the line fits a phone; the summary above names the whole path.
@@ -308,8 +310,8 @@ function Item({ row, children }: { row: RequestRow; children: ReactNode }) {
         </b>
         <span className="block truncate text-xs text-muted-foreground">
           <span className="font-mono">{documentIdentifierOf(row.record.document)}</span>
-          {askerCount > 1 && ` · ${plural(askerCount, "asker")}`}
-          {suggestedName !== null && ` · suggested ${suggestedName}`}
+          {askerCount > 1 && ` · ${t("count.asker", { count: askerCount })}`}
+          {suggestedName !== null && ` · ${t("bulk.suggested", { name: suggestedName })}`}
         </span>
       </span>
       <span className="shrink-0">{children}</span>

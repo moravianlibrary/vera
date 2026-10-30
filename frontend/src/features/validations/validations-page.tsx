@@ -3,12 +3,12 @@
 // Its state lives in the URL like Documents': the filter, `?id=` naming the open iteration and
 // `?watchlist=` the watchlist the filter was opened from; opened bare it reopens the tab last
 // used, the shared *Review needed* being the queue the demo opens on.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ValidationDetail } from "@vera/contract/validations";
 import { hasPermission } from "@vera/domain/permissions";
 import { ClipboardCheck } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -34,6 +34,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function ValidationsPage() {
+  const { t } = useTranslation("validations");
   const view = useViewUrlState(validationsView);
   const { data: propertyIndex } = usePropertiesQuery();
   const { query, selectedId, grouping, select } = view;
@@ -58,14 +59,14 @@ export function ValidationsPage() {
       : paneStateOf(
           selectedId,
           detail,
-          "This item no longer waits here",
-          failureOf(validationQuery, "Could not load this validation."),
+          t("page.unavailable"),
+          failureOf(validationQuery, t("page.loadError")),
         );
   const detailPane = (
     <Pane
       state={paneState}
       emptyIcon={ClipboardCheck}
-      emptyText="Select an item"
+      emptyText={t("page.select")}
       render={(ready) => (
         <ValidationDetailPane
           key={ready.row.iteration.id}
@@ -106,8 +107,8 @@ export function ValidationsPage() {
           facets: summary?.propertyFacets,
           onChange: (properties) => view.setQuery({ ...query, properties }),
         }}
-        searchLabel="Search what waits for review"
-        searchPlaceholder="Search — title, catalog ID, shelf mark, defect"
+        searchLabel={t("page.search")}
+        searchPlaceholder={t("page.searchPlaceholder")}
       />
 
       <MasterDetail
@@ -120,7 +121,7 @@ export function ValidationsPage() {
             total={summary?.total}
             outstandingTotal={summary?.outstandingTotal}
             isLoading={validations.isLoading}
-            failure={failureOf(validations, "Could not load validations.")}
+            failure={failureOf(validations, t("page.listLoadError"))}
             paging={validations.paging}
             categories={categories}
             reviews={query.reviews}
@@ -129,7 +130,7 @@ export function ValidationsPage() {
           />
         }
         detail={detailPane}
-        detailTitle={detail?.row.document.title ?? "Item"}
+        detailTitle={detail?.row.document.title ?? t("page.detailTitle")}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {
