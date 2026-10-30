@@ -3,9 +3,9 @@
 // 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
 // values became 09:00 UTC.
 
-import type { StatusLogEntry } from "@vera/domain/entities";
+import type { LegacyLogEntry } from "@vera/domain/entities";
 
-export const statusLog: readonly StatusLogEntry[] = [
+export const statusLog: readonly LegacyLogEntry[] = [
   {
     id: "E01",
     subjectKind: "iteration",

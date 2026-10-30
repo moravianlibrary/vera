@@ -1,3 +1,4 @@
+import { legacyEntry } from "./legacy-log-test";
 // The Documents resource end to end: typed API calls against the mock server over HTTP, as the
 // views will make them, for a requester and for a curator.
 
@@ -8,6 +9,7 @@ import {
   parseDocumentSearchParams,
   toDocumentSearchParams,
 } from "@vera/contract/documents";
+import { isLegacyEntry } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument, listDocuments } from "@/api/documents";
@@ -26,6 +28,38 @@ function signInAs(profile: MockUserProfile): void {
 }
 
 describe("listDocuments as a reader", () => {
+  it("withholds an event entry's data and internal reason", async () => {
+    const request = database.requests.find((candidate) => candidate.requesterId === "u5");
+    expect(request).toBeDefined();
+    if (request === undefined) return;
+    const event = {
+      id: "E-public-event-test",
+      subjectKind: "request" as const,
+      subjectId: request.id,
+      at: "2026-06-01T00:00:00Z",
+      actor: { kind: "user" as const, userId: "u1" },
+      correlationId: "public-test",
+      reason: { public: "Received", internal: "Staff only" },
+      code: "request.created" as const,
+      data: { batch: { id: "B1", name: "Batch one" }, source: null },
+    };
+    database.statusLog.push(event);
+    try {
+      signInAs("reader");
+      const detail = await findDocument(request.documentId);
+      const result = detail?.log.find((entry) => !isLegacyEntry(entry) && entry.id === event.id);
+      expect(result).toBeDefined();
+      if (result === undefined || isLegacyEntry(result)) return;
+      expect(result.data).toBeNull();
+      expect(result.reason.internal).toBeNull();
+      expect(result.reason.public).toBe("Received");
+      expect(result.actor.kind).toBe("undisclosed");
+    } finally {
+      const index = database.statusLog.findIndex((entry) => entry.id === event.id);
+      if (index >= 0) database.statusLog.splice(index, 1);
+    }
+  });
+
   it("gives staff the same public reach", async () => {
     signInAs("staff");
     const page = await listDocuments({});
@@ -386,16 +420,18 @@ describe("findDocument", () => {
     const detail = await findDocument("D1");
 
     expect(detail?.log.length).toBeGreaterThan(0);
-    expect(detail?.log.every((entry) => entry.detail === null && entry.actor.kind !== "user")).toBe(
-      true,
-    );
+    expect(
+      detail?.log.every(
+        (entry) => legacyEntry(entry).detail === null && entry.actor.kind !== "user",
+      ),
+    ).toBe(true);
   });
 
   it("tells a requester their story in plain words, without the machinery", async () => {
     signInAs("reader");
 
     const detail = await findDocument("D17");
-    const events = detail?.log.map((entry) => entry.event) ?? [];
+    const events = detail?.log.map((entry) => legacyEntry(entry).event) ?? [];
 
     expect(events).not.toContain("Ingest failed");
   });

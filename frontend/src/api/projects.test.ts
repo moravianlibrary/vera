@@ -1,3 +1,4 @@
+import { legacyEntry } from "./legacy-log-test";
 // Projects end to end against the mock server over HTTP: who sees which project, the period from
 // the dates, the target, planned, delivered and pace of its own intention, one project's
 // proposals, lists and history, and its acts, which its intention follows. The acts change the
@@ -240,7 +241,7 @@ describe("starting and running a project", () => {
       memberIds: ["u8"],
       memberGroupIds: [],
     });
-    expect(created.log.map((entry) => entry.event)).toEqual(["Created"]);
+    expect(created.log.map((entry) => legacyEntry(entry).event)).toEqual(["Created"]);
     expect(created.row.intention.targetPages).toBe(1000);
     // Listed on Intentions only once the project is decided.
     signInAs("digitization");
@@ -273,7 +274,7 @@ describe("starting and running a project", () => {
 
     expect(saved.row.project.endsOn).toBe("2027-12-31");
     // LOG-one-act-one-story: one save, one time, the entries in the order they were written.
-    expect(saved.log.slice(0, 2).map((entry) => entry.event)).toEqual([
+    expect(saved.log.slice(0, 2).map((entry) => legacyEntry(entry).event)).toEqual([
       "Dates or target changed",
       "Details changed",
     ]);
@@ -321,7 +322,7 @@ describe("starting and running a project", () => {
 
     expect(saved.row.project).toMatchObject({ managerId: "u4", memberIds: ["u2", "u4"] });
     expect(saved.row.memberGroups.map((group) => group.id)).toEqual(["g3"]);
-    expect(saved.log.map((entry) => entry.event)).toContain("Manager changed");
+    expect(saved.log.map((entry) => legacyEntry(entry).event)).toContain("Manager changed");
     expect(
       await statusOf(
         saveProjectMembers(projectId, { managerId: "u5", memberIds: ["u4"], memberGroupIds: [] }),

@@ -689,7 +689,7 @@ export const historyDataSchemas = {
   "iteration.restriction_overruled": z.object({ rule: ref }),
   "iteration.reclassified": z.object({
     category: change(ref).nullable(),
-    priority: change(prioritySchema).nullable(),
+    priority: change(z.lazy(() => prioritySchema)).nullable(),
   }),
   "iteration.cancelled": z.object({ list: ref.nullable() }),
   "iteration.not_digitizable": z.object({ list: ref }),
@@ -705,13 +705,16 @@ export const historyDataSchemas = {
   "iteration.link_changed": z.object({ link, url: change(z.string()) }),
   "iteration.link_made_primary": z.object({ link }),
   "iteration.link_removed": z.object({ link, primary: link.nullable() }),
-  "iteration.copy_found": z.object({ registry: z.string(), state: registryStateSchema }),
+  "iteration.copy_found": z.object({
+    registry: z.string(),
+    state: z.lazy(() => registryStateSchema),
+  }),
   "iteration.property_changed": z.object({ key: z.string(), value: change(z.unknown()) }),
   "document.relinked": z.object({ catalogId: change(z.string()) }),
   "document.property_changed": z.object({ key: z.string(), value: change(z.unknown()) }),
   "document.registry_changed": z.object({
     registry: z.string(),
-    state: change(registryStateSchema),
+    state: change(z.lazy(() => registryStateSchema)),
   }),
   "list.created": z.object({
     generator: z.object({ name: z.string(), version: z.string() }).nullable(),
@@ -729,7 +732,7 @@ export const historyDataSchemas = {
   "project.member_added": z.object({ userId: id }),
   "project.member_removed": z.object({ userId: id }),
   "project.manager_changed": z.object({ userId: change(id) }),
-  "project.approved": z.object({ priority: prioritySchema, approved: count }),
+  "project.approved": z.object({ priority: z.lazy(() => prioritySchema), approved: count }),
   "project.rejected": z.object({ declined: count }),
   "project.deleted": empty,
 } satisfies Record<(typeof historyCodes)[number], z.ZodType>;
@@ -739,7 +742,7 @@ const baseEntry = z.object({
   subjectKind: z.enum(["document", "iteration", "request", "list", "project"]),
   subjectId: id,
   at: z.iso.datetime(),
-  actor: actorSchema,
+  actor: z.lazy(() => actorSchema),
   correlationId: z.string(),
   reason: z.object({ public: z.string().nullable(), internal: z.string().nullable() }),
 });
@@ -809,7 +812,7 @@ export const configurationDataSchema = z.object({
 });
 
 // A History entry binds its code to that code's payload and subject.
-type HistoryCode = (typeof historyCodes)[number];
+export type HistoryCode = (typeof historyCodes)[number];
 type EventEntryData = {
   [Code in HistoryCode]: { code: Code; data: z.infer<(typeof historyDataSchemas)[Code]> | null };
 }[HistoryCode];

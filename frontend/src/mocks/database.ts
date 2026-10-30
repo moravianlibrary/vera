@@ -3,7 +3,7 @@
 
 import type { IntentionRow } from "@vera/contract/intentions";
 import type { MixTree } from "@vera/contract/mixes";
-import type { Category, Watchlist } from "@vera/domain/entities";
+import type { Category, StatusLogEntry, Watchlist } from "@vera/domain/entities";
 import { env } from "@/config/env";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
@@ -84,7 +84,7 @@ export const database = {
   iterations: [...records.iterations],
   requests: [...records.requests],
   volumeCatalogRecords: [] as CatalogRecord[],
-  statusLog: [...records.statusLog],
+  statusLog: [...records.statusLog] as StatusLogEntry[],
   watchlists: [...watchlists],
   // Each person's own row for a watchlist they see: seen, place and delivery.
   watchlistViewers: readWatchlistViewers() as StoredWatchlistViewer[],

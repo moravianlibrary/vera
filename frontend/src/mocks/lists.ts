@@ -20,7 +20,7 @@ import type {
 import { listAttentions, listSliceSize } from "@vera/contract/lists";
 import { categoryLineageOf, categoryPathOf } from "@vera/domain/categories";
 import { effectivePageCount } from "@vera/domain/documents";
-import type { DigitizationList, Iteration, Session, StatusLogEntry } from "@vera/domain/entities";
+import type { DigitizationList, Iteration, LegacyLogEntry, Session } from "@vera/domain/entities";
 import { priorities } from "@vera/domain/entities";
 import { progressAfterGates, scopeOfIteration } from "@vera/domain/iterations";
 import type { ListState } from "@vera/domain/lists";
@@ -834,12 +834,12 @@ function logIteration(
 
 function entryOf(
   session: Session,
-  subjectKind: StatusLogEntry["subjectKind"],
+  subjectKind: LegacyLogEntry["subjectKind"],
   subjectId: string,
   correlationId: string,
   event: string,
   detail: string,
-): Omit<StatusLogEntry, "id"> {
+): Omit<LegacyLogEntry, "id"> {
   return {
     subjectKind,
     subjectId,

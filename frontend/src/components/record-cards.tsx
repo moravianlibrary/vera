@@ -14,6 +14,7 @@ import type {
   StatusLogEntry,
   User,
 } from "@vera/domain/entities";
+import { isLegacyEntry } from "@vera/domain/entities";
 import type { SourcedValue } from "@vera/domain/properties";
 import { valuesOf } from "@vera/domain/properties";
 import { ArrowUpRight } from "lucide-react";
@@ -23,6 +24,7 @@ import type { Tone } from "@/components/status-badge";
 import { RegistryBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
+import { publicWordingOf, wordingOf } from "@/lib/event-wording";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
@@ -348,11 +350,9 @@ export function CatalogCard({
   );
 }
 
-interface HistoryEvent {
+interface HistoryAsk {
   key: string;
   at: string;
-  event: string;
-  detail: string | null;
   actor: Actor;
 }
 
@@ -369,16 +369,15 @@ export function HistoryCard({
   nameOf: (userId: string) => string;
   isPublic: boolean;
 }) {
-  const asks: HistoryEvent[] = (record?.requests ?? []).map((request) => ({
+  const asks: HistoryAsk[] = (record?.requests ?? []).map((request) => ({
     key: `asked-${request.id}`,
     at: request.at,
-    event: "Asked for",
-    detail: null,
     actor: { kind: "user", userId: request.requesterId },
   }));
-  const events = [...log.map((entry) => ({ ...entry, key: entry.id })), ...asks].toSorted(
-    (first, second) => second.at.localeCompare(first.at),
-  );
+  const events = [
+    ...log.map((entry) => ({ key: entry.id, at: entry.at, actor: entry.actor, entry })),
+    ...asks.map((ask) => ({ ...ask, entry: null })),
+  ].toSorted((first, second) => second.at.localeCompare(first.at));
   const actorName = (actor: Actor) =>
     actor.kind === "user" ? nameOf(actor.userId) : actor.kind === "system" ? "System" : null;
 
@@ -394,9 +393,35 @@ export function HistoryCard({
             </Muted>
           }
         >
-          <b className="font-semibold">{entry.event}</b>
-          {!isPublic && entry.detail !== null && (
-            <div className="text-muted-foreground">{entry.detail}</div>
+          {entry.entry === null ? (
+            <b className="font-semibold">Asked for</b>
+          ) : isLegacyEntry(entry.entry) ? (
+            <>
+              <b className="font-semibold">{entry.entry.event}</b>
+              {!isPublic && entry.entry.detail !== null && (
+                <div className="text-muted-foreground">{entry.entry.detail}</div>
+              )}
+            </>
+          ) : isPublic ? (
+            <b className="font-semibold">{publicWordingOf(entry.entry.code)}</b>
+          ) : (
+            (() => {
+              const wording = wordingOf(entry.entry, nameOf);
+              return (
+                <>
+                  <b className="font-semibold">{wording.title}</b>
+                  {wording.line && <div className="text-muted-foreground">{wording.line}</div>}
+                  {entry.entry.reason.internal && (
+                    <div className="text-muted-foreground">{entry.entry.reason.internal}</div>
+                  )}
+                  {entry.entry.reason.public && (
+                    <div className="text-muted-foreground">
+                      Told the asker: {entry.entry.reason.public}
+                    </div>
+                  )}
+                </>
+              );
+            })()
           )}
         </DetailRow>
       ))}

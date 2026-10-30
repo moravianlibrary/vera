@@ -10,6 +10,7 @@ import {
   parseRequestSearchParams,
   toRequestSearchParams,
 } from "@vera/contract/requests";
+import { isLegacyEntry } from "@vera/domain/entities";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
@@ -232,9 +233,10 @@ const byValue = (first: { value: string }, second: { value: string }) =>
 // The approval's entry on the iteration it created.
 function approvalEntryOf(documentId: string) {
   const iteration = database.iterations.find((candidate) => candidate.documentId === documentId);
-  return database.statusLog.find(
+  const entry = database.statusLog.find(
     (entry) => entry.subjectKind === "iteration" && entry.subjectId === iteration?.id,
   );
+  return entry !== undefined && isLegacyEntry(entry) ? entry : undefined;
 }
 
 describe("deciding", () => {

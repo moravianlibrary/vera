@@ -40,6 +40,13 @@ import type {
   Session,
   StatusLogEntry,
 } from "@vera/domain/entities";
+import { isLegacyEntry } from "@vera/domain/entities";
+import {
+  isPublicEntry,
+  oncePerCause as oncePerEventCause,
+  publicEntryOf,
+  withoutIngestError as withoutEventIngestError,
+} from "@vera/domain/events";
 import { scopeOfIteration } from "@vera/domain/iterations";
 import { can, hasPermission, isWithinScope, scopesOf } from "@vera/domain/permissions";
 import { scopeOfProject } from "@vera/domain/projects";
@@ -593,32 +600,44 @@ function logOf(record: DocumentRecord, session: Session, audience: Audience): St
     return oncePerCause(
       hasPermission(session, "request.read_ingest")
         ? entries
-        : entries.map((entry) => (isIngestEvent(entry) ? { ...entry, detail: null } : entry)),
+        : entries.map((entry) =>
+            isLegacyEntry(entry)
+              ? isIngestEvent(entry)
+                ? { ...entry, detail: null }
+                : entry
+              : withoutEventIngestError(entry),
+          ),
     );
   }
 
-  return entries.flatMap((entry) => {
-    const event = publicEventOf(entry.event);
-    if (event === null) {
-      return [];
+  return entries.flatMap<StatusLogEntry>((entry) => {
+    if (isLegacyEntry(entry)) {
+      const event = publicEventOf(entry.event);
+      return event === null
+        ? []
+        : [
+            {
+              ...entry,
+              event,
+              actor: entry.actor.kind === "system" ? entry.actor : { kind: "undisclosed" },
+              detail: null,
+            },
+          ];
     }
-
-    return [
-      {
-        ...entry,
-        event,
-        actor: entry.actor.kind === "system" ? entry.actor : { kind: "undisclosed" },
-        detail: null,
-      },
-    ];
+    return isPublicEntry(entry) ? [publicEntryOf(entry)] : [];
   });
 }
 
 // One decision on several asks is written once per ask, so each asker's history holds it; staff
 // read it once.
 export function oncePerCause(entries: readonly StatusLogEntry[]): StatusLogEntry[] {
+  const eventEntries = entries.filter(
+    (entry): entry is import("@vera/domain/events").EventEntry => !isLegacyEntry(entry),
+  );
+  const uniqueEvents = new Set(oncePerEventCause(eventEntries).map((entry) => entry.id));
   const seen = new Set<string>();
   return entries.filter((entry) => {
+    if (!isLegacyEntry(entry)) return uniqueEvents.has(entry.id);
     const cause = `${entry.correlationId}|${entry.event}`;
     if (seen.has(cause)) {
       return false;
@@ -630,7 +649,7 @@ export function oncePerCause(entries: readonly StatusLogEntry[]): StatusLogEntry
 }
 
 function isIngestEvent(entry: StatusLogEntry): boolean {
-  return entry.event.startsWith("Ingest");
+  return isLegacyEntry(entry) && entry.event.startsWith("Ingest");
 }
 
 // A requester reads their request's story in plain language (status-log.md §7): what moved it

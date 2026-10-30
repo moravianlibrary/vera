@@ -5,6 +5,7 @@
 // status axes stay separate; the displayed status is derived in ./status.ts, never stored here.
 
 import { z } from "zod";
+import { eventEntrySchema } from "./events";
 import { grantSchema } from "./permissions";
 import { propertyConditionSchema, propertyValuesSchema } from "./properties";
 
@@ -480,7 +481,7 @@ export type Decision = Request["decision"];
 // ---------------------------------------------------------------- history
 
 // Causes, never derivations (status-log.md). One log across entities.
-export const statusLogEntrySchema = z.object({
+export const legacyLogEntrySchema = z.object({
   id,
   // A document property's change is the document's own (DOC-property-values).
   subjectKind: z.enum(["document", "iteration", "request", "list", "project"]),
@@ -488,12 +489,19 @@ export const statusLogEntrySchema = z.object({
   at: timestamp,
   actor: actorSchema,
   correlationId: z.string(),
-  // TODO(rrandiak): replace free-text events with event codes once the log contract exists.
+  // E3T1e removes the legacy free-text shape after mock writers and seeds move to codes.
   event: z.string(),
   // Withheld from callers who may only see what happened, not why.
   detail: z.string().nullable(),
 });
+export type LegacyLogEntry = z.infer<typeof legacyLogEntrySchema>;
+export const statusLogEntrySchema = z.union([z.lazy(() => eventEntrySchema), legacyLogEntrySchema]);
 export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
+export function isLegacyEntry(
+  entry: StatusLogEntry,
+): entry is z.infer<typeof legacyLogEntrySchema> {
+  return "event" in entry;
+}
 
 // ---------------------------------------------------------------- watchlists
 
