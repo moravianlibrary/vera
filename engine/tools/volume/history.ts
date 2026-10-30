@@ -1,15 +1,17 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: rows are parsed by the status log schema.
-import { statusLogEntrySchema } from "@vera/domain/entities";
+import { eventEntrySchema } from "@vera/domain/events";
 
 export function addHistory(
   requests: any[],
   iterations: any[],
   lists: any[],
+  batches: any[],
   staff: string[],
   now: string,
   decisionByRequest: Map<string, any>,
 ) {
   const requestById = new Map(requests.map((request) => [request.id, request]));
+  const batchById = new Map(batches.map((batch) => [batch.id, batch]));
   const membersByList = new Map<string, any[]>();
   for (const iteration of iterations)
     if (iteration.listId)
@@ -25,20 +27,22 @@ export function addHistory(
     at: string | null,
     actor: any,
     correlationId: string,
-    event: string,
-    detail: string | null = null,
+    code: string,
+    data: any,
+    internal: string | null = null,
   ) => {
     if (!at || Date.parse(at) > Date.parse(now)) return;
     rows.push(
-      statusLogEntrySchema.parse({
+      eventEntrySchema.parse({
         id: `V-E${id++}`,
         subjectKind,
         subjectId,
         at,
         actor,
         correlationId,
-        event,
-        detail,
+        code,
+        data,
+        reason: { public: null, internal },
       }),
     );
   };
@@ -50,7 +54,13 @@ export function addHistory(
       request.at,
       { kind: "user", userId: request.requesterId },
       proposalCorrelation,
-      "Proposed, approval requested",
+      "request.created",
+      {
+        batch: batchById.has(request.batchId)
+          ? { id: request.batchId, name: batchById.get(request.batchId).name ?? request.batchId }
+          : null,
+        source: null,
+      },
     );
     if (request.decision === "Denied") {
       add(
@@ -59,7 +69,8 @@ export function addHistory(
         request.decline.at,
         { kind: "user", userId: request.decline.actorId },
         `V-C-${request.id}-decision`,
-        "Rejected",
+        "request.declined",
+        { batchSize: null },
         request.decline.internalText,
       );
     } else if (request.decision === "Approved") {
@@ -74,10 +85,17 @@ export function addHistory(
         meta.at,
         { kind: "user", userId: meta.actorId ?? staff[0] ?? "vu1" },
         correlation,
-        "Approved",
+        "request.approved",
+        {
+          iterationId: request.iteration?.id ?? request.id,
+          isRescan: Boolean(request.rescan),
+          batchSize: null,
+        },
       );
       if (request.existingCopies?.length && request.iteration?.relation === "Tracks")
-        add("request", request.id, meta.at, { kind: "system" }, correlation, "Held: a copy exists");
+        add("request", request.id, meta.at, { kind: "system" }, correlation, "request.held", {
+          why: "copy_exists",
+        });
     }
   }
   for (const iteration of iterations) {
@@ -94,7 +112,8 @@ export function addHistory(
       meta.at,
       { kind: "user", userId: meta.actorId ?? staff[0] ?? "vu1" },
       correlation,
-      "Created",
+      "iteration.ingested",
+      {},
     );
     for (const verdict of iteration.verdicts)
       add(
@@ -103,7 +122,8 @@ export function addHistory(
         verdict.at,
         { kind: "user", userId: verdict.actorId },
         `V-C-${iteration.id}-validation-${verdict.at}`,
-        "Validation approved",
+        "iteration.verdict_accepted",
+        { defects: [] },
         verdict.note,
       );
     if (iteration.progress === "Published") {
@@ -115,7 +135,8 @@ export function addHistory(
         iteration.digitizedAt,
         { kind: "user", userId: digitizer },
         `V-C-${iteration.id}-digitized`,
-        "Digitized",
+        "iteration.digitized",
+        { list: null },
       );
       if (link)
         add(
@@ -124,7 +145,8 @@ export function addHistory(
           link.setAt,
           { kind: "user", userId: link.setBy },
           `V-C-${iteration.id}-published`,
-          "Published",
+          "iteration.published",
+          { link: { id: link.id, url: link.url ?? `https://example.org/${link.id}` } },
         );
     }
   }
@@ -136,7 +158,8 @@ export function addHistory(
       list.createdAt,
       { kind: "user", userId: list.createdBy },
       correlation,
-      "Created",
+      "list.created",
+      { generator: null, members: membersByList.get(list.id)?.length ?? 0 },
     );
     const members = membersByList.get(list.id) ?? [];
     if (members.length)
@@ -146,7 +169,8 @@ export function addHistory(
         list.createdAt,
         { kind: "user", userId: list.createdBy },
         correlation,
-        `Added ${members.length} by hand`,
+        "list.members_changed",
+        { added: members.map((member) => member.id), removed: [] },
       );
   }
   return rows.sort((a, b) => Date.parse(a.at) - Date.parse(b.at));

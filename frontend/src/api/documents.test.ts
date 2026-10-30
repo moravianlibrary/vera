@@ -1,4 +1,4 @@
-import { legacyEntry } from "./legacy-log-test";
+import { eventEntry } from "./legacy-log-test";
 // The Documents resource end to end: typed API calls against the mock server over HTTP, as the
 // views will make them, for a requester and for a curator.
 
@@ -422,7 +422,8 @@ describe("findDocument", () => {
     expect(detail?.log.length).toBeGreaterThan(0);
     expect(
       detail?.log.every(
-        (entry) => legacyEntry(entry).detail === null && entry.actor.kind !== "user",
+        (entry) =>
+          eventEntry(entry).reason.internal === null && eventEntry(entry).actor.kind !== "user",
       ),
     ).toBe(true);
   });
@@ -431,9 +432,9 @@ describe("findDocument", () => {
     signInAs("reader");
 
     const detail = await findDocument("D17");
-    const events = detail?.log.map((entry) => legacyEntry(entry).event) ?? [];
+    const events = detail?.log.map((entry) => eventEntry(entry).code) ?? [];
 
-    expect(events).not.toContain("Ingest failed");
+    expect(events).not.toContain("iteration.ingest_failed");
   });
 
   it("keeps another person's ingest failure outside staff's reach", async () => {

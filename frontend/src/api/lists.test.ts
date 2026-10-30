@@ -26,7 +26,7 @@ import {
 } from "@/api/lists";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntries, legacyEntry } from "./legacy-log-test";
+import { eventEntries, eventEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -167,7 +167,7 @@ describe("findList", () => {
     expect(detail?.members.find((item) => item.iteration.id === "IT25")?.blocker).toBe(
       "ReviewNeeded",
     );
-    expect(legacyEntry(detail?.log[0]).event).toBe("Created");
+    expect(eventEntry(detail?.log[0]).code).toBe("list.created");
     const ranks = detail?.members.map((item) => item.iteration.priority) ?? [];
     expect(ranks.indexOf("Normal")).toBeGreaterThan(ranks.indexOf("High"));
   });

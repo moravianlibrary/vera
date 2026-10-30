@@ -445,6 +445,7 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
     requests,
     iterations,
     lists,
+    batches,
     staff,
     base.now ?? baseNow,
     publicResult.decisions,

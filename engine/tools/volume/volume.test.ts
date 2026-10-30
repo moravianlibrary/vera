@@ -12,6 +12,7 @@ import {
   statusLogEntrySchema,
   userSchema,
 } from "@vera/domain/entities";
+import { eventEntrySchema } from "@vera/domain/events";
 import { createEngine } from "../../src/engine";
 import { generateVolumeSeed } from "../seed-volume";
 import { logNormal, mulberry32 } from "./random";
@@ -56,7 +57,7 @@ describe("volume seed generator", () => {
     for (const row of first.collections.requests) requestSchema.parse(row);
     for (const row of first.collections.batches) batchSchema.parse(row);
     for (const row of first.collections.lists) digitizationListSchema.parse(row);
-    for (const row of first.collections.statusLog) statusLogEntrySchema.parse(row);
+    for (const row of first.collections.statusLog) eventEntrySchema.parse(row);
   });
 
   test("produces scaled volumes and synthetic identities", () => {
@@ -140,7 +141,7 @@ describe("volume seed generator", () => {
         result.collections.statusLog.some(
           (entry: any) =>
             entry.subjectId === request.id &&
-            entry.event === "Proposed, approval requested" &&
+            entry.code === "request.created" &&
             entry.actor.userId === request.requesterId,
         ),
       ).toBe(true);

@@ -1,11 +1,7 @@
-// Generated once from docs/demos/shared/vera-data.js so the mock API serves the same coherent
-// dataset the demos were designed against; edit by hand from here on. The demo's "today" is
-// 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
-// values became 09:00 UTC.
+// The demo’s log converted to event codes; data is retained with each cause.
+import type { EventEntry } from "@vera/domain/events";
 
-import type { LegacyLogEntry } from "@vera/domain/entities";
-
-export const statusLog: readonly LegacyLogEntry[] = [
+export const statusLog: readonly EventEntry[] = [
   {
     id: "E01",
     subjectKind: "iteration",
@@ -16,8 +12,22 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k1",
-    event: "Validation approved",
-    detail: "Page count R02 — accepted, 22-page difference is not material.",
+    reason: {
+      public: null,
+      internal: "accepted, 22-page difference is not material.",
+    },
+    code: "iteration.verdict_accepted",
+    data: {
+      defects: [
+        {
+          instance: {
+            id: "pi1",
+            name: "MZK Aleph",
+          },
+          rule: "R02",
+        },
+      ],
+    },
   },
   {
     id: "E02",
@@ -29,21 +39,78 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u4",
     },
     correlationId: "k2",
-    event: "Page count set manually",
-    detail: "catalog 1098 → manual 1120",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.page_count_entered",
+    data: {
+      pages: 1120,
+      previous: 1098,
+    },
   },
   {
-    id: "E03",
-    subjectKind: "iteration",
-    subjectId: "IT3",
+    id: "E108",
+    subjectKind: "request",
+    subjectId: "R3",
     at: "2026-06-17T16:40:00Z",
     actor: {
       kind: "user",
       userId: "u1",
     },
     correlationId: "k3",
-    event: "Approved — 3 requests",
-    detail: "Category Periodicals / Regional, priority Urgent.",
+    reason: {
+      public: null,
+      internal: "Category Periodicals / Regional, priority Urgent.",
+    },
+    code: "request.approved",
+    data: {
+      iterationId: "IT3",
+      isRescan: false,
+      batchSize: 3,
+    },
+  },
+  {
+    id: "E109",
+    subjectKind: "request",
+    subjectId: "R14",
+    at: "2026-06-17T16:40:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "k3",
+    reason: {
+      public: null,
+      internal: "Category Periodicals / Regional, priority Urgent.",
+    },
+    code: "request.approved",
+    data: {
+      iterationId: "IT3",
+      isRescan: false,
+      batchSize: 3,
+    },
+  },
+  {
+    id: "E110",
+    subjectKind: "request",
+    subjectId: "R15",
+    at: "2026-06-17T16:40:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "k3",
+    reason: {
+      public: null,
+      internal: "Category Periodicals / Regional, priority Urgent.",
+    },
+    code: "request.approved",
+    data: {
+      iterationId: "IT3",
+      isRescan: false,
+      batchSize: 3,
+    },
   },
   {
     id: "E04",
@@ -54,22 +121,40 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k15",
-    event: "Forbidden by Copyright",
-    detail: "CopyrightRule: editor-in-chief died 1961, protected until 2031.",
+    reason: {
+      public: null,
+      internal: "CopyrightRule: editor-in-chief died 1961, protected until 2031.",
+    },
+    code: "iteration.restricted",
+    data: {
+      rule: {
+        id: "copyright",
+        name: "Copyright",
+      },
+      outcome: "forbidden",
+    },
   },
   {
-    id: "E05",
-    subjectKind: "iteration",
-    subjectId: "IT8",
+    id: "E111",
+    subjectKind: "request",
+    subjectId: "R8",
     at: "2026-06-19T11:20:00Z",
     actor: {
       kind: "user",
       userId: "u1",
     },
     correlationId: "k4",
-    event: "Approved as rescan",
-    detail:
-      "Over VERA 2019 and Kramerius: published. 300 dpi greyscale is not enough for the regional project.",
+    reason: {
+      public: null,
+      internal:
+        "Over VERA 2019 and Kramerius: published. 300 dpi greyscale is not enough for the regional project.",
+    },
+    code: "request.approved",
+    data: {
+      iterationId: "IT8",
+      isRescan: true,
+      batchSize: 1,
+    },
   },
   {
     id: "E06",
@@ -80,8 +165,17 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k0",
-    event: "Published",
-    detail: "Kramerius uuid:demo8",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.published",
+    data: {
+      link: {
+        id: "IT0-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo8",
+      },
+    },
   },
   {
     id: "E07",
@@ -92,8 +186,14 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k11",
-    event: "Held: a copy exists",
-    detail: "Approval was requested on arrival; Kramerius already has it.",
+    reason: {
+      public: null,
+      internal: "Approval was requested on arrival; Kramerius already has it.",
+    },
+    code: "request.held",
+    data: {
+      why: "copy_exists",
+    },
   },
   {
     id: "E08",
@@ -105,8 +205,18 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "a1",
     },
     correlationId: "k11",
-    event: "Proposed, approval requested",
-    detail: null,
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0042",
+        name: "harvest-2026-06-23",
+      },
+      source: null,
+    },
   },
   {
     id: "E09",
@@ -117,21 +227,36 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k12",
-    event: "Ingest failed",
-    detail: "Catalog record has no 245 field.",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.ingest_failed",
+    data: {
+      attempt: 1,
+      error: "Catalog record has no 245 field.",
+    },
   },
   {
-    id: "E10",
-    subjectKind: "iteration",
-    subjectId: "IT16",
+    id: "E112",
+    subjectKind: "request",
+    subjectId: "R26",
     at: "2026-06-22T15:10:00Z",
     actor: {
       kind: "user",
       userId: "u1",
     },
     correlationId: "k13",
-    event: "Approved as rescan",
-    detail: "Over Kramerius: published. Existing scan is 150 dpi.",
+    reason: {
+      public: null,
+      internal: "Over Kramerius: published. Existing scan is 150 dpi.",
+    },
+    code: "request.approved",
+    data: {
+      iterationId: "IT16",
+      isRescan: true,
+      batchSize: 1,
+    },
   },
   {
     id: "E11",
@@ -142,8 +267,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k14",
-    event: "Copy found after approval",
-    detail: "Kramerius: published.",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.copy_found",
+    data: {
+      registry: "Kramerius",
+      state: "Published",
+    },
   },
   {
     id: "E12",
@@ -155,8 +287,14 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k5",
-    event: "Cancelled",
-    detail: "Large-format scanner unavailable until Q4.",
+    reason: {
+      public: null,
+      internal: "Large-format scanner unavailable until Q4.",
+    },
+    code: "iteration.cancelled",
+    data: {
+      list: null,
+    },
   },
   {
     id: "E13",
@@ -168,8 +306,18 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k6",
-    event: "Removed from list L-2026-014",
-    detail: null,
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.unlisted",
+    data: {
+      list: {
+        id: "L-2026-014",
+        name: "Periodika — summer run",
+      },
+      why: "cancelled",
+    },
   },
   {
     id: "E14",
@@ -180,8 +328,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k7",
-    event: "Ingest failed",
-    detail: "Catalog adapter returned HTTP 502 after 3 attempts.",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.ingest_failed",
+    data: {
+      attempt: 3,
+      error: "Catalog adapter returned HTTP 502 after 3 attempts.",
+    },
   },
   {
     id: "E15",
@@ -193,8 +348,22 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k8",
-    event: "Validation denied",
-    detail: "Page count R01 — cannot plan capacity without a page count.",
+    reason: {
+      public: null,
+      internal: "cannot plan capacity without a page count.",
+    },
+    code: "iteration.verdict_denied",
+    data: {
+      defects: [
+        {
+          instance: {
+            id: "pi1",
+            name: "MZK Aleph",
+          },
+          rule: "R01",
+        },
+      ],
+    },
   },
   {
     id: "E16",
@@ -205,8 +374,17 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k9",
-    event: "Digitized",
-    detail: "18 images delivered.",
+    reason: {
+      public: null,
+      internal: "18 images delivered.",
+    },
+    code: "iteration.digitized",
+    data: {
+      list: {
+        id: "L-2026-012",
+        name: "Moravica — June",
+      },
+    },
   },
   {
     id: "E17",
@@ -217,8 +395,16 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k15",
-    event: "Checks re-run — catalog record changed",
-    detail: "New: Default ruleset R07 on 260$c. Page count R03 found again, still accepted.",
+    reason: {
+      public: null,
+      internal: "New: Default ruleset R07 on 260$c. Page count R03 found again, still accepted.",
+    },
+    code: "iteration.rechecked",
+    data: {
+      by: "catalog_change",
+      found: 1,
+      gone: 0,
+    },
   },
   {
     id: "E18",
@@ -230,8 +416,22 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k16",
-    event: "Validation approved",
-    detail: "Page count R03 — an estimate is enough to plan a regional run.",
+    reason: {
+      public: null,
+      internal: "an estimate is enough to plan a regional run.",
+    },
+    code: "iteration.verdict_accepted",
+    data: {
+      defects: [
+        {
+          instance: {
+            id: "pi1",
+            name: "MZK Aleph",
+          },
+          rule: "R03",
+        },
+      ],
+    },
   },
   {
     id: "E19",
@@ -242,8 +442,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k17",
-    event: "Added — no catalog record",
-    detail: "Approved on arrival from the ISSN harvester.",
+    reason: {
+      public: null,
+      internal: "Approved on arrival from the ISSN harvester.",
+    },
+    code: "iteration.ingested",
+    data: {},
   },
   {
     id: "E20",
@@ -255,22 +459,19 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k20",
-    event: "Created",
-    detail: "5 → 23 Oct · shaped by Regional catch-up",
-  },
-  {
-    id: "E21",
-    subjectKind: "list",
-    subjectId: "L-2026-015",
-    at: "2026-06-22T14:05:00Z",
-    actor: {
-      kind: "user",
-      userId: "u2",
+    reason: {
+      public: null,
+      internal:
+        "pages 4 000 · Periodicals only · 3 picked · 1 460 pp short: the rest of Periodicals was still in review",
     },
-    correlationId: "k20",
-    event: "Generated — PriorityThenMix 1.2.0",
-    detail:
-      "pages 4 000 · Periodicals only · 3 picked · 1 460 pp short: the rest of Periodicals was still in review",
+    code: "list.created",
+    data: {
+      generator: {
+        name: "PriorityThenMix",
+        version: "1.2.0",
+      },
+      members: 3,
+    },
   },
   {
     id: "E22",
@@ -282,8 +483,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k21",
-    event: "Created",
-    detail: "22 Jun → 10 Jul · built by hand",
+    reason: {
+      public: null,
+      internal: "22 Jun → 10 Jul · built by hand",
+    },
+    code: "list.created",
+    data: {
+      generator: null,
+      members: 4,
+    },
   },
   {
     id: "E23",
@@ -295,8 +503,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k21",
-    event: "Added 5 by hand",
-    detail: null,
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "list.members_changed",
+    data: {
+      added: ["IT5", "IT21", "IT22", "IT23", "IT9"],
+      removed: [],
+    },
   },
   {
     id: "E24",
@@ -308,8 +523,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k6",
-    event: "Removed 1",
-    detail: "Mapa Moravy 1846 — large-format scanner unavailable until Q4",
+    reason: {
+      public: null,
+      internal: "Mapa Moravy 1846 — large-format scanner unavailable until Q4",
+    },
+    code: "list.members_changed",
+    data: {
+      added: [],
+      removed: ["IT9"],
+    },
   },
   {
     id: "E25",
@@ -321,8 +543,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k22",
-    event: "Created",
-    detail: "2 → 20 Nov · built by hand · empty",
+    reason: {
+      public: null,
+      internal: "2 → 20 Nov · built by hand · empty",
+    },
+    code: "list.created",
+    data: {
+      generator: null,
+      members: 0,
+    },
   },
   {
     id: "E26",
@@ -334,8 +563,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k23",
-    event: "Created",
-    detail: "1 → 19 Jun · built by hand",
+    reason: {
+      public: null,
+      internal: "1 → 19 Jun · built by hand",
+    },
+    code: "list.created",
+    data: {
+      generator: null,
+      members: 3,
+    },
   },
   {
     id: "E27",
@@ -347,8 +583,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k23",
-    event: "Added 3 by hand",
-    detail: null,
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "list.members_changed",
+    data: {
+      added: ["IT1", "IT12", "IT20"],
+      removed: [],
+    },
   },
   {
     id: "E28",
@@ -360,8 +603,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k30",
-    event: "Created",
-    detail: "1 Jul 2025 → 30 Jun 2027 · 6 000 pp",
+    reason: {
+      public: null,
+      internal: "1 Jul 2025 → 30 Jun 2027 · 6 000 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E29",
@@ -373,8 +620,14 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k31",
-    event: "Member added",
-    detail: "Jana Nováková",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.member_added",
+    data: {
+      userId: "u1",
+    },
   },
   {
     id: "E31",
@@ -386,8 +639,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k33",
-    event: "Created",
-    detail: "1 Jan → 31 Dec 2026 · 3 000 pp",
+    reason: {
+      public: null,
+      internal: "1 Jan → 31 Dec 2026 · 3 000 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E32",
@@ -399,8 +656,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k34",
-    event: "Created",
-    detail: "1 Jan 2024 → 31 Dec 2025 · 1 200 pp",
+    reason: {
+      public: null,
+      internal: "1 Jan 2024 → 31 Dec 2025 · 1 200 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E33",
@@ -412,8 +673,20 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k35",
-    event: "Period extended",
-    detail: "ends 31 Dec 2025 → 31 Dec 2026 — the provider granted a closing year",
+    reason: {
+      public: null,
+      internal: "the provider granted a closing year",
+    },
+    code: "project.dates_changed",
+    data: {
+      changes: [
+        {
+          field: "ends",
+          from: "2025-12-31",
+          to: "2026-12-31",
+        },
+      ],
+    },
   },
   {
     id: "E34",
@@ -425,8 +698,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k36",
-    event: "Created",
-    detail: "1 Sep 2026 → 31 Aug 2028 · 2 000 pp · no intention yet",
+    reason: {
+      public: null,
+      internal: "1 Sep 2026 → 31 Aug 2028 · 2 000 pp · no intention yet",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E35",
@@ -438,8 +715,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k37",
-    event: "Created",
-    detail: "1 Jan → 31 Dec 2025 · 2 500 pp",
+    reason: {
+      public: null,
+      internal: "1 Jan → 31 Dec 2025 · 2 500 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E36",
@@ -451,8 +732,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u2",
     },
     correlationId: "k38",
-    event: "Created",
-    detail: "1 Mar 2024 → 30 Jun 2025 · 1 200 pp",
+    reason: {
+      public: null,
+      internal: "1 Mar 2024 → 30 Jun 2025 · 1 200 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E37",
@@ -464,8 +749,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u3",
     },
     correlationId: "k39",
-    event: "Created",
-    detail: "1 Jan 2022 → 31 Dec 2024 · 900 pp",
+    reason: {
+      public: null,
+      internal: "1 Jan 2022 → 31 Dec 2024 · 900 pp",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E38",
@@ -476,8 +765,17 @@ export const statusLog: readonly LegacyLogEntry[] = [
       kind: "system",
     },
     correlationId: "k10",
-    event: "Published",
-    detail: "Kramerius uuid:demo",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "iteration.published",
+    data: {
+      link: {
+        id: "IT1-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo",
+      },
+    },
   },
   {
     id: "E39",
@@ -489,8 +787,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k40",
-    event: "Approved",
-    detail: "priority High",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "High",
+      approved: 1,
+    },
   },
   {
     id: "E40",
@@ -502,8 +807,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k41",
-    event: "Approved",
-    detail: "priority Normal",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "Normal",
+      approved: 1,
+    },
   },
   {
     id: "E41",
@@ -515,8 +827,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u3",
     },
     correlationId: "k42",
-    event: "Approved",
-    detail: "priority High",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "High",
+      approved: 1,
+    },
   },
   {
     id: "E42",
@@ -528,8 +847,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k43",
-    event: "Approved",
-    detail: "priority Normal",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "Normal",
+      approved: 1,
+    },
   },
   {
     id: "E43",
@@ -541,8 +867,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u3",
     },
     correlationId: "k44",
-    event: "Approved",
-    detail: "priority Urgent",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "Urgent",
+      approved: 1,
+    },
   },
   {
     id: "E44",
@@ -554,8 +887,15 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u3",
     },
     correlationId: "k45",
-    event: "Approved",
-    detail: "priority Normal",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "project.approved",
+    data: {
+      priority: "Normal",
+      approved: 1,
+    },
   },
   {
     id: "E45",
@@ -567,8 +907,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u4",
     },
     correlationId: "k46",
-    event: "Created",
-    detail: "1 Sep 2026 → 31 Aug 2027 · 800 pp · proposed",
+    reason: {
+      public: null,
+      internal: "1 Sep 2026 → 31 Aug 2027 · 800 pp · proposed",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E46",
@@ -580,8 +924,12 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u4",
     },
     correlationId: "k47",
-    event: "Created",
-    detail: "1 Apr → 31 Dec 2026 · 1 500 pp · proposed",
+    reason: {
+      public: null,
+      internal: "1 Apr → 31 Dec 2026 · 1 500 pp · proposed",
+    },
+    code: "project.created",
+    data: {},
   },
   {
     id: "E47",
@@ -593,8 +941,1394 @@ export const statusLog: readonly LegacyLogEntry[] = [
       userId: "u1",
     },
     correlationId: "k48",
-    event: "Rejected",
-    detail:
-      "The postcard collection is not catalogued yet, so nothing in it can be proposed. Start a new project once it is in the catalog.",
+    reason: {
+      public: null,
+      internal:
+        "The postcard collection is not catalogued yet, so nothing in it can be proposed. Start a new project once it is in the catalog.",
+    },
+    code: "project.rejected",
+    data: {
+      declined: 1,
+    },
+  },
+  {
+    id: "E48",
+    subjectKind: "request",
+    subjectId: "R1",
+    at: "2026-03-11T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0009",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0009",
+        name: "proposals-2026-03-11",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E49",
+    subjectKind: "request",
+    subjectId: "R2",
+    at: "2026-05-02T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0012",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0012",
+        name: "proposals-2026-05-02",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E50",
+    subjectKind: "request",
+    subjectId: "R3",
+    at: "2026-06-17T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0031",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0031",
+        name: "proposals-2026-06-17",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E51",
+    subjectKind: "request",
+    subjectId: "R4",
+    at: "2026-06-09T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0029",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0029",
+        name: "proposals-2026-06-09",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E52",
+    subjectKind: "request",
+    subjectId: "R5",
+    at: "2026-06-21T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a1",
+    },
+    correlationId: "B-0037",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0037",
+        name: "harvest-2026-06-21",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E53",
+    subjectKind: "request",
+    subjectId: "R6",
+    at: "2026-04-02T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0120",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0120",
+        name: "proposals-2026-04-02.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E54",
+    subjectKind: "request",
+    subjectId: "R7",
+    at: "2026-06-14T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u7",
+    },
+    correlationId: "B-0138",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0138",
+        name: "harvest / ISSN harvester",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E55",
+    subjectKind: "request",
+    subjectId: "R0",
+    at: "2019-03-12T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0001",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0001",
+        name: "proposals-2019-03-12",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E56",
+    subjectKind: "request",
+    subjectId: "R8",
+    at: "2026-06-03T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0025",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0025",
+        name: "harvest-2026-06-03",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E57",
+    subjectKind: "request",
+    subjectId: "R9",
+    at: "2026-06-08T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0028",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0028",
+        name: "proposals-2026-06-08",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E58",
+    subjectKind: "request",
+    subjectId: "R10",
+    at: "2026-06-19T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0141",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0141",
+        name: "proposals-2026-06-19.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E59",
+    subjectKind: "request",
+    subjectId: "R11",
+    at: "2026-06-20T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0141",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0141",
+        name: "proposals-2026-06-19.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E60",
+    subjectKind: "request",
+    subjectId: "R12",
+    at: "2026-05-28T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0022",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0022",
+        name: "proposals-2026-05-28",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E61",
+    subjectKind: "request",
+    subjectId: "R23",
+    at: "2026-06-21T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0142",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0142",
+        name: "proposals-2026-06-21.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E62",
+    subjectKind: "request",
+    subjectId: "R24",
+    at: "2026-06-20T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0142",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0142",
+        name: "proposals-2026-06-21.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E63",
+    subjectKind: "request",
+    subjectId: "R25",
+    at: "2026-06-22T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0040",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0040",
+        name: "proposals-2026-06-22",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E64",
+    subjectKind: "request",
+    subjectId: "R26",
+    at: "2026-06-22T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u7",
+    },
+    correlationId: "B-0142",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0142",
+        name: "proposals-2026-06-21.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E65",
+    subjectKind: "request",
+    subjectId: "R27",
+    at: "2026-06-18T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0141",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0141",
+        name: "proposals-2026-06-19.csv",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E66",
+    subjectKind: "request",
+    subjectId: "R38",
+    at: "2026-06-17T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0032",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0032",
+        name: "proposals-2026-06-17",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E67",
+    subjectKind: "request",
+    subjectId: "R39",
+    at: "2026-06-23T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0043",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0043",
+        name: "harvest-2026-06-23",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E68",
+    subjectKind: "request",
+    subjectId: "R40",
+    at: "2026-05-12T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0017",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0017",
+        name: "proposals-2026-05-12",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E69",
+    subjectKind: "request",
+    subjectId: "R41",
+    at: "2026-04-28T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a1",
+    },
+    correlationId: "B-0010",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0010",
+        name: "harvest-2026-04-28",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E70",
+    subjectKind: "request",
+    subjectId: "R42",
+    at: "2026-05-06T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0014",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0014",
+        name: "proposals-2026-05-06",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E71",
+    subjectKind: "request",
+    subjectId: "R43",
+    at: "2026-05-14T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0018",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0018",
+        name: "proposals-2026-05-14",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E72",
+    subjectKind: "request",
+    subjectId: "R44",
+    at: "2026-04-30T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0011",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0011",
+        name: "proposals-2026-04-30",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E73",
+    subjectKind: "request",
+    subjectId: "R45",
+    at: "2026-05-02T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0013",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0013",
+        name: "harvest-2026-05-02",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E74",
+    subjectKind: "request",
+    subjectId: "R46",
+    at: "2026-05-26T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0021",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0021",
+        name: "proposals-2026-05-26",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E75",
+    subjectKind: "request",
+    subjectId: "R47",
+    at: "2026-05-09T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0015",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0015",
+        name: "proposals-2026-05-09",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E76",
+    subjectKind: "request",
+    subjectId: "R48",
+    at: "2026-06-01T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0023",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0023",
+        name: "harvest-2026-06-01",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E77",
+    subjectKind: "request",
+    subjectId: "R49",
+    at: "2026-06-04T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u7",
+    },
+    correlationId: "B-0027",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0027",
+        name: "proposals-2026-06-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E78",
+    subjectKind: "request",
+    subjectId: "R50",
+    at: "2026-05-21T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0020",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0020",
+        name: "proposals-2026-05-21",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E79",
+    subjectKind: "request",
+    subjectId: "R51",
+    at: "2026-05-18T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0019",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0019",
+        name: "proposals-2026-05-18",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E80",
+    subjectKind: "request",
+    subjectId: "R52",
+    at: "2026-05-11T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0016",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0016",
+        name: "proposals-2026-05-11",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E81",
+    subjectKind: "request",
+    subjectId: "R53",
+    at: "2026-06-03T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0024",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0024",
+        name: "proposals-2026-06-03",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E82",
+    subjectKind: "request",
+    subjectId: "R54",
+    at: "2025-01-14T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0006",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0006",
+        name: "proposals-2025-01-14",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E83",
+    subjectKind: "request",
+    subjectId: "R55",
+    at: "2025-03-03T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0007",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0007",
+        name: "proposals-2025-03-03",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E84",
+    subjectKind: "request",
+    subjectId: "R56",
+    at: "2025-03-20T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0008",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0008",
+        name: "proposals-2025-03-20",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E85",
+    subjectKind: "request",
+    subjectId: "R57",
+    at: "2024-03-11T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0004",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0004",
+        name: "proposals-2024-03-11",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E86",
+    subjectKind: "request",
+    subjectId: "R58",
+    at: "2024-10-09T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0005",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0005",
+        name: "proposals-2024-10-09",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E87",
+    subjectKind: "request",
+    subjectId: "R59",
+    at: "2022-02-02T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0002",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0002",
+        name: "proposals-2022-02-02",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E88",
+    subjectKind: "request",
+    subjectId: "R60",
+    at: "2023-05-15T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u1",
+    },
+    correlationId: "B-0003",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0003",
+        name: "proposals-2023-05-15",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E89",
+    subjectKind: "request",
+    subjectId: "R13",
+    at: "2026-06-04T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u7",
+    },
+    correlationId: "B-0026",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0026",
+        name: "proposals-2026-06-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E90",
+    subjectKind: "request",
+    subjectId: "R14",
+    at: "2026-06-19T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0034",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0034",
+        name: "proposals-2026-06-19",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E91",
+    subjectKind: "request",
+    subjectId: "R15",
+    at: "2026-06-20T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0035",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0035",
+        name: "proposals-2026-06-20",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E92",
+    subjectKind: "request",
+    subjectId: "R16",
+    at: "2026-06-22T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0038",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0038",
+        name: "proposals-2026-06-22",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E93",
+    subjectKind: "request",
+    subjectId: "R17",
+    at: "2026-06-22T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0039",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0039",
+        name: "proposals-2026-06-22",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E94",
+    subjectKind: "request",
+    subjectId: "R18",
+    at: "2026-06-23T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u7",
+    },
+    correlationId: "B-0041",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0041",
+        name: "proposals-2026-06-23",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E95",
+    subjectKind: "request",
+    subjectId: "R19",
+    at: "2026-06-21T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0036",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0036",
+        name: "proposals-2026-06-21",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E96",
+    subjectKind: "request",
+    subjectId: "R21",
+    at: "2026-06-18T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u6",
+    },
+    correlationId: "B-0033",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0033",
+        name: "proposals-2026-06-18",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E97",
+    subjectKind: "request",
+    subjectId: "R22",
+    at: "2026-06-10T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0030",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0030",
+        name: "proposals-2026-06-10",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E98",
+    subjectKind: "request",
+    subjectId: "R28",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0143",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0143",
+        name: "shelf ST1-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E99",
+    subjectKind: "request",
+    subjectId: "R29",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0143",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0143",
+        name: "shelf ST1-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E100",
+    subjectKind: "request",
+    subjectId: "R30",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0143",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0143",
+        name: "shelf ST1-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E101",
+    subjectKind: "request",
+    subjectId: "R31",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0143",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0143",
+        name: "shelf ST1-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E102",
+    subjectKind: "request",
+    subjectId: "R32",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u4",
+    },
+    correlationId: "B-0143",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0143",
+        name: "shelf ST1-04",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E103",
+    subjectKind: "request",
+    subjectId: "R33",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0144",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0144",
+        name: "brno-almanacs.txt",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E104",
+    subjectKind: "request",
+    subjectId: "R34",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0144",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0144",
+        name: "brno-almanacs.txt",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E105",
+    subjectKind: "request",
+    subjectId: "R35",
+    at: "2026-06-24T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "u5",
+    },
+    correlationId: "B-0144",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0144",
+        name: "brno-almanacs.txt",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E106",
+    subjectKind: "request",
+    subjectId: "R36",
+    at: "2026-06-25T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0145",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0145",
+        name: "ISSN sweep, 25 Jun",
+      },
+      source: null,
+    },
+  },
+  {
+    id: "E107",
+    subjectKind: "request",
+    subjectId: "R37",
+    at: "2026-06-25T09:00:00Z",
+    actor: {
+      kind: "user",
+      userId: "a2",
+    },
+    correlationId: "B-0145",
+    reason: {
+      public: null,
+      internal: null,
+    },
+    code: "request.created",
+    data: {
+      batch: {
+        id: "B-0145",
+        name: "ISSN sweep, 25 Jun",
+      },
+      source: null,
+    },
   },
 ];

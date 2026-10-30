@@ -23,7 +23,7 @@ import {
 } from "@/api/validations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
-import { eventEntry, legacyEntry } from "./legacy-log-test";
+import { eventEntry } from "./legacy-log-test";
 
 const server = setupServer();
 
@@ -133,7 +133,7 @@ describe("findValidation", () => {
     const outside = await findValidation("IT10");
 
     expect(detail?.row.review).toBe("Denied");
-    expect(legacyEntry(detail?.log[0]).event).toBe("Validation denied");
+    expect(eventEntry(detail?.log[0]).code).toBe("iteration.verdict_denied");
     expect(outside).toBeNull();
   });
 });

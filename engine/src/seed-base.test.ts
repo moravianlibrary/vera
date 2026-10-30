@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "bun:test";
 import { iterationSchema } from "@vera/domain/entities";
+import { eventEntrySchema } from "@vera/domain/events";
 import { z } from "zod";
 import expected from "../test/base-sessions.json";
 import { call, testEngine } from "../test/engine";
@@ -12,6 +13,15 @@ import { readSeed } from "./seed";
 const engine = testEngine("base");
 
 describe("the base seed", () => {
+  it("stores only event entries and logs every request", () => {
+    const seed = readSeed("base");
+    const entries = z.array(eventEntrySchema).parse(seed.collections.statusLog);
+    const requests = z.array(z.object({ id: z.string() })).parse(seed.collections.requests);
+    for (const request of requests)
+      expect(
+        entries.some((entry) => entry.subjectId === request.id && entry.code === "request.created"),
+      ).toBe(true);
+  });
   it("parses, at the demo's moment", () => {
     expect(readSeed("base").now).toBe("2026-06-25T08:40:00.000Z");
     expect(engine.clock.now().toISOString()).toBe("2026-06-25T08:40:00.000Z");

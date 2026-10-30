@@ -16,6 +16,7 @@ import {
   statusLogEntrySchema,
   userSchema,
 } from "@vera/domain/entities";
+import { eventEntrySchema } from "@vera/domain/events";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { database } from "@/mocks/database";
@@ -41,6 +42,7 @@ describe("fixtures", () => {
   });
 
   it("reference only records that exist", () => {
+    for (const entry of database.statusLog) eventEntrySchema.parse(entry);
     const ids = new Set(
       [
         database.users,
