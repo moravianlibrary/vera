@@ -14,6 +14,131 @@ const roleDraft = {
 const json = (response: Response) => response.json() as Promise<Record<string, unknown>>;
 
 describe("access acts", () => {
+  it("ACT-identity-default-role: sets a default role", async () => {
+    const engine = testEngine("base");
+    const response = await call(
+      engine,
+      "PUT",
+      api(accessRecordActionRoute("identity-instances", "pi22", "default-role")),
+      { as: "u3", body: { roleId: "reader" } },
+    );
+    expect(response.status).toBe(200);
+    expect(await json(response)).toMatchObject({ id: "pi22", defaultRoleId: "reader" });
+    engine.close();
+  });
+  it("ACT-identity-default-role: sets no default role", async () => {
+    const engine = testEngine("base");
+    expect(
+      (
+        await call(
+          engine,
+          "PUT",
+          api(accessRecordActionRoute("identity-instances", "pi23", "default-role")),
+          { as: "u3", body: { roleId: null } },
+        )
+      ).status,
+    ).toBe(200);
+    const settings = engine.db
+      .query<{ settings: string }, []>("SELECT settings FROM plugin_instances WHERE id='pi23'")
+      .get();
+    expect(JSON.parse(settings?.settings ?? "{}").defaultRoleId).toBeNull();
+    engine.close();
+  });
+  it("ACT-identity-default-role: refuses a missing instance (404)", async () => {
+    const engine = testEngine("base");
+    expect(
+      (
+        await call(
+          engine,
+          "PUT",
+          api(accessRecordActionRoute("identity-instances", "pi99", "default-role")),
+          { as: "u3", body: { roleId: "reader" } },
+        )
+      ).status,
+    ).toBe(404);
+    engine.close();
+  });
+  it("ACT-identity-default-role: refuses an unknown role (422)", async () => {
+    const engine = testEngine("base");
+    expect(
+      (
+        await call(
+          engine,
+          "PUT",
+          api(accessRecordActionRoute("identity-instances", "pi22", "default-role")),
+          { as: "u3", body: { roleId: "missing" } },
+        )
+      ).status,
+    ).toBe(422);
+    engine.close();
+  });
+  it("ACT-identity-default-role: refuses without access.manage (403)", async () => {
+    const engine = testEngine("base");
+    expect(
+      (
+        await call(
+          engine,
+          "PUT",
+          api(accessRecordActionRoute("identity-instances", "pi22", "default-role")),
+          { as: "u5", body: { roleId: "reader" } },
+        )
+      ).status,
+    ).toBe(403);
+    engine.close();
+  });
+  it("ACT-identity-default-role: leaves existing users' roles unchanged", async () => {
+    const engine = testEngine("base");
+    const before = engine.db
+      .query<{ role_id: string }, []>(
+        "SELECT role_id FROM user_hand_roles WHERE user_id='u3' ORDER BY rowid",
+      )
+      .all();
+    await call(
+      engine,
+      "PUT",
+      api(accessRecordActionRoute("identity-instances", "pi22", "default-role")),
+      { as: "u3", body: { roleId: "reader" } },
+    );
+    expect(
+      engine.db
+        .query<{ role_id: string }, []>(
+          "SELECT role_id FROM user_hand_roles WHERE user_id='u3' ORDER BY rowid",
+        )
+        .all(),
+    ).toEqual(before);
+    engine.close();
+  });
+  it("ACT-identity-default-role: gives the new default role on a first login", async () => {
+    const engine = testEngine("base");
+    await call(
+      engine,
+      "PUT",
+      api(accessRecordActionRoute("identity-instances", "pi23", "default-role")),
+      { as: "u3", body: { roleId: "curator" } },
+    );
+    const start = await call(engine, "GET", "/api/login/pi23");
+    const location = start.headers.get("Location");
+    if (location === null) throw new Error("Expected the provider redirect");
+    const flow = new URL(location, "http://engine.test").searchParams.get("flow");
+    if (flow === null) throw new Error("Expected the login flow");
+    await call(
+      engine,
+      "GET",
+      `/api/login/pi23/callback?flow=${encodeURIComponent(flow)}&code=nova.ctenarka@muni.cz`,
+    );
+    const person = engine.db
+      .query<{ user_id: string }, []>(
+        "SELECT user_id FROM user_identities WHERE instance_id='pi23' AND external_id='nova.ctenarka@muni.cz'",
+      )
+      .get();
+    if (person === null) throw new Error("Expected the first login identity");
+    expect(
+      engine.db
+        .query("SELECT 1 FROM user_mapped_roles WHERE user_id=? AND role_id='curator'")
+        .get(person.user_id),
+    ).not.toBeNull();
+    engine.close();
+  });
   it("ACT-role-save: creates and names a new role", async () => {
     const engine = testEngine("base");
     const created = await call(engine, "POST", api(apiRoutes.accessRoles), {

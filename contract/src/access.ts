@@ -101,6 +101,9 @@ export const identityLinkSchema = identitySchema.pick({ instanceId: true }).exte
   externalId: z.string().trim().min(1, "Their id there"),
 });
 
+export const identityDefaultRoleSchema = z.object({ roleId: z.string().nullable() });
+export type IdentityDefaultRole = z.infer<typeof identityDefaultRoleSchema>;
+
 export type IdentityLink = z.infer<typeof identityLinkSchema>;
 
 // Somebody with no institutional account: a username on Local accounts, and the roles they

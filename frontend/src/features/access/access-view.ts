@@ -111,6 +111,7 @@ export const selectionParams = {
   groups: "g",
   custodies: "c",
   watchlists: "w",
+  "identity-instances": "identity",
 } as const satisfies Record<AccessSelectionKind, string>;
 
 export interface AccessSelection {
@@ -126,6 +127,7 @@ export function selectionOf(params: URLSearchParams, index: AccessIndex): Access
     groups: (id) => index.groups.some((group) => group.id === id),
     custodies: (id) => index.custodies.some((custody) => custody.id === id),
     watchlists: (id) => index.sharedWatchlists.some((watchlist) => watchlist.id === id),
+    "identity-instances": (id) => index.identityInstances.some((instance) => instance.id === id),
   };
   for (const kind of accessSelectionKinds) {
     const id = params.get(selectionParams[kind]);

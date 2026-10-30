@@ -13,6 +13,7 @@ import { identityLinkSchema, localAccountSchema, recordDraftSchema } from "@vera
 import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@vera/domain/access";
 import { heldRoleIdsOf, requestReachOf } from "@vera/domain/access";
 import { useId } from "react";
+import { z } from "zod";
 import {
   createCustody,
   createGroup,
@@ -24,6 +25,7 @@ import {
   setCustodyMembers,
   setGroupMembers,
   setHandRoles,
+  setIdentityDefaultRole,
   setUserGroups,
   suspendUser,
 } from "@/api/access";
@@ -80,6 +82,69 @@ interface DialogProps {
   onClose: () => void;
   index: AccessIndex;
   names: AccessNames;
+}
+
+const defaultRoleDraftSchema = z.object({ roleId: z.string() });
+
+export function IdentityDefaultRoleDialog({
+  isOpen,
+  onClose,
+  index,
+  instance,
+  onSaved,
+}: DialogProps & {
+  instance: import("@vera/domain/access").IdentityInstance;
+  onSaved: (notice: AccessNotice) => void;
+}) {
+  const save = useActionMutation({
+    call: setIdentityDefaultRole,
+    invalidates: accessInvalidations,
+    refusalTexts,
+  });
+  return (
+    <FormDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Default role: ${instance.name}`}
+      description="Choose the role a first login receives."
+      schema={defaultRoleDraftSchema}
+      defaultValues={{ roleId: instance.defaultRoleId ?? "none" }}
+      submitLabel="Save"
+      onSubmit={async ({ roleId }) => {
+        const result = await save.run({
+          instanceId: instance.id,
+          roleId: roleId === "none" ? null : roleId,
+        });
+        if (result.isDone)
+          onSaved({
+            title: "Default role saved",
+            text: `${instance.name} will give ${roleId === "none" ? "no role" : (index.roles.find((role) => role.id === roleId)?.name ?? roleId)} to first logins from now on.`,
+          });
+        return result;
+      }}
+      render={(form) => (
+        <>
+          <p>Applies to first logins from now on; people already in keep their roles.</p>
+          <Select
+            value={form.watch("roleId")}
+            onValueChange={(roleId) => form.setValue("roleId", roleId, { shouldDirty: true })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None — no access yet</SelectItem>
+              {index.roles.map((role) => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </>
+      )}
+    />
+  );
 }
 
 // What being in the group gives, in words.

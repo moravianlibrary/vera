@@ -195,6 +195,7 @@ export const roleEndpoints = [
             defaultRoleId: settings.defaultRoleId ?? null,
             mappings: settings.mappings ?? [],
             isLocal: JSON.parse(row.versions)[0]?.declares?.loginEntry === "Form",
+            isEnabled: true,
           },
         ];
       });

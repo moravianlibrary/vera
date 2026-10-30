@@ -2,7 +2,13 @@
 
 import { accessIndexSchema } from "@vera/contract/access";
 import { endpoints } from "@vera/contract/endpoints";
-import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@vera/domain/access";
+import type {
+  AccessGroup,
+  AccessUser,
+  CustodyRecord,
+  IdentityInstance,
+  Role,
+} from "@vera/domain/access";
 import { hasPermission } from "@vera/domain/permissions";
 import { rolesOf, sessionOf } from "../access/session";
 import type { Engine } from "../engine";
@@ -115,6 +121,40 @@ export function custodiesOf(engine: Engine): CustodyRecord[] {
     }));
 }
 
+export function identityInstancesOf(engine: Engine): IdentityInstance[] {
+  return engine.db
+    .query<
+      {
+        id: string;
+        name: string;
+        implementation_id: string;
+        settings: string;
+        versions: string;
+        is_enabled: number;
+      },
+      []
+    >(
+      "SELECT i.id,i.name,i.implementation_id,i.settings,p.versions,i.is_enabled FROM plugin_instances i JOIN plugin_implementations p ON p.id=i.implementation_id WHERE i.is_deleted=0 ORDER BY i.rowid",
+    )
+    .all()
+    .flatMap((i) => {
+      const settings = JSON.parse(i.settings ?? "null");
+      if (settings?.kind !== "Identity") return [];
+      const entry = JSON.parse(i.versions)[0]?.declares?.loginEntry;
+      return [
+        {
+          id: i.id,
+          name: i.name,
+          userIdClaim: settings.userIdClaim,
+          defaultRoleId: settings.defaultRoleId ?? null,
+          mappings: settings.mappings ?? [],
+          isLocal: entry === "Form",
+          isEnabled: i.is_enabled === 1,
+        },
+      ];
+    });
+}
+
 export function requireCaller(engine: Engine, userId: string | null) {
   if (userId === null)
     return { ok: false as const, response: problem(401, "Nobody is signed in.") };
@@ -147,29 +187,7 @@ export const accessIndexEndpoint = implement(endpoints.accessIndex, ({ engine, c
   const roles: Role[] = rolesOf(engine.db);
   const groupRecords = groupsOf(engine);
   const custodies = custodiesOf(engine);
-  const identityInstances = engine.db
-    .query<
-      { id: string; name: string; implementation_id: string; settings: string; versions: string },
-      []
-    >(
-      "SELECT i.id,i.name,i.implementation_id,i.settings,p.versions FROM plugin_instances i JOIN plugin_implementations p ON p.id=i.implementation_id WHERE i.is_deleted=0 ORDER BY i.rowid",
-    )
-    .all()
-    .flatMap((i) => {
-      const settings = JSON.parse(i.settings ?? "null");
-      if (settings?.kind !== "Identity") return [];
-      const entry = JSON.parse(i.versions)[0]?.declares?.loginEntry;
-      return [
-        {
-          id: i.id,
-          name: i.name,
-          userIdClaim: settings.userIdClaim,
-          defaultRoleId: settings.defaultRoleId ?? null,
-          mappings: settings.mappings ?? [],
-          isLocal: entry === "Form",
-        },
-      ];
-    });
+  const identityInstances = identityInstancesOf(engine);
   const categoryMemberships = engine.db
     .query<{ id: string }, []>(
       "SELECT c.id FROM categories c WHERE EXISTS (SELECT 1 FROM category_members cm WHERE cm.category_id=c.id) ORDER BY c.rowid",

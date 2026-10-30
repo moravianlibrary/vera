@@ -8,6 +8,7 @@ import {
   accessGroupSchema,
   accessUserSchema,
   custodyRecordSchema,
+  identityInstanceSchema,
   identitySchema,
   roleSchema,
 } from "@vera/domain/access";
@@ -19,6 +20,7 @@ import {
   custodyMembersSchema,
   groupMembersSchema,
   handRolesSchema,
+  identityDefaultRoleSchema,
   identityLinkSchema,
   localAccountSchema,
   recordDraftSchema,
@@ -35,7 +37,7 @@ import {
   tokenSchema,
   verifiedSchema,
 } from "./login";
-import { apiRoutes } from "./routes";
+import { accessRecordActionRoute, apiRoutes } from "./routes";
 import { userSettingsChangeSchema, userSettingsSchema } from "./user-settings";
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -230,6 +232,15 @@ export const endpoints = {
     body: identityLinkSchema,
     response: identitySchema,
     codes: ["access.identity_taken"],
+  }),
+  identityDefaultRole: spec({
+    method: "PUT",
+    path: accessRecordActionRoute("identity-instances", ":id", "default-role"),
+    summary: "Sets an Identity instance's default role.",
+    params: z.object({ id: z.string() }),
+    body: identityDefaultRoleSchema,
+    response: identityInstanceSchema,
+    codes: [],
   }),
   identityUnlink: spec({
     method: "DELETE",

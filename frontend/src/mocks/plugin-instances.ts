@@ -73,6 +73,7 @@ export function identityInstances(): IdentityInstance[] {
         defaultRoleId: settings.defaultRoleId,
         mappings: settings.mappings.map((mapping) => ({ ...mapping })),
         isLocal: implementationOf(instance)?.versions[0]?.declares.loginEntry === "Form",
+        isEnabled: instance.isEnabled,
       },
     ];
   });

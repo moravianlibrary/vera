@@ -1,5 +1,5 @@
 import type { AccessIndex } from "@vera/contract/access";
-import type { AccessUser, Identity } from "@vera/domain/access";
+import type { AccessUser, Identity, IdentityInstance } from "@vera/domain/access";
 import {
   categoryCustodyOf,
   heldRoleIdsOf,
@@ -28,7 +28,7 @@ import {
   recordActionsFor,
 } from "@/features/access/access-acts";
 import type { AccessNotice } from "@/features/access/access-dialogs";
-import { accessRefusalTexts } from "@/features/access/access-dialogs";
+import { accessRefusalTexts, IdentityDefaultRoleDialog } from "@/features/access/access-dialogs";
 import { CategoryAccessDetail } from "@/features/access/access-management-detail";
 import {
   AgentBadge,
@@ -56,7 +56,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import type { ListFieldDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 
-type View = "users" | "roles" | "groups" | "custodies";
+type View = "users" | "roles" | "groups" | "custodies" | "ways-in";
 type CustodyType = "proposals" | "categories";
 type Selected = AccessSelection | { kind: "categories"; id: string };
 type Row = {
@@ -69,7 +69,7 @@ type Row = {
   access: string;
   kind: Selected["kind"];
 };
-const views: View[] = ["users", "roles", "groups", "custodies"];
+const views: View[] = ["users", "roles", "groups", "custodies", "ways-in"];
 const loadSize = 25;
 
 function selectionFrom(params: URLSearchParams): Selected | null {
@@ -79,6 +79,7 @@ function selectionFrom(params: URLSearchParams): Selected | null {
     groups: "g",
     custodies: "c",
     categories: "category",
+    "identity-instances": "identity",
   })) {
     const id = params.get(key);
     if (id) return { kind: kind as Selected["kind"], id };
@@ -87,6 +88,7 @@ function selectionFrom(params: URLSearchParams): Selected | null {
 }
 
 function viewOf(params: URLSearchParams, selected: Selected | null): View {
+  if (selected?.kind === "identity-instances") return "ways-in";
   if (selected?.kind === "roles") return "roles";
   if (selected?.kind === "groups") return "groups";
   if (["custodies", "categories"].includes(selected?.kind ?? "")) return "custodies";
@@ -139,6 +141,16 @@ function rowsOf(
       secondary: group.description,
       third: `${group.memberIds.length} members`,
       access: `${index.custodies.filter((custody) => custody.groupIds.includes(group.id)).length} proposal sets · ${group.categoryIds.length} categories · ${index.projects.filter((project) => project.memberGroupIds.includes(group.id)).length} projects`,
+    }));
+  if (view === "ways-in")
+    return index.identityInstances.map((instance) => ({
+      id: instance.id,
+      kind: "identity-instances",
+      title: instance.name,
+      secondary: instance.isLocal ? "Form" : "Redirect",
+      third:
+        index.roles.find((role) => role.id === instance.defaultRoleId)?.name ?? "No access yet",
+      access: `${index.users.filter((user) => user.identities.some((identity) => identity.instanceId === instance.id)).length} people log in through it`,
     }));
   if (type === "proposals")
     return index.custodies.map((custody) => ({
@@ -296,6 +308,7 @@ export function AccessPage() {
   const { data: session } = useSessionQuery();
   const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const [dialog, setDialog] = useState<AccessDialog | null>(null);
+  const [defaultRoleInstance, setDefaultRoleInstance] = useState<IdentityInstance | null>(null);
   const [notice, setNotice] = useState<AccessNotice | null>(null);
   const restore = useActionMutation({
     call: restoreUser,
@@ -387,9 +400,11 @@ export function AccessPage() {
         ? "roles"
         : choice?.kind === "groups"
           ? "groups"
-          : choice?.kind === "custodies" || choice?.kind === "categories"
-            ? "custodies"
-            : "users";
+          : choice?.kind === "identity-instances"
+            ? "ways-in"
+            : choice?.kind === "custodies" || choice?.kind === "categories"
+              ? "custodies"
+              : "users";
     const targetType = choice?.kind === "categories" ? "categories" : "proposals";
     const targetKey = `${targetView}:${targetType}`;
     const currentKey = `${view}:${type}`;
@@ -420,9 +435,11 @@ export function AccessPage() {
           ? "users"
           : choice.kind === "roles"
             ? "roles"
-            : choice.kind === "groups"
-              ? "groups"
-              : "custodies",
+            : choice.kind === "identity-instances"
+              ? "ways-in"
+              : choice.kind === "groups"
+                ? "groups"
+                : "custodies",
       );
       if (choice.kind === "custodies") next.set("type", "proposals");
       if (choice.kind === "categories") next.set("type", "categories");
@@ -480,6 +497,10 @@ export function AccessPage() {
   const selectedCustody =
     selected?.kind === "custodies"
       ? index?.custodies.find((custody) => custody.id === selected.id)
+      : undefined;
+  const selectedIdentity =
+    view === "ways-in" && selected
+      ? index?.identityInstances.find((instance) => instance.id === selected.id)
       : undefined;
   const columns: ColumnDefinition<Row>[] = [
     {
@@ -573,7 +594,7 @@ export function AccessPage() {
           </Button>
           <h2 className="mt-4 text-base font-semibold">{selectedRow?.title ?? selected.id}</h2>
           <p className="mt-1 text-xs text-muted-foreground">Immediate relationships</p>
-          {selected.kind !== "watchlists" && (
+          {selected.kind !== "watchlists" && selected.kind !== "identity-instances" && (
             <div className="mt-4">
               <AccessRelationships
                 index={index}
@@ -616,6 +637,45 @@ export function AccessPage() {
               onSelect={open}
               custody={selectedCustody}
             />
+          )}
+          {selectedIdentity && (
+            <section className="rounded-lg border bg-card p-5">
+              <h2 className="text-base font-semibold">{selectedIdentity.name}</h2>
+              <ActionBar
+                actions={
+                  canManage
+                    ? [
+                        {
+                          id: "default-role",
+                          label: "Default role…",
+                          onSelect: () => setDefaultRoleInstance(selectedIdentity),
+                        },
+                      ]
+                    : []
+                }
+                cap={1}
+                menuLabel="More"
+              />
+              <p>
+                {selectedIdentity.defaultRoleId
+                  ? index.roles.find((role) => role.id === selectedIdentity.defaultRoleId)?.name
+                  : "No access yet"}
+              </p>
+              <h3>Claim mappings</h3>
+              {selectedIdentity.mappings.map((mapping) => (
+                <p key={`${mapping.claim}:${mapping.roleId}`}>
+                  {mapping.claim} →{" "}
+                  {index.roles.find((role) => role.id === mapping.roleId)?.name ?? mapping.roleId}
+                </p>
+              ))}
+              <p>{selectedIdentity.isLocal ? "Form" : "Redirect"}</p>
+              <a
+                className="underline"
+                href={`/plugins?i=${encodeURIComponent(selectedIdentity.id)}`}
+              >
+                Edit in Plugins
+              </a>
+            </section>
           )}
           {selected.kind === "categories" && (
             <CategoryAccessDetail
@@ -781,6 +841,22 @@ export function AccessPage() {
             setNotice(nextNotice);
             setDialog(null);
             if (nextSelection) open(nextSelection);
+          }}
+        />
+      )}
+      {defaultRoleInstance && index && (
+        <IdentityDefaultRoleDialog
+          isOpen
+          onClose={() => setDefaultRoleInstance(null)}
+          index={index}
+          names={
+            names ??
+            namesOf(index, { categoryOf: (id) => categoryPath(index, id), instanceOf: pluginName })
+          }
+          instance={defaultRoleInstance}
+          onSaved={(saved) => {
+            setNotice(saved);
+            setDefaultRoleInstance(null);
           }}
         />
       )}

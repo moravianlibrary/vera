@@ -21,7 +21,14 @@ import type {
   RoleImpact,
   UserGroups,
 } from "@vera/contract/access";
-import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@vera/domain/access";
+import type {
+  AccessGroup,
+  AccessUser,
+  CustodyRecord,
+  Identity,
+  IdentityInstance,
+  Role,
+} from "@vera/domain/access";
 import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@vera/domain/access";
 import type { Session } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
@@ -371,6 +378,30 @@ export function setHandRoles(
 
   database.userAccess = access;
   return { value: findUser(userId) as AccessUser };
+}
+
+export function setIdentityDefaultRole(
+  session: Session,
+  instanceId: string,
+  body: { roleId: string | null },
+): Outcome<IdentityInstance> {
+  const { roleId } = body;
+  const refusal = guard(session);
+  if (refusal !== null) return { refusal };
+  const identity = identityInstances().find(
+    (instance) => instance.id === instanceId && instance.isEnabled,
+  );
+  if (!identity) return { refusal: unknownRecord("Identity instance") };
+  if (roleId !== null && !database.roles.some((role) => role.id === roleId))
+    return { refusal: { status: 422, message: "Choose an existing role" } };
+  database.pluginInstances = database.pluginInstances.map((instance) =>
+    instance.id === instanceId && instance.settings?.kind === "Identity"
+      ? { ...instance, settings: { ...instance.settings, defaultRoleId: roleId } }
+      : instance,
+  );
+  return {
+    value: identityInstances().find((instance) => instance.id === instanceId) as IdentityInstance,
+  };
 }
 
 export function setUserGroups(

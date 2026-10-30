@@ -223,11 +223,17 @@ export function scheduleActionRoute(scheduleId: string, action: ScheduleAction):
 // One record of Users & Groups, and what is set on it whole: a user's hand-set roles, groups and
 // identities; a group's or a custody's members. And what deleting a role or a custody would do,
 // and a person suspended and restored (ACCESS-suspend).
-export const accessRecordKinds = ["roles", "users", "groups", "custodies"] as const;
+export const accessRecordKinds = [
+  "roles",
+  "users",
+  "groups",
+  "custodies",
+  "identity-instances",
+] as const;
 export type AccessRecordKind = (typeof accessRecordKinds)[number];
 
 export function accessRecordRoute(kind: AccessRecordKind, recordId: string): string {
-  return `${apiRoutes.access}/${kind}/${encodeURIComponent(recordId)}`;
+  return `${apiRoutes.access}/${kind}/${recordId.startsWith(":") ? recordId : encodeURIComponent(recordId)}`;
 }
 
 export const accessRecordActions = [
@@ -238,6 +244,7 @@ export const accessRecordActions = [
   "impact",
   "suspend",
   "restore",
+  "default-role",
 ] as const;
 export type AccessRecordAction = (typeof accessRecordActions)[number];
 

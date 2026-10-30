@@ -966,6 +966,7 @@
     "identityInstances": [
       {
         "id": "pi22",
+        "isEnabled": true,
         "name": "MZK Keycloak",
         "userIdClaim": "preferred_username",
         "defaultRoleId": null,
@@ -987,6 +988,7 @@
       },
       {
         "id": "pi23",
+        "isEnabled": true,
         "name": "eduID.cz",
         "userIdClaim": "eduPersonPrincipalName",
         "defaultRoleId": "reader",
@@ -995,6 +997,7 @@
       },
       {
         "id": "pi24",
+        "isEnabled": true,
         "name": "Local accounts",
         "userIdClaim": "username",
         "defaultRoleId": "reader",
@@ -1003,6 +1006,7 @@
       },
       {
         "id": "pi41",
+        "isEnabled": true,
         "name": "Google",
         "userIdClaim": "sub",
         "defaultRoleId": "reader",
@@ -1011,6 +1015,7 @@
       },
       {
         "id": "pi42",
+        "isEnabled": true,
         "name": "Seznam",
         "userIdClaim": "sub",
         "defaultRoleId": "reader",

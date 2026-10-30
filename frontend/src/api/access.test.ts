@@ -24,6 +24,7 @@ import {
   setCustodyMembers,
   setGroupMembers,
   setHandRoles,
+  setIdentityDefaultRole,
   setUserGroups,
   suspendUser,
   unlinkIdentity,
@@ -389,6 +390,47 @@ describe("users", () => {
         createLocalAccount({ name: "Hana", username: "hmala", email: "", roleIds: [] }),
       ),
     ).toMatchObject({ status: 409 });
+  });
+});
+
+describe("ACT-identity-default-role", () => {
+  it("sets a default role", async () => {
+    signInAs("admin");
+    expect(await setIdentityDefaultRole({ instanceId: "pi22", roleId: "reader" })).toMatchObject({
+      defaultRoleId: "reader",
+    });
+  });
+  it("sets no default role", async () => {
+    signInAs("admin");
+    expect(await setIdentityDefaultRole({ instanceId: "pi23", roleId: null })).toMatchObject({
+      defaultRoleId: null,
+    });
+  });
+  it("returns 404 for a missing instance", async () => {
+    signInAs("admin");
+    expect(
+      await refusalOf(setIdentityDefaultRole({ instanceId: "pi99", roleId: "reader" })),
+    ).toMatchObject({ status: 404 });
+  });
+  it("returns 422 for an unknown role", async () => {
+    signInAs("admin");
+    expect(
+      await refusalOf(setIdentityDefaultRole({ instanceId: "pi22", roleId: "missing" })),
+    ).toMatchObject({ status: 422 });
+  });
+  it("returns 403 without access.manage", async () => {
+    signInAs("staff");
+    expect(
+      await refusalOf(setIdentityDefaultRole({ instanceId: "pi22", roleId: "reader" })),
+    ).toMatchObject({ status: 403 });
+  });
+  it("leaves existing users' roles unchanged", async () => {
+    signInAs("admin");
+    const before = await getAccessIndex();
+    const existing = userOf(before, "u3");
+    await setIdentityDefaultRole({ instanceId: "pi22", roleId: "reader" });
+    expect(userOf(await getAccessIndex(), "u3")?.handRoleIds).toEqual(existing?.handRoleIds);
+    expect(userOf(await getAccessIndex(), "u3")?.mappedRoles).toEqual(existing?.mappedRoles);
   });
 });
 

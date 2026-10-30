@@ -5,6 +5,7 @@ import {
   custodyMembersSchema,
   groupMembersSchema,
   handRolesSchema,
+  identityDefaultRoleSchema,
   identityLinkSchema,
   localAccountSchema,
   recordDraftSchema,
@@ -141,6 +142,7 @@ import {
   setCustodyMembers,
   setGroupMembers,
   setHandRoles,
+  setIdentityDefaultRole,
   setUserGroups,
   suspendUser,
   unlinkIdentity,
@@ -837,6 +839,12 @@ export function createHandlers(profile: MockUserProfile) {
       createLocalAccount(session, account),
     ),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/roles`, handRolesSchema, setHandRoles),
+    accessWrite(
+      "put",
+      `${apiRoutes.access}/identity-instances/:id/default-role`,
+      identityDefaultRoleSchema,
+      setIdentityDefaultRole,
+    ),
     accessWrite("put", `${apiRoutes.accessUsers}/:id/groups`, userGroupsSchema, setUserGroups),
     http.delete(
       route(`${apiRoutes.accessUsers}/:id/identities/:instanceId/:externalId`),

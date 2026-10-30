@@ -160,6 +160,8 @@ export function recordActionsFor(
           : []),
       ];
     }
+    case "identity-instances":
+      return [];
   }
 }
 

@@ -4,7 +4,7 @@ import { managersOf } from "@vera/domain/access";
 import type { Engine } from "../engine";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
-import { accessUser, groupsOf, requireManage } from "./index";
+import { accessUser, groupsOf, identityInstancesOf, requireManage } from "./index";
 import { rolesOf } from "./session";
 
 export function nextUserId(engine: Engine) {
@@ -24,6 +24,28 @@ function manageUsers(engine: Engine) {
 const unknown = (what: string) => problem(404, `No such ${what}`);
 
 export const userEndpoints = [
+  implement(endpoints.identityDefaultRole, ({ engine, caller, params, body }) => {
+    const auth = requireManage(engine, caller?.userId ?? null);
+    if (!auth.ok) return auth.response;
+    const row = engine.db
+      .query<{ id: string; settings: string }, [string]>(
+        "SELECT i.id,i.settings FROM plugin_instances i JOIN plugin_implementations p ON p.id=i.implementation_id WHERE i.id=? AND i.is_deleted=0 AND i.is_enabled=1 AND p.kind='Identity'",
+      )
+      .get(params.id);
+    if (!row) return unknown("Identity instance");
+    if (body.roleId !== null && !rolesOf(engine.db).some((role) => role.id === body.roleId))
+      return problem(422, "Choose an existing role");
+    const settings = JSON.parse(row.settings ?? "null");
+    engine.db.transaction(() =>
+      engine.db
+        .query("UPDATE plugin_instances SET settings=? WHERE id=?")
+        .run(JSON.stringify({ ...settings, defaultRoleId: body.roleId }), params.id),
+    )();
+    const identityInstance = identityInstancesOf(engine).find(
+      (instance) => instance.id === params.id,
+    );
+    return identityInstance ? { body: identityInstance } : unknown("Identity instance");
+  }),
   implement(endpoints.localAccount, ({ engine, caller, body }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;

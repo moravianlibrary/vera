@@ -6,6 +6,7 @@ import type {
   CustodyMembers,
   GroupMembers,
   HandRoles,
+  IdentityDefaultRole,
   IdentityLink,
   LocalAccount,
   RecordDraft,
@@ -21,6 +22,7 @@ import {
   accessGroupSchema,
   accessUserSchema,
   custodyRecordSchema,
+  identityInstanceSchema,
   identitySchema,
   roleSchema,
 } from "@vera/domain/access";
@@ -61,6 +63,20 @@ const putOn =
     putJson(accessRecordActionRoute(kind, recordId, action), body, schema);
 
 export const setHandRoles = putOn<HandRoles, AccessUser>("users", "roles", accessUserSchema);
+
+export async function setIdentityDefaultRole({
+  instanceId,
+  roleId,
+}: {
+  instanceId: string;
+  roleId: string | null;
+}) {
+  return putJson(
+    accessRecordActionRoute("identity-instances", instanceId, "default-role"),
+    { roleId } satisfies IdentityDefaultRole,
+    identityInstanceSchema,
+  );
+}
 
 export const setUserGroups = putOn<UserGroups, AccessUser>("users", "groups", accessUserSchema);
 

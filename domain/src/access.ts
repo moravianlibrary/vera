@@ -89,6 +89,7 @@ export const identityInstanceSchema = z.object({
   defaultRoleId: id.nullable(),
   mappings: z.array(z.object({ claim: z.string(), roleId: id })),
   isLocal: z.boolean(),
+  isEnabled: z.boolean(),
 });
 export type IdentityInstance = z.infer<typeof identityInstanceSchema>;
 
