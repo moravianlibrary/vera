@@ -209,6 +209,18 @@ Also decided on 2026-10-15: *Documents* is to be named for its stage, the approv
 is published (*Digitization*, *Progress*…), in Czech first
 ([VIEW-own-label](reference/access/views.md#view-own-label)).
 
+### L73: Plugin API
+
+Rules: [PLG-api-call](reference/integrations/plugin-api.md#plg-api-call) and the rules after it.
+
+Proposed on 2026-10-30 ([DEC-0019](decisions/DEC-0019-plugin-api-and-capabilities.md)); the
+cursor, the mirror, record changes on schedules and dropping `inputMode` settled the same day.
+Nothing follows it yet: there are no per-kind types in `domain/src/plugin-api/`, declarations
+have no `operations`, the mock decides search from `configuration.search` and ways in from
+`inputMode`, and no instance has a cursor or a mirror. The client part (the drawer's mirror line
+and *Reset*, ways in from operations) follows the engine's. → engine (step 7 of
+[backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
+
 ## Done
 
 ### Built, 2026-10-29

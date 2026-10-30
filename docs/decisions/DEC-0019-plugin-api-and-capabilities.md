@@ -1,6 +1,7 @@
 # DEC-0019: The plugin API is written once, and a version declares what it can do
 
-> **Proposal.** Drafted on 2026-10-30; not settled.
+> **Proposal.** Drafted on 2026-10-30. The cursor, the mirror, record changes on schedules and
+> dropping `inputMode` were settled the same day; the rest is not settled yet.
 
 **Context.** VERA's plugins are described by what they supply
 ([PLG-declares](../reference/integrations/plugins.md#plg-declares)), but nowhere by what VERA
@@ -28,6 +29,18 @@ something the plugin promises.
   checked against the interfaces the class implements when it loads. An instance may switch a
   declared operation off, never on
   ([PLG-api-capabilities](../reference/integrations/plugin-api.md#plg-api-capabilities)).
+- **VERA holds every cursor** a plugin goes on from (a harvester's, a catalog's changes), stored
+  with what the call answered, so a failed run reads the same again
+  ([PLG-api-cursor](../reference/integrations/plugin-api.md#plg-api-cursor)).
+- **A catalog's changes come on its schedules**, which an administrator sets: `sync` or `changes`,
+  each changed id running that document's record-change triggers
+  ([PLG-api-record-change](../reference/integrations/plugin-api.md#plg-api-record-change)).
+- **A catalog adapter may keep a local mirror** in VERA, fetched whole and then kept in step by
+  scheduled syncs. VERA searches the mirror itself, so Catalog search works for a catalog that
+  cannot be searched, and the plugin may read its records from it
+  ([PLG-api-mirror](../reference/integrations/plugin-api.md#plg-api-mirror)). The plugin still
+  never writes to VERA's database: it answers pages, and VERA stores them.
+- **Input's `inputMode` goes**: an Input instance's ways in are the operations it declares.
 - **A JSON Schema for `vera-plugin.json`**, from `declarationsSchema`, as the seed gets one
   (step 4), so a plugin author outside MZK can check a package before signing it.
 
@@ -36,6 +49,10 @@ something the plugin promises.
   run code to show a version, which B6 rules out.
 - *Capabilities as instance configuration only* (today's `search: off`): the configuration can
   claim what the code cannot do.
+- *A store the plugin writes to directly* (a key-value table it owns): it would write outside
+  the call-and-apply split (B5), so a failed run could leave half a page and a moved cursor.
+- *Each catalog plugin building its own search index*: every author would solve indexing again,
+  and VERA could not search by identifier the same way across catalogs.
 - *Generating the Java interfaces from the TypeScript types*: the backend plan already rejects
   code generation for the HTTP contract (B2); the same review that keeps that table honest keeps
   this one.

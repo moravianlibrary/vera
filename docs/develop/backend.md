@@ -195,9 +195,10 @@ session from installing code, not a trusted signer's mistake.
 
 ### B6a. The plugin interfaces, and what a version can do
 
-> **Proposal** ([DEC-0019](../decisions/DEC-0019-plugin-api-and-capabilities.md)), not settled.
-> B6 says `plugin-api` holds one interface per kind; this says what goes in them and where it
-> is written first.
+> **Proposal** ([DEC-0019](../decisions/DEC-0019-plugin-api-and-capabilities.md)). The cursor,
+> the mirror, record changes on schedules and dropping `inputMode` were settled on 2026-10-30;
+> the rest is not settled yet. B6 says `plugin-api` holds one interface per kind; this says what
+> goes in them and where it is written first.
 
 - **Written once, before the backend.** Each kind's operations, what each takes and answers, and
   its refusals are in [plugin-api.md](../reference/integrations/plugin-api.md)
@@ -205,10 +206,11 @@ session from installing code, not a trusted signer's mistake.
   `domain/src/plugin-api/`. The engine's fakes implement those types; `plugin-api` is written from
   them by hand, as the OpenAPI document is from the endpoint table (B2).
 - **One interface per kind for what every implementation does**, and one per optional
-  operation: `CatalogAdapter` (`read`, `readLink`), with `SearchableCatalog` (`search`) and
-  `ChangeFeed` (`changedSince`) beside it; `Input` with `TypeDetector`, `BarcodeReader`,
-  `PhotoReader`, `EntryLinkInput`. A call answers or throws one of the outcomes B6 names:
-  `PluginUnavailable`, or `PluginRefused` with a code from the kind's closed list
+  operation: `CatalogAdapter` (`read`, `readLink`), with `SearchableCatalog` (`search`),
+  `ChangeFeed` (`changes`) and `MirroredCatalog` (`sync`) beside it; `Input` with
+  `TypeDetector`, `BarcodeReader`, `PhotoReader` and `EntryLinkInput`, and no `inputMode`. A call
+  answers or throws one of the outcomes B6 names: `PluginUnavailable`, or `PluginRefused` with a
+  code from the kind's closed list
   ([PLG-api-outcome](../reference/integrations/plugin-api.md#plg-api-outcome)).
 - **What a version can do is declared**, in `vera-plugin.json` as `operations`, beside the rest
   of its declarations, so upload and Plugins know it without running code. When the version
@@ -218,12 +220,22 @@ session from installing code, not a trusted signer's mistake.
   off for one catalog). The propose dialog's ways in, *Generate*, the classifier's suggestion and
   the rest read what enabled instances declare and keep
   ([PLG-api-capabilities](../reference/integrations/plugin-api.md#plg-api-capabilities)).
+- **Cursors** live in a `plugin_cursor` table (instance, operation, the plugin's text), written in
+  the apply transaction with what the call answered
+  ([PLG-api-cursor](../reference/integrations/plugin-api.md#plg-api-cursor)).
+- **The catalog mirror** is a `catalog_mirror` table per installation: instance, catalog id,
+  title, units, identifiers, the record as `jsonb`, fetched at, and a `tsvector` over the search
+  text with a GIN index, plus an index on identifiers. A `sync` run is a chain of calls, each
+  page applied in its own transaction with its cursor, so a first fetch of a whole catalog
+  resumes after a restart. Catalog search over an instance with a mirror is a query VERA runs,
+  not a plugin call; the context gives `read` a read-only view of its own instance's rows
+  ([PLG-api-mirror](../reference/integrations/plugin-api.md#plg-api-mirror)). The engine keeps
+  the same in SQLite with FTS5.
+- **Record changes** come on the instance's schedules: each run calls `sync` or `changes`, and
+  every changed id VERA holds runs that document's record-change triggers
+  ([PLG-api-record-change](../reference/integrations/plugin-api.md#plg-api-record-change)).
 - **A JSON Schema for `vera-plugin.json`**, from `declarationsSchema`, published with
   `plugin-api`, so an outside author checks a package before it is signed.
-
-Open, in [plugin-api.md](../reference/integrations/plugin-api.md#plg-api-kinds): whether *on
-record change* comes from a catalog's change feed or from polling, where a harvester's cursor
-lives, and whether Input's `inputMode` gives way to its operations.
 
 ### B7. Login and sessions
 
@@ -368,8 +380,9 @@ These are cheap now and expensive later. Each is a step of the engine's, not of 
    produce the same ones. Tests compare codes and fields, never message texts.
 7. **The plugin API written down** (B6a): each kind's operations, outcomes and declared
    capabilities as types in `domain/src/plugin-api/`, the fakes implementing them, and
-   `operations` in the declarations, read by the dialogs instead of instance settings. Step 5's
-   fakes are then described by the same types.
+   `operations` in the declarations, read by the dialogs instead of instance settings and
+   `inputMode`; cursors kept by the engine, and a fake catalog with a mirror (`sync`) searched by
+   the engine. Step 5's fakes are then described by the same types.
 
 ## Repository and build
 

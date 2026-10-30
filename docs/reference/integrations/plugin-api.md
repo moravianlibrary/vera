@@ -1,7 +1,9 @@
 # Plugin API
 
 > **Proposal — [DEC-0019](../../decisions/DEC-0019-plugin-api-and-capabilities.md).** Drafted on
-> 2026-10-30, not settled. The questions marked **Open** are for the product owner.
+> 2026-10-30. Settled the same day: schedules trigger a catalog's changes, a catalog adapter may
+> keep a local mirror, VERA holds every cursor, and Input's `inputMode` is gone. The rest is
+> not settled yet. Nothing follows it yet: [L73](../../ledger.md#l73-plugin-api).
 
 What VERA asks of each plugin kind ([PLG-kinds](plugins.md#plg-kinds)), and how a plugin says
 which of it it can do. This is the plugin contract 1.x
@@ -14,8 +16,9 @@ Both are written from this page and from the types in `domain/src/plugin-api/`.
 Every call gets the instance's **context**: its configuration, its secrets, an HTTP client, a
 logger and the clock ([B6](../../develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)).
 A plugin reaches the outside world only through that client, so its calls are timed out, traced
-and recorded the same way. A call never touches VERA's database and never calls another plugin:
-VERA gives it what it needs and writes what it answers.
+and recorded the same way. A call never writes to VERA's database and never calls another plugin:
+VERA gives it what it needs and writes what it answers. The one thing it reads on its own is its
+instance's mirror ([PLG-api-mirror](#plg-api-mirror)), through the context, read-only.
 
 #### PLG-api-outcome
 
@@ -64,11 +67,12 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
 | | `entry` *(optional; EntryLink)* | an incoming `/ask` request | the item, and the origin to return to | `origin_not_allowed` |
 | Identifier | `recognise` | a value | whether it is this type, and its normal form | `checksum` |
-| Harvester | `harvest` | what it read last time (its cursor) | new items to propose, and the next cursor | — |
+| Harvester | `harvest` | its cursor ([PLG-api-cursor](#plg-api-cursor)) | new items to propose, and the next cursor | — |
 | Catalog adapter | `read` | a catalog id | the record: fields, units, issuance type, the reading's date | `not_found` |
 | | `readLink` | a record link or id as pasted | the catalog id | `not_this_catalog`, `malformed` |
 | | `search` *(optional)* | a text query | hits: catalog id, title, units | — |
-| | `changedSince` *(optional)* | a moment | catalog ids changed since then | — |
+| | `changes` *(optional)* | its cursor | catalog ids changed since, and the next cursor | — |
+| | `sync` *(optional)* | its cursor | a page of records to keep and ids to drop, the next cursor, and whether more follow | — |
 | Property source | `values` | the record and its iteration | values for the properties it declares, each with its tier | — |
 | Registry | `lookup` | the record's identifiers | the raw state and its link, per record found | — |
 | Validation | `check` | the record and its properties | defects: rule, field, detail | — |
@@ -82,12 +86,48 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Delivery channel | `send` | the recipient, the payload or text | sent | `recipient_rejected` |
 | | `test` | the recipient | sent, with the time it took | `recipient_rejected` |
 
-**Open:**
-1. Is `changedSince` the way *on record change* is triggered, or does VERA keep polling `read`?
-2. Does `harvest` hold its own cursor in VERA (given back on each call, as above), or in the
-   outside system?
-3. Is Input's `inputMode` replaced by these operations (one Input may then read barcodes and
-   photos both), or kept beside them for the dialog's layout?
+An Input instance's ways in are the operations its version declares; it has no `inputMode`. One
+Input may read barcodes and photos both, and the propose dialog lays out what the enabled
+instances offer.
+
+#### PLG-api-cursor
+
+A call that goes on where the last one stopped (`harvest`, `changes`, `sync`) takes a **cursor**
+and answers the next one. VERA keeps the cursor per instance and operation, and stores the next
+one in the same transaction as what the call answered, so a run that fails leaves the cursor
+where it was and the next run reads the same again. The cursor is the plugin's own text; VERA
+never reads it. *Reset* on the instance's drawer clears it, so the next run starts from the
+beginning.
+
+#### PLG-api-record-change
+
+A catalog's changes reach VERA on the instance's **schedules**, which an administrator sets
+([ENT-schedule](../model/entities.md#ent-schedule)): each scheduled run calls `sync` when the
+version declares it, else `changes`. Every changed id that names a document VERA holds runs
+that document's *on record change* triggers (the checks, the property sources), as *Recheck*
+does. A catalog adapter that declares neither has no record-change runs; its records are read
+again only on *Recheck* and at ingest.
+
+#### PLG-api-mirror
+
+A catalog adapter that declares `sync` keeps a **mirror**: VERA stores the records it hands over,
+per instance, and keeps them as `sync` says (a page of records to keep, ids to drop). The first
+scheduled run fetches the whole catalog page by page; later runs fetch what changed. VERA stores
+each page in its own transaction with the cursor ([PLG-api-cursor](#plg-api-cursor)), so a long
+first fetch resumes where it stopped.
+
+A mirrored record holds its catalog id, title, units, identifiers, the text to search and the
+record itself as the plugin gave it, with the moment it was fetched.
+- **Search:** VERA searches the mirror itself, by text and by identifier, so an instance with a
+  mirror offers Catalog search ([ACT-ways-in](../access/acts.md#act-ways-in)) even when its
+  version does not declare `search` and its catalog cannot be searched.
+- **Read:** the plugin reads its own mirror through the context, so `read` may answer from it
+  without calling the catalog; the reading's date is then the moment the record was fetched.
+- **Freshness:** the instance's drawer says when the mirror was last synced and how many records
+  it holds.
+
+Deleting the instance drops its mirror; *Reset* clears the cursor and rebuilds the mirror on the
+next run.
 
 #### PLG-api-version
 
