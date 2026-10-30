@@ -6,7 +6,6 @@
 // defaults (PLG-upgrade). An instance opens its configuration (never a secret), VERA's settings
 // on it, its own tiers, copy states and agent, when it runs (its schedules are shown here and edited only on
 // Schedules), its recent runs from Tasks and what it supplies.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   InstanceSettings,
@@ -41,10 +40,10 @@ import {
   triggerLabels,
 } from "@/features/plugins/plugin-words";
 import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
+import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
 import { formatCalendarDay } from "@/lib/format-date";
 import { agoText, shortDayOf } from "@/lib/format-moment";
-import { plural } from "@/lib/plural";
 
 const linkClass = "text-primary underline-offset-2 hover:underline";
 
@@ -76,10 +75,10 @@ function CustodyCard({
 }) {
   const name = names.custodyOf(custodyId);
   return (
-    <DetailCard title="Places into">
+    <DetailCard title={i18n.t("plugins:pluginDrawers.placesInto")}>
       <DetailRow>
         {name === undefined ? (
-          <Muted>Its custody was deleted: it places nothing until another is picked.</Muted>
+          <Muted>{i18n.t("plugins:pluginDrawers.custodyDeleted")}</Muted>
         ) : reach.canSeeAccess ? (
           <Link to={`/access?c=${encodeURIComponent(custodyId)}`} className={linkClass}>
             {name}
@@ -88,10 +87,7 @@ function CustodyCard({
           name
         )}
       </DetailRow>
-      <FinePrint>
-        A proposal its condition matches is in this custody; what no rule places lands in the
-        fallback.
-      </FinePrint>
+      <FinePrint>{i18n.t("plugins:pluginDrawers.custodyFinePrint")}</FinePrint>
     </DetailCard>
   );
 }
@@ -112,7 +108,8 @@ export function implementationSubtitle(implementation: PluginImplementation): Re
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       <KindBadge kind={implementation.kind} />
-      <span className="font-mono">v{implementation.versions[0]?.version}</span> · implementation
+      <span className="font-mono">v{implementation.versions[0]?.version}</span> ·{" "}
+      {i18n.t("plugins:pluginDrawers.implementation")}
     </span>
   );
 }
@@ -132,7 +129,11 @@ export function ImplementationDrawer({
       <p>{implementation.description}</p>
       {newest !== undefined && <Contract version={newest} />}
 
-      <DetailCard title={`Versions installed · ${implementation.versions.length}`}>
+      <DetailCard
+        title={i18n.t("plugins:pluginDrawers.versionsInstalled", {
+          count: implementation.versions.length,
+        })}
+      >
         {implementation.versions.map((version) => {
           const running = instances.filter((instance) => instance.version === version.version);
           return (
@@ -140,9 +141,15 @@ export function ImplementationDrawer({
               key={version.version}
               aside={
                 isRunnableContract(version.contractVersion) ? (
-                  <Muted>{plural(running.length, "instance")}</Muted>
+                  <Muted>
+                    {i18n.t("plugins:pluginDrawers.instanceCount", { count: running.length })}
+                  </Muted>
                 ) : (
-                  <ToneBadge tone="amber">contract {version.contractVersion}</ToneBadge>
+                  <ToneBadge tone="amber">
+                    {i18n.t("plugins:pluginDrawers.contractVersion", {
+                      version: version.contractVersion,
+                    })}
+                  </ToneBadge>
                 )
               }
             >
@@ -155,17 +162,12 @@ export function ImplementationDrawer({
         })}
         {implementation.versions.some(
           (version) => !isRunnableContract(version.contractVersion),
-        ) && (
-          <FinePrint>
-            A version built for another contract is installed but never runs: VERA runs contract
-            1.x.
-          </FinePrint>
-        )}
+        ) && <FinePrint>{i18n.t("plugins:pluginDrawers.otherContract")}</FinePrint>}
       </DetailCard>
 
-      <DetailCard title={`Instances · ${instances.length}`}>
+      <DetailCard title={i18n.t("plugins:pluginDrawers.instances", { count: instances.length })}>
         {instances.length === 0 ? (
-          <Muted>None: it does nothing until one is configured.</Muted>
+          <Muted>{i18n.t("plugins:pluginDrawers.noneConfigured")}</Muted>
         ) : (
           instances.map((instance) => (
             <DetailRow key={instance.id} aside={<InstanceStateBadge instance={instance} />}>
@@ -198,20 +200,23 @@ function Contract({ version }: { version: PluginVersion }) {
   return (
     <>
       {declares.properties.length > 0 && (
-        <DetailCard title="Properties it supplies">
+        <DetailCard title={i18n.t("plugins:pluginDrawers.propertiesSupplied")}>
           {declares.properties.map((property) => (
-            <DetailRow key={property.key} aside={<Muted>tier {property.tier}</Muted>}>
+            <DetailRow
+              key={property.key}
+              aside={<Muted>{i18n.t("plugins:pluginDrawers.tier", { tier: property.tier })}</Muted>}
+            >
               <span className="font-mono">{property.key}</span>
             </DetailRow>
           ))}
           <FinePrint>
-            Each instance's default; an instance sets its own. The highest tier with a value wins.{" "}
-            <code>manual</code> is tier 100 and reserved: a person who looked outranks every plugin.
+            {i18n.t("plugins:pluginDrawers.propertyFinePrint")} <code>manual</code>
+            {i18n.t("plugins:pluginDrawers.manualTierAfter")}
           </FinePrint>
         </DetailCard>
       )}
       {declares.rawStates.length > 0 && (
-        <DetailCard title="Registry mapping">
+        <DetailCard title={i18n.t("plugins:pluginDrawers.registryMapping")}>
           <CompactTable
             rows={declares.rawStates}
             rowKey={(state) => state.raw}
@@ -219,21 +224,27 @@ function Contract({ version }: { version: PluginVersion }) {
             columns={[
               {
                 key: "raw",
-                header: "Raw",
+                header: i18n.t("plugins:pluginDrawers.raw"),
                 cell: (state) => <span className="font-mono text-xs">{state.raw}</span>,
               },
               {
                 key: "state",
-                header: "State",
+                header: i18n.t("plugins:pluginDrawers.state"),
                 cell: (state) =>
-                  state.state ?? <span className="text-tone-amber-foreground">Unmapped</span>,
+                  state.state ?? (
+                    <span className="text-tone-amber-foreground">
+                      {i18n.t("plugins:pluginDrawers.unmapped")}
+                    </span>
+                  ),
               },
               {
                 key: "copy",
-                header: "Existing copy, by default",
+                header: i18n.t("plugins:pluginDrawers.existingCopyDefault"),
                 cell: (state) =>
                   state.isExistingCopy ? (
-                    <span className="text-tone-purple-foreground">counts</span>
+                    <span className="text-tone-purple-foreground">
+                      {i18n.t("plugins:pluginDrawers.counts")}
+                    </span>
                   ) : (
                     <Muted>—</Muted>
                   ),
@@ -241,42 +252,45 @@ function Contract({ version }: { version: PluginVersion }) {
             ]}
           />
           {hasUnmapped && (
-            <StatusNote tone="amber" title="Unmapped on purpose" className="mt-3">
-              An unmapped value shown verbatim costs a curator one moment of unfamiliarity; a wrong
-              mapping tells every curator something false, silently.
+            <StatusNote
+              tone="amber"
+              title={i18n.t("plugins:pluginDrawers.unmappedPurpose")}
+              className="mt-3"
+            >
+              {i18n.t("plugins:pluginDrawers.unmappedFinePrint")}
             </StatusNote>
           )}
         </DetailCard>
       )}
       {declares.agent !== null && (
-        <DetailCard title="Agent, by default">
+        <DetailCard title={i18n.t("plugins:pluginDrawers.agentDefault")}>
           <FactGrid
             facts={[
-              { label: "Name", value: declares.agent.name },
-              { label: "Entry point", value: entryPointText(declares.agent.entryPoint) },
+              { label: i18n.t("plugins:pluginDrawers.name"), value: declares.agent.name },
+              {
+                label: i18n.t("plugins:pluginDrawers.entryPoint"),
+                value: entryPointText(declares.agent.entryPoint),
+              },
             ]}
           />
           <FinePrint>
             {declares.agent.entryPoint === "proposals"
-              ? "What it finds goes through review, attributed to the agent."
-              : "What it finds skips review: created already approved, attributed to the agent."}
+              ? i18n.t("plugins:pluginDrawers.agentProposals")
+              : i18n.t("plugins:pluginDrawers.agentAdditions")}
           </FinePrint>
         </DetailCard>
       )}
       {declares.rules.length > 0 && (
-        <DetailCard title="Rules">
+        <DetailCard title={i18n.t("plugins:pluginDrawers.rules")}>
           {declares.rules.map((rule) => (
             <DetailRow key={rule.code}>
               <span className="font-mono">{rule.code}</span> {rule.label}
             </DetailRow>
           ))}
-          <FinePrint>
-            A rule code stays stable between versions: renumbering one would silently invalidate
-            every approval made against it.
-          </FinePrint>
+          <FinePrint>{i18n.t("plugins:pluginDrawers.rulesFinePrint")}</FinePrint>
         </DetailCard>
       )}
-      <DetailCard title="What it declares">
+      <DetailCard title={i18n.t("plugins:pluginDrawers.whatDeclared")}>
         <FactGrid facts={declaredFacts(version)} />
       </DetailCard>
     </>
@@ -287,46 +301,67 @@ function declaredFacts(version: PluginVersion): Fact[] {
   const { declares } = version;
   return [
     ...(declares.identifierTypes.length > 0
-      ? [{ label: "Identifiers it resolves", value: declares.identifierTypes.join(" · ") }]
+      ? [
+          {
+            label: i18n.t("plugins:pluginDrawers.identifiersResolved"),
+            value: declares.identifierTypes.join(" · "),
+          },
+        ]
       : []),
     ...(declares.generatorClass === null
       ? []
       : [
           {
-            label: "Class",
+            label: i18n.t("plugins:pluginDrawers.class"),
             value:
               declares.generatorClass === "AiBased"
-                ? `${generatorClassText(declares.generatorClass)}: gives its own reason for every pick; not deterministic`
-                : `${generatorClassText(declares.generatorClass)}: the same pool gives the same list`,
+                ? i18n.t("plugins:pluginDrawers.generatorAi", {
+                    class: generatorClassText(declares.generatorClass),
+                  })
+                : i18n.t("plugins:pluginDrawers.generatorRule", {
+                    class: generatorClassText(declares.generatorClass),
+                  }),
           },
         ]),
     ...(declares.channelInterface === null
       ? []
-      : [{ label: "Interface", value: declares.channelInterface.toLowerCase() }]),
+      : [
+          {
+            label: i18n.t("plugins:pluginDrawers.interface"),
+            value: declares.channelInterface.toLowerCase(),
+          },
+        ]),
     // PLG-declares: how it reaches a person, which makes it a watchlist channel.
     ...(declares.personReach === undefined || declares.personReach === null
       ? []
-      : [{ label: "Reaches a person", value: personReachText(declares.personReach) }]),
+      : [
+          {
+            label: i18n.t("plugins:pluginDrawers.reachesPerson"),
+            value: personReachText(declares.personReach),
+          },
+        ]),
     ...(declares.inputMode === null
       ? []
-      : [{ label: "Way in", value: declares.inputMode.toLowerCase() }]),
+      : [
+          { label: i18n.t("plugins:pluginDrawers.wayIn"), value: declares.inputMode.toLowerCase() },
+        ]),
     {
-      label: "Runs",
-      value: version.triggers.map((trigger) => triggerLabels[trigger]).join(", "),
+      label: i18n.t("plugins:pluginDrawers.runs"),
+      value: version.triggers.map((trigger) => i18n.t(triggerLabels[trigger])).join(", "),
     },
     {
-      label: "Configured with",
+      label: i18n.t("plugins:pluginDrawers.configuredWith"),
       value:
         version.configFields.length === 0
-          ? "nothing"
+          ? i18n.t("plugins:pluginDrawers.nothing")
           : version.configFields
               .map(
                 (field) =>
-                  `${field.key}${field.isSecret ? " (secret)" : ""}${field.isRequired ? "" : " (optional)"}`,
+                  `${field.key}${field.isSecret ? ` (${i18n.t("plugins:pluginDrawers.secret")})` : ""}${field.isRequired ? "" : ` (${i18n.t("plugins:pluginDrawers.optional")})`}`,
               )
               .join(", "),
     },
-    { label: "Contract", value: version.contractVersion },
+    { label: i18n.t("plugins:pluginDrawers.contract"), value: version.contractVersion },
   ];
 }
 
@@ -380,12 +415,12 @@ export function InstanceDrawer({
     <div className="grid gap-4 text-ui">
       {notice}
       {!instance.isEnabled && (
-        <StatusNote tone="slate" title="Disabled">
-          It keeps its configuration and runs nowhere.
+        <StatusNote tone="slate" title={i18n.t("plugins:pluginDrawers.disabled")}>
+          {i18n.t("plugins:pluginDrawers.disabledFinePrint")}
         </StatusNote>
       )}
 
-      <DetailCard title="Configuration">
+      <DetailCard title={i18n.t("plugins:pluginDrawers.configuration")}>
         <pre
           data-swipe="off"
           className="mb-3 overflow-x-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap"
@@ -397,14 +432,14 @@ export function InstanceDrawer({
         <FactGrid
           facts={[
             {
-              label: "Linked to",
+              label: i18n.t("plugins:pluginDrawers.linkedTo"),
               value:
                 instance.linkedCategoryId === null
-                  ? "all categories"
+                  ? i18n.t("plugins:pluginDrawers.allCategories")
                   : names.categoryOf(instance.linkedCategoryId),
             },
             {
-              label: "Created",
+              label: i18n.t("plugins:pluginDrawers.created"),
               value: `${formatCalendarDay(instance.createdAt)} · ${names.userOf(instance.createdBy)}`,
             },
           ]}
@@ -412,9 +447,11 @@ export function InstanceDrawer({
       </DetailCard>
 
       {instance.kind === "DeliveryChannel" && reach.canSeeHooks && (
-        <DetailCard title={`Hooks sending through it · ${instance.hooks.length}`}>
+        <DetailCard
+          title={i18n.t("plugins:pluginDrawers.hooksSending", { count: instance.hooks.length })}
+        >
           {instance.hooks.length === 0 ? (
-            <Muted>No hooks use this channel.</Muted>
+            <Muted>{i18n.t("plugins:pluginDrawers.noHooksUseChannel")}</Muted>
           ) : (
             instance.hooks.map((hook) => (
               <DetailRow key={hook.id} aside={<Muted>{hook.state}</Muted>}>
@@ -433,23 +470,25 @@ export function InstanceDrawer({
 
       {version !== undefined && <PolicyCard policy={instance.policy} version={version} />}
 
-      <DetailCard title="When it runs">
+      <DetailCard title={i18n.t("plugins:pluginDrawers.whenRuns")}>
         <FactGrid
           facts={[
             ...(instance.triggers.length > 0
               ? [
                   {
-                    label: "On",
-                    value: instance.triggers.map((trigger) => triggerLabels[trigger]).join(", "),
+                    label: i18n.t("plugins:pluginDrawers.on"),
+                    value: instance.triggers
+                      .map((trigger) => i18n.t(triggerLabels[trigger]))
+                      .join(", "),
                   },
                 ]
               : []),
             ...instance.schedules.map((schedule) => ({
-              label: "Scheduled",
+              label: i18n.t("plugins:pluginDrawers.scheduled"),
               value: (
                 <>
                   {cadenceText(schedule.cadence)}
-                  {schedule.isPaused && <Muted> · paused</Muted>}
+                  {schedule.isPaused && <Muted> · {i18n.t("plugins:pluginDrawers.paused")}</Muted>}
                   {reach.canSeeTasks && (
                     <>
                       {" · "}
@@ -457,7 +496,7 @@ export function InstanceDrawer({
                         to={`/schedules?s=${encodeURIComponent(schedule.id)}`}
                         className={linkClass}
                       >
-                        edit on Schedules
+                        {i18n.t("plugins:pluginDrawers.editSchedules")}
                       </Link>
                     </>
                   )}
@@ -468,13 +507,17 @@ export function InstanceDrawer({
         />
         {isRunnable && instance.schedules.length === 0 && (
           <FinePrint>
-            No schedule: it runs only{" "}
-            {instance.triggers.length === 0 ? "by hand" : runsText(instance)}.
+            {i18n.t("plugins:pluginDrawers.noSchedule", {
+              when:
+                instance.triggers.length === 0
+                  ? i18n.t("plugins:pluginDrawers.byHand")
+                  : runsText(instance),
+            })}
             {reach.canSeeTasks && (
               <>
                 {" "}
                 <Link to="/schedules" className={linkClass}>
-                  Add one on Schedules
+                  {i18n.t("plugins:pluginDrawers.addSchedule")}
                 </Link>
                 .
               </>
@@ -487,16 +530,16 @@ export function InstanceDrawer({
         <RecentRunsCard instance={instance} asOf={asOf} reach={reach} />
       )}
 
-      <DetailCard title="What it supplies">
+      <DetailCard title={i18n.t("plugins:pluginDrawers.whatSupplies")}>
         {version === undefined || suppliesOf(version).length === 0 ? (
-          <Muted>Nothing it declares beyond doing its job.</Muted>
+          <Muted>{i18n.t("plugins:pluginDrawers.noDeclarations")}</Muted>
         ) : (
           <SupplyChips items={suppliesOf(version)} />
         )}
         <FinePrint>
-          Declared by the implementation:{" "}
+          {i18n.t("plugins:pluginDrawers.declaredByImplementation")}{" "}
           <button type="button" className={linkClass} onClick={onOpenImplementation}>
-            see its contract
+            {i18n.t("plugins:pluginDrawers.seeContract")}
           </button>
           .
         </FinePrint>
@@ -516,7 +559,7 @@ function RecentRunsCard({
   asOf: string;
   reach: DrawerReach;
 }) {
-  const title = `Recent runs${instance.runCount > 0 ? ` · ${instance.runCount}` : ""}`;
+  const title = i18n.t("plugins:pluginDrawers.recentRuns", { count: instance.runCount });
   return (
     <DetailCard
       title={title}
@@ -526,7 +569,7 @@ function RecentRunsCard({
             to={`/tasks?plugin=${encodeURIComponent(instance.id)}`}
             className={`${linkClass} text-xs`}
           >
-            All on Tasks
+            {i18n.t("plugins:pluginDrawers.allTasks")}
           </Link>
         ) : undefined
       }
@@ -534,8 +577,8 @@ function RecentRunsCard({
       {instance.recentRuns.length === 0 ? (
         <Muted>
           {instance.lastRunAt === null
-            ? "It has not run yet."
-            : `Last run ${shortDayOf(instance.lastRunAt)}; its run has expired from Tasks.`}
+            ? i18n.t("plugins:pluginDrawers.neverRun")
+            : i18n.t("plugins:pluginDrawers.expiredRun", { date: shortDayOf(instance.lastRunAt) })}
         </Muted>
       ) : (
         instance.recentRuns.map((run) => (
@@ -574,14 +617,15 @@ function PolicyCard({ policy, version }: { policy: InstancePolicy; version: Plug
   const declaredTierOf = (key: string) =>
     declares.properties.find((property) => property.key === key)?.tier;
   return (
-    <DetailCard title="Its policy">
+    <DetailCard title={i18n.t("plugins:pluginDrawers.policy")}>
       {policy.tiers.map(({ key, tier }) => (
         <DetailRow
           key={key}
           aside={
             <Muted>
-              tier {tier}
-              {declaredTierOf(key) !== tier && ` · declared ${declaredTierOf(key)}`}
+              {i18n.t("plugins:pluginDrawers.tier", { tier })}
+              {declaredTierOf(key) !== tier &&
+                ` · ${i18n.t("plugins:pluginDrawers.declaredTier", { tier: declaredTierOf(key) })}`}
             </Muted>
           }
         >
@@ -589,9 +633,9 @@ function PolicyCard({ policy, version }: { policy: InstancePolicy; version: Plug
         </DetailRow>
       ))}
       {declares.rawStates.length > 0 && (
-        <DetailRow aside={<Muted>count as an existing copy</Muted>}>
+        <DetailRow aside={<Muted>{i18n.t("plugins:pluginDrawers.countAsExistingCopy")}</Muted>}>
           {policy.copyStates.length === 0 ? (
-            <Muted>no state</Muted>
+            <Muted>{i18n.t("plugins:pluginDrawers.noState")}</Muted>
           ) : (
             <span className="font-mono text-xs">{policy.copyStates.join(", ")}</span>
           )}
@@ -599,7 +643,7 @@ function PolicyCard({ policy, version }: { policy: InstancePolicy; version: Plug
       )}
       {policy.agent !== null && (
         <DetailRow aside={<Muted>{entryPointText(policy.agent.entryPoint)}</Muted>}>
-          Agent {policy.agent.name}
+          {i18n.t("plugins:pluginDrawers.agentName", { name: policy.agent.name })}
         </DetailRow>
       )}
     </DetailCard>
@@ -618,35 +662,35 @@ function SettingsCard({
   switch (settings.kind) {
     case "Identity":
       return (
-        <DetailCard title="Login">
+        <DetailCard title={i18n.t("plugins:pluginDrawers.login")}>
           <FactGrid
             facts={[
-              { label: "Button", value: settings.label },
-              { label: "Order on the login page", value: settings.order },
+              { label: i18n.t("plugins:pluginDrawers.button"), value: settings.label },
+              { label: i18n.t("plugins:pluginDrawers.orderLogin"), value: settings.order },
               {
-                label: "User id claim",
+                label: i18n.t("plugins:pluginDrawers.userIdClaim"),
                 value: <span className="font-mono">{settings.userIdClaim}</span>,
               },
               {
-                label: "A new user gets",
+                label: i18n.t("plugins:pluginDrawers.newUserGets"),
                 value:
                   settings.defaultRoleId === null
-                    ? "no role: they see “no access yet”"
+                    ? i18n.t("plugins:pluginDrawers.noRole")
                     : names.roleOf(settings.defaultRoleId),
               },
               {
-                label: "Match by email",
+                label: i18n.t("plugins:pluginDrawers.matchEmail"),
                 value: settings.matchByEmail
-                  ? "yes: a verified address joins an existing user"
-                  : "no",
+                  ? i18n.t("plugins:pluginDrawers.matchEmailYes")
+                  : i18n.t("plugins:pluginDrawers.no"),
               },
             ]}
           />
           <h4 className="mt-4 mb-1 text-xs font-medium text-muted-foreground">
-            Claims it maps to roles
+            {i18n.t("plugins:pluginDrawers.claimsToRoles")}
           </h4>
           {settings.mappings.length === 0 ? (
-            <Muted>None: roles are given by hand on Users &amp; Groups.</Muted>
+            <Muted>{i18n.t("plugins:pluginDrawers.rolesGivenByHand")}</Muted>
           ) : (
             settings.mappings.map((mapping) => (
               <DetailRow key={mapping.claim} aside={names.roleOf(mapping.roleId)}>
@@ -654,7 +698,7 @@ function SettingsCard({
               </DetailRow>
             ))
           )}
-          <FinePrint>Applied at every login: a role holds while its claim does.</FinePrint>
+          <FinePrint>{i18n.t("plugins:pluginDrawers.roleClaimAppliedAtLogin")}</FinePrint>
         </DetailCard>
       );
     case "Custody":
@@ -663,14 +707,16 @@ function SettingsCard({
     case "Classifier":
     case "Identifier":
       return (
-        <DetailCard title="Order">
-          <FactGrid facts={[{ label: "Among its kind", value: settings.order }]} />
+        <DetailCard title={i18n.t("plugins:pluginDrawers.order")}>
+          <FactGrid
+            facts={[{ label: i18n.t("plugins:pluginDrawers.amongKind"), value: settings.order }]}
+          />
           <FinePrint>
             {settings.kind === "Message"
-              ? "Message… offers the instances in this order."
+              ? i18n.t("plugins:pluginDrawers.messageOrder")
               : settings.kind === "Identifier"
-                ? "A pasted value is tried against the identifier types in this order; the first that recognises it gives its type."
-                : "Asked in this order; the first suggestion wins, and the decide form names who made it."}
+                ? i18n.t("plugins:pluginDrawers.identifierOrder")
+                : i18n.t("plugins:pluginDrawers.classifierOrder")}
           </FinePrint>
         </DetailCard>
       );

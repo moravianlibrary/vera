@@ -2,7 +2,6 @@
 // `scheduleView`, `editSchedule`): the timeline's window in `?range=` (the day by default) and
 // the schedule a link points at in `?s=`; the editor's fields, every one a cadence could need,
 // read into the one cadence the chosen Repeat keeps, and back.
-// TODO(rrandiak): labels move to i18n.
 
 import type { TimelineRange } from "@vera/contract/schedules";
 import { timelineRanges } from "@vera/contract/schedules";
@@ -19,15 +18,15 @@ export const rangeParam = "range";
 export const focusedScheduleParam = "s";
 
 export const rangeLabels = {
-  day: "24 h",
-  week: "7 days",
-  month: "Month",
+  day: "tasks:schedulesView.day",
+  week: "tasks:schedulesView.week",
+  month: "tasks:schedulesView.month",
 } as const satisfies Record<TimelineRange, string>;
 
 export const rangeTitles = {
-  day: "Next 24 hours",
-  week: "Next 7 days",
-  month: "Next 30 days",
+  day: "tasks:schedulesView.next24Hours",
+  week: "tasks:schedulesView.next7Days",
+  month: "tasks:schedulesView.next30Days",
 } as const satisfies Record<TimelineRange, string>;
 
 // An unknown range reads as the day, so a stale link still opens the view.
@@ -36,19 +35,22 @@ export function rangeOf(params: URLSearchParams): TimelineRange {
 }
 
 export const cadenceKindLabels = {
-  minutes: "Every N minutes",
-  hours: "Every N hours",
-  day: "Daily",
-  week: "Weekly",
-  month: "Monthly",
+  minutes: "tasks:schedulesView.everyNMinutes",
+  hours: "tasks:schedulesView.everyNHours",
+  day: "tasks:schedulesView.daily",
+  week: "tasks:schedulesView.weekly",
+  month: "tasks:schedulesView.monthly",
 } as const satisfies Record<EditableCadenceKind, string>;
 
 export const scheduleFormSchema = z
   .object({
-    instanceId: z.string().min(1, "Choose the plugin it runs."),
-    name: z.string().trim().min(1, "Give it a name: it is what a run is listed under."),
+    instanceId: z.string().min(1, "scheduleDialogs.validationChoosePlugin"),
+    name: z.string().trim().min(1, "scheduleDialogs.validationName"),
     every: z.enum(editableCadenceKinds),
-    interval: z.number({ error: "A whole number" }).int().min(1, "At least 1"),
+    interval: z
+      .number({ error: "scheduleDialogs.validationNumber" })
+      .int()
+      .min(1, "scheduleDialogs.validationAtLeastOne"),
     weekday: z.number().int().min(0).max(6),
     day: z.number().int().min(1).max(28),
     at: clockTimeSchema,
@@ -56,7 +58,7 @@ export const scheduleFormSchema = z
   })
   .refine((form) => form.every !== "minutes" || form.interval >= shortestIntervalMinutes, {
     path: ["interval"],
-    message: "Every 5 minutes is the shortest: anything faster is an event, and events are Hooks.",
+    message: "scheduleDialogs.validationMinimumInterval",
   });
 export type ScheduleForm = z.infer<typeof scheduleFormSchema>;
 

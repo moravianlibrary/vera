@@ -5,7 +5,6 @@
 // filter is applied here: an instance matches by its name, its implementation's or its
 // configuration; an implementation shows with the instances that match, or, with no *State*
 // picked, when its own name does, so one with no instance can still be found.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   PluginImplementation,
@@ -23,8 +22,8 @@ export const instanceStates = ["enabled", "disabled"] as const;
 export type InstanceState = (typeof instanceStates)[number];
 
 export const instanceStateLabels = {
-  enabled: "Enabled",
-  disabled: "Disabled",
+  enabled: "plugins:pluginsView.enabled",
+  disabled: "plugins:pluginsView.disabled",
 } as const satisfies Record<InstanceState, string>;
 
 export interface PluginQuery {
@@ -85,13 +84,13 @@ export const pluginsView: ViewDefinition<PluginQuery> = {
   fields: [
     {
       key: "kinds",
-      label: "Type",
+      label: "plugins:pluginsView.type",
       field: vocabulary(pluginKinds, pluginKindLabels),
       isQuick: true,
     },
     {
       key: "states",
-      label: "State",
+      label: "plugins:pluginsView.state",
       field: vocabulary(instanceStates, instanceStateLabels),
       isQuick: true,
     },

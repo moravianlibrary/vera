@@ -2,12 +2,12 @@
 // why it failed or was skipped, what ran and what started it, what it changed, its items (All or
 // only the Errors), its log, and *Cancel…*, *Run again* and *Download log*. A link to its
 // schedule is for `task.read`, who sees Schedules; to its plugin for `plugin.read`.
-// TODO(rrandiak): labels move to i18n.
 
 import type { RunDetail, RunItem } from "@vera/contract/tasks";
 import { Download } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { getRunLog } from "@/api/tasks";
 import { DetailCard, FactGrid, FinePrint } from "@/components/detail-card";
@@ -20,6 +20,7 @@ import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
 import type { NameOf } from "@/features/tasks/run-parts";
 import { starterOf } from "@/features/tasks/run-parts";
 import { repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
+import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
 import { agoText, clockTimeOf, dayAndTimeOf } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
@@ -45,17 +46,21 @@ export function RunDrawer({
   onCancel,
   onRunAgain,
 }: RunDrawerProps) {
+  const { t } = useTranslation("tasks");
   const { run, asOf } = detail;
   const isRunning = run.state === "Running";
 
   const facts = [
-    { label: "Plugin", value: <PluginFact detail={detail} canSeePlugins={canSeePlugins} /> },
     {
-      label: "Trigger",
+      label: t("runDrawer.plugin"),
+      value: <PluginFact detail={detail} canSeePlugins={canSeePlugins} />,
+    },
+    {
+      label: t("runDrawer.trigger"),
       value: <TriggerFact detail={detail} nameOf={nameOf} canSeeSchedules={canSeeSchedules} />,
     },
     {
-      label: "Started",
+      label: t("runDrawer.started"),
       value: (
         <>
           {dayAndTimeOf(run.startedAt)}{" "}
@@ -63,18 +68,21 @@ export function RunDrawer({
         </>
       ),
     },
-    { label: isRunning ? "Running for" : "Took", value: tookText(run, asOf) },
+    {
+      label: isRunning ? t("runDrawer.runningFor") : t("runDrawer.took"),
+      value: tookText(run, asOf),
+    },
     ...(run.itemCount > 0
       ? [
           {
-            label: "Items",
+            label: t("runDrawer.items"),
             value: (
               <>
                 {formatCount(run.doneCount)} / {formatCount(run.itemCount)}
                 {run.errorCount > 0 && (
                   <span className="text-tone-red-foreground">
                     {" "}
-                    · {formatCount(run.errorCount)} with errors
+                    · {t("runDrawer.errorsCount", { count: formatCount(run.errorCount) })}
                   </span>
                 )}
               </>
@@ -102,22 +110,25 @@ export function RunDrawer({
           />
         )}
         {run.failure !== null && (
-          <StatusNote tone="red" title="Failed">
+          <StatusNote tone="red" title={t("runDrawer.failed")}>
             {run.failure}
           </StatusNote>
         )}
         {run.note !== null && (
-          <StatusNote tone="slate" title={run.state === "Skipped" ? "Skipped" : "Note"}>
+          <StatusNote
+            tone="slate"
+            title={run.state === "Skipped" ? t("runDrawer.skipped") : t("runDrawer.note")}
+          >
             {run.note}
           </StatusNote>
         )}
       </div>
 
-      <DetailCard title="Run">
+      <DetailCard title={t("runDrawer.run")}>
         <FactGrid facts={facts} />
       </DetailCard>
 
-      <DetailCard title="What it changed">
+      <DetailCard title={t("runDrawer.whatChanged")}>
         {run.changes !== null && run.changes.length > 0 ? (
           <ul className="grid list-disc gap-1 pl-5">
             {run.changes.map((change) => (
@@ -131,17 +142,17 @@ export function RunDrawer({
         ) : (
           <p className="text-muted-foreground">
             {isRunning
-              ? "Shown when it finishes."
+              ? t("runDrawer.shownWhenFinished")
               : run.state === "Done"
-                ? "Nothing: a run that confirms what VERA already knew writes nothing."
-                : "Nothing."}
+                ? t("runDrawer.nothingKnown")
+                : t("runDrawer.nothing")}
           </p>
         )}
       </DetailCard>
 
       {run.itemCount > 1 && <ItemsCard detail={detail} />}
 
-      <DetailCard title="Log">
+      <DetailCard title={t("runDrawer.log")}>
         <pre className="max-h-72 overflow-auto rounded-md bg-muted px-3 py-2.5 font-mono text-caption leading-relaxed whitespace-pre-wrap">
           {detail.log.map((line) => (
             <div
@@ -157,17 +168,17 @@ export function RunDrawer({
       <div className="flex flex-wrap gap-2">
         {onRunAgain !== undefined && (
           <Button size="sm" onClick={onRunAgain}>
-            Run again
+            {t("runParts.runAgain")}
           </Button>
         )}
         {onCancel !== undefined && (
           <Button size="sm" variant="outline" onClick={onCancel}>
-            Cancel…
+            {t("runParts.cancel")}
           </Button>
         )}
         <Button size="sm" variant="outline" onClick={() => void downloadLog(run.id)}>
           <Download />
-          Download log
+          {t("runDrawer.downloadLog")}
         </Button>
       </div>
     </div>
@@ -183,7 +194,8 @@ function PluginFact({ detail, canSeePlugins }: { detail: RunDetail; canSeePlugin
   if (source.kind === "core") {
     return (
       <>
-        {source.name} <span className="text-muted-foreground">· core</span>
+        {source.name}{" "}
+        <span className="text-muted-foreground">· {i18n.t("tasks:runDrawer.core")}</span>
       </>
     );
   }
@@ -217,7 +229,7 @@ function TriggerFact({
     case "schedule":
       return (
         <>
-          Schedule, {cadenceText(trigger.cadence)}
+          {i18n.t("tasks:runDrawer.schedule", { cadence: cadenceText(trigger.cadence) })}
           {canSeeSchedules && (
             <>
               {" · "}
@@ -225,7 +237,7 @@ function TriggerFact({
                 to={`/schedules?s=${encodeURIComponent(trigger.scheduleId)}`}
                 className={linkClass}
               >
-                see it
+                {i18n.t("tasks:runDrawer.seeSchedule")}
               </Link>
             </>
           )}
@@ -234,7 +246,7 @@ function TriggerFact({
     case "repeat":
       return (
         <>
-          Intention repeat,{" "}
+          {i18n.t("tasks:runDrawer.intentionRepeat")}{" "}
           <Link
             to={`/intentions?t=${encodeURIComponent(trigger.templateId)}`}
             className={linkClass}
@@ -246,11 +258,11 @@ function TriggerFact({
     case "approval":
       return (
         <>
-          On approval: {starterOf(run, nameOf)} approved it in{" "}
+          {i18n.t("tasks:runDrawer.approval", { name: starterOf(run, nameOf) })}{" "}
           <Link to={trigger.from.path} className={linkClass}>
             {trigger.from.label}
           </Link>
-          . Ingest is never started by hand.
+          {i18n.t("tasks:runDrawer.ingestManual")}
         </>
       );
     case "manual":
@@ -269,17 +281,18 @@ const itemTabs = ["all", "errors"] as const;
 type ItemTab = (typeof itemTabs)[number];
 
 function ItemsCard({ detail }: { detail: RunDetail }) {
+  const { t } = useTranslation("tasks");
   const [tab, setTab] = useState<ItemTab>("all");
   const items = tab === "errors" ? detail.errors : detail.items;
   const total = tab === "errors" ? detail.run.errorCount : detail.run.doneCount;
   const tabLabels = {
-    all: "All",
-    errors: `Errors · ${detail.run.errorCount}`,
+    all: t("runDrawer.all"),
+    errors: t("runDrawer.errorsTab", { count: detail.run.errorCount }),
   } as const satisfies Record<ItemTab, string>;
 
   return (
-    <DetailCard title="Items">
-      <div role="tablist" aria-label="Items" className="mb-2 flex gap-1">
+    <DetailCard title={t("runDrawer.items")}>
+      <div role="tablist" aria-label={t("runDrawer.items")} className="mb-2 flex gap-1">
         {itemTabs.map((value) => (
           <button
             key={value}
@@ -297,7 +310,7 @@ function ItemsCard({ detail }: { detail: RunDetail }) {
         ))}
       </div>
       {items.length === 0 ? (
-        <p className="text-muted-foreground">No errors.</p>
+        <p className="text-muted-foreground">{i18n.t("tasks:runDrawer.noErrors")}</p>
       ) : (
         <ul className="grid divide-y">
           {items.map((item) => (
@@ -306,7 +319,7 @@ function ItemsCard({ detail }: { detail: RunDetail }) {
         </ul>
       )}
       <FinePrint>
-        Showing {items.length} of {formatCount(total)}.
+        {t("runDrawer.showingItems", { shown: items.length, total: formatCount(total) })}
       </FinePrint>
     </DetailCard>
   );
@@ -322,7 +335,7 @@ function ItemRow({ item }: { item: RunItem }) {
         )}
       </span>
       <ToneBadge tone={item.error === null ? "green" : "red"}>
-        {item.error === null ? "ok" : "error"}
+        {item.error === null ? i18n.t("tasks:runDrawer.ok") : i18n.t("tasks:runDrawer.error")}
       </ToneBadge>
     </li>
   );

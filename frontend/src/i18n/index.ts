@@ -12,26 +12,32 @@ import csCategories from "@/i18n/locales/cs/categories.json";
 import csCommon from "@/i18n/locales/cs/common.json";
 import csDocuments from "@/i18n/locales/cs/documents.json";
 import csHistory from "@/i18n/locales/cs/history.json";
+import csHooks from "@/i18n/locales/cs/hooks.json";
 import csIntentions from "@/i18n/locales/cs/intentions.json";
 import csLists from "@/i18n/locales/cs/lists.json";
+import csPlugins from "@/i18n/locales/cs/plugins.json";
 import csPreferences from "@/i18n/locales/cs/preferences.json";
 import csProjects from "@/i18n/locales/cs/projects.json";
 import csProperties from "@/i18n/locales/cs/properties.json";
 import csRequests from "@/i18n/locales/cs/requests.json";
 import csSystem from "@/i18n/locales/cs/system.json";
+import csTasks from "@/i18n/locales/cs/tasks.json";
 import csValidations from "@/i18n/locales/cs/validations.json";
 import enAccess from "@/i18n/locales/en/access.json";
 import enCategories from "@/i18n/locales/en/categories.json";
 import enCommon from "@/i18n/locales/en/common.json";
 import enDocuments from "@/i18n/locales/en/documents.json";
 import enHistory from "@/i18n/locales/en/history.json";
+import enHooks from "@/i18n/locales/en/hooks.json";
 import enIntentions from "@/i18n/locales/en/intentions.json";
 import enLists from "@/i18n/locales/en/lists.json";
+import enPlugins from "@/i18n/locales/en/plugins.json";
 import enPreferences from "@/i18n/locales/en/preferences.json";
 import enProjects from "@/i18n/locales/en/projects.json";
 import enProperties from "@/i18n/locales/en/properties.json";
 import enRequests from "@/i18n/locales/en/requests.json";
 import enSystem from "@/i18n/locales/en/system.json";
+import enTasks from "@/i18n/locales/en/tasks.json";
 import enValidations from "@/i18n/locales/en/validations.json";
 
 export const resources = {
@@ -49,6 +55,9 @@ export const resources = {
     categories: enCategories,
     properties: enProperties,
     preferences: enPreferences,
+    hooks: enHooks,
+    plugins: enPlugins,
+    tasks: enTasks,
   },
   cs: {
     access: csAccess,
@@ -64,6 +73,9 @@ export const resources = {
     categories: csCategories,
     properties: csProperties,
     preferences: csPreferences,
+    hooks: csHooks,
+    plugins: csPlugins,
+    tasks: csTasks,
   },
 } as const;
 
@@ -87,6 +99,9 @@ i18n.use(initReactI18next).init({
     "categories",
     "properties",
     "preferences",
+    "hooks",
+    "plugins",
+    "tasks",
   ],
   defaultNS: "access",
   keySeparator: false,

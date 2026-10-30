@@ -5,7 +5,6 @@
 // instance's row its configuration, when it runs and what its last runs did (`?i=`). *Type*,
 // *State* and the search narrow the table in place. Schedules are shown here and edited only on
 // Schedules.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   PluginImplementation,
@@ -16,6 +15,7 @@ import type { Session } from "@vera/domain/entities";
 import { hasPermission } from "@vera/domain/permissions";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { enablePluginInstance, runPluginInstance } from "@/api/plugins";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -54,9 +54,9 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useRequestCustodiesQuery, useRolesQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { plural } from "@/lib/plural";
 
 export function PluginsPage() {
+  const { t } = useTranslation("plugins");
   const [params, setParams] = useSearchParams();
   const pluginsQuery = usePluginsQuery();
   const { data: index } = pluginsQuery;
@@ -96,21 +96,21 @@ export function PluginsPage() {
 
   return (
     <>
-      <PageHeader title="Plugins" actions={headerActionsFor(session, setDialog)} />
+      <PageHeader title={t("pluginsPage.title")} actions={headerActionsFor(session, setDialog)} />
       <FilterBar
         fields={pluginsView.fields}
         query={query}
         facets={index === undefined ? undefined : pluginFacetsOf(index, query)}
         onQueryChange={setQuery}
-        searchLabel="Search plugins and instances"
-        searchPlaceholder="Search plugins and instances…"
+        searchLabel={t("pluginsPage.searchLabel")}
+        searchPlaceholder={t("pluginsPage.searchPlaceholder")}
       />
       <PageContent isFlushVertical className="@container">
         {index === undefined ? (
           <QueryState
             isLoading={pluginsQuery.isLoading}
-            failure={failureOf(pluginsQuery, "Could not load plugins.")}
-            loadingText="Loading plugins…"
+            failure={failureOf(pluginsQuery, t("pluginsPage.loadFailure"))}
+            loadingText={t("pluginsPage.loading")}
           >
             <span />
           </QueryState>
@@ -174,6 +174,7 @@ function PluginTable({
   onClose,
   onDialog,
 }: PluginTableProps) {
+  const { t } = useTranslation("plugins");
   const labels = useReferenceLabels(["users", "categories"]);
   const { data: roles = [] } = useRolesQuery();
   const { data: custodies = [] } = useRequestCustodiesQuery();
@@ -191,15 +192,15 @@ function PluginTable({
     call: runPluginInstance,
     invalidates: pluginInvalidations,
     refusalTexts: {
-      "plugin.disabled": "It is disabled; enable it first.",
-      "plugin.not_runnable": "It runs only while somebody uses it.",
-      403: "You may not run plugins.",
+      "plugin.disabled": t("pluginsPage.refusalDisabled"),
+      "plugin.not_runnable": t("pluginsPage.refusalNotRunnable"),
+      403: t("pluginsPage.refusalRunForbidden"),
     },
   });
   const enable = useActionMutation({
     call: enablePluginInstance,
     invalidates: pluginInvalidations,
-    refusalTexts: { "plugin.contract": "Its version was built for a contract VERA does not run." },
+    refusalTexts: { "plugin.contract": t("pluginsPage.refusalContract") },
   });
   const implementationOf = (instance: PluginInstanceDetail) =>
     index.implementations.find((candidate) => candidate.id === instance.implementationId);
@@ -222,12 +223,16 @@ function PluginTable({
     onNotice(
       result.isDone
         ? {
-            title: `${instance.name} started`,
-            text: "Follow it on Tasks.",
+            title: t("pluginsPage.runStartedTitle", { name: instance.name }),
+            text: t("pluginsPage.runStarted"),
             tone: "green",
             runId: result.value.id,
           }
-        : { title: `${instance.name} did not start`, text: result.refusal.message, tone: "red" },
+        : {
+            title: t("pluginsPage.runFailedTitle", { name: instance.name }),
+            text: result.refusal.message,
+            tone: "red",
+          },
     );
   };
 
@@ -236,11 +241,15 @@ function PluginTable({
     onNotice(
       result.isDone
         ? {
-            title: `${instance.name} enabled`,
-            text: "It runs from its next trigger.",
+            title: t("pluginsPage.enabledTitle", { name: instance.name }),
+            text: t("pluginsPage.enabledText"),
             tone: "green",
           }
-        : { title: `${instance.name} stays disabled`, text: result.refusal.message, tone: "red" },
+        : {
+            title: t("pluginsPage.enableFailedTitle", { name: instance.name }),
+            text: result.refusal.message,
+            tone: "red",
+          },
     );
   };
 
@@ -270,7 +279,7 @@ function PluginTable({
               runId={notice.runId}
               className="text-primary underline-offset-2 hover:underline"
             >
-              Open the run
+              {t("pluginsPage.openRun")}
             </RunOverlayLink>
           </>
         )}
@@ -308,7 +317,7 @@ function PluginTable({
           {selection === null && noticeLine !== null && <div className="pt-4">{noticeLine}</div>}
           {isFiltered && shown.instances.length > 0 && (
             <p className="py-3 text-xs text-muted-foreground">
-              {plural(shown.instances.length, "matching instance")}
+              {t("pluginsPage.matchingInstances", { count: shown.instances.length })}
             </p>
           )}
         </>
@@ -329,7 +338,7 @@ function PluginTable({
           index.instances.some((instance) => instance.id === id)
             ? onOpenInstance(id)
             : onOpenImplementation(id),
-        emptyText: isFiltered ? "Nothing matches." : "No plugin is installed.",
+        emptyText: isFiltered ? t("pluginsPage.nothingMatches") : t("pluginsPage.noneInstalled"),
       }}
       swipe={{
         items: shown.instances,

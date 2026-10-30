@@ -1,5 +1,4 @@
 // Hooks' URL filters, subject grouping and seven-day activity (STATUS "Hooks").
-// TODO(rrandiak): labels move to i18n.
 
 import type { Hook, HookIndex } from "@vera/contract/hooks";
 import { hookGroupOfEvent, hookGroups, hookInterfaceSchema } from "@vera/contract/hooks";
@@ -16,12 +15,16 @@ export interface HooksQuery {
 }
 
 const interfaceLabels = {
-  Email: "Email",
-  Chat: "Chat",
-  Webhook: "Webhook",
-  File: "File",
+  Email: "hooks:hooksView.email",
+  Chat: "hooks:hooksView.chat",
+  Webhook: "hooks:hooksView.webhook",
+  File: "hooks:hooksView.file",
 } as const;
-const stateLabels = { active: "Active", paused: "Paused", gave_up: "Needs attention" } as const;
+const stateLabels = {
+  active: "hooks:hooksView.active",
+  paused: "hooks:hooksView.paused",
+  gave_up: "hooks:hooksView.needsAttention",
+} as const;
 
 function selected(
   params: URLSearchParams,
@@ -49,11 +52,16 @@ export const hooksView: ViewDefinition<HooksQuery> = {
   fields: [
     {
       key: "kinds",
-      label: "Channel",
+      label: "hooks:hooksView.channel",
       field: vocabulary(interfaces, interfaceLabels),
       isQuick: true,
     },
-    { key: "states", label: "State", field: vocabulary(states, stateLabels), isQuick: true },
+    {
+      key: "states",
+      label: "hooks:hooksView.state",
+      field: vocabulary(states, stateLabels),
+      isQuick: true,
+    },
   ],
   groupings: [],
   groupingParam: "group",

@@ -1,6 +1,5 @@
 // A hook editor and explicit test flow over the shared dialog shell (STATUS "Hooks").
 // The draft stays in the form while the preview and send-test steps are open.
-// TODO(rrandiak): labels move to i18n.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
@@ -18,6 +17,7 @@ import {
 } from "@vera/contract/hooks";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { previewHook, sendHookTest } from "@/api/hooks";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
@@ -67,10 +67,10 @@ interface HookEditorProps {
 }
 
 const destinationLabels = {
-  Email: "Email address or recipient",
-  Chat: "Channel or person",
-  Webhook: "HTTPS endpoint",
-  File: "Destination path",
+  Email: "hooks:hookEditor.emailAddressOrRecipient",
+  Chat: "hooks:hookEditor.channelOrPerson",
+  Webhook: "hooks:hookEditor.httpsEndpoint",
+  File: "hooks:hookEditor.destinationPath",
 } as const;
 const noChannel = "__none__";
 
@@ -82,6 +82,7 @@ export function HookEditor({
   onSaved,
   startWithTest = false,
 }: HookEditorProps) {
+  const { t } = useTranslation("hooks");
   const [step, setStep] = useState<"edit" | "test">(startWithTest ? "test" : "edit");
   const [preview, setPreview] = useState<HookPreview | null>(null);
   const [testResult, setTestResult] = useState<HookTestResult | null>(null);
@@ -111,13 +112,13 @@ export function HookEditor({
           setRefusal({
             status: null,
             code: null,
-            message: error instanceof Error ? error.message : "The preview could not be loaded.",
+            message: error instanceof Error ? error.message : t("hookEditor.previewFailure"),
           });
       });
     return () => {
       isCurrent = false;
     };
-  }, [hook, startWithTest]);
+  }, [hook, startWithTest, t]);
 
   const beginTest = form.handleSubmit(async (draft) => {
     setRefusal(null);
@@ -129,7 +130,7 @@ export function HookEditor({
       setRefusal({
         status: null,
         code: null,
-        message: error instanceof Error ? error.message : "The preview could not be loaded.",
+        message: error instanceof Error ? error.message : t("hookEditor.previewFailure"),
       });
     }
   });
@@ -170,12 +171,12 @@ export function HookEditor({
       onClose={close}
       title={
         step === "test"
-          ? `Test ${form.watch("name") || "hook"}`
+          ? t("hookEditor.testTitle", { name: form.watch("name") || t("hookEditor.hook") })
           : hook === null
-            ? "New hook"
-            : `Edit ${hook.name}`
+            ? t("hookEditor.newHook")
+            : t("hookEditor.editHook", { name: hook.name })
       }
-      description="Configure an outbound subscription and test its public message."
+      description={t("hookEditor.description")}
       width="wide"
       isDirty={form.formState.isDirty}
       onBack={
@@ -188,7 +189,12 @@ export function HookEditor({
       }
       refusal={refusal}
       primary={{
-        label: step === "test" ? "Send test" : hook === null ? "Create hook" : "Save hook",
+        label:
+          step === "test"
+            ? t("hookEditor.sendTest")
+            : hook === null
+              ? t("hookEditor.createHook")
+              : t("hookEditor.saveHook"),
         isDisabled: step === "test" && preview === null,
         isPending: form.formState.isSubmitting || test.isPending,
         onSelect: () => void (step === "test" ? send() : save()),
@@ -197,21 +203,22 @@ export function HookEditor({
       {step === "test" ? (
         <div className="grid gap-4">
           {preview === null ? (
-            <p>Loading public preview…</p>
+            <p>{t("hookEditor.loadingPublicPreview")}</p>
           ) : (
             <p>
-              Send a sample through {preview.channel.name} to <strong>{preview.recipient}</strong>.
+              {t("hookEditor.sampleThrough", {
+                channel: preview.channel.name,
+                recipient: preview.recipient,
+              })}
             </p>
           )}
           <div className="rounded-lg border bg-muted/40 p-4">
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              Public preview · {preview?.sampleSubject}
+              {t("hookEditor.publicPreview")} · {preview?.sampleSubject}
             </p>
             <p className="mt-2 whitespace-pre-wrap break-words">{preview?.publicText}</p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Sending a test does not save this hook or add delivery history.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("hookEditor.testNotSaved")}</p>
           {testResult !== null && (
             <p
               role="status"
@@ -230,7 +237,7 @@ export function HookEditor({
             void save();
           }}
         >
-          <Field id="hook-name" label="Name">
+          <Field id="hook-name" label={t("hookEditor.name")}>
             <Input
               id="hook-name"
               {...form.register("name")}
@@ -238,7 +245,7 @@ export function HookEditor({
             />
           </Field>
           <FieldError text={form.formState.errors.name?.message} />
-          <Field id="hook-event" label="When">
+          <Field id="hook-event" label={t("hookEditor.when")}>
             <Controller
               control={form.control}
               name="events"
@@ -250,14 +257,17 @@ export function HookEditor({
                   >
                     {field.value.length <= 2
                       ? field.value.join(" · ")
-                      : `${field.value.slice(0, 2).join(" · ")} +${field.value.length - 2} more`}
+                      : t("hookEditor.moreEvents", {
+                          events: field.value.slice(0, 2).join(" · "),
+                          count: field.value.length - 2,
+                        })}
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="max-h-80 w-80 overflow-y-auto">
                     {hookGroups.map((group, groupIndex) => (
                       <div key={group}>
                         {groupIndex > 0 && <DropdownMenuSeparator />}
                         <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                          {group}
+                          {t(`hookEditor.group.${group}`)}
                         </div>
                         {hookEventSchema.options
                           .filter((event) => hookGroupOfEvent(event) === group)
@@ -288,11 +298,11 @@ export function HookEditor({
               text={
                 form.formState.errors.events?.message ??
                 form.formState.errors.events?.root?.message ??
-                (form.formState.errors.events ? "Pick at least one event" : undefined)
+                (form.formState.errors.events ? t("hookEditor.pickEvent") : undefined)
               }
             />
           </Field>
-          <Field id="hook-filter" label="Only when">
+          <Field id="hook-filter" label={t("hookEditor.onlyWhen")}>
             <Input
               id="hook-filter"
               {...form.register("filter")}
@@ -300,10 +310,10 @@ export function HookEditor({
             />
           </Field>
           <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
-            Leave empty for every event. Supported: category under Periodicals.
+            {t("hookEditor.filterHint")}
           </p>
           <FieldError text={form.formState.errors.filter?.message} />
-          <Field id="hook-channel" label="Send through">
+          <Field id="hook-channel" label={t("hookEditor.sendThrough")}>
             <Controller
               control={form.control}
               name="channelId"
@@ -316,11 +326,13 @@ export function HookEditor({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={noChannel}>Choose a delivery channel</SelectItem>
+                    <SelectItem value={noChannel}>
+                      {t("hookEditor.chooseDeliveryChannel")}
+                    </SelectItem>
                     {channels.map((item) => (
                       <SelectItem key={item.id} value={item.id} disabled={!item.isEnabled}>
-                        {item.name} · {item.interface}
-                        {!item.isEnabled && " (disabled)"}
+                        {item.name} · {t(`hooksView.${item.interface.toLowerCase()}`)}
+                        {!item.isEnabled && ` (${t("hookEditor.disabled")})`}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -328,11 +340,9 @@ export function HookEditor({
               )}
             />
           </Field>
-          <p className="-mt-2 text-xs text-muted-foreground">
-            Delivery channels are configured in Plugins.
-          </p>
+          <p className="-mt-2 text-xs text-muted-foreground">{t("hookEditor.channelsInPlugins")}</p>
           <FieldError text={form.formState.errors.channelId?.message} />
-          <Field id="hook-recipient" label={destinationLabels[channel?.interface ?? "Email"]}>
+          <Field id="hook-recipient" label={t(destinationLabels[channel?.interface ?? "Email"])}>
             <Input
               id="hook-recipient"
               {...form.register("recipient")}
@@ -342,7 +352,9 @@ export function HookEditor({
           <FieldError text={form.formState.errors.recipient?.message} />
           {channel?.interface === "Email" && (
             <fieldset className="grid gap-3 rounded-lg border p-4">
-              <legend className="px-1 text-sm font-medium">Recipient preference</legend>
+              <legend className="px-1 text-sm font-medium">
+                {t("hookEditor.recipientPreference")}
+              </legend>
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox
                   id="hook-recipient-preference"
@@ -351,19 +363,22 @@ export function HookEditor({
                     form.setValue(
                       "recipientPreference",
                       checked === true
-                        ? { label: form.getValues("name") || "Hook email", defaultEnabled: false }
+                        ? {
+                            label: form.getValues("name") || t("hookEditor.hookEmail"),
+                            defaultEnabled: false,
+                          }
                         : null,
                       { shouldDirty: true },
                     )
                   }
                 />
                 <Label htmlFor="hook-recipient-preference">
-                  Recipient is a VERA user who can turn this email off
+                  {t("hookEditor.recipientCanTurnOff")}
                 </Label>
               </div>
               {recipientPreference != null && (
                 <>
-                  <Field id="hook-preference-label" label="Name in user preferences">
+                  <Field id="hook-preference-label" label={t("hookEditor.nameInPreferences")}>
                     <Input
                       id="hook-preference-label"
                       {...form.register("recipientPreference.label")}
@@ -371,7 +386,7 @@ export function HookEditor({
                   </Field>
                   <div className="flex items-center gap-2 text-sm">
                     <Switch
-                      aria-label="Enabled by default for recipients"
+                      aria-label={t("hookEditor.enabledByDefault")}
                       checked={recipientPreference.defaultEnabled}
                       onCheckedChange={(defaultEnabled) =>
                         form.setValue("recipientPreference.defaultEnabled", defaultEnabled, {
@@ -379,25 +394,23 @@ export function HookEditor({
                         })
                       }
                     />
-                    Enabled by default for recipients
+                    {t("hookEditor.enabledByDefault")}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Existing choices follow this Hook when it is edited. New recipients use this
-                    explicit default.
+                    {t("hookEditor.preferenceDefaultDescription")}
                   </p>
                 </>
               )}
             </fieldset>
           )}
-          <Field id="hook-message" label="Message">
+          <Field id="hook-message" label={t("hookEditor.message")}>
             <Textarea id="hook-message" rows={3} {...form.register("message")} />
           </Field>
           <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
-            Use public placeholders such as {"{title}"}, {"{decision}"}, {"{public_text}"}, and{" "}
-            {"{link}"}.
+            {t("hookEditor.placeholders")}
           </p>
           <fieldset className="grid gap-2 rounded-lg border p-4">
-            <legend className="px-1 text-sm font-medium">Timing</legend>
+            <legend className="px-1 text-sm font-medium">{t("hookEditor.timing")}</legend>
             <RadioGroup
               value={batch === null ? "once" : "batch"}
               onValueChange={(value) =>
@@ -410,16 +423,16 @@ export function HookEditor({
             >
               <div className="flex items-center gap-2">
                 <RadioGroupItem id="hook-timing-once" value="once" />
-                <Label htmlFor="hook-timing-once">Send each event at once</Label>
+                <Label htmlFor="hook-timing-once">{t("hookEditor.sendAtOnce")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem id="hook-timing-batch" value="batch" />
-                <Label htmlFor="hook-timing-batch">Wait for more</Label>
+                <Label htmlFor="hook-timing-batch">{t("hookEditor.waitForMore")}</Label>
               </div>
             </RadioGroup>
             {batch !== null && (
               <div className="grid gap-3 sm:grid-cols-3">
-                <Field id="hook-wait" label="Quiet wait · min">
+                <Field id="hook-wait" label={t("hookEditor.quietWait")}>
                   <Input
                     id="hook-wait"
                     type="number"
@@ -427,7 +440,7 @@ export function HookEditor({
                     {...form.register("batch.waitMinutes", { valueAsNumber: true })}
                   />
                 </Field>
-                <Field id="hook-max" label="Maximum wait · min">
+                <Field id="hook-max" label={t("hookEditor.maximumWait")}>
                   <Input
                     id="hook-max"
                     type="number"
@@ -435,7 +448,7 @@ export function HookEditor({
                     {...form.register("batch.maxMinutes", { valueAsNumber: true })}
                   />
                 </Field>
-                <Field id="hook-by" label="Combine by">
+                <Field id="hook-by" label={t("hookEditor.combineBy")}>
                   <Controller
                     control={form.control}
                     name="batch.by"
@@ -445,8 +458,8 @@ export function HookEditor({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="recipient">Recipient</SelectItem>
-                          <SelectItem value="all">All events</SelectItem>
+                          <SelectItem value="recipient">{t("hookEditor.recipient")}</SelectItem>
+                          <SelectItem value="all">{t("hookEditor.allEvents")}</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -462,8 +475,8 @@ export function HookEditor({
             />
           </fieldset>
           <fieldset className="grid gap-3 rounded-lg border p-4 sm:grid-cols-2">
-            <legend className="px-1 text-sm font-medium">If delivery fails</legend>
-            <Field id="hook-attempts" label="Attempts">
+            <legend className="px-1 text-sm font-medium">{t("hookEditor.ifDeliveryFails")}</legend>
+            <Field id="hook-attempts" label={t("hookEditor.attempts")}>
               <Input
                 id="hook-attempts"
                 type="number"
@@ -472,7 +485,7 @@ export function HookEditor({
                 {...form.register("retry.attempts", { valueAsNumber: true })}
               />
             </Field>
-            <Field id="hook-backoff" label="Wait between attempts">
+            <Field id="hook-backoff" label={t("hookEditor.waitBetweenAttempts")}>
               <Controller
                 control={form.control}
                 name="retry.backoff"
@@ -482,8 +495,8 @@ export function HookEditor({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fixed">Fixed · 5 min</SelectItem>
-                      <SelectItem value="exponential">Growing · 1, 2, 4… min</SelectItem>
+                      <SelectItem value="fixed">{t("hookEditor.fixedFiveMinutes")}</SelectItem>
+                      <SelectItem value="exponential">{t("hookEditor.growingMinutes")}</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -497,7 +510,7 @@ export function HookEditor({
             className="justify-self-start"
             onClick={() => void beginTest()}
           >
-            Preview and send a test…
+            {t("hookEditor.previewSendTest")}
           </Button>
         </form>
       )}

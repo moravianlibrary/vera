@@ -2,7 +2,6 @@
 // badge, what started it, what it changed, a running run's card with its progress, and the
 // finished table's columns per tier, with a failed run's red line under its row. Who started a
 // run is named through the reference data; VERA itself starts schedules and repeats.
-// TODO(rrandiak): labels move to i18n.
 
 import type { Run } from "@vera/contract/tasks";
 import type { ReactNode } from "react";
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { RunProgress } from "@/components/visualizations/run-progress";
 import { repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
 import type { PerTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
 import { agoText } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
@@ -22,7 +22,7 @@ import { formatCount } from "@/lib/format-number";
 export type NameOf = (userId: string) => string;
 
 export function starterOf(run: Run, nameOf: NameOf): string {
-  return run.startedBy === null ? "VERA" : nameOf(run.startedBy);
+  return run.startedBy === null ? i18n.t("tasks:runParts.vera") : nameOf(run.startedBy);
 }
 
 export function sourceOf(run: Run): string {
@@ -34,13 +34,19 @@ export function triggerOf(run: Run, nameOf: NameOf): { title: string; detail: st
   const { trigger } = run;
   switch (trigger.kind) {
     case "schedule":
-      return { title: "Schedule", detail: cadenceText(trigger.cadence) };
+      return { title: i18n.t("tasks:taskWords.schedule"), detail: cadenceText(trigger.cadence) };
     case "repeat":
-      return { title: "Intention repeat", detail: repeatNameOf(trigger.name) };
+      return { title: i18n.t("tasks:taskWords.repeat"), detail: repeatNameOf(trigger.name) };
     case "approval":
-      return { title: "On approval", detail: `${starterOf(run, nameOf)} approved it` };
+      return {
+        title: i18n.t("tasks:taskWords.approval"),
+        detail: i18n.t("tasks:runParts.approvedBy", { name: starterOf(run, nameOf) }),
+      };
     case "manual":
-      return { title: starterOf(run, nameOf), detail: `from ${trigger.from.label}` };
+      return {
+        title: starterOf(run, nameOf),
+        detail: i18n.t("tasks:runParts.from", { name: trigger.from.label }),
+      };
   }
 }
 
@@ -79,7 +85,7 @@ export function NoticeLine({
             className="text-primary underline-offset-2 hover:underline"
             onClick={() => onOpenRun(runId)}
           >
-            Open the run
+            {i18n.t("tasks:runParts.openRun")}
           </button>
         </>
       )}
@@ -104,20 +110,29 @@ export function SectionTitle({ title, count }: { title: string; count?: number }
 export function RunResult({ run }: { run: Run }) {
   switch (run.state) {
     case "Failed":
-      return <span className="text-muted-foreground">nothing changed</span>;
+      return (
+        <span className="text-muted-foreground">{i18n.t("tasks:runParts.nothingChanged")}</span>
+      );
     case "Skipped":
-      return <span className="text-muted-foreground">did not run</span>;
+      return <span className="text-muted-foreground">{i18n.t("tasks:runParts.didNotRun")}</span>;
     case "Cancelled":
       return (
         <span className="text-muted-foreground">
-          {formatCount(run.doneCount)} of {formatCount(run.itemCount)} processed
+          {i18n.t("tasks:runParts.processed", {
+            done: formatCount(run.doneCount),
+            total: formatCount(run.itemCount),
+          })}
         </span>
       );
     case "Running":
-      return <span className="text-muted-foreground">shown when it finishes</span>;
+      return (
+        <span className="text-muted-foreground">{i18n.t("tasks:runParts.shownWhenFinished")}</span>
+      );
     default:
       if (run.changes === null || run.changes.length === 0) {
-        return <span className="text-muted-foreground">nothing changed</span>;
+        return (
+          <span className="text-muted-foreground">{i18n.t("tasks:runParts.nothingChanged")}</span>
+        );
       }
 
       return (
@@ -172,12 +187,16 @@ export function RunningCard({ run, asOf, nameOf, isOpen, onOpen, onCancel }: Run
         <div className="min-w-0 flex-1">
           <RunTitle run={run} onOpen={onOpen} />
           <Sub>
-            {trigger.title} · {trigger.detail} · started {agoText(run.startedAt, asOf)}
+            {i18n.t("tasks:runParts.startedAgo", {
+              title: trigger.title,
+              detail: trigger.detail,
+              ago: agoText(run.startedAt, asOf),
+            })}
           </Sub>
         </div>
         {onCancel !== undefined && (
           <Button variant="outline" size="sm" onClick={onCancel}>
-            Cancel…
+            {i18n.t("tasks:runParts.cancel")}
           </Button>
         )}
       </div>
@@ -202,12 +221,12 @@ export function FailureNote({ run, onRunAgain }: { run: Run; onRunAgain?: () => 
 
   return (
     <div className="flex items-center gap-2">
-      <StatusNote tone="red" title="Failed" className="flex-1">
+      <StatusNote tone="red" title={i18n.t("tasks:runParts.failed")} className="flex-1">
         {run.failure}
       </StatusNote>
       {onRunAgain !== undefined && (
         <Button variant="outline" size="sm" onClick={onRunAgain}>
-          Run again
+          {i18n.t("tasks:runParts.runAgain")}
         </Button>
       )}
     </div>
@@ -229,7 +248,7 @@ export function runColumns({
 }: RunColumnsOptions): PerTier<readonly ColumnDefinition<Run>[]> {
   const what = (detail: (run: Run) => string): ColumnDefinition<Run> => ({
     key: "what",
-    header: "What",
+    header: i18n.t("tasks:runParts.what"),
     track: "minmax(14rem,2fr)",
     cell: (run) => (
       <>
@@ -243,13 +262,13 @@ export function runColumns({
   });
   const plugin: ColumnDefinition<Run> = {
     key: "plugin",
-    header: "Plugin",
+    header: i18n.t("tasks:runParts.plugin"),
     track: "minmax(8rem,1fr)",
     cell: sourceOf,
   };
   const trigger: ColumnDefinition<Run> = {
     key: "trigger",
-    header: "Trigger",
+    header: i18n.t("tasks:runParts.trigger"),
     track: "minmax(9rem,1fr)",
     cell: (run) => {
       const { title, detail } = triggerOf(run, nameOf);
@@ -263,13 +282,13 @@ export function runColumns({
   };
   const started: ColumnDefinition<Run> = {
     key: "started",
-    header: "Started",
+    header: i18n.t("tasks:runParts.started"),
     track: "max-content",
     cell: (run) => <span className="whitespace-nowrap">{agoText(run.startedAt, asOf)}</span>,
   };
   const took: ColumnDefinition<Run> = {
     key: "took",
-    header: "Took",
+    header: i18n.t("tasks:runParts.took"),
     track: "max-content",
     isNumeric: true,
     cell: (run) => (
@@ -280,13 +299,13 @@ export function runColumns({
   };
   const state: ColumnDefinition<Run> = {
     key: "state",
-    header: "State",
+    header: i18n.t("tasks:runParts.state"),
     track: "max-content",
     cell: (run) => <RunStateBadge run={run} />,
   };
   const result = (isStateShown: boolean): ColumnDefinition<Run> => ({
     key: "result",
-    header: "Result",
+    header: i18n.t("tasks:runParts.result"),
     track: "minmax(12rem,2fr)",
     cell: (run) => (
       <>

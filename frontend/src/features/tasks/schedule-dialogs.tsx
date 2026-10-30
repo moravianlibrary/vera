@@ -3,7 +3,6 @@
 // Repeat and its fields, what to do when the previous run is still going, and the next three runs
 // it will get; *Delete schedule…* from the editor, saying its runs stay; and Pause, with the
 // reason shown on the row so nobody resumes it too early.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ScheduleRow } from "@vera/contract/schedules";
 import {
@@ -13,6 +12,7 @@ import {
   schedulableKinds,
 } from "@vera/domain/schedules";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { createSchedule, deleteSchedule, pauseSchedule, saveSchedule } from "@/api/schedules";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
@@ -43,20 +43,16 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
 import { cadenceText, weekdayName } from "@/lib/format-cadence";
 import { aheadText } from "@/lib/format-moment";
-import { plural } from "@/lib/plural";
 
-const refusalTexts = {
-  "schedule.too_often": "Every 5 minutes is the shortest.",
-  "schedule.not_schedulable": "That plugin runs only while somebody uses it.",
-  "schedule.paused": "Somebody paused it meanwhile.",
-  "schedule.not_paused": "Somebody resumed it meanwhile.",
-  403: "You may no longer change schedules.",
-} as const;
-
-const overlapHints = {
-  skip: "the next one catches up; right for refreshes",
-  wait: "never miss one; right for sweeps",
-} as const;
+function refusalTextsFor(t: (key: string) => string) {
+  return {
+    "schedule.too_often": t("scheduleDialogs.refusalTooOften"),
+    "schedule.not_schedulable": t("scheduleDialogs.refusalNotSchedulable"),
+    "schedule.paused": t("scheduleDialogs.refusalPaused"),
+    "schedule.not_paused": t("scheduleDialogs.refusalNotPaused"),
+    403: t("scheduleDialogs.refusalForbidden"),
+  };
+}
 
 // Monday first, as a week is read here.
 const weekdays = [1, 2, 3, 4, 5, 6, 0] as const;
@@ -83,6 +79,7 @@ export function ScheduleEditorDialog({
   onSaved,
   onDelete,
 }: ScheduleEditorDialogProps) {
+  const { t } = useTranslation("tasks");
   const id = useId();
   const { data: instances = [] } = usePluginInstancesQuery();
   const schedulable = instances.filter(
@@ -98,15 +95,19 @@ export function ScheduleEditorDialog({
         : saveSchedule(schedule.id, draft);
     },
     invalidates: taskInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsFor(t),
   });
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={schedule === null ? "New schedule" : `Edit schedule — ${schedule.name}`}
-      description="When a plugin runs by itself"
+      title={
+        schedule === null
+          ? t("scheduleDialogs.newSchedule")
+          : t("scheduleDialogs.editSchedule", { name: schedule.name })
+      }
+      description={t("scheduleDialogs.description")}
       schema={scheduleFormSchema}
       defaultValues={{
         instanceId: instance?.id ?? "",
@@ -114,22 +115,30 @@ export function ScheduleEditorDialog({
         overlap: schedule?.overlap ?? "skip",
         ...formOfCadence(schedule?.cadence ?? { every: "day", at: "02:00" }),
       }}
-      submitLabel={schedule === null ? "Create schedule" : "Save"}
+      submitLabel={
+        schedule === null ? t("scheduleDialogs.createSchedule") : t("scheduleDialogs.save")
+      }
       fieldOf={(refusal) => (refusal.code === "schedule.too_often" ? "interval" : null)}
       secondary={
         onDelete === undefined
           ? undefined
-          : { label: "Delete schedule…", isDestructive: true, onSelect: onDelete }
+          : { label: t("scheduleDialogs.deleteSchedule"), isDestructive: true, onSelect: onDelete }
       }
       onSubmit={async (form) => {
         const result = await save.run(form);
         if (result.isDone) {
           onSaved(result.value, {
-            title: schedule === null ? "Schedule created" : "Schedule saved",
+            title:
+              schedule === null
+                ? t("scheduleDialogs.scheduleCreated")
+                : t("scheduleDialogs.scheduleSaved"),
             text:
               result.value.nextAt === null
-                ? `${result.value.name}.`
-                : `${result.value.name}: next run ${aheadText(result.value.nextAt, asOf)}.`,
+                ? t("scheduleDialogs.savedNoNext", { name: result.value.name })
+                : t("scheduleDialogs.savedNext", {
+                    name: result.value.name,
+                    time: aheadText(result.value.nextAt, asOf),
+                  }),
           });
         }
 
@@ -152,7 +161,7 @@ export function ScheduleEditorDialog({
           <>
             {schedule === null ? (
               <>
-                <Field id={`${id}-instance`} label="Plugin instance">
+                <Field id={`${id}-instance`} label={t("scheduleDialogs.pluginInstance")}>
                   <Select
                     value={values.instanceId}
                     onValueChange={(value) =>
@@ -163,7 +172,7 @@ export function ScheduleEditorDialog({
                     }
                   >
                     <SelectTrigger id={`${id}-instance`} className="w-full">
-                      <SelectValue placeholder="Choose the plugin it runs" />
+                      <SelectValue placeholder={t("scheduleDialogs.choosePlugin")} />
                     </SelectTrigger>
                     <SelectContent>
                       {schedulable.map((candidate) => (
@@ -174,26 +183,29 @@ export function ScheduleEditorDialog({
                     </SelectContent>
                   </Select>
                 </Field>
-                <FieldError message={errors.instanceId?.message} />
+                <FieldError
+                  message={errors.instanceId?.message ? t(errors.instanceId.message) : undefined}
+                />
               </>
             ) : (
               <p className="text-muted-foreground">
-                Runs <b className="font-semibold text-foreground">{instance?.name}</b> ·{" "}
+                {t("scheduleDialogs.runsLabel")}{" "}
+                <b className="font-semibold text-foreground">{instance?.name}</b> ·{" "}
                 {instance?.plugin}
               </p>
             )}
 
-            <Field id={`${id}-name`} label="Name">
+            <Field id={`${id}-name`} label={t("scheduleDialogs.name")}>
               <Input
                 id={`${id}-name`}
-                placeholder="e.g. MZK Aleph — catalog resync"
+                placeholder={t("scheduleDialogs.namePlaceholder")}
                 {...form.register("name")}
               />
             </Field>
-            <FieldError message={errors.name?.message} />
+            <FieldError message={errors.name?.message ? t(errors.name.message) : undefined} />
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <Field id={`${id}-every`} label="Repeat">
+              <Field id={`${id}-every`} label={t("scheduleDialogs.repeat")}>
                 <Select
                   value={values.every}
                   onValueChange={(value) =>
@@ -213,14 +225,14 @@ export function ScheduleEditorDialog({
                   <SelectContent>
                     {editableCadenceKinds.map((kind) => (
                       <SelectItem key={kind} value={kind}>
-                        {cadenceKindLabels[kind]}
+                        {t(cadenceKindLabels[kind])}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
               {(values.every === "minutes" || values.every === "hours") && (
-                <Field id={`${id}-interval`} label="Every">
+                <Field id={`${id}-interval`} label={t("scheduleDialogs.every")}>
                   <Input
                     id={`${id}-interval`}
                     type="number"
@@ -230,7 +242,7 @@ export function ScheduleEditorDialog({
                 </Field>
               )}
               {(values.every === "week" || values.every === "month") && (
-                <Field id={`${id}-on`} label="On">
+                <Field id={`${id}-on`} label={t("scheduleDialogs.on")}>
                   <Select
                     value={String(values.every === "week" ? values.weekday : values.day)}
                     onValueChange={(value) =>
@@ -251,7 +263,7 @@ export function ScheduleEditorDialog({
                           ))
                         : monthDays.map((day) => (
                             <SelectItem key={day} value={String(day)}>
-                              day {day}
+                              {t("scheduleDialogs.day", { day })}
                             </SelectItem>
                           ))}
                     </SelectContent>
@@ -259,16 +271,22 @@ export function ScheduleEditorDialog({
                 </Field>
               )}
               {values.every !== "minutes" && values.every !== "hours" && (
-                <Field id={`${id}-at`} label="At">
+                <Field id={`${id}-at`} label={t("scheduleDialogs.at")}>
                   <Input id={`${id}-at`} type="time" {...form.register("at")} />
                 </Field>
               )}
             </div>
-            <FieldError message={errors.interval?.message ?? errors.at?.message} />
+            <FieldError
+              message={
+                errors.interval?.message || errors.at?.message
+                  ? t(errors.interval?.message ?? errors.at?.message ?? "")
+                  : undefined
+              }
+            />
 
             <fieldset className="grid gap-2">
               <legend className="mb-1.5 text-sm font-medium">
-                If the previous run is still going
+                {t("scheduleDialogs.overlapTitle")}
               </legend>
               <RadioGroup
                 value={values.overlap}
@@ -286,8 +304,11 @@ export function ScheduleEditorDialog({
                   <div key={overlap} className="flex items-start gap-2">
                     <RadioGroupItem id={`${id}-${overlap}`} value={overlap} className="mt-0.5" />
                     <Label htmlFor={`${id}-${overlap}`} className="block leading-snug font-normal">
-                      {overlapLabels[overlap]}
-                      <span className="text-muted-foreground"> — {overlapHints[overlap]}</span>
+                      {t(overlapLabels[overlap])}
+                      <span className="text-muted-foreground">
+                        {" "}
+                        — {t(`scheduleDialogs.overlapHint.${overlap}`)}
+                      </span>
                     </Label>
                   </div>
                 ))}
@@ -295,7 +316,7 @@ export function ScheduleEditorDialog({
             </fieldset>
 
             <div className="grid gap-1">
-              <span className="text-sm font-medium">Next runs</span>
+              <span className="text-sm font-medium">{t("scheduleDialogs.nextRuns")}</span>
               <p className="text-xs text-muted-foreground">
                 {parsed.success ? (
                   <>
@@ -305,7 +326,7 @@ export function ScheduleEditorDialog({
                     — {cadenceText(cadenceOfForm(parsed.data))}
                   </>
                 ) : (
-                  "Shown once the fields above are complete."
+                  t("scheduleDialogs.previewUnavailable")
                 )}
               </p>
             </div>
@@ -329,35 +350,35 @@ export function PauseScheduleDialog({
   schedule,
   onPaused,
 }: PauseScheduleDialogProps) {
+  const { t } = useTranslation("tasks");
   const pause = useActionMutation({
     call: (reason: string) => pauseSchedule(schedule.id, { reason }),
     invalidates: taskInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsFor(t),
   });
 
   return (
     <ReasonDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Pause ${schedule.name}?`}
-      description="Pausing a schedule"
-      fields={
-        <p className="text-sm">
-          It stops running by itself until somebody resumes it. A run in progress finishes.
-        </p>
-      }
+      title={t("scheduleDialogs.pauseTitle", { name: schedule.name })}
+      description={t("scheduleDialogs.pauseDescription")}
+      fields={<p className="text-sm">{t("scheduleDialogs.pauseConsequence")}</p>}
       internalNote={{
-        label: "Why",
-        hint: "shown on the schedule, so nobody resumes it too early",
+        label: t("scheduleDialogs.why"),
+        hint: t("scheduleDialogs.whyHint"),
         isRequired: true,
-        placeholder: "e.g. catalog migration until 1 July",
+        placeholder: t("scheduleDialogs.pausePlaceholder"),
       }}
-      confirmLabel="Pause"
+      confirmLabel={t("scheduleDialogs.pause")}
       isDestructive={false}
       onConfirm={async (texts) => {
         const result = await pause.run(texts.internalNote);
         if (result.isDone) {
-          onPaused({ title: `Paused ${schedule.name}`, text: "Resume it from the same row." });
+          onPaused({
+            title: t("scheduleDialogs.pausedTitle", { name: schedule.name }),
+            text: t("scheduleDialogs.resumeSameRow"),
+          });
         }
 
         return result;
@@ -379,10 +400,11 @@ export function DeleteScheduleDialog({
   schedule,
   onDeleted,
 }: DeleteScheduleDialogProps) {
+  const { t } = useTranslation("tasks");
   const remove = useActionMutation({
     call: () => deleteSchedule(schedule.id),
     invalidates: taskInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsFor(t),
   });
   const instanceName =
     schedule.source.kind === "plugin" ? schedule.source.instance.name : schedule.name;
@@ -391,23 +413,23 @@ export function DeleteScheduleDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${schedule.name}?`}
-      description="The schedule goes; its runs stay"
+      title={t("scheduleDialogs.deleteTitle", { name: schedule.name })}
+      description={t("scheduleDialogs.deleteDescription")}
       consequences={[
-        { text: `${instanceName} stops running by itself. It can still be run by hand.` },
+        { text: t("scheduleDialogs.deleteConsequence", { name: instanceName }) },
         {
-          text: `Its ${plural(schedule.runCount, "run")} on record stay, under retention like any other.`,
+          text: t("scheduleDialogs.runsRemain", { count: schedule.runCount }),
         },
-        { text: "To stop it for a while, pause it instead.", tone: "amber" },
+        { text: t("scheduleDialogs.pauseInstead"), tone: "amber" },
       ]}
-      confirmLabel="Delete schedule"
+      confirmLabel={t("scheduleDialogs.deleteScheduleConfirm")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(undefined);
         if (result.isDone) {
           onDeleted({
-            title: "Schedule deleted",
-            text: `${instanceName} runs only by hand now.`,
+            title: t("scheduleDialogs.scheduleDeleted"),
+            text: t("scheduleDialogs.runsByHand", { name: instanceName }),
           });
         }
 

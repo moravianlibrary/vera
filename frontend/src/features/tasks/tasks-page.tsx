@@ -2,13 +2,13 @@
 // section whose heading and table header stick in the single page scroller. A run opens in the drawer (`?run=`).
 // `task.read` sees everyone's runs and next scheduled work; with `task.read_own` alone the page
 // is *My Tasks*, the person's own runs.
-// TODO(rrandiak): labels move to i18n.
 
 import type { Run, RunIndex } from "@vera/contract/tasks";
 import type { Session } from "@vera/domain/entities";
 import { hasPermission } from "@vera/domain/permissions";
 import { canCancelRun, canRunAgain, isOwnRun } from "@vera/domain/tasks";
 import { useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { runAgain } from "@/api/tasks";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -37,10 +37,11 @@ import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { i18n } from "@/i18n";
 import { aheadText } from "@/lib/format-moment";
-import { plural } from "@/lib/plural";
 
 export function TasksPage() {
+  const { t } = useTranslation("tasks");
   const view = useViewUrlState(tasksView, runParam);
   const { query, selectedId: openRunId, select } = view;
   const { data: session } = useSessionQuery();
@@ -60,8 +61,8 @@ export function TasksPage() {
     call: runAgain,
     invalidates: taskInvalidations,
     refusalTexts: {
-      "task.not_rerunnable": "Only a failed or cancelled plugin run is run again.",
-      403: "You may not run this plugin.",
+      "task.not_rerunnable": t("tasksPage.refusalNotRerunnable"),
+      403: t("tasksPage.refusalRunForbidden"),
     },
   });
 
@@ -70,7 +71,8 @@ export function TasksPage() {
   }
 
   const title =
-    visibleNavigation(session).find((entry) => entry.id === "tasks")?.visibleLabel ?? "Tasks";
+    visibleNavigation(session).find((entry) => entry.id === "tasks")?.visibleLabel ??
+    t("tasksPage.title");
   const seesEveryone = hasPermission(session, "task.read");
   const show = (next: TaskNotice, tone: ShownNotice["tone"] = "green") =>
     setNotice({ ...next, tone });
@@ -78,13 +80,16 @@ export function TasksPage() {
   const runAgainNow = async (run: Run) => {
     const result = await rerun.run(run.id);
     if (!result.isDone) {
-      show({ title: `${run.id} did not start`, text: result.refusal.message }, "red");
+      show(
+        { title: t("tasksPage.runAgainFailed", { id: run.id }), text: result.refusal.message },
+        "red",
+      );
       return;
     }
 
     show({
-      title: `Started ${result.value.id}`,
-      text: `Running ${run.what} again; ${run.id} stays as it was.`,
+      title: t("tasksPage.runAgainStarted", { id: result.value.id }),
+      text: t("tasksPage.runAgainText", { what: run.what, id: run.id }),
       runId: result.value.id,
     });
     select(result.value.id);
@@ -118,8 +123,8 @@ export function TasksPage() {
           query={query}
           facets={index.facets}
           onQueryChange={(next) => view.setQuery(next)}
-          searchLabel="Search runs"
-          searchPlaceholder="Search runs — what ran, ID"
+          searchLabel={t("tasksPage.searchLabel")}
+          searchPlaceholder={t("tasksPage.searchPlaceholder")}
         />
       )}
       {index !== undefined &&
@@ -156,17 +161,17 @@ export function TasksPage() {
               rows: [],
               rowId: (run: Run) => run.id,
               columns: runColumns({ asOf: new Date().toISOString(), nameOf, onOpen: select }),
-              emptyText: "No finished run matches these filters.",
+              emptyText: t("tasksPage.emptyFinished"),
               isLoading: runsQuery.isLoading,
-              loadingText: "Loading runs…",
-              failure: failureOf(runsQuery, "Could not load runs."),
+              loadingText: t("tasksPage.loading"),
+              failure: failureOf(runsQuery, t("tasksPage.loadFailure")),
             }}
           />
         ) : (
           <TableWithDrawer
             openId={openRunId}
             onClose={() => select(null)}
-            drawerTitle={openRun?.run.what ?? "Run"}
+            drawerTitle={openRun?.run.what ?? t("tasksPage.run")}
             drawerSubtitle={
               openRun === undefined ? undefined : (
                 <>
@@ -185,7 +190,7 @@ export function TasksPage() {
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {isDetailMissing ? "This run is gone, or is not yours to see." : "Loading…"}
+                  {isDetailMissing ? t("tasksPage.runUnavailable") : t("tasksPage.loading")}
                 </p>
               )
             }
@@ -208,7 +213,7 @@ export function TasksPage() {
               rowId: (run) => run.id,
               columns: runColumns({ asOf: index.asOf, nameOf, onOpen: select }),
               onOpen: select,
-              emptyText: "No finished run matches these filters.",
+              emptyText: t("tasksPage.emptyFinished"),
               isLoading: false,
               noteOf: (run) =>
                 run.failure === null ? null : (
@@ -223,7 +228,7 @@ export function TasksPage() {
               header: (
                 <div className="sticky top-0 z-20 grid h-10 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center border-y bg-background">
                   <h2 className="min-w-0 truncate text-caption font-semibold tracking-wider text-muted-foreground uppercase">
-                    Finished{" "}
+                    {t("tasksPage.finished")}{" "}
                     <span className="font-normal normal-case">· {index.finished.length}</span>
                   </h2>
                   {index.running.length > 0 && isRunningOffscreen && (
@@ -234,7 +239,7 @@ export function TasksPage() {
                         runningRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
                       }
                     >
-                      Scroll to running ↑
+                      {t("tasksPage.scrollRunning")}
                     </button>
                   )}
                 </div>
@@ -255,17 +260,17 @@ export function TasksPage() {
             }}
             below={
               <p className="sticky bottom-0 z-20 border-t bg-background py-2.5 text-xs leading-relaxed text-muted-foreground">
-                Runs are kept for <b className="font-semibold">{daysText(index.retention.days)}</b>,
-                failed and cancelled ones for{" "}
-                <b className="font-semibold">{daysText(index.retention.failedDays)}</b>. Nobody
-                deletes them by hand: this is the record of what changed the data.{" "}
+                {t("tasksPage.retention", {
+                  days: daysText(index.retention.days),
+                  failedDays: daysText(index.retention.failedDays),
+                })}{" "}
                 {hasPermission(session, "task.schedule") && (
                   <button
                     type="button"
                     className="text-primary underline-offset-2 hover:underline"
                     onClick={() => setIsRetentionOpen(true)}
                   >
-                    Change…
+                    {t("tasksPage.changeRetention")}
                   </button>
                 )}
               </p>
@@ -300,7 +305,9 @@ export function TasksPage() {
 }
 
 function daysText(days: number): string {
-  return days === 365 ? "a year" : plural(days, "day");
+  return days === 365
+    ? i18n.t("tasks:tasksPage.year")
+    : i18n.t("tasks:tasksPage.days", { count: days });
 }
 
 interface RunsAboveProps {
@@ -327,19 +334,17 @@ function RunsAbove({
   onCancel,
   runningRef,
 }: RunsAboveProps) {
+  const { t } = useTranslation("tasks");
   return (
     <>
       {notice !== null && (
         <NoticeLine notice={notice} onOpenRun={onOpen} onDismiss={onDismissNotice} />
       )}
       {index.visibleCount === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">
-          Nothing you started has run yet. Re-checks, generated lists and ingests you start show up
-          here while they run, and after.
-        </p>
+        <p className="mt-6 text-sm text-muted-foreground">{t("tasksPage.noRunsYet")}</p>
       ) : index.running.length > 0 ? (
         <div ref={runningRef} className="scroll-mt-4">
-          <SectionTitle title="Running" count={index.running.length} />
+          <SectionTitle title={t("tasksPage.running")} count={index.running.length} />
           <div className="grid gap-2.5 @4xl:grid-cols-2">
             {index.running.map((run) => (
               <RunningCard
@@ -360,6 +365,7 @@ function RunsAbove({
 }
 
 function NextRunsStrip({ index }: { index: RunIndex }) {
+  const { t } = useTranslation("tasks");
   const availableRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(1);
   useLayoutEffect(() => {
@@ -385,14 +391,14 @@ function NextRunsStrip({ index }: { index: RunIndex }) {
   return (
     <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2 text-xs sm:px-6">
       <span className="shrink-0 font-semibold tracking-wider text-muted-foreground uppercase">
-        Next runs
+        {t("tasksPage.nextRuns")}
       </span>
       <div
         ref={availableRef}
         className="flex min-w-0 flex-1 gap-2 overflow-hidden whitespace-nowrap"
       >
         {index.nextRuns.length === 0 ? (
-          <span className="text-muted-foreground">None scheduled</span>
+          <span className="text-muted-foreground">{i18n.t("tasks:tasksPage.noneScheduled")}</span>
         ) : (
           index.nextRuns.map((run, position) => (
             <Link
@@ -413,7 +419,7 @@ function NextRunsStrip({ index }: { index: RunIndex }) {
         )}
       </div>
       <Link to="/schedules" className="shrink-0 text-primary hover:underline">
-        {plural(index.schedules.activeCount, "schedule")} active
+        {t("tasksPage.activeSchedules", { count: index.schedules.activeCount })}
       </Link>
     </div>
   );

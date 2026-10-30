@@ -2,11 +2,11 @@
 // cancelling a run says where it stands and what stops, from the run as the server last counted
 // it; how long runs are kept is two numbers, failed and cancelled ones at least as long as the
 // rest. Running a run again asks nothing: the old run stays as it was.
-// TODO(rrandiak): labels move to i18n.
 
 import type { Retention, Run } from "@vera/contract/tasks";
 import { retentionSchema } from "@vera/contract/tasks";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import type { z } from "zod";
 import { cancelRun, saveRetention } from "@/api/tasks";
 import { Field } from "@/components/classification-fields";
@@ -42,12 +42,13 @@ export function CancelRunDialog({
   otherStarter,
   onCancelled,
 }: CancelRunDialogProps) {
+  const { t } = useTranslation("tasks");
   const cancel = useActionMutation({
     call: () => cancelRun(run.id),
     invalidates: taskInvalidations,
     refusalTexts: {
-      "task.not_running": "It has finished meanwhile.",
-      403: "You may no longer cancel this run.",
+      "task.not_running": t("runDialogs.refusalNotRunning"),
+      403: t("runDialogs.refusalCancelForbidden"),
     },
   });
   const left = run.itemCount - run.doneCount;
@@ -56,33 +57,40 @@ export function CancelRunDialog({
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Cancel ${run.id}?`}
+      title={t("runDialogs.cancelTitle", { id: run.id })}
       description={run.what}
       consequences={[
         {
-          text: `${run.what}: ${formatCount(run.doneCount)} of ${formatCount(run.itemCount)} processed.`,
+          text: t("runDialogs.cancelProgress", {
+            what: run.what,
+            done: formatCount(run.doneCount),
+            total: formatCount(run.itemCount),
+          }),
         },
         {
-          text: `It stops after the item it is on. What it already changed stays; the other ${formatCount(left)} are not processed.`,
+          text: t("runDialogs.cancelConsequence", { left: formatCount(left) }),
         },
         ...(otherStarter === null
           ? []
           : [
               {
-                text: `${otherStarter} started it, and sees it as cancelled by you.`,
+                text: t("runDialogs.cancelOtherStarter", { name: otherStarter }),
                 tone: "amber" as const,
               },
             ]),
       ]}
-      confirmLabel="Cancel the run"
-      cancelLabel="Keep running"
+      confirmLabel={t("runDialogs.cancelRun")}
+      cancelLabel={t("runDialogs.keepRunning")}
       isDestructive
       onConfirm={async () => {
         const result = await cancel.run(undefined);
         if (result.isDone) {
           onCancelled({
-            title: `Cancelled ${run.id}`,
-            text: `${formatCount(result.value.doneCount)} of ${formatCount(result.value.itemCount)} processed.`,
+            title: t("runDialogs.cancelledTitle", { id: run.id }),
+            text: t("runDialogs.processed", {
+              done: formatCount(result.value.doneCount),
+              total: formatCount(result.value.itemCount),
+            }),
           });
         }
 
@@ -92,10 +100,11 @@ export function CancelRunDialog({
   );
 }
 
-const retentionFormSchema = retentionSchema.refine((form) => form.failedDays >= form.days, {
-  path: ["failedDays"],
-  message: "Keep failed and cancelled runs at least as long as the others.",
-});
+const retentionFormSchema = (message: string) =>
+  retentionSchema.refine((form) => form.failedDays >= form.days, {
+    path: ["failedDays"],
+    message,
+  });
 
 interface RetentionDialogProps {
   isOpen: boolean;
@@ -105,13 +114,14 @@ interface RetentionDialogProps {
 }
 
 export function RetentionDialog({ isOpen, onClose, retention, onSaved }: RetentionDialogProps) {
+  const { t } = useTranslation("tasks");
   const id = useId();
   const save = useActionMutation({
     call: saveRetention,
     invalidates: taskInvalidations,
     refusalTexts: {
-      "retention.failed_shorter": "Keep failed and cancelled runs at least as long as the others.",
-      403: "You may no longer change how long runs are kept.",
+      "retention.failed_shorter": t("runDialogs.retentionOrder"),
+      403: t("runDialogs.retentionForbidden"),
     },
   });
 
@@ -119,18 +129,26 @@ export function RetentionDialog({ isOpen, onClose, retention, onSaved }: Retenti
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Keep runs for"
-      description="How long a run's account is kept"
-      schema={retentionFormSchema satisfies z.ZodType<Retention, Retention>}
+      title={t("runDialogs.keepRunsFor")}
+      description={t("runDialogs.retentionDescription")}
+      schema={
+        retentionFormSchema(t("runDialogs.retentionOrder")) satisfies z.ZodType<
+          Retention,
+          Retention
+        >
+      }
       defaultValues={retention}
-      submitLabel="Save"
+      submitLabel={t("runDialogs.save")}
       fieldOf={(refusal) => (refusal.code === "retention.failed_shorter" ? "failedDays" : null)}
       onSubmit={async (form) => {
         const result = await save.run(form);
         if (result.isDone) {
           onSaved({
-            title: "Saved",
-            text: `Runs are kept ${result.value.days} days, failed and cancelled ones ${result.value.failedDays} days.`,
+            title: t("runDialogs.saved"),
+            text: t("runDialogs.retentionSaved", {
+              days: result.value.days,
+              failedDays: result.value.failedDays,
+            }),
           });
         }
 
@@ -139,7 +157,7 @@ export function RetentionDialog({ isOpen, onClose, retention, onSaved }: Retenti
       render={(form) => (
         <>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field id={`${id}-days`} label="Runs, days">
+            <Field id={`${id}-days`} label={t("runDialogs.runDays")}>
               <Input
                 id={`${id}-days`}
                 type="number"
@@ -147,7 +165,7 @@ export function RetentionDialog({ isOpen, onClose, retention, onSaved }: Retenti
                 {...form.register("days", { valueAsNumber: true })}
               />
             </Field>
-            <Field id={`${id}-failed`} label="Failed and cancelled, days">
+            <Field id={`${id}-failed`} label={t("runDialogs.failedDays")}>
               <Input
                 id={`${id}-failed`}
                 type="number"
@@ -162,8 +180,7 @@ export function RetentionDialog({ isOpen, onClose, retention, onSaved }: Retenti
             }
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            A run older than this is removed with its log and items. What it changed stays in each
-            record&apos;s own history; only the account of the run goes.
+            {t("runDialogs.retentionFinePrint")}
           </p>
         </>
       )}

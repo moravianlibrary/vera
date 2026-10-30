@@ -2,7 +2,6 @@
 // `filterBar`): its filter in the URL, State and Trigger on the bar, Plugin, Started by and
 // Started date as added filters, and `?run=` naming the open run. Started by is for `task.read` only: with
 // `task.read_own` every run is the person's own. No grouping.
-// TODO(rrandiak): labels move to i18n.
 
 import type { RunQuery } from "@vera/contract/tasks";
 import { isSameRunQuery, parseRunSearchParams, toRunSearchParams } from "@vera/contract/tasks";
@@ -22,23 +21,27 @@ export const tasksView: ViewDefinition<RunQuery> = {
   fields: [
     {
       key: "states",
-      label: "State",
+      label: "tasks:tasksView.state",
       field: vocabulary(runStates, runStateLabels),
       isQuick: true,
     },
     {
       key: "triggers",
-      label: "Trigger",
+      label: "tasks:tasksView.trigger",
       field: vocabulary(triggerKinds, triggerLabels),
       isQuick: true,
     },
     {
       key: "instanceIds",
-      label: "Plugin",
+      label: "tasks:tasksView.plugin",
       field: { kind: "reference", reference: "pluginInstances" },
     },
-    { key: "startedBy", label: "Started by", field: { kind: "reference", reference: "users" } },
-    { key: "started", label: "Started", field: { kind: "dateRange" } },
+    {
+      key: "startedBy",
+      label: "tasks:tasksView.startedBy",
+      field: { kind: "reference", reference: "users" },
+    },
+    { key: "started", label: "tasks:tasksView.started", field: { kind: "dateRange" } },
   ],
   groupings: [],
   groupingParam: "group",

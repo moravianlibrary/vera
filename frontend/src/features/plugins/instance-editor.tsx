@@ -9,7 +9,6 @@
 // each property it supplies, which registry states count as an existing copy
 // (REG-copy-not-gate), and a harvester's agent. When it runs by itself is set on Schedules, once
 // it exists.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   InstanceDraft,
@@ -28,6 +27,7 @@ import {
 import { schedulableKinds } from "@vera/domain/schedules";
 import { useId } from "react";
 import { Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { createPluginInstance, savePluginInstance } from "@/api/plugins";
 import { categoryLabelOf, Field } from "@/components/classification-fields";
@@ -82,19 +82,20 @@ interface InstanceForm {
   agentEntryPoint: EntryPoint;
 }
 
-export const refusalTexts = {
-  "plugin.name_taken": "Another instance of it has that name.",
-  "plugin.config_missing": "A required field is empty.",
-  "plugin.user_claim_fixed": "The user id claim is fixed once people sign in through it.",
-  "plugin.last_identity": "It is the last way to log in; enable another first.",
-  "plugin.contract": "Its version was built for a contract VERA does not run.",
-  "plugin.policy": "Its tiers, copy states or agent do not fit what its version declares.",
-  "plugin.no_such_custody": "Pick a request custody on Users & Groups.",
-  "plugin.identifier":
-    "The type, pattern, normalisation (trim, upperCase, dropHyphens) or checksum (isbn10, isbn13, issn) is not one VERA reads.",
-  "plugin.identifier_taken": "Another instance already recognises that identifier type.",
-  403: "Only those who configure plugins change them.",
-};
+export function refusalTextsFor(t: (key: string) => string) {
+  return {
+    "plugin.name_taken": t("instanceEditor.refusalNameTaken"),
+    "plugin.config_missing": t("instanceEditor.refusalConfigMissing"),
+    "plugin.user_claim_fixed": t("instanceEditor.refusalClaimFixed"),
+    "plugin.last_identity": t("instanceEditor.refusalLastIdentity"),
+    "plugin.contract": t("pluginsPage.refusalContract"),
+    "plugin.policy": t("instanceEditor.refusalPolicy"),
+    "plugin.no_such_custody": t("instanceEditor.refusalCustody"),
+    "plugin.identifier": t("instanceEditor.refusalIdentifier"),
+    "plugin.identifier_taken": t("instanceEditor.refusalIdentifierTaken"),
+    403: t("instanceEditor.refusalForbidden"),
+  };
+}
 
 // "group mzk-staff → staff", one a line, the role by its name.
 function mappingsOf(text: string, roles: readonly NamedRole[]) {
@@ -109,6 +110,7 @@ function mappingsOf(text: string, roles: readonly NamedRole[]) {
 }
 
 function formSchemaOf(
+  t: (key: string, values?: Record<string, unknown>) => string,
   version: PluginVersion,
   isNew: boolean,
   roles: readonly NamedRole[],
@@ -117,7 +119,7 @@ function formSchemaOf(
 ) {
   return z
     .object({
-      name: z.string().trim().min(1, "An instance needs a name: its runs are listed under it."),
+      name: z.string().trim().min(1, t("instanceEditor.validationName")),
       configuration: z.record(z.string(), z.string()),
       linkedCategoryId: z.string(),
       label: z.string(),
@@ -141,7 +143,7 @@ function formSchemaOf(
           context.addIssue({
             code: "custom",
             path: ["configuration", field.key],
-            message: `${field.key} is required.`,
+            message: t("instanceEditor.validationRequired", { key: field.key }),
           });
         }
       }
@@ -152,7 +154,7 @@ function formSchemaOf(
           context.addIssue({
             code: "custom",
             path: ["tiers", key],
-            message: `A tier is a whole number from 0 to ${maxPluginTier}; manual alone is 100.`,
+            message: t("instanceEditor.validationTier", { max: maxPluginTier }),
           });
         }
       }
@@ -161,12 +163,16 @@ function formSchemaOf(
         context.addIssue({
           code: "custom",
           path: ["custodyId"],
-          message: "Pick the custody a proposal it matches is in.",
+          message: t("instanceEditor.validationCustody"),
         });
       }
 
       if (version.declares.agent !== null && values.agentName.trim() === "") {
-        context.addIssue({ code: "custom", path: ["agentName"], message: "Name its agent." });
+        context.addIssue({
+          code: "custom",
+          path: ["agentName"],
+          message: t("instanceEditor.validationAgent"),
+        });
       }
 
       const unknown = mappingsOf(values.mappings, roles).find(
@@ -176,7 +182,9 @@ function formSchemaOf(
         context.addIssue({
           code: "custom",
           path: ["mappings"],
-          message: `Write each as "claim ${mappingArrow} role"; ${unknown.roleName || "a role"} is not a role.`,
+          message: t("instanceEditor.validationMapping", {
+            role: unknown.roleName || t("instanceEditor.aRole"),
+          }),
         });
       }
     });
@@ -245,6 +253,7 @@ export function InstanceEditorDialog({
   kindCount,
   onSaved,
 }: InstanceEditorDialogProps) {
+  const { t } = useTranslation("plugins");
   const id = useId();
   const { data: roles = [] } = useRolesQuery();
   const { data: categories = [] } = useCategoriesQuery();
@@ -265,7 +274,7 @@ export function InstanceEditorDialog({
         ? createPluginInstance({ ...draft, implementationId: implementation.id })
         : savePluginInstance(instance.id, draft),
     invalidates: pluginInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsFor(t),
   });
   if (version === undefined) {
     return null;
@@ -288,9 +297,14 @@ export function InstanceEditorDialog({
     <FormDialog<InstanceForm>
       isOpen
       onClose={onClose}
-      title={isNew ? `New instance of ${implementation.name}` : `Edit ${instance.name}`}
-      description={`The configuration of an instance of ${implementation.name}`}
+      title={
+        isNew
+          ? t("instanceEditor.newInstanceTitle", { name: implementation.name })
+          : t("instanceEditor.editTitle", { name: instance.name })
+      }
+      description={t("instanceEditor.description", { name: implementation.name })}
       schema={formSchemaOf(
+        t,
         version,
         isNew,
         roles,
@@ -323,7 +337,7 @@ export function InstanceEditorDialog({
         agentName: policy.agent?.name ?? "",
         agentEntryPoint: policy.agent?.entryPoint ?? "proposals",
       }}
-      submitLabel={isNew ? "Create instance" : "Save"}
+      submitLabel={isNew ? t("instanceEditor.createInstance") : t("instanceEditor.save")}
       fieldOf={(refusal) => (refusal.code === "plugin.name_taken" ? "name" : null)}
       onSubmit={async (values) => {
         const secrets = new Set(
@@ -346,11 +360,15 @@ export function InstanceEditorDialog({
           onSaved(
             isNew
               ? {
-                  title: `${result.value.name} created`,
-                  text: "Enabled: it runs from its next trigger.",
+                  title: t("instanceEditor.createdTitle", { name: result.value.name }),
+                  text: t("instanceEditor.createdText"),
                   tone: "green",
                 }
-              : { title: `${result.value.name} saved`, text: "From its next run.", tone: "green" },
+              : {
+                  title: t("instanceEditor.savedTitle", { name: result.value.name }),
+                  text: t("instanceEditor.savedText"),
+                  tone: "green",
+                },
             result.value.id,
           );
         }
@@ -359,15 +377,19 @@ export function InstanceEditorDialog({
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
-            <Input id={`${id}-name`} placeholder="e.g. MZK Aleph" {...form.register("name")} />
+          <Field id={`${id}-name`} label={t("instanceEditor.name")}>
+            <Input
+              id={`${id}-name`}
+              placeholder={t("instanceEditor.namePlaceholder")}
+              {...form.register("name")}
+            />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
 
           {version.configFields.length > 0 && (
             <fieldset className="grid gap-3">
               <legend className="mb-2 text-xs font-semibold text-muted-foreground">
-                Configuration
+                {t("instanceEditor.configuration")}
               </legend>
               {version.configFields.map((field) => {
                 const isSet = instance?.secretsSet.includes(field.key) === true;
@@ -376,7 +398,7 @@ export function InstanceEditorDialog({
                     <Field
                       id={`${id}-config-${field.key}`}
                       label={field.key}
-                      hint={field.isRequired ? undefined : "optional"}
+                      hint={field.isRequired ? undefined : t("instanceEditor.optional")}
                     >
                       <Input
                         id={`${id}-config-${field.key}`}
@@ -384,7 +406,9 @@ export function InstanceEditorDialog({
                         type={field.isSecret ? "password" : "text"}
                         autoComplete="off"
                         placeholder={
-                          field.isSecret && isSet ? "••• set: leave blank to keep it" : undefined
+                          field.isSecret && isSet
+                            ? t("instanceEditor.secretPlaceholder")
+                            : undefined
                         }
                         {...form.register(`configuration.${field.key}`)}
                       />
@@ -398,7 +422,7 @@ export function InstanceEditorDialog({
             </fieldset>
           )}
 
-          <Field id={`${id}-linked`} label="Linked to">
+          <Field id={`${id}-linked`} label={t("instanceEditor.linkedTo")}>
             <Controller
               control={form.control}
               name="linkedCategoryId"
@@ -408,7 +432,9 @@ export function InstanceEditorDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={allCategories}>All categories</SelectItem>
+                    <SelectItem value={allCategories}>
+                      {t("instanceEditor.allCategories")}
+                    </SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {categoryLabelOf(categories, category.id)}
@@ -422,14 +448,20 @@ export function InstanceEditorDialog({
 
           {isIdentity && (
             <fieldset className="grid gap-3">
-              <legend className="mb-2 text-xs font-semibold text-muted-foreground">Login</legend>
-              <Field id={`${id}-label`} label="Button on the login page">
-                <Input id={`${id}-label`} placeholder="Log in with …" {...form.register("label")} />
+              <legend className="mb-2 text-xs font-semibold text-muted-foreground">
+                {t("instanceEditor.login")}
+              </legend>
+              <Field id={`${id}-label`} label={t("instanceEditor.buttonOnLoginPage")}>
+                <Input
+                  id={`${id}-label`}
+                  placeholder={t("instanceEditor.loginButtonPlaceholder")}
+                  {...form.register("label")}
+                />
               </Field>
               <Field
                 id={`${id}-claim`}
-                label="User id claim"
-                hint={isNew ? "fixed once people sign in" : undefined}
+                label={t("instanceEditor.userIdClaim")}
+                hint={isNew ? t("instanceEditor.claimFixed") : undefined}
               >
                 {isNew ? (
                   <Input
@@ -441,12 +473,12 @@ export function InstanceEditorDialog({
                   <p id={`${id}-claim`} className="font-mono text-xs">
                     {identity?.userIdClaim}{" "}
                     <span className="font-sans text-muted-foreground">
-                      · fixed once people sign in through it
+                      · {t("instanceEditor.claimFixedText")}
                     </span>
                   </p>
                 )}
               </Field>
-              <Field id={`${id}-role`} label="A new user gets">
+              <Field id={`${id}-role`} label={t("instanceEditor.defaultRole")}>
                 <Controller
                   control={form.control}
                   name="defaultRoleId"
@@ -456,7 +488,7 @@ export function InstanceEditorDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={noRole}>No role: they see “no access yet”</SelectItem>
+                        <SelectItem value={noRole}>{t("instanceEditor.noRole")}</SelectItem>
                         {roles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -479,10 +511,9 @@ export function InstanceEditorDialog({
                       className="mt-0.5"
                     />
                     <span>
-                      Match by email
+                      {t("instanceEditor.matchByEmail")}
                       <span className="block text-xs text-muted-foreground">
-                        A verified address joins the user who already has it, instead of making a
-                        new one.
+                        {t("instanceEditor.matchByEmailHint")}
                       </span>
                     </span>
                   </label>
@@ -490,34 +521,34 @@ export function InstanceEditorDialog({
               />
               <Field
                 id={`${id}-mappings`}
-                label="Claims it maps to roles"
-                hint={`one a line, claim ${mappingArrow} role`}
+                label={t("instanceEditor.claimsToRoles")}
+                hint={t("instanceEditor.mappingHint")}
               >
                 <Textarea
                   id={`${id}-mappings`}
                   rows={4}
                   className="font-mono text-xs"
-                  placeholder={`group mzk-staff ${mappingArrow} staff`}
+                  placeholder={t("instanceEditor.mappingPlaceholder")}
                   {...form.register("mappings")}
                 />
               </Field>
               <FieldError message={form.formState.errors.mappings?.message} />
               <p className="text-xs text-muted-foreground">
-                Applied at each person's next login: a role holds while its claim does.
+                {t("instanceEditor.mappingFinePrint")}
               </p>
             </fieldset>
           )}
 
           {isCustody && (
             <>
-              <Field id={`${id}-custody`} label="Places into">
+              <Field id={`${id}-custody`} label={t("instanceEditor.placesInto")}>
                 <Controller
                   control={form.control}
                   name="custodyId"
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger id={`${id}-custody`} className="w-full">
-                        <SelectValue placeholder="Pick a request custody" />
+                        <SelectValue placeholder={t("instanceEditor.pickCustody")} />
                       </SelectTrigger>
                       <SelectContent>
                         {pickable.map((custody) => (
@@ -532,8 +563,7 @@ export function InstanceEditorDialog({
               </Field>
               <FieldError message={form.formState.errors.custodyId?.message} />
               <p className="text-xs text-muted-foreground">
-                A proposal its condition matches is in this custody. Renaming the custody changes
-                nothing; what no rule places lands in the fallback.
+                {t("instanceEditor.custodyFinePrint")}
               </p>
             </>
           )}
@@ -541,12 +571,12 @@ export function InstanceEditorDialog({
           {hasOrder && (
             <Field
               id={`${id}-order`}
-              label={isIdentity ? "Order on the login page" : "Order"}
+              label={isIdentity ? t("instanceEditor.loginPageOrder") : t("instanceEditor.order")}
               hint={
                 implementation.kind === "Classifier"
-                  ? "the first suggestion wins"
+                  ? t("instanceEditor.firstSuggestionWins")
                   : implementation.kind === "Identifier"
-                    ? "the first that recognises a value gives its type"
+                    ? t("instanceEditor.firstIdentifierWins")
                     : undefined
               }
             >
@@ -563,14 +593,14 @@ export function InstanceEditorDialog({
           {declares.properties.length > 0 && (
             <fieldset className="grid gap-2">
               <legend className="mb-2 text-xs font-semibold text-muted-foreground">
-                Tiers of what it supplies
+                {t("instanceEditor.tiersSupplied")}
               </legend>
               {declares.properties.map(({ key, tier }) => (
                 <div key={key} className="grid gap-1">
                   <Field
                     id={`${id}-tier-${key}`}
                     label={key}
-                    hint={`${implementation.name} declares ${tier}`}
+                    hint={t("instanceEditor.declaredTier", { name: implementation.name, tier })}
                   >
                     <Input
                       id={`${id}-tier-${key}`}
@@ -584,16 +614,14 @@ export function InstanceEditorDialog({
                   <FieldError message={form.formState.errors.tiers?.[key]?.message} />
                 </div>
               ))}
-              <p className="text-xs text-muted-foreground">
-                The highest tier with a value wins; manual is 100, above every plugin.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("instanceEditor.tierFinePrint")}</p>
             </fieldset>
           )}
 
           {declares.rawStates.length > 0 && (
             <fieldset className="grid gap-2">
               <legend className="mb-2 text-xs font-semibold text-muted-foreground">
-                Counts as an existing copy
+                {t("instanceEditor.countsAsCopy")}
               </legend>
               <Controller
                 control={form.control}
@@ -619,27 +647,31 @@ export function InstanceEditorDialog({
                         />
                         <span className="font-mono text-xs">{state.raw}</span>
                         <span className="text-xs text-muted-foreground">
-                          {state.state ?? "Unmapped"}
+                          {state.state ?? t("pluginDrawers.unmapped")}
                         </span>
                       </label>
                     ))}
                   </div>
                 )}
               />
-              <p className="text-xs text-muted-foreground">
-                A copy blocks nothing: it is news for whoever decides.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("instanceEditor.copyFinePrint")}</p>
             </fieldset>
           )}
 
           {declares.agent !== null && (
             <fieldset className="grid gap-3">
-              <legend className="mb-2 text-xs font-semibold text-muted-foreground">Agent</legend>
-              <Field id={`${id}-agent`} label="Name" hint="what it proposes is logged as it">
+              <legend className="mb-2 text-xs font-semibold text-muted-foreground">
+                {t("instanceEditor.agent")}
+              </legend>
+              <Field
+                id={`${id}-agent`}
+                label={t("instanceEditor.name")}
+                hint={t("instanceEditor.agentHint")}
+              >
                 <Input id={`${id}-agent`} {...form.register("agentName")} />
               </Field>
               <FieldError message={form.formState.errors.agentName?.message} />
-              <Field id={`${id}-entry`} label="What it finds enters">
+              <Field id={`${id}-entry`} label={t("instanceEditor.whatItFindsEnters")}>
                 <Controller
                   control={form.control}
                   name="agentEntryPoint"
@@ -663,9 +695,7 @@ export function InstanceEditorDialog({
           )}
 
           {(schedulableKinds as readonly string[]).includes(implementation.kind) && (
-            <p className="text-xs text-muted-foreground">
-              When it runs by itself is set on Schedules, once it exists.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("instanceEditor.scheduleFinePrint")}</p>
           )}
         </>
       )}

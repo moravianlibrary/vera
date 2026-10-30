@@ -4,12 +4,12 @@
 // columns the tier has room for (component-interfaces.md §2.4): Instance · Configuration · Linked
 // to · Runs · Last run · state on a large screen, Configuration and Runs going as it narrows. An
 // implementation with no instance says it does nothing until one is configured.
-// TODO(rrandiak): labels move to i18n.
 
 import type { PluginImplementation, PluginInstanceDetail } from "@vera/contract/plugins";
 import type { PluginKind } from "@vera/domain/plugins";
 import { pluginKinds } from "@vera/domain/plugins";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { GroupLevel } from "@/components/data-table";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RunStateBadge } from "@/components/run-state-badge";
@@ -26,29 +26,31 @@ import type { ShownPlugins } from "@/features/plugins/plugins-view";
 import { configurationText } from "@/features/plugins/plugins-view";
 import type { PerTier } from "@/hooks/use-tier";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
 import { agoText } from "@/lib/format-moment";
-import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
 const smallBadge = "px-1.5 py-0 text-2xs";
 
 export function KindBadge({ kind, className }: { kind: PluginKind; className?: string }) {
+  const { t } = useTranslation("plugins");
   return (
     <ToneBadge tone={pluginKindTones[kind]} className={cn(smallBadge, className)}>
-      {pluginKindLabels[kind]}
+      {t(pluginKindLabels[kind])}
     </ToneBadge>
   );
 }
 
 export function InstanceStateBadge({ instance }: { instance: PluginInstanceDetail }) {
+  const { t } = useTranslation("plugins");
   return instance.isEnabled ? (
     <ToneBadge tone="green" className={smallBadge}>
-      enabled
+      {t("pluginsView.enabled")}
     </ToneBadge>
   ) : (
     <ToneBadge tone="slate" className={smallBadge}>
-      disabled
+      {t("pluginsView.disabled")}
     </ToneBadge>
   );
 }
@@ -70,10 +72,12 @@ export function SupplyChips({ items }: { items: readonly string[] }) {
 
 // "on ingest", "every 30 min", a paused schedule said so.
 export function runsPartsOf(instance: PluginInstanceDetail): string[] {
+  const { t } = i18n;
   return [
-    ...instance.triggers.map((trigger) => triggerLabels[trigger]),
+    ...instance.triggers.map((trigger) => i18n.t(triggerLabels[trigger])),
     ...instance.schedules.map(
-      (schedule) => `${cadenceText(schedule.cadence)}${schedule.isPaused ? " (paused)" : ""}`,
+      (schedule) =>
+        `${cadenceText(schedule.cadence)}${schedule.isPaused ? ` (${t("plugins:pluginTable.paused")})` : ""}`,
     ),
   ];
 }
@@ -106,7 +110,7 @@ function RunsCell({ instance }: { instance: PluginInstanceDetail }) {
 function LastRun({ instance, asOf }: { instance: PluginInstanceDetail; asOf: string }) {
   const [latest] = instance.recentRuns;
   if (instance.lastRunAt === null) {
-    return <span className="text-muted-foreground">never</span>;
+    return <span className="text-muted-foreground">{i18n.t("plugins:pluginTable.never")}</span>;
   }
 
   return (
@@ -145,10 +149,12 @@ function CustodyLine({
   const name = custodyOf(instance.settings.custodyId);
   return name === undefined ? (
     <div className="text-xs text-tone-amber-foreground">
-      Its custody was deleted: it places nothing
+      {i18n.t("plugins:pluginTable.custodyDeleted")}
     </div>
   ) : (
-    <div className="text-xs text-muted-foreground">into {name}</div>
+    <div className="text-xs text-muted-foreground">
+      {i18n.t("plugins:pluginTable.intoCustody", { name })}
+    </div>
   );
 }
 
@@ -164,7 +170,7 @@ export function instanceColumns({
     indent: string,
   ): ColumnDefinition<PluginInstanceDetail> => ({
     key: "name",
-    header: "Instance",
+    header: i18n.t("plugins:pluginTable.instance"),
     track: "minmax(10rem,1fr)",
     cell: (instance) => {
       const implementation = implementationOf(instance);
@@ -173,7 +179,7 @@ export function instanceColumns({
       return (
         <div className={indent}>
           <div className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
-            Instance
+            {i18n.t("plugins:pluginTable.instance")}
           </div>
           <div className="font-medium">{instance.name}</div>
           <CustodyLine instance={instance} custodyOf={custodyOf} />
@@ -190,7 +196,7 @@ export function instanceColumns({
   });
   const configuration: ColumnDefinition<PluginInstanceDetail> = {
     key: "configuration",
-    header: "Configuration",
+    header: i18n.t("plugins:pluginTable.configuration"),
     track: "minmax(12rem,2fr)",
     cell: (instance) => (
       <span className="font-mono text-caption break-all text-muted-foreground">
@@ -200,24 +206,26 @@ export function instanceColumns({
   };
   const linked: ColumnDefinition<PluginInstanceDetail> = {
     key: "linked",
-    header: "Linked to",
+    header: i18n.t("plugins:pluginTable.linkedTo"),
     track: "max-content",
     cell: (instance) =>
       instance.linkedCategoryId === null ? (
-        <span className="whitespace-nowrap text-muted-foreground">all categories</span>
+        <span className="whitespace-nowrap text-muted-foreground">
+          {i18n.t("plugins:pluginTable.allCategories")}
+        </span>
       ) : (
         <span className="whitespace-nowrap">{categoryOf(instance.linkedCategoryId)}</span>
       ),
   };
   const runs: ColumnDefinition<PluginInstanceDetail> = {
     key: "runs",
-    header: "Runs",
+    header: i18n.t("plugins:pluginTable.runs"),
     track: "max-content",
     cell: (instance) => <RunsCell instance={instance} />,
   };
   const last: ColumnDefinition<PluginInstanceDetail> = {
     key: "last",
-    header: "Last run",
+    header: i18n.t("plugins:pluginTable.lastRun"),
     track: "max-content",
     cell: (instance) => <LastRun instance={instance} asOf={asOf} />,
   };
@@ -248,6 +256,7 @@ export function useInstanceGroups({
   isFiltered,
 }: GroupsOptions): GroupLevel<PluginInstanceDetail>[] {
   const tier = useTier();
+  const { t } = useTranslation("plugins");
   const implementationsOf = (kind: string) =>
     shown.implementations.filter((implementation) => implementation.kind === kind);
   const kindOf = (kind: string) => pluginKinds.find((candidate) => candidate === kind);
@@ -266,9 +275,9 @@ export function useInstanceGroups({
             </span>
             <KindBadge kind={kind} className="border-foreground/20" />
             <span className="text-xs text-muted-foreground">
-              {tier === "phone" ? "" : `${pluginKindJobs[kind]} · `}
-              {plural(implementationsOf(kind).length, "implementation")} ·{" "}
-              {plural(rows.length, "instance")}
+              {tier === "phone" ? "" : `${t(pluginKindJobs[kind])} · `}
+              {t("pluginTable.implementationCount", { count: implementationsOf(kind).length })} ·{" "}
+              {t("pluginTable.instanceCount", { count: rows.length })}
             </span>
           </span>
         );
@@ -282,9 +291,7 @@ export function useInstanceGroups({
       isOpenable: true,
       rowClassName: "[&_td]:py-3",
       emptyText: () =>
-        isFiltered
-          ? "No instance in this state."
-          : "No instance — it does nothing until one is configured.",
+        isFiltered ? t("pluginTable.noInstanceInState") : t("pluginTable.noInstanceConfigured"),
       header: (key) => {
         const implementation = shown.implementations.find((candidate) => candidate.id === key);
         return implementation === undefined ? null : (
@@ -294,7 +301,7 @@ export function useInstanceGroups({
             action={
               onNewInstance === undefined || tier === "phone" ? undefined : (
                 <Button size="sm" onClick={() => onNewInstance(implementation)}>
-                  New instance…
+                  {t("pluginTable.newInstance")}
                 </Button>
               )
             }
@@ -319,7 +326,7 @@ function ImplementationHeader({
     <div className={cn("flex items-start gap-3", isPhone ? "pl-1" : "pl-5")}>
       <div className="min-w-0 flex-1">
         <div className="mb-0.5 text-2xs font-semibold tracking-wider text-foreground uppercase">
-          Plugin
+          {i18n.t("plugins:pluginTable.plugin")}
         </div>
         <div className={cn("flex flex-wrap items-baseline gap-x-2", !isPhone && "mb-1")}>
           <span className="font-semibold">{implementation.name}</span>

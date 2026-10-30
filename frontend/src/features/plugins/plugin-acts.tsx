@@ -7,7 +7,6 @@
 // Enable says nothing first, since nothing stops. Moving says what the new version adds and
 // retires. Uploading reads the package's descriptor before anything is installed, and no instance
 // moves with it.
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   PluginImplementation,
@@ -20,6 +19,7 @@ import { hasPermission } from "@vera/domain/permissions";
 import { compareVersions, isRunnableContract } from "@vera/domain/plugins";
 import { schedulableKinds } from "@vera/domain/schedules";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import {
   deletePluginInstance,
   disablePluginInstance,
@@ -36,7 +36,7 @@ import type { DialogStep } from "@/components/dialogs/stepped-dialog";
 import { SteppedDialog } from "@/components/dialogs/stepped-dialog";
 import { StatusNote } from "@/components/status-note";
 import { Input } from "@/components/ui/input";
-import { InstanceEditorDialog, refusalTexts } from "@/features/plugins/instance-editor";
+import { InstanceEditorDialog, refusalTextsFor } from "@/features/plugins/instance-editor";
 import { KindBadge } from "@/features/plugins/plugin-table";
 import {
   declaredNameText,
@@ -50,7 +50,7 @@ import {
   usePluginImpactQuery,
 } from "@/features/plugins/use-plugins-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { plural } from "@/lib/plural";
+import { i18n } from "@/i18n";
 
 export interface PluginNotice {
   title: string;
@@ -75,7 +75,7 @@ export function headerActionsFor(session: Session, open: Open): ViewAction[] {
     ? [
         {
           id: "upload",
-          label: "Upload plugin code…",
+          label: i18n.t("plugins:pluginActs.uploadCode"),
           isPrimary: true,
           onSelect: () => open({ kind: "upload", implementationId: null }),
         },
@@ -96,7 +96,7 @@ export function implementationActionsFor(
       ? [
           {
             id: "new-instance",
-            label: "New instance…",
+            label: i18n.t("plugins:pluginActs.newInstance"),
             isPrimary: true,
             onSelect: () => open({ kind: "newInstance", implementationId: implementation.id }),
           },
@@ -106,7 +106,7 @@ export function implementationActionsFor(
       ? [
           {
             id: "upload",
-            label: "Upload a new version…",
+            label: i18n.t("plugins:pluginActs.uploadVersion"),
             onSelect: () => open({ kind: "upload", implementationId: implementation.id }),
           },
         ]
@@ -140,21 +140,49 @@ export function instanceActionsFor(
     open({ kind, instanceId: instance.id });
   return [
     ...(isRunnable && instance.isEnabled && hasPermission(session, "plugin.run")
-      ? [{ id: "run", label: "Run now", isPrimary: true, onSelect: onRun }]
+      ? [
+          {
+            id: "run",
+            label: i18n.t("plugins:pluginActs.runNow"),
+            isPrimary: true,
+            onSelect: onRun,
+          },
+        ]
       : []),
     ...(canConfigure
       ? [
-          { id: "edit", label: "Edit configuration…", onSelect: act("edit") },
+          {
+            id: "edit",
+            label: i18n.t("plugins:pluginActs.editConfiguration"),
+            onSelect: act("edit"),
+          },
           instance.isEnabled
-            ? { id: "disable", label: "Disable…", onSelect: act("disable") }
-            : { id: "enable", label: "Enable", onSelect: onEnable },
+            ? {
+                id: "disable",
+                label: i18n.t("plugins:pluginActs.disable"),
+                onSelect: act("disable"),
+              }
+            : { id: "enable", label: i18n.t("plugins:pluginActs.enable"), onSelect: onEnable },
           ...(newer === null
             ? []
-            : [{ id: "upgrade", label: `Move to v${newer}…`, onSelect: act("upgrade") }]),
+            : [
+                {
+                  id: "upgrade",
+                  label: i18n.t("plugins:pluginActs.moveTo", { version: newer }),
+                  onSelect: act("upgrade"),
+                },
+              ]),
           // DOC-identifiers: a predefined instance is edited, never deleted.
           ...(instance.isPredefined
             ? []
-            : [{ id: "delete", label: "Delete…", isDestructive: true, onSelect: act("delete") }]),
+            : [
+                {
+                  id: "delete",
+                  label: i18n.t("plugins:pluginActs.delete"),
+                  isDestructive: true,
+                  onSelect: act("delete"),
+                },
+              ]),
         ]
       : []),
   ];
@@ -251,6 +279,7 @@ function SwitchOffDialog({
   isDeleting: boolean;
   onDone: (notice: PluginNotice) => void;
 }) {
+  const { t } = useTranslation("plugins");
   const { data: impact } = usePluginImpactQuery(instance.id, true);
   const act = useActionMutation({
     call: async (instanceId: string): Promise<null> => {
@@ -258,7 +287,7 @@ function SwitchOffDialog({
       return null;
     },
     invalidates: pluginInvalidations,
-    refusalTexts,
+    refusalTexts: refusalTextsFor(t),
   });
   const loss = impact === undefined ? undefined : lossText(impact, instance.name);
   const consequences: Consequence[] | undefined =
@@ -266,41 +295,54 @@ function SwitchOffDialog({
       ? undefined
       : isDeleting
         ? [
-            { text: `It stops for good: ${loss}`, tone: "red" },
+            { text: t("pluginActs.stopsForGood", { loss }), tone: "red" },
             ...(impact.scheduleCount > 0
               ? [
                   {
-                    text: `Its ${plural(impact.scheduleCount, "schedule")} on Schedules ${impact.scheduleCount === 1 ? "goes" : "go"} with it.`,
+                    text: t("pluginActs.schedulesDeleted", { count: impact.scheduleCount }),
                     tone: "amber" as const,
                   },
                 ]
               : []),
             {
-              text: `${impact.runCount > 0 ? `Its ${plural(impact.runCount, "run")} on Tasks stay until retention removes them. ` : ""}What it already wrote stays in each record's history. To stop it for a while, disable it instead.`,
+              text:
+                impact.runCount > 0
+                  ? t("pluginActs.deletedHistory", { count: impact.runCount })
+                  : t("pluginActs.deletedHistoryNone"),
             },
           ]
         : [
-            { text: `While it is disabled, ${loss}`, tone: "amber" },
+            { text: t("pluginActs.disabledConsequence", { loss }), tone: "amber" },
             {
-              text: `Its configuration and history stay${impact.scheduleCount > 0 ? ", and its schedules are skipped rather than deleted" : ""}. Enable it again at any time.`,
+              text:
+                impact.scheduleCount > 0
+                  ? t("pluginActs.disabledWithSchedules")
+                  : t("pluginActs.disabledWithoutSchedules"),
             },
           ];
   return (
     <ConsequenceDialog
       isOpen
       onClose={onClose}
-      title={`${isDeleting ? "Delete" : "Disable"} ${instance.name}?`}
-      description={`What ${isDeleting ? "deleting" : "disabling"} the plugin instance ${instance.name} stops`}
+      title={t(isDeleting ? "pluginActs.deleteTitle" : "pluginActs.disableTitle", {
+        name: instance.name,
+      })}
+      description={t(
+        isDeleting ? "pluginActs.deleteDescription" : "pluginActs.disableDescription",
+        { name: instance.name },
+      )}
       consequences={consequences}
-      confirmLabel={isDeleting ? "Delete instance" : "Disable"}
+      confirmLabel={t(isDeleting ? "pluginActs.deleteInstance" : "pluginActs.disable")}
       isDestructive={isDeleting}
       onConfirm={async () => {
         const result = await act.run(instance.id);
         if (result.isDone) {
           onDone({
-            title: `${instance.name} ${isDeleting ? "deleted" : "disabled"}`,
+            title: t(isDeleting ? "pluginActs.deletedTitle" : "pluginActs.disabledTitle", {
+              name: instance.name,
+            }),
             text: isDeleting
-              ? "Its runs stay on Tasks."
+              ? t("pluginActs.runsStay")
               : `${(loss ?? "").charAt(0).toUpperCase()}${(loss ?? "").slice(1)}`,
             tone: "green",
           });
@@ -322,38 +364,48 @@ function UpgradeDialog({
   instance: PluginInstanceDetail;
   onDone: (notice: PluginNotice) => void;
 }) {
+  const { t } = useTranslation("plugins");
   const { data: upgrade } = useInstanceUpgradeQuery(instance.id, true);
   const move = useActionMutation({
     call: upgradePluginInstance,
     invalidates: pluginInvalidations,
-    refusalTexts: { ...refusalTexts, "plugin.up_to_date": "It runs the newest version already." },
+    refusalTexts: { ...refusalTextsFor(t), "plugin.up_to_date": t("pluginActs.upToDate") },
   });
   const consequences: Consequence[] | undefined =
     upgrade === undefined
       ? undefined
       : [
-          { text: `It moves from v${upgrade.fromVersion} to v${upgrade.toVersion}.` },
+          {
+            text: t("pluginActs.moveVersion", { from: upgrade.fromVersion, to: upgrade.toVersion }),
+          },
           ...upgrade.difference.retired.map(
             (name): Consequence => ({
               text:
                 name.kind === "rule"
-                  ? `Retires ${declaredNameText(name)}: defects under it are no longer reported${upgrade.coveredApprovalCount > 0 ? `, so ${plural(upgrade.coveredApprovalCount, "approval")} made against it cover nothing` : ""}.`
-                  : `Retires ${declaredNameText(name)}.`,
+                  ? upgrade.coveredApprovalCount > 0
+                    ? t("pluginActs.retireRule", {
+                        name: declaredNameText(name),
+                        count: upgrade.coveredApprovalCount,
+                      })
+                    : t("pluginActs.retireRuleNone", { name: declaredNameText(name) })
+                  : t("pluginActs.retireName", { name: declaredNameText(name) }),
               tone: "red",
             }),
           ),
           ...upgrade.difference.added.map(
-            (name): Consequence => ({ text: `Adds ${declaredNameText(name)}.` }),
+            (name): Consequence => ({
+              text: t("pluginActs.addName", { name: declaredNameText(name) }),
+            }),
           ),
           ...upgrade.difference.configDropped.map(
             (key): Consequence => ({
-              text: `Drops the field ${key}, and the value it had.`,
+              text: t("pluginActs.dropField", { key }),
               tone: "amber",
             }),
           ),
           ...upgrade.difference.configAdded.map(
             (key): Consequence => ({
-              text: `Adds the field ${key}, empty until it is filled.`,
+              text: t("pluginActs.addField", { key }),
               tone: "amber",
             }),
           ),
@@ -362,17 +414,24 @@ function UpgradeDialog({
     <ConsequenceDialog
       isOpen
       onClose={onClose}
-      title={`Move ${instance.name} to v${upgrade?.toVersion ?? "…"}?`}
-      description={`What moving ${instance.name} to a newer version changes`}
+      title={t("pluginActs.moveTitle", { name: instance.name, version: upgrade?.toVersion ?? "…" })}
+      description={t("pluginActs.moveDescription", { name: instance.name })}
       consequences={consequences}
-      confirmLabel={upgrade === undefined ? "Move" : `Move to v${upgrade.toVersion}`}
+      confirmLabel={
+        upgrade === undefined
+          ? t("pluginActs.move")
+          : t("pluginActs.moveTo", { version: upgrade.toVersion })
+      }
       isDestructive={false}
       onConfirm={async () => {
         const result = await move.run(instance.id);
         if (result.isDone) {
           onDone({
-            title: `${instance.name} runs v${result.value.version}`,
-            text: "From its next run.",
+            title: t("pluginActs.runsVersion", {
+              name: instance.name,
+              version: result.value.version,
+            }),
+            text: t("pluginActs.fromNextRun"),
             tone: "green",
           });
         }
@@ -393,13 +452,15 @@ interface UploadState {
 
 const emptyUpload: UploadState = { file: null, reading: null, installed: null };
 
-const uploadRefusalTexts = {
-  "plugin.not_a_package": "A plugin comes as a .jar package.",
-  "plugin.no_descriptor": "VERA found no plugin descriptor in it: is it a VERA plugin?",
-  "plugin.version_installed": "That version is installed already.",
-  "plugin.other_implementation": "That package is another plugin's.",
-  403: "Only those who upload plugin code may.",
-};
+function uploadRefusalTextsFor(t: (key: string) => string) {
+  return {
+    "plugin.not_a_package": t("pluginActs.refusalPackage"),
+    "plugin.no_descriptor": t("pluginActs.refusalDescriptor"),
+    "plugin.version_installed": t("pluginActs.refusalInstalled"),
+    "plugin.other_implementation": t("pluginActs.refusalImplementation"),
+    403: t("pluginActs.refusalUploadForbidden"),
+  };
+}
 
 function UploadDialog({
   onClose,
@@ -410,25 +471,26 @@ function UploadDialog({
   implementation: PluginImplementation | null;
   onInstalled: (notice: PluginNotice, implementationId: string) => void;
 }) {
+  const { t } = useTranslation("plugins");
   const id = useId();
   const read = useActionMutation({
     call: (file: File) => uploadPluginPackage(file, implementation?.id ?? null),
     invalidates: [],
-    refusalTexts: uploadRefusalTexts,
+    refusalTexts: uploadRefusalTextsFor(t),
   });
   const install = useActionMutation({
     call: installPluginUpload,
     invalidates: pluginInvalidations,
-    refusalTexts: uploadRefusalTexts,
+    refusalTexts: uploadRefusalTextsFor(t),
   });
   const steps: DialogStep<UploadState>[] = [
     {
-      label: "Package",
-      advanceLabel: "Read it",
+      label: t("pluginActs.package"),
+      advanceLabel: t("pluginActs.readIt"),
       canAdvance: (state) => state.file !== null,
       render: (state, setState) => (
         <div className="grid gap-3">
-          <Field id={`${id}-file`} label="Package">
+          <Field id={`${id}-file`} label={t("pluginActs.package")}>
             <Input
               id={`${id}-file`}
               type="file"
@@ -440,8 +502,8 @@ function UploadDialog({
           </Field>
           <FinePrint>
             {implementation === null
-              ? "The package declares its type and what it supplies; VERA reads it before anything is installed, and nothing runs until an instance of it is made."
-              : `Currently v${implementation.versions[0]?.version}. What the new version declares is compared with it before it is installed; no instance moves with it.`}
+              ? t("pluginActs.packageFinePrint")
+              : t("pluginActs.versionFinePrint", { version: implementation.versions[0]?.version })}
           </FinePrint>
           {state.file !== null && (
             <p className="text-xs text-muted-foreground">{state.file.name}</p>
@@ -460,7 +522,7 @@ function UploadDialog({
       },
     },
     {
-      label: "What it declares",
+      label: t("pluginActs.whatItDeclares"),
       canAdvance: (state) => state.reading !== null,
       render: (state) => (state.reading === null ? null : <ReadingView reading={state.reading} />),
     },
@@ -470,14 +532,18 @@ function UploadDialog({
       isOpen
       onClose={onClose}
       title={
-        implementation === null ? "Upload plugin code" : `New version of ${implementation.name}`
+        implementation === null
+          ? t("pluginActs.uploadCode")
+          : t("pluginActs.newVersionTitle", { name: implementation.name })
       }
-      description="Upload a plugin package; VERA reads what it declares before installing it"
+      description={t("pluginActs.uploadDescription")}
       steps={steps}
       initialState={emptyUpload}
       isDirty={(state) => state.file !== null}
       submitLabel={(state) =>
-        state.reading === null ? "Install" : `Install v${state.reading.version.version}`
+        state.reading === null
+          ? t("pluginActs.install")
+          : t("pluginActs.installVersion", { version: state.reading.version.version })
       }
       onSubmit={async (state) => {
         if (state.reading === null) {
@@ -491,11 +557,14 @@ function UploadDialog({
 
         onInstalled(
           {
-            title: `${result.value.name} v${state.reading.version.version} installed`,
+            title: t("pluginActs.installedTitle", {
+              name: result.value.name,
+              version: state.reading.version.version,
+            }),
             text:
               state.reading.implementationId === null
-                ? "It does nothing until an instance of it is made."
-                : "Its instances stay on the version they run until each is moved.",
+                ? t("pluginActs.noInstanceUntilMade")
+                : t("pluginActs.instancesStayVersion"),
             tone: "green",
           },
           result.value.id,
@@ -507,6 +576,7 @@ function UploadDialog({
 }
 
 function ReadingView({ reading }: { reading: UploadReading }) {
+  const { t } = useTranslation("plugins");
   const { difference } = reading;
   const supplies = suppliesOf({ ...reading.version, installedAt: "", installedBy: "" });
   return (
@@ -522,14 +592,20 @@ function ReadingView({ reading }: { reading: UploadReading }) {
         <p className="mt-1 text-xs text-muted-foreground">{reading.description}</p>
       </div>
       {!reading.isRunnable && (
-        <StatusNote tone="amber" title={`Built for contract ${reading.version.contractVersion}`}>
-          VERA runs contract 1.x: it can be installed, but no instance of it can be enabled.
+        <StatusNote
+          tone="amber"
+          title={t("pluginActs.builtForContract", { version: reading.version.contractVersion })}
+        >
+          {t("pluginActs.unrunnableContract")}
         </StatusNote>
       )}
       <p>
         {reading.implementationId === null
-          ? `A new ${pluginKindLabels[reading.kind].toLowerCase()}: nothing runs until an instance of it is made.`
-          : `A new version of ${reading.name}, now at v${reading.currentVersion}. No instance moves with it: each is moved on its own, after the same comparison.`}
+          ? t("pluginActs.newKind", { kind: t(pluginKindLabels[reading.kind]).toLowerCase() })
+          : t("pluginActs.newVersionSummary", {
+              name: reading.name,
+              version: reading.currentVersion,
+            })}
       </p>
       {difference !== null && (
         <ul className="grid gap-1 text-ui">
@@ -537,37 +613,40 @@ function ReadingView({ reading }: { reading: UploadReading }) {
             difference.retired.length +
             difference.configAdded.length +
             difference.configDropped.length ===
-            0 && <li className="text-muted-foreground">It declares the same names and fields.</li>}
+            0 && <li className="text-muted-foreground">{t("pluginActs.sameDeclarations")}</li>}
           {difference.retired.map((name) => (
             <li key={`retired-${name.kind}-${name.name}`} className="text-tone-red-foreground">
-              Retires {declaredNameText(name)}
-              {name.kind === "rule" &&
-                ": accepted defects under it are no longer reported, so their approvals have nothing to cover"}
-              .
+              {name.kind === "rule"
+                ? t("pluginActs.retiredRuleSummary", { name: declaredNameText(name) })
+                : t("pluginActs.retireName", { name: declaredNameText(name) })}
             </li>
           ))}
           {difference.added.map((name) => (
-            <li key={`added-${name.kind}-${name.name}`}>Adds {declaredNameText(name)}.</li>
+            <li key={`added-${name.kind}-${name.name}`}>
+              {t("pluginActs.addName", { name: declaredNameText(name) })}
+            </li>
           ))}
           {difference.configDropped.map((key) => (
             <li key={`dropped-${key}`} className="text-tone-amber-foreground">
-              Drops the field {key}.
+              {t("pluginActs.dropField", { key })}
             </li>
           ))}
           {difference.configAdded.map((key) => (
             <li key={`added-field-${key}`} className="text-tone-amber-foreground">
-              Adds the field {key}.
+              {t("pluginActs.addFieldShort", { key })}
             </li>
           ))}
         </ul>
       )}
       {supplies.length > 0 && (
-        <p className="text-xs text-muted-foreground">Supplies: {supplies.join(" · ")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("pluginActs.supplies", { items: supplies.join(" · ") })}
+        </p>
       )}
       <p className="text-xs text-muted-foreground">
-        Configured with{" "}
+        {t("pluginActs.configuredWith")}
         {reading.version.configFields.length === 0
-          ? "nothing"
+          ? t("pluginActs.nothing")
           : reading.version.configFields.map((field) => field.key).join(", ")}
         .
       </p>
