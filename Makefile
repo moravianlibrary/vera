@@ -12,6 +12,7 @@ ENGINE_LOG := .engine.log
 SEED ?= base
 SEED_NUMBER ?= 1
 SCALE ?= 1
+# VERA_TEST_WORKERS  frontend test workers (default 4)
 # live: the dev servers talk to the engine, started for them; mock: to the in-browser mock.
 API_MODE ?= live
 api-env = VITE_API_MODE=$(API_MODE) VITE_API_PROXY_TARGET=$(ENGINE_URL)
