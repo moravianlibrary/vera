@@ -32,5 +32,4 @@ person needs an admin to create an account before they can ask.
 [ACCESS-sign-up](../reference/access/people.md#access-sign-up),
 [ACCESS-verify-email](../reference/access/people.md#access-verify-email),
 [ACCESS-password-reset](../reference/access/people.md#access-password-reset),
-[ACCESS-no-enumeration](../reference/access/people.md#access-no-enumeration). Not built
-([L71](../ledger.md#l71-local-sign-up)).
+[ACCESS-no-enumeration](../reference/access/people.md#access-no-enumeration). Built ([L71](../ledger.md#built-2026-10-29)).

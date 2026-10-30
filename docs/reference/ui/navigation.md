@@ -63,9 +63,6 @@ The language is the person's: their first login keeps the one in use, it is the 
 browser they log in from, and they change it in Preferences → Display. A pick on the login page
 replaces the language they hold.
 
-> **Open — [L4](../../ledger.md#l4-logging-in).** There is no login page yet, so no pick there;
-> the browser's language, the person's own and the Display choice are built.
-
 #### UI-record-links
 
 A link to a record opens it. Most go to that record's page; a run opens over the current page.

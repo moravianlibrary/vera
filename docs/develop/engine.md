@@ -58,14 +58,17 @@ flowchart LR
 
 ## Dev servers and signing in
 
-The frontend's existing live mode proxies `/api` to the engine (`VITE_API_MODE=live`,
-`VITE_API_PROXY_TARGET`).
+The frontend's live mode proxies `/api` to the engine (`VITE_API_MODE=live`,
+`VITE_API_PROXY_TARGET`), and `/_engine/identity` too, for the fake providers' page.
 
-- **Real login** runs against the fake Identity providers: first login, default role, match by
-  email, mappings at each login ([L4](../ledger.md#l4-logging-in)).
-- **One person per dev server** (`make dev-roles`) keeps working. Cookies are shared across
-  ports on `localhost`, so each dev server's proxy adds a development-only header naming its
-  fixture person. The engine honours that header only in development.
+- **Real login** runs against fake Identity providers: Keycloak, eduID, Google and Seznam are a
+  development page listing the seed's fake accounts; local accounts log in with a username and
+  password. First login, the default role, match by email and the mappings at each login apply
+  as in production ([ACCESS-first-login](../reference/access/people.md#access-first-login)).
+- **One person per dev server** (`make dev-roles`): each role's server listens on its own
+  loopback address (`127.0.0.1:5201` for admin, `127.0.0.2:5202` for curator, …), so each browser
+  window keeps its own session cookie; cookies are per host, not per port.
+- **Tests** open a session for a user with `POST /_engine/sessions`.
 
 ## Control endpoints
 
@@ -77,6 +80,8 @@ Development and tests only, under `/_engine`:
 | `POST /_engine/clock` | set or advance the clock; due jobs run |
 | `GET /_engine/outbox` | the mail, chat and webhook messages the fakes "sent" |
 | `POST /_engine/jobs/run` | run due jobs now |
+| `POST /_engine/sessions` | open a session for a user, `{ userId }`, with its cookie |
+| `GET /_engine/identity/:instanceId` | the fake provider's page for a login under way |
 
 ## Seeds
 
@@ -103,8 +108,9 @@ Readers' and curators' acts come first, so the core journey works as early as po
 1. **Skeleton** (built 2026-10-16): the server, SQLite, the schema, the seed, the clock,
    `/_engine`, the contract check, and the dev servers switched to live mode. Its one endpoint is
    `GET /api/session`.
-2. **Access:** the session, login with fake identities, roles, groups, custodies, Users
-   management.
+2. **Access** (built 2026-10-29): sessions with a sliding cookie, login through the Identity
+   plugins against fake providers, local sign-up with email verification and password reset,
+   Users & Groups, the account and the settings.
 3. **Asking and deciding:** propose, check, custody placement, Requests, approve and decline,
    My Documents.
 4. **Ingest and review:** the ingest job, validation and restriction fakes, Documents
@@ -163,3 +169,28 @@ Decided on 2026-10-16, with step 1:
   by collection and the fakes' data. Each step loads the collections its tables hold. The base
   seed's converter is not kept; `engine/test/base-sessions.json` records the sessions the mock
   gave, and a test proves the engine gives the same.
+
+Decided on 2026-10-16 and 2026-10-29, built with step 2:
+- **E12, amended.** The dev header is gone. A session cookie names the caller; each role's dev
+  server has a loopback address of its own, and tests open a session through `/_engine/sessions`.
+- **E13, amended.** Seeds hold no dev people. A seed may extend one other: `base` extends
+  `installation`, which holds what VERA installs, the six shipped roles and the fallback custody;
+  the child's own fields win and its collections merge in by id.
+- **E14. Sessions:** a random token in an HttpOnly, SameSite=Lax cookie, `vera_session`, stored
+  only as its SHA-256. A session slides, 30 minutes idle and 12 hours at most, its cookie
+  reissued on every answer. Logging out, suspension and a password reset end sessions.
+- **E15. Login:** an Identity plugin does the provider's work and answers who the person is; the
+  engine never sees a provider's tokens. Redirect logins are flows good for 10 minutes and go
+  back only to a path within VERA (one function in the contract, shared with the client). The
+  fake providers are a development page over the seed's fake accounts. A local account keeps the
+  first password typed for a seed account, and its own for one created by sign-up.
+- **E16. Sign-up:** pending sign-ups and reset links are stored by their token's SHA-256; their
+  mail goes to the outbox; a job deletes an unverified sign-up after 7 days
+  ([DEC-0016](../decisions/DEC-0016-local-sign-up.md)).
+- **E1, built.** The endpoint table in `contract/src/endpoints.ts` holds every endpoint step 2
+  serves, each marked public or redirecting where it is, and the engine serves exactly the table.
+
+> **Open.** The session limits are placeholders until the library sets its own. Renewal through
+> the Identity plugin (`renew`) is not built: a session lives on its own limits. The OpenAPI
+> document is made from the endpoint table once step 3's endpoints are in. Sign-up limits only
+> per email; a limit per address waits for the proxy's client address.

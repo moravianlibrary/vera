@@ -38,19 +38,6 @@ Rules: [LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat).
 Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. Nothing makes occurrences
 yet. → engine, then frontend.
 
-### L4: Logging in
-
-Rules: [ACCESS-first-login](reference/access/people.md#access-first-login),
-[ACCESS-mapping-at-login](reference/access/people.md#access-mapping-at-login),
-[ACCESS-login-page](reference/access/people.md#access-login-page).
-
-Also: [UI-language](reference/ui/navigation.md#ui-language).
-
-The mock signs in a fixed person per dev server. The engine runs a real login against fake
-Identity providers: first login, default role, match by email, mappings at each login. The
-frontend needs the login page, whose language pick calls `pickLoginLanguage` in
-`frontend/src/i18n/language.ts`. → engine, then frontend.
-
 ### L7: Access and planning changes are not logged
 
 Rules: [ACCESS-provenance](reference/access/people.md#access-provenance),
@@ -165,33 +152,12 @@ takes over Tlačítko digitalizovat. Needs:
 - `/ask` in the frontend, opening *Propose…* over the reader's start page with the item landed;
 - the `EntryLink` Input implementation (configuration: name, allowed return origins);
 - the batch's `source`, shown on the batch and filterable on Requests;
-- the return to the page after login, which waits on the login page ([L4](#l4-logging-in));
+- the return to the page after login, which waits on the login page ([L4](#built-2026-10-29));
 - Google and Seznam as Identity instances in the engine's fakes
   ([plugin-catalog.md](develop/plugin-catalog.md)).
 
 Not settled: which portal hosts the button, and so the first instance's return origin. Old
 requests from the mini app are moved by hand, not imported. → engine, then frontend.
-
-### L71: Local sign-up
-
-Rules: [ACCESS-sign-up](reference/access/people.md#access-sign-up),
-[ACCESS-verify-email](reference/access/people.md#access-verify-email),
-[ACCESS-password-reset](reference/access/people.md#access-password-reset),
-[ACCESS-no-enumeration](reference/access/people.md#access-no-enumeration).
-
-Decided on 2026-10-29 ([DEC-0016](decisions/DEC-0016-local-sign-up.md)). Needs:
-- endpoints `POST /api/signup/:instanceId`, `POST /api/email-verification/:instanceId` (send
-  again), `POST /api/email-verification/confirm {token}`, `POST /api/password-reset/:instanceId`
-  `{email}` and `POST /api/password-reset/confirm {token, password}`, each answering 202 or 204
-  as the rules say;
-- unverified accounts and single-use tokens stored as hashes, with their expiry, on the engine
-  clock; a job deleting unverified accounts after 7 days;
-- the emails sent through the instance's `mail_channel`;
-- the pages: *Create an account*, *Check your email*, `/verify-email/:token`,
-  *Forgot your password?* and `/reset-password/:token`, in the mock first, the links shown on the
-  page in mock mode since the mock sends no mail.
-
-→ frontend with the mock, then engine.
 
 ### L72: Observability
 
@@ -230,6 +196,12 @@ is published (*Digitization*, *Progress*…), in Czech first
 
 ### Built, 2026-10-29
 
+- **L4:** login is built: the login page with its language pick in the client, and in the
+  engine sessions, the Identity plugins with fake providers, first login, match by email and
+  the mappings at each login ([ACCESS-login-page](reference/access/people.md#access-login-page),
+  [ACCESS-first-login](reference/access/people.md#access-first-login)).
+- **L71:** local sign-up, email verification and password reset, in the client with the mock and
+  in the engine ([ACCESS-sign-up](reference/access/people.md#access-sign-up)).
 - **L11:** the shipped roles and the fallback custody are the engine's installation seed
   (`engine/seeds/installation.json`), which `base.json` extends; `docs/tools/docs.ts` reads the
   roles there, and a frontend test keeps the mock's fixture equal to it
@@ -301,7 +273,7 @@ is published (*Digitization*, *Progress*…), in Czech first
 - **L68:** the interface speaks the browser's language on first access, or English; the
   person's language is saved at their first login, the same in any browser, and changed in the
   Display preferences ([UI-language](reference/ui/navigation.md#ui-language)). A pick on the login page
-  replaces it once the login page exists ([L4](#l4-logging-in)).
+  replaces it once the login page exists ([L4](#built-2026-10-29)).
 - **L12:** the permission lines are i18n messages, one file per language in
   `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
   English one ([the catalog](reference/access/permissions.md#the-catalog)). The Czech file is a
