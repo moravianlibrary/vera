@@ -22,8 +22,12 @@ import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition, RowPicking } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import type { QueryFailure } from "@/components/query-state";
-import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
-import { Badge } from "@/components/ui/badge";
+import {
+  PriorityBadge,
+  RegistryBadge,
+  StatusWithFootnote,
+  ToneBadge,
+} from "@/components/status-badge";
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
@@ -214,9 +218,9 @@ export function publicDocumentColumns(userId: string): ColumnDefinition<Document
         return readable === undefined ? (
           <Muted>—</Muted>
         ) : (
-          <Badge className="border-transparent bg-tone-purple text-tone-purple-foreground">
+          <ToneBadge tone="purple" className="px-2 py-0.5 text-xs">
             Read it in {readable.registry}
-          </Badge>
+          </ToneBadge>
         );
       },
     },

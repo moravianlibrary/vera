@@ -555,6 +555,9 @@ export interface GroupHeaderProps {
 It sticks under the toolbar and the table header. On the phone the action
 moves into the header's `…`.
 
+`BatchGroupHeader` adds the shared batch title and submitter, day and source line;
+Documents and Requests provide their own counts, action and footnote.
+
 ### 2.4 `DataTable` (🆕) — full-width tables
 
 ```ts

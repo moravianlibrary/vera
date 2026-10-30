@@ -80,4 +80,20 @@ describe("user settings", () => {
     });
     expect(await getUserSettings()).toEqual(settings);
   });
+
+  it("keeps the open sections per board, merged section by section", async () => {
+    signInAs("reader");
+    await updateUserSettings({ lastOpenedWatchlists: { documents: "W-reader-documents" } });
+    await updateUserSettings({ openSections: { projects: { rejected: false } } });
+    const settings = await updateUserSettings({
+      openSections: { projects: { ended: false }, intentions: { archived: false } },
+    });
+
+    expect(settings.openSections).toEqual({
+      projects: { rejected: false, ended: false },
+      intentions: { archived: false },
+    });
+    expect(settings.lastOpenedWatchlists).toEqual({ documents: "W-reader-documents" });
+    expect(await getUserSettings()).toEqual(settings);
+  });
 });

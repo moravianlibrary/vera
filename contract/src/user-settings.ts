@@ -6,6 +6,11 @@ import { categoryTreeValues } from "@vera/domain/categories";
 import { watchlistViewSchema } from "@vera/domain/entities";
 import { z } from "zod";
 
+// The boards whose sections a person opens and closes (G-COMP-5).
+export const sectionBoards = ["projects", "intentions"] as const;
+
+export type SectionBoard = (typeof sectionBoards)[number];
+
 // UI-language: the languages the interface speaks.
 export const languages = ["cs", "en"] as const;
 
@@ -21,6 +26,11 @@ export const userSettingsSchema = z.object({
   language: z.enum(languages).optional(),
   dateFormat: z.enum(["local", "iso"]).optional(),
   density: z.enum(["comfortable", "compact"]).optional(),
+  // Per board, the sections a person closed or opened again. A section never toggled is absent
+  // and starts open.
+  openSections: z
+    .partialRecord(z.enum(sectionBoards), z.record(z.string(), z.boolean()))
+    .optional(),
   // A missing entry follows the most recently opened tab. Null fixes the view to All.
   fixedOpeningWatchlists: z.partialRecord(watchlistViewSchema, z.string().nullable()).optional(),
   notifications: z
@@ -56,6 +66,16 @@ export function settingsAfter(current: UserSettings, change: UserSettingsChange)
             ...current.fixedOpeningWatchlists,
             ...change.fixedOpeningWatchlists,
           },
+        }),
+    ...(change.openSections === undefined
+      ? {}
+      : {
+          openSections: Object.fromEntries(
+            sectionBoards.flatMap((board) => {
+              const merged = { ...current.openSections?.[board], ...change.openSections?.[board] };
+              return Object.keys(merged).length === 0 ? [] : [[board, merged]];
+            }),
+          ),
         }),
     ...(change.notifications === undefined
       ? {}

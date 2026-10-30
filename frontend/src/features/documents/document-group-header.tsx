@@ -11,26 +11,19 @@
 import type { DocumentGroup } from "@vera/contract/documents";
 import type { AdditionState } from "@vera/domain/documents";
 import { additionStates } from "@vera/domain/documents";
-import type { Project, User } from "@vera/domain/entities";
+import type { User } from "@vera/domain/entities";
 import { useState } from "react";
 import { Link } from "react-router";
 import { retryBatch } from "@/api/additions";
+import { BatchGroupHeader } from "@/components/lists/batch-group-header";
 import { GroupHeader } from "@/components/lists/group-header";
-import { Badge } from "@/components/ui/badge";
+import { ProjectStateBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
-import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
-import { cn } from "@/lib/utils";
-
-const projectStateTones = {
-  Proposed: "bg-tone-amber text-tone-amber-foreground",
-  Approved: "bg-tone-green text-tone-green-foreground",
-  Rejected: "bg-tone-red text-tone-red-foreground",
-} as const satisfies Record<Project["state"], string>;
 
 interface DocumentGroupHeaderProps {
   group: DocumentGroup;
@@ -60,30 +53,14 @@ interface BatchHeaderProps {
 
 function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
   const { batch, size, additions } = group;
-  // A batch of one is listed with what was asked for on its own (ENT-batch).
-  if (batch === null) {
-    return <GroupHeader title="One at a time" meta="asked for on its own, or still a proposal" />;
-  }
-
-  const submitter = users.find((user) => user.id === batch.submittedBy)?.name ?? batch.submittedBy;
   return (
-    <GroupHeader
-      title={
-        <>
-          <b className="font-semibold">
-            Batch <span className="font-mono">{batch.id}</span>
-          </b>{" "}
-          <span className="font-normal text-foreground">· {batch.name}</span>
-        </>
-      }
-      meta={
-        <>
-          {formatDay(batch.submittedAt)} · {submitter} ·{" "}
-          <AdditionCounts size={size} additions={additions} />
-        </>
-      }
+    <BatchGroupHeader
+      batch={batch}
+      users={users}
+      lone={{ title: "One at a time", meta: "asked for on its own, or still a proposal" }}
+      counts={<AdditionCounts size={size} additions={additions} />}
       action={
-        additions.failed > 0 && canRetryAdditions ? (
+        batch !== null && additions.failed > 0 && canRetryAdditions ? (
           <RetryFailedButton batchId={batch.id} failed={additions.failed} />
         ) : undefined
       }
@@ -194,14 +171,10 @@ function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
       title={
         <>
           <b className="font-bold">{project.name}</b>{" "}
-          <Badge
-            className={cn(
-              "ml-1 border-foreground/20 px-1.5 py-0 text-2xs",
-              projectStateTones[project.state],
-            )}
-          >
-            {project.state}
-          </Badge>
+          <ProjectStateBadge
+            state={project.state}
+            className="ml-1 border-foreground/20 px-1.5 py-0 text-2xs"
+          />
         </>
       }
       meta={

@@ -6,10 +6,9 @@
 
 import type { RequestGroup } from "@vera/contract/requests";
 import type { User } from "@vera/domain/entities";
+import { BatchGroupHeader, UserName } from "@/components/lists/batch-group-header";
 import { GroupHeader } from "@/components/lists/group-header";
-import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
 type BatchGroup = Extract<RequestGroup, { kind: "batch" }>;
@@ -37,35 +36,19 @@ interface BatchHeaderProps {
 
 function BatchHeader({ group, users, onBulkApprove }: BatchHeaderProps) {
   const { batch } = group;
-  if (batch === null) {
-    return <GroupHeader title="Proposed one at a time" meta="not part of a batch" />;
-  }
-
-  const submitter = users.find((user) => user.id === batch.submittedBy);
   const leftOut = [
     group.rescanCount > 0 && plural(group.rescanCount, "rescan"),
     group.checkingCount > 0 && `${group.checkingCount} still being checked`,
   ].filter(Boolean);
   const canBulkApprove = group.approvableCount > 0 && onBulkApprove !== undefined;
   return (
-    <GroupHeader
-      title={
+    <BatchGroupHeader
+      batch={batch}
+      users={users}
+      lone={{ title: "Proposed one at a time", meta: "not part of a batch" }}
+      counts={
         <>
-          <b className="font-semibold">
-            Batch <span className="font-mono">{batch.id}</span>
-          </b>{" "}
-          <span className="font-normal text-foreground">
-            · {batch.name} · {formatDay(batch.submittedAt)}
-          </span>
-        </>
-      }
-      meta={
-        <>
-          <UserName user={submitter} fallback={batch.submittedBy} />
-          {batch.source !== null && (
-            <span className="text-muted-foreground"> · from {batch.source.name}</span>
-          )}
-          {` · ${group.askCount} asked`}
+          {group.askCount} asked
           {group.elsewhereCount > 0 && (
             <>
               {" · "}
@@ -76,7 +59,7 @@ function BatchHeader({ group, users, onBulkApprove }: BatchHeaderProps) {
         </>
       }
       action={
-        canBulkApprove ? (
+        batch !== null && canBulkApprove ? (
           <Button size="xs" onClick={() => onBulkApprove(group)}>
             Approve {group.approvableCount}…
           </Button>
@@ -103,21 +86,5 @@ function RequesterHeader({ group, users }: { group: RequesterGroup; users: reado
         </>
       }
     />
-  );
-}
-
-function UserName({ user, fallback }: { user: User | undefined; fallback: string }) {
-  return (
-    <>
-      {user?.name ?? fallback}
-      {user?.kind === "agent" && (
-        <>
-          {" "}
-          <ToneBadge tone="purple" className="border-foreground/20">
-            agent
-          </ToneBadge>
-        </>
-      )}
-    </>
   );
 }

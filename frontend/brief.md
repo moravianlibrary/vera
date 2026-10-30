@@ -83,6 +83,7 @@ zod v4.
 
 | Need | Use |
 |---|---|
+| A submitted batch's group header in Documents or Requests | `BatchGroupHeader` (`components/lists/batch-group-header.tsx`); the view passes its counts and action |
 | A list view's URL state | `ViewDefinition` (`src/lib/view-definition.ts`; `view` only when it has watchlists) in `features/<view>/<view>-view.ts`, read by `useViewUrlState` |
 | Its filter bar | the definition's `fields` → `FilterBar` (`components/filters/`); value, reference, `numberRange` (with `presets`) and `dateRange` fields; the phone's `filter-sheet.tsx`; names via `useReferenceLabels` |
 | Saved filters | `WatchlistTabs`; the active tab follows the full live filter. An unmatched filter appears as `Current search`, with actions to save a new watchlist or update an editable one. A new view adds its value to `watchlistViewSchema` (`domain/entities.ts`) and a comparer in `api/watchlists.ts` |

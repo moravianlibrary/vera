@@ -35,7 +35,7 @@ import { byCatalogOrder, catalogEntryOf, permissionGroups } from "@vera/domain/p
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { ToneBadge } from "@/components/status-badge";
+import { AgentBadge, SuspendedBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import type { AccessSelection, AccessSelectionKind } from "@/features/access/access-view";
@@ -195,23 +195,6 @@ function RecordLink({
     >
       {children}
     </button>
-  );
-}
-
-export function AgentBadge() {
-  return (
-    <ToneBadge tone="purple" className="px-1.5 py-0 text-2xs">
-      agent
-    </ToneBadge>
-  );
-}
-
-// ACCESS-suspend.
-export function SuspendedBadge() {
-  return (
-    <ToneBadge tone="red" className="px-1.5 py-0 text-2xs">
-      suspended
-    </ToneBadge>
   );
 }
 

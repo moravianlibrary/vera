@@ -10,10 +10,9 @@ import type { ProjectRow } from "@vera/contract/projects";
 import { Fragment } from "react";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
-import { ToneBadge } from "@/components/status-badge";
+import { ProjectStateBadge, ToneBadge } from "@/components/status-badge";
 import { PaceBars } from "@/components/visualizations/pace-bars";
 import {
-  decisionTones,
   paceOf,
   pagesOf,
   periodTextOf,
@@ -73,7 +72,7 @@ export function ProjectBadges({ row }: { row: ProjectRow }) {
   const pace = paceOf(row);
   return (
     <>
-      <ToneBadge tone={decisionTones[project.state]}>{project.state}</ToneBadge>
+      <ProjectStateBadge state={project.state} />
       {project.state !== "Rejected" && (
         <ToneBadge tone={periodTones[row.period]}>{row.period}</ToneBadge>
       )}

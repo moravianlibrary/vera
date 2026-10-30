@@ -47,7 +47,6 @@ import {
   periodNouns,
 } from "@/features/intentions/intentions-view";
 import { intentionMixHrefOf } from "@/features/intentions/mix-view";
-import { useIntentionSectionPreferences } from "@/features/intentions/use-intention-section-preferences";
 import {
   intentionInvalidations,
   useIntentionIndexQuery,
@@ -56,6 +55,7 @@ import { generationHrefOf } from "@/features/lists/lists-view";
 import { useListGeneratorsQuery } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useProjectsQuery } from "@/hooks/use-reference-query";
+import { useSectionPreferences } from "@/hooks/use-section-preferences";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { formatCalendarDay } from "@/lib/format-date";
@@ -69,6 +69,9 @@ type OpenDialog =
   | { kind: "template"; row: IntentionTemplateRow | null }
   | { kind: "correct"; row: IntentionRow }
   | null;
+
+const intentionSectionIds = ["repeats", "running", "upcoming", "ended", "archived"] as const;
+type IntentionSectionId = (typeof intentionSectionIds)[number];
 
 interface Note {
   tone: NoteTone;
@@ -282,7 +285,6 @@ export function IntentionsPage() {
                 focusedId={params.get("i")}
                 focusedTemplateId={params.get("t")}
                 acts={acts}
-                session={session}
               />
             )}
           </>
@@ -415,7 +417,6 @@ interface IntentionBoardProps {
   focusedId: string | null;
   focusedTemplateId: string | null;
   acts: IntentionActs;
-  session: Session;
 }
 
 function IntentionBoard({
@@ -425,9 +426,8 @@ function IntentionBoard({
   focusedId,
   focusedTemplateId,
   acts,
-  session,
 }: IntentionBoardProps) {
-  const { isOpen, setOpen } = useIntentionSectionPreferences(session.user.id);
+  const { isOpen, setOpen } = useSectionPreferences<IntentionSectionId>("intentions");
   const sections = intentionBoardSectionsOf(index);
   const visibleCount = Object.values(sections).filter((items) => items.length > 0).length;
   const isHeadingHidden = visibleCount === 1;

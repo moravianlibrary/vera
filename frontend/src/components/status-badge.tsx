@@ -4,7 +4,7 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { RecordStatus } from "@vera/contract/documents";
-import type { Priority, RegistryRecord, RegistryState } from "@vera/domain/entities";
+import type { Priority, Project, RegistryRecord, RegistryState } from "@vera/domain/entities";
 import type { ListState } from "@vera/domain/lists";
 import type { StatusFootnote } from "@vera/domain/status";
 import { cva } from "class-variance-authority";
@@ -41,6 +41,43 @@ export function ToneBadge({ tone, className, children }: ToneBadgeProps) {
     <Badge className={cn(toneVariants({ tone }), "px-1.5 py-0 text-caption", className)}>
       {children}
     </Badge>
+  );
+}
+
+export function AgentBadge() {
+  return (
+    <ToneBadge tone="purple" className="px-1.5 py-0 text-2xs">
+      agent
+    </ToneBadge>
+  );
+}
+
+// ACCESS-suspend.
+export function SuspendedBadge() {
+  return (
+    <ToneBadge tone="red" className="px-1.5 py-0 text-2xs">
+      suspended
+    </ToneBadge>
+  );
+}
+
+const projectStateTones = {
+  Proposed: "amber",
+  Approved: "green",
+  Rejected: "red",
+} as const satisfies Record<Project["state"], Tone>;
+
+export function ProjectStateBadge({
+  state,
+  className,
+}: {
+  state: Project["state"];
+  className?: string;
+}) {
+  return (
+    <ToneBadge tone={projectStateTones[state]} className={className}>
+      {state}
+    </ToneBadge>
   );
 }
 

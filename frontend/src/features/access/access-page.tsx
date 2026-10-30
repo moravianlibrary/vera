@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { NoticeLine } from "@/components/notice-line";
 import { failureOf } from "@/components/query-state";
+import { AgentBadge, SuspendedBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import type { AccessDialog } from "@/features/access/access-acts";
 import {
@@ -31,12 +32,10 @@ import type { AccessNotice } from "@/features/access/access-dialogs";
 import { accessRefusalTexts, IdentityDefaultRoleDialog } from "@/features/access/access-dialogs";
 import { CategoryAccessDetail } from "@/features/access/access-management-detail";
 import {
-  AgentBadge,
   CustodyRecordView,
   GroupRecord,
   namesOf,
   RoleRecord,
-  SuspendedBadge,
   UserRecord,
 } from "@/features/access/access-records";
 import { AccessRelationships } from "@/features/access/access-relationships";

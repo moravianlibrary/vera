@@ -1,18 +1,6 @@
 [
   {
     "gate": "G-COMP-1",
-    "file": "features/documents/document-group-header.tsx",
-    "count": 1,
-    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
-  },
-  {
-    "gate": "G-COMP-1",
-    "file": "features/documents/document-list.tsx",
-    "count": 1,
-    "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
-  },
-  {
-    "gate": "G-COMP-1",
     "file": "features/documents/propose-dialog.tsx",
     "count": 2,
     "reason": "U4: DataTable, ConsequenceDialog, StatusBadge or TabStrip"
@@ -58,17 +46,5 @@
     "file": "features/plugins/plugin-drawers.tsx",
     "count": 1,
     "reason": "U4: DataTable or FactGrid"
-  },
-  {
-    "gate": "G-COMP-5",
-    "file": "features/intentions/use-intention-section-preferences.ts",
-    "count": 2,
-    "reason": "U4: one useSectionPreferences hook"
-  },
-  {
-    "gate": "G-COMP-5",
-    "file": "features/projects/use-project-section-preferences.ts",
-    "count": 2,
-    "reason": "U4: one useSectionPreferences hook"
   }
 ]

@@ -35,6 +35,7 @@ import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { PickerDialog } from "@/components/dialogs/picker-dialog";
 import { FieldError } from "@/components/iteration-dialogs";
+import { AgentBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -46,7 +47,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AccessNames } from "@/features/access/access-records";
-import { AgentBadge } from "@/features/access/access-records";
 import { confersText } from "@/features/access/access-words";
 import { accessInvalidations, useCustodyImpactQuery } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";

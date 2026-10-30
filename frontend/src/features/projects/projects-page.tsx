@@ -27,15 +27,18 @@ import {
   projectSectionsOf,
   projectsView,
 } from "@/features/projects/projects-view";
-import { useProjectSectionPreferences } from "@/features/projects/use-project-section-preferences";
 import { useProjectIndexQuery } from "@/features/projects/use-projects-query";
 import { useUsersQuery } from "@/hooks/use-reference-query";
+import { useSectionPreferences } from "@/hooks/use-section-preferences";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 
 const projectHref = (row: ProjectRow) => `/projects/${encodeURIComponent(row.project.id)}`;
+
+const projectSectionIds = ["proposed", "active", "ended", "rejected"] as const;
+type ProjectSectionId = (typeof projectSectionIds)[number];
 
 const nameColumn: ColumnDefinition<ProjectRow> = {
   key: "project",
@@ -228,7 +231,7 @@ function ProjectBoard({
   rejectedColumns,
   onOpen,
 }: ProjectBoardProps) {
-  const { isOpen, setOpen } = useProjectSectionPreferences(session.user.id);
+  const { isOpen, setOpen } = useSectionPreferences<ProjectSectionId>("projects");
   const visibleCount = Object.values(sections).filter((rows) => rows.length > 0).length;
   if (visibleCount === 0) {
     return (
