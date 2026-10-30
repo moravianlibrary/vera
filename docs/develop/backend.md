@@ -193,6 +193,38 @@ the administrator's permission is not enough on its own:
 Signing proves where a plugin came from, not that it is safe: it stops a stolen administrator
 session from installing code, not a trusted signer's mistake.
 
+### B6a. The plugin interfaces, and what a version can do
+
+> **Proposal** ([DEC-0019](../decisions/DEC-0019-plugin-api-and-capabilities.md)), not settled.
+> B6 says `plugin-api` holds one interface per kind; this says what goes in them and where it
+> is written first.
+
+- **Written once, before the backend.** Each kind's operations, what each takes and answers, and
+  its refusals are in [plugin-api.md](../reference/integrations/plugin-api.md)
+  ([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds)), with zod types in
+  `domain/src/plugin-api/`. The engine's fakes implement those types; `plugin-api` is written from
+  them by hand, as the OpenAPI document is from the endpoint table (B2).
+- **One interface per kind for what every implementation does**, and one per optional
+  operation: `CatalogAdapter` (`read`, `readLink`), with `SearchableCatalog` (`search`) and
+  `ChangeFeed` (`changedSince`) beside it; `Input` with `TypeDetector`, `BarcodeReader`,
+  `PhotoReader`, `EntryLinkInput`. A call answers or throws one of the outcomes B6 names:
+  `PluginUnavailable`, or `PluginRefused` with a code from the kind's closed list
+  ([PLG-api-outcome](../reference/integrations/plugin-api.md#plg-api-outcome)).
+- **What a version can do is declared**, in `vera-plugin.json` as `operations`, beside the rest
+  of its declarations, so upload and Plugins know it without running code. When the version
+  loads, `pluginhost` compares the declared operations with the optional interfaces the class
+  implements; a version where they differ is refused at upload.
+- **An instance narrows, never widens**: its settings may switch a declared operation off (search
+  off for one catalog). The propose dialog's ways in, *Generate*, the classifier's suggestion and
+  the rest read what enabled instances declare and keep
+  ([PLG-api-capabilities](../reference/integrations/plugin-api.md#plg-api-capabilities)).
+- **A JSON Schema for `vera-plugin.json`**, from `declarationsSchema`, published with
+  `plugin-api`, so an outside author checks a package before it is signed.
+
+Open, in [plugin-api.md](../reference/integrations/plugin-api.md#plg-api-kinds): whether *on
+record change* comes from a catalog's change feed or from polling, where a harvester's cursor
+lives, and whether Input's `inputMode` gives way to its operations.
+
 ### B7. Login and sessions
 
 E14, E15 and E16 carry over as they are: the `vera_session` cookie, its SHA-256 stored, the
@@ -334,6 +366,10 @@ These are cheap now and expensive later. Each is a step of the engine's, not of 
    which seed data, and how it fails. The backend's fakes are written from that.
 6. **The 422 body**: the field paths in `errors` named one way (JSON Pointer), so both sides
    produce the same ones. Tests compare codes and fields, never message texts.
+7. **The plugin API written down** (B6a): each kind's operations, outcomes and declared
+   capabilities as types in `domain/src/plugin-api/`, the fakes implementing them, and
+   `operations` in the declarations, read by the dialogs instead of instance settings. Step 5's
+   fakes are then described by the same types.
 
 ## Repository and build
 

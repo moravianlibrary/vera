@@ -11,7 +11,7 @@ rather than smoothed over here.
 | Lifecycles | [request](lifecycles/request.md) · [iteration](lifecycles/iteration.md) · [list](lifecycles/list.md) · [project](lifecycles/project.md) · [intention](lifecycles/intention.md) |
 | Planning | [categories](planning/categories.md) · [mixes](planning/mixes.md) · [intentions](planning/intentions.md) · [generation](planning/generation.md) |
 | Access | [permissions](access/permissions.md) · [scopes](access/scopes.md) · [roles](access/roles.md) · [people](access/people.md) · [custody](access/custody.md) · [views](access/views.md) · [acts](access/acts.md) |
-| Integrations | [plugins](integrations/plugins.md) · [registries](integrations/registries.md) · [hooks](integrations/hooks.md) · [messaging](integrations/messaging.md) · [watchlists](integrations/watchlists.md) · [observability](integrations/observability.md) |
+| Integrations | [plugins](integrations/plugins.md) · [plugin API](integrations/plugin-api.md) · [registries](integrations/registries.md) · [hooks](integrations/hooks.md) · [messaging](integrations/messaging.md) · [watchlists](integrations/watchlists.md) · [observability](integrations/observability.md) |
 | UI | [tiers](ui/tiers.md) · [navigation](ui/navigation.md) · [pages](ui/pages.md) |
 
 Terms in English and Czech are in the [glossary](../glossary.md); the reasons behind the larger
