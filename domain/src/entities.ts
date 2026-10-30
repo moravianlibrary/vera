@@ -354,6 +354,18 @@ export const validationVerdictSchema = z.object({
 });
 export type ValidationVerdict = z.infer<typeof validationVerdictSchema>;
 
+// LC-ITER-links: where a scan can be read. `instanceId` is the Link or Publication detector
+// instance that made the address canonical; null for a web address taken as typed.
+export const publicationLinkSchema = z.object({
+  id: z.string(),
+  url: z.url(),
+  instanceId: z.string().nullable(),
+  setBy: z.string(),
+  setAt: timestamp,
+  isPrimary: z.boolean(),
+});
+export type PublicationLink = z.infer<typeof publicationLinkSchema>;
+
 export const iterationSchema = z.object({
   id,
   documentId: id,
@@ -381,7 +393,14 @@ export const iterationSchema = z.object({
     })
     .nullable(),
   digitizedAt: timestamp.nullable(),
-  publishedLink: z.url().nullable(),
+  links: z
+    .array(publicationLinkSchema)
+    .refine(
+      (links) =>
+        (links.length === 0 || links.filter((link) => link.isPrimary).length === 1) &&
+        new Set(links.map((link) => link.url)).size === links.length,
+      { message: "Links must have one primary and no duplicate URLs" },
+    ),
   scanDpi: z.number().int().positive().nullable(),
   // Attempt properties: what was chosen for this scan (DOC-property).
   properties: z.array(propertyValuesSchema),

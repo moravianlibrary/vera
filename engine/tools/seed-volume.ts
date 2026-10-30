@@ -352,7 +352,19 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
         verdicts: [],
         ingestFailure: null,
         digitizedAt: progress === "Published" ? timestamp(new Date(at.getTime() - 86400000)) : null,
-        publishedLink: progress === "Published" ? `https://kramerius.mzk.cz/view/${id}` : null,
+        links:
+          progress === "Published"
+            ? [
+                {
+                  id: `${id}-L1`,
+                  url: `https://kramerius.mzk.cz/view/${id}`,
+                  instanceId: null,
+                  setBy: arrivalProposers[documentIndex]!,
+                  setAt: timestamp(new Date(at.getTime() - 86400000)),
+                  isPrimary: true,
+                },
+              ]
+            : [],
         scanDpi: null,
         properties: [],
       });

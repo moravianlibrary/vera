@@ -45,7 +45,7 @@ import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import { withCatalogReading } from "@/mocks/fixtures/properties";
-import { canonicalLinkOf, setLink } from "@/mocks/links";
+import { addLink, canonicalLinkOf, makePrimary, removeLink, replaceLink } from "@/mocks/links";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
 
@@ -131,12 +131,87 @@ export function publishIteration(
     };
   }
 
-  if (iteration.publishedLink === link) {
-    return { refusal: { status: 422, message: "It is already available there" } };
+  if (iteration.links.some((held) => held.url === link.url)) {
+    return { refusal: { status: 422, message: "That link is already there." } };
   }
 
-  setLink(iteration, link, { kind: "user", userId: session.user.id });
-  return { value: { publishedLink: link, progress: "Published" } };
+  return {
+    value: {
+      links: addLink(iteration, link, { kind: "user", userId: session.user.id }).links,
+      progress: "Published",
+    },
+  };
+}
+
+export function replaceIterationLink(
+  session: Session,
+  iterationId: string,
+  linkId: string,
+  publication: Publication,
+): Outcome<PublicationResult> {
+  const found = actionableIteration(session, iterationId, "iteration.publish");
+  if ("refusal" in found) return found;
+  const { iteration } = found.value;
+  if (!iteration.links.some((link) => link.id === linkId))
+    return { refusal: { status: 404, message: "No such link" } };
+  const canonical = canonicalLinkOf(publication.link);
+  if (canonical === null)
+    return {
+      refusal: {
+        status: 422,
+        code: "iteration.link_unread",
+        message: "It is no web address, and no Link plugin reads it",
+      },
+    };
+  if (iteration.links.some((link) => link.id !== linkId && link.url === canonical.url))
+    return { refusal: { status: 422, message: "That link is already there." } };
+  return {
+    value: {
+      links: replaceLink(iteration, linkId, canonical, { kind: "user", userId: session.user.id })
+        .links,
+      progress: iteration.progress,
+    },
+  };
+}
+
+export function makeIterationLinkPrimary(
+  session: Session,
+  iterationId: string,
+  linkId: string,
+): Outcome<PublicationResult> {
+  const found = actionableIteration(session, iterationId, "iteration.publish");
+  if ("refusal" in found) return found;
+  const { iteration } = found.value;
+  const link = iteration.links.find((candidate) => candidate.id === linkId);
+  if (link === undefined) return { refusal: { status: 404, message: "No such link" } };
+  if (link.isPrimary)
+    return { refusal: { status: 409, message: "It is already the primary link" } };
+  return {
+    value: {
+      links: makePrimary(iteration, linkId, { kind: "user", userId: session.user.id }).links,
+      progress: iteration.progress,
+    },
+  };
+}
+
+export function removeIterationLink(
+  session: Session,
+  iterationId: string,
+  linkId: string,
+): Outcome<PublicationResult> {
+  const found = actionableIteration(session, iterationId, "iteration.publish");
+  if ("refusal" in found) return found;
+  const { iteration } = found.value;
+  if (!iteration.links.some((link) => link.id === linkId))
+    return { refusal: { status: 404, message: "No such link" } };
+  if (iteration.links.length === 1)
+    return { refusal: { status: 409, message: "The last link cannot be removed" } };
+  return {
+    value: {
+      links: removeLink(iteration, linkId, { kind: "user", userId: session.user.id }).links,
+      progress: iteration.progress,
+    },
+  };
 }
 
 // ---------------------------------------------------------------- page count and recheck

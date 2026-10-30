@@ -3,7 +3,7 @@
 // category path (permissions.md §2), which `scopeOfIteration` gives `can()`.
 
 import { categoryLineageOf } from "./categories";
-import type { Category, Iteration, Progress } from "./entities";
+import type { Category, Iteration, Progress, PublicationLink } from "./entities";
 import type { ScopedRecord } from "./permissions";
 import { isProgressAtLeast, isRestricted, validationOf } from "./status";
 
@@ -15,6 +15,10 @@ export function isReclassifiable(iteration: Iteration): boolean {
 // Only a scan can be somewhere to read; setting the link is what makes it Published (P1).
 export function isPublishable(iteration: Iteration): boolean {
   return isProgressAtLeast(iteration.progress, "Digitized");
+}
+
+export function primaryLinkOf(iteration: Iteration): PublicationLink | null {
+  return iteration.links.find((link) => link.isPrimary) ?? null;
 }
 
 // Held at the gate rather than moved, and only before the scan exists (status-model.md §2.5).

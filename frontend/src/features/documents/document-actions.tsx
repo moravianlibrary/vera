@@ -23,12 +23,7 @@ import {
 import { can, hasPermission } from "@vera/domain/permissions";
 import { useId, useState } from "react";
 import { z } from "zod";
-import {
-  cancelIteration,
-  overruleRestriction,
-  publishIteration,
-  resumeIteration,
-} from "@/api/iterations";
+import { addLink, cancelIteration, overruleRestriction, resumeIteration } from "@/api/iterations";
 import { withdrawAsk } from "@/api/requests";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -45,7 +40,7 @@ import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 // A change to an iteration shows in the list, the record and what each watchlist counts.
-const iterationInvalidations = [documentsQueryKey, watchlistsQueryKey];
+export const iterationInvalidations = [documentsQueryKey, watchlistsQueryKey];
 // A withdrawn ask leaves Requests' queue too.
 const withdrawalInvalidations = [documentsQueryKey, requestsQueryKey, watchlistsQueryKey];
 
@@ -118,10 +113,7 @@ export function DocumentActions({
   if (mayDo("iteration.publish") && isPublishable(iteration)) {
     actions.push({
       id: "publish",
-      label:
-        iteration.publishedLink === null
-          ? "Set where it is available…"
-          : "Change where it is available…",
+      label: "Add link…",
       isInMenu: true,
       onSelect: open("publish"),
     });
@@ -165,7 +157,7 @@ export function DocumentActions({
         session={session}
       />
       <PublishDialog
-        key={`publish-${iteration.id}-${iteration.publishedLink}`}
+        key={`publish-${iteration.id}-${iteration.links.length}`}
         isOpen={openDialog === "publish"}
         onClose={close}
         title={title}
@@ -251,24 +243,23 @@ type PublishForm = z.infer<typeof publishFormSchema>;
 function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps) {
   const id = useId();
   const publish = useActionMutation({
-    call: (publication: Publication) => publishIteration(iteration.id, publication),
+    call: (publication: Publication) => addLink(iteration.id, publication),
     act: "ACT-publish",
     invalidates: iterationInvalidations,
     refusalTexts: {
       409: "It is not digitized yet.",
       "iteration.link_unread": "That is no web address, and no Link plugin reads it as a PID.",
-      422: "It is already available there.",
+      422: "That link is already there.",
     },
   });
-  const isPublished = iteration.publishedLink !== null;
-  const defaultValues: PublishForm = { link: iteration.publishedLink ?? "" };
+  const defaultValues: PublishForm = { link: "" };
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Where it is available — ${title}`}
-      description="Set the link where a reader opens the scan."
+      title={`Add link — ${title}`}
+      description="Add a link where a reader opens the scan."
       schema={publishFormSchema}
       defaultValues={defaultValues}
       submitLabel="Save"
@@ -284,13 +275,7 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
           </Field>
           <FieldError message={form.formState.errors.link?.message} />
           <p className="text-xs text-muted-foreground">
-            {isPublished ? (
-              "It stays Published; the history keeps the old link."
-            ) : (
-              <>
-                Saving makes it <b>Published</b>: everyone who asked is told, with the link.
-              </>
-            )}
+            Saving makes it <b>Published</b>: everyone who asked is told, with the link.
           </p>
         </>
       )}

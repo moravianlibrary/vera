@@ -15,6 +15,7 @@ import type {
 import { hookEventSchema } from "@vera/contract/hooks";
 import type { Session } from "@vera/domain/entities";
 import { retryAtOf, sendAtOf } from "@vera/domain/hooks";
+import { primaryLinkOf } from "@vera/domain/iterations";
 import { hasPermission } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import type { Outcome, Refusal } from "@/mocks/mutations";
@@ -462,6 +463,9 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
       : draft.event.startsWith("request.")
         ? "R21"
         : "IT7";
+  const sampleIteration = database.iterations.find((iteration) => iteration.id === "IT7");
+  const sampleLink =
+    sampleIteration === undefined ? null : (primaryLinkOf(sampleIteration)?.url ?? null);
   const publicText =
     draft.message === ""
       ? `${draft.event}: ${sampleSubject}`
@@ -472,7 +476,7 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
               title: "Sample title",
               decision: "approved",
               public_text: "The request was approved",
-              link: "https://vera.example/record",
+              link: sampleLink ?? "https://vera.example/record",
               task: "Sample task",
               error: "A public error summary",
               list: "Sample list",

@@ -61,7 +61,12 @@ export const hooksView: ViewDefinition<HooksQuery> = {
 
 export function hookGroupOf(hook: Hook): (typeof hookGroups)[number] {
   if (hook.event.startsWith("request.")) return "Requests";
-  if (hook.event.startsWith("document.")) return "Documents";
+  if (
+    hook.event.startsWith("document.") ||
+    hook.event === "iteration.link_added" ||
+    hook.event === "iteration.link_changed"
+  )
+    return "Documents";
   if (hook.event.startsWith("iteration.")) return "Records";
   if (hook.event.startsWith("list.")) return "Lists";
   return "Tasks";

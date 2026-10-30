@@ -19,8 +19,8 @@ import {
   reclassificationResultSchema,
   releaseResultSchema,
 } from "@vera/contract/iterations";
-import { iterationActionRoute } from "@vera/contract/routes";
-import { postJson } from "@/api/http";
+import { iterationActionRoute, iterationLinkRoute } from "@vera/contract/routes";
+import { deleteJson, postJson } from "@/api/http";
 
 // ---------------------------------------------------------------- calls
 
@@ -35,7 +35,7 @@ export async function reclassifyIteration(
   );
 }
 
-export async function publishIteration(
+export async function addLink(
   iterationId: string,
   publication: Publication,
 ): Promise<PublicationResult> {
@@ -44,6 +44,29 @@ export async function publishIteration(
     publication,
     publicationResultSchema,
   );
+}
+
+export async function replaceLink(
+  iterationId: string,
+  linkId: string,
+  publication: Publication,
+): Promise<PublicationResult> {
+  return postJson(
+    iterationLinkRoute(iterationId, linkId, "replace"),
+    publication,
+    publicationResultSchema,
+  );
+}
+
+export async function makeLinkPrimary(
+  iterationId: string,
+  linkId: string,
+): Promise<PublicationResult> {
+  return postJson(iterationLinkRoute(iterationId, linkId, "primary"), {}, publicationResultSchema);
+}
+
+export async function removeLink(iterationId: string, linkId: string): Promise<PublicationResult> {
+  return deleteJson(iterationLinkRoute(iterationId, linkId), publicationResultSchema);
 }
 
 export async function enterPageCount(

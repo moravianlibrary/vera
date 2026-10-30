@@ -9,12 +9,16 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
 import {
+  addLink,
+  makeLinkPrimary,
   overruleRestriction,
-  publishIteration,
   reclassifyIteration,
+  removeLink,
+  replaceLink,
   resumeIteration,
 } from "@/api/iterations";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -91,34 +95,162 @@ describe("setting where it is available", () => {
   it("publishes a digitized item at its link", async () => {
     signInAs("admin");
 
-    const result = await publishIteration("IT12", {
+    const result = await addLink("IT12", {
       link: "https://kramerius.mzk.cz/view/uuid:d12",
     });
+    const second = await addLink("IT12", { link: "https://example.org/second" });
     const detail = await findDocument("D12");
 
-    expect(result.progress).toBe("Published");
-    expect(detail?.record.iterations.at(-1)?.publishedLink).toBe(
+    expect(result.links[0]?.isPrimary).toBe(true);
+    expect(second.links[1]?.isPrimary).toBe(false);
+    expect(detail?.record.iterations.at(-1)?.links[0]?.url).toBe(
       "https://kramerius.mzk.cz/view/uuid:d12",
     );
-    expect(detail?.log[0]?.event).toBe("Published");
+    expect(await statusOf(addLink("IT12", { link: "https://example.org/second" }))).toBe(422);
+    expect(detail?.log.some((entry) => entry.event === "Published")).toBe(true);
   });
 
-  it("changes the link of a published item and keeps the old one in the history", async () => {
+  it("replaces a link in place and refuses an unknown link (ACT-link-replace)", async () => {
+    signInAs("curator");
+    const before = (await currentIterationOf("D50"))?.links[0];
+    expect(before).toBeDefined();
+    const changed = await replaceLink("IT34", before!.id, {
+      link: "https://example.org/replacement",
+    });
+    expect(changed.links[0]).toMatchObject({
+      id: before!.id,
+      url: "https://example.org/replacement",
+      isPrimary: true,
+    });
+    expect(await statusOf(replaceLink("IT34", "missing", { link: "https://example.org/x" }))).toBe(
+      404,
+    );
+  });
+
+  it("changes the primary link and refuses making it primary twice (ACT-link-primary)", async () => {
+    signInAs("curator");
+    const initial = await currentIterationOf("D1");
+    const other = initial?.links.find((link) => !link.isPrimary);
+    expect(other).toBeDefined();
+    const changed = await makeLinkPrimary("IT1", other!.id);
+    expect(changed.links.find((link) => link.id === other!.id)?.isPrimary).toBe(true);
+    expect(changed.links.find((link) => link.id !== other!.id)?.isPrimary).toBe(false);
+    expect(await statusOf(makeLinkPrimary("IT1", other!.id))).toBe(409);
+  });
+
+  it("removes the primary, promotes the oldest remaining link, and keeps Published (ACT-link-remove)", async () => {
+    signInAs("curator");
+    const initial = await currentIterationOf("D1");
+    const primary = initial?.links.find((link) => link.isPrimary);
+    const remaining = initial?.links.find((link) => !link.isPrimary);
+    expect(primary).toBeDefined();
+    expect(remaining).toBeDefined();
+    const changed = await removeLink("IT1", primary!.id);
+    expect(changed.links).toHaveLength(1);
+    expect(changed.links[0]).toMatchObject({ id: remaining!.id, isPrimary: true });
+    expect(changed.progress).toBe("Published");
+    expect(await statusOf(removeLink("IT1", remaining!.id))).toBe(409);
+  });
+
+  it("adds a link to a published item without replacing its existing link", async () => {
     signInAs("curator");
 
-    await publishIteration("IT34", { link: "https://kramerius.mzk.cz/view/uuid:d50-new" });
+    await addLink("IT34", { link: "https://kramerius.mzk.cz/view/uuid:d50-new" });
     const detail = await findDocument("D50");
 
-    expect(detail?.log[0]?.event).toBe("Link changed");
-    expect(detail?.log[0]?.detail).toContain("uuid:demo50");
+    expect(detail?.log[0]?.event).toBe("Link added");
+    expect(detail?.record.iterations.at(-1)?.links).toHaveLength(2);
   });
 
   it("refuses an item not yet scanned, one outside the grant, and a link that is not a web address", async () => {
     signInAs("curator");
 
-    expect(await statusOf(publishIteration("IT28", { link: "https://a.cz/x" }))).toBe(409); // Ready, in custody
-    expect(await statusOf(publishIteration("IT37", { link: "https://a.cz/x" }))).toBe(403);
-    expect(await statusOf(publishIteration("IT36", { link: "ftp://a.cz/x" }))).toBe(422);
+    expect(await statusOf(addLink("IT28", { link: "https://a.cz/x" }))).toBe(409); // Ready, in custody
+    expect(await statusOf(addLink("IT37", { link: "https://a.cz/x" }))).toBe(403);
+    expect(await statusOf(addLink("IT36", { link: "ftp://a.cz/x" }))).toBe(422);
+  });
+
+  it("refuses all four link acts without iteration.publish", async () => {
+    signInAs("curator");
+
+    expect(await statusOf(addLink("IT37", { link: "https://example.org/new" }))).toBe(403);
+    expect(
+      await statusOf(replaceLink("IT37", "missing", { link: "https://example.org/new" })),
+    ).toBe(403);
+    expect(await statusOf(makeLinkPrimary("IT37", "missing"))).toBe(403);
+    expect(await statusOf(removeLink("IT37", "missing"))).toBe(403);
+  });
+
+  it("records each link act in the log and fires its hook event", async () => {
+    signInAs("admin");
+    const iterationIndex = database.iterations.findIndex((candidate) => candidate.id === "IT12");
+    const original = database.iterations[iterationIndex];
+    const hookTemplate = database.hooks[0];
+    if (original === undefined || hookTemplate === undefined) {
+      throw new Error("IT12 and a hook fixture are present");
+    }
+
+    const hookIds = ["iteration.published", "iteration.link_added", "iteration.link_changed"].map(
+      (_event, index) => `test-link-act-hook-${index}`,
+    );
+    const hookEvents = [
+      "iteration.published",
+      "iteration.link_added",
+      "iteration.link_changed",
+    ] as const;
+    const testHooks = hookEvents.map((event, index) => ({
+      ...hookTemplate,
+      id: hookIds[index]!,
+      name: `Link act test ${index}`,
+      event,
+      filter: "",
+    }));
+    const logStart = database.statusLog.length;
+    const deliveryStart = database.hookDeliveries.length;
+    database.hooks.push(...testHooks);
+    database.iterations.splice(iterationIndex, 1, {
+      ...original,
+      progress: "Digitized",
+      links: [],
+    });
+
+    try {
+      const first = await addLink("IT12", { link: "https://example.org/first" });
+      const second = await addLink("IT12", { link: "https://example.org/second" });
+      const secondId = second.links.find((link) => !link.isPrimary)?.id;
+      if (secondId === undefined) throw new Error("The second link is not primary");
+      await replaceLink("IT12", secondId, { link: "https://example.org/replaced" });
+      await makeLinkPrimary("IT12", secondId);
+      await removeLink("IT12", secondId);
+
+      expect(first.links[0]?.isPrimary).toBe(true);
+      expect(database.statusLog.slice(logStart).map((entry) => entry.event)).toEqual([
+        "Published",
+        "Link added",
+        "Link changed",
+        "Primary link changed",
+        "Link removed",
+      ]);
+      expect(
+        database.hookDeliveries
+          .slice(deliveryStart)
+          .filter((delivery) => hookIds.includes(delivery.hookId))
+          .map((delivery) => delivery.event),
+      ).toEqual([
+        "iteration.published",
+        "iteration.link_added",
+        "iteration.link_changed",
+        "iteration.link_changed",
+        "iteration.link_changed",
+      ]);
+    } finally {
+      database.iterations.splice(iterationIndex, 1, original);
+      database.hooks = database.hooks.filter((hook) => !hookIds.includes(hook.id));
+      database.hookDeliveries = database.hookDeliveries.filter(
+        (delivery) => !hookIds.includes(delivery.hookId),
+      );
+      database.statusLog.splice(logStart);
+    }
   });
 });
 

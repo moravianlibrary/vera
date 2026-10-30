@@ -35,7 +35,24 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2026-06-19T15:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo",
+    links: [
+      {
+        id: "IT1-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-04-02T08:12:00Z",
+        isPrimary: true,
+      },
+      {
+        id: "IT1-L2",
+        url: "https://www.digitalniknihovna.cz/mzk/uuid/it1",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-04-02T08:12:00Z",
+        isPrimary: false,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -56,7 +73,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -96,7 +113,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -117,7 +134,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -138,7 +155,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -165,7 +182,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -189,7 +206,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
       error: "Catalog adapter returned HTTP 502 after 3 attempts.",
     },
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -210,7 +227,24 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2019-11-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo8",
+    links: [
+      {
+        id: "IT0-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo8",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2019-11-14T09:30:00Z",
+        isPrimary: true,
+      },
+      {
+        id: "IT0-L2",
+        url: "https://www.digitalniknihovna.cz/mzk/uuid/it0",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2019-11-14T09:30:00Z",
+        isPrimary: false,
+      },
+    ],
     scanDpi: 300,
   },
   {
@@ -231,7 +265,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -258,7 +292,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -298,7 +332,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -338,7 +372,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -369,7 +403,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2026-06-19T15:00:00Z",
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -410,7 +444,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -446,7 +480,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -467,7 +501,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -498,7 +532,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -548,7 +582,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -580,7 +614,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -601,7 +635,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2026-06-19T15:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo36",
+    links: [
+      {
+        id: "IT20-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo36",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -622,7 +665,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -643,7 +686,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -664,7 +707,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -685,7 +728,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -717,7 +760,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -738,7 +781,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -759,7 +802,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -780,7 +823,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -801,7 +844,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -822,7 +865,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -843,7 +886,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -864,7 +907,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -885,7 +928,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
   {
@@ -906,7 +949,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2025-05-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo50",
+    links: [
+      {
+        id: "IT34-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo50",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -927,7 +979,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2025-10-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo51",
+    links: [
+      {
+        id: "IT35-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo51",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -948,7 +1009,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2025-11-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo52",
+    links: [
+      {
+        id: "IT36-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo52",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -969,7 +1039,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2024-09-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo53",
+    links: [
+      {
+        id: "IT37-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo53",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -990,7 +1069,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2025-04-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo54",
+    links: [
+      {
+        id: "IT38-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo54",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -1011,7 +1099,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2023-06-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo55",
+    links: [
+      {
+        id: "IT39-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo55",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -1032,7 +1129,16 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     verdicts: [],
     ingestFailure: null,
     digitizedAt: "2024-08-01T09:00:00Z",
-    publishedLink: "https://kramerius.mzk.cz/view/uuid:demo56",
+    links: [
+      {
+        id: "IT40-L1",
+        url: "https://kramerius.mzk.cz/view/uuid:demo56",
+        instanceId: null,
+        setBy: "u1",
+        setAt: "2026-06-19T15:00:00Z",
+        isPrimary: true,
+      },
+    ],
     scanDpi: null,
   },
   {
@@ -1056,7 +1162,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
       error: "Catalog record MZK03-000601877 has no 245 field; the adapter rejected it.",
     },
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
   },
 ];

@@ -65,7 +65,7 @@ const iteration = (
   verdicts: [],
   ingestFailure: null,
   digitizedAt: null,
-  publishedLink: null,
+  links: [],
   scanDpi: null,
   properties: [],
   ...overrides,

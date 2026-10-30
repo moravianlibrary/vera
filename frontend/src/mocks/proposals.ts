@@ -27,6 +27,7 @@ import type {
   Request,
   Session,
 } from "@vera/domain/entities";
+import { primaryLinkOf } from "@vera/domain/iterations";
 import { isProjectMember } from "@vera/domain/projects";
 import { defaultBatchNameOf } from "@vera/domain/proposals";
 import { isProgressAtLeast, publicIterationStatusOf } from "@vera/domain/status";
@@ -442,7 +443,7 @@ function approve(
     verdicts: [],
     ingestFailure: null,
     digitizedAt: null,
-    publishedLink: null,
+    links: [],
     scanDpi: null,
     properties: [],
   };
@@ -475,7 +476,7 @@ function existingCopiesOf(record: DocumentRecord, now: string): ExistingCopy[] {
       (iteration): ExistingCopy => ({
         source: "VERA",
         state: iteration.progress === "Published" ? "Published" : "Digitized",
-        link: iteration.publishedLink,
+        link: primaryLinkOf(iteration)?.url ?? null,
         iterationId: iteration.id,
         seenAt: now,
         foundAfterApproval: false,

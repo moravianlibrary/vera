@@ -6196,7 +6196,6 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2026-06-19T15:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo",
         "scanDpi": null,
         "properties": [
           {
@@ -6212,6 +6211,24 @@
                 "setBy": "u2"
               }
             ]
+          }
+        ],
+        "links": [
+          {
+            "id": "IT1-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2026-04-02T08:12:00Z",
+            "isPrimary": true
+          },
+          {
+            "id": "IT1-L2",
+            "url": "https://www.digitalniknihovna.cz/mzk/uuid/it1",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2026-04-02T08:12:00Z",
+            "isPrimary": false
           }
         ]
       },
@@ -6233,9 +6250,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT3",
@@ -6274,9 +6291,9 @@
         ],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT4",
@@ -6296,9 +6313,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT5",
@@ -6318,7 +6335,6 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
         "properties": [
           {
@@ -6335,7 +6351,8 @@
               }
             ]
           }
-        ]
+        ],
+        "links": []
       },
       {
         "id": "IT6",
@@ -6360,9 +6377,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT7",
@@ -6385,9 +6402,9 @@
           "error": "Catalog adapter returned HTTP 502 after 3 attempts."
         },
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT0",
@@ -6407,9 +6424,26 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2019-11-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo8",
         "scanDpi": 300,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT0-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo8",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2019-11-14T09:30:00Z",
+            "isPrimary": true
+          },
+          {
+            "id": "IT0-L2",
+            "url": "https://www.digitalniknihovna.cz/mzk/uuid/it0",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2019-11-14T09:30:00Z",
+            "isPrimary": false
+          }
+        ]
       },
       {
         "id": "IT8",
@@ -6429,9 +6463,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT9",
@@ -6457,9 +6491,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT10",
@@ -6498,9 +6532,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT11",
@@ -6539,9 +6573,9 @@
         ],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT12",
@@ -6571,7 +6605,6 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2026-06-19T15:00:00Z",
-        "publishedLink": null,
         "scanDpi": null,
         "properties": [
           {
@@ -6588,7 +6621,8 @@
               }
             ]
           }
-        ]
+        ],
+        "links": []
       },
       {
         "id": "IT13",
@@ -6627,9 +6661,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT14",
@@ -6664,9 +6698,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT15",
@@ -6686,9 +6720,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT16",
@@ -6718,9 +6752,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT18",
@@ -6768,9 +6802,9 @@
         ],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT19",
@@ -6800,9 +6834,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT20",
@@ -6822,7 +6856,6 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2026-06-19T15:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo36",
         "scanDpi": null,
         "properties": [
           {
@@ -6838,6 +6871,16 @@
                 "setBy": "u2"
               }
             ]
+          }
+        ],
+        "links": [
+          {
+            "id": "IT20-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo36",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2026-06-19T15:00:00Z",
+            "isPrimary": true
           }
         ]
       },
@@ -6859,7 +6902,6 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
         "properties": [
           {
@@ -6876,7 +6918,8 @@
               }
             ]
           }
-        ]
+        ],
+        "links": []
       },
       {
         "id": "IT22",
@@ -6896,9 +6939,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT23",
@@ -6918,9 +6961,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT24",
@@ -6940,9 +6983,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT25",
@@ -6972,9 +7015,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT26",
@@ -6994,9 +7037,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT27",
@@ -7016,9 +7059,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT28",
@@ -7038,9 +7081,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT29",
@@ -7060,9 +7103,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT30",
@@ -7082,9 +7125,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT31",
@@ -7104,9 +7147,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT32",
@@ -7126,9 +7169,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT33",
@@ -7148,9 +7191,9 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       },
       {
         "id": "IT34",
@@ -7170,9 +7213,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2025-05-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo50",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT34-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo50",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2025-05-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT35",
@@ -7192,9 +7244,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2025-10-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo51",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT35-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo51",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2025-10-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT36",
@@ -7214,9 +7275,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2025-11-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo52",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT36-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo52",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2025-11-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT37",
@@ -7236,9 +7306,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2024-09-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo53",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT37-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo53",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2024-09-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT38",
@@ -7258,9 +7337,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2025-04-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo54",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT38-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo54",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2025-04-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT39",
@@ -7280,9 +7368,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2023-06-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo55",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT39-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo55",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2023-06-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT40",
@@ -7302,9 +7399,18 @@
         "verdicts": [],
         "ingestFailure": null,
         "digitizedAt": "2024-08-01T09:00:00Z",
-        "publishedLink": "https://kramerius.mzk.cz/view/uuid:demo56",
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": [
+          {
+            "id": "IT40-L1",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo56",
+            "instanceId": null,
+            "setBy": "u1",
+            "setAt": "2024-08-01T09:00:00Z",
+            "isPrimary": true
+          }
+        ]
       },
       {
         "id": "IT17",
@@ -7327,9 +7433,9 @@
           "error": "Catalog record MZK03-000601877 has no 245 field; the adapter rejected it."
         },
         "digitizedAt": null,
-        "publishedLink": null,
         "scanDpi": null,
-        "properties": []
+        "properties": [],
+        "links": []
       }
     ],
     "requests": [

@@ -23,6 +23,8 @@ export const hookEventSchema = z.enum([
   "iteration.listed",
   "iteration.digitized",
   "iteration.published",
+  "iteration.link_added",
+  "iteration.link_changed",
   "iteration.classified",
   "document.relinked",
   "document.property_changed",

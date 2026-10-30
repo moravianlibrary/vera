@@ -11,6 +11,7 @@
 // custody or project; labels move to i18n.
 
 import type { DocumentDetail } from "@vera/contract/documents";
+import type { Publication } from "@vera/contract/iterations";
 import { categoryPathOf } from "@vera/domain/categories";
 import type { DocumentRecord } from "@vera/domain/documents";
 import {
@@ -24,6 +25,7 @@ import {
   recordStatusOf,
 } from "@vera/domain/documents";
 import type { Iteration, Session } from "@vera/domain/entities";
+import { primaryLinkOf } from "@vera/domain/iterations";
 import { hasPermission } from "@vera/domain/permissions";
 import {
   isProgressAtLeast,
@@ -35,6 +37,9 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { z } from "zod";
+import { makeLinkPrimary, removeLink, replaceLink } from "@/api/iterations";
+import { Field } from "@/components/classification-fields";
 import type { Fact, Stat } from "@/components/detail-card";
 import {
   DetailCard,
@@ -44,7 +49,10 @@ import {
   Muted,
   StatTiles,
 } from "@/components/detail-card";
+import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
+import { FormDialog } from "@/components/dialogs/form-dialog";
 import { MessageDialog } from "@/components/dialogs/message-dialog";
+import { FieldError } from "@/components/iteration-dialogs";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import {
   AskersCard,
@@ -56,14 +64,17 @@ import {
 import { PriorityBadge, StatusBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { DocumentActions } from "@/features/documents/document-actions";
+import { Input } from "@/components/ui/input";
+import { DocumentActions, iterationInvalidations } from "@/features/documents/document-actions";
 import { RetryFailedButton } from "@/features/documents/document-group-header";
 import { PropertiesCard } from "@/features/properties/properties-card";
+import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useBatchesQuery,
   useCategoriesQuery,
   useDigitizationListsQuery,
+  usePluginInstancesQuery,
   useProjectsQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
@@ -371,6 +382,7 @@ function DigitizationCard({
   const { data: projects = [] } = useProjectsQuery();
   // A curator sees the list an item is on, its name and dates, without list.read.
   const { data: lists = [] } = useDigitizationListsQuery();
+  const { data: pluginInstances = [] } = usePluginInstancesQuery();
   const project = projects.find((candidate) => candidate.id === iteration.projectId);
   const list = lists.find((candidate) => candidate.id === iteration.listId);
   const canOpenProjects = hasPermission(session, "project.read");
@@ -428,17 +440,43 @@ function DigitizationCard({
     facts.push({
       label: "Available at",
       value:
-        iteration.publishedLink === null ? (
+        iteration.links.length === 0 ? (
           <Muted>not set yet — setting it makes it Published</Muted>
         ) : (
-          <a
-            href={iteration.publishedLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline underline-offset-4"
-          >
-            {iteration.publishedLink.replace(/^https?:\/\//, "")}
-          </a>
+          <div className="grid gap-3">
+            {[...iteration.links]
+              .sort((left, right) => Number(right.isPrimary) - Number(left.isPrimary))
+              .map((link) => (
+                <div key={link.id} className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="break-all underline underline-offset-4"
+                    >
+                      {link.url.replace(/^https?:\/\//, "")}
+                    </a>
+                    {iteration.links.length > 1 && link.isPrimary && (
+                      <ToneBadge tone="purple">primary</ToneBadge>
+                    )}
+                  </div>
+                  <Muted>
+                    {link.instanceId === null
+                      ? "web address"
+                      : (pluginInstances.find((instance) => instance.id === link.instanceId)
+                          ?.name ?? "plugin")}
+                    {" · "}
+                    {nameOf(link.setBy)}
+                    {" · "}
+                    {formatDay(link.setAt)}
+                  </Muted>
+                  {hasPermission(session, "iteration.publish") && (
+                    <PublicationLinkActions iteration={iteration} link={link} title={title} />
+                  )}
+                </div>
+              ))}
+          </div>
         ),
     });
   }
@@ -482,6 +520,108 @@ function DigitizationCard({
         />
       )}
     </DetailCard>
+  );
+}
+
+function PublicationLinkActions({
+  iteration,
+  link,
+  title,
+}: {
+  iteration: Iteration;
+  link: Iteration["links"][number];
+  title: string;
+}) {
+  const [isReplacing, setIsReplacing] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [primaryRefusal, setPrimaryRefusal] = useState<string | null>(null);
+  const primary = useActionMutation({
+    call: () => makeLinkPrimary(iteration.id, link.id),
+    invalidates: iterationInvalidations,
+    act: "ACT-link-primary",
+    refusalTexts: { 404: "That link is gone.", 409: "It is already the primary link." },
+  });
+  const replacement = useActionMutation({
+    call: (publication: Publication) => replaceLink(iteration.id, link.id, publication),
+    invalidates: iterationInvalidations,
+    act: "ACT-link-replace",
+    refusalTexts: {
+      404: "That link is gone.",
+      "iteration.link_unread": "That is no web address, and no Link plugin reads it as a PID.",
+      422: "That link is already there.",
+    },
+  });
+  const removal = useActionMutation({
+    call: () => removeLink(iteration.id, link.id),
+    invalidates: iterationInvalidations,
+    act: "ACT-link-remove",
+    refusalTexts: { 404: "That link is gone.", 409: "The last link stays; replace it instead." },
+  });
+  const oldest = iteration.links
+    .filter((candidate) => candidate.id !== link.id)
+    .toSorted((a, b) => Date.parse(a.setAt) - Date.parse(b.setAt))[0];
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      {!link.isPrimary && (
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={primary.isPending}
+          onClick={async () => {
+            const result = await primary.run(undefined);
+            setPrimaryRefusal(result.isDone ? null : result.refusal.message);
+          }}
+        >
+          Make primary
+        </Button>
+      )}
+      {primaryRefusal !== null && (
+        <p role="alert" className="text-xs text-destructive">
+          {primaryRefusal}
+        </p>
+      )}
+      <Button size="sm" variant="outline" onClick={() => setIsReplacing(true)}>
+        Replace link…
+      </Button>
+      {iteration.links.length > 1 && (
+        <Button size="sm" variant="outline" onClick={() => setIsRemoving(true)}>
+          Remove link…
+        </Button>
+      )}
+      <FormDialog
+        isOpen={isReplacing}
+        onClose={() => setIsReplacing(false)}
+        title={`Replace link — ${title}`}
+        description="Enter the new address for this link."
+        schema={z.object({ link: z.string().trim().min(1, "Enter where the scan opens") })}
+        defaultValues={{ link: link.url }}
+        submitLabel="Replace link"
+        onSubmit={(values) => replacement.run(values)}
+        render={(form) => (
+          <>
+            <Field id={`replace-link-${link.id}`} label="Link">
+              <Input id={`replace-link-${link.id}`} {...form.register("link")} />
+            </Field>
+            <FieldError message={form.formState.errors.link?.message} />
+          </>
+        )}
+      />
+      <ConsequenceDialog
+        isOpen={isRemoving}
+        onClose={() => setIsRemoving(false)}
+        title="Remove link?"
+        description="This link will no longer be available from the record."
+        consequences={[
+          { text: "The link is removed." },
+          ...(link.isPrimary && oldest
+            ? [{ text: `${oldest.url.replace(/^https?:\/\//, "")} becomes primary.` }]
+            : []),
+        ]}
+        confirmLabel="Remove link"
+        isDestructive
+        onConfirm={() => removal.run(undefined)}
+      />
+    </div>
   );
 }
 
@@ -587,12 +727,9 @@ function readingLinkOf(record: DocumentRecord): { source: string; url: string } 
     return { source: content.registry, url: content.url };
   }
 
-  const publishedLink = record.iterations.findLast(
-    (iteration) => iteration.publishedLink !== null,
-  )?.publishedLink;
-  return publishedLink === undefined || publishedLink === null
-    ? null
-    : { source: "VERA", url: publishedLink };
+  const published = record.iterations.findLast((iteration) => primaryLinkOf(iteration) !== null);
+  const primary = published === undefined ? null : primaryLinkOf(published);
+  return primary === null ? null : { source: "VERA", url: primary.url };
 }
 
 // ---------------------------------------------------------------- shared

@@ -194,10 +194,13 @@ import {
 import {
   cancelIteration,
   enterPageCount,
+  makeIterationLinkPrimary,
   overruleRestriction,
   publishIteration,
   recheckIteration,
   reclassifyIteration,
+  removeIterationLink,
+  replaceIterationLink,
   resumeIteration,
 } from "@/mocks/iterations";
 import { canGenerate, enabledGenerators, generateDraft } from "@/mocks/list-generation";
@@ -1370,6 +1373,31 @@ export function createHandlers(profile: MockUserProfile) {
 
     iterationAction("reclassify", reclassificationSchema, reclassifyIteration),
     iterationAction("publish", publicationSchema, publishIteration),
+    http.post(
+      route(`${apiRoutes.iterations}/:id/links/:linkId/replace`),
+      async ({ params, request }) => {
+        const body = publicationSchema.safeParse(await request.json());
+        if (!body.success) return invalidResponse(body.error);
+        return outcomeResponse(
+          replaceIterationLink(
+            currentSession(),
+            String(params.id),
+            String(params.linkId),
+            body.data,
+          ),
+        );
+      },
+    ),
+    http.post(route(`${apiRoutes.iterations}/:id/links/:linkId/primary`), ({ params }) =>
+      outcomeResponse(
+        makeIterationLinkPrimary(currentSession(), String(params.id), String(params.linkId)),
+      ),
+    ),
+    http.delete(route(`${apiRoutes.iterations}/:id/links/:linkId`), ({ params }) =>
+      outcomeResponse(
+        removeIterationLink(currentSession(), String(params.id), String(params.linkId)),
+      ),
+    ),
     iterationAction("page-count", pageCountSchema, enterPageCount),
     iterationAction("recheck", recheckSchema, recheckIteration),
     iterationAction("cancel", cancellationRequestSchema, cancelIteration),

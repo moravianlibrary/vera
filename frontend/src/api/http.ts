@@ -74,6 +74,11 @@ export async function putJson<T>(path: string, body: unknown, schema: z.ZodType<
   return sendJson("PUT", path, body, schema);
 }
 
+export async function deleteJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
+  const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });
+  return parseResponse("DELETE", path, response, schema);
+}
+
 // A delete answers with no body.
 export async function deleteResource(path: string): Promise<void> {
   const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });

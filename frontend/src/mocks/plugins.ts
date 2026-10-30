@@ -576,7 +576,7 @@ export function runInstanceNow(session: Session, instanceId: string): Outcome<Ru
   });
   // The mock finds what it would at once, rather than as the run goes (PLG-kinds).
   if (kindOf(instance) === "PublicationDetector") {
-    detectPublications();
+    detectPublications(instanceId);
   }
 
   return { value: publicRunOf(started, mockNow()) };

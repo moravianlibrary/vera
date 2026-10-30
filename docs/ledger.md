@@ -136,10 +136,9 @@ Rules: [LC-ITER-links](reference/lifecycles/iteration.md#lc-iter-links),
 [HOOK-subject-data](reference/integrations/hooks.md#hook-subject-data).
 
 Decided on 2026-10-29 ([DEC-0014](decisions/DEC-0014-several-publication-links.md)). The
-contract and mock hold one `publishedLink` per iteration and one *Set link…* act. They need a
-set of links with where each is, who set it, when and which is primary; the four acts; and the
-two new hook events. The record shows every link, primary first; a list or table shows the
-primary one with a count of the others. → engine, then frontend.
+frontend and mock hold the link set; the engine builds it with the iteration acts (step 4). The
+record shows every link, primary first; a list or table shows the primary one with a count of the
+others.
 
 ### L70: Entry links
 

@@ -5,7 +5,7 @@
 // permission, scoped by the iteration's category (permissions.md §3), and the server checks it
 // again; a pane only leaves out what the caller may not do.
 
-import { prioritySchema, progressSchema } from "@vera/domain/entities";
+import { prioritySchema, progressSchema, publicationLinkSchema } from "@vera/domain/entities";
 import { reviewStateSchema } from "@vera/domain/validations";
 import { z } from "zod";
 
@@ -42,7 +42,7 @@ export const publicationSchema = z.object({
 export type Publication = z.infer<typeof publicationSchema>;
 
 export const publicationResultSchema = z.object({
-  publishedLink: z.url(),
+  links: z.array(publicationLinkSchema),
   progress: progressSchema,
 });
 
