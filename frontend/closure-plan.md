@@ -107,11 +107,11 @@ blank region.
 
 **Review:** G-COMP-1…5; diff should be net-negative lines. Screenshots of each touched view.
 
-## U5 — Home
+## U5 — Home (dropped)
 
-Completion plan Session C, step 1–2 and 4 (the user menu exists): zero destinations → No
-access, one → redirect, several → destination cards from `visibleNavigation`, with badges and
-typed counts from the server. Not an analytics dashboard.
+Superseded by [VIEW-landing](../docs/reference/access/views.md#view-landing): there is no Home
+page; `/` opens the first sidebar entry, or *No access yet*. The client already does this
+(`Landing` in `app.tsx`). Dropped on 2026-10-30.
 
 ## U6 — Phone gestures
 

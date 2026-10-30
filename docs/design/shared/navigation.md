@@ -369,6 +369,10 @@ and whatever else accumulates. Not a group, not a route.
 
 ## 8. Home
 
+> **Superseded** by [VIEW-landing](../../reference/access/views.md#view-landing): there is no
+> Home page. `/` opens the first sidebar entry the person holds, or *No access yet*. The card page
+> below, and the Home demo, are history.
+
 `/` resolves here, and the logo navigates here. Whether Home is a **page** or a
 **redirect** depends on how much the actor can reach:
 
