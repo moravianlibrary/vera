@@ -11,6 +11,8 @@ import csAccess from "@/i18n/locales/cs/access.json";
 import csCommon from "@/i18n/locales/cs/common.json";
 import csDocuments from "@/i18n/locales/cs/documents.json";
 import csHistory from "@/i18n/locales/cs/history.json";
+import csLists from "@/i18n/locales/cs/lists.json";
+import csProjects from "@/i18n/locales/cs/projects.json";
 import csRequests from "@/i18n/locales/cs/requests.json";
 import csSystem from "@/i18n/locales/cs/system.json";
 import csValidations from "@/i18n/locales/cs/validations.json";
@@ -18,6 +20,8 @@ import enAccess from "@/i18n/locales/en/access.json";
 import enCommon from "@/i18n/locales/en/common.json";
 import enDocuments from "@/i18n/locales/en/documents.json";
 import enHistory from "@/i18n/locales/en/history.json";
+import enLists from "@/i18n/locales/en/lists.json";
+import enProjects from "@/i18n/locales/en/projects.json";
 import enRequests from "@/i18n/locales/en/requests.json";
 import enSystem from "@/i18n/locales/en/system.json";
 import enValidations from "@/i18n/locales/en/validations.json";
@@ -31,6 +35,8 @@ export const resources = {
     documents: enDocuments,
     requests: enRequests,
     validations: enValidations,
+    lists: enLists,
+    projects: enProjects,
   },
   cs: {
     access: csAccess,
@@ -40,6 +46,8 @@ export const resources = {
     documents: csDocuments,
     requests: csRequests,
     validations: csValidations,
+    lists: csLists,
+    projects: csProjects,
   },
 } as const;
 
@@ -49,7 +57,17 @@ i18n.use(initReactI18next).init({
   resources,
   lng: "en",
   fallbackLng: "en",
-  ns: ["access", "common", "system", "history", "documents", "requests", "validations"],
+  ns: [
+    "access",
+    "common",
+    "system",
+    "history",
+    "documents",
+    "requests",
+    "validations",
+    "lists",
+    "projects",
+  ],
   defaultNS: "access",
   keySeparator: false,
   initAsync: false,

@@ -4,7 +4,6 @@
 // its members and its history. The target, planned, delivered and pace are its own intention's,
 // linked on Intentions once approved; other intentions counting the same funding are measures
 // beside it and are not shown here (intentions.md §3.4).
-// TODO(rrandiak): labels move to i18n.
 
 import type { FundedItem, ProjectDetail, ProjectProposal } from "@vera/contract/projects";
 import { documentIdentifierOf } from "@vera/domain/documents";
@@ -13,6 +12,7 @@ import { progressValues } from "@vera/domain/entities";
 import { can } from "@vera/domain/permissions";
 import { iterationStatusOf, statusFootnoteOf } from "@vera/domain/status";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { DataTable } from "@/components/data-table";
@@ -47,12 +47,12 @@ import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { formatDay, formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
-const backToIndex = { label: "Projects", href: "/projects" };
-const backToProjects = { label: "Back to Projects", href: "/projects" };
+const backToIndex = { label: "projects:projectPage.projects", href: "/projects" };
+const backToProjects = { label: "projects:projectPage.backToProjects", href: "/projects" };
 
 export function ProjectPage() {
+  const { t } = useTranslation("projects");
   const { projectId = null } = useParams();
   const detailQuery = useProjectQuery(projectId);
   const { data: detail } = detailQuery;
@@ -63,10 +63,14 @@ export function ProjectPage() {
   if (detailQuery.isError)
     return (
       <>
-        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
+        <PageHeader
+          title={t("projectPage.project")}
+          breadcrumb={backToIndex}
+          back={backToProjects}
+        />
         <QueryState
           isLoading={false}
-          failure={failureOf(detailQuery, "Could not load this project.")}
+          failure={failureOf(detailQuery, t("projectPage.loadFailure"))}
         >
           <span />
         </QueryState>
@@ -76,11 +80,15 @@ export function ProjectPage() {
   if (detail === undefined || session === undefined) {
     return (
       <>
-        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
+        <PageHeader
+          title={t("projectPage.project")}
+          breadcrumb={backToIndex}
+          back={backToProjects}
+        />
         <QueryState
           isLoading={detailQuery.isLoading}
-          failure={failureOf(detailQuery, "Could not load this project.")}
-          loadingText="Loading the project…"
+          failure={failureOf(detailQuery, t("projectPage.loadFailure"))}
+          loadingText={t("projectPage.loading")}
         >
           <span />
         </QueryState>
@@ -91,10 +99,14 @@ export function ProjectPage() {
   if (detail === null) {
     return (
       <>
-        <PageHeader title="Project" breadcrumb={backToIndex} back={backToProjects} />
+        <PageHeader
+          title={t("projectPage.project")}
+          breadcrumb={backToIndex}
+          back={backToProjects}
+        />
         <PageContent>
-          <StatusNote tone="slate" title="You are not on that project">
-            It is gone, or only its members and whoever decides projects see it.
+          <StatusNote tone="slate" title={t("projectPage.unavailableTitle")}>
+            {t("projectPage.unavailableBody")}
           </StatusNote>
         </PageContent>
       </>
@@ -125,6 +137,7 @@ function ProjectRecord({
   nameOf,
   categories,
 }: ProjectRecordProps & { session: Session }) {
+  const { t } = useTranslation("projects");
   const navigate = useNavigate();
   const { row } = detail;
   const { project } = row;
@@ -134,7 +147,10 @@ function ProjectRecord({
     onDeleted: () => navigate("/projects"),
   });
   const note = projectNoteOf(row, project.state === "Proposed" ? "" : nameOf(project.actorId));
-  const standing = [project.state, project.state === "Rejected" ? null : row.period]
+  const standing = [
+    t(`projectState.${project.state}`),
+    project.state === "Rejected" ? null : t(`projectPeriod.${row.period}`),
+  ]
     .filter((part) => part !== null)
     .join(" · ");
 
@@ -162,12 +178,12 @@ function ProjectRecord({
     >
       {project.state !== "Rejected" && (
         <DetailCard
-          title="Against the target"
+          title={t("projectPage.againstTarget")}
           action={
             project.state === "Approved" && can(session, "intention.read") ? (
               <Button asChild size="sm" variant="outline">
                 <Link to={`/intentions?i=${encodeURIComponent(row.intention.id)}`}>
-                  Its intention
+                  {t("projectPage.itsIntention")}
                 </Link>
               </Button>
             ) : (
@@ -185,7 +201,7 @@ function ProjectRecord({
           />
           {row.intention.targetPages === null ? (
             <p className="mt-2 text-ui">
-              No target: its intention only counts output.{" "}
+              {t("projectPage.noTarget")}{" "}
               <Muted>
                 {formatCount(row.plannedPages)} pp planned · {formatCount(row.deliveredPages)}{" "}
                 delivered
@@ -194,10 +210,10 @@ function ProjectRecord({
           ) : null}
           <FinePrint>
             {project.state === "Approved"
-              ? `These are its intention's figures, counted over the project's period: the target is set here, on the project, and the mix on the intention. The mark on the planned and delivered bars is where they would be at an even pace${
-                  row.evenPace === null ? "" : "; within 10 points of it reads on pace"
-                }. Delivered is a part of planned: the two are never added.`
-              : "Nothing counts towards it until it is approved: what is proposed into it is still waiting."}
+              ? t("projectPage.approvedFinePrint", {
+                  evenPace: row.evenPace !== null ? t("projectPage.withinPace") : "",
+                })
+              : t("projectPage.proposedFinePrint")}
           </FinePrint>
         </DetailCard>
       )}
@@ -209,10 +225,11 @@ function ProjectRecord({
 }
 
 function AboutCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
+  const { t } = useTranslation("projects");
   const { project } = detail.row;
   return (
     <DetailCard
-      title="About"
+      title={t("projectPage.about")}
       action={
         <span className="flex flex-wrap justify-end gap-1.5">
           <ProjectBadges row={detail.row} />
@@ -220,31 +237,32 @@ function AboutCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
       }
     >
       {project.description === "" ? (
-        <Muted>No description.</Muted>
+        <Muted>{t("projectPage.noDescription")}</Muted>
       ) : (
         <p className="mb-2">{project.description}</p>
       )}
       <DetailRow aside={nameOf(project.managerId)}>
-        <Muted>Manager</Muted>
+        <Muted>{t("projectPage.manager")}</Muted>
       </DetailRow>
       <DetailRow
         aside={
           project.state === "Proposed"
-            ? "not yet"
-            : `${project.state} ${formatDay(project.at)} · ${nameOf(project.actorId)}`
+            ? t("projectPage.notYet")
+            : t("projectPage.decisionMade", {
+                state: t(`projectState.${project.state}`),
+                date: formatDay(project.at),
+                name: nameOf(project.actorId),
+              })
         }
       >
-        <Muted>Decision</Muted>
+        <Muted>{t("projectPage.decision")}</Muted>
       </DetailRow>
       {project.state === "Approved" && (
         <>
           <DetailRow aside={<PriorityBadge priority={project.priority} />}>
-            <Muted>Priority</Muted>
+            <Muted>{t("projectPage.priority")}</Muted>
           </DetailRow>
-          <FinePrint>
-            Set once, at approval: the proposals approved with it took it, and it pre-fills those
-            proposed after. Each item's priority is its own from then on.
-          </FinePrint>
+          <FinePrint>{t("projectPage.priorityFinePrint")}</FinePrint>
         </>
       )}
     </DetailCard>
@@ -256,6 +274,7 @@ function ProjectMembersCard({
   nameOf,
   onEdit,
 }: Omit<ProjectRecordProps, "categories"> & { onEdit: (() => void) | null }) {
+  const { t } = useTranslation("projects");
   const { project, memberGroups } = detail.row;
   const members: Member[] = [
     // The manager first.
@@ -274,38 +293,38 @@ function ProjectMembersCard({
       kind: "group" as const,
       id: group.id,
       label: group.name,
-      role: plural(group.peopleCount, "person", "people"),
+      role: t("projectPage.person", { count: group.peopleCount }),
     })),
   ];
 
   return (
     <MembersCard
-      title="Members"
+      title={t("projectPage.members")}
       members={members}
-      emptyText="Nobody yet."
+      emptyText={t("projectPage.nobodyYet")}
       action={
         onEdit === null ? undefined : (
           <Button variant="outline" size="sm" onClick={onEdit}>
-            Edit
+            {t("projectPage.edit")}
           </Button>
         )
       }
     >
       <FinePrint>
-        Members propose documents into it
-        {project.state === "Rejected" ? ", not any more" : ""}. A grant scoped to project means
-        exactly these people and groups; one scoped to managed, its manager.
+        {t("projectPage.membersFinePrint", {
+          rejected: project.state === "Rejected" ? t("projectPage.noLonger") : "",
+        })}
       </FinePrint>
     </MembersCard>
   );
 }
 
 const decisionLabels = {
-  Pending: "Pending",
-  Approved: "Approved",
-  Denied: "Declined",
-  Withdrawn: "Withdrawn",
-  Duplicate: "Duplicate",
+  Pending: "proposalDecision.Pending",
+  Approved: "proposalDecision.Approved",
+  Denied: "proposalDecision.Denied",
+  Withdrawn: "proposalDecision.Withdrawn",
+  Duplicate: "proposalDecision.Duplicate",
 } as const satisfies Record<ProjectProposal["decision"], string>;
 
 const decisionTones = {
@@ -317,28 +336,27 @@ const decisionTones = {
 } as const satisfies Record<ProjectProposal["decision"], "amber" | "green" | "red" | "slate">;
 
 function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
+  const { t } = useTranslation("projects");
   const { project } = detail.row;
   const { proposals } = detail;
   return (
-    <DetailCard title={`Proposals — ${proposals.length}`}>
+    <DetailCard title={t("projectPage.proposals", { count: proposals.length })}>
       {proposals.length === 0 && (
         <Muted>
-          {project.state === "Rejected"
-            ? "None."
-            : "None yet. Members propose documents into it from Documents."}
+          {project.state === "Rejected" ? t("projectPage.none") : t("projectPage.noProposals")}
         </Muted>
       )}
       {proposals.map((proposal) => {
         const flags = [
-          proposal.isAfterProjectApproval ? "after the project's approval" : null,
-          proposal.hasCopy ? "a copy exists" : null,
+          proposal.isAfterProjectApproval ? t("projectPage.afterApproval") : null,
+          proposal.hasCopy ? t("projectPage.copyExists") : null,
         ].filter((flag) => flag !== null);
         return (
           <DetailRow
             key={proposal.documentId}
             aside={
               <ToneBadge tone={decisionTones[proposal.decision]}>
-                {decisionLabels[proposal.decision]}
+                {t(decisionLabels[proposal.decision])}
               </ToneBadge>
             }
           >
@@ -360,10 +378,10 @@ function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories"
       {proposals.length > 0 && (
         <FinePrint>
           {project.state === "Approved"
-            ? "What is proposed after the approval is decided on its own in Requests, with this project's priority pre-filled."
+            ? t("projectPage.approvedProposalsFinePrint")
             : project.state === "Proposed"
-              ? "Ordinary pending proposals: a curator may decide one before the project is decided."
-              : "Rejected with the project, except where somebody else asked too."}
+              ? t("projectPage.proposedProposalsFinePrint")
+              : t("projectPage.rejectedProposalsFinePrint")}
         </FinePrint>
       )}
     </DetailCard>
@@ -371,16 +389,15 @@ function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories"
 }
 
 function ListsCard({ detail }: { detail: ProjectDetail }) {
+  const { t } = useTranslation("projects");
   const { lists, formerLists, row } = detail;
   if (row.fundedCount === 0) {
     return null;
   }
 
   return (
-    <DetailCard title={`Lists — ${lists.length + formerLists.length}`}>
-      {lists.length + formerLists.length === 0 && (
-        <Muted>None of what it funds is on a list yet.</Muted>
-      )}
+    <DetailCard title={t("projectPage.lists", { count: lists.length + formerLists.length })}>
+      {lists.length + formerLists.length === 0 && <Muted>{t("projectPage.noFundedLists")}</Muted>}
       {lists.map(({ list, state, itemCount, pages }) => (
         <DetailRow
           key={list.id}
@@ -388,7 +405,7 @@ function ListsCard({ detail }: { detail: ProjectDetail }) {
             <span className="grid justify-items-end gap-0.5 text-xs">
               <ListStateBadge state={state} />
               <Muted>
-                {itemCount} of its items · {formatCount(pages)} pp
+                {t("projectPage.listItemCount", { count: itemCount, pages: formatCount(pages) })}
               </Muted>
             </span>
           }
@@ -410,18 +427,15 @@ function ListsCard({ detail }: { detail: ProjectDetail }) {
           key={name}
           aside={
             <span className="text-xs text-muted-foreground">
-              {itemCount} of its items · not counted
+              {t("projectPage.formerListItemCount", { count: itemCount })}
             </span>
           }
         >
-          {name} <Muted>· no longer exists</Muted>
+          {name} <Muted>· {t("projectPage.noLongerExists")}</Muted>
         </DetailRow>
       ))}
       {lists.length + formerLists.length > 0 && (
-        <FinePrint>
-          The lists carrying items it funded. A list can mix funding: only this project's pages are
-          counted here. A deleted list's items stop counting.
-        </FinePrint>
+        <FinePrint>{t("projectPage.listsFinePrint")}</FinePrint>
       )}
     </DetailCard>
   );
@@ -438,13 +452,14 @@ function FundedCard({
   categories: readonly Category[];
 }) {
   const { row, funded } = detail;
+  const { t } = useTranslation("projects");
   if (funded.length === 0 && row.project.state !== "Approved") {
     return null;
   }
 
   const document: ColumnDefinition<FundedItem> = {
     key: "document",
-    header: "Document",
+    header: "projects:projectPage.document",
     track: "minmax(12rem,1fr)",
     cell: (item) => (
       <>
@@ -463,15 +478,19 @@ function FundedCard({
     header: string,
     cell: (item: FundedItem) => ReactNode,
   ): ColumnDefinition<FundedItem> => ({ key, header, track: "max-content", cell });
-  const category = column("category", "Category", (item) => (
+  const category = column("category", "projects:projectPage.category", (item) => (
     <Muted>{categoryLabelOf(categories, item.iteration.categoryId)}</Muted>
   ));
-  const list = column("list", "List", (item) => <Muted>{item.listName ?? "—"}</Muted>);
+  const list = column("list", "projects:projectPage.list", (item) => (
+    <Muted>{item.listName ?? "—"}</Muted>
+  ));
   const pages: ColumnDefinition<FundedItem> = {
-    ...column("pages", "Pages", (item) => (item.pages === null ? "—" : formatCount(item.pages))),
+    ...column("pages", "projects:projectPage.pages", (item) =>
+      item.pages === null ? "—" : formatCount(item.pages),
+    ),
     isNumeric: true,
   };
-  const status = column("status", "Status", (item) => (
+  const status = column("status", "projects:projectPage.status", (item) => (
     <StatusWithFootnote
       status={iterationStatusOf(item.iteration)}
       footnote={statusFootnoteOf(item.iteration)}
@@ -479,9 +498,9 @@ function FundedCard({
   ));
 
   return (
-    <DetailCard title={`What it funded — ${funded.length}`}>
+    <DetailCard title={t("projectPage.whatItFunded", { count: funded.length })}>
       {funded.length === 0 ? (
-        <Muted>Nothing yet: no approved request names this project.</Muted>
+        <Muted>{t("projectPage.nothingFundedYet")}</Muted>
       ) : (
         <>
           <DataTable
@@ -495,12 +514,12 @@ function FundedCard({
             emptyText=""
           />
           <FinePrint>
-            Iterations, not documents: a rescan of the same book can be funded by another grant.{" "}
+            {t("projectPage.fundedFinePrint")}{" "}
             <Link
               to={`/documents?project=${encodeURIComponent(row.project.id)}`}
               className="text-foreground underline"
             >
-              Open in Documents
+              {t("projectPage.openInDocuments")}
             </Link>
             .
           </FinePrint>

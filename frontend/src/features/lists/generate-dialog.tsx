@@ -7,10 +7,10 @@
 // shapes the draft, Overall unless another is picked or a card started it (§4.1, §4.4); a
 // correcting run's allocation, accepted on Intentions, fixes the pages and the shape until it is
 // dropped for the plain mix.
-// TODO(rrandiak): labels move to i18n.
 
 import type { GenerationDraft, ListGenerator, ListShape } from "@vera/contract/lists";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { generateDraft } from "@/api/lists";
 import { Field } from "@/components/classification-fields";
 import type { DialogStep } from "@/components/dialogs/stepped-dialog";
@@ -30,8 +30,8 @@ import {
 import { GenerationReport, generatorClassLabels } from "@/features/lists/generation-report";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 interface GenerateState {
   generatorId: string;
@@ -81,12 +81,13 @@ export function GenerateDialog({
   onDropAllocation,
   onDraft,
 }: GenerateDialogProps) {
+  const { t } = useTranslation("lists");
   const generate = useActionMutation({ call: generateDraft, invalidates: [] });
 
   const steps: DialogStep<GenerateState>[] = [
     {
-      label: "Ask",
-      advanceLabel: "Generate draft",
+      label: t("generateDialog.ask"),
+      advanceLabel: t("generateDialog.generateDraft"),
       canAdvance: (state) => pagesOf(state.pages) !== null && state.generatorId !== "",
       render: (state, setState) => (
         <AskStep
@@ -113,7 +114,7 @@ export function GenerateDialog({
       },
     },
     {
-      label: "Preview",
+      label: t("generateDialog.preview"),
       canAdvance: (state) => state.draft !== null,
       render: (state) => (state.draft === null ? null : <PreviewStep draft={state.draft} />),
     },
@@ -123,8 +124,8 @@ export function GenerateDialog({
     <SteppedDialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Generate a draft"
-      description="Let a list generator draft what goes on this list."
+      title={t("generateDialog.title")}
+      description={t("generateDialog.description")}
       width="wide"
       steps={steps}
       initialState={{
@@ -138,8 +139,8 @@ export function GenerateDialog({
       isDirty={(state) => state.draft !== null || state.categoryIds.length > 0}
       submitLabel={(state) =>
         state.draft === null || state.draft.picks.length === 0
-          ? "Use this draft"
-          : `Put ${state.draft.picks.length} on the list`
+          ? t("generateDialog.useDraft")
+          : t("generateDialog.putOnList", { count: state.draft.picks.length })
       }
       onSubmit={async (state) => {
         if (state.draft !== null) {
@@ -173,6 +174,7 @@ function AskStep({
   allocation,
   onDropAllocation,
 }: AskStepProps) {
+  const { t } = useTranslation("lists");
   const id = useId();
   const { data: categories = [] } = useCategoriesQuery();
   const tops = categories.filter((category) => category.parentId === null);
@@ -183,13 +185,13 @@ function AskStep({
     <div className="grid gap-5">
       {generators.length === 1 && only !== undefined ? (
         <div>
-          Using <b className="font-semibold">{only.plugin}</b> · {only.name}{" "}
+          {t("generateDialog.using")} <b className="font-semibold">{only.plugin}</b> · {only.name}{" "}
           <GeneratorClassBadge generator={only} />
           <p className="mt-0.5 text-xs text-muted-foreground">{only.description}</p>
         </div>
       ) : (
         <div className="grid gap-2">
-          <Label>Generator</Label>
+          <Label>{t("generateDialog.generator")}</Label>
           <RadioGroup
             value={state.generatorId}
             onValueChange={(generatorId) => change({ generatorId })}
@@ -219,11 +221,15 @@ function AskStep({
       )}
 
       <div className="grid gap-5 sm:grid-cols-[12rem_1fr]">
-        <Field id={`${id}-pages`} label="Pages" hint="required">
+        <Field
+          id={`${id}-pages`}
+          label={t("generateDialog.pages")}
+          hint={t("generateDialog.required")}
+        >
           <Input
             id={`${id}-pages`}
             inputMode="numeric"
-            placeholder="e.g. 4,000"
+            placeholder={t("generateDialog.pagesPlaceholder")}
             value={state.pages}
             readOnly={allocation !== null}
             onChange={(event) => change({ pages: event.target.value })}
@@ -231,8 +237,10 @@ function AskStep({
         </Field>
         <div className="grid content-start gap-2">
           <Label>
-            Categories{" "}
-            <span className="font-normal text-muted-foreground">— all if none ticked</span>
+            {t("generateDialog.categories")}{" "}
+            <span className="font-normal text-muted-foreground">
+              — {t("generateDialog.allIfNone")}
+            </span>
           </Label>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {tops.map((top) => (
@@ -257,16 +265,21 @@ function AskStep({
 
       {memberCount > 0 && (
         <p className="text-xs text-muted-foreground">
-          The {plural(memberCount, "item")} already on it stay — {formatCount(memberPages)} pp. It
-          tops up towards the pages you give; it never swaps out what is there.
+          {t("generateDialog.existingMembers", {
+            count: memberCount,
+            pages: formatCount(memberPages),
+          })}
         </p>
       )}
 
       {allocation !== null && (
         <div className="rounded-md border border-tone-purple-foreground/30 bg-tone-purple px-3 py-2 text-xs text-tone-purple-foreground">
           <b className="font-semibold">
-            Correcting allocation from{" "}
-            {shapes.find((shape) => shape.id === state.intentionId)?.name ?? "the intention"}
+            {t("generateDialog.correctingAllocationFrom", {
+              name:
+                shapes.find((shape) => shape.id === state.intentionId)?.name ??
+                t("generateDialog.theIntention"),
+            })}{" "}
           </b>{" "}
           {Object.entries(allocation.byCategory)
             .map(
@@ -274,21 +287,21 @@ function AskStep({
                 `${categories.find((category) => category.id === categoryId)?.name ?? categoryId} ${formatCount(pages)} pp`,
             )
             .join(" · ")}
-          . Accepted on Intentions; a category that cannot be filled stays short.{" "}
+          . {t("generateDialog.allocationAccepted")}{" "}
           <button
             type="button"
             className="font-medium underline underline-offset-2"
             onClick={onDropAllocation}
           >
-            Use its plain mix instead
+            {t("generateDialog.usePlainMix")}
           </button>
         </div>
       )}
 
       <Field
         id={`${id}-shape`}
-        label="Shape by"
-        hint="one intention supplies the scope and the mix"
+        label={t("generateDialog.shapeBy")}
+        hint={t("generateDialog.shapeHint")}
       >
         <Select
           value={state.intentionId}
@@ -307,10 +320,7 @@ function AskStep({
           </SelectContent>
         </Select>
       </Field>
-      <p className="-mt-3 text-xs text-muted-foreground">
-        It is not attached to anything by this: what the list counts towards is worked out from what
-        ends up on it.
-      </p>
+      <p className="-mt-3 text-xs text-muted-foreground">{t("generateDialog.notAttached")}</p>
     </div>
   );
 }
@@ -319,13 +329,15 @@ function AskStep({
 function shapeLabelOf(shape: ListShape): string {
   const funding =
     shape.funding.kind === "project"
-      ? `funded by ${shape.funding.name}`
+      ? i18n.t("lists:generateDialog.fundedBy", { name: shape.funding.name })
       : shape.funding.kind === "none"
-        ? "unfunded only"
+        ? i18n.t("lists:generateDialog.unfundedOnly")
         : null;
   return [
-    shape.isOverall ? `${shape.name} — Overall, the default` : shape.name,
-    shape.scope === null ? null : `only ${shape.scope}`,
+    shape.isOverall
+      ? i18n.t("lists:generateDialog.overallDefault", { name: shape.name })
+      : shape.name,
+    shape.scope === null ? null : i18n.t("lists:generateDialog.onlyScope", { scope: shape.scope }),
     funding,
   ]
     .filter((part) => part !== null)
@@ -333,15 +345,16 @@ function shapeLabelOf(shape: ListShape): string {
 }
 
 function PreviewStep({ draft }: { draft: GenerationDraft }) {
+  const { t } = useTranslation("lists");
   return (
     <div className="grid gap-4">
       <p className="text-xs text-muted-foreground">
-        Shaped by <b className="font-semibold text-foreground">{draft.shapedBy.name}</b>. The picks
-        go on the left, each marked <i>generated</i> with its reason; adjust by hand before saving.
+        {t("generateDialog.shapedBy", { name: draft.shapedBy.name })}{" "}
+        {t("generateDialog.picksInstruction")}
       </p>
       <GenerationReport draft={draft} />
       {draft.picks.length === 0 ? (
-        <p className="text-muted-foreground">Nothing ready fits what was asked.</p>
+        <p className="text-muted-foreground">{t("generateDialog.noFits")}</p>
       ) : (
         <ul className="divide-y rounded-md border">
           {draft.picks.map(({ item, reason }) => (
@@ -364,7 +377,7 @@ function PreviewStep({ draft }: { draft: GenerationDraft }) {
 function GeneratorClassBadge({ generator }: { generator: ListGenerator }) {
   return (
     <ToneBadge tone={generator.generatorClass === "AiBased" ? "purple" : "slate"}>
-      {generatorClassLabels[generator.generatorClass]}
+      {i18n.t(generatorClassLabels[generator.generatorClass])}
     </ToneBadge>
   );
 }

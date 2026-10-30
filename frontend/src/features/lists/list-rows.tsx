@@ -3,12 +3,12 @@
 // says what needs a look: a list past its end and not marked Done, members blocked since
 // listing, scans a new defect holds, or that it is empty; then what it counts towards besides
 // the house mix, and the intention it was generated with.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ListRow } from "@vera/contract/lists";
 import type { DigitizationList } from "@vera/domain/entities";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
@@ -17,7 +17,6 @@ import { ListStateBadge } from "@/components/status-badge";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 // "22 Jun → 10 Jul".
 export function runsOf(list: DigitizationList): string {
@@ -50,6 +49,7 @@ export function ListRows({
   selectedId,
   onSelect,
 }: ListRowsProps) {
+  const { t } = useTranslation("lists");
   return (
     <RecordList
       rows={rows}
@@ -62,7 +62,8 @@ export function ListRows({
           <>
             <ListStateBadge state={row.state} />
             <span className="text-xs text-muted-foreground">
-              {runsOf(row.list)} · {plural(row.itemCount, "item")} · {formatCount(row.pages)} pp
+              {runsOf(row.list)} · {t("listRows.item", { count: row.itemCount })} ·{" "}
+              {formatCount(row.pages)} pp
             </span>
           </>
         ),
@@ -74,9 +75,9 @@ export function ListRows({
       failure={failure}
       selectedId={selectedId}
       onSelect={onSelect}
-      loadingText="Loading lists…"
-      emptyText="No lists here."
-      loadingMoreText="Loading more…"
+      loadingText={t("listRows.loading")}
+      emptyText={t("listRows.empty")}
+      loadingMoreText={t("listRows.loadingMore")}
     />
   );
 }
@@ -84,7 +85,7 @@ export function ListRows({
 export const listColumns: ColumnDefinition<ListRow>[] = [
   {
     key: "list",
-    header: "List",
+    header: "lists:listRows.list",
     track: "minmax(10rem,1fr)",
     cell: (row) => (
       <>
@@ -97,33 +98,33 @@ export const listColumns: ColumnDefinition<ListRow>[] = [
   },
   {
     key: "state",
-    header: "State",
+    header: "lists:listRows.state",
     track: "fit-content(7rem)",
     cell: (row) => <ListStateBadge state={row.state} />,
   },
   {
     key: "runs",
-    header: "Runs",
+    header: "lists:listRows.runs",
     track: "max-content",
     cell: (row) => <Muted>{runsOf(row.list)}</Muted>,
   },
   {
     key: "items",
-    header: "Items",
+    header: "lists:listRows.items",
     track: "max-content",
     isNumeric: true,
     cell: (row) => row.itemCount,
   },
   {
     key: "pages",
-    header: "Pages",
+    header: "lists:listRows.pages",
     track: "max-content",
     isNumeric: true,
     cell: (row) => formatCount(row.pages),
   },
   {
     key: "delivered",
-    header: "Delivered",
+    header: "lists:listRows.delivered",
     track: "max-content",
     isNumeric: true,
     cell: (row) => {
@@ -134,11 +135,12 @@ export const listColumns: ColumnDefinition<ListRow>[] = [
 ];
 
 function WhyLine({ row }: { row: ListRow }) {
+  const { t } = useTranslation("lists");
   const parts: ReactElement[] = [];
   if (row.state === "InProgress" && row.isOverdue) {
     parts.push(
       <b key="overdue" className="font-semibold text-foreground">
-        Ended — not marked Done yet
+        {t("listRows.overdue")}
       </b>,
     );
   }
@@ -146,7 +148,7 @@ function WhyLine({ row }: { row: ListRow }) {
   if (row.blockedCount > 0) {
     parts.push(
       <b key="blocked" className="font-semibold text-tone-amber-foreground">
-        ⚠ {row.blockedCount} blocked since listing
+        {t("listRows.blocked", { count: row.blockedCount })}
       </b>,
     );
   }
@@ -154,7 +156,8 @@ function WhyLine({ row }: { row: ListRow }) {
   if (row.itemCount === 0) {
     parts.push(
       <span key="empty">
-        <b className="font-semibold text-foreground">Empty</b> — nothing on it yet
+        <b className="font-semibold text-foreground">{t("listRows.emptyLabel")}</b> —{" "}
+        {t("listRows.nothingOnList")}
       </span>,
     );
   }
@@ -163,7 +166,7 @@ function WhyLine({ row }: { row: ListRow }) {
   if (counted.length > 0) {
     parts.push(
       <span key="counts">
-        Counts towards{" "}
+        {t("listRows.countsTowards")}{" "}
         {counted.slice(0, 2).map((intention, index) => (
           <Fragment key={intention.id}>
             {index > 0 && ", "}
@@ -174,13 +177,15 @@ function WhyLine({ row }: { row: ListRow }) {
       </span>,
     );
   } else if (row.itemCount > 0) {
-    parts.push(<span key="counts">Counts towards the house mix only</span>);
+    parts.push(<span key="counts">{t("listRows.houseMixOnly")}</span>);
   }
 
   if (row.list.generated !== null) {
     parts.push(
       <span key="generated">
-        generated with {row.generatedWith?.name ?? row.list.generated.generator}
+        {t("listRows.generatedWith", {
+          name: row.generatedWith?.name ?? row.list.generated.generator,
+        })}
       </span>,
     );
   }
@@ -188,7 +193,7 @@ function WhyLine({ row }: { row: ListRow }) {
   if (row.reviewNeededCount > 0) {
     parts.push(
       <b key="review" className="font-semibold text-tone-purple-foreground">
-        {row.reviewNeededCount} digitized, review needed
+        {t("listRows.reviewNeeded", { count: row.reviewNeededCount })}
       </b>,
     );
   }

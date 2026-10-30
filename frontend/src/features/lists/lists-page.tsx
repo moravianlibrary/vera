@@ -2,10 +2,10 @@
 // in the pane. Its state lives in the URL like the other views': filters and `?id=`
 // naming the open list. The count says how much is ready to list to whoever builds lists.
 // *New list* opens the editor, and needs `list.create`.
-// TODO(rrandiak): labels move to i18n.
 
 import { hasPermission } from "@vera/domain/permissions";
 import { ListChecks } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -20,9 +20,9 @@ import { useListQuery, useListsQuery, usePoolSizeQuery } from "@/features/lists/
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 export function ListsPage() {
+  const { t } = useTranslation("lists");
   const view = useViewUrlState(listsView);
   const { query, selectedId, select } = view;
   const { data: session } = useSessionQuery();
@@ -42,10 +42,13 @@ export function ListsPage() {
   const title =
     visibleNavigation(session).find((entry) => entry.id === "lists")?.visibleLabel ?? "";
   const count = [
-    total === undefined ? "Lists" : plural(total, "list"),
+    total === undefined ? t("listsPage.lists") : t("listsPage.list", { count: total }),
     pool === undefined
       ? null
-      : `${formatCount(pool.total)} ready to list, ${formatCount(pool.pages)} pp`,
+      : t("listsPage.poolCount", {
+          total: formatCount(pool.total),
+          pages: formatCount(pool.pages),
+        }),
   ]
     .filter((part) => part !== null)
     .join(" · ");
@@ -56,7 +59,7 @@ export function ListsPage() {
         title={title}
         actions={
           hasPermission(session, "list.create")
-            ? [{ id: "new", label: "New list", isPrimary: true, href: "/lists/new" }]
+            ? [{ id: "new", label: t("listsPage.newList"), isPrimary: true, href: "/lists/new" }]
             : []
         }
       />
@@ -79,8 +82,8 @@ export function ListsPage() {
         query={query}
         facets={lists.summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
-        searchLabel="Search lists"
-        searchPlaceholder="Search lists — name, ID"
+        searchLabel={t("listsPage.searchLabel")}
+        searchPlaceholder={t("listsPage.searchPlaceholder")}
       />
 
       <MasterDetail
@@ -90,7 +93,7 @@ export function ListsPage() {
             count={count}
             total={total}
             isLoading={lists.isLoading}
-            failure={failureOf(lists, "Could not load lists.")}
+            failure={failureOf(lists, t("listsPage.loadFailure"))}
             paging={lists.paging}
             selectedId={selectedId}
             onSelect={select}
@@ -101,11 +104,11 @@ export function ListsPage() {
             state={paneStateOf(
               selectedId,
               detail,
-              "This list is gone",
-              failureOf(listQuery, "Could not load this list."),
+              t("listsPage.gone"),
+              failureOf(listQuery, t("listsPage.loadOneFailure")),
             )}
             emptyIcon={ListChecks}
-            emptyText="Select a list"
+            emptyText={t("listsPage.selectList")}
             render={(ready) => (
               <ListDetailPane
                 key={ready.row.list.id}
@@ -116,7 +119,7 @@ export function ListsPage() {
             )}
           />
         }
-        detailTitle={detail?.row.list.name ?? "List"}
+        detailTitle={detail?.row.list.name ?? t("listsPage.list")}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {

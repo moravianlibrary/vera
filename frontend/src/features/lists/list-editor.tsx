@@ -10,7 +10,6 @@
 // (intentions.md §4.4). The top says what the draft counts towards, worked out from what is on
 // it and when it starts, its fill against one intention's mix, and warns when it will not count
 // towards the intention it was generated with, or will stop counting towards one (L8, L10).
-// TODO(rrandiak): labels move to i18n.
 
 import type {
   GenerationDraft,
@@ -26,6 +25,7 @@ import type { Category } from "@vera/domain/entities";
 import { priorities } from "@vera/domain/entities";
 import type { ReactNode } from "react";
 import { useDeferredValue, useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { createList, saveList } from "@/api/lists";
 import { Muted } from "@/components/detail-card";
@@ -67,7 +67,6 @@ import { isSameSet, useDraft } from "@/hooks/use-draft";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 interface ListFields {
   name: string;
@@ -120,6 +119,7 @@ interface ListEditorProps {
 }
 
 export function ListEditor({ detail, start = null, canOpenIntentions }: ListEditorProps) {
+  const { t } = useTranslation("lists");
   const navigate = useNavigate();
   const listId = detail?.row.list.id ?? null;
   const fields = useDraft(fieldsOf(detail), isSameFields);
@@ -213,8 +213,8 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
     act: listId === null ? "ACT-list-create" : undefined,
     invalidates: listInvalidations,
     refusalTexts: {
-      "list.member_unavailable": "Something you put on it is no longer ready to list.",
-      "list.done": "This list was marked Done meanwhile; it no longer changes.",
+      "list.member_unavailable": t("listEditor.memberUnavailable"),
+      "list.done": t("listEditor.doneMeanwhile"),
     },
   });
 
@@ -347,31 +347,33 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
         isOtherwiseDirty={isOtherwiseDirty}
         rowId={(item) => item.iteration.id}
         target={{
-          title: "On this list",
-          summary: `${plural(onList.length, "item")} · ${formatCount(pages)} pp`,
+          title: t("listEditor.onThisList"),
+          summary: `${t("listEditor.item", { count: onList.length })} · ${formatCount(pages)} pp`,
           items: onList,
           columns,
           card,
           action:
             generators.length === 0
               ? undefined
-              : { id: "generate", label: "Generate…", onSelect: () => setIsGenerating(true) },
+              : {
+                  id: "generate",
+                  label: t("listEditor.generate"),
+                  onSelect: () => setIsGenerating(true),
+                },
           whyOf: (item) => <OnListWhy item={item} reason={reasons.get(item.iteration.id)} />,
           emptyText: (
             <>
-              <b className="font-semibold text-foreground">Nothing on it yet.</b> Add documents from
-              the ready ones
-              {generators.length > 0 ? ", or generate a draft and adjust it." : "."}
+              <b className="font-semibold text-foreground">{t("listEditor.nothingOnList")}</b>{" "}
+              {t("listEditor.addReady")}
+              {generators.length > 0 ? t("listEditor.orGenerate") : "."}
               {generators.length === 0 && (
-                <span className="mt-1 block">
-                  No list generator is configured, so lists are built by hand.
-                </span>
+                <span className="mt-1 block">{t("listEditor.noGenerator")}</span>
               )}
             </>
           ),
         }}
         source={{
-          title: "Ready to list",
+          title: t("listEditor.readyToList"),
           summary:
             poolCount === null ? "" : `${poolCount.total} · ${formatCount(poolCount.pages)} pp`,
           items: pool.items === undefined ? undefined : [...takenOff, ...ready],
@@ -397,12 +399,12 @@ export function ListEditor({ detail, start = null, canOpenIntentions }: ListEdit
             pool.summary === undefined ? undefined : (
               <PoolFootnote pool={pool.summary} categoryName={leafOf} />
             ),
-          emptyText: "Nothing ready matches.",
-          failure: failureOf(pool, "Could not load what is ready to list."),
+          emptyText: t("listEditor.nothingReadyMatches"),
+          failure: failureOf(pool, t("listEditor.loadReadyFailure")),
           resetKey: poolQuery,
           paging: pool.paging,
         }}
-        unchangedText={listId === null ? "new — not saved" : "no changes"}
+        unchangedText={listId === null ? t("listEditor.newNotSaved") : t("listEditor.noChanges")}
         canSave={canSave}
         isSaving={save.isPending}
         onSave={() => void onSave()}
@@ -433,7 +435,7 @@ export function listEditorColumns(
   return [
     {
       key: "document",
-      header: "Document",
+      header: "lists:listEditor.document",
       track: "minmax(9rem,1fr)",
       cell: (item) => (
         <>
@@ -446,19 +448,19 @@ export function listEditorColumns(
     },
     {
       key: "category",
-      header: "Category",
+      header: "lists:listEditor.category",
       track: "fit-content(8rem)",
       cell: (item) => <Muted>{leafOf(item.iteration.categoryId)}</Muted>,
     },
     {
       key: "priority",
-      header: "Priority",
+      header: "lists:listEditor.priority",
       track: "fit-content(5rem)",
       cell: (item) => <PriorityBadge priority={item.iteration.priority} />,
     },
     {
       key: "pages",
-      header: "Pages",
+      header: "lists:listEditor.pages",
       track: "max-content",
       isNumeric: true,
       cell: (item) => (item.pages === null ? <Muted>—</Muted> : formatCount(item.pages)),
@@ -467,6 +469,7 @@ export function listEditorColumns(
 }
 
 function LateCopy({ item }: { item: ListItem }) {
+  const { t } = useTranslation("lists");
   if (item.lateCopy === null) {
     return null;
   }
@@ -477,24 +480,21 @@ function LateCopy({ item }: { item: ListItem }) {
         ⚠ {item.lateCopy.source}: {item.lateCopy.state.toLowerCase()} since{" "}
         {formatDay(item.lateCopy.seenAt)}
       </b>{" "}
-      — a copy appeared after approval. Look before listing it.
+      — {t("listEditor.lateCopy")}
     </>
   );
 }
 
 function OnListWhy({ item, reason }: { item: ListItem; reason: string | undefined }) {
+  const { t } = useTranslation("lists");
   const generated =
     reason === undefined ? null : (
       <>
-        <ToneBadge tone="purple">generated</ToneBadge> {reason}
+        <ToneBadge tone="purple">{t("listEditor.generated")}</ToneBadge> {reason}
       </>
     );
   if (item.blocker !== null) {
-    return (
-      <b className="font-semibold text-tone-amber-foreground">
-        ⚠ Blocked since listing — take it off if it should not be scanned
-      </b>
-    );
+    return <b className="font-semibold text-tone-amber-foreground">{t("listEditor.blocked")}</b>;
   }
 
   if (item.lateCopy === null) {
@@ -511,10 +511,12 @@ function OnListWhy({ item, reason }: { item: ListItem; reason: string | undefine
 }
 
 function PoolWhy({ item, isTakenOff }: { item: ListItem; isTakenOff: boolean }) {
+  const { t } = useTranslation("lists");
   if (isTakenOff) {
     return (
       <>
-        <b className="font-semibold text-foreground">Taken off</b> — back to Ready when you save
+        <b className="font-semibold text-foreground">{t("listEditor.takenOff")}</b> —{" "}
+        {t("listEditor.backToReady")}
       </>
     );
   }
@@ -533,26 +535,31 @@ interface PoolFootnoteProps {
 
 // What review still holds back, so a short pool explains itself (decided 2026-09-26).
 function PoolFootnote({ pool, categoryName }: PoolFootnoteProps) {
+  const { t } = useTranslation("lists");
   const waiting = [
-    ...pool.inReview.map(
-      (held) =>
-        `${held.itemCount} more in ${categoryName(held.categoryId)} (${formatCount(held.pages)} pp, in Validations)`,
+    ...pool.inReview.map((held) =>
+      t("listEditor.waitingItem", {
+        count: held.itemCount,
+        category: categoryName(held.categoryId),
+        pages: formatCount(held.pages),
+      }),
     ),
-    pool.undecidedCount > 0 ? `${plural(pool.undecidedCount, "proposal")} not decided yet` : null,
+    pool.undecidedCount > 0
+      ? t("listEditor.undecidedProposal", { count: pool.undecidedCount })
+      : null,
   ].filter((part) => part !== null);
 
   return (
     <>
       {waiting.length > 0 && (
         <p>
-          <b className="font-semibold text-foreground">Waiting in review:</b> {waiting.join(" · ")}.
-          They join the pool once review lets them through.
+          <b className="font-semibold text-foreground">{t("listEditor.waitingInReview")}</b>{" "}
+          {waiting.join(" · ")}.{t("listEditor.reviewAllows")}
         </p>
       )}
       {pool.cancelledCount > 0 && (
         <p className="mt-1.5">
-          Not shown: {pool.cancelledCount} Ready but cancelled. Resuming it in Documents brings it
-          back here.
+          {t("listEditor.cancelledNotShown", { count: pool.cancelledCount })}
         </p>
       )}
     </>
@@ -578,6 +585,7 @@ function PoolFilter({
   categories,
   properties,
 }: PoolFilterProps) {
+  const { t } = useTranslation("lists");
   const tops = categories.filter((category) => category.parentId === null);
   const childrenOf = (parentId: string) =>
     categories.filter((category) => category.parentId === parentId);
@@ -585,8 +593,8 @@ function PoolFilter({
   return (
     <>
       <Input
-        aria-label="Search what is ready"
-        placeholder="Search"
+        aria-label={t("listEditor.searchReady")}
+        placeholder={t("listEditor.search")}
         className="h-7 w-32 text-xs"
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
@@ -595,15 +603,15 @@ function PoolFilter({
         value={categoryId || "__all_categories__"}
         onValueChange={(value) => onCategoryChange(value === "__all_categories__" ? "" : value)}
       >
-        <SelectTrigger aria-label="Category" className="h-7 w-auto px-2 text-xs">
+        <SelectTrigger aria-label={t("listEditor.category")} className="h-7 w-auto px-2 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__all_categories__">Every category</SelectItem>
+          <SelectItem value="__all_categories__">{t("listEditor.everyCategory")}</SelectItem>
           {tops.map((top) => (
             <SelectGroup key={top.id}>
               <SelectLabel>{top.name}</SelectLabel>
-              <SelectItem value={top.id}>All of {top.name}</SelectItem>
+              <SelectItem value={top.id}>{t("listEditor.allOf", { name: top.name })}</SelectItem>
               {childrenOf(top.id).map((child) => (
                 <SelectItem key={child.id} value={child.id}>
                   {child.name}
@@ -643,13 +651,14 @@ function EditorHeader({
   report,
   refusal,
 }: EditorHeaderProps) {
+  const { t } = useTranslation("lists");
   const id = useId();
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <Input
-          aria-label="Name"
-          placeholder="Name the list — e.g. Periodicals, October"
+          aria-label={t("listEditor.name")}
+          placeholder={t("listEditor.namePlaceholder")}
           className="h-8 min-w-48 flex-1 font-semibold sm:max-w-80"
           value={fields.name}
           onChange={(event) => onFieldsChange({ name: event.target.value })}
@@ -661,25 +670,28 @@ function EditorHeader({
           value={fields.startsNow ? "now" : "on"}
           onValueChange={(value) => onFieldsChange({ startsNow: value === "now" })}
         >
-          <SelectTrigger aria-label="When it starts" className="h-8 w-auto px-2 text-sm">
+          <SelectTrigger
+            aria-label={t("listEditor.whenStarts")}
+            className="h-8 w-auto px-2 text-sm"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="now">Starts now</SelectItem>
-            <SelectItem value="on">Starts on</SelectItem>
+            <SelectItem value="now">{t("listEditor.startsNow")}</SelectItem>
+            <SelectItem value="on">{t("listEditor.startsOn")}</SelectItem>
           </SelectContent>
         </Select>
         {!fields.startsNow && (
           <Input
             type="date"
-            aria-label="Starts on"
+            aria-label={t("listEditor.startsOn")}
             className="h-8 w-auto"
             value={fields.startsOn}
             onChange={(event) => onFieldsChange({ startsOn: event.target.value })}
           />
         )}
         <label htmlFor={`${id}-ends`} className="text-sm text-muted-foreground">
-          ends
+          {t("listEditor.ends")}
         </label>
         <Input
           id={`${id}-ends`}
@@ -692,14 +704,14 @@ function EditorHeader({
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-          Pages
+          {t("listEditor.pages")}
         </span>
         <b className="font-semibold tabular-nums">{formatCount(pages)}</b>
-        <span className="text-muted-foreground">of</span>
+        <span className="text-muted-foreground">{t("listEditor.of")}</span>
         <Input
-          aria-label="Target pages"
+          aria-label={t("listEditor.targetPages")}
           inputMode="numeric"
-          placeholder="target"
+          placeholder={t("listEditor.target")}
           className="h-7 w-24 text-sm"
           value={fields.target}
           onChange={(event) => onFieldsChange({ target: event.target.value })}
@@ -715,15 +727,12 @@ function EditorHeader({
       {intentions}
       {report}
       {lateCopies > 0 && (
-        <StatusNote
-          tone="amber"
-          title={`${plural(lateCopies, "item")} on this list ${lateCopies === 1 ? "has" : "have"} a copy that appeared after approval`}
-        >
-          Nobody decided over it — it is listed only if you mean it.
+        <StatusNote tone="amber" title={t("listEditor.lateCopyTitle", { count: lateCopies })}>
+          {t("listEditor.lateCopyBody")}
         </StatusNote>
       )}
       {refusal !== null && (
-        <StatusNote tone="red" title="Not saved">
+        <StatusNote tone="red" title={t("listEditor.notSaved")}>
           {refusal.message}
         </StatusNote>
       )}
@@ -754,6 +763,7 @@ function IntentionsStrip({
   generatedWith,
   isDatesChanged,
 }: IntentionsStripProps) {
+  const { t } = useTranslation("lists");
   if (reading === undefined) {
     return null;
   }
@@ -768,21 +778,21 @@ function IntentionsStrip({
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span
           className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
-          title="Worked out from what is on it and when it starts — nothing to tick"
+          title={t("listEditor.countsTowardsTitle")}
         >
-          Counts towards
+          {t("listEditor.countsTowards")}
         </span>
         <CountsTowardsLine rows={reading.countsTowards} canOpen={canOpen} />
       </div>
       <div className="grid gap-2 sm:grid-cols-[auto_1fr] sm:items-start">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-            Mix
+            {t("listEditor.mix")}
           </span>
           <Select value={mixBy ?? overall?.id ?? shapes[0]?.id ?? ""} onValueChange={onMixByChange}>
             <SelectTrigger
-              aria-label="Read the fill against"
-              title="Which intention's mix to read the fill against"
+              aria-label={t("listEditor.readFillAgainst")}
+              title={t("listEditor.readFillTitle")}
               className="h-7 w-auto max-w-48 px-2 text-xs"
             >
               <SelectValue />
@@ -801,23 +811,32 @@ function IntentionsStrip({
       {!isGeneratedCounted && generatedWith !== null && (
         <StatusNote
           tone="amber"
-          title={`Generated with ${generatedWith.name}, but it will not count towards it`}
+          title={t("listEditor.generatedNotCounted", { name: generatedWith.name })}
         >
           {generatedShape === undefined
-            ? "It counts lists starting inside its window"
-            : `${generatedShape.name} counts lists starting ${generatedShape.endsOn === null ? `from ${formatCalendarDay(generatedShape.countsFrom)}` : `${formatCalendarDay(generatedShape.countsFrom)} → ${formatCalendarDay(generatedShape.endsOn)}`}`}
-          ; this one starts {formatCalendarDay(reading.startsOn)}. Move the start into that window
-          if it should.
+            ? t("listEditor.countsInsideWindow")
+            : t("listEditor.shapeCounts", {
+                name: generatedShape.name,
+                starts: formatCalendarDay(generatedShape.countsFrom),
+                ends:
+                  generatedShape.endsOn === null
+                    ? ""
+                    : ` → ${formatCalendarDay(generatedShape.endsOn)}`,
+              })}
+          {t("listEditor.moveStartIntoWindow", { date: formatCalendarDay(reading.startsOn) })}
         </StatusNote>
       )}
       {isDatesChanged && reading.stopsCountingTowards.length > 0 && (
         <StatusNote
           tone="amber"
-          title={`Saving with these dates, it stops counting towards ${reading.stopsCountingTowards.map((row) => row.name).join(", ")}`}
+          title={t("listEditor.stopsCounting", {
+            names: reading.stopsCountingTowards.map((row) => row.name).join(", "),
+          })}
         >
-          {reading.stopsCountingTowards.length === 1 ? "That intention counts" : "They count"} lists
-          starting inside {reading.stopsCountingTowards.length === 1 ? "its" : "their"} window; this
-          one would start {formatCalendarDay(reading.startsOn)}.
+          {t("listEditor.stopsCountingBody", {
+            count: reading.stopsCountingTowards.length,
+            date: formatCalendarDay(reading.startsOn),
+          })}
         </StatusNote>
       )}
     </div>

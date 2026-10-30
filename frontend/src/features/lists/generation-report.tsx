@@ -3,27 +3,26 @@
 // and which categories ended short or unallocated, with why. A list silently short of its own
 // plan is worse than one that says so. Shown in the Generate preview and, once taken, in the
 // editor's top strip until dismissed.
-// TODO(rrandiak): labels move to i18n.
 
 import type { GenerationDraft, ShortfallCause } from "@vera/contract/lists";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 export const generatorClassLabels = {
-  RuleBased: "rule-based",
-  AiBased: "AI-based",
+  RuleBased: "lists:generationReport.ruleBased",
+  AiBased: "lists:generationReport.aiBased",
 } as const satisfies Record<GenerationDraft["generator"]["generatorClass"], string>;
 
 const shortfallTexts = {
-  leftOut: "left out of the categories",
-  overshoot: "what is ready would overshoot",
-  noSupply: "nothing more is ready",
-  unallocated: "no share in the mix — unallocated, not drawn from",
+  leftOut: "generationReport.leftOut",
+  overshoot: "generationReport.overshoot",
+  noSupply: "generationReport.noSupply",
+  unallocated: "generationReport.unallocated",
 } as const satisfies Record<ShortfallCause, string>;
 
 interface GenerationReportProps {
@@ -32,38 +31,45 @@ interface GenerationReportProps {
 }
 
 export function GenerationReport({ draft, onDismiss }: GenerationReportProps) {
+  const { t } = useTranslation("lists");
   const { data: categories = [] } = useCategoriesQuery();
   const { generator, picks, requestedPages, totalPages, spreadCount, shortfalls } = draft;
   const off = totalPages - requestedPages;
   const offShare = Math.round((off / requestedPages) * 100);
   const lateCopies = picks.filter(({ item }) => item.lateCopy !== null).length;
   const parts = [
-    generatorClassLabels[generator.generatorClass],
-    `${plural(picks.length, "pick")}, ${formatCount(totalPages)} of ${formatCount(requestedPages)} pp (${off >= 0 ? "+" : ""}${offShare}%, tolerance ${Math.round(generator.tolerance * 100)}%)`,
-    spreadCount > 0 ? `${spreadCount} re-spread to categories with supply left` : null,
-    lateCopies > 0
-      ? `${lateCopies} with a copy that appeared after approval — look at ${lateCopies === 1 ? "it" : "them"}`
-      : null,
+    t(generatorClassLabels[generator.generatorClass].replace("lists:", "")),
+    t("generationReport.summary", {
+      count: picks.length,
+      total: formatCount(totalPages),
+      requested: formatCount(requestedPages),
+      off: `${off >= 0 ? "+" : ""}${offShare}`,
+      tolerance: Math.round(generator.tolerance * 100),
+    }),
+    spreadCount > 0 ? t("generationReport.respread", { count: spreadCount }) : null,
+    lateCopies > 0 ? t("generationReport.lateCopies", { count: lateCopies }) : null,
   ].filter((part) => part !== null);
 
   return (
     <div className="relative">
       <StatusNote
         tone={shortfalls.length > 0 ? "amber" : "green"}
-        title={`Draft from ${generator.plugin} ${generator.version}`}
+        title={t("generationReport.title", {
+          plugin: generator.plugin,
+          version: generator.version,
+        })}
         className={onDismiss === undefined ? undefined : "pr-10"}
       >
         {parts.join(" · ")}.{" "}
-        {generator.generatorClass === "AiBased" &&
-          "Each reason is the model’s own; review them before saving. "}
-        Nothing is saved yet.
+        {generator.generatorClass === "AiBased" && `${t("generationReport.aiReview")} `}
+        {t("generationReport.notSaved")}
       </StatusNote>
       {onDismiss !== undefined && (
         <Button
           variant="ghost"
           size="icon"
           className="absolute top-1 right-1 size-7"
-          aria-label="Hide the report"
+          aria-label={t("generationReport.hide")}
           onClick={onDismiss}
         >
           <X className="size-3.5" />
@@ -72,7 +78,7 @@ export function GenerationReport({ draft, onDismiss }: GenerationReportProps) {
       {shortfalls.length > 0 && (
         <details className="mt-1 px-3.5 text-xs text-muted-foreground">
           <summary className="cursor-pointer">
-            {plural(shortfalls.length, "category", "categories")} short or unallocated — show
+            {t("generationReport.shortfalls", { count: shortfalls.length })}
           </summary>
           <ul className="mt-1 grid gap-0.5 pb-1">
             {shortfalls.map((shortfall) => (
@@ -81,10 +87,13 @@ export function GenerationReport({ draft, onDismiss }: GenerationReportProps) {
                   {categoryLabelOf(categories, shortfall.categoryId)}
                 </b>{" "}
                 {shortfall.cause === "unallocated"
-                  ? shortfallTexts.unallocated
-                  : `${formatCount(shortfall.pages)} pp short — ${shortfallTexts[shortfall.cause]}`}
+                  ? t(shortfallTexts.unallocated)
+                  : t("generationReport.shortfall", {
+                      pages: formatCount(shortfall.pages),
+                      cause: t(shortfallTexts[shortfall.cause]),
+                    })}
                 {shortfall.inReviewCount > 0 &&
-                  ` (${shortfall.inReviewCount} more waiting in review)`}
+                  ` ${t("generationReport.inReview", { count: shortfall.inReviewCount })}`}
               </li>
             ))}
           </ul>

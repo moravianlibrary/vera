@@ -2,12 +2,12 @@
 // run at once, so it is not master–detail but cards for the proposed and active (including
 // upcoming), with compact tables for the ended and rejected. Each populated category is a
 // remembered section unless it is the only one shown. A card or row opens its project.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ProjectRow } from "@vera/contract/projects";
 import type { Session } from "@vera/domain/entities";
 import { can, hasPermission, scopesOf } from "@vera/domain/permissions";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import type { CardSection } from "@/components/card-sections";
 import { CardSections } from "@/components/card-sections";
@@ -42,7 +42,7 @@ type ProjectSectionId = (typeof projectSectionIds)[number];
 
 const nameColumn: ColumnDefinition<ProjectRow> = {
   key: "project",
-  header: "Project",
+  header: "projects:projectsPage.project",
   track: "minmax(12rem,1fr)",
   cell: (row) => (
     <Link to={projectHref(row)} className="font-medium hover:underline">
@@ -53,7 +53,7 @@ const nameColumn: ColumnDefinition<ProjectRow> = {
 
 const periodColumn: ColumnDefinition<ProjectRow> = {
   key: "period",
-  header: "Period",
+  header: "projects:projectsPage.period",
   track: "max-content",
   cell: (row) => <span className="text-muted-foreground">{periodTextOf(row.project)}</span>,
 };
@@ -74,12 +74,20 @@ const pagesColumn = (
 });
 
 // Its intention's (projects.md §1.1).
-const target = pagesColumn("target", "Target", (row) => row.intention.targetPages);
-const planned = pagesColumn("planned", "Planned", (row) => row.plannedPages);
-const delivered = pagesColumn("delivered", "Delivered", (row) => row.deliveredPages);
+const target = pagesColumn(
+  "target",
+  "projects:projectsPage.target",
+  (row) => row.intention.targetPages,
+);
+const planned = pagesColumn("planned", "projects:projectsPage.planned", (row) => row.plannedPages);
+const delivered = pagesColumn(
+  "delivered",
+  "projects:projectsPage.delivered",
+  (row) => row.deliveredPages,
+);
 const result: ColumnDefinition<ProjectRow> = {
   key: "result",
-  header: "Result",
+  header: "projects:projectsPage.result",
   track: "max-content",
   cell: (row) => {
     const pace = paceOf(row);
@@ -97,7 +105,7 @@ export const endedProjectColumns = {
 export function rejectedProjectColumns(nameOf: (userId: string) => string) {
   const decided: ColumnDefinition<ProjectRow> = {
     key: "decided",
-    header: "Decided",
+    header: "projects:projectsPage.decided",
     track: "max-content",
     cell: (row) =>
       row.project.state === "Rejected" ? (
@@ -108,7 +116,7 @@ export function rejectedProjectColumns(nameOf: (userId: string) => string) {
   };
   const reason: ColumnDefinition<ProjectRow> = {
     key: "reason",
-    header: "Reason",
+    header: "projects:projectsPage.reason",
     track: "minmax(12rem,2fr)",
     cell: (row) =>
       row.project.state === "Rejected" ? (
@@ -123,6 +131,7 @@ export function rejectedProjectColumns(nameOf: (userId: string) => string) {
 }
 
 export function ProjectsPage() {
+  const { t } = useTranslation("projects");
   const view = useViewUrlState(projectsView);
   const navigate = useNavigate();
   const [isStarting, setIsStarting] = useState(false);
@@ -141,13 +150,13 @@ export function ProjectsPage() {
   return (
     <>
       <PageHeader
-        title="Projects"
+        title={t("projectsPage.title")}
         actions={
           can(session, "project.create")
             ? [
                 {
                   id: "new",
-                  label: "New project",
+                  label: t("projectsPage.newProject"),
                   isPrimary: true,
                   onSelect: () => setIsStarting(true),
                 },
@@ -178,19 +187,19 @@ export function ProjectsPage() {
         query={view.query}
         facets={index?.facets}
         onQueryChange={view.setQuery}
-        searchLabel="Search projects"
-        searchPlaceholder="Search projects — name, description"
+        searchLabel={t("projectsPage.searchLabel")}
+        searchPlaceholder={t("projectsPage.searchPlaceholder")}
       />
       <PageContent>
         {indexQuery.isError ? (
           <>
             <QueryState
               isLoading={false}
-              failure={failureOf(indexQuery, "Could not load projects.")}
+              failure={failureOf(indexQuery, t("projectsPage.loadFailure"))}
             >
               <span />
             </QueryState>
-            <p className="px-4 text-sm text-muted-foreground">Try again in a moment.</p>
+            <p className="px-4 text-sm text-muted-foreground">{t("projectsPage.tryAgain")}</p>
           </>
         ) : index === undefined ? null : (
           <ProjectBoard
@@ -231,16 +240,17 @@ function ProjectBoard({
   rejectedColumns,
   onOpen,
 }: ProjectBoardProps) {
+  const { t } = useTranslation("projects");
   const { isOpen, setOpen } = useSectionPreferences<ProjectSectionId>("projects");
   const visibleCount = Object.values(sections).filter((rows) => rows.length > 0).length;
   if (visibleCount === 0) {
     return (
       <p className="text-sm text-muted-foreground">
         {isFiltered
-          ? "No projects match these filters"
+          ? t("projectsPage.noMatches")
           : seesEvery
-            ? "None yet"
-            : "None you are on"}
+            ? t("projectsPage.noneYet")
+            : t("projectsPage.noneYouAreOn")}
       </p>
     );
   }
@@ -249,7 +259,7 @@ function ProjectBoard({
   const cardSections: CardSection<ProjectRow>[] = [
     {
       id: "proposed",
-      title: "Proposed",
+      title: t("projectState.Proposed"),
       items: sections.proposed,
       isHeadingHidden,
       isOpen: isOpen("proposed"),
@@ -258,8 +268,8 @@ function ProjectBoard({
     {
       id: "active",
       title: sections.active.some((row) => row.period === "Upcoming")
-        ? "Active and upcoming"
-        : "Active",
+        ? t("projectsPage.activeUpcoming")
+        : t("projectPeriod.Active"),
       items: sections.active,
       isHeadingHidden,
       isOpen: isOpen("active"),
@@ -267,7 +277,7 @@ function ProjectBoard({
     },
     {
       id: "ended",
-      title: "Ended",
+      title: t("projectPeriod.Ended"),
       items: sections.ended,
       isHeadingHidden,
       isOpen: isOpen("ended"),
@@ -276,7 +286,7 @@ function ProjectBoard({
     },
     {
       id: "rejected",
-      title: "Rejected",
+      title: t("projectState.Rejected"),
       items: sections.rejected,
       isHeadingHidden,
       isOpen: isOpen("rejected"),

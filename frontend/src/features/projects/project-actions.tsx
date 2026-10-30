@@ -5,13 +5,13 @@
 // An act the person may not do is absent. Approve… comes first, as the primary, while it waits.
 // *Message manager…* on the page reaches its manager, for anyone but the manager, while a Message
 // instance is enabled (MSG-recipients, MSG-order).
-// TODO(rrandiak): labels move to i18n.
 
 import type { ProjectRow } from "@vera/contract/projects";
 import type { Session } from "@vera/domain/entities";
 import { can } from "@vera/domain/permissions";
 import { scopeOfProject } from "@vera/domain/projects";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { MessageDialog } from "@/components/dialogs/message-dialog";
 import {
@@ -32,6 +32,7 @@ interface ProjectActionsOptions {
 }
 
 export function useProjectActions({ row, session, onDeleted = () => {} }: ProjectActionsOptions) {
+  const { t } = useTranslation("projects");
   const { project } = row;
   const scope = scopeOfProject(project);
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
@@ -42,18 +43,22 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
     ? [
         {
           id: "approve",
-          label: "Approve…",
+          label: t("projectActions.approve"),
           isPrimary: true,
           onSelect: () => setOpenDialog("approve"),
         },
-        { id: "reject", label: "Reject…", onSelect: () => setOpenDialog("reject") },
+        {
+          id: "reject",
+          label: t("projectActions.reject"),
+          onSelect: () => setOpenDialog("reject"),
+        },
       ]
     : [];
   const pageActions: ViewAction[] = [...decisionActions];
   if (can(session, "project.edit", scope)) {
     pageActions.push({
       id: "edit",
-      label: "Edit",
+      label: t("projectActions.edit"),
       isPrimary: !canDecide,
       onSelect: () => setOpenDialog("edit"),
     });
@@ -62,7 +67,7 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
   if (messageChannels.length > 0 && project.managerId !== session.user.id) {
     pageActions.push({
       id: "message-manager",
-      label: "Message manager…",
+      label: t("projectActions.messageManager"),
       onSelect: () => setOpenDialog("message"),
     });
   }
@@ -70,7 +75,7 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
   if (can(session, "project.delete", scope) && row.proposalCount === 0) {
     pageActions.push({
       id: "delete",
-      label: "Delete…",
+      label: t("projectActions.delete"),
       isInMenu: true,
       isDestructive: true,
       onSelect: () => setOpenDialog("delete"),
@@ -113,7 +118,7 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
         onClose={close}
         subject={{ kind: "project", id: project.id }}
         label={project.name}
-        recipientLabel="its manager"
+        recipientLabel={t("projectActions.manager")}
       />
       <DeleteProjectDialog
         isOpen={openDialog === "delete"}

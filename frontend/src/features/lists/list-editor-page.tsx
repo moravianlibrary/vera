@@ -2,9 +2,9 @@
 // `/lists/:listId/edit` needs `list.edit`; without it the page goes back to browse, as the action
 // that leads here is absent. A Done list is history and is not edited. `/lists/new?generate…`
 // is a new list an intention's card started (lists-view.ts `generationStartOf`).
-// TODO(rrandiak): labels move to i18n.
 
 import { can, hasPermission } from "@vera/domain/permissions";
+import { useTranslation } from "react-i18next";
 import { Navigate, useParams, useSearchParams } from "react-router";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { failureOf, QueryState } from "@/components/query-state";
@@ -15,6 +15,7 @@ import { useListQuery } from "@/features/lists/use-lists-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 
 export function ListEditorPage() {
+  const { t } = useTranslation("lists");
   const { listId = null } = useParams();
   const { data: session } = useSessionQuery();
   const listQuery = useListQuery(listId);
@@ -33,7 +34,7 @@ export function ListEditorPage() {
   if (listId === null) {
     return (
       <>
-        <PageHeader title="New list" />
+        <PageHeader title={t("editorPage.newList")} />
         <ListEditor
           detail={null}
           start={generationStartOf(params)}
@@ -46,12 +47,12 @@ export function ListEditorPage() {
   if (detail === undefined) {
     return (
       <>
-        <PageHeader title="Edit list" />
+        <PageHeader title={t("editorPage.editList")} />
         {listId !== null && (
           <QueryState
             isLoading={listQuery.isLoading}
-            failure={failureOf(listQuery, "Could not load this list.")}
-            loadingText="Loading the list…"
+            failure={failureOf(listQuery, t("editorPage.loadFailure"))}
+            loadingText={t("editorPage.loading")}
           >
             {null}
           </QueryState>
@@ -63,12 +64,13 @@ export function ListEditorPage() {
   if (detail === null || detail.row.state === "Done") {
     return (
       <>
-        <PageHeader title="Edit list" />
+        <PageHeader title={t("editorPage.editList")} />
         <PageContent>
-          <StatusNote tone="slate" title={detail === null ? "Not found" : "Done"}>
-            {detail === null
-              ? "This list is gone, or not yours to see."
-              : "A Done list is history: what is on it and its dates no longer change."}
+          <StatusNote
+            tone="slate"
+            title={detail === null ? t("editorPage.notFound") : t("editorPage.doneTitle")}
+          >
+            {detail === null ? t("editorPage.gone") : t("editorPage.done")}
           </StatusNote>
         </PageContent>
       </>

@@ -2,10 +2,11 @@
 // *Mix* cards): what it counts towards, worked out from what is on it and when it starts, never
 // attached, and its fill per category against one intention's mix, inside its scope. A correcting
 // run is read against the allocation it accepted. The editor's top and the pane both use them.
-// TODO(rrandiak): labels move to i18n.
 
 import type { CountsTowardsRow, ListMix, ListMixRow } from "@vera/contract/lists";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+import { i18n } from "@/i18n";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
@@ -22,10 +23,9 @@ export function CountsTowardsLine({
   rows: readonly CountsTowardsRow[];
   canOpen: boolean;
 }) {
+  const { t } = useTranslation("lists");
   if (rows.length === 0) {
-    return (
-      <span className="text-muted-foreground">nothing yet — it counts once items are on it</span>
-    );
+    return <span className="text-muted-foreground">{t("listIntentions.emptyCounts")}</span>;
   }
 
   return (
@@ -51,18 +51,21 @@ export function CountsTowardsLine({
 
 function labelOf(row: ListMixRow, total: number, hasGoal: boolean): string {
   if (row.share === null) {
-    return "unallocated";
+    return i18n.t("lists:listIntentions.unallocated");
   }
 
   if (row.share === 0) {
-    return "excluded — 0%";
+    return i18n.t("lists:listIntentions.excluded");
   }
 
   if (hasGoal && row.goalPages !== null) {
     return `${formatCount(row.pages)} / ${formatCount(row.goalPages)} pp`;
   }
 
-  return `${total === 0 ? 0 : Math.round((row.pages / total) * 100)}% of its pages · ${formatCount(row.pages)} pp`;
+  return i18n.t("lists:listIntentions.share", {
+    percent: total === 0 ? 0 : Math.round((row.pages / total) * 100),
+    pages: formatCount(row.pages),
+  });
 }
 
 // One meter per category: the pages on the list against its goal.

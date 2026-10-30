@@ -5,7 +5,6 @@
 // and the dialog says what happens to each member. Per item, while the list is not Done and the
 // item is still open: *Could not be digitized…* with a message, while the list runs; *Cancel…*
 // with a reason, which takes it off the list; and taking it off in the editor.
-// TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
 import type { DeletionDryRun, ListDetail, ListItem, MarkDoneDryRun } from "@vera/contract/lists";
@@ -14,6 +13,7 @@ import { isCancellable, scopeOfIteration } from "@vera/domain/iterations";
 import { isScanned } from "@vera/domain/lists";
 import { can, hasPermission } from "@vera/domain/permissions";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cancelIteration } from "@/api/iterations";
 import {
   deleteList,
@@ -31,15 +31,15 @@ import { ReasonDialog } from "@/components/dialogs/reason-dialog";
 import { listInvalidations, listsQueryKey } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
+import { i18n } from "@/i18n";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
-const listRefusalTexts = {
-  "list.done": "This list was marked Done meanwhile; it no longer changes.",
-  "list.not_started": "It has not started yet: nothing on it is being scanned.",
-  "list.already_started": "It has started meanwhile.",
-} as const;
+const listRefusalTextsOf = (t: (key: string) => string) => ({
+  "list.done": t("listActions.refusalDone"),
+  "list.not_started": t("listActions.refusalNotStarted"),
+  "list.already_started": t("listActions.refusalStarted"),
+});
 
 type OpenDialog = "start" | "done" | "delete" | null;
 
@@ -50,6 +50,7 @@ interface ListActionsOptions {
 }
 
 export function useListActions({ detail, session, onDeleted }: ListActionsOptions) {
+  const { t } = useTranslation("lists");
   const { row } = detail;
   const { list } = row;
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
@@ -68,17 +69,17 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
   const done = useActionMutation({
     call: markDone,
     invalidates: listInvalidations,
-    refusalTexts: listRefusalTexts,
+    refusalTexts: listRefusalTextsOf(t),
   });
   const start = useActionMutation({
     call: startList,
     invalidates: listInvalidations,
-    refusalTexts: listRefusalTexts,
+    refusalTexts: listRefusalTextsOf(t),
   });
   const remove = useActionMutation({
     call: deleteList,
     invalidates: listInvalidations,
-    refusalTexts: listRefusalTexts,
+    refusalTexts: listRefusalTextsOf(t),
   });
 
   // A Done list is history: nothing on it or about it changes (flows.md L16).
@@ -87,7 +88,7 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
     hasPermission(session, "list.edit") && row.state === "InProgress"
       ? {
           id: "done",
-          label: "Mark Done…",
+          label: t("listActions.markDone"),
           isPrimary: row.isOverdue,
           onSelect: () => setOpenDialog("done"),
         }
@@ -96,7 +97,7 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
     hasPermission(session, "list.edit") && isOpen
       ? {
           id: "edit",
-          label: "Edit",
+          label: t("listActions.edit"),
           isPrimary: !row.isOverdue,
           href: `/lists/${encodeURIComponent(list.id)}/edit`,
         }
@@ -106,13 +107,17 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
   const actions = ordered.filter((action) => action !== null);
 
   if (hasPermission(session, "list.edit") && row.state === "Planned") {
-    actions.push({ id: "start", label: "Start now…", onSelect: () => setOpenDialog("start") });
+    actions.push({
+      id: "start",
+      label: t("listActions.start"),
+      onSelect: () => setOpenDialog("start"),
+    });
   }
 
   if (hasPermission(session, "list.delete") && isOpen) {
     actions.push({
       id: "delete",
-      label: "Delete…",
+      label: t("listActions.delete"),
       isInMenu: true,
       isDestructive: true,
       onSelect: () => setOpenDialog("delete"),
@@ -124,42 +129,42 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
       <ConsequenceDialog
         isOpen={openDialog === "start"}
         onClose={() => setOpenDialog(null)}
-        title={`Start ${list.name} now?`}
-        description={`It was to start ${formatCalendarDay(list.startsOn)}; its start date becomes today.`}
+        title={t("listActions.startTitle", { name: list.name })}
+        description={t("listActions.startDescription", { date: formatCalendarDay(list.startsOn) })}
         consequences={[
-          { text: "It is In progress from now, and so is everything on it not held." },
+          { text: t("listActions.startConsequence") },
           {
-            text: "Intentions count a list by the day it starts, so it may count towards other ones.",
+            text: t("listActions.intentionConsequence"),
           },
-          { text: "The history keeps the date it replaced." },
+          { text: t("listActions.historyConsequence") },
         ]}
-        confirmLabel="Start now"
+        confirmLabel={t("listActions.start")}
         isDestructive={false}
         onConfirm={() => start.run(list.id)}
       />
       <ConsequenceDialog
         isOpen={openDialog === "done"}
         onClose={() => setOpenDialog(null)}
-        title={`Mark ${list.name} Done?`}
-        description="Everything on it not marked could not be digitized moves to Digitized."
+        title={t("listActions.doneTitle", { name: list.name })}
+        description={t("listActions.doneDescription")}
         consequences={
           doneDryRun.data === undefined ? undefined : doneConsequencesOf(doneDryRun.data)
         }
-        confirmLabel="Mark Done"
+        confirmLabel={t("listActions.markDone")}
         isDestructive={false}
         onConfirm={() => done.run(list.id)}
       />
       <ConsequenceDialog
         isOpen={openDialog === "delete"}
         onClose={() => setOpenDialog(null)}
-        title={`Delete ${list.name}?`}
-        description="What is on it returns to the pool; the list is gone."
+        title={t("listActions.deleteTitle", { name: list.name })}
+        description={t("listActions.deleteDescription")}
         consequences={
           deletionDryRun.data === undefined
             ? undefined
             : deletionConsequencesOf(deletionDryRun.data, list.id)
         }
-        confirmLabel="Delete list"
+        confirmLabel={t("listActions.deleteList")}
         isDestructive
         onConfirm={async () => {
           const result = await remove.run(list.id);
@@ -177,58 +182,69 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
 }
 
 function doneConsequencesOf(dryRun: MarkDoneDryRun): Consequence[] {
+  const t = (key: string, options?: Record<string, unknown>) => i18n.t(`lists:${key}`, options);
   const { toDigitized, alreadyScannedCount, notDigitizableCount, blocked } = dryRun;
   const consequences: (Consequence | null)[] = [
     {
-      text: `${plural(toDigitized.itemCount, "item moves", "items move")} to Digitized — ${formatCount(toDigitized.pages)} pp`,
+      text: t("listActions.toDigitized", {
+        count: toDigitized.itemCount,
+        pages: formatCount(toDigitized.pages),
+      }),
     },
     alreadyScannedCount > 0
       ? {
-          text: `${alreadyScannedCount} already digitized ${alreadyScannedCount === 1 ? "stays as it is" : "stay as they are"}`,
+          text: t("listActions.alreadyScanned", { count: alreadyScannedCount }),
         }
       : null,
     notDigitizableCount > 0
       ? {
-          text: `${notDigitizableCount} marked could not be digitized ${notDigitizableCount === 1 ? "does not; its message stands" : "do not; their message stands"}`,
+          text: t("listActions.notDigitizable", { count: notDigitizableCount }),
         }
       : null,
     blocked.length > 0
       ? {
-          text: `${blocked.length} ${blocked.length === 1 ? "is" : "are"} blocked since listing — ${blocked.map((item) => item.title).join(", ")}. If ${blocked.length === 1 ? "it was" : "they were"} not scanned, close this and mark ${blocked.length === 1 ? "it" : "them"} could not be digitized first.`,
+          text: t("listActions.blocked", {
+            count: blocked.length,
+            names: blocked.map((item) => item.title).join(", "),
+          }),
           tone: "amber",
         }
       : null,
     {
-      text: "If something on it was not scanned, mark that item first, from the ⋯ beside it. Done is final: the list stays as history and cannot be deleted.",
+      text: t("listActions.doneFinal"),
     },
   ];
   return consequences.filter((consequence) => consequence !== null);
 }
 
 function deletionConsequencesOf(dryRun: DeletionDryRun, listId: string): Consequence[] {
+  const t = (key: string, options?: Record<string, unknown>) => i18n.t(`lists:${key}`, options);
   const { toReady, toEnqueuedCount, scannedCount, heldCount } = dryRun;
   const consequences: (Consequence | null)[] = [
     {
-      text: `${plural(toReady.itemCount, "item returns", "items return")} to the pool as Ready — ${formatCount(toReady.pages)} pp`,
+      text: t("listActions.toReady", {
+        count: toReady.itemCount,
+        pages: formatCount(toReady.pages),
+      }),
     },
     toEnqueuedCount > 0
       ? {
-          text: `${toEnqueuedCount} blocked since listing ${toEnqueuedCount === 1 ? "goes" : "go"} back to Enqueued, Ready again when the gate clears`,
+          text: t("listActions.toEnqueued", { count: toEnqueuedCount }),
           tone: "amber",
         }
       : null,
     scannedCount > 0
       ? {
-          text: `${scannedCount} already digitized ${scannedCount === 1 ? "keeps its" : "keep their"} status`,
+          text: t("listActions.scannedStatus", { count: scannedCount }),
         }
       : null,
     heldCount > 0
       ? {
-          text: `${heldCount} cancelled or not digitizable ${heldCount === 1 ? "stays" : "stay"} held`,
+          text: t("listActions.held", { count: heldCount }),
         }
       : null,
     {
-      text: `A list is deleted, not cancelled: no reason is asked. That they were listed on ${listId} stays in each one's history.`,
+      text: t("listActions.deletedHistory", { id: listId }),
     },
   ];
   return consequences.filter((consequence) => consequence !== null);
@@ -247,6 +263,7 @@ interface ItemActionsProps {
 // The ⋯ beside a member, with its dialogs; nothing for a member that is scanned or stopped, or on
 // a Done list.
 export function ItemActions({ item, detail, session }: ItemActionsProps) {
+  const { t } = useTranslation("lists");
   const { data: categories = [] } = useCategoriesQuery();
   const [openDialog, setOpenDialog] = useState<OpenItemDialog>(null);
   const { row } = detail;
@@ -256,15 +273,15 @@ export function ItemActions({ item, detail, session }: ItemActionsProps) {
     call: (message: string) => markNotDigitizable(list.id, iteration.id, { message }),
     invalidates: listInvalidations,
     refusalTexts: {
-      ...listRefusalTexts,
-      "iteration.stopped": "It was scanned or stopped meanwhile.",
+      ...listRefusalTextsOf(t),
+      "iteration.stopped": t("listActions.iterationStopped"),
     },
   });
   const cancel = useActionMutation({
     call: (texts: { publicText: string; internalText: string | null }) =>
       cancelIteration(iteration.id, texts),
     invalidates: listInvalidations,
-    refusalTexts: { 409: "It is already held, or it has been scanned meanwhile." },
+    refusalTexts: { 409: t("listActions.alreadyHeld") },
   });
 
   if (row.state === "Done" || isScanned(iteration) || iteration.cancellation !== null) {
@@ -275,7 +292,7 @@ export function ItemActions({ item, detail, session }: ItemActionsProps) {
   if (hasPermission(session, "list.edit") && row.state === "InProgress") {
     actions.push({
       id: "notDigitizable",
-      label: "Could not be digitized…",
+      label: t("listActions.notDigitizedAction"),
       isInMenu: true,
       onSelect: () => setOpenDialog("notDigitizable"),
     });
@@ -285,7 +302,7 @@ export function ItemActions({ item, detail, session }: ItemActionsProps) {
   if (can(session, "iteration.cancel", scope) && isCancellable(iteration)) {
     actions.push({
       id: "cancel",
-      label: "Cancel…",
+      label: t("listActions.cancel"),
       isInMenu: true,
       isDestructive: true,
       onSelect: () => setOpenDialog("cancel"),
@@ -295,7 +312,7 @@ export function ItemActions({ item, detail, session }: ItemActionsProps) {
   if (hasPermission(session, "list.edit")) {
     actions.push({
       id: "takeOff",
-      label: "Take it off — in the editor",
+      label: t("listActions.takeOff"),
       isInMenu: true,
       href: `/lists/${encodeURIComponent(list.id)}/edit`,
     });
@@ -307,33 +324,37 @@ export function ItemActions({ item, detail, session }: ItemActionsProps) {
       <ReasonDialog
         isOpen={openDialog === "notDigitizable"}
         onClose={() => setOpenDialog(null)}
-        title={`Could not be digitized — ${document.title}`}
-        description="Mark it as not digitized, with a message every asker reads."
+        title={t("listActions.notDigitizedTitle", { title: document.title })}
+        description={t("listActions.notDigitizedDescription")}
         publicText={{
-          label: "Message",
-          hint: "required; every asker reads it",
+          label: t("listActions.message"),
+          hint: t("listActions.requiredEveryAsker"),
           isRequired: true,
-          placeholder: "e.g. Pages too tightly bound to open safely; sent to conservation.",
+          placeholder: t("listActions.notDigitizedPlaceholder"),
         }}
-        reach={`It stays on ${list.name}, marked. Marking the list Done moves every other item to Digitized; this one is not.`}
-        confirmLabel="Mark it"
+        reach={t("listActions.notDigitizedReach", { name: list.name })}
+        confirmLabel={t("listActions.markIt")}
         isDestructive
         onConfirm={({ publicText }) => notDigitizable.run(publicText)}
       />
       <ReasonDialog
         isOpen={openDialog === "cancel"}
         onClose={() => setOpenDialog(null)}
-        title={`Cancel — ${document.title}`}
-        description="Hold it at the gate and take it off the list."
+        title={t("listActions.cancelTitle", { title: document.title })}
+        description={t("listActions.cancelDescription")}
         publicText={{
-          label: "Reason",
-          hint: "required; every asker reads it",
+          label: t("listActions.reason"),
+          hint: t("listActions.requiredEveryAsker"),
           isRequired: true,
-          placeholder: "e.g. Postponed — will be scheduled next quarter.",
+          placeholder: t("listActions.cancelPlaceholder"),
         }}
-        internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
-        reach="Held at the gate, and taken off the list. Resuming it in Documents brings it back to the pool."
-        confirmLabel="Cancel it"
+        internalNote={{
+          label: t("listActions.internalNote"),
+          hint: t("listActions.optionalStaff"),
+          isRequired: false,
+        }}
+        reach={t("listActions.cancelReach")}
+        confirmLabel={t("listActions.cancelIt")}
         isDestructive
         onConfirm={({ publicText, internalNote }) =>
           cancel.run({ publicText, internalText: internalNote || null })

@@ -4,10 +4,10 @@
 // decision would act on, the lists carrying its items, its members, and what is approved but on
 // no list yet. The target, planned, delivered and pace are its own intention's, the one number
 // kept in one place; a project with no target draws the time alone.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ProjectRow } from "@vera/contract/projects";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
 import { ProjectStateBadge, ToneBadge } from "@/components/status-badge";
@@ -20,8 +20,8 @@ import {
   targetTextOf,
   timeLabelOf,
 } from "@/features/projects/projects-view";
+import { i18n } from "@/i18n";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 interface ProjectCardProps {
   row: ProjectRow;
@@ -30,12 +30,13 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ row, nameOf, actions }: ProjectCardProps) {
+  const { t } = useTranslation("projects");
   const { project } = row;
   const meta = [
     periodTextOf(project),
     targetTextOf(row),
-    `managed by ${nameOf(project.managerId)}`,
-    project.state === "Approved" ? `${project.priority} priority` : null,
+    t("projectCard.managedBy", { name: nameOf(project.managerId) }),
+    project.state === "Approved" ? t("projectCard.priority", { priority: project.priority }) : null,
   ]
     .filter((part) => part !== null)
     .join(" · ");
@@ -74,7 +75,9 @@ export function ProjectBadges({ row }: { row: ProjectRow }) {
     <>
       <ProjectStateBadge state={project.state} />
       {project.state !== "Rejected" && (
-        <ToneBadge tone={periodTones[row.period]}>{row.period}</ToneBadge>
+        <ToneBadge tone={periodTones[row.period]}>
+          {i18n.t(`projects:projectPeriod.${row.period}`)}
+        </ToneBadge>
       )}
       {pace !== null && <ToneBadge tone={pace.tone}>{pace.text}</ToneBadge>}
     </>
@@ -82,9 +85,10 @@ export function ProjectBadges({ row }: { row: ProjectRow }) {
 }
 
 function ProjectFoot({ row }: { row: ProjectRow }) {
+  const { t } = useTranslation("projects");
   const { project, pending, waiting } = row;
   const groupNames = row.memberGroups.map((group) => group.name).join(", ");
-  const members = [plural(project.memberIds.length, "member"), groupNames || null]
+  const members = [t("projectCard.member", { count: project.memberIds.length }), groupNames || null]
     .filter((part) => part !== null)
     .join(" · ");
 
@@ -95,16 +99,21 @@ function ProjectFoot({ row }: { row: ProjectRow }) {
           key: "pending",
           part:
             project.state !== "Proposed" ? null : pending.documentCount === 0 ? (
-              "No proposals in it yet"
+              t("projectCard.noProposals")
             ) : (
               <>
-                <b className="font-medium text-foreground">{pending.documentCount} pending</b>
+                <b className="font-medium text-foreground">
+                  {t("projectCard.pending", { count: pending.documentCount })}
+                </b>
                 {pending.withCopyCount > 0 &&
-                  ` · ${pending.withCopyCount} with a copy (will be skipped)`}
+                  ` · ${t("projectCard.withCopy", { count: pending.withCopyCount })}`}
               </>
             ),
         },
-        { key: "lists", part: row.listCount > 0 ? plural(row.listCount, "list") : null },
+        {
+          key: "lists",
+          part: row.listCount > 0 ? t("projectCard.list", { count: row.listCount }) : null,
+        },
         { key: "members", part: members },
         {
           key: "waiting",
@@ -112,7 +121,7 @@ function ProjectFoot({ row }: { row: ProjectRow }) {
             waiting.itemCount === 0 ? null : (
               <>
                 <b className="font-medium text-foreground">{formatCount(waiting.pages)} pp</b>{" "}
-                approved, not on a list
+                {t("projectCard.approvedNotListed")}
               </>
             ),
         },

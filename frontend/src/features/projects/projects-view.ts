@@ -3,7 +3,6 @@
 // ended and rejected sit in tables below. Each section shows its newest projects first. Decision and period are two badges
 // that never mix (projects.md §1). The target, planned, delivered and pace are the project's own
 // intention's (§1.1).
-// TODO(rrandiak): labels move to i18n.
 
 import type { ProjectQuery, ProjectRow } from "@vera/contract/projects";
 import {
@@ -19,9 +18,9 @@ import type { ProjectPeriod } from "@vera/domain/projects";
 import { projectPeriods } from "@vera/domain/projects";
 import type { DayPreset } from "@vera/domain/value-range";
 import type { Tone } from "@/components/status-badge";
+import { i18n } from "@/i18n";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 import type { NoteTone } from "@/lib/status-notes";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
@@ -43,32 +42,47 @@ export const projectsView: ViewDefinition<ProjectQuery> = {
   fields: [
     {
       key: "states",
-      label: "Decision",
+      label: "projects:projectsView.decision",
       field: vocabulary(projectStates, {
-        Proposed: "Proposed",
-        Approved: "Approved",
-        Rejected: "Rejected",
+        Proposed: "projects:projectState.Proposed",
+        Approved: "projects:projectState.Approved",
+        Rejected: "projects:projectState.Rejected",
       }),
       isQuick: true,
     },
     {
       key: "periods",
-      label: "Period",
-      field: vocabulary(projectPeriods, { Upcoming: "Upcoming", Active: "Active", Ended: "Ended" }),
+      label: "projects:projectsView.period",
+      field: vocabulary(projectPeriods, {
+        Upcoming: "projects:projectPeriod.Upcoming",
+        Active: "projects:projectPeriod.Active",
+        Ended: "projects:projectPeriod.Ended",
+      }),
       isQuick: true,
     },
     {
       key: "paces",
-      label: "Pace",
-      field: vocabulary(projectPaces, { BehindPace: "Behind pace", OnTrack: "On track" }),
+      label: "projects:projectsView.pace",
+      field: vocabulary(projectPaces, {
+        BehindPace: "projects:projectPace.BehindPace",
+        OnTrack: "projects:projectPace.OnTrack",
+      }),
     },
     {
       key: "dates",
-      label: "Project dates",
+      label: "projects:projectsView.projectDates",
       field: { kind: "dateRange", presets: projectDatePresets },
     },
-    { key: "timeElapsed", label: "Time elapsed", field: { kind: "numberRange", unit: "%" } },
-    { key: "delivered", label: "Delivered", field: { kind: "numberRange", unit: "pages" } },
+    {
+      key: "timeElapsed",
+      label: "projects:projectsView.timeElapsed",
+      field: { kind: "numberRange", unit: "%" },
+    },
+    {
+      key: "delivered",
+      label: "projects:projectsView.delivered",
+      field: { kind: "numberRange", unit: "pages" },
+    },
   ],
   groupings: [],
   groupingParam: "group",
@@ -146,11 +160,11 @@ export function paceOf(
   }
 
   const labels = {
-    onPace: "On pace",
-    behindPace: "Behind pace",
-    targetMet: "Target met",
-    short: `${deliveredPercentOf(row) ?? 0}% delivered`,
-    fullyPlanned: "Fully planned",
+    onPace: i18n.t("projects:projectPace.onPace"),
+    behindPace: i18n.t("projects:projectPace.behindPace"),
+    targetMet: i18n.t("projects:projectPace.targetMet"),
+    short: i18n.t("projects:projectPace.short", { percent: deliveredPercentOf(row) ?? 0 }),
+    fullyPlanned: i18n.t("projects:projectPace.fullyPlanned"),
   } as const satisfies Record<TargetVerdict, string>;
   return { text: labels[row.verdict], tone: verdictTones[row.verdict] };
 }
@@ -158,21 +172,32 @@ export function paceOf(
 // "target 6,000 pp", "no target".
 export function targetTextOf(row: ProjectRow): string {
   const target = row.intention.targetPages;
-  return target === null ? "no target" : `target ${formatCount(target)} pp`;
+  return target === null
+    ? i18n.t("projects:projectText.noTarget")
+    : i18n.t("projects:projectText.target", { pages: formatCount(target) });
 }
 
 export function periodTextOf(project: Pick<Project, "startsOn" | "endsOn">): string {
-  return `${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(project.endsOn)}`;
+  return i18n.t("projects:projectText.period", {
+    starts: formatCalendarDay(project.startsOn),
+    ends: formatCalendarDay(project.endsOn),
+  });
 }
 
 export function timeLabelOf(row: ProjectRow): string {
   switch (row.period) {
     case "Upcoming":
-      return `starts ${formatCalendarDay(row.project.startsOn)} · in ${plural(row.daysToStart, "day")}`;
+      return i18n.t("projects:projectText.startsIn", {
+        date: formatCalendarDay(row.project.startsOn),
+        count: row.daysToStart,
+      });
     case "Ended":
-      return `ended ${formatCalendarDay(row.project.endsOn)}`;
+      return i18n.t("projects:projectText.ended", { date: formatCalendarDay(row.project.endsOn) });
     case "Active":
-      return `${Math.round(row.timeElapsed * 100)}% elapsed · ${plural(row.daysLeft, "day")} left`;
+      return i18n.t("projects:projectText.elapsed", {
+        percent: Math.round(row.timeElapsed * 100),
+        count: row.daysLeft,
+      });
   }
 }
 
@@ -198,21 +223,28 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     case "Proposed":
       return {
         tone: "amber",
-        title: "Proposed — waiting for a curator to approve or reject it",
+        title: i18n.t("projects:projectNote.proposedTitle"),
         body:
           pending.documentCount === 0
-            ? "Nothing is proposed into it yet; members can propose while it waits."
-            : `${plural(pending.documentCount, "document is", "documents are")} proposed into it. Approving approves them at the priority it picks${
-                pending.withCopyCount > 0
-                  ? `, except ${pending.withCopyCount} with a copy, each decided on its own as a rescan`
-                  : ""
-              }.`,
+            ? i18n.t("projects:projectNote.proposedEmpty")
+            : i18n.t("projects:projectNote.proposedPending", {
+                count: pending.documentCount,
+                copies:
+                  pending.withCopyCount > 0
+                    ? i18n.t("projects:projectNote.proposedCopies", {
+                        count: pending.withCopyCount,
+                      })
+                    : "",
+              }),
       };
     case "Rejected":
       return {
         tone: "red",
-        title: `Rejected ${formatDay(project.at)} by ${decidedBy}`,
-        body: `${project.reason} It takes no more proposals, and the decision is final — to try again, start a new project.`,
+        title: i18n.t("projects:projectNote.rejectedTitle", {
+          date: formatDay(project.at),
+          name: decidedBy,
+        }),
+        body: i18n.t("projects:projectNote.rejectedBody", { reason: project.reason }),
       };
     case "Approved":
       break;
@@ -221,8 +253,10 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
   if (row.period === "Upcoming") {
     return {
       tone: "slate",
-      title: `Approved · starts ${formatCalendarDay(project.startsOn)}`,
-      body: "Nothing is delivered before it starts.",
+      title: i18n.t("projects:projectNote.upcomingTitle", {
+        date: formatCalendarDay(project.startsOn),
+      }),
+      body: i18n.t("projects:projectNote.upcomingBody"),
     };
   }
 
@@ -230,50 +264,76 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     if (target === null) {
       return {
         tone: "slate",
-        title: `Ended ${formatCalendarDay(project.endsOn)} — it had no target`,
-        body: `${formatCount(row.deliveredPages)} pages digitized. These numbers stay true: the pages it funded are funded by it for good.`,
+        title: i18n.t("projects:projectNote.endedNoTargetTitle", {
+          date: formatCalendarDay(project.endsOn),
+        }),
+        body: i18n.t("projects:projectNote.endedNoTargetBody", {
+          pages: formatCount(row.deliveredPages),
+        }),
       };
     }
 
     const short = target - row.deliveredPages;
     return {
       tone: paceOf(row)?.tone ?? "slate",
-      title: `Ended ${formatCalendarDay(project.endsOn)} — ${delivered >= 100 ? "target met" : `${delivered}% of the target delivered`}`,
-      body: `${formatCount(row.deliveredPages)} of ${formatCount(target)} pages digitized${
-        short > 0 ? `, ${formatCount(short)} short` : ""
-      }. These numbers stay true: the pages it funded are funded by it for good.`,
+      title:
+        delivered >= 100
+          ? i18n.t("projects:projectNote.endedTargetMetTitle", {
+              date: formatCalendarDay(project.endsOn),
+            })
+          : i18n.t("projects:projectNote.endedTargetTitle", {
+              date: formatCalendarDay(project.endsOn),
+              percent: delivered,
+            }),
+      body: i18n.t("projects:projectNote.endedTargetBody", {
+        pages: formatCount(row.deliveredPages),
+        target: formatCount(target),
+        shortText:
+          short > 0 ? i18n.t("projects:projectNote.short", { pages: formatCount(short) }) : "",
+      }),
     };
   }
 
   const pace = paceOf(row);
-  const daysLeft = `${plural(row.daysLeft, "day")} left.`;
+  const daysLeft = i18n.t("projects:projectText.daysLeft", { count: row.daysLeft });
   if (row.fundedCount === 0) {
     return {
       tone: "amber",
-      title: `Running since ${formatCalendarDay(project.startsOn)}, and nothing is funded by it yet`,
-      body: `${daysLeft} No approved request names this project.`,
+      title: i18n.t("projects:projectNote.runningUnfundedTitle", {
+        date: formatCalendarDay(project.startsOn),
+      }),
+      body: i18n.t("projects:projectNote.runningUnfundedBody", { days: daysLeft }),
     };
   }
 
   if (pace === null) {
     return {
       tone: "slate",
-      title: `Running since ${formatCalendarDay(project.startsOn)}, with no target`,
-      body: `${daysLeft} ${formatCount(row.deliveredPages)} pages digitized so far; its intention only counts output.`,
+      title: i18n.t("projects:projectNote.runningNoTargetTitle", {
+        date: formatCalendarDay(project.startsOn),
+      }),
+      body: i18n.t("projects:projectNote.runningNoTargetBody", {
+        days: daysLeft,
+        pages: formatCount(row.deliveredPages),
+      }),
     };
   }
 
   const onLists = row.plannedPages - row.deliveredPages;
   return {
     tone: pace.tone,
-    title: `${pace.text} — ${delivered}% delivered with ${Math.round(row.timeElapsed * 100)}% of the time gone`,
+    title: i18n.t("projects:projectNote.runningTitle", {
+      pace: pace.text,
+      delivered,
+      elapsed: Math.round(row.timeElapsed * 100),
+    }),
     body: [
       daysLeft,
       onLists > 0
-        ? `${formatCount(onLists)} pp are on lists and not digitized yet.`
-        : "Nothing of it is on a running list.",
+        ? i18n.t("projects:projectNote.onLists", { pages: formatCount(onLists) })
+        : i18n.t("projects:projectNote.noRunningList"),
       waiting.itemCount > 0
-        ? `${formatCount(waiting.pages)} pp more are approved and waiting for a list.`
+        ? i18n.t("projects:projectNote.waitingForList", { pages: formatCount(waiting.pages) })
         : null,
     ]
       .filter((part) => part !== null)

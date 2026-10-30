@@ -4,7 +4,7 @@
 // and lists what it approves and the copies it skips; rejecting asks a reason every member reads
 // and says what stays with other askers. Deleting is offered only while nothing was proposed.
 // TODO(rrandiak): the Members dialog moves onto PickerDialog (component-interfaces.md §6.6) once
-// Users & Groups builds it (plan.md step 9); labels move to i18n.
+// Users & Groups builds it (plan.md step 9).
 
 import { useQuery } from "@tanstack/react-query";
 import type {
@@ -16,6 +16,7 @@ import type {
 import type { Priority } from "@vera/domain/entities";
 import { prioritySchema } from "@vera/domain/entities";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import {
   approveProject,
@@ -49,12 +50,11 @@ import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useGroupsQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
-const decidedTexts = {
-  "project.decided": "It has been decided meanwhile; a decision is final.",
-  "project.has_proposals": "Something has been proposed into it meanwhile, so it stays.",
-} as const;
+const decidedTextsOf = (t: (key: string) => string) => ({
+  "project.decided": t("projectDialogs.decided"),
+  "project.has_proposals": t("projectDialogs.hasProposals"),
+});
 
 // A project's acts change its own intention too: made, recounted, archived or deleted with it.
 const invalidations = [...projectInvalidations, intentionsQueryKey];
@@ -62,19 +62,20 @@ const invalidations = [...projectInvalidations, intentionsQueryKey];
 // ---------------------------------------------------------------- start and edit
 
 // As typed: the target is digits until it is sent, and empty for none.
-const projectFormSchema = z
-  .object({
-    name: z.string().trim().min(1, "A project needs a name"),
-    description: z.string(),
-    startsOn: z.string().min(1, "A project is time-boxed: it needs both dates"),
-    endsOn: z.string().min(1, "A project is time-boxed: it needs both dates"),
-    targetPages: z.string().regex(/^\s*([1-9][\d\s,]*)?$/, "Pages, as a whole number above 0"),
-  })
-  .refine((values) => values.endsOn >= values.startsOn, {
-    message: "It cannot end before it starts",
-    path: ["endsOn"],
-  });
-type ProjectForm = z.infer<typeof projectFormSchema>;
+const projectFormSchemaOf = (t: (key: string) => string) =>
+  z
+    .object({
+      name: z.string().trim().min(1, t("projectDialogs.nameRequired")),
+      description: z.string(),
+      startsOn: z.string().min(1, t("projectDialogs.datesRequired")),
+      endsOn: z.string().min(1, t("projectDialogs.datesRequired")),
+      targetPages: z.string().regex(/^\s*([1-9][\d\s,]*)?$/, t("projectDialogs.pagesPositive")),
+    })
+    .refine((values) => values.endsOn >= values.startsOn, {
+      message: t("projectDialogs.endsBeforeStarts"),
+      path: ["endsOn"],
+    });
+type ProjectForm = z.infer<ReturnType<typeof projectFormSchemaOf>>;
 
 const draftOf = (values: ProjectForm): ProjectDraft => ({
   name: values.name.trim(),
@@ -97,26 +98,32 @@ interface ProjectFormDialogProps {
 // (projects.md §3). The target is its intention's, made with it; new dates move that intention's
 // window, and the form shows what that does to its figures before saving (§1.1).
 export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectFormDialogProps) {
+  const { t } = useTranslation("projects");
+  const schema = projectFormSchemaOf(t);
   const id = useId();
   const project = row?.project ?? null;
   const save = useActionMutation({
     call: (draft: ProjectDraft) =>
       project === null ? createProject(draft) : saveProject(project.id, draft),
     invalidates: invalidations,
-    refusalTexts: { 403: "You may no longer edit this project." },
+    refusalTexts: { 403: t("projectDialogs.cannotEdit") },
   });
 
   return (
     <FormDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={project === null ? "New project" : `Edit ${project.name}`}
+      title={
+        project === null
+          ? t("projectDialogs.newProject")
+          : t("projectDialogs.editProject", { name: project.name })
+      }
       description={
         project === null
-          ? "Start a project: money and a deadline that members propose documents into."
-          : "Change what the project is, its dates and its target."
+          ? t("projectDialogs.startDescription")
+          : t("projectDialogs.editDescription")
       }
-      schema={projectFormSchema}
+      schema={schema}
       defaultValues={{
         name: project?.name ?? "",
         description: project?.description ?? "",
@@ -124,7 +131,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
         endsOn: project?.endsOn ?? "",
         targetPages: String(row?.intention.targetPages ?? ""),
       }}
-      submitLabel={project === null ? "Propose project" : "Save"}
+      submitLabel={project === null ? t("projectDialogs.proposeProject") : t("projectDialogs.save")}
       onSubmit={async (values) => {
         const result = await save.run(draftOf(values));
         if (result.isDone) {
@@ -145,32 +152,30 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
           draft.startsOn !== project.startsOn ||
           draft.endsOn !== project.endsOn ||
           draft.targetPages !== row.intention.targetPages;
-        return isMoved
-          ? "It is approved: its period and pace follow the new dates and target. Nothing it funded moves, and its decision and priority stay."
-          : null;
+        return isMoved ? t("projectDialogs.approvedChangeWarning") : null;
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
+          <Field id={`${id}-name`} label={t("projectDialogs.name")}>
             <Input
               id={`${id}-name`}
-              placeholder="e.g. NDK Periodika 2027"
+              placeholder={t("projectDialogs.namePlaceholder")}
               {...form.register("name")}
             />
           </Field>
           <FieldError message={form.formState.errors.name?.message} />
           <Field
             id={`${id}-description`}
-            label="Description"
-            hint="what it is for; members and curators read it"
+            label={t("projectDialogs.description")}
+            hint={t("projectDialogs.descriptionHint")}
           >
             <Textarea id={`${id}-description`} rows={3} {...form.register("description")} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field id={`${id}-starts`} label="Starts">
+            <Field id={`${id}-starts`} label={t("projectDialogs.starts")}>
               <Input id={`${id}-starts`} type="date" {...form.register("startsOn")} />
             </Field>
-            <Field id={`${id}-ends`} label="Ends">
+            <Field id={`${id}-ends`} label={t("projectDialogs.ends")}>
               <Input id={`${id}-ends`} type="date" {...form.register("endsOn")} />
             </Field>
           </div>
@@ -181,23 +186,20 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
           />
           <Field
             id={`${id}-target`}
-            label="Target pages"
-            hint="none: its intention only counts output"
+            label={t("projectDialogs.targetPages")}
+            hint={t("projectDialogs.noTargetHint")}
           >
             <Input
               id={`${id}-target`}
               inputMode="numeric"
-              placeholder="e.g. 4,000"
+              placeholder={t("projectDialogs.pagesPlaceholder")}
               {...form.register("targetPages")}
             />
           </Field>
           <FieldError message={form.formState.errors.targetPages?.message} />
           {row !== null && <FiguresChange row={row} values={form.watch()} />}
           {project === null && (
-            <p className="text-xs text-muted-foreground">
-              It starts <b className="font-semibold">Proposed</b>, with you as its manager and only
-              member. Members propose documents into it; a curator approves or rejects it.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("projectDialogs.newProjectNote")}</p>
           )}
         </>
       )}
@@ -208,7 +210,8 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
 // New dates move its intention's window and recount it: said before saving, from the server
 // (intentions.md §3.4).
 function FiguresChange({ row, values }: { row: ProjectRow; values: ProjectForm }) {
-  const parsed = projectFormSchema.safeParse(values);
+  const { t } = useTranslation("projects");
+  const parsed = projectFormSchemaOf(t).safeParse(values);
   const draft = parsed.success ? draftOf(parsed.data) : null;
   const isMoved =
     draft !== null &&
@@ -224,15 +227,15 @@ function FiguresChange({ row, values }: { row: ProjectRow; values: ProjectForm }
 
   const moves = (
     [
-      ["Planned", change.plannedPages],
-      ["Delivered", change.deliveredPages],
+      [t("projectDialogs.planned"), change.plannedPages],
+      [t("projectDialogs.delivered"), change.deliveredPages],
     ] as const
   ).filter(([, figure]) => figure.before !== figure.after);
   return (
     <p className="rounded-md border border-dashed px-3 py-2 text-xs">
-      Its intention counts over the new dates:{" "}
+      {t("projectDialogs.intentionNewDates")}{" "}
       {moves.length === 0 ? (
-        <span className="text-muted-foreground">its figures do not change.</span>
+        <span className="text-muted-foreground">{t("projectDialogs.figuresUnchanged")}</span>
       ) : (
         moves.map(([label, figure], index) => (
           <span key={label}>
@@ -265,6 +268,7 @@ interface MembersState {
 // The whole set at once. The manager is always a member; handing over keeps the old one a member
 // until removed, and a removed member's proposals stay in the project (flows.md PJ2, PJ4).
 export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
+  const { t } = useTranslation("projects");
   const id = useId();
   const { project } = row;
   const initial: MembersState = {
@@ -285,7 +289,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
         memberGroupIds: [...members.memberGroupIds],
       }),
     invalidates: invalidations,
-    refusalTexts: { 403: "You may no longer change who is on it." },
+    refusalTexts: { 403: t("projectDialogs.cannotChangeMembers") },
   });
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const people = users.filter((user) => user.kind === "person");
@@ -318,17 +322,21 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
     <DialogShell
       isOpen={isOpen}
       onClose={close}
-      title={`Members — ${project.name}`}
-      description="Who is on the project, and who manages it."
+      title={t("projectDialogs.membersTitle", { name: project.name })}
+      description={t("projectDialogs.membersDescription")}
       isDirty={isDirty}
       refusal={refusal}
-      primary={{ label: "Save members", isPending, onSelect: () => void confirm() }}
+      primary={{
+        label: t("projectDialogs.saveMembers"),
+        isPending,
+        onSelect: () => void confirm(),
+      }}
     >
       <div className="grid gap-5">
         <Field
           id={`${id}-manager`}
-          label="Manager"
-          hint="edits it and its members; always a member"
+          label={t("projectDialogs.manager")}
+          hint={t("projectDialogs.managerHint")}
         >
           <Select
             value={state.managerId}
@@ -348,21 +356,23 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
         </Field>
         {state.managerId !== project.managerId && (
           <p className="-mt-3 text-xs text-muted-foreground">
-            Handing over: {nameOf(project.managerId)} stays a member until removed.
+            {t("projectDialogs.handingOver", { name: nameOf(project.managerId) })}
           </p>
         )}
 
         <div className="grid gap-1.5">
-          <p className="text-sm font-medium">People</p>
+          <p className="text-sm font-medium">{t("projectDialogs.people")}</p>
           <ul className="divide-y rounded-md border text-sm">
             {state.memberIds.map((userId) => (
               <li key={userId} className="flex items-center gap-2 px-3 py-1.5">
                 <span className="min-w-0 flex-1">{nameOf(userId)}</span>
                 {userId === state.managerId ? (
-                  <span className="text-xs text-muted-foreground">manager</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("projectDialogs.manager")}
+                  </span>
                 ) : (
                   <RemoveButton
-                    label={`Remove ${nameOf(userId)}`}
+                    label={t("projectDialogs.remove", { name: nameOf(userId) })}
                     onSelect={() =>
                       setState({
                         ...state,
@@ -376,7 +386,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
           </ul>
           {freePeople.length > 0 && (
             <AddSelect
-              placeholder="Add a person…"
+              placeholder={t("projectDialogs.addPerson")}
               options={freePeople.map((user) => ({ value: user.id, label: user.name }))}
               onAdd={(userId) => setState({ ...state, memberIds: [...state.memberIds, userId] })}
             />
@@ -385,13 +395,13 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
 
         <div className="grid gap-1.5">
           <p className="text-sm font-medium">
-            Groups{" "}
+            {t("projectDialogs.groups")}{" "}
             <span className="font-normal text-muted-foreground">
-              — everyone in one is a member while they are in it
+              — {t("projectDialogs.groupMembersHint")}
             </span>
           </p>
           {state.memberGroupIds.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No group.</p>
+            <p className="text-xs text-muted-foreground">{t("projectDialogs.noGroup")}</p>
           ) : (
             <ul className="divide-y rounded-md border text-sm">
               {state.memberGroupIds.map((groupId) => {
@@ -402,12 +412,12 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
                       {group?.name ?? groupId}{" "}
                       {group !== undefined && (
                         <span className="text-xs text-muted-foreground">
-                          · {plural(group.peopleCount, "person", "people")}
+                          · {t("projectDialogs.person", { count: group.peopleCount })}
                         </span>
                       )}
                     </span>
                     <RemoveButton
-                      label={`Remove ${group?.name ?? groupId}`}
+                      label={t("projectDialogs.remove", { name: group?.name ?? groupId })}
                       onSelect={() =>
                         setState({
                           ...state,
@@ -424,7 +434,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
           )}
           {freeGroups.length > 0 && (
             <AddSelect
-              placeholder="Add a group…"
+              placeholder={t("projectDialogs.addGroup")}
               options={freeGroups.map((group) => ({ value: group.id, label: group.name }))}
               onAdd={(groupId) =>
                 setState({ ...state, memberGroupIds: [...state.memberGroupIds, groupId] })
@@ -432,10 +442,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
             />
           )}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Members propose documents into it. Removing someone leaves what they proposed in the
-          project.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("projectDialogs.membersFootnote")}</p>
       </div>
     </DialogShell>
   );
@@ -474,13 +481,14 @@ type ApprovalForm = z.infer<typeof approvalFormSchema>;
 // Approving picks the priority, set once; it approves what is pending at that moment but the
 // copies, which are decided on their own as rescans (flows.md D11).
 export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
+  const { t } = useTranslation("projects");
   const id = useId();
   const { project } = row;
   const { data: dryRun } = useDecisionDryRun(project.id, isOpen);
   const approve = useActionMutation({
     call: (priority: Priority) => approveProject(project.id, { priority }),
     invalidates: invalidations,
-    refusalTexts: decidedTexts,
+    refusalTexts: decidedTextsOf(t),
   });
   const approvedCount = dryRun?.approves.length ?? 0;
 
@@ -488,20 +496,22 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
     <FormDialog<ApprovalForm>
       isOpen={isOpen}
       onClose={onClose}
-      title={`Approve ${project.name}`}
-      description="Approve the project at a priority, with what is pending in it."
+      title={t("projectDialogs.approveTitle", { name: project.name })}
+      description={t("projectDialogs.approveDescription")}
       schema={approvalFormSchema}
       defaultValues={{ priority: "Normal" }}
       submitLabel={
-        approvedCount === 0 ? "Approve" : `Approve and ${plural(approvedCount, "proposal")}`
+        approvedCount === 0
+          ? t("projectDialogs.approve")
+          : t("projectDialogs.approveProposals", { count: approvedCount })
       }
       onSubmit={({ priority }) => approve.run(priority)}
       render={(form) => (
         <>
           <Field
             id={`${id}-priority`}
-            label="Priority"
-            hint="set once; the proposals approved with it take it"
+            label={t("projectDialogs.priority")}
+            hint={t("projectDialogs.priorityHint")}
           >
             <PrioritySelect
               id={`${id}-priority`}
@@ -512,18 +522,20 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
             />
           </Field>
           {dryRun === undefined ? (
-            <p className="text-xs text-muted-foreground">Counting what it approves…</p>
+            <p className="text-xs text-muted-foreground">{t("projectDialogs.countingApprovals")}</p>
           ) : (
             <>
               <div>
                 <p className="text-sm font-medium">
-                  It approves{" "}
+                  {t("projectDialogs.itApproves")}{" "}
                   <span className="font-normal text-muted-foreground">
-                    — {plural(dryRun.approves.length, "document")} pending in it
+                    — {t("projectDialogs.documentsPending", { count: dryRun.approves.length })}
                   </span>
                 </p>
                 {dryRun.approves.length === 0 ? (
-                  <p className="mt-1 text-xs text-muted-foreground">Nothing is pending in it.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("projectDialogs.nothingPending")}
+                  </p>
                 ) : (
                   <DocumentList documents={dryRun.approves} />
                 )}
@@ -531,9 +543,9 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
               {dryRun.skips.length > 0 && (
                 <div>
                   <p className="text-sm font-medium">
-                    It skips{" "}
+                    {t("projectDialogs.itSkips")}{" "}
                     <span className="font-normal text-muted-foreground">
-                      — a copy exists; each is decided on its own, as a rescan
+                      — {t("projectDialogs.copyRescans")}
                     </span>
                   </p>
                   <DocumentList documents={dryRun.skips} />
@@ -541,10 +553,7 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
               )}
             </>
           )}
-          <p className="text-xs text-muted-foreground">
-            Approved is final. Proposals made after it carry <i>after the project's approval</i> and
-            are decided on their own in Requests, with this priority pre-filled.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("projectDialogs.approvedFootnote")}</p>
         </>
       )}
     />
@@ -554,31 +563,32 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
 // Only the project's own asks are rejected; a document others asked for stays theirs (flows.md
 // D12).
 export function RejectDialog({ isOpen, onClose, row }: DecisionDialogProps) {
+  const { t } = useTranslation("projects");
   const { project } = row;
   const { data: dryRun } = useDecisionDryRun(project.id, isOpen);
   const reject = useActionMutation({
     call: (reason: string) => rejectProject(project.id, { reason }),
     invalidates: invalidations,
-    refusalTexts: decidedTexts,
+    refusalTexts: decidedTextsOf(t),
   });
 
   return (
     <ReasonDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Reject ${project.name}`}
-      description="Reject the project, with a reason its members read."
+      title={t("projectDialogs.rejectTitle", { name: project.name })}
+      description={t("projectDialogs.rejectDescription")}
       publicText={{
-        label: "Reason",
-        hint: "required; every member reads it",
+        label: t("projectDialogs.reason"),
+        hint: t("projectDialogs.reasonRequired"),
         isRequired: true,
-        placeholder: "Why it is not going ahead",
+        placeholder: t("projectDialogs.rejectPlaceholder"),
       }}
       fields={
         dryRun !== undefined &&
         dryRun.pending.length > 0 && (
           <div>
-            <p className="text-sm font-medium">Its proposals</p>
+            <p className="text-sm font-medium">{t("projectDialogs.itsProposals")}</p>
             <ul className="mt-1 grid list-disc gap-1 pl-4.5 text-ui">
               {dryRun.pending.map((document) => (
                 <li key={document.documentId}>
@@ -586,8 +596,8 @@ export function RejectDialog({ isOpen, onClose, row }: DecisionDialogProps) {
                   <span className="text-muted-foreground">
                     —{" "}
                     {document.isAskedByOthers
-                      ? "others asked for it too: only the project's request is rejected, theirs stay"
-                      : "declined"}
+                      ? t("projectDialogs.othersAskedToo")
+                      : t("projectDialogs.declined")}
                   </span>
                 </li>
               ))}
@@ -595,8 +605,8 @@ export function RejectDialog({ isOpen, onClose, row }: DecisionDialogProps) {
           </div>
         )
       }
-      reach="Rejected is final and takes no more proposals. To try again, start a new project."
-      confirmLabel="Reject project"
+      reach={t("projectDialogs.rejectReach")}
+      confirmLabel={t("projectDialogs.rejectProject")}
       isDestructive
       onConfirm={({ publicText }) => reject.run(publicText)}
     />
@@ -615,26 +625,27 @@ interface DeleteDialogProps {
 // Offered only while nothing was proposed into it, so nothing depends on it; anything else is
 // history and stays (projects.md §3).
 export function DeleteProjectDialog({ isOpen, onClose, row, onDeleted }: DeleteDialogProps) {
+  const { t } = useTranslation("projects");
   const { project } = row;
   const remove = useActionMutation({
     call: deleteProject,
     invalidates: invalidations,
-    refusalTexts: decidedTexts,
+    refusalTexts: decidedTextsOf(t),
   });
 
   return (
     <ConsequenceDialog
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${project.name}?`}
-      description="Delete a project nothing has been proposed into."
+      title={t("projectDialogs.deleteTitle", { name: project.name })}
+      description={t("projectDialogs.deleteDescription")}
       consequences={[
-        { text: "Nothing has been proposed into it, so nothing depends on it." },
+        { text: t("projectDialogs.nothingDepends") },
         {
-          text: `It goes, with its intention and ${plural(project.memberIds.length, "member")}; its history keeps that it was deleted.`,
+          text: t("projectDialogs.deleteConsequence", { count: project.memberIds.length }),
         },
       ]}
-      confirmLabel="Delete project"
+      confirmLabel={t("projectDialogs.deleteProject")}
       isDestructive
       onConfirm={async () => {
         const result = await remove.run(project.id);

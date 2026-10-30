@@ -282,6 +282,7 @@ const headersText = (columns: ColumnSet) =>
   columns
     .map(({ header }) => header)
     .filter((header): header is string => typeof header === "string" && header !== "")
+    .map((header) => i18n.t(header, { lng: "en" }))
     .join(" · ");
 
 function columnsText(columns: ColumnSet | PerTier<ColumnSet>): string {

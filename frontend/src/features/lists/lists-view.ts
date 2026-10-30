@@ -1,6 +1,5 @@
 // The Digitization Lists view's searchable filter and saved watchlists. Runs means the calendar
 // interval from a list's start through its end; a requested interval matches when they overlap.
-// TODO(rrandiak): labels move to i18n.
 
 import type { ListQuery } from "@vera/contract/lists";
 import {
@@ -21,26 +20,26 @@ export const listsView: ViewDefinition<ListQuery> = {
   fields: [
     {
       key: "states",
-      label: "State",
+      label: "lists:listsView.state",
       field: vocabulary(listStates, {
-        Planned: "Planned",
-        InProgress: "In progress",
-        Done: "Done",
+        Planned: "lists:listState.Planned",
+        InProgress: "lists:listState.InProgress",
+        Done: "lists:listState.Done",
       }),
       isQuick: true,
     },
     {
       key: "attention",
-      label: "Needs attention",
+      label: "lists:listsView.needsAttention",
       field: vocabulary(listAttentions, {
-        Overdue: "Overdue",
-        Blocked: "Blocked members",
-        ReviewNeeded: "Review needed",
-        LateCopy: "Late copy",
-        Empty: "Empty",
+        Overdue: "lists:listAttention.Overdue",
+        Blocked: "lists:listAttention.Blocked",
+        ReviewNeeded: "lists:listAttention.ReviewNeeded",
+        LateCopy: "lists:listAttention.LateCopy",
+        Empty: "lists:listAttention.Empty",
       }),
     },
-    { key: "runs", label: "Runs", field: { kind: "dateRange", presets: [] } },
+    { key: "runs", label: "lists:listsView.runs", field: { kind: "dateRange", presets: [] } },
   ],
   groupings: [],
   groupingParam: "group",
