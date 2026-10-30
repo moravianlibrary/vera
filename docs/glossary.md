@@ -4,7 +4,7 @@ Every domain term in English and Czech, with a one-line meaning and where it is 
 ships in both languages, with Czech primary in production. The interface's messages
 (`frontend/src/i18n/locales/`) follow these terms.
 
-Settled on 2026-10-30 ([L37](ledger.md#l37-czech-terms)); the Czech messages use these words.
+Settled on 2026-10-30 ([L37](ledger.md#built-2026-10-30)); the Czech messages use these words.
 They are checked on a real phone before release.
 
 ## Pages

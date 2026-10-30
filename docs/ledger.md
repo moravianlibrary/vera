@@ -194,21 +194,6 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 → frontend and engine, then deployment.
 
-## For part 5 (writing and i18n)
-
-### L37: Czech terms
-
-Rules: the [glossary](glossary.md).
-
-The Czech column is a first draft. Several terms, such as *iteration*, *mix*, *hook* and
-*custody*, need the word the library already uses.
-
-Decided on 2026-10-15: corrected in their own session in part 5. → i18n.
-
-Also decided on 2026-10-15: *Documents* is to be named for its stage, the approved work until it
-is published (*Digitization*, *Progress*…), in Czech first
-([VIEW-own-label](reference/access/views.md#view-own-label)).
-
 ### L73: Plugin API
 
 Rules: [PLG-api-call](reference/integrations/plugin-api.md#plg-api-call) and the rules after it.
@@ -222,6 +207,15 @@ and *Reset*, ways in from operations) follows the engine's. → engine (step 7 o
 [backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
 
 ## Done
+
+### Built, 2026-10-30
+
+- **L37:** the glossary's Czech column is settled, *Documents* named for its stage
+  (*Digitalizace*, [VIEW-own-label](reference/access/views.md#view-own-label)), and every
+  message the interface shows has its Czech in `frontend/src/i18n/locales/cs/`, with Czech
+  plural forms. Every word the interface shows comes from messages, sixteen namespaces in
+  English and Czech; dates and numbers follow the language in use. To be checked on a real
+  phone before release.
 
 ### Built, 2026-10-29
 
@@ -306,7 +300,7 @@ and *Reset*, ways in from operations) follows the engine's. → engine (step 7 o
 - **L12:** the permission lines are i18n messages, one file per language in
   `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
   English one ([the catalog](reference/access/permissions.md#the-catalog)). The Czech file is a
-  copy of the English until the Czech terms are settled ([L37](#l37-czech-terms)).
+  copy of the English until the Czech terms are settled ([L37](#built-2026-10-30)).
 - **L67, in the mock:** a recheck records the title, material type and shelf mark again as
   the catalog adapter's reading, with the recheck's time
   ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)); reading the
@@ -521,7 +515,7 @@ and *Reset*, ways in from operations) follows the engine's. → engine (step 7 o
   holds approved work only, every scope also reaching one's own asks. Each page has its own
   entry, the switch went, and `project-user` is public-only
   ([VIEW-documents-audience](reference/access/views.md#view-documents-audience)). Documents is
-  still to be named for its stage in part 5 ([L37](#l37-czech-terms)).
+  still to be named for its stage in part 5 ([L37](#built-2026-10-30)).
 
 - **L2:** Documents narrows to the scope of `iteration.read`: category custody at `custody`, the
   person's projects at `project`, everything at `any`
