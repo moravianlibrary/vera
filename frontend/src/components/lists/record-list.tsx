@@ -12,13 +12,15 @@
 
 import { Check } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { Fragment } from "react";
+import { Fragment, useRef } from "react";
 import type { ListToolbarProps } from "@/components/lists/list-toolbar";
 import { ListToolbar } from "@/components/lists/list-toolbar";
 import type { QueryFailure } from "@/components/query-state";
 import { QueryError } from "@/components/query-state";
 import { useLoadMore } from "@/hooks/use-load-more";
+import { useLongPress } from "@/hooks/use-long-press";
 import type { PagedList } from "@/hooks/use-paged-list";
+import { useTier } from "@/hooks/use-tier";
 import { cn } from "@/lib/utils";
 
 export interface ColumnDefinition<Row> {
@@ -73,6 +75,7 @@ export interface RecordListProps<Row, Group extends GroupCounts, Grouping extend
   selectedId: string | null;
   onSelect: (id: string) => void;
   picking?: RowPicking;
+  onLongPress?: (id: string) => void;
   loadingText: string;
   emptyText: string;
   // Set when the list could not load: shown instead of the loading and empty lines.
@@ -109,12 +112,28 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
   selectedId,
   onSelect,
   picking,
+  onLongPress,
   loadingText,
   emptyText,
   failure,
   loadingMoreText,
 }: RecordListProps<Row, Group, Grouping>) {
   const sentinelRef = useLoadMore(paging.hasMore, paging.isLoadingMore, paging.onLoadMore);
+  const tier = useTier();
+  const longPressId = useRef<string | null>(null);
+  const didLongPress = useRef<string | null>(null);
+  const longPressStart = useRef(onLongPress);
+  longPressStart.current = onLongPress;
+  const longPress = useLongPress(
+    () => {
+      const id = longPressId.current;
+      if (id !== null && picking === undefined) {
+        didLongPress.current = id;
+        longPressStart.current?.(id);
+      }
+    },
+    { isEnabled: tier === "phone" && picking === undefined },
+  );
   const groupStarts = groups === undefined ? new Map<number, Group>() : groupStartsOf(groups);
   const hasWhyLine = whyOf !== undefined;
   // While picking, the mark has a track of its own, so the columns keep their place under
@@ -173,7 +192,31 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                 <button
                   type="button"
                   data-slot="record-list-row"
-                  onClick={() => (picking === undefined ? onSelect(id) : picking.onToggle(id))}
+                  onPointerDown={(event) => {
+                    longPressId.current = id;
+                    longPress.onPointerDown(event);
+                  }}
+                  onPointerMove={longPress.onPointerMove}
+                  onPointerUp={() => {
+                    longPress.onPointerUp();
+                    longPressId.current = null;
+                    setTimeout(() => {
+                      didLongPress.current = null;
+                    }, 0);
+                  }}
+                  onPointerCancel={() => {
+                    longPress.onPointerCancel();
+                    longPressId.current = null;
+                  }}
+                  onContextMenu={longPress.onContextMenu}
+                  onClick={() => {
+                    if (didLongPress.current === id) {
+                      didLongPress.current = null;
+                      return;
+                    }
+                    if (picking === undefined) onSelect(id);
+                    else picking.onToggle(id);
+                  }}
                   aria-current={isSelected || undefined}
                   aria-pressed={picking === undefined ? undefined : isPicked}
                   className={cn(

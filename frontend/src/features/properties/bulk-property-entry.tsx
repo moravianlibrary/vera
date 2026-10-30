@@ -31,6 +31,7 @@ export interface BulkPropertyEntryState {
   readonly toolbarActions: ReactNode;
   readonly notice: ReactNode;
   readonly dialog: ReactNode;
+  readonly startPicking: (id: string) => void;
 }
 
 export function useBulkPropertyEntry(
@@ -50,7 +51,13 @@ export function useBulkPropertyEntry(
       : [];
 
   if (enterable.length === 0) {
-    return { picking: undefined, toolbarActions: null, notice: null, dialog: null };
+    return {
+      picking: undefined,
+      toolbarActions: null,
+      notice: null,
+      dialog: null,
+      startPicking: () => {},
+    };
   }
 
   const isPicking = pickedIds !== null;
@@ -133,5 +140,11 @@ export function useBulkPropertyEntry(
       />
     );
 
-  return { picking, toolbarActions, notice, dialog };
+  return {
+    picking,
+    toolbarActions,
+    notice,
+    dialog,
+    startPicking: (id) => setPickedIds(new Set([id])),
+  };
 }

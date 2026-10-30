@@ -54,6 +54,7 @@ interface DocumentListProps {
   selectedId: string | null;
   onSelect: (documentId: string) => void;
   picking?: RowPicking;
+  onLongPress?: (id: string) => void;
   // Picking rows and what is done to the picked ones.
   toolbarActions?: ReactNode;
 }
@@ -75,6 +76,7 @@ export function DocumentList({
   selectedId,
   onSelect,
   picking,
+  onLongPress,
   toolbarActions,
 }: DocumentListProps) {
   const isPublic = audience === "public";
@@ -129,6 +131,7 @@ export function DocumentList({
       selectedId={selectedId}
       onSelect={onSelect}
       picking={picking}
+      onLongPress={onLongPress}
       loadingText="Loading documents…"
       emptyText="Nothing matches. Clear a filter to see more."
       loadingMoreText="Loading more documents…"

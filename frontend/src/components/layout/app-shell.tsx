@@ -5,14 +5,16 @@
 // (navigation.md §4.2): the aside keeps the rail's width in the layout and the bar inside it
 // grows, so the content never moves. The tier is stamped on <html> as `data-tier`, which sets
 // the root size.
-// TODO(rrandiak): phone gestures (component-interfaces.md §8.1); labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
 import { loginPathFor } from "@vera/contract/return-to";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Navigate, Outlet, useLocation, useMatches } from "react-router";
+import { Navigate, Outlet, useLocation, useMatches, useNavigate } from "react-router";
 import { ApiError } from "@/api/http";
+import { visibleNavigation } from "@/components/layout/navigation";
 import { OpenNavigationContext } from "@/components/layout/navigation-button";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SwipePeekPill } from "@/components/swipe-peek-pill";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { ServiceUnavailablePage } from "@/features/system/service-unavailable-page";
 import { GlobalRunDrawer } from "@/features/tasks/global-run-drawer";
@@ -21,6 +23,7 @@ import { useAppliedLanguage } from "@/hooks/use-language";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
 import { useSidebarPreference } from "@/hooks/use-sidebar-preference";
+import { useSwipeBetween } from "@/hooks/use-swipe-between";
 import { useTier } from "@/hooks/use-tier";
 import { useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { routeTemplateOf, telemetryUserId } from "@/lib/telemetry/rules";
@@ -30,6 +33,7 @@ import { cn } from "@/lib/utils";
 export function AppShell() {
   const { data: session, error, refetch } = useSessionQuery();
   const location = useLocation();
+  const navigate = useNavigate();
   const matches = useMatches();
   const lastPage = useRef<string | null>(null);
   useAppearance();
@@ -37,8 +41,23 @@ export function AppShell() {
   const { data: userSettings } = useUserSettingsQuery();
   const sidebar = useSidebarPreference();
   const tier = useTier();
-  const isDocked = tier === "notebook" || tier === "large";
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const navigation = session === undefined ? [] : visibleNavigation(session);
+  const currentNavigation = navigation.find(
+    (entry) => location.pathname === entry.path || location.pathname.startsWith(`${entry.path}/`),
+  );
+  const swipe = useSwipeBetween({
+    items: navigation,
+    idOf: (entry) => entry.id,
+    labelOf: (entry) => entry.visibleLabel,
+    currentId: currentNavigation?.id ?? null,
+    onSelect: (id) => {
+      const entry = navigation.find((item) => item.id === id);
+      if (entry !== undefined) navigate(entry.path);
+    },
+    isEnabled: tier === "phone" && !isSheetOpen,
+  });
+  const isDocked = tier === "notebook" || tier === "large";
   const [displayVersion, setDisplayVersion] = useState(0);
   const peek = useSidebarPeek(isDocked && !sidebar.isExpanded);
 
@@ -114,7 +133,8 @@ export function AppShell() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <main className="flex min-h-0 flex-1 flex-col">
+        <main {...swipe.bind} className="relative flex min-h-0 flex-1 flex-col">
+          <SwipePeekPill peek={swipe.peek} />
           <OpenNavigationContext value={isDocked ? null : () => setIsSheetOpen(true)}>
             <Outlet key={displayVersion} />
           </OpenNavigationContext>

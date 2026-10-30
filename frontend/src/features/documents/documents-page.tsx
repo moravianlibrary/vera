@@ -183,6 +183,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             selectedId={selectedId}
             onSelect={select}
             picking={bulk.picking}
+            onLongPress={bulk.startPicking}
             toolbarActions={bulk.toolbarActions}
           />
         }
