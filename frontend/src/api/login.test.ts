@@ -26,13 +26,6 @@ describe("mock login", () => {
         canResetPassword: false,
       },
       {
-        instanceId: "pi23",
-        label: "Log in with eduID",
-        entry: "redirect",
-        canSignUp: false,
-        canResetPassword: false,
-      },
-      {
         instanceId: "pi24",
         label: "Log in with a VERA account",
         entry: "form",
@@ -73,9 +66,9 @@ describe("mock login", () => {
 
   it("leaves a disabled identity off the login page", async () => {
     server.use(...createHandlers("admin"));
-    await disablePluginInstance("pi23");
+    await disablePluginInstance("pi41");
     expect(await listLoginEntries()).not.toContainEqual(
-      expect.objectContaining({ instanceId: "pi23" }),
+      expect.objectContaining({ instanceId: "pi41" }),
     );
   });
 });

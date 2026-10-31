@@ -93,17 +93,17 @@ describe("listValidations", () => {
   it("filters to rows with defects to rule on from the selected instance", async () => {
     signInAs("curator");
 
-    const page = await listValidations({ reviews: ["Needed"], instances: ["pi44"] });
+    const page = await listValidations({ reviews: ["Needed"], instances: ["pi9"] });
 
     expect(page.items.length).toBeGreaterThan(0);
     expect(
       page.items.every((row) =>
-        outstandingDefects(row.iteration).some((defect) => defect.instanceId === "pi44"),
+        outstandingDefects(row.iteration).some((defect) => defect.instanceId === "pi9"),
       ),
     ).toBe(true);
     const ids = page.items.map((row) => row.iteration.id);
     expect(ids).toContain("IT16");
-    expect(ids).not.toContain("IT18"); // its page count was accepted; only 260$c is outstanding
+    expect(ids).toContain("IT18"); // its page count was accepted; 260$c remains outstanding
   });
 
   it("matches a category's whole subtree and counts the outstanding defects", async () => {
@@ -143,7 +143,7 @@ describe("verdicts", () => {
     signInAs("curator");
 
     const result = await acceptDefects("IT16", {
-      defectKeys: ["pi44:R03:pages"],
+      defectKeys: ["pi9:R03:pages"],
       note: "An estimate is enough here.",
     });
     const detail = await findValidation("IT16");
@@ -157,7 +157,7 @@ describe("verdicts", () => {
     signInAs("curator");
 
     expect(
-      await statusOf(acceptDefects("IT19", { defectKeys: ["pi44:R01:pages"], note: null })),
+      await statusOf(acceptDefects("IT19", { defectKeys: ["pi9:R01:pages"], note: null })),
     ).toBe(409);
     expect(
       await statusOf(acceptDefects("IT14", { defectKeys: ["pi10:R01:041$a"], note: null })),
@@ -187,11 +187,11 @@ describe("verdicts", () => {
   it("revokes an acceptance: the defect is outstanding again and Ready is undone", async () => {
     signInAs("curator");
 
-    const result = await revokeAcceptance("IT3", { defectKeys: ["pi44:R02:pages"] });
+    const result = await revokeAcceptance("IT3", { defectKeys: ["pi9:R02:pages"] });
 
     expect(result.review).toBe("Needed");
     expect(result.progress).toBe("Enqueued"); // a gate fails after Ready (V14)
-    expect(await statusOf(revokeAcceptance("IT3", { defectKeys: ["pi44:R02:pages"] }))).toBe(409); // nothing is accepted now
+    expect(await statusOf(revokeAcceptance("IT3", { defectKeys: ["pi9:R02:pages"] }))).toBe(409); // nothing is accepted now
   });
 });
 
@@ -282,7 +282,7 @@ describe("page count and recheck", () => {
 
     const result = await enterPageCount("IT11", { pages: 312 });
 
-    expect(result.clearedKeys).toEqual(["pi44:R01:pages"]);
+    expect(result.clearedKeys).toEqual(["pi9:R01:pages"]);
     expect(result.review).toBeNull(); // the denial lapsed with its defect
     expect(result.progress).toBe("Ready");
     expect(await findValidation("IT11")).toBeNull();
@@ -369,7 +369,7 @@ describe("the query in the URL", () => {
     const query: ValidationQuery = {
       search: "velehrad",
       reviews: ["Needed", "Denied"],
-      instances: ["pi44"],
+      instances: ["pi9"],
       waiting: { from: "2026-06-01" },
     };
 

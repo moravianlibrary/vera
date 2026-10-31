@@ -33,13 +33,13 @@ describe("access acts", () => {
         await call(
           engine,
           "PUT",
-          api(accessRecordActionRoute("identity-instances", "pi23", "default-role")),
+          api(accessRecordActionRoute("identity-instances", "pi41", "default-role")),
           { as: "u3", body: { roleId: null } },
         )
       ).status,
     ).toBe(200);
     const settings = engine.db
-      .query<{ settings: string }, []>("SELECT settings FROM plugin_instances WHERE id='pi23'")
+      .query<{ settings: string }, []>("SELECT settings FROM plugin_instances WHERE id='pi41'")
       .get();
     expect(JSON.parse(settings?.settings ?? "{}").defaultRoleId).toBeNull();
     engine.close();
@@ -113,10 +113,10 @@ describe("access acts", () => {
     await call(
       engine,
       "PUT",
-      api(accessRecordActionRoute("identity-instances", "pi23", "default-role")),
+      api(accessRecordActionRoute("identity-instances", "pi41", "default-role")),
       { as: "u3", body: { roleId: "curator" } },
     );
-    const start = await call(engine, "GET", "/api/login/pi23");
+    const start = await call(engine, "GET", "/api/login/pi41");
     const location = start.headers.get("Location");
     if (location === null) throw new Error("Expected the provider redirect");
     const flow = new URL(location, "http://engine.test").searchParams.get("flow");
@@ -124,11 +124,11 @@ describe("access acts", () => {
     await call(
       engine,
       "GET",
-      `/api/login/pi23/callback?flow=${encodeURIComponent(flow)}&code=nova.ctenarka@muni.cz`,
+      `/api/login/pi41/callback?flow=${encodeURIComponent(flow)}&code=nova.ctenarka@muni.cz`,
     );
     const person = engine.db
       .query<{ user_id: string }, []>(
-        "SELECT user_id FROM user_identities WHERE instance_id='pi23' AND external_id='nova.ctenarka@muni.cz'",
+        "SELECT user_id FROM user_identities WHERE instance_id='pi41' AND external_id='nova.ctenarka@muni.cz'",
       )
       .get();
     if (person === null) throw new Error("Expected the first login identity");
@@ -298,7 +298,7 @@ describe("access acts", () => {
       (
         await call(engine, "POST", api(accessRecordActionRoute("users", "u1", "identities")), {
           as: "u3",
-          body: { instanceId: "pi23", externalId: "one-off" },
+          body: { instanceId: "pi41", externalId: "one-off" },
         })
       ).status,
     ).toBe(200);
@@ -311,7 +311,7 @@ describe("access acts", () => {
       (
         await call(engine, "POST", api(accessRecordActionRoute("users", "u1", "identities")), {
           as: "u3",
-          body: { instanceId: "pi23", externalId: "one-off" },
+          body: { instanceId: "pi41", externalId: "one-off" },
         })
       ).status,
     ).toBe(200);
@@ -319,7 +319,7 @@ describe("access acts", () => {
       (
         await call(engine, "POST", api(accessRecordActionRoute("users", "u2", "identities")), {
           as: "u3",
-          body: { instanceId: "pi23", externalId: "one-off" },
+          body: { instanceId: "pi41", externalId: "one-off" },
         })
       ).status,
     ).toBe(409);
@@ -330,14 +330,14 @@ describe("access acts", () => {
     const engine = testEngine("base");
     await call(engine, "POST", api(accessRecordActionRoute("users", "u1", "identities")), {
       as: "u3",
-      body: { instanceId: "pi23", externalId: "one-off" },
+      body: { instanceId: "pi41", externalId: "one-off" },
     });
     expect(
       (
         await call(
           engine,
           "DELETE",
-          api(`${accessRecordActionRoute("users", "u1", "identities")}/pi23/one-off`),
+          api(`${accessRecordActionRoute("users", "u1", "identities")}/pi41/one-off`),
           { as: "u3" },
         )
       ).status,
@@ -349,12 +349,12 @@ describe("access acts", () => {
     const engine = testEngine("base");
     await call(engine, "POST", api(accessRecordActionRoute("users", "u1", "identities")), {
       as: "u3",
-      body: { instanceId: "pi23", externalId: "one-off" },
+      body: { instanceId: "pi41", externalId: "one-off" },
     });
     await call(
       engine,
       "DELETE",
-      api(`${accessRecordActionRoute("users", "u1", "identities")}/pi23/one-off`),
+      api(`${accessRecordActionRoute("users", "u1", "identities")}/pi41/one-off`),
       { as: "u3" },
     );
     expect(

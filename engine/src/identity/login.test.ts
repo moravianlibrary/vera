@@ -41,7 +41,6 @@ describe("Identity login", () => {
     }[];
     expect(entries.map((entry: { instanceId: string }) => entry.instanceId)).toEqual([
       "pi22",
-      "pi23",
       "pi24",
       "pi41",
       "pi42",
@@ -55,11 +54,11 @@ describe("Identity login", () => {
     expect(entries[2].canResetPassword).toBe(false);
   });
   it("omits a disabled instance", async () => {
-    engine.db.query("UPDATE plugin_instances SET is_enabled = 0 WHERE id = 'pi23'").run();
+    engine.db.query("UPDATE plugin_instances SET is_enabled = 0 WHERE id = 'pi41'").run();
     const response = await call(engine, "GET", "/api/login");
     expect(
       ((await response.json()) as { instanceId: string }[]).map((entry) => entry.instanceId),
-    ).not.toContain("pi23");
+    ).not.toContain("pi41");
   });
   it("accepts the first local password and opens a session", async () => {
     const identity = engine.db
@@ -170,9 +169,9 @@ describe("Identity login", () => {
     ).toBe("/");
   });
   it("creates a first login with the default role", async () => {
-    const start = await call(engine, "GET", "/api/login/pi23");
+    const start = await call(engine, "GET", "/api/login/pi41");
     const flow = flowFrom(start);
-    await callback("pi23", flow, "nova.ctenarka@muni.cz");
+    await callback("pi41", flow, "nova.ctenarka@muni.cz");
     const user = engine.db
       .query<{ id: string }, []>("SELECT id FROM users WHERE email = 'nova.ctenarka@muni.cz'")
       .get();
@@ -186,18 +185,18 @@ describe("Identity login", () => {
     ).toContainEqual({ role_id: "reader", claim: "default role" });
   });
   it("matches a verified email to the existing person", async () => {
-    const account = accounts("pi23").find((row) => row.external_id.startsWith("eduid-"));
+    const account = accounts("pi41").find((row) => row.external_id.startsWith("google-"));
     if (account === undefined) throw new Error("Expected the email match account");
-    const expected = account.external_id.slice("eduid-".length);
+    const expected = account.external_id.slice("google-".length);
     const countBefore = engine.db
       .query<{ count: number }, []>("SELECT count(*) AS count FROM users")
       .get()?.count;
-    const start = await call(engine, "GET", "/api/login/pi23");
+    const start = await call(engine, "GET", "/api/login/pi41");
     const flow = flowFrom(start);
-    await callback("pi23", flow, account.external_id);
+    await callback("pi41", flow, account.external_id);
     expect(
       engine.db
-        .query("SELECT 1 FROM user_identities WHERE user_id = ? AND instance_id = 'pi23'")
+        .query("SELECT 1 FROM user_identities WHERE user_id = ? AND instance_id = 'pi41'")
         .get(expected),
     ).not.toBeNull();
     expect(

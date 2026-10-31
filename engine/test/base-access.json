@@ -187,14 +187,14 @@
         "mappedRoles": [
           {
             "roleId": "reader",
-            "instanceId": "pi23",
+            "instanceId": "pi41",
             "claim": "default role"
           }
         ],
         "groupIds": [],
         "identities": [
           {
-            "instanceId": "pi23",
+            "instanceId": "pi41",
             "externalId": "marek@muni.cz",
             "lastLoginAt": "2026-06-18T07:00:00.000Z"
           }
@@ -987,15 +987,6 @@
         "isLocal": false
       },
       {
-        "id": "pi23",
-        "isEnabled": true,
-        "name": "eduID.cz",
-        "userIdClaim": "eduPersonPrincipalName",
-        "defaultRoleId": "reader",
-        "mappings": [],
-        "isLocal": false
-      },
-      {
         "id": "pi24",
         "isEnabled": true,
         "name": "Local accounts",
@@ -1549,10 +1540,6 @@
       ],
       "mappings": [
         {
-          "instanceId": "pi23",
-          "claim": null
-        },
-        {
           "instanceId": "pi24",
           "claim": null
         },
@@ -1783,14 +1770,14 @@
       "mappedRoles": [
         {
           "roleId": "reader",
-          "instanceId": "pi23",
+          "instanceId": "pi41",
           "claim": "default role"
         }
       ],
       "groupIds": [],
       "identities": [
         {
-          "instanceId": "pi23",
+          "instanceId": "pi41",
           "externalId": "marek@muni.cz",
           "lastLoginAt": "2026-06-18T07:00:00.000Z"
         }

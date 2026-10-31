@@ -73,7 +73,7 @@ export const hooks: Hook[] = [
     name: "New list to the Digitization Office",
     events: ["list.created", "list.started", "list.marked_done"],
     filter: "",
-    channelId: "pi19",
+    channelId: "pi18",
     recipient: "Digitization Office › Lists",
     message: "New list {list} — {pages} pp, starts {starts}. {link}",
     batch: { waitMinutes: 60, maxMinutes: 240, by: "all" },

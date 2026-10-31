@@ -552,7 +552,7 @@ export interface UserAccess {
 }
 
 const keycloak = "pi22";
-const eduId = "pi23";
+const google = "pi41";
 const localAccounts = "pi24";
 
 function loginAt(month: number, day: number, hours = 9, minutes = 0): string {
@@ -609,8 +609,8 @@ export const userAccess: Readonly<Record<string, UserAccess>> = {
   ),
   u5: person(
     [],
-    [mapped("reader", "default role", eduId)],
-    [{ instanceId: eduId, externalId: "marek@muni.cz", lastLoginAt: loginAt(6, 18) }],
+    [mapped("reader", "default role", google)],
+    [{ instanceId: google, externalId: "marek@muni.cz", lastLoginAt: loginAt(6, 18) }],
   ),
   u6: person(
     ["reader"],

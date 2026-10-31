@@ -100,12 +100,13 @@ describe("getAccessIndex", () => {
 
     expect(identityInstances.map((instance) => instance.name)).toEqual([
       "MZK Keycloak",
-      "eduID.cz",
       "Local accounts",
       "Google",
       "Seznam",
     ]);
-    expect(identityInstances[1]).toMatchObject({ defaultRoleId: "reader" });
+    expect(identityInstances.find((instance) => instance.name === "Google")).toMatchObject({
+      defaultRoleId: "reader",
+    });
   });
 });
 
@@ -301,13 +302,13 @@ describe("users", () => {
       ),
     ).toMatchObject({ status: 422 });
     expect(
-      await linkIdentity({ userId: "u1", link: { instanceId: "pi23", externalId: "jana@mzk.cz" } }),
-    ).toEqual({ instanceId: "pi23", externalId: "jana@mzk.cz", lastLoginAt: null });
+      await linkIdentity({ userId: "u1", link: { instanceId: "pi41", externalId: "jana@mzk.cz" } }),
+    ).toEqual({ instanceId: "pi41", externalId: "jana@mzk.cz", lastLoginAt: null });
   });
 
   it("unlinks an identity, never the last one (ACCESS-link-identity)", async () => {
     signInAs("admin");
-    await linkIdentity({ userId: "u2", link: { instanceId: "pi23", externalId: "u2@mzk.cz" } });
+    await linkIdentity({ userId: "u2", link: { instanceId: "pi41", externalId: "u2@mzk.cz" } });
     const before = userOf(await getAccessIndex(), "u2");
     const [first, second] = before?.identities ?? [];
     if (first === undefined || second === undefined) {
@@ -316,7 +317,7 @@ describe("users", () => {
 
     expect(
       await refusalOf(
-        unlinkIdentity({ userId: "u2", identity: { instanceId: "pi23", externalId: "nobody" } }),
+        unlinkIdentity({ userId: "u2", identity: { instanceId: "pi41", externalId: "nobody" } }),
       ),
     ).toMatchObject({ status: 404 });
     await unlinkIdentity({ userId: "u2", identity: first });
@@ -402,7 +403,7 @@ describe("ACT-identity-default-role", () => {
   });
   it("sets no default role", async () => {
     signInAs("admin");
-    expect(await setIdentityDefaultRole({ instanceId: "pi23", roleId: null })).toMatchObject({
+    expect(await setIdentityDefaultRole({ instanceId: "pi41", roleId: null })).toMatchObject({
       defaultRoleId: null,
     });
   });

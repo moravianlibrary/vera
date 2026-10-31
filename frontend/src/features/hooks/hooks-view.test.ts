@@ -14,7 +14,7 @@ const index: HookIndex = {
   channels: [
     { id: "pi17", name: "Mailgun", interface: "Email", isEnabled: true },
     { id: "pi18", name: "Slack", interface: "Chat", isEnabled: true },
-    { id: "pi19", name: "Teams", interface: "Chat", isEnabled: true },
+    { id: "pi18", name: "MZK Slack", interface: "Chat", isEnabled: true },
     { id: "pi20", name: "Webhook", interface: "Webhook", isEnabled: true },
     { id: "pi21", name: "SFTP", interface: "File", isEnabled: true },
   ],

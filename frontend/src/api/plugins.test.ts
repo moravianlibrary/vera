@@ -109,13 +109,7 @@ describe("getPluginIndex", () => {
       "SmtpMailer",
       "GmailAccountMailer",
     ];
-    const keptNames = [
-      "IdentifierDetector",
-      "SamlIdentity",
-      "TeamsNotifier",
-      "PageCountCheck",
-      "CatalogLinkCheck",
-    ];
+    const keptNames = ["IdentifierDetector"];
     expect(
       implementations.every(({ name }) => [...catalogNames, ...keptNames].includes(name)),
     ).toBe(true);
@@ -337,7 +331,7 @@ describe("switching an instance off", () => {
       kind: "ListGenerator",
       otherEnabledCount: 1,
     });
-    expect(await getPluginImpact("pi23")).toMatchObject({ kind: "Identity", userCount: 1 });
+    expect(await getPluginImpact("pi41")).toMatchObject({ kind: "Identity", userCount: 1 });
     expect((await getPluginImpact("pi25")).openProposalCount).toBeGreaterThan(0);
     // Two runs by hand, and the generated history.
     const history = historicalRuns.filter((run) => run.instanceId === "pi1").length;
@@ -366,7 +360,7 @@ describe("switching an instance off", () => {
 
   it("never switches off the last way to log in", async () => {
     signInAs("admin");
-    const others = ["pi23", "pi24", "pi41", "pi42"];
+    const others = ["pi24", "pi41", "pi42"];
     for (const instanceId of others) await disablePluginInstance(instanceId);
 
     expect(await refusalOf(disablePluginInstance("pi22"))).toMatchObject({

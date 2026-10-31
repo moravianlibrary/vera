@@ -92,8 +92,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi44:R02:pages",
-        instanceId: "pi44",
+        key: "pi9:R02:pages",
+        instanceId: "pi9",
         ruleCode: "R02",
         subject: "pages",
         publicText: "The page count on file differs from the catalogue.",
@@ -103,7 +103,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["pi44:R02:pages"],
+        defectKeys: ["pi9:R02:pages"],
         verdict: "Approved",
         actorId: "u1",
         at: "2026-06-20T14:02:00Z",
@@ -351,8 +351,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi44:R01:pages",
-        instanceId: "pi44",
+        key: "pi9:R01:pages",
+        instanceId: "pi9",
         ruleCode: "R01",
         subject: "pages",
         publicText: "No page count could be established.",
@@ -362,7 +362,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["pi44:R01:pages"],
+        defectKeys: ["pi9:R01:pages"],
         verdict: "Denied",
         actorId: "u1",
         at: "2026-06-20T09:00:00Z",
@@ -431,8 +431,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
         firstSeenAt: "2026-06-21T09:00:00Z",
       },
       {
-        key: "pi44:R04:pages",
-        instanceId: "pi44",
+        key: "pi9:R04:pages",
+        instanceId: "pi9",
         ruleCode: "R04",
         subject: "pages",
         publicText: "The page count looks unusually high for the years covered.",
@@ -520,8 +520,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi44:R03:pages",
-        instanceId: "pi44",
+        key: "pi9:R03:pages",
+        instanceId: "pi9",
         ruleCode: "R03",
         subject: "pages",
         publicText: "The page count is an estimate, not a count.",
@@ -551,8 +551,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi44:R03:pages",
-        instanceId: "pi44",
+        key: "pi9:R03:pages",
+        instanceId: "pi9",
         ruleCode: "R03",
         subject: "pages",
         publicText: "The page count is an estimate, not a count.",
@@ -572,7 +572,7 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     ],
     verdicts: [
       {
-        defectKeys: ["pi44:R03:pages"],
+        defectKeys: ["pi9:R03:pages"],
         verdict: "Approved",
         actorId: "u1",
         at: "2026-06-18T10:20:00Z",
@@ -601,8 +601,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi45:R01:record",
-        instanceId: "pi45",
+        key: "pi9:R01:record",
+        instanceId: "pi9",
         ruleCode: "R01",
         subject: "record",
         publicText: "The catalogue record for this volume could not be found.",
@@ -747,8 +747,8 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     cancellation: null,
     defects: [
       {
-        key: "pi44:R02:pages",
-        instanceId: "pi44",
+        key: "pi9:R02:pages",
+        instanceId: "pi9",
         ruleCode: "R02",
         subject: "pages",
         publicText: "The page count does not match the catalog.",

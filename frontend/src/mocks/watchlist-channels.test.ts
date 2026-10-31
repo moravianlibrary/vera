@@ -14,14 +14,11 @@ describe("watchlist channels", () => {
       "MZK SMTP",
       "Mailgun — requesters",
       "MZK Slack",
-      "MZK Teams",
     ]);
     expect(channels.find((channel) => channel.name === "MZK Slack")).toMatchObject({
       reach: { by: "claim", claim: "slack_id" },
       canReach: true,
     });
-    // Nobody's login gives a teams_upn yet.
-    expect(channels.find((channel) => channel.name === "MZK Teams")?.canReach).toBe(false);
   });
 
   it("leave out an instance switched off, and one that reaches no person", () => {

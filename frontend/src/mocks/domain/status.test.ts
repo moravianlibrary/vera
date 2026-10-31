@@ -45,7 +45,7 @@ describe("validationOf", () => {
       verdicts: [
         ...accepted.verdicts,
         {
-          defectKeys: ["pi44:R02:pages"],
+          defectKeys: ["pi9:R02:pages"],
           verdict: "Revoked",
           actorId: "u1",
           at: "2026-06-24T09:00:00Z",
