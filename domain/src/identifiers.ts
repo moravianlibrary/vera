@@ -140,10 +140,17 @@ export function detectIdentifierType(
   rules: readonly IdentifierTypeRule[],
   value: string,
 ): IdentifierType | null {
-  const matches = rules.filter(
-    (rule) => rule.recogniser !== null && recognises(rule.recogniser, value),
-  );
-  return matches.length === 1 ? (matches[0]?.type ?? null) : null;
+  const types = recognisingTypesOf(rules, value);
+  return types.length === 1 ? (types[0] ?? null) : null;
+}
+
+export function recognisingTypesOf(
+  rules: readonly IdentifierTypeRule[],
+  value: string,
+): IdentifierType[] {
+  return rules
+    .filter((rule) => rule.recogniser !== null && recognises(rule.recogniser, value))
+    .map(({ type }) => type);
 }
 
 // The value as it is looked up: normalised by its type's recogniser, as typed without one.

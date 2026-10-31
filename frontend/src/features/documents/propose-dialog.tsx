@@ -92,6 +92,7 @@ const noProject = "none";
 interface DraftItem {
   key: string;
   type: IdentifierType | null;
+  candidateTypes: IdentifierType[];
   value: string;
   unit: string | null;
   reason: string | null;
@@ -103,7 +104,10 @@ interface DraftItem {
 type Outcome = "new" | "inVera" | "open" | "skip";
 
 function outcomeOf(item: DraftItem): Outcome {
-  if (item.type === null || item.isCheckFailed) {
+  if (item.type === null) {
+    return item.candidateTypes.length >= 2 ? "open" : "skip";
+  }
+  if (item.isCheckFailed) {
     return "skip";
   }
 
@@ -274,7 +278,15 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
       void readRecordLink({ catalogInstanceId: catalog.id, link: ask.record })
         .then(({ catalogId }) => {
           addFromAsk(
-            [{ type: "catalogId", value: catalogId, unit: ask.unit, reason: null }],
+            [
+              {
+                type: "catalogId",
+                candidateTypes: [],
+                value: catalogId,
+                unit: ask.unit,
+                reason: null,
+              },
+            ],
             i18n.t("proposeWays.recordLinkSource", { ns: "documents", name: catalog.name }),
           );
         })
@@ -292,7 +304,15 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
     }
     if (!parsedType.success) {
       addFromAsk(
-        [{ type: null, value: ask.identifier.value, unit: ask.unit, reason: null }],
+        [
+          {
+            type: null,
+            candidateTypes: [],
+            value: ask.identifier.value,
+            unit: ask.unit,
+            reason: null,
+          },
+        ],
         i18n.t("proposal.typeIt", { ns: "documents" }),
       );
       return;
@@ -320,6 +340,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
       items.filter((item) => item.key !== key),
       catalogIds.map((catalogId) => ({
         type: "catalogId" as const,
+        candidateTypes: [],
         value: catalogId,
         unit: picked.unit,
         reason: picked.reason,
@@ -879,6 +900,14 @@ function ItemOutcome({
   onPickRecords: (catalogIds: string[]) => void;
 }) {
   if (item.type === null) {
+    if (item.candidateTypes.length >= 2) {
+      return (
+        <>
+          <ToneBadge tone="amber">{i18n.t("proposal.whichType", { ns: "documents" })}</ToneBadge>
+          <TypeFix item={item} types={item.candidateTypes} onChange={onChange} />
+        </>
+      );
+    }
     return (
       <>
         <ToneBadge tone="red">
@@ -1017,15 +1046,17 @@ function RecordPick({
 // A value that is no identifier of the type it was read as gets the type that fits it.
 function TypeFix({
   item,
+  types,
   onChange,
 }: {
   item: DraftItem;
+  types?: readonly IdentifierType[];
   onChange: (patch: Partial<DraftItem>) => void;
 }) {
   const rules = useIdentifierRules();
-  const fitting = rules
-    .map(({ type }) => type)
-    .filter((type) => isIdentifierOf(rules, type, item.value));
+  const fitting =
+    types ??
+    rules.map(({ type }) => type).filter((type) => isIdentifierOf(rules, type, item.value));
   if (fitting.length === 0) {
     return null;
   }
@@ -1034,7 +1065,7 @@ function TypeFix({
     <Select
       onValueChange={(picked) => {
         const type = identifierTypeSchema.parse(picked);
-        onChange({ type, value: normalisedOf(rules, type, item.value) });
+        onChange({ type, candidateTypes: [], value: normalisedOf(rules, type, item.value) });
       }}
     >
       <SelectTrigger

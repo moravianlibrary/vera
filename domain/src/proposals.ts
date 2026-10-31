@@ -4,11 +4,17 @@
 // DOC-identifiers); what the identifier resolves to is the catalog's answer, asked of the server.
 
 import type { IdentifierType, IdentifierTypeRule } from "./identifiers";
-import { detectIdentifierType, isIdentifierOf, normalisedOf } from "./identifiers";
+import {
+  detectIdentifierType,
+  isIdentifierOf,
+  normalisedOf,
+  recognisingTypesOf,
+} from "./identifiers";
 
 export interface ProposalLine {
   // Null when the value is not an identifier of the type asked for, or of any type.
   type: IdentifierType | null;
+  candidateTypes: IdentifierType[];
   value: string;
   unit: string | null;
   reason: string | null;
@@ -44,14 +50,19 @@ export function readIdentifier(
   rules: readonly IdentifierTypeRule[],
   value: string,
   chosenType: IdentifierType | null,
-): Pick<ProposalLine, "type" | "value"> {
+): Pick<ProposalLine, "type" | "value" | "candidateTypes"> {
   const type =
     chosenType === null
       ? detectIdentifierType(rules, value)
       : isIdentifierOf(rules, chosenType, value)
         ? chosenType
         : null;
-  return { type, value: type === null ? value : normalisedOf(rules, type, value) };
+  const candidateTypes = chosenType === null ? recognisingTypesOf(rules, value) : [];
+  return {
+    type,
+    candidateTypes: type === null && candidateTypes.length >= 2 ? candidateTypes : [],
+    value: type === null ? value : normalisedOf(rules, type, value),
+  };
 }
 
 function columnsOf(line: string): string[] {

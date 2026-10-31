@@ -38,7 +38,7 @@ type Add = (lines: ProposalLine[], source: string) => void;
 const allCatalogs = "all";
 
 function catalogLine(catalogId: string): ProposalLine {
-  return { type: "catalogId", value: catalogId, unit: null, reason: null };
+  return { type: "catalogId", candidateTypes: [], value: catalogId, unit: null, reason: null };
 }
 
 // ---------------------------------------------------------------- catalog search

@@ -2,7 +2,12 @@
 // by the rules of MZK's predefined Identifier instances as the mock sends them.
 
 import type { IdentifierTypeRule } from "@vera/domain/identifiers";
-import { detectIdentifierType, isIdentifierOf, recognises } from "@vera/domain/identifiers";
+import {
+  detectIdentifierType,
+  isIdentifierOf,
+  recognises,
+  recognisingTypesOf,
+} from "@vera/domain/identifiers";
 import { defaultBatchNameOf, parseProposalLines } from "@vera/domain/proposals";
 import { describe, expect, it } from "vitest";
 import { identifierRules } from "@/mocks/identifiers";
@@ -38,6 +43,10 @@ describe("detectIdentifierType", () => {
     };
 
     expect(detectIdentifierType([first, ...rules], "MZK01-001277001")).toBeNull();
+    expect(recognisingTypesOf([first, ...rules], "MZK01-001277001")).toEqual([
+      "shelfMark",
+      "catalogId",
+    ]);
   });
 
   it("reads a type checked only by plugin code as any value, for the lookup to check", () => {
@@ -77,11 +86,17 @@ describe("parseProposalLines", () => {
       },
     ];
 
-    expect(parseProposalLines("MZK01-001277001", null, overlapping)[0]?.type).toBeNull();
+    expect(parseProposalLines("MZK01-001277001", null, overlapping)[0]).toMatchObject({
+      type: null,
+      candidateTypes: ["catalogId", "shelfMark"],
+    });
   });
 
   it("leaves a line unread when no enabled Identifier instance recognises it", () => {
-    expect(parseProposalLines("Slovácké noviny", null, rules)[0]?.type).toBeNull();
+    expect(parseProposalLines("Slovácké noviny", null, rules)[0]).toMatchObject({
+      type: null,
+      candidateTypes: [],
+    });
   });
 
   it("reads identifier, volume and why, and skips blanks and comments", () => {
@@ -94,11 +109,12 @@ describe("parseProposalLines", () => {
     expect(lines).toEqual([
       {
         type: "catalogId",
+        candidateTypes: [],
         value: "MZK01-001622010",
         unit: "1889",
         reason: "For the 1889 elections",
       },
-      { type: "nbn", value: "cnb001388120", unit: null, reason: null },
+      { type: "nbn", candidateTypes: [], value: "cnb001388120", unit: null, reason: null },
     ]);
   });
 
@@ -107,6 +123,7 @@ describe("parseProposalLines", () => {
 
     expect(line).toEqual({
       type: "catalogId",
+      candidateTypes: [],
       value: "MZK01-001277001",
       unit: "1940",
       reason: "Seminar",
@@ -117,6 +134,7 @@ describe("parseProposalLines", () => {
     const lines = parseProposalLines("1801-1233\ncnb001388120", "issn", rules);
 
     expect(lines.map((line) => line.type)).toEqual(["issn", null]);
+    expect(lines.map((line) => line.candidateTypes)).toEqual([[], []]);
   });
 
   it("reads any value as a shelf mark when that type is chosen (DOC-identifiers)", () => {
