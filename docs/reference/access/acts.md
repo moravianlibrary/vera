@@ -65,8 +65,8 @@ item is checked as it lands, so the list says what submitting will do.
 |---|---|---|
 | Type it | one identifier of a chosen type, a volume or issue, a reason | — |
 | Catalog search | searches the catalogs that can be searched, and adds a result | a Catalog adapter that searches |
-| Record link | the link to, or the ID of, a record in any catalog, searchable or not, found there | a Catalog adapter that reads it |
-| Paste list | one item per line: identifier, volume or issue, reason; each line read as the chosen type, or detected | detecting: an Input plugin that detects types |
+| Record link | the link to, or the ID of, a record in any catalog, searchable or not, found there | a Catalog adapter; a link, not only an ID, where it reads links |
+| Paste list | one item per line: identifier, volume or issue, reason; each line read as the chosen type, or detected | detecting: an enabled Identifier instance ([PLG-api-kinds](../integrations/plugin-api.md#plg-api-kinds)) |
 | File upload | a CSV or TXT file with the same columns | — |
 | Barcode scan | continuous: each scan is added as it arrives, with nothing to click. A hardware scanner types like a keyboard; the camera reads codes too | the camera: an Input plugin that reads barcodes |
 | Photo capture | a photo of a cover, title page or catalog card is read, identifiers or its text, and matched to catalog records; the candidates come back with why each matched, and nothing is added until the person picks one | an Input plugin that reads photos |
@@ -108,6 +108,8 @@ An outside portal links to `/ask` to open *Propose…* with one item filled in
 - *Back to …*, named after the source, shows only when `return` is on an origin that source's
   instance allows. Otherwise there is no way back, and never a redirect to an address the link
   carried.
+- When `source` names an instance, that instance reads the link first, so a portal may use its
+  own parameters ([PLG-api-entry](../integrations/plugin-api.md#plg-api-entry)).
 - Anything the parameters cannot read lands as an item that says why, as a typed one would.
 
 ## Request review

@@ -1,7 +1,7 @@
 # DEC-0019: The plugin API is written once, and a version declares what it can do
 
-> **Proposal.** Drafted on 2026-10-30. The cursor, the mirror, record changes on schedules and
-> dropping `inputMode` were settled the same day; the rest is not settled yet.
+> **Decided.** Drafted on 2026-10-30; the cursor, the mirror, record changes on schedules and
+> dropping `inputMode` settled that day, the rest on 2026-10-31.
 
 **Context.** VERA's plugins are described by what they supply
 ([PLG-declares](../reference/integrations/plugins.md#plg-declares)), but nowhere by what VERA
@@ -41,6 +41,14 @@ something the plugin promises.
   ([PLG-api-mirror](../reference/integrations/plugin-api.md#plg-api-mirror)). The plugin still
   never writes to VERA's database: it answers pages, and VERA stores them.
 - **Input's `inputMode` goes**: an Input instance's ways in are the operations it declares.
+- **A catalog adapter must read a record**; taking a pasted link apart (`readLink`) is optional.
+  Without it, *Record link* takes that catalog's own ids only.
+- **Type detection belongs to the Identifier plugins**: a pasted line's type is the one whose
+  `recognise` takes it, so no Input plugin detects types, and the mock's invented
+  `IdentifierDetector` goes.
+- **An entry link is read by its portal's `EntryLink` instance** (`entry`), so a portal may link
+  with its own parameters; the portal does not change the mechanism
+  ([PLG-api-entry](../reference/integrations/plugin-api.md#plg-api-entry)).
 - **A JSON Schema for `vera-plugin.json`**, from `declarationsSchema`, as the seed gets one
   (step 4), so a plugin author outside MZK can check a package before signing it.
 
@@ -53,6 +61,8 @@ something the plugin promises.
   the call-and-apply split (B5), so a failed run could leave half a page and a moved cursor.
 - *Each catalog plugin building its own search index*: every author would solve indexing again,
   and VERA could not search by identifier the same way across catalogs.
+- *A type-detecting Input plugin*: it would repeat what the Identifier instances already know,
+  and detection would vanish with one plugin.
 - *Generating the Java interfaces from the TypeScript types*: the backend plan already rejects
   code generation for the HTTP contract (B2); the same review that keeps that table honest keeps
   this one.

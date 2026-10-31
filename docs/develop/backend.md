@@ -195,9 +195,8 @@ session from installing code, not a trusted signer's mistake.
 
 ### B6a. The plugin interfaces, and what a version can do
 
-> **Proposal** ([DEC-0019](../decisions/DEC-0019-plugin-api-and-capabilities.md)). The cursor,
-> the mirror, record changes on schedules and dropping `inputMode` were settled on 2026-10-30;
-> the rest is not settled yet. B6 says `plugin-api` holds one interface per kind; this says what
+> Decided ([DEC-0019](../decisions/DEC-0019-plugin-api-and-capabilities.md), 2026-10-30 and
+> 2026-10-31). B6 says `plugin-api` holds one interface per kind; this says what
 > goes in them and where it is written first.
 
 - **Written once, before the backend.** Each kind's operations, what each takes and answers, and
@@ -206,9 +205,10 @@ session from installing code, not a trusted signer's mistake.
   `domain/src/plugin-api/`. The engine's fakes implement those types; `plugin-api` is written from
   them by hand, as the OpenAPI document is from the endpoint table (B2).
 - **One interface per kind for what every implementation does**, and one per optional
-  operation: `CatalogAdapter` (`read`, `readLink`), with `SearchableCatalog` (`search`),
-  `ChangeFeed` (`changes`) and `MirroredCatalog` (`sync`) beside it; `Input` with
-  `TypeDetector`, `BarcodeReader`, `PhotoReader` and `EntryLinkInput`, and no `inputMode`. A call
+  operation: `CatalogAdapter` (`read`), with `LinkReader` (`readLink`), `SearchableCatalog`
+  (`search`), `ChangeFeed` (`changes`) and `MirroredCatalog` (`sync`) beside it; `Input` with
+  `BarcodeReader`, `PhotoReader` and `EntryLinkInput`, and no `inputMode`. Type detection is
+  VERA calling every enabled `Identifier`'s `recognise`, not an interface. A call
   answers or throws one of the outcomes B6 names: `PluginUnavailable`, or `PluginRefused` with a
   code from the kind's closed list
   ([PLG-api-outcome](../reference/integrations/plugin-api.md#plg-api-outcome)).

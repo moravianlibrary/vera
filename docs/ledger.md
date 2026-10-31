@@ -169,8 +169,10 @@ takes over Tlačítko digitalizovat. Needs:
 - Google and Seznam as Identity instances in the engine's fakes
   ([plugin-catalog.md](develop/plugin-catalog.md)).
 
-Not settled: which portal hosts the button, and so the first instance's return origin. Old
-requests from the mini app are moved by hand, not imported. → engine, then frontend.
+The portal does not matter (2026-10-31): each is an instance, its return origins in its
+configuration, and its `entry` reads what it sends
+([PLG-api-entry](reference/integrations/plugin-api.md#plg-api-entry)). Old requests from the mini
+app are moved by hand, not imported. → engine, then frontend.
 
 ### L72: Observability
 
@@ -198,11 +200,13 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 Rules: [PLG-api-call](reference/integrations/plugin-api.md#plg-api-call) and the rules after it.
 
-Proposed on 2026-10-30 ([DEC-0019](decisions/DEC-0019-plugin-api-and-capabilities.md)); the
-cursor, the mirror, record changes on schedules and dropping `inputMode` settled the same day.
+Decided on 2026-10-30 and 2026-10-31 ([DEC-0019](decisions/DEC-0019-plugin-api-and-capabilities.md)).
+`readLink` is optional, type detection is the Identifier instances' `recognise`, and an
+`EntryLink` instance reads its portal's link.
 Nothing follows it yet: there are no per-kind types in `domain/src/plugin-api/`, declarations
 have no `operations`, the mock decides search from `configuration.search` and ways in from
-`inputMode`, and no instance has a cursor or a mirror. The client part (the drawer's mirror line
+`inputMode` (with the invented `IdentifierDetector`), and no instance has a cursor or a
+mirror. The client part (the drawer's mirror line
 and *Reset*, ways in from operations) follows the engine's. → engine (step 7 of
 [backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
 

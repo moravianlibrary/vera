@@ -1,9 +1,7 @@
 # Plugin API
 
-> **Proposal — [DEC-0019](../../decisions/DEC-0019-plugin-api-and-capabilities.md).** Drafted on
-> 2026-10-30. Settled the same day: schedules trigger a catalog's changes, a catalog adapter may
-> keep a local mirror, VERA holds every cursor, and Input's `inputMode` is gone. The rest is
-> not settled yet. Nothing follows it yet: [L73](../../ledger.md#l73-plugin-api).
+> Decided in [DEC-0019](../../decisions/DEC-0019-plugin-api-and-capabilities.md) (2026-10-30
+> and 2026-10-31). Nothing follows it yet: [L73](../../ledger.md#l73-plugin-api).
 
 What VERA asks of each plugin kind ([PLG-kinds](plugins.md#plg-kinds)), and how a plugin says
 which of it it can do. This is the plugin contract 1.x
@@ -49,7 +47,7 @@ what the version declares and the instance keeps, among enabled instances
 ([PERM-absent-not-disabled](../access/permissions.md#perm-absent-not-disabled)).
 
 *Why:* the propose dialog's ways in already depend on what a plugin can do ("a Catalog adapter
-that searches", "an Input plugin that detects types",
+that searches", "an Input plugin that reads barcodes",
 [ACT-ways-in](../access/acts.md#act-ways-in)). Without a declaration, VERA would have to call a
 plugin to find out, or trust an instance setting the code may not honour.
 
@@ -62,14 +60,13 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 |---|---|---|---|---|
 | Identity | `begin` | where to return | a redirect, or nothing for a form entry | — |
 | | `complete` | the provider's callback, or the form's username and password | the external id, email, name and claims | `wrong_credentials`, `suspended`, `not_allowed` |
-| Input | `detectTypes` *(optional)* | pasted lines | each line's identifier type, or none | — |
-| | `readBarcode` *(optional)* | a photo | the code read, or none | `unreadable` |
+| Input | `readBarcode` *(optional)* | a photo | the code read, or none | `unreadable` |
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
-| | `entry` *(optional; EntryLink)* | an incoming `/ask` request | the item, and the origin to return to | `origin_not_allowed` |
+| | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page | the item read from it, and the origin to return to ([PLG-api-entry](#plg-api-entry)) | `origin_not_allowed`, `unreadable` |
 | Identifier | `recognise` | a value | whether it is this type, and its normal form | `checksum` |
 | Harvester | `harvest` | its cursor ([PLG-api-cursor](#plg-api-cursor)) | new items to propose, and the next cursor | — |
 | Catalog adapter | `read` | a catalog id | the record: fields, units, issuance type, the reading's date | `not_found` |
-| | `readLink` | a record link or id as pasted | the catalog id | `not_this_catalog`, `malformed` |
+| | `readLink` *(optional)* | a record link or id as pasted | the catalog id | `not_this_catalog`, `malformed` |
 | | `search` *(optional)* | a text query | hits: catalog id, title, units | — |
 | | `changes` *(optional)* | its cursor | catalog ids changed since, and the next cursor | — |
 | | `sync` *(optional)* | its cursor | a page of records to keep and ids to drop, the next cursor, and whether more follow | — |
@@ -89,6 +86,27 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 An Input instance's ways in are the operations its version declares; it has no `inputMode`. One
 Input may read barcodes and photos both, and the propose dialog lays out what the enabled
 instances offer.
+
+**Detecting a pasted line's type is not an Input operation.** VERA asks every enabled Identifier
+instance's `recognise`: a line one instance recognises gets its type, a line several recognise
+asks the person which, and a line none recognises lands as unread. *Paste list* detects types
+whenever an Identifier instance is enabled.
+
+**A catalog adapter without `readLink`** takes only its catalog's own ids in *Record link*: VERA
+passes what was pasted to `read` as it is, and a link lands as unread. With `readLink`, a pasted
+link or id is taken apart first.
+
+#### PLG-api-entry
+
+An outside portal's link reaches VERA at `/ask` ([ACT-entry-link](../access/acts.md#act-entry-link)).
+When the link names a `source`, that `EntryLink` instance reads it first: `entry` takes the link's
+parameters and the portal's page it came from, and answers the item to land (a catalog id, or an
+identifier with its type; a unit; a reason) and the return origin. So each portal links the way
+it can: with VERA's own parameters, or with its own (a record id under another name, its page
+address), which its instance takes apart. VERA then checks the item as any other and never
+redirects to an origin outside the instance's configured list. Without a `source`, or when the
+instance answers nothing, VERA reads its own parameters itself. Which portal hosts a link does not
+change the mechanism: each is one more instance.
 
 #### PLG-api-cursor
 
