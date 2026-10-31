@@ -364,7 +364,7 @@ describe("the ways in (ACT-ways-in)", () => {
 
     const instances = database.pluginInstances;
     database.pluginInstances = instances.map((instance) =>
-      ["pi11", "pi12", "pi13", "pi2"].includes(instance.id)
+      instance.settings?.kind === "Identifier" || ["pi12", "pi13", "pi2"].includes(instance.id)
         ? { ...instance, isEnabled: false }
         : instance,
     );

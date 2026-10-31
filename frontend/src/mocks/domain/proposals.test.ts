@@ -30,14 +30,14 @@ describe("detectIdentifierType", () => {
     expect(detectIdentifierType(rules, "1801-1234")).toBeNull();
   });
 
-  it("follows the instances' order: the first that recognises a value gives its type", () => {
+  it("leaves a value unread when several instances recognise it", () => {
     const first: IdentifierTypeRule = {
       type: "shelfMark",
       labels: { en: "Shelf mark", cs: "Signatura" },
       recogniser: { pattern: ".+", normalisation: [], checksum: null },
     };
 
-    expect(detectIdentifierType([first, ...rules], "MZK01-001277001")).toBe("shelfMark");
+    expect(detectIdentifierType([first, ...rules], "MZK01-001277001")).toBeNull();
   });
 
   it("reads a type checked only by plugin code as any value, for the lookup to check", () => {
@@ -63,6 +63,27 @@ describe("the checksums", () => {
 });
 
 describe("parseProposalLines", () => {
+  it("detects a line when exactly one enabled Identifier instance recognises it", () => {
+    expect(parseProposalLines("MZK01-001277001", null, rules)[0]?.type).toBe("catalogId");
+  });
+
+  it("leaves a line unread when several instances recognise it", () => {
+    const overlapping = [
+      ...rules,
+      {
+        type: "shelfMark" as const,
+        labels: { en: "Shelf mark", cs: "Signatura" },
+        recogniser: { pattern: "MZK01-001277001", normalisation: [], checksum: null },
+      },
+    ];
+
+    expect(parseProposalLines("MZK01-001277001", null, overlapping)[0]?.type).toBeNull();
+  });
+
+  it("leaves a line unread when no enabled Identifier instance recognises it", () => {
+    expect(parseProposalLines("Slovácké noviny", null, rules)[0]?.type).toBeNull();
+  });
+
   it("reads identifier, volume and why, and skips blanks and comments", () => {
     const lines = parseProposalLines(
       "# from the seminar\nMZK01-001622010;1889;For the 1889 elections\n\ncnb001388120\n",

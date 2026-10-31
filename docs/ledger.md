@@ -205,8 +205,9 @@ Decided on 2026-10-30 and 2026-10-31 ([DEC-0019](decisions/DEC-0019-plugin-api-a
 `EntryLink` instance reads its portal's link.
 Nothing follows it yet: there are no per-kind types in `domain/src/plugin-api/`, declarations
 have no `operations`, the mock decides search from `configuration.search` and ways in from
-`inputMode` (with the invented `IdentifierDetector`), and no instance has a cursor or a
-mirror. The client part (the drawer's mirror line
+`inputMode`, and no instance has a cursor or a mirror. Type detection already follows it in the
+mock (2026-10-31), except that a line several Identifier instances recognise lands as unread
+instead of asking which type. The client part (the drawer's mirror line
 and *Reset*, ways in from operations) follows the engine's. → engine (step 7 of
 [backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
 

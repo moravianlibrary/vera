@@ -292,22 +292,6 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
     },
   ),
   implementation(
-    "pt8",
-    "IdentifierDetector",
-    "Input",
-    "Recognises which identifier each pasted line is — ISBN, ISSN, NBN, barcode, catalog ID, and shelf marks as the library writes them.",
-    {
-      version: "1.2.0",
-      installedAt: "2026-02-04",
-      triggers: ["OnDemand"],
-      declares: {
-        identifierTypes: ["NBN", "ISSN", "ISBN", "Barcode", "Catalog ID", "Shelf mark"],
-        inputMode: "Text",
-      },
-      fields: ["checksums", "unknown"],
-    },
-  ),
-  implementation(
     "pt9",
     "BarcodeReader",
     "Input",
@@ -865,15 +849,6 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     settings: { kind: "Custody", custodyId: "pc3" },
     createdAt: "2026-06-23",
     lastRunAt: june(25, 10, 20),
-  }),
-  instance({
-    id: "pi11",
-    name: "Default",
-    implementationId: "pt8",
-    configuration: { checksums: "on", unknown: "flag" },
-    triggers: ["OnDemand"],
-    createdAt: "2026-02-04",
-    lastRunAt: june(25, 9, 40),
   }),
   instance({
     id: "pi12",

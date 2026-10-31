@@ -135,16 +135,15 @@ export function isIdentifierOf(
   return rule.recogniser === null || recognises(rule.recogniser, value);
 }
 
-// DOC-lines: the first type, in the instances' order, whose recogniser takes the value; a type
-// without one is read only when chosen.
+// DOC-lines: a pasted value has a type only when exactly one enabled instance recognises it.
 export function detectIdentifierType(
   rules: readonly IdentifierTypeRule[],
   value: string,
 ): IdentifierType | null {
-  return (
-    rules.find((rule) => rule.recogniser !== null && recognises(rule.recogniser, value))?.type ??
-    null
+  const matches = rules.filter(
+    (rule) => rule.recogniser !== null && recognises(rule.recogniser, value),
   );
+  return matches.length === 1 ? (matches[0]?.type ?? null) : null;
 }
 
 // The value as it is looked up: normalised by its type's recogniser, as typed without one.

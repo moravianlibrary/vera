@@ -11843,45 +11843,7 @@
           }
         ]
       },
-      {
-        "id": "pt8",
-        "descriptorId": "cz.mzk.vera.identifier-detector",
-        "name": "IdentifierDetector",
-        "kind": "Input",
-        "description": "Recognises which identifier each pasted line is — ISBN, ISSN, NBN, barcode, catalog ID, and shelf marks as the library writes them.",
-        "versions": [
-          {
-            "version": "1.2.0",
-            "contractVersion": "1.0",
-            "installedAt": "2026-02-04",
-            "installedBy": "u3",
-            "triggers": ["OnDemand"],
-            "declares": {
-              "properties": [],
-              "identifierTypes": ["NBN", "ISSN", "ISBN", "Barcode", "Catalog ID", "Shelf mark"],
-              "rawStates": [],
-              "rules": [],
-              "agent": null,
-              "generatorClass": null,
-              "channelInterface": null,
-              "inputMode": "Text",
-              "loginEntry": null
-            },
-            "configFields": [
-              {
-                "key": "checksums",
-                "isSecret": false,
-                "isRequired": true
-              },
-              {
-                "key": "unknown",
-                "isSecret": false,
-                "isRequired": true
-              }
-            ]
-          }
-        ]
-      },
+
       {
         "id": "pt9",
         "descriptorId": "cz.mzk.vera.barcode-reader",
@@ -13242,24 +13204,7 @@
         "createdBy": "u3",
         "isDeleted": false
       },
-      {
-        "id": "pi11",
-        "name": "Default",
-        "implementationId": "pt8",
-        "configuration": {
-          "checksums": "on",
-          "unknown": "flag"
-        },
-        "triggers": ["OnDemand"],
-        "createdAt": "2026-02-04",
-        "lastRunAt": "2026-06-25T07:40:00.000Z",
-        "version": "1.2.0",
-        "isEnabled": true,
-        "linkedCategoryId": null,
-        "settings": null,
-        "createdBy": "u3",
-        "isDeleted": false
-      },
+
       {
         "id": "pi12",
         "name": "Camera",

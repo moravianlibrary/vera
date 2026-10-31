@@ -109,7 +109,7 @@ describe("getPluginIndex", () => {
       "SmtpMailer",
       "GmailAccountMailer",
     ];
-    const keptNames = ["IdentifierDetector"];
+    const keptNames: string[] = [];
     expect(
       implementations.every(({ name }) => [...catalogNames, ...keptNames].includes(name)),
     ).toBe(true);

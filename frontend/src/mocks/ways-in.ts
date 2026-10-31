@@ -47,7 +47,7 @@ export function waysInOf(): WaysIn {
     (instance) => catalogOf(instance) !== null,
   );
   return {
-    canDetectTypes: hasInput("Text"),
+    canDetectTypes: enabledInstancesOf("Identifier").length > 0,
     searchCatalogs: adapters.filter(isSearchable).map(({ id, name }) => ({ id, name })),
     linkCatalogs: adapters.map((instance) => ({
       id: instance.id,
