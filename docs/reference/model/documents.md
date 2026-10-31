@@ -69,8 +69,10 @@ no recogniser there: any value is taken when the type is chosen, and the catalog
 
 A pasted list has one item per line: identifier, unit and reason, separated by `;`, a tab, or a
 comma. A line starting with `#` is skipped. With a type chosen, every line is read as that
-type; without one, each line's type is the first Identifier instance, in their order, that
-recognises it. A type without a recogniser is read only when chosen.
+type; without one, each line's type is detected by the enabled Identifier instances
+([PLG-api-kinds](../integrations/plugin-api.md#plg-api-kinds)): the type of the one that
+recognises it; *Which type?* with those types to pick from when several do; unread when none
+does. A type without a recogniser is read only when chosen.
 
 ## Properties
 
