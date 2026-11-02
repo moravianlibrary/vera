@@ -15,13 +15,13 @@ What each page is for, its shape, and what can narrow it. Who sees each page is 
 | Categories | the tree, its custody and the selected mix | a tree with a record pane |
 | Intentions | intentions and repeats, by state | a board; each intention's mix has its own page |
 | Category mixes | mixes and their revisions | a list with a mix detail pane |
-| Tasks | runs, running and past | a list with a record pane |
-| Schedules | what runs when | a timeline |
-| Users management | users, roles, groups and custodies, and what links them | linked columns |
+| Tasks | runs, running and past | a table; a run opens in a drawer |
+| Schedules | what runs when | a timeline above a table |
+| Users management | users, roles, groups and custodies, and what links them | four tabs, each a list with a record pane |
 | Plugins | kinds, implementations and instances | a grouped table with drawers |
-| Properties | the property definitions ([DOC-property](../model/documents.md#doc-property)) | a table with drawers |
-| Hooks | hooks and their deliveries | a table with drawers |
-| Watchlists | every watchlist the person sees, and notifications | one table per page |
+| Properties | the property definitions ([DOC-property](../model/documents.md#doc-property)) | a list with a record pane |
+| Hooks | hooks and their deliveries | a list with a record pane |
+| System watchlists | the system watchlists and their audiences; a person's own are in Preferences | a table |
 | Preferences | notifications and personal settings | sections |
 
 #### UI-filters
@@ -93,7 +93,7 @@ of its own accord ([DOC-property-filter](../model/documents.md#doc-property-filt
 <!-- /generated:page-columns -->
 
 Projects shows its proposed and active projects as cards, and a table for the ended and the
-rejected. Intentions is a board of cards, Categories a tree, Users management linked columns.
+rejected. Intentions is a board of cards, Categories a tree, and each of Users management's tabs a list.
 
 ## Record panes
 
@@ -114,7 +114,7 @@ person may not read is absent, a card included
 | Categories | its figures as tiles · the shares of its children, or of the top level, in the selected mix · Needs attention, on *All categories* · Documents here, on a leaf · Custody |
 | Tasks | a run, in a drawer that may open over any page: Run · What it changed · Items · Log |
 | Plugins | an implementation, in a drawer: what it declares and supplies, its versions and instances; an instance: its configuration, what it supplies, when it runs, the hooks sending through it |
-| Properties | a definition, in a drawer: Definition · its values, for an enum |
+| Properties | a definition: Definition · its values, for an enum |
 | Hooks | a hook: Subscription · What it sends · Deliveries |
 | Users management | a user, role, group or custody, each with where it comes from ([ACCESS-provenance](../access/people.md#access-provenance)) |
 | Projects | its own page: Against the target · About · Members · Proposals · Lists · What it funded |

@@ -134,7 +134,7 @@ An outside portal links to `/ask` to open *Propose…* with one item filled in
 |---|---|---|---|---|
 | `ACT-approve` | *Approve…* | `request.decide`, the proposal in the person's custody | Pending; its checks have answered (409); a leaf category (422); a rescan note when a copy exists (422) | every open ask of the document approved; one iteration, which the oldest ask originates; log *Approved* per ask |
 | `ACT-decline` | *Decline…* | `request.decide`, as above | Pending | every open ask declined, with the two texts; log *Declined* per ask |
-| `ACT-approve-batch` | *Approve batch…* | `request.decide` | the open, checked proposals of a batch that need no rescan; some may be unticked | as *Approve…* for each; rescans and unchecked ones are left out and counted |
+| `ACT-approve-batch` | *Approve N…*, on the batch's header | `request.decide` | the open, checked proposals of a batch that need no rescan; some may be unticked | as *Approve…* for each; rescans and unchecked ones are left out and counted |
 | `ACT-retry-batch` | *Retry failed* | `request.retry` | some of the batch failed to be added (409), and some of that within the grant's scope (403) | each failed item within the scope back to ingest with its attempt counted; log *Ingest retried* |
 
 ## Iterations
@@ -144,7 +144,7 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-reclassify` | *Change category or priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over |
+| `ACT-reclassify` | *Reclassify — category, priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over |
 | `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again, its title, material type and shelf mark recorded with the recheck's time ([DOC-property-predefined](../model/documents.md#doc-property-predefined)), and the checks rerun; defects no longer found are gone; log *Rechecked* |
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
@@ -209,7 +209,7 @@ At `custody` that is the person's own subtree; the top level needs `any`.
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
 | `ACT-category-create` | *New category* | `category.edit` at the parent | the parent is not a leaf holding documents (409 `category.holds_documents`); a unique name beside it (409 `category.name_taken`) | no share in any mix *(no log)* |
-| `ACT-category-save` | *Rename or move…* | `category.edit` | not under itself (422); as create at the new parent | moved: its subtree goes along, it has no share in its new set, and its old share is unallocated *(no log)* |
+| `ACT-category-save` | *Edit…*: rename or move | `category.edit` | not under itself (422); as create at the new parent | moved: its subtree goes along, it has no share in its new set, and its old share is unallocated *(no log)* |
 | `ACT-category-refine` | *Refine…* | `category.edit` | a leaf (409 `category.has_children`) | a child that takes every document and the leaf's whole share; log *Reclassified* per document |
 | `ACT-category-delete` | *Delete…* | `category.edit` | no children (409); no documents (409); no intention or repeat scoped to it (409 `category.scope`) | its shares unallocated; custody on it removed *(no log)* |
 | `ACT-category-custody` | *Grant custody…* | `category.grant_custody` | people and existing groups | the set of holders, written whole *(no log)* |
@@ -223,7 +223,7 @@ The Categories tree picker selects a mix to display.
 |---|---|---|---|---|
 | `ACT-mix-create` | *New mix* | `mix.edit` | a unique name (409) | *(no log)* |
 | `ACT-mix-save` | *Edit proportions* | `mix.edit` | not archived (409); unchanged meanwhile (409 `mix.revision`) | a new revision *(no log)* |
-| `ACT-mix-snapshot` | *Label revision…* | `mix.edit` | the revision has no label yet (409) | *(no log)* |
+| `ACT-mix-snapshot` | *Name snapshot* | `mix.edit` | the revision has no label yet (409) | *(no log)* |
 | `ACT-mix-primary` | *Make Primary* | `mix.manage` | not archived (409) | *(no log)* |
 | `ACT-mix-archive` | *Archive* | `mix.manage` | not the Primary mix (409) | *(no log)* |
 | `ACT-mix-delete` | *Delete…* | `mix.manage` | not Primary and never used by an intention, repeat or generated list (409) | removes the mix and its revisions *(no log)* |
@@ -232,7 +232,7 @@ The Categories tree picker selects a mix to display.
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-watchlist-save` | *Save as watchlist* or *Save a personal copy* | the person can open the view; `watch` for a personal one, `watchlist.manage_system` for any other audience | a filter valid for the view (422); no duplicate except an explicit personal copy of a visible system watchlist or a system copy of one's own personal watchlist (409); a second personal copy is refused | — |
+| `ACT-watchlist-save` | *Save watchlist*, *Save new watchlist* or *Save a personal copy* | the person can open the view; `watch` for a personal one, `watchlist.manage_system` for any other audience | a filter valid for the view (422); no duplicate except an explicit personal copy of a visible system watchlist or a system copy of one's own personal watchlist (409); a second personal copy is refused | — |
 | `ACT-watchlist-change` | rename, refilter, delete | their own personal one; `watchlist.manage_system` for a system one | — | — |
 
 ## Tasks and schedules
@@ -301,7 +301,7 @@ Every act needs `access.manage` and is refused when it would leave nobody able t
 | `ACT-local-account` | *New local account…* | local accounts enabled (422); a free username (409) |
 | `ACT-identity-default-role` | *Default role…* on a way in | an enabled Identity instance (404); an existing role, or none (422) |
 | `ACT-group-save` | *New group*, *Edit group*, *Members…* | a unique name (409) |
-| `ACT-custody-save` | *New custody*, *Edit*, *Members…* | a unique name (409); the fallback keeps its name (422); members are people or groups |
+| `ACT-custody-save` | *New request custody set*, *Edit*, *Members…* | a unique name (409); the fallback keeps its name (422); members are people or groups |
 | `ACT-custody-delete` | *Delete custody…* | not the fallback (422) |
 
 ## Messages

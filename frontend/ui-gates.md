@@ -15,7 +15,8 @@ by `bun run check:ui` once session U1 of `closure-plan.md` lands; until then the
 |---|---|---|
 | **Master–detail** | `PageHeader` → `WatchlistTabs`? → `FilterBar`? → `MasterDetail` (master: `RecordList` with `GroupHeader`, or `Tree`; detail: `Pane` over `PaneState`, body of `DetailCard`s) | Documents, My documents, Requests, Validations, Lists, Hooks, Properties, Categories, Access, Mixes |
 | **Board** | `PageHeader` → `WatchlistTabs`? → `FilterBar` → `SectionBoard` (collapsible sections, card grid, remembered open state) | Projects, Intentions |
-| **Table + drawer** | `PageHeader` → `FilterBar`? → `TableWithDrawer` (`DataTable` + `DetailDrawer`) | Tasks, Schedules, Plugins |
+| **Table + drawer** | `PageHeader` → `FilterBar`? → `TableWithDrawer` (`DataTable` + `DetailDrawer`) | Tasks, Plugins |
+| **Table** | `PageHeader` → what the table is read against? → `DataTable`, whose rows open nothing in place | Schedules (its timeline above; `?s=` marks a row), System watchlists |
 | **Record page** | `PageHeader` with back → `RecordPage` → `DetailCard`s | Project, Intention mix, Mix |
 | **Wizard / editor** | `PageHeader` → `PaneWizard` or `TransferEditor` | Category refine, List editor |
 | **Settings** | `PageHeader` → `TabStrip` sections → `SettingsCard`s | Preferences |
