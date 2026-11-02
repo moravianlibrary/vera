@@ -25,6 +25,19 @@ needed. The interface words a refusal by its code alone, in the person's languag
 message is English, for logs and developers, and is never shown
 ([DEC-0020](../../decisions/DEC-0020-refusals-are-worded-by-code.md)).
 
+#### ACT-refusal-code
+
+A refusal code is `<subject>.<condition>` in lowercase snake case: the entity the act is on and
+the state that stops it, not the act (`list.done`, `list.already_started`,
+`iteration.scanned`). A code and an event code never share a spelling
+([EVENT-code](../model/events.md#event-code)). The problem's `type` is
+`https://vera.mzk.cz/problems/<code>`. A published code is never renamed or given another
+meaning, since the messages and every server key on it.
+
+A 422 names each wrong field by a JSON Pointer into the body (`/endsOn`), each with a code of its
+own in the same case: the schema's (`too_small`, `too_big`, `invalid_type`, `required`) or VERA's
+(`ends_before_start`).
+
 #### ACT-out-of-reach
 
 A record outside the person's reach is *not found* (404), not *forbidden*, so a refusal does not

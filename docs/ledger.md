@@ -42,7 +42,8 @@ else by its status. About 240 of the mock's refusals carry no code, so their Eng
 Czech interface, and eleven codes have no words in the client (`hook.active`, `hook.paused`,
 `hook.recipient_preference`, `intention.overall`, `mix.revision`, `plugin.config_unknown`,
 `plugin.no_such_category`, `plugin.no_such_role`, `plugin.unchanged`, `proposal.link_unread`,
-`watchlist.already_saved`). A 422's field errors carry a message, not a code. → frontend (mock
+`watchlist.already_saved`). A 422's field errors carry a message, not a JSON Pointer and a code
+([ACT-refusal-code](reference/access/acts.md#act-refusal-code)). → frontend (mock
 and client), then the engine keeps the same codes ([E11](develop/engine.md#settled)).
 
 ## For the engine
