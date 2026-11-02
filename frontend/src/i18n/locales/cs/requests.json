@@ -37,7 +37,7 @@
   "decision.category": "Kategorie",
   "decision.priority": "Priorita",
   "decision.messageAskers": "Napsat žadatelům…",
-  "decision.openDocuments": "Otevřít v {{label}} →",
+  "decision.openDocuments": "Open in Documents",
   "decision.checksPending": "Kontroly ještě neodpověděly. Rozhodnout lze, až odpoví.",
   "decision.chooseCategory": "Vyberte kategorii",
   "decision.rescanReason": "Uveďte, proč se skenuje znovu",

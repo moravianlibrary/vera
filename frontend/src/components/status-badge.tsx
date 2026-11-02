@@ -9,6 +9,7 @@ import type { StatusFootnote } from "@vera/domain/status";
 import { cva } from "class-variance-authority";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { existingCopyLabels } from "@/components/filters/value-labels";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -76,10 +77,10 @@ export function ProjectStateBadge({
   state: Project["state"];
   className?: string;
 }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("projects");
   return (
     <ToneBadge tone={projectStateTones[state]} className={className}>
-      {t(`progress.${state}`)}
+      {t(`projectState.${state}`)}
     </ToneBadge>
   );
 }
@@ -185,9 +186,10 @@ interface RegistryBadgeProps {
 }
 
 export function RegistryBadge({ record, className }: RegistryBadgeProps) {
+  const { t } = useTranslation("common");
   return (
     <Badge className={cn(toneVariants({ tone: registryTones[record.state] }), className)}>
-      {record.registry}: {record.rawState ?? record.state}
+      {record.registry}: {record.rawState ?? t(existingCopyLabels[record.state])}
     </Badge>
   );
 }

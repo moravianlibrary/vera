@@ -347,5 +347,6 @@
   "pluginActs.retiredRuleSummary": "Retires {{name}}: accepted defects under it are no longer reported, so their approvals have nothing to cover.",
   "pluginActs.supplies": "Supplies: {{items}}",
   "pluginActs.configuredWith": "Configured with",
-  "pluginActs.nothing": "nothing"
+  "pluginActs.nothing": "nothing",
+  "pluginTable.type": "Type"
 }

@@ -142,11 +142,10 @@ export function RequestList({
 }
 
 export function requestColumns(references: RequestReferences): ColumnDefinition<RequestRow>[] {
-  const t = i18n.getFixedT(null, "requests");
   return [
     {
       key: "document",
-      header: t("column.document"),
+      header: "requests:column.document",
       track: "minmax(9rem,1fr)",
       cell: (row) => (
         <>
@@ -162,20 +161,20 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "status",
-      header: t("column.status"),
+      header: "requests:column.status",
       track: "fit-content(9rem)",
       cell: (row) => <RequestStatusBadge row={row} />,
     },
     {
       key: "askers",
-      header: t("column.askers"),
+      header: "requests:column.askers",
       track: "max-content",
       isNumeric: true,
       cell: (row) => askerIdsOf(row).length,
     },
     {
       key: "pages",
-      header: t("column.pages"),
+      header: "requests:column.pages",
       track: "max-content",
       isNumeric: true,
       cell: (row) => {
@@ -185,7 +184,7 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "asked",
-      header: t("column.asked"),
+      header: "requests:column.asked",
       track: "max-content",
       isNumeric: true,
       cell: (row) => {
@@ -195,7 +194,7 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
     },
     {
       key: "copy",
-      header: t("column.existingCopy"),
+      header: "requests:column.existingCopy",
       track: "fit-content(9rem)",
       cell: (row) => <CopyCell row={row} />,
     },

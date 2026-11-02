@@ -37,7 +37,7 @@
   "decision.category": "Category",
   "decision.priority": "Priority",
   "decision.messageAskers": "Message askers…",
-  "decision.openDocuments": "Open in {{label}} →",
+  "decision.openDocuments": "Open in Documents",
   "decision.checksPending": "The checks have not answered yet. It can be decided once they have.",
   "decision.chooseCategory": "Choose a category",
   "decision.rescanReason": "Say why it is scanned again",

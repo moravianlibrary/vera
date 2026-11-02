@@ -223,5 +223,6 @@
   "globalRun.started": "Spuštěno {{id}}.",
   "globalRun.unavailable": "Tento běh už neexistuje, nebo ho nesmíte vidět.",
   "globalRun.loading": "Načítám…",
-  "schedulesPage.lastRunTime": "naposledy {{time}}"
+  "schedulesPage.lastRunTime": "naposledy {{time}}",
+  "scheduleDialogs.pause": "Pause"
 }

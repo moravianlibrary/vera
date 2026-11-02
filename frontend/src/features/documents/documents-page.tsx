@@ -110,7 +110,7 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             ? [
                 {
                   id: "propose",
-                  label: proposeActOf(session),
+                  label: t(proposeActOf(session) === "Add" ? "page.addProposal" : "page.propose"),
                   icon: Plus,
                   isPrimary: true,
                   onSelect: () => setIsProposing(true),

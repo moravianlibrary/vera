@@ -20,6 +20,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { DetailCard, DetailRow, FactGrid, Muted } from "@/components/detail-card";
+import { existingCopyLabels } from "@/components/filters/value-labels";
 import type { Tone } from "@/components/status-badge";
 import { RegistryBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
@@ -215,7 +216,11 @@ export function CopiesCard({
 
 function CopyBadge({ copy, record }: { copy: ExistingCopy; record: DocumentRecord }) {
   const attempt = record.iterations.find((iteration) => iteration.id === copy.iterationId)?.attempt;
-  const label = attempt === undefined ? copy.state : `${copy.state} · iteration ${attempt}`;
+  const state = i18n.t(existingCopyLabels[copy.state]);
+  const label =
+    attempt === undefined
+      ? state
+      : `${state} · ${i18n.t("recordCards.iteration", { ns: "common", count: attempt })}`;
   if (copy.link === null) {
     return <ToneBadge tone="purple">{label}</ToneBadge>;
   }
@@ -230,9 +235,9 @@ function CopyBadge({ copy, record }: { copy: ExistingCopy; record: DocumentRecor
 }
 
 const unitTypeLabels = {
-  "volume-name": "volume-name",
-  "volume-number": "volume-number",
-  barcode: "barcode",
+  "volume-name": "common:recordCards.unitVolumeName",
+  "volume-number": "common:recordCards.unitVolumeNumber",
+  barcode: "common:recordCards.unitBarcode",
 } as const satisfies Record<NonNullable<Document["unit"]>["type"], string>;
 
 // The title, type and shelf mark come from the catalog adapter, each with its sources
@@ -316,7 +321,8 @@ export function CatalogCard({
                 t("recordCards.wholeRecord")
               ) : (
                 <>
-                  {document.unit.value} <Muted>({unitTypeLabels[document.unit.type]})</Muted>
+                  {document.unit.value}{" "}
+                  <Muted>({i18n.t(unitTypeLabels[document.unit.type])})</Muted>
                 </>
               ),
           },

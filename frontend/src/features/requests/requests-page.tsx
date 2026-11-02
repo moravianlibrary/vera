@@ -93,7 +93,7 @@ export function RequestsPage() {
               documentsEntry === undefined
                 ? undefined
                 : {
-                    label: t("decision.openDocuments", { label: documentsEntry.visibleLabel }),
+                    label: t("decision.openDocuments"),
                     href: `${documentsEntry.path}?id=${encodeURIComponent(decided.documentId)}`,
                   },
           },
@@ -117,7 +117,7 @@ export function RequestsPage() {
 
   return (
     <>
-      <PageHeader title={title} />
+      <PageHeader title={t(title)} />
 
       {hasPermission(session, "watch") && (
         <WatchlistTabs
@@ -144,8 +144,8 @@ export function RequestsPage() {
           facets: summary?.propertyFacets,
           onChange: (properties) => view.setQuery({ ...query, properties }),
         }}
-        searchLabel={t("page.search")}
-        searchPlaceholder={t("page.searchPlaceholder")}
+        searchLabel="requests:page.search"
+        searchPlaceholder="requests:page.searchPlaceholder"
       />
 
       <MasterDetail

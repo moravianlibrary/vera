@@ -332,5 +332,6 @@
   "mixesPage.deleteTitle": "Delete {{name}}?",
   "mixesPage.deleteDescription": "This permanently removes the unused mix and its revisions.",
   "mixesPage.deleteConsequence": "No intention, repeat or list has used it, so nothing else changes.",
-  "mixesPage.deleteMix": "Delete mix"
+  "mixesPage.deleteMix": "Delete mix",
+  "intentionCard.points": "{{name}} · {{points}} pts"
 }

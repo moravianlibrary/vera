@@ -373,5 +373,6 @@
   "pluginActs.retiredRuleSummary": "Vyřadí {{name}}: přijaté vady podle něj se už nehlásí, takže jejich schválení nemají co pokrývat.",
   "pluginActs.supplies": "Dodává: {{items}}",
   "pluginActs.configuredWith": "Nastaveno pomocí",
-  "pluginActs.nothing": "nic"
+  "pluginActs.nothing": "nic",
+  "pluginTable.type": "Type"
 }

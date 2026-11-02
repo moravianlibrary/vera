@@ -54,7 +54,7 @@ export function DetailDrawer<Item>({
           <div {...closeGesture} className="flex items-start gap-3 border-b px-5 py-3.5">
             <div className="min-w-0 flex-1">
               <DrawerPrimitive.Title className="text-title font-semibold leading-snug">
-                {t(title)}
+                {title}
               </DrawerPrimitive.Title>
               <DrawerPrimitive.Description className="mt-0.5 text-xs text-muted-foreground">
                 {subtitle}

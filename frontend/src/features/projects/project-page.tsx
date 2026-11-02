@@ -65,8 +65,8 @@ export function ProjectPage() {
       <>
         <PageHeader
           title={t("projectPage.project")}
-          breadcrumb={backToIndex}
-          back={backToProjects}
+          breadcrumb={{ ...backToIndex, label: t(backToIndex.label) }}
+          back={{ ...backToProjects, label: t(backToProjects.label) }}
         />
         <QueryState
           isLoading={false}
@@ -82,8 +82,8 @@ export function ProjectPage() {
       <>
         <PageHeader
           title={t("projectPage.project")}
-          breadcrumb={backToIndex}
-          back={backToProjects}
+          breadcrumb={{ ...backToIndex, label: t(backToIndex.label) }}
+          back={{ ...backToProjects, label: t(backToProjects.label) }}
         />
         <QueryState
           isLoading={detailQuery.isLoading}
@@ -101,8 +101,8 @@ export function ProjectPage() {
       <>
         <PageHeader
           title={t("projectPage.project")}
-          breadcrumb={backToIndex}
-          back={backToProjects}
+          breadcrumb={{ ...backToIndex, label: t(backToIndex.label) }}
+          back={{ ...backToProjects, label: t(backToProjects.label) }}
         />
         <PageContent>
           <StatusNote tone="slate" title={t("projectPage.unavailableTitle")}>
@@ -159,8 +159,12 @@ function ProjectRecord({
       header={{
         title: project.name,
         actions: pageActions,
-        breadcrumb: { ...backToIndex, detail: `${standing} · ${periodTextOf(project)}` },
-        back: backToProjects,
+        breadcrumb: {
+          ...backToIndex,
+          label: t(backToIndex.label),
+          detail: `${standing} · ${periodTextOf(project)}`,
+        },
+        back: { ...backToProjects, label: t(backToProjects.label) },
       }}
       note={
         <StatusNote tone={note.tone} title={note.title}>

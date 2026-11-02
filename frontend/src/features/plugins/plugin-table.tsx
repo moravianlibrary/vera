@@ -271,7 +271,7 @@ export function useInstanceGroups({
         return kind === undefined ? null : (
           <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <span className="text-2xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Type
+              {i18n.t("plugins:pluginTable.type")}
             </span>
             <KindBadge kind={kind} className="border-foreground/20" />
             <span className="text-xs text-muted-foreground">

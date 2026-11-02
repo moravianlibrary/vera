@@ -122,7 +122,7 @@ export function TransferEditor<Item>({
               )}
             </span>
             <Button variant="outline" size="sm" onClick={onDiscard}>
-              Discard
+              {t("transfer.discard")}
             </Button>
             <Button size="sm" disabled={!canSave || isSaving} onClick={onSave}>
               {isSaving ? t("transfer.saving") : t("dialog.save")}

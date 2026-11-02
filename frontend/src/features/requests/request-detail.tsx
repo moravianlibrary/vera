@@ -107,7 +107,7 @@ export function RequestDetailPane({ detail, session, onDecided }: RequestDetailP
   if (documents !== undefined) {
     headingActions.push({
       id: "documents",
-      label: t("decision.openDocuments", { label: documents.visibleLabel }),
+      label: t("decision.openDocuments"),
       href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
     });
   }

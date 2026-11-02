@@ -546,5 +546,7 @@
   "management.resource": "resource",
   "dialog.rolesSavedFor": "Roles saved for {{name}}",
   "dialog.groupsSavedFor": "Groups saved for {{name}}",
-  "dialog.emailExample": "name@example.cz"
+  "dialog.emailExample": "name@example.cz",
+  "record.categories": "Categories",
+  "record.plugins": "Plugins"
 }

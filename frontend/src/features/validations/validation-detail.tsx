@@ -82,7 +82,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
     documents === undefined
       ? undefined
       : {
-          label: t("detail.openDocuments", { label: documents.visibleLabel }),
+          label: t("detail.openDocuments"),
           href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
         };
   const onRechecked = (result: RecheckResult) => {
@@ -222,11 +222,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
               nameOf={nameOf}
               action={<RevokeButton row={row} scope={scope} session={session} />}
             />
-            <FinePrint>
-              Repair the record in the catalog, then Recheck: a defect that is gone needs no
-              verdict. Accepting says it is tolerable — a later check finding the same or fewer asks
-              nobody again.
-            </FinePrint>
+            <FinePrint>{t("detail.validationNote")}</FinePrint>
           </DetailCard>
         )}
         {row.review === "Forbidden" && <ForbiddenCard session={session} />}

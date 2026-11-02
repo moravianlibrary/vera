@@ -135,7 +135,7 @@
   "count.document_other": "{{count}} documents",
   "count.defect_one": "{{count}} defect",
   "count.defect_other": "{{count}} defects",
-  "detail.openDocuments": "Open in {{label}} →",
+  "detail.openDocuments": "Open in Documents",
   "detail.askedByLabel": "Asked by",
   "count.people_one": "{{count}} person",
   "count.people_other": "{{count}} people",
@@ -156,5 +156,6 @@
   "progress.InProgress": "In progress",
   "progress.Digitized": "Digitized",
   "progress.Published": "Published",
-  "action.denyAfterScanDescription": "Rule the defects substantial. It stays {{progress}} and reads denied in review."
+  "action.denyAfterScanDescription": "Rule the defects substantial. It stays {{progress}} and reads denied in review.",
+  "detail.validationNote": "Repair the record in the catalog, then Recheck: a defect that is gone needs no verdict. Accepting says it is tolerable — a later check finding the same or fewer asks nobody again."
 }

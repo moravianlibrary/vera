@@ -217,5 +217,6 @@
   "globalRun.started": "Started {{id}}.",
   "globalRun.unavailable": "This run is gone, or is not yours to see.",
   "globalRun.loading": "Loading…",
-  "schedulesPage.lastRunTime": "last {{time}}"
+  "schedulesPage.lastRunTime": "last {{time}}",
+  "scheduleDialogs.pause": "Pause"
 }

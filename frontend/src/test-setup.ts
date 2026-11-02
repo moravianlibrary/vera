@@ -2,6 +2,22 @@
 // sends as text; a browser's fetch and FormData are one, so the tests use Node's.
 import "@testing-library/jest-dom/vitest";
 import { File as NodeFile } from "node:buffer";
+import { afterEach } from "vitest";
+import { i18n } from "@/i18n";
+
+const missingKeys = new Set<string>();
+i18n.init({
+  saveMissing: true,
+  missingKeyHandler: (_languages, namespace, key) => {
+    missingKeys.add(`${namespace}:${key}`);
+  },
+});
+
+afterEach(() => {
+  const missing = [...missingKeys];
+  missingKeys.clear();
+  if (missing.length) throw new Error(`Missing i18n messages: ${missing.join(", ")}`);
+});
 
 const nodeForm = await new Response("a=b", {
   headers: { "Content-Type": "application/x-www-form-urlencoded" },

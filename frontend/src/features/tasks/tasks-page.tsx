@@ -72,7 +72,7 @@ export function TasksPage() {
 
   const title =
     visibleNavigation(session).find((entry) => entry.id === "tasks")?.visibleLabel ??
-    t("tasksPage.title");
+    "tasksPage.title";
   const seesEveryone = hasPermission(session, "task.read");
   const show = (next: TaskNotice, tone: ShownNotice["tone"] = "green") =>
     setNotice({ ...next, tone });
@@ -104,7 +104,7 @@ export function TasksPage() {
 
   return (
     <>
-      <PageHeader title={title} />
+      <PageHeader title={t(title)} />
       {hasPermission(session, "watch") && (
         <WatchlistTabs
           view="tasks"

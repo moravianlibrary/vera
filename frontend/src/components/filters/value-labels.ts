@@ -3,6 +3,7 @@
 
 import type { Answer } from "@vera/contract/documents";
 import type { ExistingCopyState } from "@vera/domain/documents";
+import type { RegistryState } from "@vera/domain/entities";
 
 export const answerLabels = {
   Yes: "common:answer.Yes",
@@ -17,4 +18,5 @@ export const existingCopyLabels = {
   InProgress: "common:existingCopy.InProgress",
   Digitized: "common:existingCopy.Digitized",
   Published: "common:existingCopy.Published",
-} as const satisfies Record<ExistingCopyState, string>;
+  NotFound: "common:existingCopy.NotFound",
+} as const satisfies Record<ExistingCopyState | Extract<RegistryState, "NotFound">, string>;

@@ -572,5 +572,7 @@
   "management.shown_many": "zobrazeno {{count}}",
   "dialog.rolesSavedFor": "Role uloženy: {{name}}",
   "dialog.groupsSavedFor": "Skupiny uloženy: {{name}}",
-  "dialog.emailExample": "jmeno@example.cz"
+  "dialog.emailExample": "jmeno@example.cz",
+  "record.categories": "Categories",
+  "record.plugins": "Plugins"
 }

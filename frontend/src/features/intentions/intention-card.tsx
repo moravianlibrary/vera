@@ -125,7 +125,9 @@ function IntentionBadges({
       {row.state === "Upcoming" && <ToneBadge tone="slate">{message("state.upcoming")}</ToneBadge>}
       {row.outOfBandCount > 0 && <ToneBadge tone="red">{message("pace.outOfBand")}</ToneBadge>}
       {verdict !== null && <ToneBadge tone={verdict.tone}>{verdict.text}</ToneBadge>}
-      {repeatEvery !== null && <ToneBadge tone="slate">↻ {everyLabels[repeatEvery]}</ToneBadge>}
+      {repeatEvery !== null && (
+        <ToneBadge tone="slate">↻ {message(everyLabels[repeatEvery])}</ToneBadge>
+      )}
     </>
   );
 }
@@ -416,7 +418,10 @@ function OutOfBandDetail({ row }: { row: IntentionRow }) {
         <>
           {message("intentionCard.worstDrift")}
           <b className="font-semibold">
-            {worst.name} {signedPoints(worst.drift)} pts
+            {message("intentionCard.points", {
+              name: worst.name,
+              points: signedPoints(worst.drift),
+            })}
           </b>
         </>
       )}

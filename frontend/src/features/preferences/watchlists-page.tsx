@@ -178,7 +178,7 @@ function WatchlistDirectory({
   const columnsOf = (entries: WatchlistSummary[]): ColumnDefinition<WatchlistSummary>[] => {
     const nameColumn: ColumnDefinition<WatchlistSummary> = {
       key: "watchlist",
-      header: t("watchlists.watchlistColumn"),
+      header: "preferences:watchlists.watchlistColumn",
       track: isSystem ? "70%" : "44%",
       cell: (watchlist) => (
         <div className="min-w-0 break-words whitespace-normal">
@@ -247,7 +247,7 @@ function WatchlistDirectory({
     };
     const delivery: ColumnDefinition<WatchlistSummary> = {
       key: "delivery",
-      header: t("watchlists.deliveryColumn"),
+      header: "preferences:watchlists.deliveryColumn",
       track: "25%",
       cell: (watchlist) =>
         !isSystem && visibleIds.has(watchlist.id) ? (
@@ -310,7 +310,7 @@ function WatchlistDirectory({
     };
     const actions: ColumnDefinition<WatchlistSummary> = {
       key: "actions",
-      header: t("watchlists.actionsColumn"),
+      header: "preferences:watchlists.actionsColumn",
       track: isSystem ? "30%" : "31%",
       cell: (watchlist) => {
         const index = entries.indexOf(watchlist);

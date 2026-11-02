@@ -147,8 +147,11 @@ export function Sidebar({
                 )
               }
             >
-              <span className="relative grid size-7 shrink-0 place-items-center text-caption font-bold">
-                {entry.rail}
+              <span
+                aria-hidden="true"
+                className="relative grid size-7 shrink-0 place-items-center text-caption font-bold"
+              >
+                {t(entry.rail)}
                 {badgeCount > 0 && !isShowingLabels && (
                   <span className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-sidebar-primary" />
                 )}

@@ -104,7 +104,7 @@
   "listDetail.deliveredFoot": "digitalizovaných stran · {{scanned}} z {{count}} položek",
   "listDetail.items": "Položky",
   "listDetail.onThisList": "Na tomto seznamu — {{count}}",
-  "listDetail.pagesCount": "{{count}} pp",
+  "listDetail.pagesCount": "{{count}} s.",
   "listDetail.empty": "prázdný",
   "listDetail.average": "průměrně {{pages}} s.",
   "listDetail.countsTowards": "Započítává se do",

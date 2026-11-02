@@ -80,7 +80,7 @@ export function ValidationsPage() {
 
   return (
     <>
-      <PageHeader title={title} />
+      <PageHeader title={t(title)} />
 
       {hasPermission(session, "watch") && (
         <WatchlistTabs

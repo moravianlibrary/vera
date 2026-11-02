@@ -144,7 +144,7 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
             hasPermission(session, "request.decide") && (
               <Button asChild size="sm" variant="outline">
                 <Link to={`/requests?id=${encodeURIComponent(document.id)}`}>
-                  Decide in Requests
+                  {i18n.t("documents:detail.decideInRequests")}
                   <ArrowRight />
                 </Link>
               </Button>
@@ -290,7 +290,7 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
         hasPermission(session, "validation.approve") && (
           <Button asChild size="sm" variant="outline">
             <Link to={`/review/documents?id=${encodeURIComponent(iteration.id)}`}>
-              Resolve in Documents Validations
+              {i18n.t("documents:detail.resolveInValidations")}
               <ArrowRight />
             </Link>
           </Button>

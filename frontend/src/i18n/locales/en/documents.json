@@ -412,5 +412,10 @@
   "statusNote.declined": "Declined",
   "statusNote.notAccepted": "Not accepted",
   "statusNote.alreadyBeingDigitized": "Already being digitized",
-  "statusNote.duplicateText": "Somebody asked for this first — you are following that work."
+  "statusNote.duplicateText": "Somebody asked for this first — you are following that work.",
+  "detail.decideInRequests": "Decide in Requests",
+  "detail.resolveInValidations": "Resolve in Documents Validations",
+  "page.addProposal": "Add…",
+  "page.propose": "Propose…",
+  "detail.openDocuments": "Open in Documents"
 }

@@ -4,7 +4,9 @@
 // the server's; the axis starts at its now. A phone ticks every 6 hours, 2 days or 10 days, and
 // draws a band sooner.
 
+import { useTranslation } from "react-i18next";
 import { useTier } from "@/hooks/use-tier";
+import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 export const timelineSpans = ["day", "week", "month"] as const;
@@ -43,9 +45,16 @@ const phoneDenseAt = 24;
 const hourMilliseconds = 3_600_000;
 const dayMilliseconds = 24 * hourMilliseconds;
 
-const clockFormat = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
-const weekdayFormat = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric" });
-const dayFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
+const localeOf = () => (i18n.language === "cs" ? "cs-CZ" : "en-GB");
+
+function formatsOf() {
+  const locale = localeOf();
+  return {
+    clock: new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }),
+    weekday: new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric" }),
+    day: new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }),
+  };
+}
 
 interface Tick {
   at: Date;
@@ -56,14 +65,20 @@ function startOfDay(moment: Date): Date {
   return new Date(moment.getFullYear(), moment.getMonth(), moment.getDate());
 }
 
-function ticksOf(span: TimelineSpan, now: Date, end: Date, isPhone: boolean): Tick[] {
+function ticksOf(
+  span: TimelineSpan,
+  now: Date,
+  end: Date,
+  isPhone: boolean,
+  formats: ReturnType<typeof formatsOf>,
+): Tick[] {
   const ticks: Tick[] = [];
   if (span === "day") {
     const step = isPhone ? 6 : 3;
     const first = startOfDay(now);
     first.setHours((Math.floor(now.getHours() / step) + 1) * step);
     for (let at = first; at < end; at = new Date(at.getTime() + step * hourMilliseconds)) {
-      ticks.push({ at, label: clockFormat.format(at) });
+      ticks.push({ at, label: formats.clock.format(at) });
     }
 
     return ticks;
@@ -77,7 +92,10 @@ function ticksOf(span: TimelineSpan, now: Date, end: Date, isPhone: boolean): Ti
     at = new Date(at.getFullYear(), at.getMonth(), at.getDate() + 1), dayIndex += 1
   ) {
     if (dayIndex % every === 0) {
-      ticks.push({ at, label: span === "week" ? weekdayFormat.format(at) : dayFormat.format(at) });
+      ticks.push({
+        at,
+        label: span === "week" ? formats.weekday.format(at) : formats.day.format(at),
+      });
     }
   }
 
@@ -85,11 +103,13 @@ function ticksOf(span: TimelineSpan, now: Date, end: Date, isPhone: boolean): Ti
 }
 
 export function Timeline({ span, now, end, lanes }: TimelineProps) {
+  const { t } = useTranslation("common");
   const isPhone = useTier() === "phone";
+  const formats = formatsOf();
   const length = end.getTime() - now.getTime();
   const left = (at: Date) => `${(((at.getTime() - now.getTime()) / length) * 100).toFixed(2)}%`;
   // A tick too close to "now" would overlap its label.
-  const ticks = ticksOf(span, now, end, isPhone).filter(
+  const ticks = ticksOf(span, now, end, isPhone, formats).filter(
     (tick) => (tick.at.getTime() - now.getTime()) / length > (isPhone ? 0.32 : 0.09),
   );
   const denseLimit = isPhone ? phoneDenseAt : denseAt[span];
@@ -99,7 +119,7 @@ export function Timeline({ span, now, end, lanes }: TimelineProps) {
       <div />
       <div className="relative h-5 border-b text-caption text-muted-foreground">
         <span className="absolute left-0 font-medium text-foreground">
-          now {clockFormat.format(now)}
+          {t("timeline.now", { time: formats.clock.format(now) })}
         </span>
         {ticks.map((tick) => (
           <span
@@ -116,6 +136,7 @@ export function Timeline({ span, now, end, lanes }: TimelineProps) {
           key={lane.id}
           lane={lane}
           left={left}
+          clockFormat={formats.clock}
           isDense={lane.runCount > denseLimit || (lane.runCount > 0 && lane.runsAt.length === 0)}
         />
       ))}
@@ -126,12 +147,15 @@ export function Timeline({ span, now, end, lanes }: TimelineProps) {
 function TimelineRow({
   lane,
   left,
+  clockFormat,
   isDense,
 }: {
   lane: TimelineLane;
   left: (at: Date) => string;
+  clockFormat: Intl.DateTimeFormat;
   isDense: boolean;
 }) {
+  const { t } = useTranslation("common");
   const band = (text: string, className?: string) => (
     <div
       className={cn(
@@ -151,7 +175,7 @@ function TimelineRow({
       <div className="relative h-6 rounded-sm bg-muted/60">
         {lane.isPaused ? (
           band(
-            "paused",
+            t("timeline.paused"),
             "bg-[repeating-linear-gradient(135deg,var(--muted)_0_6px,var(--border)_6px_12px)] text-muted-foreground",
           )
         ) : isDense ? (

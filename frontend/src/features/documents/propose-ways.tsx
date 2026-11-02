@@ -666,7 +666,7 @@ function PhotoResult({
                   <span className="block text-xs text-muted-foreground">{candidate.why}</span>
                 </span>
                 <Button size="sm" variant="outline" onClick={() => onAdd(candidate.catalogId)}>
-                  Add
+                  {i18n.t("documents:proposeWays.add")}
                 </Button>
               </li>
             ))}

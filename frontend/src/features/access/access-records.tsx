@@ -567,7 +567,7 @@ function CategoryCustodyPart({
       <Fine>
         {t("record.categoryCustodyGrantedOn")}{" "}
         <Link to="/categories" className={linkClass}>
-          Categories
+          {t("record.categories")}
         </Link>
         {t("record.fromBranchNotHere")}
       </Fine>
@@ -644,7 +644,7 @@ export function RoleRecord({
           <Fine>
             {t("record.mappingsSetOnIdentity")}{" "}
             <Link to="/plugins?kind=Identity" className={linkClass}>
-              Plugins
+              {t("record.plugins")}
             </Link>
             .
           </Fine>

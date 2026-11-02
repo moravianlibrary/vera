@@ -56,7 +56,7 @@ export function ListsPage() {
   return (
     <>
       <PageHeader
-        title={title}
+        title={t(title)}
         actions={
           hasPermission(session, "list.create")
             ? [{ id: "new", label: t("listsPage.newList"), isPrimary: true, href: "/lists/new" }]

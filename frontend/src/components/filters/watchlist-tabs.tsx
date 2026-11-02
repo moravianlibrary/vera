@@ -376,6 +376,7 @@ function CurrentSearchPopover({
   onSave,
   onUpdate,
 }: CurrentSearchPopoverProps) {
+  const { t } = useTranslation("common");
   return (
     <WatchlistEditorPopover
       view={view}
@@ -394,7 +395,7 @@ function CurrentSearchPopover({
           aria-current="page"
           className="inline-flex h-9 shrink-0 items-center gap-1.5 border-b-2 border-primary px-3 text-ui font-medium whitespace-nowrap text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
-          Current search
+          {t("watchlist.currentSearch")}
           <ChevronDown className="size-3.5" />
         </button>
       }

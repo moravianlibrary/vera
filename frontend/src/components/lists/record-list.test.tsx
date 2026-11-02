@@ -15,7 +15,9 @@ function PickingList() {
       rows={rows}
       rowId={(row) => row.id}
       total={2}
-      columns={[{ key: "name", header: "Name", track: "1fr", cell: (row) => row.id }]}
+      columns={[
+        { key: "name", header: "common:recordList.name", track: "1fr", cell: (row) => row.id },
+      ]}
       card={{ title: (row) => row.id }}
       toolbar={{ count: "2 documents" }}
       paging={{ hasMore: false, isLoadingMore: false, onLoadMore: () => {} }}
