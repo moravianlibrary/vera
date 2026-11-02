@@ -19,8 +19,11 @@ How to read a row:
 
 A refused act answers with a status and a message the person can act on: 403 when they may not,
 404 when the record is not within their reach, 409 when its state does not allow it, 422 when
-the input is wrong, 429 when a limit is reached. Where a page has to tell refusals apart, the
-answer also carries a code (`list.done`, `access.last_manager`).
+the input is wrong, 429 when a limit is reached. Every refusal carries a code (`list.done`,
+`access.last_manager`), or its status's own (`forbidden`, `not_found`) when nothing finer is
+needed. The interface words a refusal by its code alone, in the person's language; the server's
+message is English, for logs and developers, and is never shown
+([DEC-0020](../../decisions/DEC-0020-refusals-are-worded-by-code.md)).
 
 #### ACT-out-of-reach
 

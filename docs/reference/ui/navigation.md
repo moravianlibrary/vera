@@ -63,6 +63,22 @@ The language is the person's: their first login keeps the one in use, it is the 
 browser they log in from, and they change it in Preferences → Display. A pick on the login page
 replaces the language they hold.
 
+#### UI-names
+
+A name people give a record is held in each language the interface speaks, one name per
+language, at least one of them. Named this way: watchlists, properties and their enum values,
+plugin instances, roles, custodies, categories, mixes, schedules and repeats. Projects and lists
+keep one name, which is usually a proper name.
+- An editor offers the name in the language in use; *Add language* adds the other.
+- A record shows its name in the viewer's language, or in the other one when it has none, with
+  no mark.
+- A search matches a name in any language. A name is unique within its language where the
+  record's name must be unique.
+- What VERA ships (system watchlists, the predefined properties and instances, the shipped
+  roles) is named in both.
+
+See [DEC-0021](../../decisions/DEC-0021-names-in-each-language.md).
+
 #### UI-record-links
 
 A link to a record opens it. Most go to that record's page; a run opens over the current page.

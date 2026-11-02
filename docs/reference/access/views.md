@@ -30,7 +30,8 @@ tree displays.
 #### VIEW-gate
 
 Every page, nested pages included, is gated by its entry's permissions. A person who opens a
-page they cannot see is sent to their landing page. The nested pages are:
+page they cannot see is shown *Forbidden* in the shell, naming the page, with a way to their
+landing page. The nested pages are:
 - the list editor (`/lists/new`, `/lists/:id/edit`);
 - a project's page (`/projects/:id`);
 - an intention's mix (`/intentions/:id/mix`);

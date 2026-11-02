@@ -19,7 +19,31 @@ None.
 
 ## Not built yet
 
-None.
+### L37: Czech, everywhere
+
+Rules: [UI-language](reference/ui/navigation.md#ui-language), the [glossary](glossary.md).
+
+Built on 2026-10-30 and reopened on 2026-11-02: the frontend review found words the messages do
+not hold. Some page titles, the project state badge, the project page's way back and the repeat
+badge show message keys; `mixPicker.*`, `tree.collapse`/`tree.expand`,
+`classification.chooseCategory` and `scheduleDialogs.pause` are in no messages file; a dozen
+labels are English in the code (among them the header's *Add*, the Schedules timeline, a copy's
+attempt, the drift's *pts*); the pages unit is *pp* in Czech; and the sidebar's rail marks are
+English. A *hook* is now *hook* in Czech (glossary, 2026-11-02), not *oznámení*, which stays
+Preferences' word for notifications. No test fails on a missing message yet. → frontend.
+
+### L74: Refusals by code
+
+Rules: [ACT-refusal](reference/access/acts.md#act-refusal),
+[DEC-0020](decisions/DEC-0020-refusals-are-worded-by-code.md).
+
+The client words a refusal by the action's text for its code, else the server's English `detail`,
+else by its status. About 240 of the mock's refusals carry no code, so their English reaches a
+Czech interface, and eleven codes have no words in the client (`hook.active`, `hook.paused`,
+`hook.recipient_preference`, `intention.overall`, `mix.revision`, `plugin.config_unknown`,
+`plugin.no_such_category`, `plugin.no_such_role`, `plugin.unchanged`, `proposal.link_unread`,
+`watchlist.already_saved`). A 422's field errors carry a message, not a code. → frontend (mock
+and client), then the engine keeps the same codes ([E11](develop/engine.md#settled)).
 
 ## For the engine
 
@@ -210,16 +234,27 @@ mock (2026-10-31), with *Which type?* for a line several Identifier instances re
 and *Reset*, ways in from operations) follows the engine's. → engine (step 7 of
 [backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
 
+### L75: Names in each language
+
+Rules: [UI-names](reference/ui/navigation.md#ui-names),
+[DEC-0021](decisions/DEC-0021-names-in-each-language.md).
+
+Every record holds one `name` string, and the shipped watchlists, properties, instances and roles
+are named in English. Needs: `names` by language in the contract and the domain for watchlists,
+properties and enum values, plugin instances, roles, custodies, categories, mixes, schedules and
+repeats; the seeds in both languages; search and uniqueness by language; then the client shows the
+viewer's language and its editors gain *Add language*. → engine (contract and seed), then
+frontend.
+
 ## Done
 
-### Built, 2026-10-30
+### Decided, 2026-11-02
 
-- **L37:** the glossary's Czech column is settled, *Documents* named for its stage
-  (*Digitalizace*, [VIEW-own-label](reference/access/views.md#view-own-label)), and every
-  message the interface shows has its Czech in `frontend/src/i18n/locales/cs/`, with Czech
-  plural forms. Every word the interface shows comes from messages, sixteen namespaces in
-  English and Czech; dates and numbers follow the language in use. To be checked on a real
-  phone before release.
+- **Forbidden, not a redirect:** a page the person cannot open shows *Forbidden* in the shell,
+  naming the page, as the client already does
+  ([VIEW-gate](reference/access/views.md#view-gate)).
+- **Hook in Czech** is *hook* (*hooku*, *hooky*), as Czech developers say it; *oznámení* stays
+  Preferences' notifications ([glossary](glossary.md)). Built with [L37](#l37-czech-everywhere).
 
 ### Built, 2026-10-29
 
@@ -304,7 +339,7 @@ and *Reset*, ways in from operations) follows the engine's. → engine (step 7 o
 - **L12:** the permission lines are i18n messages, one file per language in
   `frontend/src/i18n/locales/`, read through i18next; the catalog table is generated from the
   English one ([the catalog](reference/access/permissions.md#the-catalog)). The Czech file is a
-  copy of the English until the Czech terms are settled ([L37](#built-2026-10-30)).
+  copy of the English until the Czech terms are settled ([L37](#l37-czech-everywhere)).
 - **L67, in the mock:** a recheck records the title, material type and shelf mark again as
   the catalog adapter's reading, with the recheck's time
   ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined)); reading the
@@ -519,7 +554,7 @@ and *Reset*, ways in from operations) follows the engine's. → engine (step 7 o
   holds approved work only, every scope also reaching one's own asks. Each page has its own
   entry, the switch went, and `project-user` is public-only
   ([VIEW-documents-audience](reference/access/views.md#view-documents-audience)). Documents is
-  still to be named for its stage in part 5 ([L37](#built-2026-10-30)).
+  still to be named for its stage in part 5 ([L37](#l37-czech-everywhere)).
 
 - **L2:** Documents narrows to the scope of `iteration.read`: category custody at `custody`, the
   person's projects at `project`, everything at `any`

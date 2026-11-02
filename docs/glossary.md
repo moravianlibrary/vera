@@ -4,7 +4,7 @@ Every domain term in English and Czech, with a one-line meaning and where it is 
 ships in both languages, with Czech primary in production. The interface's messages
 (`frontend/src/i18n/locales/`) follow these terms.
 
-Settled on 2026-10-30 ([L37](ledger.md#built-2026-10-30)); the Czech messages use these words.
+Settled on 2026-10-30 ([L37](ledger.md#l37-czech-everywhere)); the Czech messages use these words.
 They are checked on a real phone before release.
 
 ## Pages
@@ -97,7 +97,7 @@ They are checked on a real phone before release.
 | plugin, implementation, instance | plugin, implementace, instance | the code and its configured uses | [PLG-model](reference/integrations/plugins.md#plg-model) |
 | run | běh | one execution, listed on Tasks | [ENT-run](reference/model/entities.md#ent-run) |
 | schedule | plán spouštění | runs an instance on a cadence | [ENT-schedule](reference/model/entities.md#ent-schedule) |
-| hook | oznámení | sends a message when an event happens | [HOOK-model](reference/integrations/hooks.md#hook-model) |
+| hook | hook (hooku, hooky) | sends a message when an event happens | [HOOK-model](reference/integrations/hooks.md#hook-model) |
 | delivery channel | doručovací kanál | where a hook sends | [HOOK-model](reference/integrations/hooks.md#hook-model) |
 | watchlist | uložený pohled | a saved filter over one page | [WATCH-model](reference/integrations/watchlists.md#watch-model) |
 | status log | historie | the append-only record of causes | [LOG-cause](reference/model/log.md#log-cause) |
