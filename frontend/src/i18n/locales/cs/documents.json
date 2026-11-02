@@ -231,7 +231,7 @@
   "proposeWays.volumeOrIssue_few": "{{count}} svazky nebo čísla",
   "proposeWays.volumeOrIssue_many": "{{count}} svazků nebo čísel",
   "proposeWays.volumeOrIssue_other": "{{count}} svazků nebo čísel",
-  "proposeWays.add": "Add",
+  "proposeWays.add": "Přidat",
   "proposeWays.recordNotFound": "{{catalog}} v tom žádný záznam nenašel. Vložte adresu stránky záznamu, nebo jeho ID.",
   "proposeWays.theCatalog": "Katalog",
   "proposeWays.couldNotRead": "Nepodařilo se přečíst. Zkuste to znovu.",
@@ -487,9 +487,9 @@
   "statusNote.notAccepted": "Nepřijato",
   "statusNote.alreadyBeingDigitized": "Už se digitalizuje",
   "statusNote.duplicateText": "Někdo o to požádal dřív — sledujete tu práci.",
-  "detail.decideInRequests": "Decide in Requests",
-  "detail.resolveInValidations": "Resolve in Documents Validations",
-  "page.addProposal": "Add…",
-  "page.propose": "Propose…",
-  "detail.openDocuments": "Open in Documents"
+  "detail.decideInRequests": "Rozhodnout v Žádostech",
+  "detail.resolveInValidations": "Vyřešit ve Validacích",
+  "page.addProposal": "Přidat…",
+  "page.propose": "Navrhnout…",
+  "detail.openDocuments": "Otevřít v Digitalizaci"
 }

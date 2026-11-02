@@ -145,7 +145,7 @@
   "count.defect_few": "{{count}} vady",
   "count.defect_many": "{{count}} vad",
   "count.defect_other": "{{count}} vad",
-  "detail.openDocuments": "Open in Documents",
+  "detail.openDocuments": "Otevřít v Digitalizaci",
   "detail.askedByLabel": "Žádá",
   "count.people_one": "{{count}} člověk",
   "count.people_few": "{{count}} lidé",
@@ -173,5 +173,5 @@
   "progress.Digitized": "Digitalizováno",
   "progress.Published": "Zveřejněno",
   "action.denyAfterScanDescription": "Uznat vady za podstatné. Zůstává ve stavu {{progress}} a je označeno jako zamítnuté při validaci.",
-  "detail.validationNote": "Repair the record in the catalog, then Recheck: a defect that is gone needs no verdict. Accepting says it is tolerable — a later check finding the same or fewer asks nobody again."
+  "detail.validationNote": "Opravte záznam v katalogu a pak ho znovu zkontrolujte: vada, která zmizela, žádný verdikt nepotřebuje. Přijetí říká, že je snesitelná — pozdější kontrola, která najde stejné nebo méně vad, se už nikoho neptá."
 }

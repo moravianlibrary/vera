@@ -217,12 +217,12 @@
   "scheduleDialogs.validationName": "Dejte mu název: pod ním se běhy vypisují.",
   "scheduleDialogs.validationNumber": "Celé číslo",
   "scheduleDialogs.validationAtLeastOne": "Alespoň 1",
-  "scheduleDialogs.validationMinimumInterval": "Nejkratší je každých 5 minut: cokoli rychlejšího je událost a na události jsou Oznámení.",
+  "scheduleDialogs.validationMinimumInterval": "Nejkratší je každých 5 minut: cokoli rychlejšího je událost a na události jsou Hooky.",
   "globalRun.notRerunnable": "Znovu se spouští jen neúspěšný nebo zrušený běh pluginu.",
   "globalRun.forbidden": "Tento plugin nesmíte spouštět.",
   "globalRun.started": "Spuštěno {{id}}.",
   "globalRun.unavailable": "Tento běh už neexistuje, nebo ho nesmíte vidět.",
   "globalRun.loading": "Načítám…",
   "schedulesPage.lastRunTime": "naposledy {{time}}",
-  "scheduleDialogs.pause": "Pause"
+  "scheduleDialogs.pause": "Pozastavit"
 }

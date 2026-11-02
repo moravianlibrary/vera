@@ -355,5 +355,5 @@
   "mixesPage.deleteDescription": "Trvale odstraní nepoužité rozložení i jeho revize.",
   "mixesPage.deleteConsequence": "Žádný záměr, opakování ani seznam ho nepoužil, takže se nic jiného nemění.",
   "mixesPage.deleteMix": "Smazat rozložení",
-  "intentionCard.points": "{{name}} · {{points}} pts"
+  "intentionCard.points": "{{name}} · {{points}} p. b."
 }

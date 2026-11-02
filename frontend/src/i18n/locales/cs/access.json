@@ -46,8 +46,8 @@
   "permission.plugin.configure.line": "nastavovat instance",
   "permission.plugin.upload_code.line": "instalovat kód pluginů",
   "permission.plugin.run.line": "spustit plugin hned",
-  "permission.hook.read.line": "vidět oznámení",
-  "permission.hook.configure.line": "upravovat oznámení",
+  "permission.hook.read.line": "vidět hooky",
+  "permission.hook.configure.line": "upravovat hooky",
   "permission.property.define.line": "definovat vlastnosti na stránce Vlastnosti",
   "permission.access.read.line": "vidět uživatele, skupiny a role",
   "permission.access.manage.line": "měnit je, včetně rolí",
@@ -573,6 +573,6 @@
   "dialog.rolesSavedFor": "Role uloženy: {{name}}",
   "dialog.groupsSavedFor": "Skupiny uloženy: {{name}}",
   "dialog.emailExample": "jmeno@example.cz",
-  "record.categories": "Categories",
-  "record.plugins": "Plugins"
+  "record.categories": "Kategorie",
+  "record.plugins": "Pluginy"
 }
