@@ -1,3 +1,4 @@
+// Shape: System.
 // The router's crash system page, with a short reference for whoever looks after VERA.
 
 import { useEffect, useState } from "react";

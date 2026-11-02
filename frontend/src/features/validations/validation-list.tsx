@@ -175,7 +175,11 @@ function ValidationGroupHeader({
 function emptyTextOf(reviews: readonly ReviewedState[] | undefined): string {
   const t = i18n.getFixedT(null, "validations");
   const [only] = reviews ?? [];
-  if (reviews?.length === 1 && only === "Needed") {
+  if (
+    reviews === undefined ||
+    reviews.length === 0 ||
+    (reviews.length === 1 && only === "Needed")
+  ) {
     return t("list.emptyNeeded");
   }
 

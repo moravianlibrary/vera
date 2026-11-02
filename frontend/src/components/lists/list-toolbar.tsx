@@ -5,6 +5,13 @@
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { ViewGroupingOption } from "@/lib/view-definition";
 
 export interface ListGroupings<Grouping extends string> {
@@ -38,24 +45,32 @@ export function ListToolbar<Grouping extends string>({
       {actions}
 
       {groupings !== undefined && groupings.options.length > 0 && (
-        <select
-          aria-label={t("filter.groupList")}
-          className="ml-auto h-7 rounded-md border bg-background px-2 text-xs text-muted-foreground"
-          value={groupings.value ?? ""}
-          onChange={(event) =>
+        <Select
+          value={groupings.value ?? "none"}
+          onValueChange={(value) =>
             groupings.onChange(
-              groupings.options.find((option) => option.value === event.target.value)?.value ??
-                null,
+              value === "none"
+                ? null
+                : (groupings.options.find((option) => option.value === value)?.value ?? null),
             )
           }
         >
-          <option value="">{t("filter.noGrouping")}</option>
-          {groupings.options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {t(option.label)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            aria-label={t("filter.groupList")}
+            className="ml-auto text-muted-foreground"
+            size="sm"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">{t("filter.noGrouping")}</SelectItem>
+            {groupings.options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {t(option.label)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   );

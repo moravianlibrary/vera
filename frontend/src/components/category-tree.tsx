@@ -22,6 +22,13 @@ import {
 } from "@/components/category-tree-values";
 import { Tree } from "@/components/tree";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { i18n } from "@/i18n";
@@ -130,27 +137,28 @@ export function CategoryTree({
           <label htmlFor={id} className="text-xs text-muted-foreground">
             {t("categoryTree.show")}
           </label>
-          <select
-            id={id}
-            className="h-7 rounded-md border bg-background px-2 text-xs"
+          <Select
             value={shown}
-            onChange={(event) => {
-              const value = categoryTreeValues.find(
-                (candidate) => candidate === event.target.value,
-              );
+            onValueChange={(selected) => {
+              const value = categoryTreeValues.find((candidate) => candidate === selected);
               if (value !== undefined) {
                 remember.mutate({ categoryTreeValue: value });
               }
             }}
           >
-            {categoryTreeValues
-              .filter((value) => offered.includes(value))
-              .map((value) => (
-                <option key={value} value={value}>
-                  {t(categoryTreeValueLabels[value])}
-                </option>
-              ))}
-          </select>
+            <SelectTrigger id={id} aria-label={t("categoryTree.show")} size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categoryTreeValues
+                .filter((value) => offered.includes(value))
+                .map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {t(categoryTreeValueLabels[value])}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
         </div>
         {matchingIds !== undefined && matchingIds.size < categories.length && (
           <p className="text-xs text-muted-foreground">

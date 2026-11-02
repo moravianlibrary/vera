@@ -1,3 +1,4 @@
+// Shape: System.
 // System page: setting a local account password (ACCESS-password-reset).
 import { type FormEvent, useState } from "react";
 import { useTranslation } from "react-i18next";

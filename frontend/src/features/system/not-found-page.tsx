@@ -1,3 +1,4 @@
+// Shape: System.
 // The unknown-path system page, inside the shell (ui-gates.md G-STATE-3).
 
 import { useTranslation } from "react-i18next";

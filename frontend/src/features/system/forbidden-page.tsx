@@ -1,3 +1,4 @@
+// Shape: System.
 // The forbidden system page, naming the view inside the shell (ui-gates.md G-STATE-3).
 
 import { useTranslation } from "react-i18next";

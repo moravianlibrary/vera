@@ -159,7 +159,7 @@ function TimelineRow({
   const band = (text: string, className?: string) => (
     <div
       className={cn(
-        "absolute inset-x-0 top-1/2 flex h-4 -translate-y-1/2 items-center rounded-sm bg-tone-blue px-2 text-2xs text-tone-blue-foreground",
+        "absolute inset-x-0 top-1/2 flex h-4 -translate-y-1/2 items-center rounded-xs bg-tone-blue px-2 text-2xs text-tone-blue-foreground",
         className,
       )}
     >
@@ -172,7 +172,7 @@ function TimelineRow({
       <div className="truncate text-muted-foreground" title={lane.label}>
         {lane.label}
       </div>
-      <div className="relative h-6 rounded-sm bg-muted/60">
+      <div className="relative h-6 rounded-xs bg-muted/60">
         {lane.isPaused ? (
           band(
             t("timeline.paused"),

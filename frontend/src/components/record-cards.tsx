@@ -2,7 +2,7 @@
 // the existing copies, the catalog record and the history, under the record's heading
 // (docs/demos/shared/page-documents.js and page-proposals.js). Each takes the record as the
 // server sent it, already withheld to what the caller may read.
-// TODO(rrandiak): Open in catalog.
+// The catalog record links out when the caller passes the catalog adapter's link (DEC-0006).
 
 import type { DocumentRecord } from "@vera/domain/documents";
 import { currentIterationOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";

@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 import type { AccessIndex } from "@vera/contract/access";
 import type { AccessUser, Identity, IdentityInstance } from "@vera/domain/access";
 import {

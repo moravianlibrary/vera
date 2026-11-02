@@ -1,3 +1,4 @@
+// Shape: Wizard / editor.
 // The Digitization Lists editor surfaces (view-map.md §2.4): `/lists/new` needs `list.create`,
 // `/lists/:listId/edit` needs `list.edit`; without it the page goes back to browse, as the action
 // that leads here is absent. A Done list is history and is not edited. `/lists/new?generate…`

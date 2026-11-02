@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // Independent, reusable mix definitions. A mix has percentages and revisions, but no output of
 // its own; output comparisons remain on an intention and its reporting window.
 

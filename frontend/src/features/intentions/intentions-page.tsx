@@ -1,3 +1,4 @@
+// Shape: Board.
 // The Intentions page: one filtered board, repeats then running, upcoming, ended and archived.
 // `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat. *New intention* and
 // *Edit* need `intention.edit`, *New repeat* and a repeat's *Edit* `intention.repeat`; what was

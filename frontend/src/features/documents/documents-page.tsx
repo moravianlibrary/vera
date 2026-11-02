@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // The Documents view: one row per document within the caller's reach, its full record beside it.
 // Its state lives in the URL, so any state is a link: the filter, `?id=` naming the open
 // document, `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
@@ -15,6 +16,7 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { failureOf } from "@/components/query-state";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
@@ -30,6 +32,7 @@ import {
 } from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { i18n } from "@/i18n";
 
 export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) {
   const { t } = useTranslation("documents");
@@ -84,6 +87,8 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
         (option) => option.value !== "batch" || hasPermission(session, "request.read_ingest"),
       );
   const title = t(isMy ? "page.myTitle" : "page.title");
+  const isFiltered = Object.keys(view.filter).length > 0;
+  const emptyText = documentEmptyTextOf(isMy, isFiltered);
 
   const detailPane = (
     <Pane
@@ -184,6 +189,14 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
             picking={bulk.picking}
             onLongPress={bulk.startPicking}
             toolbarActions={bulk.toolbarActions}
+            emptyText={emptyText}
+            emptyAction={
+              isMy && canPropose ? (
+                <Button variant="link" size="sm" onClick={() => setIsProposing(true)}>
+                  {t(proposeActOf(session) === "Add" ? "page.addProposal" : "page.propose")}
+                </Button>
+              ) : undefined
+            }
           />
         }
         detail={detailPane}
@@ -224,6 +237,12 @@ export function DocumentsPage({ perspective }: { perspective: "staff" | "my" }) 
       )}
     </>
   );
+}
+
+export function documentEmptyTextOf(isMy: boolean, isFiltered: boolean): string {
+  return i18n.t(isFiltered ? "list.empty" : isMy ? "list.emptyMine" : "list.emptyStaff", {
+    ns: "documents",
+  });
 }
 
 interface MineToggleProps {

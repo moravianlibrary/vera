@@ -191,9 +191,7 @@ function dropShares(categoryId: string): void {
   });
 }
 
-// TODO(rrandiak): intentions.md §1.1.1 gives a new or moved category 0%, which since 2026-10-07
-// reads as deliberately excluded; it gets no share instead, so its set is flagged until somebody
-// decides. Confirm, or make it 0.
+// PLAN-new-category-share: a new or moved category gets no share and its set stays flagged.
 export function createCategory(session: Session, draft: CategoryDraft): Outcome<Category> {
   const name = draft.name.trim();
   const refusal = placeRefusal(session, draft.parentId) ?? nameRefusal(draft.parentId, name, null);
@@ -335,8 +333,7 @@ export function deleteCategory(session: Session, categoryId: string): Outcome<nu
     };
   }
 
-  // TODO(rrandiak): an intention scoped to the category is refused for now; may the delete widen
-  // its scope to the parent instead, or archive it?
+  // PLAN-new-category-share: keep a category while intentions are scoped to it.
   if (scopedTo(categoryId).length > 0) {
     return {
       refusal: {

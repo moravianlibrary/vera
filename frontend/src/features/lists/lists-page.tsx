@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // The Digitization Lists page, browse (view-map.md §2.4): the lists on the left, the chosen one
 // in the pane. Its state lives in the URL like the other views': filters and `?id=`
 // naming the open list. The count says how much is ready to list to whoever builds lists.

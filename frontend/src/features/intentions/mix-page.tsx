@@ -1,3 +1,4 @@
+// Shape: Record page.
 // An intention's Mix, `/intentions/:intentionId/mix` (intentions.md §2.3–§2.5; concepts.md *Mix*,
 // decided 2026-10-07; docs/demos/shared/page-categories.js for the tree and the set editor, which
 // the demo still keeps on Categories). The category tree with the intention's shares, read

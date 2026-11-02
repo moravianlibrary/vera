@@ -1,3 +1,4 @@
+// Shape: Table.
 // One place to find personal and system saved filters, and each person's delivery choices: each
 // Delivery channel instance that can reach them off until switched on, named by the instance,
 // browser push on for every watchlist once this browser may notify (WATCH-delivery), whose

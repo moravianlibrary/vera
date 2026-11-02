@@ -1,3 +1,4 @@
+// Shape: Record page.
 // A project's own page, `/projects/:projectId` (docs/demos/shared/page-projects.js detail;
 // projects.md §1.1, §4): where it stands in words, the bars against its target, what was proposed
 // into it, the lists carrying what it funded, the iterations it funded; beside them what it is,

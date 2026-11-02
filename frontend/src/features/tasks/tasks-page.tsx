@@ -1,3 +1,4 @@
+// Shape: Table + drawer.
 // Tasks: watchlists and filters above an upcoming-run strip, running cards, then a Finished
 // section whose heading and table header stick in the single page scroller. A run opens in the drawer (`?run=`).
 // `task.read` sees everyone's runs and next scheduled work; with `task.read_own` alone the page

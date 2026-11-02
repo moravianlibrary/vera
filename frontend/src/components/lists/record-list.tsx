@@ -78,7 +78,7 @@ export interface RecordListProps<Row, Group extends GroupCounts, Grouping extend
   picking?: RowPicking;
   onLongPress?: (id: string) => void;
   loadingText: string;
-  emptyText: string;
+  emptyText: ReactNode;
   // Set when the list could not load: shown instead of the loading and empty lines.
   failure?: QueryFailure;
   loadingMoreText: string;

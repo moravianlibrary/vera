@@ -59,6 +59,8 @@ interface DocumentListProps {
   onLongPress?: (id: string) => void;
   // Picking rows and what is done to the picked ones.
   toolbarActions?: ReactNode;
+  emptyText?: ReactNode;
+  emptyAction?: ReactNode;
 }
 
 export function DocumentList({
@@ -80,6 +82,8 @@ export function DocumentList({
   picking,
   onLongPress,
   toolbarActions,
+  emptyText,
+  emptyAction,
 }: DocumentListProps) {
   useTranslation("documents");
   const isPublic = audience === "public";
@@ -139,7 +143,12 @@ export function DocumentList({
       picking={picking}
       onLongPress={onLongPress}
       loadingText={i18n.t("list.loading", { ns: "documents" })}
-      emptyText={i18n.t("list.empty", { ns: "documents" })}
+      emptyText={
+        <div className="flex flex-wrap items-center gap-x-2">
+          <span>{emptyText ?? i18n.t("list.empty", { ns: "documents" })}</span>
+          {emptyAction}
+        </div>
+      }
       loadingMoreText={i18n.t("list.loadingMore", { ns: "documents" })}
     />
   );

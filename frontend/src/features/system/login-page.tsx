@@ -1,3 +1,4 @@
+// Shape: System.
 // The login system page: ordered Identity entries, return path and UI-language pick (ACCESS-login-page).
 
 import { useQuery } from "@tanstack/react-query";

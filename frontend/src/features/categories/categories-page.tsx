@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // The Categories page (docs/demos/shared/page-categories.js; STATUS "Categories"; concepts.md
 // *Category*): the tree on the left and one category on the right, *All categories* when none is
 // picked. It is about the tree, what each line of work holds and who holds custody of it; a

@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // The Documents Validations view (view-map.md §2.3): one row per iteration in the caller's
 // category custody whose metadata a defect holds, or that a rule forbade, the iteration beside it.
 // Its state lives in the URL like Documents': the filter, `?id=` naming the open iteration and

@@ -1,3 +1,4 @@
+// Shape: System.
 // System page: confirming a local account's email (ACCESS-verify-email).
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // Outbound Hooks: grouped master–detail, delivery attention, public preview and editor
 // (STATUS "Hooks"; docs/demos/shared/page-hooks.js). The selected hook lives at ?h=.
 
@@ -435,7 +436,7 @@ function ActivityBars({ values }: { values: readonly number[] }) {
       {values.map((value, index) => (
         <span
           key={days[index]}
-          className="w-1.5 rounded-sm bg-primary/65"
+          className="w-1.5 rounded-xs bg-primary/65"
           style={{ height: `${value === 0 ? 12 : 25 + (value / max) * 75}%` }}
         />
       ))}

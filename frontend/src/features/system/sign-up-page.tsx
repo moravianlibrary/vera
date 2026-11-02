@@ -1,3 +1,4 @@
+// Shape: System.
 // System page: local account sign-up (ACCESS-sign-up).
 
 import { safeReturnTo } from "@vera/contract/return-to";

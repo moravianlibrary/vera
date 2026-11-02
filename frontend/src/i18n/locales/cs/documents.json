@@ -61,6 +61,8 @@
   "list.count_other": "{{count}} dokumentů",
   "list.loading": "Načítám dokumenty…",
   "list.empty": "Nic neodpovídá. Zrušte některý filtr a uvidíte víc.",
+  "list.emptyMine": "Zatím jste o nic nepožádali.",
+  "list.emptyStaff": "Zatím žádná schválená práce.",
   "list.loadingMore": "Načítám další dokumenty…",
   "list.document": "Dokument",
   "list.askers": "Žadatelé",

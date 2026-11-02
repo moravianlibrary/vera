@@ -114,7 +114,13 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex h-svh overflow-hidden bg-background">
+    <div className="relative flex h-svh overflow-hidden bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {t("shell.skipToContent")}
+      </a>
       <aside
         className={cn(
           "relative z-40 hidden shrink-0 transition-[width] duration-200 xl:block",
@@ -134,7 +140,12 @@ export function AppShell() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <main {...swipe.bind} className="relative flex min-h-0 flex-1 flex-col">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          {...swipe.bind}
+          className="relative flex min-h-0 flex-1 flex-col"
+        >
           <SwipePeekPill peek={swipe.peek} />
           <OpenNavigationContext value={isDocked ? null : () => setIsSheetOpen(true)}>
             <Outlet key={displayVersion} />

@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // Properties, under Administration (UI-pages): every property definition (DOC-property), each
 // opening in its pane, for a holder of `property.define`. The predefined four are edited, never
 // deleted (DOC-property-predefined); deleting another first says, from the server, what goes with

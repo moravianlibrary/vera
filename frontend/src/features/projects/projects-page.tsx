@@ -1,3 +1,4 @@
+// Shape: Board.
 // The Projects page (docs/demos/shared/page-projects.js index; STATUS "Projects"): few projects
 // run at once, so it is not master–detail but cards for the proposed and active (including
 // upcoming), with compact tables for the ended and rejected. Each populated category is a

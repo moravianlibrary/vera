@@ -32,6 +32,8 @@ const inFeatures = (path: string) => path.startsWith("features/");
 const outsideLayout = (path: string) =>
   path.startsWith("features/") ||
   (path.startsWith("components/") && !path.startsWith("components/layout/"));
+const componentSelects = (path: string) =>
+  path.startsWith("components/") && !path.startsWith("components/ui/");
 
 export const gates: readonly Gate[] = [
   {
@@ -51,7 +53,7 @@ export const gates: readonly Gate[] = [
   { id: "G-STYLE-2", pattern: /(?<![\w-])text-\[[0-9.]/g, appliesTo: anywhere },
   {
     id: "G-STYLE-3",
-    pattern: /(?<![\w-])rounded-\[|(?<![\w-])rounded(?=["'`\s]|$)/g,
+    pattern: /(?<![\w-])rounded-sm|(?<![\w-])rounded-\[|(?<![\w-])rounded(?=["'`\s]|$)/g,
     appliesTo: anywhere,
   },
   {
@@ -68,6 +70,7 @@ export const gates: readonly Gate[] = [
     appliesTo: inFeatures,
   },
   { id: "G-COMP-2", pattern: /<(select|input|textarea|table)\b/g, appliesTo: inFeatures },
+  { id: "G-COMP-2", pattern: /<select\b/g, appliesTo: componentSelects },
   { id: "G-COMP-5", pattern: /\b(localStorage|sessionStorage)\b/g, appliesTo: outsideLayout },
 ];
 

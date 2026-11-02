@@ -1,3 +1,4 @@
+// Shape: Table + drawer.
 // Plugins (STATUS "Plugins"; docs/demos/shared/page-plugins.js; permissions.md §3, `plugin.read`):
 // one table grouped twice, kind → implementation → instance, since that is how the model reads:
 // a kind is the job, an implementation the code and what it declares, an instance a configured

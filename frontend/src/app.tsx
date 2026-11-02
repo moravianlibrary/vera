@@ -1,6 +1,5 @@
 // The application: providers and routes. Every navigation entry is a route, gated by the same
 // permissions that reveal it in the sidebar.
-// TODO(rrandiak): the remaining views (frontend/continuation.md).
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -8,10 +7,10 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { AppShell } from "@/components/layout/app-shell";
 import {
   canOpenNavigationEntry,
+  type NavigationEntryId,
   navigationEntries,
   visibleNavigation,
 } from "@/components/layout/navigation";
-import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AccessPage } from "@/features/access/access-page";
 import { CategoriesPage } from "@/features/categories/categories-page";
@@ -47,20 +46,11 @@ import { ValidationsPage } from "@/features/validations/validations-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { queryClient } from "@/lib/query-client";
 
-function Placeholder({ title }: { title: string }) {
-  const { t } = useTranslation("common");
-  return (
-    <>
-      <PageHeader title={title} />
-      <PageContent>
-        <p className="text-sm text-muted-foreground">{t("app.viewPlanned")}</p>
-      </PageContent>
-    </>
-  );
+function assertNever(value: never): never {
+  throw new Error(`Unhandled navigation entry: ${value}`);
 }
 
-function EntryPage({ entryId, label }: { entryId: string; label: string }) {
-  const { t } = useTranslation("common");
+function EntryPage({ entryId }: { entryId: NavigationEntryId }) {
   switch (entryId) {
     case "documents":
       return <DocumentsPage perspective="staff" />;
@@ -95,7 +85,7 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
     case "watchlists":
       return <WatchlistsPage />;
     default:
-      return <Placeholder title={t(label)} />;
+      return assertNever(entryId);
   }
 }
 
@@ -126,7 +116,7 @@ function Gate({ entryId, children }: { entryId: string; children: React.ReactNod
   );
 }
 
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
     path: "/login",
     handle: { template: "/login" },
@@ -157,11 +147,17 @@ const router = createBrowserRouter([
     element: <ResetPasswordPage />,
     errorElement: <CrashPage />,
   },
-  { path: "/signed-out", handle: { template: "/signed-out" }, element: <SignedOutPage /> },
+  {
+    path: "/signed-out",
+    handle: { template: "/signed-out" },
+    element: <SignedOutPage />,
+    errorElement: <CrashPage />,
+  },
   {
     path: "/email-notifications/:token",
     handle: { template: "/email-notifications/:token" },
     element: <EmailNotificationsPage />,
+    errorElement: <CrashPage />,
   },
   {
     path: "/",
@@ -186,7 +182,7 @@ const router = createBrowserRouter([
         handle: { template: entry.path },
         element: (
           <Gate entryId={entry.id}>
-            <EntryPage entryId={entry.id} label={entry.label} />
+            <EntryPage entryId={entry.id} />
           </Gate>
         ),
       })),

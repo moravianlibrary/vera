@@ -1,3 +1,4 @@
+// Shape: System.
 // The signed-out system page, outside the shell (ui-gates.md G-STATE-2).
 
 import { useTranslation } from "react-i18next";

@@ -1,3 +1,4 @@
+// Shape: Master–detail.
 // The Requests view (VIEW-requests): one row per document asked for, within the reach of the
 // caller's `request.read`, its asks beside it; `request.decide` adds the decision acts. It opens on awaiting a decision;
 // its state lives in the URL like Documents': the filter, `?id=` naming the open document,

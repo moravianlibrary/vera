@@ -1,3 +1,4 @@
+// Shape: Table.
 // Schedules (page-composition.md §5 *Tasks*; docs/demos/shared/page-tasks.js `scheduleView`):
 // what will run by itself and when. The timeline over the next day, week or month (`?range=`),
 // then the schedules as a table, the plugin schedules and then the intention repeats, so
@@ -509,7 +510,7 @@ function ScheduleTimeline({
               type="button"
               aria-pressed={value === range}
               className={cn(
-                "rounded-sm px-2.5 py-1 text-xs",
+                "rounded-xs px-2.5 py-1 text-xs",
                 value === range
                   ? "bg-secondary font-medium"
                   : "text-muted-foreground hover:text-foreground",

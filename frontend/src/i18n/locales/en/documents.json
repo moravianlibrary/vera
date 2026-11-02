@@ -59,6 +59,8 @@
   "list.count_other": "{{count}} documents",
   "list.loading": "Loading documents…",
   "list.empty": "Nothing matches. Clear a filter to see more.",
+  "list.emptyMine": "You have not asked for anything yet.",
+  "list.emptyStaff": "No approved work yet.",
   "list.loadingMore": "Loading more documents…",
   "list.document": "Document",
   "list.askers": "Askers",

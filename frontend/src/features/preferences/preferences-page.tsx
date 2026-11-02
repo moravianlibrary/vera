@@ -1,3 +1,4 @@
+// Shape: Settings.
 import { useQuery } from "@tanstack/react-query";
 import { languages } from "@vera/contract/user-settings";
 import { pushChannelId } from "@vera/contract/watchlists";

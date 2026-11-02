@@ -155,7 +155,7 @@ export function RunTitle({ run, onOpen }: { run: Run; onOpen: (runId: string) =>
   return (
     <button
       type="button"
-      className="text-left font-medium hover:underline focus-visible:underline focus-visible:outline-none"
+      className="text-left font-medium hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       onClick={() => onOpen(run.id)}
     >
       {run.what}

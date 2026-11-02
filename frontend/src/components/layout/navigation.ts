@@ -5,8 +5,26 @@ import type { Session } from "@vera/domain/entities";
 import type { Permission } from "@vera/domain/permissions";
 import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
 
+export type NavigationEntryId =
+  | "my-documents"
+  | "documents"
+  | "requests"
+  | "validations"
+  | "lists"
+  | "projects"
+  | "categories"
+  | "mixes"
+  | "intentions"
+  | "tasks"
+  | "schedules"
+  | "access"
+  | "plugins"
+  | "properties"
+  | "hooks"
+  | "watchlists";
+
 export interface NavigationEntry {
-  readonly id: string;
+  readonly id: NavigationEntryId;
   readonly path: string;
   readonly rail: string;
   // The key stays stable when the UI language changes.

@@ -53,7 +53,10 @@ describe("the UI gates checker", () => {
       'G-COMP-1 from "@/components/ui/table"',
       "G-COMP-2 <select",
     ]);
-    expect(gatesOf("components/a.tsx", source)).toEqual([]);
+    expect(gatesOf("components/a.tsx", source)).toEqual(["G-COMP-2 <select"]);
+    expect(gatesOf("components/a.tsx", "<select />")).toEqual(["G-COMP-2 <select"]);
+    expect(gatesOf("components/ui/a.tsx", "<select />")).toEqual([]);
+    expect(gatesOf("components/a.tsx", 'className="rounded-sm"')).toEqual(["G-STYLE-3 rounded-sm"]);
   });
 
   it("keeps browser storage to hooks and the shell", () => {
