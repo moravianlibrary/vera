@@ -132,7 +132,13 @@ export function readRecordLink(link: RecordLink): Outcome<{ catalogId: string }>
 // matched by its text.
 export function readPhoto(): Outcome<PhotoReading> {
   if (!hasInput("Photo")) {
-    return { refusal: { status: 404, message: "Nothing reads photos here" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "proposal.no_photo_reader",
+        message: "Nothing reads photos here",
+      },
+    };
   }
 
   const records = knownCatalogRecords();
@@ -172,7 +178,13 @@ let photographedCount = 0;
 
 export function readBarcode(photo: File): Outcome<BarcodeReading> {
   if (!hasInput("Camera")) {
-    return { refusal: { status: 404, message: "Nothing reads barcodes here" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "proposal.no_barcode_reader",
+        message: "Nothing reads barcodes here",
+      },
+    };
   }
 
   if (photo.size === 0) {

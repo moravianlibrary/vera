@@ -2,10 +2,9 @@
 // 422) comes back as a value the dialog shows beside what was typed, never as a toast; any other
 // failure is said the same way, as one that may pass on a retry. On success the lists, details
 // and counts the action touches are refetched without being awaited, so the dialog closes at
-// once and the refetch takes the record off the list after. A refusal is worded by the action's
-// text for its Problem Details code, else by the server's own detail, else by the action's text
-// for its status, else by the default for the status.
-// TODO(rrandiak): words by code move to i18n, and a 422's `errors` go beside their fields.
+// once and the refetch takes the record off the list after. A refusal is worded by code, then
+// by the action's text for its status.
+// TODO(rrandiak): a 422's `errors` go beside their fields.
 
 import type { QueryKey } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,11 +30,11 @@ export type ActionResult<Value> =
   | { readonly isDone: true; readonly value: Value }
   | { readonly isDone: false; readonly refusal: Refusal };
 
-const defaultRefusalKeys = {
-  403: "mutation.refusal.403",
-  404: "mutation.refusal.404",
-  409: "mutation.refusal.409",
-  422: "mutation.refusal.422",
+const defaultRefusalCodes = {
+  403: "forbidden",
+  404: "not_found",
+  409: "conflict",
+  422: "invalid",
 } as const satisfies Record<RefusalStatus, string>;
 
 interface ActionMutationOptions<Input, Value> {
@@ -93,10 +92,12 @@ function refusalOf(error: unknown, texts: RefusalTexts): Refusal {
   }
 
   const code = error.problem?.code ?? null;
+  const codeWords =
+    code !== null && i18n.exists(code, { ns: "refusals" }) ? i18n.t(code, { ns: "refusals" }) : "";
   const message =
-    (code === null ? undefined : texts[code]) ??
-    error.problem?.detail ??
+    texts[code ?? ""] ??
+    (codeWords || undefined) ??
     texts[status] ??
-    i18n.t(defaultRefusalKeys[status], { ns: "common" });
+    i18n.t(defaultRefusalCodes[status], { ns: "refusals" });
   return { status, code, message };
 }

@@ -38,7 +38,8 @@ const loginEntries = implement(endpoints.loginEntries, ({ engine }) => ({
 
 const loginForm = implement(endpoints.loginForm, async ({ engine, params, body }) => {
   const instance = identityInstance(engine, params.instanceId);
-  if (instance?.entry !== "form") return problem(404, "There is no local login for this instance.");
+  if (instance?.entry !== "form")
+    return problem(404, "There is no local login for this instance.", {});
   const identity = await withPluginSpan(
     instance.id,
     implementationName(engine, instance.implementationId),
@@ -59,7 +60,7 @@ const loginForm = implement(endpoints.loginForm, async ({ engine, params, body }
 const loginStart = implement(endpoints.loginStart, ({ engine, params, query }) => {
   const instance = identityInstance(engine, params.instanceId);
   if (instance?.entry !== "redirect")
-    return problem(404, "There is no redirect login for this instance.");
+    return problem(404, "There is no redirect login for this instance.", {});
   const flowId = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64url");
   engine.db
     .query("INSERT INTO login_flows (id, instance_id, return_to, created_at) VALUES (?, ?, ?, ?)")

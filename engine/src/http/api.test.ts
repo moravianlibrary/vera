@@ -79,7 +79,8 @@ describe("the contract check", () => {
     expect(response.status).toBe(422);
     const body = await problemOf(response);
     expect(body.code).toBe("invalid");
-    expect(body.errors?.map(({ field }) => field)).toEqual(["name"]);
+    expect(body.errors?.map(({ pointer }) => pointer)).toEqual(["/name"]);
+    expect(body.errors?.[0]?.code).toBe("too_small");
     expect((await serve("GET", "/things/x7")).status).toBe(422);
     expect((await serve("GET", "/things/t7?limit=-1")).status).toBe(422);
   });

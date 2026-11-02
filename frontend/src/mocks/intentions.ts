@@ -402,21 +402,25 @@ function scopeRefusal(session: Session, draft: IntentionScope): Refusal | null {
     funding.kind === "project" &&
     !database.projects.some((project) => project.id === funding.projectId)
   ) {
-    return { status: 422, message: `No project ${funding.projectId}` };
+    return { status: 422, code: "intention.project", message: `No project ${funding.projectId}` };
   }
 
   if (
     draft.scopeCategoryId !== null &&
     !database.categories.some((category) => category.id === draft.scopeCategoryId)
   ) {
-    return { status: 422, message: `No category ${draft.scopeCategoryId}` };
+    return {
+      status: 422,
+      code: "category.not_found",
+      message: `No category ${draft.scopeCategoryId}`,
+    };
   }
 
   // PLAN-scope: a condition names a property that exists.
   const keys = new Set(allPropertyDefinitions().map(({ key }) => key));
   const unknown = (draft.scopeConditions ?? []).find((condition) => !keys.has(condition.key));
   if (unknown !== undefined) {
-    return { status: 422, message: `No property ${unknown.key}` };
+    return { status: 422, code: "property.not_found", message: `No property ${unknown.key}` };
   }
 
   const reach = scopeOf({ funding });
@@ -454,22 +458,41 @@ function applyMix(
       (candidate) => candidate.isPrimary && candidate.archivedAt === null,
     );
     return selected === undefined
-      ? { refusal: { status: 409, message: "No active Primary mix" } }
+      ? {
+          refusal: {
+            status: 409,
+            code: "mix.no_primary",
+            message: "No active Primary mix",
+          },
+        }
       : { value: { distributionId: selected.id, mixRevision: null } };
   }
   const selected = database.distributions.find((candidate) => candidate.id === mix.mixId);
   if (selected === undefined || selected.archivedAt !== null)
-    return { refusal: { status: 422, message: "Choose an active mix" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "intention.mix_inactive",
+        message: "Choose an active mix",
+      },
+    };
   if (
     mix.revision !== null &&
     !selected.revisions.some((candidate) => candidate.revision === mix.revision)
   )
-    return { refusal: { status: 422, message: "Choose a saved revision" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "intention.revision_required",
+        message: "Choose a saved revision",
+      },
+    };
   return { value: { distributionId: mix.mixId, mixRevision: mix.revision } };
 }
 
 const overallShapeRefusal: Refusal = {
   status: 422,
+  code: "intention.overall_has_no_target",
   message: "Overall counts everything, with no target or end",
 };
 
@@ -520,6 +543,7 @@ export function saveIntention(
     return {
       refusal: {
         status: 409,
+        code: "intention.is_archived",
         message: "An archived intention is preserved; copy it to make changes",
       },
     };
@@ -613,7 +637,11 @@ export function unarchiveIntention(session: Session, intentionId: string): Outco
   }
 
   return {
-    refusal: { status: 409, message: "An archive is preserved; create a copy for new work" },
+    refusal: {
+      status: 409,
+      code: "intention.is_archived",
+      message: "An archive is preserved; create a copy for new work",
+    },
   };
 }
 
@@ -626,7 +654,13 @@ function deletableFor(session: Session, intentionId: string): Outcome<Intention>
 
   const intention = found.value;
   if (intention.archived !== null) {
-    return { refusal: { status: 409, message: "An archived intention is preserved" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "intention.is_archived",
+        message: "An archived intention is preserved",
+      },
+    };
   }
   if (intention.isOverall) {
     return { refusal: overallRefusal };
@@ -686,7 +720,11 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
       (chosen.revision !== null &&
         !selected.revisions.some((version) => version.revision === chosen.revision))
     )
-      return { status: 422, message: "Choose an active mix and saved revision" };
+      return {
+        status: 422,
+        code: "intention.mix_revision_required",
+        message: "Choose an active mix and saved revision",
+      };
   }
   return scopeRefusal(session, scope);
 }

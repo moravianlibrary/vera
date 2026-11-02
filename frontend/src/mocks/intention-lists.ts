@@ -185,7 +185,13 @@ export function readList(session: Session, request: ListReadingRequest): Outcome
       ? overallIntention()
       : database.intentions.find((candidate) => candidate.id === request.intentionId);
   if (intention === undefined) {
-    return { refusal: { status: 422, message: `No intention ${request.intentionId}` } };
+    return {
+      refusal: {
+        status: 422,
+        code: "list.intention_not_found",
+        message: `No intention ${request.intentionId}`,
+      },
+    };
   }
 
   const memberIds = new Set(request.memberIds);
@@ -223,10 +229,22 @@ export function previewCorrection(
 
   const intention = shapeableIntentions().find((candidate) => candidate.id === intentionId);
   if (intention === undefined) {
-    return { refusal: { status: 404, message: "No intention to correct towards" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "list.intention_not_found",
+        message: "No intention to correct towards",
+      },
+    };
   }
   if (intention.distributionId === null) {
-    return { refusal: { status: 422, message: "This intention has no mix to correct towards" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "list.correction_needs_mix",
+        message: "This intention has no mix to correct towards",
+      },
+    };
   }
 
   const data = countingData();

@@ -91,7 +91,7 @@ export function createEngine(options: EngineOptions): Engine {
         return serveControl(request, engine);
       }
 
-      return problem(404, `Nothing is served at ${pathname}.`);
+      return problem(404, `Nothing is served at ${pathname}.`, {});
     },
     reset(name) {
       // Read first: an unknown seed leaves the database as it was.

@@ -146,7 +146,11 @@ function keepsManager(
 function grantsRefusal(draft: RoleDraft): Refusal | null {
   const permissions = draft.grants.map((grant) => grant.permission);
   if (new Set(permissions).size !== permissions.length) {
-    return { status: 422, message: "Each permission is granted once, at one scope" };
+    return {
+      status: 422,
+      code: "role.duplicate_permission",
+      message: "Each permission is granted once, at one scope",
+    };
   }
 
   const refused = draft.grants.find((grant) => !isAcceptedGrant(grant));
@@ -393,7 +397,13 @@ export function setIdentityDefaultRole(
   );
   if (!identity) return { refusal: unknownRecord("Identity instance") };
   if (roleId !== null && !database.roles.some((role) => role.id === roleId))
-    return { refusal: { status: 422, message: "Choose an existing role" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "role.not_found",
+        message: "Choose an existing role",
+      },
+    };
   database.pluginInstances = database.pluginInstances.map((instance) =>
     instance.id === instanceId && instance.settings?.kind === "Identity"
       ? { ...instance, settings: { ...instance.settings, defaultRoleId: roleId } }
@@ -455,7 +465,9 @@ export function linkIdentity(
   }
 
   if (user.kind === "agent") {
-    return { refusal: { status: 422, message: "An agent never logs in" } };
+    return {
+      refusal: { status: 422, code: "access.agent_no_login", message: "An agent never logs in" },
+    };
   }
 
   const instance = identityInstances().find((candidate) => candidate.id === link.instanceId);
@@ -538,7 +550,9 @@ export function suspendUser(session: Session, userId: string): Outcome<AccessUse
   }
 
   if (user.kind === "agent") {
-    return { refusal: { status: 422, message: "An agent never logs in" } };
+    return {
+      refusal: { status: 422, code: "access.agent_no_login", message: "An agent never logs in" },
+    };
   }
 
   if (user.suspendedAt !== null) {
@@ -596,7 +610,13 @@ export function createLocalAccount(session: Session, account: LocalAccount): Out
 
   const local = identityInstances().find((instance) => instance.isLocal);
   if (local === undefined) {
-    return { refusal: { status: 422, message: "Local accounts are switched off" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "access.local_accounts_off",
+        message: "Local accounts are switched off",
+      },
+    };
   }
 
   if (identityHolder(local.id, account.username) !== null) {

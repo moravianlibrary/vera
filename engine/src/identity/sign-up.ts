@@ -74,7 +74,7 @@ function createPending(
 
 const signUp = implement(endpoints.signUp, async ({ engine, params, body }) => {
   const instance = configured(engine, params.instanceId);
-  if (instance === null) return problem(404, "There is no sign-up for this instance.");
+  if (instance === null) return problem(404, "There is no sign-up for this instance.", {});
   if (body.website) return new Response(null, { status: 202 });
   if (body.password.length < passwordMinimum(engine, instance.id))
     return problem(422, "The password is too short.", { code: "access.password_short" });
@@ -96,7 +96,10 @@ const signUp = implement(endpoints.signUp, async ({ engine, params, body }) => {
     WHERE channel = 'mail' AND lower(recipient) = lower(?) AND json_extract(payload, '$.subject') = ? AND sent_at >= ?`)
       .get(body.email, "Verify your email", new Date(now.getTime() - day).toISOString())?.count ??
     0;
-  if (count >= 3) return problem(429, "Too many verification emails.");
+  if (count >= 3)
+    return problem(429, "Too many verification emails.", {
+      code: "access.too_many_verification_emails",
+    });
   if (
     engine.db
       .query("SELECT 1 FROM users WHERE email IS NOT NULL AND lower(email) = lower(?)")

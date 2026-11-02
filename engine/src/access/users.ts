@@ -34,7 +34,7 @@ export const userEndpoints = [
       .get(params.id);
     if (!row) return unknown("Identity instance");
     if (body.roleId !== null && !rolesOf(engine.db).some((role) => role.id === body.roleId))
-      return problem(422, "Choose an existing role");
+      return problem(422, "Choose an existing role", { code: "role.not_found" });
     const settings = JSON.parse(row.settings ?? "null");
     engine.db.transaction(() =>
       engine.db
@@ -54,7 +54,10 @@ export const userEndpoints = [
         "SELECT i.id FROM plugin_instances i JOIN plugin_implementations p ON p.id=i.implementation_id WHERE p.kind='Identity' AND p.name='LocalAccounts' AND i.is_enabled=1 AND i.is_deleted=0 ORDER BY i.rowid",
       )
       .get();
-    if (!local) return problem(422, "Local accounts are switched off");
+    if (!local)
+      return problem(422, "Local accounts are switched off", {
+        code: "access.local_accounts_off",
+      });
     if (
       engine.db
         .query("SELECT 1 FROM user_identities WHERE instance_id=? AND external_id=?")
@@ -124,7 +127,8 @@ export const userEndpoints = [
     if (!auth.ok) return auth.response;
     const user = accessUser(engine, params.id);
     if (!user) return unknown("user");
-    if (user.kind === "agent") return problem(422, "An agent never logs in");
+    if (user.kind === "agent")
+      return problem(422, "An agent never logs in", { code: "access.agent_no_login" });
     const instance = engine.db
       .query<{ id: string; name: string; settings: string }, [string]>(
         "SELECT i.id,i.name,i.settings FROM plugin_instances i JOIN plugin_implementations p ON p.id=i.implementation_id WHERE i.id=? AND i.is_deleted=0 AND p.kind='Identity'",
@@ -185,7 +189,8 @@ export const userEndpoints = [
     if (!auth.ok) return auth.response;
     const user = accessUser(engine, params.id);
     if (!user) return unknown("user");
-    if (user.kind === "agent") return problem(422, "An agent never logs in");
+    if (user.kind === "agent")
+      return problem(422, "An agent never logs in", { code: "access.agent_no_login" });
     if (user.suspendedAt !== null)
       return problem(409, `${user.name} is suspended`, { code: "access.suspended" });
     const now = engine.clock.now().toISOString();

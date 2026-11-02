@@ -60,7 +60,9 @@ export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixR
       (mix) => mix.name.toLocaleLowerCase() === draft.name.toLocaleLowerCase(),
     )
   ) {
-    return { refusal: { status: 409, message: "A mix already has that name" } };
+    return {
+      refusal: { status: 409, code: "mix.name_taken", message: "A mix already has that name" },
+    };
   }
 
   const source = draft.fromMixId === null ? null : findMix(draft.fromMixId);
@@ -70,7 +72,13 @@ export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixR
       ? null
       : source?.revisions.find((candidate) => candidate.revision === draft.fromRevision);
   if (draft.fromRevision !== null && revision === undefined) {
-    return { refusal: { status: 422, message: "That mix revision does not exist" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "mix.revision_not_found",
+        message: "That mix revision does not exist",
+      },
+    };
   }
 
   const shares = { ...(revision?.shares ?? source?.shares ?? {}) };
@@ -99,7 +107,13 @@ export function saveMixRecordSet(
   const mix = findMix(mixId);
   if (mix === undefined) return { refusal: notFound };
   if (mix.archivedAt !== null) {
-    return { refusal: { status: 409, message: "This mix is archived; make an editable copy" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "mix.is_archived",
+        message: "This mix is archived; make an editable copy",
+      },
+    };
   }
   if (mix.revision !== change.revision) {
     return {
@@ -116,13 +130,20 @@ export function saveMixRecordSet(
     siblings.some((category) => !(category.id in change.shares)) ||
     Object.keys(change.shares).length !== siblings.length
   ) {
-    return { refusal: { status: 422, message: "Name every child in this category set" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "mix.child_missing",
+        message: "Name every child in this category set",
+      },
+    };
   }
   const sum = Object.values(change.shares).reduce<number>(
     (total, share) => total + (share ?? 0),
     0,
   );
-  if (sum > 100) return { refusal: { status: 422, message: "A set cannot pass 100" } };
+  if (sum > 100)
+    return { refusal: { status: 422, code: "mix.over_hundred", message: "A set cannot pass 100" } };
 
   const shares = { ...mix.shares };
   for (const [categoryId, share] of Object.entries(change.shares)) {
@@ -158,9 +179,18 @@ export function snapshotMixRecord(
   const mix = findMix(mixId);
   if (mix === undefined) return { refusal: notFound };
   const version = mix.revisions.find((candidate) => candidate.revision === draft.revision);
-  if (version === undefined) return { refusal: { status: 422, message: "No such revision" } };
+  if (version === undefined)
+    return {
+      refusal: { status: 422, code: "mix.revision_not_found", message: "No such revision" },
+    };
   if (version.label !== null)
-    return { refusal: { status: 409, message: "That revision already has a snapshot label" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "mix.revision_labelled",
+        message: "That revision already has a snapshot label",
+      },
+    };
   const saved = {
     ...mix,
     revisions: mix.revisions.map((candidate) =>
@@ -178,7 +208,13 @@ export function makeMixPrimary(session: Session, mixId: string): Outcome<MixReco
   const mix = findMix(mixId);
   if (mix === undefined) return { refusal: notFound };
   if (mix.archivedAt !== null)
-    return { refusal: { status: 409, message: "An archived mix cannot be Primary" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "mix.is_archived",
+        message: "An archived mix cannot be Primary",
+      },
+    };
   database.distributions = database.distributions.map((candidate) => ({
     ...candidate,
     isPrimary: candidate.id === mixId,
@@ -192,7 +228,11 @@ export function archiveMixRecord(session: Session, mixId: string): Outcome<MixRe
   if (mix === undefined) return { refusal: notFound };
   if (mix.isPrimary)
     return {
-      refusal: { status: 409, message: "Choose a new Primary mix before archiving this one" },
+      refusal: {
+        status: 409,
+        code: "mix.is_primary",
+        message: "Choose a new Primary mix before archiving this one",
+      },
     };
   if (mix.archivedAt !== null) return { value: recordOf(session, mix) };
   // Followers keep the final revision. Their selection never switches to Primary implicitly.
@@ -220,7 +260,11 @@ export function deleteMixRecord(session: Session, mixId: string): Outcome<null> 
   if (mix === undefined) return { refusal: notFound };
   if (mix.isPrimary)
     return {
-      refusal: { status: 409, message: "Choose a new Primary mix before removing this one" },
+      refusal: {
+        status: 409,
+        code: "mix.is_primary",
+        message: "Choose a new Primary mix before removing this one",
+      },
     };
   if (
     database.mixUsedIds.has(mixId) ||
@@ -231,6 +275,7 @@ export function deleteMixRecord(session: Session, mixId: string): Outcome<null> 
     return {
       refusal: {
         status: 409,
+        code: "mix.in_use",
         message: "A mix that has been used cannot be removed; archive it instead",
       },
     };

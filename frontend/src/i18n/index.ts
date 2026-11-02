@@ -19,6 +19,7 @@ import csPlugins from "@/i18n/locales/cs/plugins.json";
 import csPreferences from "@/i18n/locales/cs/preferences.json";
 import csProjects from "@/i18n/locales/cs/projects.json";
 import csProperties from "@/i18n/locales/cs/properties.json";
+import csRefusals from "@/i18n/locales/cs/refusals.json";
 import csRequests from "@/i18n/locales/cs/requests.json";
 import csSystem from "@/i18n/locales/cs/system.json";
 import csTasks from "@/i18n/locales/cs/tasks.json";
@@ -35,6 +36,7 @@ import enPlugins from "@/i18n/locales/en/plugins.json";
 import enPreferences from "@/i18n/locales/en/preferences.json";
 import enProjects from "@/i18n/locales/en/projects.json";
 import enProperties from "@/i18n/locales/en/properties.json";
+import enRefusals from "@/i18n/locales/en/refusals.json";
 import enRequests from "@/i18n/locales/en/requests.json";
 import enSystem from "@/i18n/locales/en/system.json";
 import enTasks from "@/i18n/locales/en/tasks.json";
@@ -55,6 +57,7 @@ export const resources = {
     categories: enCategories,
     properties: enProperties,
     preferences: enPreferences,
+    refusals: enRefusals,
     hooks: enHooks,
     plugins: enPlugins,
     tasks: enTasks,
@@ -73,6 +76,7 @@ export const resources = {
     categories: csCategories,
     properties: csProperties,
     preferences: csPreferences,
+    refusals: csRefusals,
     hooks: csHooks,
     plugins: csPlugins,
     tasks: csTasks,
@@ -99,6 +103,7 @@ i18n.use(initReactI18next).init({
     "categories",
     "properties",
     "preferences",
+    "refusals",
     "hooks",
     "plugins",
     "tasks",

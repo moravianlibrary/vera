@@ -62,7 +62,11 @@ export function reclassifyIteration(
   const { iteration } = found.value;
   if (!isReclassifiable(iteration)) {
     return {
-      refusal: { status: 409, message: "It is scanned; its category and priority stay" },
+      refusal: {
+        status: 409,
+        code: "iteration.scanned",
+        message: "It is scanned; its category and priority stay",
+      },
     };
   }
 
@@ -73,7 +77,9 @@ export function reclassifyIteration(
 
   const { categoryId, priority } = reclassification;
   if (categoryId === iteration.categoryId && priority === iteration.priority) {
-    return { refusal: { status: 422, message: "Nothing changed" } };
+    return {
+      refusal: { status: 422, code: "iteration.nothing_changed", message: "Nothing changed" },
+    };
   }
 
   replaceIteration({ ...iteration, categoryId, priority });
@@ -121,7 +127,9 @@ export function publishIteration(
 
   const { iteration } = found.value;
   if (!isPublishable(iteration)) {
-    return { refusal: { status: 409, message: "It is not digitized yet" } };
+    return {
+      refusal: { status: 409, code: "iteration.digitized", message: "It is not digitized yet" },
+    };
   }
 
   // A PID or a viewer's address is read by a Link instance (PLG-kinds).
@@ -137,7 +145,13 @@ export function publishIteration(
   }
 
   if (iteration.links.some((held) => held.url === link.url)) {
-    return { refusal: { status: 422, message: "That link is already there." } };
+    return {
+      refusal: {
+        status: 422,
+        code: "iteration.link_exists",
+        message: "That link is already there.",
+      },
+    };
   }
 
   return {
@@ -169,7 +183,13 @@ export function replaceIterationLink(
       },
     };
   if (iteration.links.some((link) => link.id !== linkId && link.url === canonical.url))
-    return { refusal: { status: 422, message: "That link is already there." } };
+    return {
+      refusal: {
+        status: 422,
+        code: "iteration.link_exists",
+        message: "That link is already there.",
+      },
+    };
   return {
     value: {
       links: replaceLink(iteration, linkId, canonical, { kind: "user", userId: session.user.id })
@@ -190,7 +210,13 @@ export function makeIterationLinkPrimary(
   const link = iteration.links.find((candidate) => candidate.id === linkId);
   if (link === undefined) return { refusal: { status: 404, message: "No such link" } };
   if (link.isPrimary)
-    return { refusal: { status: 409, message: "It is already the primary link" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.already_primary_link",
+        message: "It is already the primary link",
+      },
+    };
   return {
     value: {
       links: makePrimary(iteration, linkId, { kind: "user", userId: session.user.id }).links,
@@ -210,7 +236,13 @@ export function removeIterationLink(
   if (!iteration.links.some((link) => link.id === linkId))
     return { refusal: { status: 404, message: "No such link" } };
   if (iteration.links.length === 1)
-    return { refusal: { status: 409, message: "The last link cannot be removed" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.last_link",
+        message: "The last link cannot be removed",
+      },
+    };
   return {
     value: {
       links: removeLink(iteration, linkId, { kind: "user", userId: session.user.id }).links,
@@ -393,7 +425,13 @@ export function cancelIteration(
 
   const { iteration } = found.value;
   if (!isCancellable(iteration)) {
-    return { refusal: { status: 409, message: "It is already held, or already scanned" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.already_held",
+        message: "It is already held, or already scanned",
+      },
+    };
   }
 
   const now = new Date().toISOString();
@@ -457,7 +495,13 @@ export function resumeIteration(
 
   const { iteration } = found.value;
   if (!isResumable(iteration)) {
-    return { refusal: { status: 409, message: "It is not held, or it has been scanned" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.not_held",
+        message: "It is not held, or it has been scanned",
+      },
+    };
   }
 
   const released = { ...iteration, listId: null, cancellation: null };
@@ -504,7 +548,13 @@ export function overruleRestriction(
 
   const { iteration } = found.value;
   if (!isOverrulable(iteration)) {
-    return { refusal: { status: 409, message: "No restriction stands on it" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.no_restriction",
+        message: "No restriction stands on it",
+      },
+    };
   }
 
   const now = new Date().toISOString();
@@ -564,11 +614,23 @@ export function actionableIteration(
   const attempts = database.iterations.filter((candidate) => candidate.documentId === document.id);
   const latest = Math.max(...attempts.map((candidate) => candidate.attempt));
   if (iteration.attempt !== latest) {
-    return { refusal: { status: 409, message: "A later attempt has replaced this one" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "iteration.not_current",
+        message: "A later attempt has replaced this one",
+      },
+    };
   }
 
   if (!can(session, permission, scopeOfIteration(database.categories, iteration.categoryId))) {
-    return { refusal: { status: 403, message: "This is outside what you may change" } };
+    return {
+      refusal: {
+        status: 403,
+        code: "iteration.outside_custody",
+        message: "This is outside what you may change",
+      },
+    };
   }
 
   return { value: { iteration, document } };

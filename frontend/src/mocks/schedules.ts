@@ -146,7 +146,11 @@ const noSuchSchedule: Refusal = { status: 404, message: "No such schedule" };
 
 function cadenceRefusal(cadence: Cadence): Refusal | null {
   if (cadence.every === "quarter") {
-    return { status: 422, message: "A plugin schedule is not quarterly" };
+    return {
+      status: 422,
+      code: "schedule.quarterly_not_allowed",
+      message: "A plugin schedule is not quarterly",
+    };
   }
 
   if (isTooFrequent(cadence)) {

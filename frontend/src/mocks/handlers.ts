@@ -582,7 +582,11 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(`${apiRoutes.notificationPreferences}/:token`), ({ params }) => {
       const choices = publicNotificationChoices(String(params.token));
       return choices === null
-        ? problemResponse({ status: 404, message: "This notification link has expired" })
+        ? problemResponse({
+            status: 404,
+            code: "notification.link_expired",
+            message: "This notification link has expired",
+          })
         : HttpResponse.json(choices);
     }),
 
@@ -594,7 +598,11 @@ export function createHandlers(profile: MockUserProfile) {
         if (!parsed.success) return invalidResponse(parsed.error);
         const choices = changePublicNotificationChoices(String(params.token), parsed.data);
         return choices === null
-          ? problemResponse({ status: 404, message: "This notification link has expired" })
+          ? problemResponse({
+              status: 404,
+              code: "notification.link_expired",
+              message: "This notification link has expired",
+            })
           : HttpResponse.json(choices);
       },
     ),
@@ -812,7 +820,11 @@ export function createHandlers(profile: MockUserProfile) {
       const form = await request.formData();
       const file = form.get("file");
       if (!(file instanceof File)) {
-        return problemResponse({ status: 422, message: "Choose a package to upload" });
+        return problemResponse({
+          status: 422,
+          code: "plugin.package_missing",
+          message: "Choose a package to upload",
+        });
       }
 
       const implementationId = form.get("implementationId");
@@ -1039,7 +1051,11 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(`${apiRoutes.intentions}/:intentionId/correction`), ({ params, request }) => {
       const pages = Number(new URL(request.url).searchParams.get("pages"));
       if (!Number.isInteger(pages) || pages <= 0) {
-        return problemResponse({ status: 422, message: "Say how many pages the list is for" });
+        return problemResponse({
+          status: 422,
+          code: "list.page_count_required",
+          message: "Say how many pages the list is for",
+        });
       }
 
       return outcomeResponse(
@@ -1439,7 +1455,11 @@ export function createHandlers(profile: MockUserProfile) {
       const photo = (await request.formData()).get("photo");
       return photo instanceof File
         ? outcomeResponse(readPhoto())
-        : problemResponse({ status: 422, message: "Take a photo to read" });
+        : problemResponse({
+            status: 422,
+            code: "proposal.photo_missing",
+            message: "Take a photo to read",
+          });
     }),
     http.post(route(apiRoutes.proposalBarcode), async ({ request }) => {
       if (!hasPermission(currentSession(), "request.create")) {
@@ -1449,7 +1469,11 @@ export function createHandlers(profile: MockUserProfile) {
       const photo = (await request.formData()).get("photo");
       return photo instanceof File
         ? outcomeResponse(readBarcode(photo))
-        : problemResponse({ status: 422, message: "Photograph a barcode to read" });
+        : problemResponse({
+            status: 422,
+            code: "proposal.photo_missing",
+            message: "Photograph a barcode to read",
+          });
     }),
 
     http.get(route(apiRoutes.proposalRateLimit), () => {
@@ -1488,6 +1512,7 @@ export function createHandlers(profile: MockUserProfile) {
       if (batchLimit !== null && draft.data.items.length > batchLimit) {
         return problemResponse({
           status: 422,
+          code: "proposal.too_many_items",
           message: `At most ${batchLimit} items at once`,
         });
       }
@@ -1495,6 +1520,7 @@ export function createHandlers(profile: MockUserProfile) {
       if (!canSubmitRateLimited(session, submittableProposalItemCount(session, draft.data))) {
         return problemResponse({
           status: 429,
+          code: "proposal.daily_limit",
           message: "Today's proposal limit has been reached",
         });
       }
@@ -1505,6 +1531,7 @@ export function createHandlers(profile: MockUserProfile) {
       if (isProjectRefused) {
         return problemResponse({
           status: 422,
+          code: "project.not_proposable",
           message: "Only a member proposes into a project, and not into a rejected one",
         });
       }
@@ -1625,7 +1652,11 @@ export function createHandlers(profile: MockUserProfile) {
 
       const detail = findValidationDetail(session, String(params.iterationId));
       if (detail === null) {
-        return problemResponse({ status: 404, message: "Nothing here waits for a verdict" });
+        return problemResponse({
+          status: 404,
+          code: "validation.not_waiting",
+          message: "Nothing here waits for a verdict",
+        });
       }
 
       return HttpResponse.json(detail);
@@ -1642,7 +1673,11 @@ export function createHandlers(profile: MockUserProfile) {
       const kind = messageSubjectKindSchema.safeParse(params.get(messageSubjectParams.kind));
       const id = params.get(messageSubjectParams.id);
       if (!kind.success || id === null || id === "") {
-        return problemResponse({ status: 422, message: "Say what the message is about" });
+        return problemResponse({
+          status: 422,
+          code: "message.subject_missing",
+          message: "Say what the message is about",
+        });
       }
 
       return outcomeResponse(prepareMessage(currentSession(), { kind: kind.data, id }));
@@ -1654,7 +1689,11 @@ export function createHandlers(profile: MockUserProfile) {
       const id = params.get(messageSubjectParams.id);
       const body = sendMessageBodySchema.safeParse(await request.json());
       if (!subject.success || id === null || id === "" || !body.success) {
-        return problemResponse({ status: 422, message: "Say what to send and whom it is about" });
+        return problemResponse({
+          status: 422,
+          code: "message.recipient_missing",
+          message: "Say what to send and whom it is about",
+        });
       }
       return outcomeResponse(
         sendMessage(
@@ -1686,7 +1725,11 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
       if (!isValidWatchlistFilter(draft.data.view, draft.data.filter)) {
-        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
+        return problemResponse({
+          status: 422,
+          code: "watchlist.invalid_filter",
+          message: "Filter is not valid for this view",
+        });
       }
       if (!canOpenView(session, draft.data.view)) return forbidden();
 
@@ -1709,6 +1752,7 @@ export function createHandlers(profile: MockUserProfile) {
         ) {
           return problemResponse({
             status: 422,
+            code: "watchlist.source_unavailable",
             message: "Choose a visible system watchlist to copy",
           });
         }
@@ -1754,7 +1798,11 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(reach.error);
       }
       if (!isValidWatchlistFilter(reach.data.view, reach.data.filter)) {
-        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
+        return problemResponse({
+          status: 422,
+          code: "watchlist.invalid_filter",
+          message: "Filter is not valid for this view",
+        });
       }
       if (!canOpenView(currentSession(), reach.data.view)) return forbidden();
 
@@ -1786,7 +1834,11 @@ export function createHandlers(profile: MockUserProfile) {
         change.data.filter !== undefined &&
         !isValidWatchlistFilter(watchlist.view, change.data.filter)
       ) {
-        return problemResponse({ status: 422, message: "Filter is not valid for this view" });
+        return problemResponse({
+          status: 422,
+          code: "watchlist.invalid_filter",
+          message: "Filter is not valid for this view",
+        });
       }
 
       const audience = change.data.audience ?? watchlist.audience;
@@ -1797,11 +1849,16 @@ export function createHandlers(profile: MockUserProfile) {
       if (audience.kind === "personal" && watchlist.audience.kind !== "personal") {
         return problemResponse({
           status: 409,
+          code: "watchlist.system_to_personal",
           message: "System watchlists cannot become personal",
         });
       }
       if (audience.kind !== "personal" && watchlist.audience.kind === "personal") {
-        return problemResponse({ status: 409, message: "Create a separate system copy instead" });
+        return problemResponse({
+          status: 409,
+          code: "watchlist.personal_to_system",
+          message: "Create a separate system copy instead",
+        });
       }
       const changed = {
         ...watchlist,
@@ -1979,6 +2036,7 @@ function outcomeResponse<Value extends JsonBodyType>(outcome: Outcome<Value>) {
 function forbidden() {
   return problemResponse({
     status: 403,
+    code: "watchlist.manager_required",
     message: "Only those who manage shared watchlists can change them",
   });
 }

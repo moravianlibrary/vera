@@ -1,6 +1,7 @@
 // A refusal as the server answers it: RFC 9457 Problem Details (decided 2026-10-06), with VERA's
 // `code` and `errors` extensions. A refusal with no code of its own takes its status's.
 
+import type { RefusalCode } from "@vera/contract/refusal-codes";
 import { HttpResponse } from "msw";
 import type { z } from "zod";
 import type { Refusal } from "@/mocks/mutations";
@@ -12,11 +13,12 @@ const problemsOf = {
   410: { code: "gone", title: "Gone" },
   422: { code: "invalid", title: "Not accepted" },
   429: { code: "rate_limited", title: "Too many requests" },
-} as const satisfies Record<Refusal["status"], { code: string; title: string }>;
+} as const satisfies Record<Refusal["status"], { code: RefusalCode; title: string }>;
 
 interface FieldError {
-  field: string;
-  message: string;
+  pointer: string;
+  code: string;
+  detail?: string;
 }
 
 export function problemResponse({ status, message, code }: Refusal, errors?: FieldError[]) {
@@ -40,6 +42,13 @@ export function problemResponse({ status, message, code }: Refusal, errors?: Fie
 export function invalidResponse(error: z.ZodError) {
   return problemResponse(
     { status: 422, message: error.issues[0]?.message ?? "Not accepted" },
-    error.issues.map((issue) => ({ field: issue.path.join("."), message: issue.message })),
+    error.issues.map((issue) => ({
+      pointer:
+        issue.path.length === 0
+          ? ""
+          : `/${issue.path.map((part) => String(part).replaceAll("~", "~0").replaceAll("/", "~1")).join("/")}`,
+      code: issue.code === "custom" ? (issue.params?.code ?? "invalid") : issue.code,
+      detail: issue.message,
+    })),
   );
 }

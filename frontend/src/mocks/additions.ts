@@ -28,14 +28,26 @@ export function retryBatch(session: Session, batchId: string): Outcome<BatchRetr
     .map(currentIterationOf)
     .filter((iteration): iteration is Iteration => iteration?.progress === "IngestFailed");
   if (failed.length === 0) {
-    return { refusal: { status: 409, message: "Nothing in this batch failed to be added" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "batch.no_failed_items",
+        message: "Nothing in this batch failed to be added",
+      },
+    };
   }
 
   const retried = failed.filter((iteration) =>
     can(session, "request.retry", scopeOfIteration(database.categories, iteration.categoryId)),
   );
   if (retried.length === 0) {
-    return { refusal: { status: 403, message: "What failed is outside your custody" } };
+    return {
+      refusal: {
+        status: 403,
+        code: "batch.outside_custody",
+        message: "What failed is outside your custody",
+      },
+    };
   }
 
   const now = new Date().toISOString();

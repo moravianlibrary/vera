@@ -3,6 +3,7 @@
 // and the checks more than one action makes. Kept apart from the resources so each of them
 // reads only its own rules.
 
+import type { RefusalCode } from "@vera/contract/refusal-codes";
 import { categoryPathOf, leafCategoriesOf } from "@vera/domain/categories";
 import type { Iteration } from "@vera/domain/entities";
 import type { EventEntry } from "@vera/domain/events";
@@ -10,7 +11,11 @@ import { database } from "@/mocks/database";
 
 // Answered as RFC 9457 Problem Details (problem.ts): the message is its detail, and the code, when
 // a refusal has one of its own, lets the frontend word it.
-export type Refusal = { status: 403 | 404 | 409 | 410 | 422 | 429; message: string; code?: string };
+export type Refusal = {
+  status: 403 | 404 | 409 | 410 | 422 | 429;
+  message: string;
+  code?: RefusalCode;
+};
 export type Outcome<Value> = { value: Value } | { refusal: Refusal };
 
 type EventEntryInput = EventEntry extends infer Entry
@@ -35,7 +40,11 @@ export function leafCategoryRefusal(categoryId: string): Refusal | null {
     (category) => category.id === categoryId,
   );
   if (!isKnown || !isLeaf) {
-    return { status: 422, message: "Choose a category with no subcategories" };
+    return {
+      status: 422,
+      code: "category.not_leaf",
+      message: "Choose a category with no subcategories",
+    };
   }
 
   return null;

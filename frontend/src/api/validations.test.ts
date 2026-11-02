@@ -341,7 +341,7 @@ describe("page count and recheck", () => {
     expect(error instanceof ApiError && error.problem).toMatchObject({
       status: 422,
       code: "invalid",
-      errors: [{ field: "pages" }],
+      errors: [{ pointer: "/pages", code: "too_small" }],
     });
   });
 });

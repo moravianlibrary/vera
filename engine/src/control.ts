@@ -47,9 +47,15 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
     const identityPage = matchPath("/identity/:instanceId", path);
     if (request.method === "GET" && identityPage !== null) {
       const instanceId = identityPage.instanceId;
-      if (instanceId === undefined) return problem(404, "There is no enabled Identity instance.");
+      if (instanceId === undefined)
+        return problem(404, "There is no enabled Identity instance.", {
+          code: "identity.no_instance",
+        });
       const instance = identityInstance(engine, instanceId);
-      if (instance === null) return problem(404, "There is no enabled Identity instance.");
+      if (instance === null)
+        return problem(404, "There is no enabled Identity instance.", {
+          code: "identity.no_instance",
+        });
       const flow = url.searchParams.get("flow") ?? "";
       const accounts = engine.db
         .query<
@@ -102,10 +108,10 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
         )
         .get(input.data.userId);
       if (user === null) {
-        return problem(404, `There is no user named ${input.data.userId}.`);
+        return problem(404, `There is no user named ${input.data.userId}.`, {});
       }
       if (user.kind === "agent") {
-        return problem(422, "An agent cannot sign in.");
+        return problem(422, "An agent cannot sign in.", { code: "access.agent_no_login" });
       }
       if (user.suspended_at !== null) {
         return problem(403, "This user is suspended.", { code: "access.suspended" });
@@ -171,7 +177,7 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
     throw error;
   }
 
-  return problem(404, `No control endpoint answers ${request.method} ${path}.`);
+  return problem(404, `No control endpoint answers ${request.method} ${path}.`, {});
 }
 
 // An empty body is an empty object, so `POST /_engine/reset` alone loads the base seed.

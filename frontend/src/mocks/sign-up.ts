@@ -1,5 +1,6 @@
 // ACCESS-sign-up, ACCESS-verify-email and ACCESS-password-reset in the in-memory mock.
 import type { PasswordReset, SignUp } from "@vera/contract/login";
+import type { RefusalCode } from "@vera/contract/refusal-codes";
 import { safeReturnTo } from "@vera/contract/return-to";
 import { addLocalAccountUser } from "@/mocks/access";
 import { database } from "@/mocks/database";
@@ -46,7 +47,7 @@ function mail(to: string, subject: string, link: string | null): void {
   // The mock sends no mail; pages expose these in-memory messages for the demo.
   database.systemMail.push({ to, subject, text: subject, link, sentAt: mockNow().toISOString() });
 }
-function refusal(status: 404 | 410 | 422 | 429, code?: string): Outcome<never> {
+function refusal(status: 404 | 410 | 422 | 429, code?: RefusalCode): Outcome<never> {
   return {
     refusal: {
       status,

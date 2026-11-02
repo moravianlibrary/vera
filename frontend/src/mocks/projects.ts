@@ -588,14 +588,18 @@ export function saveProjectMembers(
     (userId) => !database.users.some((user) => user.id === userId && user.kind === "person"),
   );
   if (unknownUser !== undefined) {
-    return { refusal: { status: 422, message: `No person ${unknownUser}` } };
+    return {
+      refusal: { status: 422, code: "person.not_found", message: `No person ${unknownUser}` },
+    };
   }
 
   const unknownGroup = members.memberGroupIds.find(
     (groupId) => !database.groups.some((group) => group.id === groupId),
   );
   if (unknownGroup !== undefined) {
-    return { refusal: { status: 422, message: `No group ${unknownGroup}` } };
+    return {
+      refusal: { status: 422, code: "group.not_found", message: `No group ${unknownGroup}` },
+    };
   }
 
   const project = found.value;

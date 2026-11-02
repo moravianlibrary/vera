@@ -333,7 +333,13 @@ function rowToRuleOn(
 ): Outcome<ValidationRow> {
   const row = findReachableValidation(session, iterationId);
   if (row === null) {
-    return { refusal: { status: 404, message: "Nothing here waits for a verdict" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "validation.not_waiting",
+        message: "Nothing here waits for a verdict",
+      },
+    };
   }
 
   const scope = scopeOfIteration(database.categories, row.iteration.categoryId);
@@ -343,7 +349,11 @@ function rowToRuleOn(
 
   if (row.review === "Forbidden") {
     return {
-      refusal: { status: 409, message: "A rule forbids it; only an administrator can lift it" },
+      refusal: {
+        status: 409,
+        code: "validation.forbidden_by_rule",
+        message: "A rule forbids it; only an administrator can lift it",
+      },
     };
   }
 
@@ -432,7 +442,13 @@ export function revokeAcceptance(
   const current = new Set(row.iteration.defects.map((defect) => defect.key));
   const isStanding = (key: string) => accepted.has(key) && current.has(key);
   if (!revocation.defectKeys.every(isStanding)) {
-    return { refusal: { status: 409, message: "Those defects are not accepted now" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "validation.defects_not_accepted",
+        message: "Those defects are not accepted now",
+      },
+    };
   }
 
   return {

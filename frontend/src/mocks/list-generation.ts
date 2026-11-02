@@ -85,6 +85,7 @@ export function generateDraft(
     return {
       refusal: {
         status: 422,
+        code: "list.intention_ended",
         message: "Shape it by an intention that is neither ended nor archived",
       },
     };
@@ -101,6 +102,7 @@ export function generateDraft(
     return {
       refusal: {
         status: 422,
+        code: "list.allocation_outside_mix",
         message: "Allocate pages only to the categories its mix is read across",
       },
     };
@@ -122,7 +124,13 @@ export function generateDraft(
     .toSorted(byPriorityThenAge);
   if (shapedBy.distributionId === null) {
     if (allocation !== null)
-      return { refusal: { status: 422, message: "A correcting allocation needs a mix" } };
+      return {
+        refusal: {
+          status: 422,
+          code: "list.correction_needs_mix",
+          message: "A correcting allocation needs a mix",
+        },
+      };
     const picked: { item: ListItem; reason: string }[] = [];
     let total = fixed.reduce((sum, item) => sum + (item.pages ?? 0), 0);
     for (const item of available) {

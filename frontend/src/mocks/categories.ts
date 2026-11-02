@@ -131,7 +131,7 @@ function findCategory(categoryId: string): Category | null {
 // holding documents, which would stop them being on a leaf (intentions.md §1.2).
 function placeRefusal(session: Session, parentId: string | null): Refusal | null {
   if (parentId !== null && findCategory(parentId) === null) {
-    return { status: 422, message: `No category ${parentId}` };
+    return { status: 422, code: "category.not_found", message: `No category ${parentId}` };
   }
 
   if (!mayOn(session, "category.edit", parentId)) {
@@ -233,7 +233,13 @@ export function saveCategory(
     draft.parentId !== null &&
     isInSubtree(database.categories, draft.parentId, categoryId)
   ) {
-    return { refusal: { status: 422, message: "A category cannot go under itself" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "category.under_itself",
+        message: "A category cannot go under itself",
+      },
+    };
   }
 
   const name = draft.name.trim();
@@ -377,7 +383,13 @@ export function saveCategoryCustody(
       (userId) => !database.users.some((user) => user.id === userId && user.kind === "person"),
     );
   if (isUnknown) {
-    return { refusal: { status: 422, message: "Custody goes to existing groups and people" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "category.custody_member_unknown",
+        message: "Custody goes to existing groups and people",
+      },
+    };
   }
 
   database.groups = database.groups.map((group) => {

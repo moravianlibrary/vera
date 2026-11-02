@@ -522,11 +522,23 @@ function openRowFor(session: Session, documentId: string): Outcome<RequestRow> {
   }
 
   if (!isDecidableBy(session, row)) {
-    return { refusal: { status: 403, message: "This proposal is outside your request custody" } };
+    return {
+      refusal: {
+        status: 403,
+        code: "proposal.outside_request_custody",
+        message: "This proposal is outside your request custody",
+      },
+    };
   }
 
   if (row.decision !== "Pending") {
-    return { refusal: { status: 409, message: "This proposal has already been decided" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "proposal.decided",
+        message: "This proposal has already been decided",
+      },
+    };
   }
 
   return { value: row };
@@ -549,11 +561,23 @@ export function approveProposal(
 
   const row = found.value;
   if (isBeingChecked(row)) {
-    return { refusal: { status: 409, message: "The checks have not answered yet" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "proposal.checks_pending",
+        message: "The checks have not answered yet",
+      },
+    };
   }
 
   if (isRescan(row) && approval.rescanNote === null) {
-    return { refusal: { status: 422, message: "Say why it is scanned again" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "proposal.rescan_reason_missing",
+        message: "Say why it is scanned again",
+      },
+    };
   }
 
   approveRow(session, row, approval);
@@ -610,12 +634,24 @@ export function withdrawAsk(session: Session, documentId: string): Outcome<Withd
     (request) => request.documentId === documentId && request.requesterId === session.user.id,
   );
   if (own.length === 0) {
-    return { refusal: { status: 404, message: "You have not asked for this document" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "request.not_asked",
+        message: "You have not asked for this document",
+      },
+    };
   }
 
   const ask = own.find((request) => request.decision === "Pending");
   if (ask === undefined) {
-    return { refusal: { status: 409, message: "It has been decided meanwhile" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "proposal.decided",
+        message: "It has been decided meanwhile",
+      },
+    };
   }
 
   const now = new Date().toISOString();
@@ -661,7 +697,13 @@ export function bulkApproveProposals(
     (row) => isBulkApprovable(row) && !excludedIds.has(row.record.document.id),
   );
   if (taken.length === 0) {
-    return { refusal: { status: 409, message: "Nothing in this batch is left to approve" } };
+    return {
+      refusal: {
+        status: 409,
+        code: "batch.nothing_to_approve",
+        message: "Nothing in this batch is left to approve",
+      },
+    };
   }
 
   for (const row of taken) {

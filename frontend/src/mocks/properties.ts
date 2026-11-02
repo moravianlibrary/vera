@@ -121,7 +121,11 @@ function draftRefusal(draft: PropertyDraft, key: string): Refusal | null {
   if (draft.type.kind === "enum") {
     const values = draft.type.values.map(({ value }) => value);
     if (new Set(values).size !== values.length) {
-      return { status: 422, message: "Each value is listed once" };
+      return {
+        status: 422,
+        code: "property.duplicate_value",
+        message: "Each value is listed once",
+      };
     }
   }
 
@@ -415,12 +419,22 @@ export function enterPropertyValue(
 
   if (definition.handTier === null || key === pageCountKey || !mayBeEnteredByHand(definition)) {
     return {
-      refusal: { status: 422, message: "This property is not entered by hand here" },
+      refusal: {
+        status: 422,
+        code: "property.not_by_hand",
+        message: "This property is not entered by hand here",
+      },
     };
   }
 
   if (entry.value !== null && !isValueOf(definition, entry.value)) {
-    return { refusal: { status: 422, message: "That is not a value this property takes" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "property.value_not_allowed",
+        message: "That is not a value this property takes",
+      },
+    };
   }
 
   const iterations = database.iterations
@@ -436,7 +450,13 @@ export function enterPropertyValue(
 
   if (definition.about === "attempt") {
     if (iteration === null) {
-      return { refusal: { status: 409, message: "There is no attempt to set it on yet" } };
+      return {
+        refusal: {
+          status: 409,
+          code: "property.no_attempt",
+          message: "There is no attempt to set it on yet",
+        },
+      };
     }
 
     if (isFoundAfterScan(iteration)) {

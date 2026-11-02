@@ -19,7 +19,9 @@ function managerExists(engine: Engine, roles = rolesOf(engine.db)) {
 function refusalForGrants(grants: { permission: never; scope: never }[]) {
   const permissions = grants.map((g) => g.permission);
   if (new Set(permissions).size !== permissions.length)
-    return problem(422, "Each permission is granted once, at one scope");
+    return problem(422, "Each permission is granted once, at one scope", {
+      code: "role.duplicate_permission",
+    });
   const refused = grants.find((g) => !isAcceptedGrant(g));
   if (refused)
     return problem(

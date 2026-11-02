@@ -1,9 +1,10 @@
 // A refusal as the engine answers it: RFC 9457 Problem Details with VERA's `code` and `errors`
-// (contract/src/problem.ts, ACT-refusal). A refusal with no code of its own takes its status's.
+// (contract/src/refusal-codes.ts, ACT-refusal). A refusal with no code of its own takes its status's.
 
 import type { Problem } from "@vera/contract/problem";
+import type { RefusalCode } from "@vera/contract/refusal-codes";
 
-const problemsOf: Record<number, { code?: string; title: string }> = {
+const problemsOf: Record<number, { code?: RefusalCode; title: string }> = {
   400: { code: "bad_request", title: "Bad request" },
   401: { title: "Not signed in" },
   403: { code: "forbidden", title: "Forbidden" },
@@ -16,14 +17,15 @@ const problemsOf: Record<number, { code?: string; title: string }> = {
 };
 
 export interface FieldError {
-  field: string;
-  message: string;
+  pointer: string;
+  code: string;
+  detail?: string;
 }
 
 export function problem(
   status: number,
   detail: string,
-  options: { code?: string; errors?: FieldError[] } = {},
+  options: { code?: RefusalCode; errors?: FieldError[] } = {},
 ): Response {
   const known = problemsOf[status] ?? { title: "Error" };
   const code = options.code ?? known.code;
@@ -42,9 +44,20 @@ export function problem(
 }
 
 // Every issue named by the field it is on, for a form to show beside it.
-export function fieldErrorsOf(issues: readonly { path: PropertyKey[]; message: string }[]) {
+export function fieldErrorsOf(
+  issues: readonly {
+    path: PropertyKey[];
+    message: string;
+    code?: string;
+    params?: { code?: string };
+  }[],
+) {
   return issues.map((issue) => ({
-    field: issue.path.map(String).join("."),
-    message: issue.message,
+    pointer:
+      issue.path.length === 0
+        ? ""
+        : `/${issue.path.map((part) => String(part).replaceAll("~", "~0").replaceAll("/", "~1")).join("/")}`,
+    code: issue.code === "custom" ? (issue.params?.code ?? "invalid") : (issue.code ?? "invalid"),
+    detail: issue.message,
   }));
 }

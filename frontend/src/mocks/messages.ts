@@ -168,7 +168,13 @@ function pathOf(entryId: string): string {
 export function prepareMessage(session: Session, subject: MessageSubject): Outcome<MessageHandOff> {
   const resolved = resolveSubject(session, subject);
   if (resolved === null) {
-    return { refusal: { status: 404, message: "Nothing to message about here" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "message.subject_not_found",
+        message: "Nothing to message about here",
+      },
+    };
   }
 
   // People only: an agent is a plugin, and nobody writes to themselves.
@@ -220,7 +226,13 @@ export function sendMessage(
   text: string,
 ): Outcome<{ reachedIds: string[] }> {
   if (text.trim() === "") {
-    return { refusal: { status: 422, message: "Write the message first" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "message.text_missing",
+        message: "Write the message first",
+      },
+    };
   }
   const instance = enabledInstances().find((candidate) => candidate.id === channelId);
   if (instance === undefined || instance.implementation !== "slackBot") {
@@ -230,7 +242,13 @@ export function sendMessage(
   }
   const resolved = resolveSubject(session, subject);
   if (resolved === null) {
-    return { refusal: { status: 404, message: "Nothing to message about here" } };
+    return {
+      refusal: {
+        status: 404,
+        code: "message.subject_not_found",
+        message: "Nothing to message about here",
+      },
+    };
   }
   const reachedIds = resolved.recipientIds
     .filter((userId) => userId !== session.user.id)

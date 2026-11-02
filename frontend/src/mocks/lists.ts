@@ -18,6 +18,7 @@ import type {
   PoolQuery,
 } from "@vera/contract/lists";
 import { listAttentions, listSliceSize } from "@vera/contract/lists";
+import type { RefusalCode } from "@vera/contract/refusal-codes";
 import { categoryLineageOf, categoryPathOf } from "@vera/domain/categories";
 import { effectivePageCount } from "@vera/domain/documents";
 import type { DigitizationList, Iteration, Session } from "@vera/domain/entities";
@@ -369,7 +370,13 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
 
   const startsOn = draft.startsOn ?? today();
   if (draft.endsOn < startsOn) {
-    return { refusal: { status: 422, message: "It cannot end before it starts" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "list.ends_before_start",
+        message: "It cannot end before it starts",
+      },
+    };
   }
 
   const refusal = membersRefusal(draft.memberIds, null);
@@ -440,7 +447,13 @@ export function saveList(session: Session, listId: string, draft: ListDraft): Ou
 
   const startsOn = draft.startsOn ?? today();
   if (draft.endsOn < startsOn) {
-    return { refusal: { status: 422, message: "It cannot end before it starts" } };
+    return {
+      refusal: {
+        status: 422,
+        code: "list.ends_before_start",
+        message: "It cannot end before it starts",
+      },
+    };
   }
 
   const refusal = membersRefusal(draft.memberIds, list.id);
@@ -492,11 +505,13 @@ export function saveList(session: Session, listId: string, draft: ListDraft): Ou
 function membersRefusal(
   memberIds: readonly string[],
   listId: string | null,
-): { refusal: { status: 409 | 422; message: string; code?: string } } | null {
+): { refusal: { status: 409 | 422; message: string; code?: RefusalCode } } | null {
   for (const memberId of new Set(memberIds)) {
     const iteration = database.iterations.find((candidate) => candidate.id === memberId);
     if (iteration === undefined) {
-      return { refusal: { status: 422, message: `No item ${memberId}` } };
+      return {
+        refusal: { status: 422, code: "list.member_unknown", message: `No item ${memberId}` },
+      };
     }
 
     const isOnThisList = listId !== null && iteration.listId === listId;
@@ -818,7 +833,9 @@ export function markNotDigitizable(
   const list = found.value;
   const iteration = membersOf(list.id).find((member) => member.id === iterationId);
   if (iteration === undefined) {
-    return { refusal: { status: 404, message: "It is not on this list" } };
+    return {
+      refusal: { status: 404, code: "list.member_not_found", message: "It is not on this list" },
+    };
   }
 
   if (!isOpenMember(iteration)) {
