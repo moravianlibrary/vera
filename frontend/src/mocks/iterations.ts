@@ -128,7 +128,11 @@ export function publishIteration(
   const { iteration } = found.value;
   if (!isPublishable(iteration)) {
     return {
-      refusal: { status: 409, code: "iteration.digitized", message: "It is not digitized yet" },
+      refusal: {
+        status: 409,
+        code: "iteration.not_digitized",
+        message: "It is not digitized yet.",
+      },
     };
   }
 

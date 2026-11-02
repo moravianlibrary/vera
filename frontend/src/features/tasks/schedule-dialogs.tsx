@@ -48,7 +48,7 @@ function refusalTextsFor(t: (key: string) => string) {
   return {
     "schedule.too_often": t("scheduleDialogs.refusalTooOften"),
     "schedule.not_schedulable": t("scheduleDialogs.refusalNotSchedulable"),
-    "schedule.paused": t("scheduleDialogs.refusalPaused"),
+    "schedule.already_paused": t("scheduleDialogs.refusalPaused"),
     "schedule.not_paused": t("scheduleDialogs.refusalNotPaused"),
     403: t("scheduleDialogs.refusalForbidden"),
   };

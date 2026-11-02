@@ -170,7 +170,7 @@ describe("changing a schedule", () => {
     expect(paused).toMatchObject({ nextAt: null, pause: { pausedBy: "u3" } });
     expect(await refusalOf(pauseSchedule("s3", { reason: "Again." }))).toMatchObject({
       status: 409,
-      code: "schedule.paused",
+      code: "schedule.already_paused",
     });
     expect((await resumeSchedule("s3")).pause).toBeNull();
   });

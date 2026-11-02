@@ -276,7 +276,11 @@ export function pauseSchedule(
 
   if (stored.pause !== null) {
     return {
-      refusal: { status: 409, message: "It is already paused", code: "schedule.paused" },
+      refusal: {
+        status: 409,
+        message: "It is already paused.",
+        code: "schedule.already_paused",
+      },
     };
   }
 

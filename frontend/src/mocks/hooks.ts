@@ -257,7 +257,9 @@ export function pauseHook(session: Session, hookId: string, reason: string): Out
   }
 
   if (hook.state === "paused") {
-    return { refusal: { status: 409, code: "hook.paused", message: "Already paused" } };
+    return {
+      refusal: { status: 409, code: "hook.already_paused", message: "It is already paused." },
+    };
   }
 
   const updated: Hook = {
@@ -411,7 +413,11 @@ export function sendNow(session: Session, hookId: string): Outcome<HookDelivery[
 
   if (hook.state !== "active") {
     return {
-      refusal: { status: 409, code: "hook.paused", message: "Resume this hook before sending" },
+      refusal: {
+        status: 409,
+        code: "hook.already_paused",
+        message: "It is already paused.",
+      },
     };
   }
 
