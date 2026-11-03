@@ -31,8 +31,9 @@ with step 3 (2026-11-03). Nothing now records whether a suggestion was kept, whi
 classifier that is usually overruled.
 
 Decided on 2026-11-03: `request.approved` carries the suggestion as data, the category and the
-classifier instance, or none; *kept* or *overruled* is not stored, it follows from the approved
-category, and the client words it in the History. → frontend and engine.
+classifier instance (each with its name, as other entries name what they refer to) and whether
+the decider kept it, or none; kept is stored because the iteration may be reclassified later.
+The client words it in the History. → frontend and engine.
 
 ## For the engine
 
