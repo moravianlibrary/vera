@@ -75,3 +75,32 @@ describe("RecordList phone picking", () => {
     vi.useRealTimers();
   });
 });
+
+describe("RecordList empty state", () => {
+  it("renders block empty text outside a paragraph", () => {
+    const { container } = render(
+      <I18nextProvider i18n={i18n}>
+        <RecordList
+          rows={[]}
+          rowId={(row: { id: string }) => row.id}
+          total={0}
+          columns={[
+            { key: "name", header: "common:recordList.name", track: "1fr", cell: (row) => row.id },
+          ]}
+          card={{ title: (row) => row.id }}
+          toolbar={{ count: "0 documents" }}
+          paging={{ hasMore: false, isLoadingMore: false, onLoadMore: () => {} }}
+          isLoading={false}
+          selectedId={null}
+          onSelect={() => {}}
+          loadingText="Loading documents…"
+          emptyText={<div>No documents</div>}
+          loadingMoreText="Loading more documents…"
+        />
+      </I18nextProvider>,
+    );
+
+    expect(container.querySelector("p div")).toBeNull();
+    expect(container.querySelector(".p-4.text-sm.text-muted-foreground")?.tagName).toBe("DIV");
+  });
+});

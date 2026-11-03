@@ -68,7 +68,7 @@ export function QueryState({
   }
 
   if (isEmpty) {
-    return <p className="p-4 text-sm text-muted-foreground">{emptyText}</p>;
+    return <div className="p-4 text-sm text-muted-foreground">{emptyText}</div>;
   }
 
   return children;

@@ -160,7 +160,7 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
       )}
 
       {failure === undefined && total === 0 && (
-        <p className="p-4 text-sm text-muted-foreground">{emptyText}</p>
+        <div className="p-4 text-sm text-muted-foreground">{emptyText}</div>
       )}
 
       {rows.length > 0 && (
