@@ -23,6 +23,7 @@ import type {
   ProposalSettings,
   RecordLink,
 } from "../proposals";
+import type { QueryOutcome } from "./outcome";
 import { enabledInstancesOf, implementationOf } from "./plugin-instances";
 
 export interface CatalogBase {
@@ -40,14 +41,10 @@ export interface CatalogReadingFake {
   tier: number;
 }
 export type WayInRefusal =
-  | {
-      status: 404;
-      code: "proposal.no_photo_reader" | "proposal.no_barcode_reader";
-      message: string;
-    }
+  | { status: 404; code: "proposal.no_photo_reader" | "proposal.no_barcode_reader"; message: string }
   | { status: 404; message: string }
   | { status: 422; code: "proposal.link_unread"; message: string };
-export type WayInOutcome<Value> = { value: Value } | { refusal: WayInRefusal };
+export type WayInOutcome<Value> = QueryOutcome<Value, WayInRefusal>;
 export type ProposalPluginInstance = Pick<
   StoredPluginInstance,
   "id" | "name" | "implementationId" | "isEnabled" | "isDeleted" | "settings" | "configuration"

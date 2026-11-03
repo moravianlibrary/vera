@@ -259,10 +259,7 @@ describe("deciding", () => {
     expect(detail?.record.iterations).toHaveLength(1);
     expect(relations).toEqual(["Originates", "Tracks", "Tracks", "Tracks"]);
     expect(await findRequest("D20")).toBeNull();
-    expect(approvalEntryOf("D20")?.reason.internal).toContain(
-      "Material type suggested Periodicals / National",
-    );
-    expect(approvalEntryOf("D20")?.reason.internal).toContain("— kept.");
+    expect(approvalEntryOf("D20")?.reason.internal).toBeNull();
   });
 
   it("asks why a document with a copy is scanned again", async () => {
@@ -273,7 +270,7 @@ describe("deciding", () => {
     expect(
       await approveProposal("D30", { ...approval, rescanNote: "The existing scan is 150 dpi." }),
     ).toMatchObject({ decision: "Approved" });
-    expect(approvalEntryOf("D30")?.reason.internal).toContain("Regional press suggested");
+    expect(approvalEntryOf("D30")?.reason.internal).toBe("The existing scan is 150 dpi.");
   });
 
   it("waits for the checks, and approves only into a category with no subcategories", async () => {
@@ -362,15 +359,13 @@ describe("deciding", () => {
     expect(await findRequest("D31")).toBeNull();
   });
 
-  it("logs a suggestion the decider changed as overruled, and one a batch changed as overridden", async () => {
+  it("keeps classifier suggestions out of the approval reason", async () => {
     signInAs("admin");
 
     await approveProposal("D32", { categoryId: "c21", priority: "Normal", rescanNote: null });
 
-    expect(approvalEntryOf("D32")?.reason.internal).toContain("says otherwise”) — overruled.");
-    expect(approvalEntryOf("D28")?.reason.internal).toContain(
-      "— overridden by the batch's category.",
-    );
+    expect(approvalEntryOf("D32")?.reason.internal).toBeNull();
+    expect(approvalEntryOf("D28")?.reason.internal).toBeNull();
   });
 });
 
