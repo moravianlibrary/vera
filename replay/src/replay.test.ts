@@ -6,7 +6,7 @@ import { endpointOf } from "./endpoints";
 import { knownGapCall, knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
-import { type Recording, type RecordingCall, recordingSchema } from "./recording";
+import { mediaTypeOf, type Recording, type RecordingCall, recordingSchema } from "./recording";
 
 const local = process.env.VERA_API_URL === undefined ? startLocalEngine() : undefined;
 const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "") ?? local?.url;
@@ -67,7 +67,11 @@ async function sendCall(
     const form = new FormData();
     for (const [field, value] of Object.entries(call.form)) {
       if (typeof value === "string") form.append(field, value);
-      else form.append(field, new File([new Uint8Array(value.photoBytes)], "photo.jpg"));
+      else
+        form.append(
+          field,
+          new File([new Uint8Array(value.photoBytes)], value.fileName ?? "photo.jpg"),
+        );
     }
     body = form;
   } else if (call.requestBody !== undefined) {
@@ -185,6 +189,11 @@ async function replay(
     } else if (call.code !== undefined) {
       const answer = (await response.json()) as { code?: string };
       expect(answer.code, `${label} code`).toBe(call.code);
+    } else if (call.text !== undefined) {
+      expect(mediaTypeOf(response.headers.get("Content-Type")), `${label} content type`).toBe(
+        call.contentType,
+      );
+      expect(await response.text(), `${label} text`).toBe(call.text);
     }
   }
 }

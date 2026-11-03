@@ -11,7 +11,7 @@ type Call = {
   method: string;
   path: string;
   requestBody?: unknown;
-  form?: Record<string, string | { photoBytes: number }>;
+  form?: Record<string, string | { photoBytes: number; fileName?: string }>;
   compare: "body" | "code";
 };
 type List = {
@@ -101,7 +101,11 @@ async function send(call: Call, path: string): Promise<Response> {
     const form = new FormData();
     for (const [key, value] of Object.entries(call.form)) {
       if (typeof value === "string") form.append(key, value);
-      else form.append(key, new File([new Uint8Array(value.photoBytes)], "photo.jpg"));
+      else
+        form.append(
+          key,
+          new File([new Uint8Array(value.photoBytes)], value.fileName ?? "photo.jpg"),
+        );
     }
     body = form;
   } else if (call.requestBody !== undefined) {
@@ -141,9 +145,19 @@ async function record(list: List, name: string) {
       };
       if (asFirst && input.requestBody !== undefined) output.requestBody = input.requestBody;
       if (response.status !== 204 && response.body !== null) {
-        const answer = (await response.json()) as unknown;
-        if (input.compare === "code") output.code = (answer as { code?: string }).code;
-        else output.body = list.mask === "none" ? answer : mask(answer, list.mask, ids);
+        const contentType = response.headers
+          .get("Content-Type")
+          ?.split(";", 1)[0]
+          ?.trim()
+          .toLowerCase();
+        if (contentType !== "application/json" && contentType !== "application/problem+json") {
+          output.text = await response.text();
+          if (contentType !== undefined) output.contentType = contentType;
+        } else {
+          const answer = (await response.json()) as unknown;
+          if (input.compare === "code") output.code = (answer as { code?: string }).code;
+          else output.body = list.mask === "none" ? answer : mask(answer, list.mask, ids);
+        }
       }
       if (!asFirst) {
         if (input.requestBody !== undefined) output.requestBody = input.requestBody;

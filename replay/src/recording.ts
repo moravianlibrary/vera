@@ -6,12 +6,21 @@ const callSchema = z.object({
   path: z.string(),
   requestBody: z.unknown().optional(),
   form: z
-    .record(z.string(), z.union([z.string(), z.object({ photoBytes: z.number() })]))
+    .record(
+      z.string(),
+      z.union([z.string(), z.object({ photoBytes: z.number(), fileName: z.string().optional() })]),
+    )
     .optional(),
   status: z.number().int(),
   body: z.unknown().optional(),
   code: z.string().optional(),
+  text: z.string().optional(),
+  contentType: z.string().optional(),
 });
+
+export function mediaTypeOf(contentType: string | null): string | undefined {
+  return contentType?.split(";", 1)[0]?.trim().toLowerCase();
+}
 
 export const recordingSchema = z.object({
   seed: z.string(),
