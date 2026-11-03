@@ -805,7 +805,6 @@ export const endpoints = {
     body: publicationSchema,
     response: publicationResultSchema,
     codes: [
-      "iteration.not_digitized",
       "iteration.link_unread",
       "iteration.link_exists",
       "iteration.outside_custody",
