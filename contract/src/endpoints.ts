@@ -12,7 +12,13 @@ import {
   identitySchema,
   roleSchema,
 } from "@vera/domain/access";
-import { batchSchema, requestCustodySchema, sessionSchema } from "@vera/domain/entities";
+import {
+  batchSchema,
+  requestCustodySchema,
+  sessionSchema,
+  userSchema,
+} from "@vera/domain/entities";
+import { propertyDefinitionSchema, propertyDraftSchema } from "@vera/domain/properties";
 import { z } from "zod";
 import {
   accessIndexSchema,
@@ -28,6 +34,7 @@ import {
   roleImpactSchema,
   userGroupsSchema,
 } from "./access";
+import { batchRetryResultSchema } from "./additions";
 import {
   documentDetailSchema,
   documentGroupingParam,
@@ -35,6 +42,21 @@ import {
   documentQueryParams,
   documentSliceParams,
 } from "./documents";
+import { notificationHookSchema } from "./hooks";
+import {
+  cancellationRequestSchema,
+  cancellationResultSchema,
+  overruleSchema,
+  pageCountSchema,
+  publicationResultSchema,
+  publicationSchema,
+  recheckResultSchema,
+  recheckSchema,
+  reclassificationResultSchema,
+  reclassificationSchema,
+  releaseResultSchema,
+  resumeSchema,
+} from "./iterations";
 import {
   emailOnlySchema,
   localLoginSchema,
@@ -44,6 +66,27 @@ import {
   tokenSchema,
   verifiedSchema,
 } from "./login";
+import {
+  messageChannelSchema,
+  messageHandOffSchema,
+  messageSubjectKindSchema,
+  messageSubjectParams,
+  sendMessageBodySchema,
+  sendMessageResponseSchema,
+} from "./messages";
+import {
+  notificationChoicesSchema,
+  publicNotificationPreferencesSchema,
+} from "./notification-preferences";
+import {
+  bulkPropertyEntryResultSchema,
+  bulkPropertyEntrySchema,
+  newPropertySchema,
+  propertyEntryResultSchema,
+  propertyEntrySchema,
+  propertyImpactSchema,
+  propertyIndexSchema,
+} from "./properties";
 import {
   barcodeReadingSchema,
   catalogHitSchema,
@@ -57,6 +100,8 @@ import {
   recordLinkReadingSchema,
   recordLinkSchema,
 } from "./proposals";
+import { pushDevicesSchema, pushSubscriptionSchema } from "./push";
+import { groupSchema, roleNameSchema } from "./reference";
 import {
   approvalSchema,
   bulkApprovalResultSchema,
@@ -72,6 +117,18 @@ import {
 } from "./requests";
 import { accessRecordActionRoute, apiRoutes } from "./routes";
 import { userSettingsChangeSchema, userSettingsSchema } from "./user-settings";
+import {
+  acceptanceSchema,
+  denialSchema,
+  revocationSchema,
+  validationDetailSchema,
+  validationGroupingParam,
+  validationPageSchema,
+  validationQueryParams,
+  validationSliceParams,
+  verdictResultSchema,
+} from "./validations";
+import { watchlistChannelSchema } from "./watchlists";
 
 export type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -87,6 +144,8 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   response?: z.ZodType<Value>;
   redirects?: boolean;
   public?: boolean;
+  // An endpoint the engine does not serve; the mock serves it until the backend does (DEC-0022).
+  engine?: false;
   // The codes of the refusals it may answer (ACT-refusal), besides each status's own.
   codes: readonly string[];
 }
@@ -562,6 +621,400 @@ export const endpoints = {
       "proposal.daily_limit",
       "project.not_proposable",
     ],
+  }),
+  // Documents: property values on one document or a selection.
+  propertyEntry: spec({
+    method: "PUT",
+    path: `${apiRoutes.documents}/:documentId/properties/:key`,
+    summary: "Enters a property value on a document.",
+    params: z.object({ documentId: z.string(), key: z.string() }),
+    body: propertyEntrySchema,
+    response: propertyEntryResultSchema,
+    codes: [
+      "property.not_by_hand",
+      "property.value_not_allowed",
+      "property.no_attempt",
+      "iteration.scanned",
+    ],
+    engine: false,
+  }),
+  propertyEntries: spec({
+    method: "POST",
+    path: `${apiRoutes.documents}/properties/:key`,
+    summary: "Enters a property value on selected documents.",
+    params: z.object({ key: z.string() }),
+    body: bulkPropertyEntrySchema,
+    response: bulkPropertyEntryResultSchema,
+    codes: [
+      "property.not_by_hand",
+      "property.value_not_allowed",
+      "property.no_attempt",
+      "iteration.scanned",
+    ],
+    engine: false,
+  }),
+  // Iterations and their links.
+  iterationReclassify: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/reclassify`,
+    summary: "Reclassifies an iteration.",
+    params: z.object({ id: z.string() }),
+    body: reclassificationSchema,
+    response: reclassificationResultSchema,
+    codes: [
+      "iteration.scanned",
+      "iteration.nothing_changed",
+      "category.not_leaf",
+      "iteration.outside_custody",
+      "iteration.not_current",
+    ],
+    engine: false,
+  }),
+  iterationPublish: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/publish`,
+    summary: "Publishes an iteration.",
+    params: z.object({ id: z.string() }),
+    body: publicationSchema,
+    response: publicationResultSchema,
+    codes: [
+      "iteration.not_digitized",
+      "iteration.link_unread",
+      "iteration.link_exists",
+      "iteration.outside_custody",
+      "iteration.not_current",
+    ],
+    engine: false,
+  }),
+  iterationReplaceLink: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/links/:linkId/replace`,
+    summary: "Replaces an iteration link.",
+    params: z.object({ id: z.string(), linkId: z.string() }),
+    body: publicationSchema,
+    response: publicationResultSchema,
+    codes: [
+      "iteration.not_digitized",
+      "iteration.link_unread",
+      "iteration.link_exists",
+      "iteration.outside_custody",
+      "iteration.not_current",
+    ],
+    engine: false,
+  }),
+  iterationPrimaryLink: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/links/:linkId/primary`,
+    summary: "Makes an iteration link primary.",
+    params: z.object({ id: z.string(), linkId: z.string() }),
+    body: z.object({}),
+    response: publicationResultSchema,
+    codes: ["iteration.already_primary_link", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationRemoveLink: spec({
+    method: "DELETE",
+    path: `${apiRoutes.iterations}/:id/links/:linkId`,
+    summary: "Removes an iteration link.",
+    params: z.object({ id: z.string(), linkId: z.string() }),
+    response: publicationResultSchema,
+    codes: ["iteration.last_link", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationPageCount: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/page-count`,
+    summary: "Enters an iteration's page count.",
+    params: z.object({ id: z.string() }),
+    body: pageCountSchema,
+    response: recheckResultSchema,
+    codes: ["iteration.scanned", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationRecheck: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/recheck`,
+    summary: "Rechecks an iteration.",
+    params: z.object({ id: z.string() }),
+    body: recheckSchema,
+    response: recheckResultSchema,
+    codes: ["iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationCancel: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/cancel`,
+    summary: "Cancels an iteration.",
+    params: z.object({ id: z.string() }),
+    body: cancellationRequestSchema,
+    response: cancellationResultSchema,
+    codes: ["iteration.already_held", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationResume: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/resume`,
+    summary: "Resumes a cancelled iteration.",
+    params: z.object({ id: z.string() }),
+    body: resumeSchema,
+    response: releaseResultSchema,
+    codes: ["iteration.not_held", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  iterationOverrule: spec({
+    method: "POST",
+    path: `${apiRoutes.iterations}/:id/overrule`,
+    summary: "Overrules an iteration restriction.",
+    params: z.object({ id: z.string() }),
+    body: overruleSchema,
+    response: releaseResultSchema,
+    codes: ["iteration.no_restriction", "iteration.outside_custody", "iteration.not_current"],
+    engine: false,
+  }),
+  // Validation lists and verdicts.
+  validations: spec({
+    method: "GET",
+    path: apiRoutes.validations,
+    summary: "Search validations.",
+    query: z.object(
+      Object.fromEntries(
+        [
+          ...Object.values(validationQueryParams),
+          ...Object.values(validationSliceParams),
+          validationGroupingParam,
+        ].map((key) => [key, z.string().optional()]),
+      ),
+    ),
+    response: validationPageSchema,
+    codes: [],
+    engine: false,
+  }),
+  validationDetail: spec({
+    method: "GET",
+    path: `${apiRoutes.validations}/:iterationId`,
+    summary: "Read a validation.",
+    params: z.object({ iterationId: z.string() }),
+    response: validationDetailSchema,
+    codes: ["validation.not_waiting"],
+    engine: false,
+  }),
+  validationAccept: spec({
+    method: "POST",
+    path: `${apiRoutes.validations}/:id/accept`,
+    summary: "Accepts validation defects.",
+    params: z.object({ id: z.string() }),
+    body: acceptanceSchema,
+    response: verdictResultSchema,
+    codes: ["validation.not_waiting", "validation.forbidden_by_rule"],
+    engine: false,
+  }),
+  validationDeny: spec({
+    method: "POST",
+    path: `${apiRoutes.validations}/:id/deny`,
+    summary: "Denies validation defects.",
+    params: z.object({ id: z.string() }),
+    body: denialSchema,
+    response: verdictResultSchema,
+    codes: ["validation.not_waiting", "validation.forbidden_by_rule"],
+    engine: false,
+  }),
+  validationRevoke: spec({
+    method: "POST",
+    path: `${apiRoutes.validations}/:id/revoke`,
+    summary: "Revokes accepted validation defects.",
+    params: z.object({ id: z.string() }),
+    body: revocationSchema,
+    response: verdictResultSchema,
+    codes: [
+      "validation.not_waiting",
+      "validation.forbidden_by_rule",
+      "validation.defects_not_accepted",
+    ],
+    engine: false,
+  }),
+  // Batch retry.
+  batchRetry: spec({
+    method: "POST",
+    path: `${apiRoutes.batches}/:batchId/retry`,
+    summary: "Retries failed additions in a batch.",
+    params: z.object({ batchId: z.string() }),
+    body: z.object({}),
+    response: batchRetryResultSchema,
+    codes: ["batch.no_failed_items", "batch.outside_custody"],
+    engine: false,
+  }),
+  // Properties.
+  properties: spec({
+    method: "GET",
+    path: apiRoutes.properties,
+    summary: "Read property definitions.",
+    response: propertyIndexSchema,
+    codes: [],
+    engine: false,
+  }),
+  propertyCreate: spec({
+    method: "POST",
+    path: apiRoutes.properties,
+    summary: "Creates a property definition.",
+    body: newPropertySchema,
+    response: propertyDefinitionSchema,
+    codes: ["property.key_taken", "property.duplicate_value", "property.catalog_fact"],
+    engine: false,
+  }),
+  propertySave: spec({
+    method: "PUT",
+    path: `${apiRoutes.properties}/:id`,
+    summary: "Saves a property definition.",
+    params: z.object({ id: z.string() }),
+    body: propertyDraftSchema,
+    response: propertyDefinitionSchema,
+    codes: [
+      "property.in_use",
+      "property.value_in_use",
+      "property.duplicate_value",
+      "property.catalog_fact",
+    ],
+    engine: false,
+  }),
+  propertyImpact: spec({
+    method: "GET",
+    path: `${apiRoutes.properties}/:id/impact`,
+    summary: "Counts the impact of deleting a property.",
+    params: z.object({ id: z.string() }),
+    response: propertyImpactSchema,
+    codes: [],
+    engine: false,
+  }),
+  propertyDelete: spec({
+    method: "DELETE",
+    path: `${apiRoutes.properties}/:id`,
+    summary: "Deletes a property definition (204).",
+    params: z.object({ id: z.string() }),
+    codes: ["property.predefined"],
+    engine: false,
+  }),
+  // Users.
+  users: spec({
+    method: "GET",
+    path: apiRoutes.users,
+    summary: "Read people.",
+    response: z.array(userSchema),
+    codes: [],
+    engine: false,
+  }),
+  // Groups.
+  groups: spec({
+    method: "GET",
+    path: apiRoutes.groups,
+    summary: "Read groups.",
+    response: z.array(groupSchema),
+    codes: [],
+    engine: false,
+  }),
+  // Roles.
+  roles: spec({
+    method: "GET",
+    path: apiRoutes.roles,
+    summary: "Read role names.",
+    response: z.array(roleNameSchema),
+    codes: [],
+    engine: false,
+  }),
+  // Session channels.
+  watchlistChannels: spec({
+    method: "GET",
+    path: apiRoutes.watchlistChannels,
+    summary: "Read watchlist delivery channels.",
+    response: z.array(watchlistChannelSchema),
+    codes: [],
+    engine: false,
+  }),
+  // Push devices.
+  pushDevices: spec({
+    method: "GET",
+    path: apiRoutes.pushDevices,
+    summary: "Read registered push devices.",
+    response: pushDevicesSchema,
+    codes: [],
+    engine: false,
+  }),
+  pushDeviceRegister: spec({
+    method: "POST",
+    path: apiRoutes.pushDevices,
+    summary: "Registers a push device.",
+    body: pushSubscriptionSchema,
+    response: pushDevicesSchema,
+    codes: [],
+    engine: false,
+  }),
+  notificationPreferenceGet: spec({
+    method: "GET",
+    path: `${apiRoutes.notificationPreferences}/:token`,
+    summary: "Read public notification preferences.",
+    params: z.object({ token: z.string() }),
+    response: publicNotificationPreferencesSchema,
+    codes: ["notification.link_expired"],
+    engine: false,
+  }),
+  // Notification preferences.
+  notificationPreferencePatch: spec({
+    method: "PATCH",
+    path: `${apiRoutes.notificationPreferences}/:token`,
+    summary: "Changes public notification preferences.",
+    params: z.object({ token: z.string() }),
+    body: z.object({ notifications: notificationChoicesSchema }),
+    response: publicNotificationPreferencesSchema,
+    codes: ["notification.link_expired"],
+    engine: false,
+  }),
+  // Notification hooks.
+  notificationHooks: spec({
+    method: "GET",
+    path: apiRoutes.notificationHooks,
+    summary: "Read notification hooks.",
+    response: z.array(notificationHookSchema),
+    codes: [],
+    engine: false,
+  }),
+  // Messages.
+  messageChannels: spec({
+    method: "GET",
+    path: apiRoutes.messageChannels,
+    summary: "Read message channels.",
+    response: z.array(messageChannelSchema),
+    codes: [],
+    engine: false,
+  }),
+  messageHandOff: spec({
+    method: "GET",
+    path: apiRoutes.messageHandOff,
+    summary: "Prepare a message hand-off.",
+    query: z.object({
+      [messageSubjectParams.kind]: messageSubjectKindSchema,
+      [messageSubjectParams.id]: z.string(),
+    }),
+    response: messageHandOffSchema,
+    codes: ["message.subject_missing", "message.subject_not_found"],
+    engine: false,
+  }),
+  messageSend: spec({
+    method: "POST",
+    path: apiRoutes.messageSend,
+    summary: "Sends a message.",
+    query: z.object({
+      [messageSubjectParams.kind]: messageSubjectKindSchema,
+      [messageSubjectParams.id]: z.string(),
+    }),
+    body: sendMessageBodySchema,
+    response: sendMessageResponseSchema,
+    codes: [
+      "message.recipient_missing",
+      "message.text_missing",
+      "message.not_sending",
+      "message.subject_not_found",
+      "message.unreachable",
+    ],
+    engine: false,
   }),
 };
 

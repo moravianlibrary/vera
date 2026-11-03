@@ -10,11 +10,19 @@ describe("the endpoint table", () => {
   it("is what the engine serves", () => {
     const servedKeys = served.map(keyOf);
     expect(new Set(servedKeys).size).toBe(servedKeys.length);
-    expect(servedKeys.toSorted()).toEqual(Object.values(table).map(keyOf).toSorted());
+    expect(servedKeys.toSorted()).toEqual(
+      Object.values(table)
+        .filter((entry) => entry.engine !== false)
+        .map(keyOf)
+        .toSorted(),
+    );
+    for (const entry of Object.values(table).filter((candidate) => candidate.engine === false)) {
+      expect(servedKeys, keyOf(entry)).not.toContain(keyOf(entry));
+    }
   });
 
   it("gives the engine its schemas", () => {
-    for (const entry of Object.values(table)) {
+    for (const entry of Object.values(table).filter((candidate) => candidate.engine !== false)) {
       const endpoint = served.find((candidate) => keyOf(candidate) === keyOf(entry));
       expect(endpoint?.response, keyOf(entry)).toBe(entry.response);
     }
