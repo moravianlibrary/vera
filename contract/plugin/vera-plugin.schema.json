@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "implementation": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "contractVersion": {
+      "type": "string"
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "OnProposal",
+          "OnIngest",
+          "OnRecordChange",
+          "OnSchedule",
+          "OnDemand",
+          "OnLogin",
+          "OnEvent"
+        ]
+      }
+    },
+    "declares": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "readBarcode",
+              "readPhoto",
+              "entry",
+              "readLink",
+              "search",
+              "changes",
+              "sync"
+            ]
+          }
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "tier": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "key",
+              "tier"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "identifierTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rawStates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "raw": {
+                "type": "string"
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "isExistingCopy": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "raw",
+              "state",
+              "isExistingCopy"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "reads": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "code",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "agent": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "entryPoint": {
+                  "type": "string",
+                  "enum": [
+                    "proposals",
+                    "additions"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "entryPoint"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generatorClass": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "RuleBased",
+                "AiBased"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "channelInterface": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "Email",
+                "Chat",
+                "Webhook",
+                "File"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "personReach": {
+          "anyOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "by": {
+                      "type": "string",
+                      "const": "email"
+                    }
+                  },
+                  "required": [
+                    "by"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "by": {
+                      "type": "string",
+                      "const": "claim"
+                    },
+                    "claim": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "by",
+                    "claim"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "Text",
+                "Camera",
+                "Photo"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "loginEntry": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "Redirect",
+                "Form"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "properties",
+        "identifierTypes",
+        "rawStates",
+        "rules",
+        "agent",
+        "generatorClass",
+        "channelInterface",
+        "inputMode",
+        "loginEntry"
+      ],
+      "additionalProperties": false
+    },
+    "configFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "isSecret": {
+            "type": "boolean"
+          },
+          "isRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "isSecret",
+          "isRequired"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "implementation",
+    "version",
+    "contractVersion",
+    "triggers",
+    "declares",
+    "configFields"
+  ],
+  "additionalProperties": false
+}

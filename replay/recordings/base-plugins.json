@@ -35,6 +35,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -81,6 +82,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -131,6 +133,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -172,6 +177,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -206,6 +214,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -252,6 +263,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -288,6 +302,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -318,6 +335,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -380,6 +398,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -416,6 +435,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -463,6 +483,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -499,6 +520,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -546,6 +568,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -605,6 +628,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -659,6 +686,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -691,6 +719,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -723,6 +752,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -760,6 +790,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -803,6 +834,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -835,6 +867,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -878,6 +911,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -942,6 +976,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -991,6 +1026,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1046,6 +1082,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1099,6 +1136,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1146,6 +1184,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1182,6 +1221,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1218,6 +1258,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1254,6 +1295,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1295,6 +1337,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1336,6 +1379,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1373,6 +1417,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1414,6 +1459,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1450,6 +1496,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1486,6 +1533,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1527,6 +1575,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -1581,6 +1630,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1627,6 +1677,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -1678,6 +1729,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -1728,6 +1780,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -5820,6 +5873,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -5866,6 +5920,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -5916,6 +5971,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -5957,6 +6015,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -5991,6 +6052,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -6037,6 +6101,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6073,6 +6140,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6103,6 +6173,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6165,6 +6236,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6201,6 +6273,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6248,6 +6321,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6284,6 +6358,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6331,6 +6406,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6390,6 +6466,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6444,6 +6524,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6476,6 +6557,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6508,6 +6590,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6545,6 +6628,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6588,6 +6672,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6620,6 +6705,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6663,6 +6749,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6727,6 +6814,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6776,6 +6864,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6831,6 +6920,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6884,6 +6974,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6931,6 +7022,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -6967,6 +7059,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7003,6 +7096,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7039,6 +7133,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7080,6 +7175,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7121,6 +7217,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7158,6 +7255,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7199,6 +7297,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7235,6 +7334,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7271,6 +7371,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7312,6 +7413,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -7366,6 +7468,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7412,6 +7515,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -7463,6 +7567,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -7513,6 +7618,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -9566,6 +9672,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -9612,6 +9719,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -9662,6 +9770,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -9703,6 +9814,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9737,6 +9851,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -9783,6 +9900,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9819,6 +9939,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9849,6 +9972,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9911,6 +10035,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9947,6 +10072,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -9994,6 +10120,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10030,6 +10157,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10077,6 +10205,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10136,6 +10265,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10190,6 +10323,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10222,6 +10356,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10254,6 +10389,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10291,6 +10427,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10334,6 +10471,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10366,6 +10504,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10409,6 +10548,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10473,6 +10613,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10522,6 +10663,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10577,6 +10719,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10630,6 +10773,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10677,6 +10821,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10713,6 +10858,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10749,6 +10895,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10785,6 +10932,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10826,6 +10974,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10867,6 +11016,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10904,6 +11054,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10945,6 +11096,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -10981,6 +11133,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -11017,6 +11170,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -11058,6 +11212,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -11112,6 +11267,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -11158,6 +11314,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -11209,6 +11366,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -11259,6 +11417,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -13763,6 +13922,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -13809,6 +13969,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -13859,6 +14020,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -13900,6 +14064,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -13934,6 +14101,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -13980,6 +14150,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14016,6 +14189,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14046,6 +14222,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14108,6 +14285,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14144,6 +14322,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14191,6 +14370,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14227,6 +14407,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14274,6 +14455,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14333,6 +14515,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14387,6 +14573,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14419,6 +14606,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14451,6 +14639,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14488,6 +14677,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14531,6 +14721,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14563,6 +14754,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14606,6 +14798,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14670,6 +14863,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14719,6 +14913,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14774,6 +14969,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14827,6 +15023,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14874,6 +15071,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14910,6 +15108,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14946,6 +15145,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -14982,6 +15182,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15023,6 +15224,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15064,6 +15266,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15101,6 +15304,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15142,6 +15346,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15178,6 +15383,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15214,6 +15420,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15255,6 +15462,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -15309,6 +15517,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15355,6 +15564,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -15406,6 +15616,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -15456,6 +15667,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -17574,6 +17786,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -17620,6 +17833,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -17670,6 +17884,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -17711,6 +17928,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -17745,6 +17965,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -17791,6 +18014,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -17827,6 +18053,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -17857,6 +18086,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -17919,6 +18149,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -17955,6 +18186,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18002,6 +18234,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18038,6 +18271,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18085,6 +18319,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18144,6 +18379,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18198,6 +18437,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18230,6 +18470,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18262,6 +18503,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18299,6 +18541,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18342,6 +18585,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18374,6 +18618,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18417,6 +18662,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18481,6 +18727,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18530,6 +18777,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18585,6 +18833,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18638,6 +18887,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18685,6 +18935,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18721,6 +18972,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18757,6 +19009,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18793,6 +19046,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18834,6 +19088,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18875,6 +19130,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18912,6 +19168,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18953,6 +19210,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -18989,6 +19247,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -19025,6 +19284,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -19066,6 +19326,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -19120,6 +19381,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -19166,6 +19428,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -19217,6 +19480,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -19267,6 +19531,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -21334,6 +21599,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -21380,6 +21646,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -21430,6 +21697,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -21471,6 +21741,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21505,6 +21778,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -21551,6 +21827,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21587,6 +21866,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21617,6 +21899,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21679,6 +21962,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21715,6 +21999,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21762,6 +22047,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21798,6 +22084,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21845,6 +22132,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21904,6 +22192,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21958,6 +22250,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -21990,6 +22283,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22022,6 +22316,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22059,6 +22354,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22102,6 +22398,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22134,6 +22431,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22177,6 +22475,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22241,6 +22540,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22290,6 +22590,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22345,6 +22646,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22398,6 +22700,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22445,6 +22748,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22481,6 +22785,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22517,6 +22822,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22553,6 +22859,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22594,6 +22901,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22635,6 +22943,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22672,6 +22981,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22713,6 +23023,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22749,6 +23060,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22785,6 +23097,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22826,6 +23139,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -22880,6 +23194,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22926,6 +23241,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -22977,6 +23293,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -23027,6 +23344,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -25051,6 +25369,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -25097,6 +25416,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -25147,6 +25467,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -25188,6 +25511,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25222,6 +25548,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -25268,6 +25597,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25304,6 +25636,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25334,6 +25669,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25396,6 +25732,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25432,6 +25769,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25479,6 +25817,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25515,6 +25854,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25562,6 +25902,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25621,6 +25962,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25675,6 +26020,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25707,6 +26053,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25739,6 +26086,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25776,6 +26124,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25819,6 +26168,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25851,6 +26201,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25894,6 +26245,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -25958,6 +26310,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26007,6 +26360,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26062,6 +26416,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26115,6 +26470,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26162,6 +26518,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26198,6 +26555,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26234,6 +26592,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26270,6 +26629,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26311,6 +26671,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26352,6 +26713,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26389,6 +26751,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26430,6 +26793,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26466,6 +26830,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26502,6 +26867,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26543,6 +26909,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -26597,6 +26964,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26643,6 +27011,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -26694,6 +27063,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -26744,6 +27114,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -32592,6 +32963,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -32638,6 +33010,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -32688,6 +33061,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -32729,6 +33105,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -32763,6 +33142,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -32809,6 +33191,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -32845,6 +33230,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -32875,6 +33263,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -32937,6 +33326,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -32973,6 +33363,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33020,6 +33411,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33056,6 +33448,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33103,6 +33496,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33162,6 +33556,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33216,6 +33614,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33248,6 +33647,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33280,6 +33680,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33317,6 +33718,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33360,6 +33762,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33392,6 +33795,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33435,6 +33839,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33499,6 +33904,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33548,6 +33954,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33603,6 +34010,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33656,6 +34064,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33703,6 +34112,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33739,6 +34149,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33775,6 +34186,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33811,6 +34223,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33852,6 +34265,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33893,6 +34307,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33930,6 +34345,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -33971,6 +34387,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -34007,6 +34424,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -34043,6 +34461,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -34084,6 +34503,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -34138,6 +34558,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -34184,6 +34605,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -34235,6 +34657,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -34285,6 +34708,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -36513,6 +36937,7 @@
                 "agent": null,
                 "generatorClass": null,
                 "channelInterface": null,
+                "operations": [],
                 "inputMode": null,
                 "loginEntry": null
               },
@@ -36603,6 +37028,7 @@
                   "agent": null,
                   "generatorClass": null,
                   "channelInterface": null,
+                  "operations": [],
                   "inputMode": null,
                   "loginEntry": null
                 },
@@ -36656,6 +37082,7 @@
                   "agent": null,
                   "generatorClass": null,
                   "channelInterface": null,
+                  "operations": [],
                   "inputMode": null,
                   "loginEntry": null
                 },
@@ -36707,6 +37134,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -36753,6 +37181,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -36803,6 +37232,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -36844,6 +37276,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -36878,6 +37313,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -36924,6 +37362,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -36960,6 +37401,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -36990,6 +37434,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37052,6 +37497,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37088,6 +37534,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37135,6 +37582,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37171,6 +37619,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37218,6 +37667,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37277,6 +37727,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37331,6 +37785,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37363,6 +37818,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37395,6 +37851,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37432,6 +37889,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37475,6 +37933,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37507,6 +37966,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37550,6 +38010,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37614,6 +38075,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37663,6 +38125,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37713,6 +38176,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37766,6 +38230,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37819,6 +38284,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37866,6 +38332,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37902,6 +38369,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37938,6 +38406,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -37974,6 +38443,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38015,6 +38485,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38056,6 +38527,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38093,6 +38565,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38134,6 +38607,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38170,6 +38644,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38206,6 +38681,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38247,6 +38723,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -38301,6 +38778,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38347,6 +38825,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -38398,6 +38877,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -38448,6 +38928,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -40503,6 +40984,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Form"
                     },
@@ -40549,6 +41031,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": "Redirect"
                     },
@@ -40599,6 +41082,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readBarcode"
+                      ],
                       "inputMode": "Camera",
                       "loginEntry": null
                     },
@@ -40640,6 +41126,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40674,6 +41163,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": "Photo",
                       "loginEntry": null
                     },
@@ -40720,6 +41212,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "entry"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40756,6 +41251,9 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readPhoto"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40786,6 +41284,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40848,6 +41347,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40884,6 +41384,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40931,6 +41432,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -40967,6 +41469,7 @@
                       },
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41014,6 +41517,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41073,6 +41577,10 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [
+                        "readLink",
+                        "search"
+                      ],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41127,6 +41635,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41159,6 +41668,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41191,6 +41701,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41228,6 +41739,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41271,6 +41783,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41303,6 +41816,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41346,6 +41860,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41410,6 +41925,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41459,6 +41975,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41509,6 +42026,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41562,6 +42080,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41615,6 +42134,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41662,6 +42182,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41698,6 +42219,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41734,6 +42256,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41770,6 +42293,7 @@
                       "agent": null,
                       "generatorClass": "RuleBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41811,6 +42335,7 @@
                       "agent": null,
                       "generatorClass": "AiBased",
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41852,6 +42377,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41889,6 +42415,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41930,6 +42457,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -41966,6 +42494,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -42002,6 +42531,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": null,
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -42043,6 +42573,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -42097,6 +42628,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Webhook",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -42143,6 +42675,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "File",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null
                     },
@@ -42194,6 +42727,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Chat",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {
@@ -42244,6 +42778,7 @@
                       "agent": null,
                       "generatorClass": null,
                       "channelInterface": "Email",
+                      "operations": [],
                       "inputMode": null,
                       "loginEntry": null,
                       "personReach": {

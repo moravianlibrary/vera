@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { extendSeed } from "@vera/contract/seed-extends";
+import { operationsMatchKind } from "@vera/domain/plugins";
 import { seedPatchSchema, seedSchema } from "../../contract/seed/seed";
 import { readSeed, seedsDir } from "./seed";
 
@@ -13,6 +14,19 @@ test("every seed patch and its extended value match the seed schemas", () => {
     if (raw.extends) {
       const parent = JSON.parse(readFileSync(join(seedsDir, `${raw.extends}.json`), "utf8"));
       expect(seedSchema.parse(extendSeed(parent, raw))).toBeDefined();
+    }
+  }
+});
+
+test("every seed version declares only operations optional for its kind", () => {
+  for (const file of readdirSync(seedsDir).filter((name) => name.endsWith(".json"))) {
+    const seed = seedSchema.parse(readSeed(file.slice(0, -5)));
+    for (const implementation of seed.collections.pluginImplementations ?? []) {
+      for (const version of implementation.versions) {
+        expect(operationsMatchKind(implementation.kind, version.declares.operations ?? [])).toBe(
+          true,
+        );
+      }
     }
   }
 });

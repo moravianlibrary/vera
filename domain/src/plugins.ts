@@ -29,6 +29,31 @@ export const pluginKinds = [
 export const pluginKindSchema = z.enum(pluginKinds);
 export type PluginKind = z.infer<typeof pluginKindSchema>;
 
+// PLG-api-capabilities: the optional operation names each kind may declare.
+export const optionalOperationsByKind = {
+  Identity: [],
+  Input: ["readBarcode", "readPhoto", "entry"],
+  Identifier: [],
+  Harvester: [],
+  CatalogAdapter: ["readLink", "search", "changes", "sync"],
+  PropertySource: [],
+  Registry: [],
+  Validation: [],
+  Restriction: [],
+  Custody: [],
+  Classifier: [],
+  ListGenerator: [],
+  Link: [],
+  PublicationDetector: [],
+  Message: [],
+  DeliveryChannel: [],
+} as const satisfies Record<PluginKind, readonly string[]>;
+
+export function operationsMatchKind(kind: PluginKind, operations: readonly string[]): boolean {
+  const allowed = optionalOperationsByKind[kind];
+  return operations.every((operation) => (allowed as readonly string[]).includes(operation));
+}
+
 // An instance as other records name it: what a run, a schedule or a filter points at.
 export const pluginInstanceSchema = z.object({
   id: z.string(),
@@ -71,6 +96,10 @@ export type EntryPoint = (typeof entryPoints)[number];
 // Its property tiers, which registry states count as a copy and its agent are only the defaults
 // of each instance's policy (PLG-upgrade).
 export const declarationsSchema = z.object({
+  // PLG-api-capabilities: optional operations are visible before plugin code loads.
+  operations: z
+    .array(z.enum(["readBarcode", "readPhoto", "entry", "readLink", "search", "changes", "sync"]))
+    .optional(),
   properties: z.array(z.object({ key: z.string(), tier: z.number().int() })),
   identifierTypes: z.array(z.string()),
   // A raw state with no state is Unmapped, shown verbatim.

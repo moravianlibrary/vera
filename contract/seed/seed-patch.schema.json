@@ -9894,6 +9894,21 @@
                     "declares": {
                       "type": "object",
                       "properties": {
+                        "operations": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "readBarcode",
+                              "readPhoto",
+                              "entry",
+                              "readLink",
+                              "search",
+                              "changes",
+                              "sync"
+                            ]
+                          }
+                        },
                         "properties": {
                           "type": "array",
                           "items": {
@@ -10649,6 +10664,21 @@
                   "declares": {
                     "type": "object",
                     "properties": {
+                      "operations": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "readBarcode",
+                            "readPhoto",
+                            "entry",
+                            "readLink",
+                            "search",
+                            "changes",
+                            "sync"
+                          ]
+                        }
+                      },
                       "properties": {
                         "type": "array",
                         "items": {

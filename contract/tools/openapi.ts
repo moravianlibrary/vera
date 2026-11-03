@@ -23,7 +23,10 @@ function schemaFiles(directory: string): string[] {
 
 async function exportedSchemas(): Promise<ExportedSchema[]> {
   const modules = ["domain/src", "contract/src"].flatMap((path) =>
-    schemaFiles(resolve(root, path)),
+    schemaFiles(resolve(root, path)).filter((file) => {
+      // Plugin operation types describe in-process calls, not HTTP components.
+      return !relative(root, file).startsWith("domain/src/plugin-api/");
+    }),
   );
   const byId = new Map<string, ExportedSchema>();
   for (const path of modules.sort()) {

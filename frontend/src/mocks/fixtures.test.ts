@@ -17,6 +17,7 @@ import {
   userSchema,
 } from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
+import { operationsMatchKind } from "@vera/domain/plugins";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { database } from "@/mocks/database";
@@ -101,5 +102,15 @@ describe("fixtures", () => {
         (intention) => intention.templateId === null || templateIds.has(intention.templateId),
       ),
     ).toBe(true);
+  });
+
+  it("declares only optional operations supported by each fixture kind", () => {
+    for (const implementation of database.pluginImplementations) {
+      for (const version of implementation.versions) {
+        expect(operationsMatchKind(implementation.kind, version.declares.operations ?? [])).toBe(
+          true,
+        );
+      }
+    }
   });
 });
