@@ -19,21 +19,7 @@ None.
 
 ## Not built yet
 
-### L76: The classifier's suggestion on an approval
-
-Rules: [EVENT-destinations](reference/model/events.md#event-destinations),
-[ACT-reason-two-texts](reference/access/acts.md#act-reason-two-texts).
-
-The mock added sentences to an approval's internal reason: the classifier's suggestion and
-whether the decider kept it, the existing copies, and the request custodies. An entry's reason
-is the two texts the act took and its data is never a sentence (events.md), so they were removed
-with step 3 (2026-11-03). Nothing now records whether a suggestion was kept, which would show a
-classifier that is usually overruled.
-
-Decided on 2026-11-03: `request.approved` carries the suggestion as data, the category and the
-classifier instance (each with its name, as other entries name what they refer to) and whether
-the decider kept it, or none; kept is stored because the iteration may be reclassified later.
-The client words it in the History. → frontend and engine.
+None.
 
 ## For the engine
 
@@ -221,6 +207,9 @@ frontend.
 
 ### Built, 2026-11-03
 
+- **L76:** an approval records the classifier's suggestion as data, its category and instance
+  and whether the decider kept it; the staff History words it, the public one does not
+  ([events](reference/model/events.md)).
 - **L10:** the daily proposal limit counts the requests stored on the library's day (Prague),
   in the mock and the engine alike, against the server's clock
   ([ROLE-library-day](reference/access/roles.md#role-library-day)).
