@@ -3,32 +3,19 @@
 // every type no instance is enabled for, which is read only when chosen and checked with the
 // catalog lookup (DOC-lines). And the refusal of a Pattern configuration that does not make one.
 
-import type {
-  IdentifierRecogniser,
-  IdentifierType,
-  IdentifierTypeRule,
-} from "@vera/domain/identifiers";
+import { identifierRules as identifierRulesShared } from "@vera/contract/queries/ways-in";
+import type { IdentifierTypeRule } from "@vera/domain/identifiers";
 import {
   identifierChecksums,
   identifierTypeSchema,
   identifierTypes,
   normalisationSteps,
 } from "@vera/domain/identifiers";
-import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
+import { database } from "@/mocks/database";
 import type { Refusal } from "@/mocks/mutations";
-import { enabledInstancesOf, implementationOf, liveInstances } from "@/mocks/plugin-instances";
+import { implementationOf, liveInstances } from "@/mocks/plugin-instances";
 
 export const patternImplementationName = "Pattern";
-
-// The names of a type no instance names.
-const typeLabels: Record<IdentifierType, IdentifierTypeRule["labels"]> = {
-  catalogId: { en: "Catalog ID", cs: "Systémové číslo" },
-  nbn: { en: "NBN", cs: "ČNB" },
-  isbn: { en: "ISBN", cs: "ISBN" },
-  issn: { en: "ISSN", cs: "ISSN" },
-  barcode: { en: "Barcode", cs: "Čárový kód" },
-  shelfMark: { en: "Shelf mark", cs: "Signatura" },
-};
 
 const listOf = (value: string | undefined) =>
   (value ?? "")
@@ -36,49 +23,8 @@ const listOf = (value: string | undefined) =>
     .map((part) => part.trim())
     .filter((part) => part !== "");
 
-function isPattern(instance: StoredPluginInstance): boolean {
-  return implementationOf(instance)?.name === patternImplementationName;
-}
-
-function typeOf(instance: StoredPluginInstance): IdentifierType | null {
-  const parsed = identifierTypeSchema.safeParse(instance.configuration.type);
-  return parsed.success ? parsed.data : null;
-}
-
-function recogniserOf(configuration: Readonly<Record<string, string>>): IdentifierRecogniser {
-  const checksum = identifierChecksums.find((each) => each === configuration.checksum);
-  return {
-    pattern: configuration.pattern ?? "",
-    normalisation: normalisationSteps.filter((step) =>
-      listOf(configuration.normalisation).includes(step),
-    ),
-    checksum: checksum ?? null,
-  };
-}
-
 export function identifierRules(): IdentifierTypeRule[] {
-  const named = enabledInstancesOf("Identifier").flatMap((instance): IdentifierTypeRule[] => {
-    const type = typeOf(instance);
-    if (type === null) {
-      return [];
-    }
-
-    return [
-      {
-        type,
-        labels: {
-          en: instance.configuration.label_en || typeLabels[type].en,
-          cs: instance.configuration.label_cs || typeLabels[type].cs,
-        },
-        // A check plugin code makes is the catalog lookup's to report.
-        recogniser: isPattern(instance) ? recogniserOf(instance.configuration) : null,
-      },
-    ];
-  });
-  const unnamed = identifierTypes
-    .filter((type) => !named.some((rule) => rule.type === type))
-    .map((type): IdentifierTypeRule => ({ type, labels: typeLabels[type], recogniser: null }));
-  return [...named, ...unnamed];
+  return identifierRulesShared(database.pluginInstances, database.pluginImplementations);
 }
 
 const configurationRefusal = (message: string): Refusal => ({

@@ -3,7 +3,16 @@
 // resolves too; the mock catalog reads those from the documents themselves. A record of several
 // volumes or issues lists them, and a barcode names one of them.
 
+import type { CatalogBase } from "@vera/contract/queries/ways-in";
 import type { CatalogRecord } from "@vera/domain/catalog";
+
+// The catalog each Aleph the mock knows stands for: the base its record IDs start with, and where
+// a person finds a record in it.
+export const wayInCatalogs: Readonly<Record<string, CatalogBase>> = {
+  "aleph.mzk.cz": { base: "MZK", opacUrl: "https://vufind.mzk.cz" },
+  "aleph.vkol.cz": { base: "VKOL", opacUrl: "https://aleph.vkol.cz" },
+  "aleph.nkp.cz": { base: "NKC", opacUrl: "https://aleph.nkp.cz" },
+};
 
 export type { CatalogRecord } from "@vera/domain/catalog";
 

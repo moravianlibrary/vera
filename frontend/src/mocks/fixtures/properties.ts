@@ -5,6 +5,8 @@
 // document as the catalog record shows them; the page count keeps its own sources
 // (DOC-page-count).
 
+import type { CatalogReadingFake } from "@vera/contract/queries/ways-in";
+import { catalogPropertyValuesOf as catalogPropertyValuesOfShared } from "@vera/contract/queries/ways-in";
 import type { Document } from "@vera/domain/entities";
 import type { Grant } from "@vera/domain/permissions";
 import type { PropertyValues, StoredPropertyDefinition } from "@vera/domain/properties";
@@ -129,27 +131,13 @@ const byHand = (value: PropertyValues["sources"][number]["value"], setBy: string
 // declares.
 const catalogAdapter = { kind: "plugin" as const, instanceId: "pi1", instanceName: "MZK Aleph" };
 const catalogTier = 50;
+export const catalogReadingFake: CatalogReadingFake = { source: catalogAdapter, tier: catalogTier };
 
 export function catalogPropertyValuesOf(
   document: Pick<Document, "title" | "type" | "shelfMark">,
   observedAt: string,
 ): PropertyValues[] {
-  const read = (key: string, value: string | null): PropertyValues[] =>
-    value === null
-      ? []
-      : [
-          {
-            key,
-            sources: [
-              { source: catalogAdapter, tier: catalogTier, value, observedAt, setBy: null },
-            ],
-          },
-        ];
-  return [
-    ...read("title", document.title),
-    ...read("material_type", document.type),
-    ...read("shelf_mark", document.shelfMark),
-  ];
+  return catalogPropertyValuesOfShared(document, observedAt, catalogReadingFake);
 }
 
 // DOC-property-predefined: a recheck's reading replaces the adapter's earlier one, and keeps every

@@ -10,45 +10,10 @@
 // a contract VERA does not run.
 
 import type { InstanceSettings, PluginVersion } from "@vera/contract/plugins";
-import type {
-  ConfigField,
-  Declarations,
-  InstancePolicy,
-  PluginKind,
-  PluginTrigger,
-} from "@vera/domain/plugins";
+import type { StoredPluginImplementation, StoredPluginInstance } from "@vera/domain/plugin-store";
+import type { ConfigField, Declarations, PluginKind, PluginTrigger } from "@vera/domain/plugins";
 
-export interface StoredPluginImplementation {
-  readonly id: string;
-  readonly descriptorId: string;
-  readonly name: string;
-  readonly kind: PluginKind;
-  readonly description: string;
-  // Newest first.
-  readonly versions: readonly PluginVersion[];
-}
-
-export interface StoredPluginInstance {
-  readonly id: string;
-  readonly name: string;
-  readonly implementationId: string;
-  readonly version: string;
-  readonly isEnabled: boolean;
-  // With the secrets, which the server never sends back.
-  readonly configuration: Readonly<Record<string, string>>;
-  readonly linkedCategoryId: string | null;
-  readonly triggers: readonly PluginTrigger[];
-  readonly settings: InstanceSettings | null;
-  // Absent while it keeps its version's defaults (PLG-upgrade).
-  readonly policy?: InstancePolicy;
-  readonly createdBy: string;
-  readonly createdAt: string;
-  readonly lastRunAt: Date | null;
-  // A deleted instance is kept, so the runs it made still name it.
-  readonly isDeleted: boolean;
-  // DOC-identifiers: shipped with VERA, so never deleted.
-  readonly isPredefined?: boolean;
-}
+export type { StoredPluginImplementation, StoredPluginInstance } from "@vera/domain/plugin-store";
 
 // June 2026, in the library's own time.
 function june(day: number, hours: number, minutes: number): Date {

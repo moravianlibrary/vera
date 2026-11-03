@@ -5,6 +5,8 @@
 
 import { z } from "zod";
 
+export type { StoredPluginImplementation, StoredPluginInstance } from "./plugin-store";
+
 // PLG-kinds: in the order a document meets them, which Plugins lists them in.
 export const pluginKinds = [
   "Identity",

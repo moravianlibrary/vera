@@ -3,6 +3,12 @@
 // deleting one on Plugins takes it out of Generate, the decide form's suggestion, *Message…*,
 // the login page and custody placement. A deleted instance is kept only so its runs name it.
 
+import {
+  enabledInstancesOf as enabledInstancesOfShared,
+  implementationOf as implementationOfShared,
+  kindOf as kindOfShared,
+  liveInstances as liveInstancesShared,
+} from "@vera/contract/queries/plugin-instances";
 import type { IdentityInstance } from "@vera/domain/access";
 import type { PluginInstance, PluginKind } from "@vera/domain/plugins";
 import { database } from "@/mocks/database";
@@ -11,13 +17,13 @@ import type { StoredPluginImplementation, StoredPluginInstance } from "@/mocks/f
 export function implementationOf(
   instance: Pick<StoredPluginInstance, "implementationId">,
 ): StoredPluginImplementation | undefined {
-  return database.pluginImplementations.find(
-    (implementation) => implementation.id === instance.implementationId,
-  );
+  return implementationOfShared(database.pluginImplementations, instance) as
+    | StoredPluginImplementation
+    | undefined;
 }
 
 export function kindOf(instance: StoredPluginInstance): PluginKind {
-  return implementationOf(instance)?.kind ?? "CatalogAdapter";
+  return kindOfShared(database.pluginImplementations, instance);
 }
 
 export function summaryOf(instance: StoredPluginInstance): PluginInstance {
@@ -37,23 +43,20 @@ export function findInstanceSummary(instanceId: string | null): PluginInstance |
 }
 
 export function liveInstances(): StoredPluginInstance[] {
-  return database.pluginInstances.filter((instance) => !instance.isDeleted);
+  return liveInstancesShared(database.pluginInstances) as StoredPluginInstance[];
 }
 
 export function instanceSummaries(): PluginInstance[] {
   return liveInstances().map(summaryOf);
 }
 
-function orderOf(instance: StoredPluginInstance): number {
-  const settings = instance.settings;
-  return settings !== null && "order" in settings ? settings.order : 0;
-}
-
 // A kind's enabled instances, in their order, else as they were made.
 export function enabledInstancesOf(kind: PluginKind): StoredPluginInstance[] {
-  return liveInstances()
-    .filter((instance) => instance.isEnabled && kindOf(instance) === kind)
-    .toSorted((first, second) => orderOf(first) - orderOf(second));
+  return enabledInstancesOfShared(
+    database.pluginImplementations,
+    database.pluginInstances,
+    kind,
+  ) as StoredPluginInstance[];
 }
 
 // Every identity instance not deleted, enabled or not: a role it mapped stays until the person's
