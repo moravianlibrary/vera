@@ -1367,7 +1367,7 @@ export function createHandlers(profile: MockUserProfile) {
       const params = new URL(request.url).searchParams;
       const session = currentSession();
       const isMy = params.get("perspective") === "my";
-      if (isMy && !canOpenMyDocuments(session)) return forbidden();
+      if (isMy && !canOpenMyDocuments(session)) return mayNotOpenMyDocuments();
       const page = queryDocuments(
         session,
         parseDocumentSearchParams(params),
@@ -1381,7 +1381,7 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(`${apiRoutes.documents}/:documentId`), ({ params, request }) => {
       const session = currentSession();
       const isMy = new URL(request.url).searchParams.get("perspective") === "my";
-      if (isMy && !canOpenMyDocuments(session)) return forbidden();
+      if (isMy && !canOpenMyDocuments(session)) return mayNotOpenMyDocuments();
       const detail = findDocumentDetail(
         session,
         String(params.documentId),
@@ -2049,6 +2049,10 @@ function forbidden() {
     code: "watchlist.manager_required",
     message: "Only those who manage shared watchlists can change them",
   });
+}
+
+function mayNotOpenMyDocuments() {
+  return problemResponse({ status: 403, message: "You may not open My Documents" });
 }
 
 function alreadySaved(duplicate: StoredWatchlist) {

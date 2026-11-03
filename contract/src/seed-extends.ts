@@ -9,11 +9,18 @@ const idOf = (value: Json): string | undefined =>
 function mergeCollection(parent: Json, child: Json): Json {
   if (Array.isArray(parent) && Array.isArray(child)) {
     const merged = [...parent];
+    const indexes = new Map<string, number>();
+    merged.forEach((item, index) => {
+      const id = idOf(item);
+      if (id !== undefined && !indexes.has(id)) indexes.set(id, index);
+    });
     for (const item of child) {
       const id = idOf(item);
-      const index = id === undefined ? -1 : merged.findIndex((existing) => idOf(existing) === id);
-      if (index === -1) merged.push(item);
-      else merged[index] = item;
+      const index = id === undefined ? undefined : indexes.get(id);
+      if (index === undefined) {
+        if (id !== undefined) indexes.set(id, merged.length);
+        merged.push(item);
+      } else merged[index] = item;
     }
     return merged;
   }

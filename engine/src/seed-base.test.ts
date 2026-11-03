@@ -37,6 +37,23 @@ describe("the base seed", () => {
     ).toBe(0);
   });
 
+  it("loads the records and property keys into their tables in seed order", () => {
+    const seed = readSeed("base");
+    for (const table of ["projects", "batches", "documents", "iterations", "requests"] as const) {
+      const count = engine.db
+        .query<{ n: number }, []>(`SELECT count(*) AS n FROM ${table}`)
+        .get()?.n;
+      expect(count).toBe(seed.collections[table]?.length ?? 0);
+    }
+    expect(
+      engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM property_definitions").get()?.n,
+    ).toBe(seed.collections.propertyDefinitions?.length ?? 0);
+    expect(
+      engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM deleted_property_keys").get()
+        ?.n,
+    ).toBe(seed.collections.deletedPropertyKeys?.length ?? 0);
+  });
+
   it("binds defects and verdict keys to Validation instances and iteration history", () => {
     const seed = readSeed("base");
     const validationIds = new Set(

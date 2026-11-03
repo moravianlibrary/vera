@@ -17483,6 +17483,27 @@
       }
     },
     "moravianPlaces": ["morav", "brn", "ostrav", "olomou", "znojm", "slovác"],
+    "custodyPlacements": {
+      "R16": ["pc1", "pc2"],
+      "R17": ["pc1", "pc2"],
+      "R18": ["pc1", "pc2"],
+      "R19": ["pc1"],
+      "R20": ["pc3"],
+      "R28": ["pc1", "pc2"],
+      "R29": ["pc1", "pc2"],
+      "R30": ["pc1", "pc2"],
+      "R31": ["pc1", "pc2"],
+      "R32": ["pc1", "pc2"],
+      "R33": ["pc1"],
+      "R34": ["pc1"],
+      "R35": [],
+      "R36": ["pc1"],
+      "R37": ["pc1"]
+    },
+    "custodyRules": [
+      { "custodyId": "pc1", "documentType": "Periodical" },
+      { "custodyId": "pc3", "projectId": "p3" }
+    ],
     "advisorReasons": {
       "IT3": "Urgent and asked for an exhibition; its page count was reviewed and accepted.",
       "IT26": "The oldest unscanned regional weekly in the pool; pairs with the Znojmo run already planned.",

@@ -42,6 +42,11 @@ import {
   rowDecisionOf,
 } from "@vera/domain/requests";
 import type { RecordStore } from "@vera/domain/store";
+import {
+  iterationsByDocumentOf,
+  requestsByDocumentOf,
+  statusLogForSubjectsOf,
+} from "@vera/domain/store-index";
 import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import {
   filterablePropertiesOf,
@@ -189,8 +194,8 @@ export function rowOf(
   plugins: RequestPlugins,
   document: Document,
 ): RequestRow | null {
-  const proposals = store.requests.filter(
-    (request) => request.documentId === document.id && isProposalDecision(request.decision),
+  const proposals = (requestsByDocumentOf(store).get(document.id) ?? []).filter((request) =>
+    isProposalDecision(request.decision),
   );
   const decision = rowDecisionOf(proposals);
   if (decision === null) {
@@ -202,9 +207,9 @@ export function rowOf(
     .toSorted(
       (first, second) => first.at.localeCompare(second.at) || first.id.localeCompare(second.id),
     );
-  const iterations = store.iterations
-    .filter((iteration) => iteration.documentId === document.id)
-    .toSorted((first, second) => first.attempt - second.attempt);
+  const iterations = (iterationsByDocumentOf(store).get(document.id) ?? []).toSorted(
+    (first, second) => first.attempt - second.attempt,
+  );
   return {
     record: { document, iterations, requests: asks },
     decision,
@@ -544,9 +549,5 @@ function logOf(store: RecordStore, row: RequestRow): StatusLogEntry[] {
   const subjects = new Set(
     [...row.record.requests, ...row.record.iterations].map((entry) => entry.id),
   );
-  return oncePerCause(
-    store.statusLog
-      .filter((entry) => subjects.has(entry.subjectId))
-      .toSorted((first, second) => second.at.localeCompare(first.at)),
-  );
+  return oncePerCause(statusLogForSubjectsOf(store, subjects));
 }

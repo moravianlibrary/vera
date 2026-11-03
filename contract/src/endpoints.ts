@@ -12,7 +12,7 @@ import {
   identitySchema,
   roleSchema,
 } from "@vera/domain/access";
-import { sessionSchema } from "@vera/domain/entities";
+import { batchSchema, requestCustodySchema, sessionSchema } from "@vera/domain/entities";
 import { z } from "zod";
 import {
   accessIndexSchema,
@@ -29,6 +29,13 @@ import {
   userGroupsSchema,
 } from "./access";
 import {
+  documentDetailSchema,
+  documentGroupingParam,
+  documentPageSchema,
+  documentQueryParams,
+  documentSliceParams,
+} from "./documents";
+import {
   emailOnlySchema,
   localLoginSchema,
   loginEntrySchema,
@@ -37,6 +44,13 @@ import {
   tokenSchema,
   verifiedSchema,
 } from "./login";
+import {
+  requestDetailSchema,
+  requestGroupingParam,
+  requestPageSchema,
+  requestQueryParams,
+  requestSliceParams,
+} from "./requests";
 import { accessRecordActionRoute, apiRoutes } from "./routes";
 import { userSettingsChangeSchema, userSettingsSchema } from "./user-settings";
 
@@ -65,6 +79,70 @@ function spec<Params = undefined, Query = undefined, Body = undefined, Value = u
 }
 
 export const endpoints = {
+  documents: spec({
+    method: "GET",
+    path: apiRoutes.documents,
+    summary: "Search documents.",
+    query: z.object(
+      Object.fromEntries(
+        [
+          ...Object.values(documentQueryParams),
+          ...Object.values(documentSliceParams),
+          documentGroupingParam,
+          "perspective",
+        ].map((key) => [key, z.string().optional()]),
+      ),
+    ),
+    response: documentPageSchema,
+    codes: [],
+  }),
+  documentDetail: spec({
+    method: "GET",
+    path: `${apiRoutes.documents}/:documentId`,
+    summary: "Read a document.",
+    params: z.object({ documentId: z.string() }),
+    query: z.object({ perspective: z.string().optional() }),
+    response: documentDetailSchema,
+    codes: [],
+  }),
+  requests: spec({
+    method: "GET",
+    path: apiRoutes.requests,
+    summary: "Search requests.",
+    query: z.object(
+      Object.fromEntries(
+        [
+          ...Object.values(requestQueryParams),
+          ...Object.values(requestSliceParams),
+          requestGroupingParam,
+        ].map((key) => [key, z.string().optional()]),
+      ),
+    ),
+    response: requestPageSchema,
+    codes: [],
+  }),
+  requestDetail: spec({
+    method: "GET",
+    path: `${apiRoutes.requests}/:documentId`,
+    summary: "Read a request.",
+    params: z.object({ documentId: z.string() }),
+    response: requestDetailSchema,
+    codes: [],
+  }),
+  requestCustodies: spec({
+    method: "GET",
+    path: apiRoutes.requestCustodies,
+    summary: "Read request custodies.",
+    response: z.array(requestCustodySchema),
+    codes: [],
+  }),
+  batches: spec({
+    method: "GET",
+    path: apiRoutes.batches,
+    summary: "Read batches.",
+    response: z.array(batchSchema),
+    codes: [],
+  }),
   loginEntries: spec({
     method: "GET",
     path: apiRoutes.login,

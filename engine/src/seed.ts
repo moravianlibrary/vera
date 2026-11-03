@@ -13,8 +13,17 @@ import {
   mappedRoleSchema,
   roleSchema,
 } from "@vera/domain/access";
-import { categorySchema, userSchema } from "@vera/domain/entities";
+import {
+  batchSchema,
+  categorySchema,
+  documentSchema,
+  iterationSchema,
+  projectSchema,
+  requestSchema,
+  userSchema,
+} from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
+import { propertyDefinitionSchema } from "@vera/domain/properties";
 import { z } from "zod";
 
 export const seedsDir = join(import.meta.dir, "..", "seeds");
@@ -41,6 +50,13 @@ export const seedSchema = z.object({
     userAccess: z.record(id, userAccessSchema),
     categories: z.array(categorySchema),
     groups: z.array(accessGroupSchema),
+    projects: z.array(projectSchema).optional(),
+    batches: z.array(batchSchema.omit({ size: true })).optional(),
+    documents: z.array(documentSchema).optional(),
+    iterations: z.array(iterationSchema).optional(),
+    requests: z.array(requestSchema).optional(),
+    propertyDefinitions: z.array(propertyDefinitionSchema.omit({ isCatalogFact: true })).optional(),
+    deletedPropertyKeys: z.array(id).optional(),
     categoryMembers: z.record(id, z.array(id)),
     requestCustodies: z
       .array(
@@ -111,6 +127,56 @@ export function readSeed(name: string, dir: string = seedsDir, chain: string[] =
 // Writes the collections step 1's tables hold. The caller runs it in a transaction.
 export function loadSeed(db: Database, seed: Seed): void {
   const { users, roles, userAccess, categories, groups, categoryMembers } = seed.collections;
+  const fakeSchema = z
+    .object({
+      custodyPlacements: z.record(id, z.array(id)).optional(),
+      custodyRules: z
+        .array(
+          z.object({
+            custodyId: id,
+            documentType: z.string().optional(),
+            projectId: id.optional(),
+          }),
+        )
+        .optional(),
+      materialLeaves: z
+        .record(z.string(), z.object({ categoryId: id, reason: z.string() }))
+        .optional(),
+      moravianPlaces: z.array(z.string()).optional(),
+    })
+    .passthrough();
+  const fakes = fakeSchema.parse(seed.fakes ?? {});
+  for (const [key, value] of Object.entries(fakes))
+    db.query("INSERT INTO seed_fakes (key,value) VALUES (?,?)").run(key, JSON.stringify(value));
+  const insertRecord = (table: string, id: string, record: unknown) =>
+    db.query(`INSERT INTO ${table} (id, record) VALUES (?, ?)`).run(id, JSON.stringify(record));
+  for (const record of seed.collections.projects ?? []) insertRecord("projects", record.id, record);
+  for (const record of seed.collections.batches ?? []) insertRecord("batches", record.id, record);
+  for (const record of seed.collections.documents ?? [])
+    insertRecord("documents", record.id, record);
+  for (const record of seed.collections.iterations ?? []) {
+    db.query("INSERT INTO iterations (id, document_id, record) VALUES (?, ?, ?)").run(
+      record.id,
+      record.documentId,
+      JSON.stringify(record),
+    );
+  }
+  for (const record of seed.collections.requests ?? []) {
+    db.query("INSERT INTO requests (id, document_id, batch_id, record) VALUES (?, ?, ?, ?)").run(
+      record.id,
+      record.documentId,
+      record.batchId,
+      JSON.stringify(record),
+    );
+  }
+  for (const record of seed.collections.propertyDefinitions ?? []) {
+    db.query("INSERT INTO property_definitions (key, record) VALUES (?, ?)").run(
+      record.key,
+      JSON.stringify(record),
+    );
+  }
+  for (const key of seed.collections.deletedPropertyKeys ?? [])
+    db.query("INSERT INTO deleted_property_keys (key) VALUES (?)").run(key);
   for (const entry of seed.collections.statusLog ?? []) {
     const parsed = eventEntrySchema.parse(entry);
     db.query(`INSERT INTO events (id,code,subject_kind,subject_id,at,actor,correlation_id,data,reason_public,reason_internal)

@@ -121,16 +121,17 @@ export function mockStore(): RecordStore {
         .flatMap((implementation) => implementation.versions)
         .flatMap((version) => version.declares.properties.map(({ key }) => key)),
     ),
-    users: database.users,
-    groups: database.groups,
-    categories: database.categories,
-    projects: database.projects,
-    batches: database.batches,
-    requestCustodies: database.requestCustodies,
-    documents: database.documents,
-    iterations: database.iterations,
-    requests: database.requests,
-    statusLog: database.statusLog,
-    propertyDefinitions: database.propertyDefinitions,
+    // Query indexes use array identity, so each store snapshots every collection.
+    users: [...database.users],
+    groups: [...database.groups],
+    categories: [...database.categories],
+    projects: [...database.projects],
+    batches: [...database.batches],
+    requestCustodies: [...database.requestCustodies],
+    documents: [...database.documents],
+    iterations: [...database.iterations],
+    requests: [...database.requests],
+    statusLog: [...database.statusLog],
+    propertyDefinitions: [...database.propertyDefinitions],
   };
 }

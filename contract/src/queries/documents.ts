@@ -55,6 +55,11 @@ import { scopeOfProject } from "@vera/domain/projects";
 import type { PropertyValues } from "@vera/domain/properties";
 import { isRestricted, validationOf } from "@vera/domain/status";
 import type { RecordStore } from "@vera/domain/store";
+import {
+  iterationsByDocumentOf,
+  requestsByDocumentOf,
+  statusLogForSubjectsOf,
+} from "@vera/domain/store-index";
 import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
 import {
   filterablePropertiesOf,
@@ -149,14 +154,12 @@ export function audienceOf(_store: RecordStore, session: Session): Audience {
 }
 
 export function recordOf(store: RecordStore, document: Document): DocumentRecord {
+  const iterations = iterationsByDocumentOf(store).get(document.id) ?? [];
+  const requests = requestsByDocumentOf(store).get(document.id) ?? [];
   return {
     document,
-    iterations: store.iterations
-      .filter((iteration) => iteration.documentId === document.id)
-      .toSorted((first, second) => first.attempt - second.attempt),
-    requests: store.requests
-      .filter((request) => request.documentId === document.id)
-      .toSorted((first, second) => first.at.localeCompare(second.at)),
+    iterations: iterations.toSorted((first, second) => first.attempt - second.attempt),
+    requests: requests.toSorted((first, second) => first.at.localeCompare(second.at)),
   };
 }
 
@@ -617,9 +620,7 @@ function logOf(
   const subjects = new Set(
     [record.document, ...record.iterations, ...record.requests].map((entry) => entry.id),
   );
-  const entries = store.statusLog
-    .filter((entry) => subjects.has(entry.subjectId))
-    .toSorted((first, second) => second.at.localeCompare(first.at));
+  const entries = statusLogForSubjectsOf(store, subjects);
   if (audience === "staff") {
     // How an ingest failed is withheld with the failure's error (request.read_ingest).
     return oncePerCause(

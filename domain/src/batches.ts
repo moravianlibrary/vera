@@ -5,11 +5,8 @@ import type { RecordStore } from "./store";
 
 export type StoredBatch = Omit<Batch, "size" | "source"> & { source?: Batch["source"] };
 
-// Counted again only when a submission added requests; requests never change batch.
-const countedByRequests = new WeakMap<
-  readonly Request[],
-  { requestCount: number; sizes: Map<string, number> }
->();
+// RecordStore snapshot arrays can key this derived index; see store.ts.
+const countedByRequests = new WeakMap<readonly Request[], Map<string, number>>();
 
 export function servedBatches(store: RecordStore): Batch[] {
   const sizes = batchSizes(store);
@@ -32,13 +29,13 @@ export function shownBatchIdOf(store: RecordStore, batchId: string | null): stri
 function batchSizes(store: RecordStore): Map<string, number> {
   const requests = store.requests;
   let counted = countedByRequests.get(requests);
-  if (counted?.requestCount !== requests.length) {
+  if (!counted) {
     const sizes = new Map<string, number>();
     for (const request of requests) {
       sizes.set(request.batchId, (sizes.get(request.batchId) ?? 0) + 1);
     }
-    counted = { requestCount: requests.length, sizes };
-    countedByRequests.set(requests, counted);
+    counted = sizes;
+    countedByRequests.set(requests, sizes);
   }
-  return counted.sizes;
+  return counted;
 }
