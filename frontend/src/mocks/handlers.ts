@@ -84,6 +84,13 @@ import {
 } from "@vera/contract/proposals";
 import { pushSubscriptionSchema } from "@vera/contract/push";
 import {
+  canDecide,
+  canReadRequests,
+  findRequestDetail,
+  publicCustodyOf,
+  queryRequests,
+} from "@vera/contract/queries/requests";
+import {
   approvalSchema,
   bulkApprovalSchema,
   declineSchema,
@@ -293,12 +300,8 @@ import { pushDevicesOf, registerPushDevice } from "@/mocks/push";
 import {
   approveProposal,
   bulkApproveProposals,
-  canDecide,
-  canReadRequests,
   declineProposal,
-  findRequestDetail,
-  publicCustodyOf,
-  queryRequests,
+  mockRequestPlugins,
   withdrawAsk,
 } from "@/mocks/requests";
 import {
@@ -1556,6 +1559,8 @@ export function createHandlers(profile: MockUserProfile) {
       const params = new URL(request.url).searchParams;
       return HttpResponse.json(
         queryRequests(
+          mockStore(),
+          mockRequestPlugins,
           session,
           parseRequestSearchParams(params),
           parseRequestSliceParams(params),
@@ -1587,7 +1592,12 @@ export function createHandlers(profile: MockUserProfile) {
         return mayNotReadRequests();
       }
 
-      const detail = findRequestDetail(session, String(params.documentId));
+      const detail = findRequestDetail(
+        mockStore(),
+        mockRequestPlugins,
+        session,
+        String(params.documentId),
+      );
       if (detail === null) {
         return problemResponse({ status: 404, message: "Request not found" });
       }

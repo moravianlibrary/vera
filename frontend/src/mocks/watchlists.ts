@@ -15,6 +15,7 @@ import { parseListSearchParams } from "@vera/contract/lists";
 import { matchingMixes, parseMixSearchParams } from "@vera/contract/mix-filters";
 import { parseProjectSearchParams } from "@vera/contract/projects";
 import { propertyParamKeyOf } from "@vera/contract/properties";
+import { canReadRequests, queryRequests } from "@vera/contract/queries/requests";
 import { parseRequestSearchParams } from "@vera/contract/requests";
 import { parseRunSearchParams } from "@vera/contract/tasks";
 import { parseValidationSearchParams } from "@vera/contract/validations";
@@ -32,14 +33,14 @@ import { publicStatuses } from "@vera/domain/status";
 import { matchingIntentions } from "@/features/intentions/intentions-board-view";
 import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { listMixRecords } from "@/mocks/mix-catalog";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
 import { publicPropertyKeys } from "@/mocks/properties";
-import { canReadRequests, queryRequests } from "@/mocks/requests";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { sessionOf } from "@/mocks/session";
 import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canReview, queryValidations } from "@/mocks/validations";
@@ -326,7 +327,10 @@ const counters = {
   // Without `request.decide` the view does not exist for the caller, and nothing matches.
   requests: (session, filter) =>
     canReadRequests(session)
-      ? queryRequests(session, parseRequestSearchParams(filter), { cursor: null, limit: 1 }).total
+      ? queryRequests(mockStore(), mockRequestPlugins, session, parseRequestSearchParams(filter), {
+          cursor: null,
+          limit: 1,
+        }).total
       : 0,
   validations: (session, filter) =>
     canReview(session)
@@ -385,9 +389,13 @@ function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
         : [];
     case "requests":
       return canReadRequests(session)
-        ? queryRequests(session, parseRequestSearchParams(filter), all).items.map(
-            (row) => row.record.document.id,
-          )
+        ? queryRequests(
+            mockStore(),
+            mockRequestPlugins,
+            session,
+            parseRequestSearchParams(filter),
+            all,
+          ).items.map((row) => row.record.document.id)
         : [];
     case "validations":
       return canReview(session)

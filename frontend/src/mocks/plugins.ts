@@ -20,6 +20,7 @@ import type {
   PluginVersion,
   UploadReading,
 } from "@vera/contract/plugins";
+import { openProposalPlacements } from "@vera/contract/queries/requests";
 import type { Run } from "@vera/contract/tasks";
 import type { Session } from "@vera/domain/entities";
 import { hasPermission } from "@vera/domain/permissions";
@@ -34,7 +35,7 @@ import {
   policyMismatchOf,
 } from "@vera/domain/plugins";
 import { schedulableKinds } from "@vera/domain/schedules";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import type { StoredPluginImplementation, StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import {
   configFieldsOf,
@@ -52,7 +53,7 @@ import {
   kindOf,
   liveInstances,
 } from "@/mocks/plugin-instances";
-import { openProposalPlacements } from "@/mocks/requests";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { instanceRunsOf, publicRunOf, startRun } from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 
@@ -498,8 +499,8 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       userCount: Object.values(database.userAccess).filter((access) =>
         access.identities.some((identity) => identity.instanceId === instance.id),
       ).length,
-      openProposalCount: openProposalPlacements().filter((placedIn) =>
-        placedIn.some((custodyId) => custodyIds.has(custodyId)),
+      openProposalCount: openProposalPlacements(mockStore(), mockRequestPlugins).filter(
+        (placedIn) => placedIn.some((custodyId) => custodyIds.has(custodyId)),
       ).length,
       hookCount: stoppedHooks.length,
       hooks: hasPermission(session, "hook.read")

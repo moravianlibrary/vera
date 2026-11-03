@@ -5,19 +5,20 @@
 // found.
 
 import type { MessageChannel, MessageHandOff, MessageSubject } from "@vera/contract/messages";
+import { findReachableRow } from "@vera/contract/queries/requests";
 import { documentIdentifierOf } from "@vera/domain/documents";
 import type { Session, User } from "@vera/domain/entities";
 import { askerIdsOf, asksOf, projectIdsOf } from "@vera/domain/requests";
 import { navigationEntries } from "@/components/layout/navigation";
 import { i18n } from "@/i18n";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import { findDocumentDetail } from "@/mocks/documents";
 import type { MessageImplementation } from "@/mocks/fixtures/message-channels";
 import { slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
 import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
 import { findProjectDetail } from "@/mocks/projects";
-import { findReachableRow } from "@/mocks/requests";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { holdersOfPermission } from "@/mocks/session";
 import { findReachableValidation } from "@/mocks/validations";
 
@@ -82,7 +83,7 @@ function resolveSubject(session: Session, subject: MessageSubject): ResolvedSubj
 }
 
 function resolveProposal(session: Session, documentId: string): ResolvedSubject | null {
-  const row = findReachableRow(session, documentId);
+  const row = findReachableRow(mockStore(), mockRequestPlugins, session, documentId);
   if (row === null) {
     return null;
   }

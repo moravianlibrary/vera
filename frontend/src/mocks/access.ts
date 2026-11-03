@@ -21,6 +21,7 @@ import type {
   RoleImpact,
   UserGroups,
 } from "@vera/contract/access";
+import { openProposalPlacements, openProposalRows } from "@vera/contract/queries/requests";
 import type {
   AccessGroup,
   AccessUser,
@@ -34,13 +35,13 @@ import type { Session } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
 import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@vera/domain/permissions";
 import { propertyNameOf } from "@vera/domain/properties";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
 import { allPropertyDefinitions } from "@/mocks/properties";
-import { openProposalPlacements, openProposalRows } from "@/mocks/requests";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
 import { audienceReachOf } from "@/mocks/watchlists";
@@ -61,7 +62,7 @@ const lastManager: Refusal = {
 
 function openProposalCountsByCustody(): Map<string, number> {
   const counts = new Map<string, number>();
-  for (const custodyId of openProposalPlacements().flat()) {
+  for (const custodyId of openProposalPlacements(mockStore(), mockRequestPlugins).flat()) {
     counts.set(custodyId, (counts.get(custodyId) ?? 0) + 1);
   }
 
@@ -88,7 +89,7 @@ export function accessIndex(): AccessIndex {
       userIds: [...userIds],
     })),
     categories: database.categories,
-    proposals: openProposalRows().map((row) => ({
+    proposals: openProposalRows(mockStore(), mockRequestPlugins).map((row) => ({
       id: row.record.document.id,
       title: row.record.document.title,
       custodyIds: row.custodyIds,
@@ -827,7 +828,9 @@ export function custodyImpact(session: Session, custodyId: string): Outcome<Cust
     return { refusal: unknownRecord("custody") };
   }
 
-  const placements = openProposalPlacements().filter((placed) => placed.includes(custodyId));
+  const placements = openProposalPlacements(mockStore(), mockRequestPlugins).filter((placed) =>
+    placed.includes(custodyId),
+  );
   return {
     value: {
       openCount: placements.length,

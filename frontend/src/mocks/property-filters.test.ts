@@ -3,10 +3,12 @@
 
 import { isSameDocumentQuery } from "@vera/contract/documents";
 import { conditionsOf, propertyParamsOf, withCondition } from "@vera/contract/properties";
+import { queryRequests } from "@vera/contract/queries/requests";
 import { describe, expect, it } from "vitest";
+import { mockStore } from "@/mocks/database";
 import { queryDocuments } from "@/mocks/documents";
 import { allPropertyDefinitions } from "@/mocks/properties";
-import { queryRequests } from "@/mocks/requests";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { resolveSession } from "@/mocks/session";
 import { queryValidations } from "@/mocks/validations";
 
@@ -100,7 +102,9 @@ describe("filtering the other pages on properties", () => {
   it("filters Documents Validations and Requests too", () => {
     const validations = queryValidations(admin, { properties: { "p.size": "A3" } });
     expect(validations.items.map((row) => row.document.id)).toEqual(["D3"]);
-    const requests = queryRequests(admin, { properties: { "p.size.none": "1" } });
+    const requests = queryRequests(mockStore(), mockRequestPlugins, admin, {
+      properties: { "p.size.none": "1" },
+    });
     expect(
       requests.items.every(
         (row) => !row.record.document.properties.some((values) => values.key === "size"),
