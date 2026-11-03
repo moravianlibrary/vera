@@ -1,0 +1,1666 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "reads",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": [
+            {
+              "id": "<U1>",
+              "name": "House mix",
+              "isPrimary": true,
+              "archivedAt": null,
+              "shares": {
+                "c1": 35,
+                "c2": 45,
+                "c3": 15,
+                "c4": 5,
+                "c11": 40,
+                "c12": 60,
+                "c21": 30,
+                "c22": 50,
+                "c23": 20,
+                "c31": 60,
+                "c32": 40
+              },
+              "revision": 4,
+              "revisions": [
+                {
+                  "revision": 4,
+                  "shares": {
+                    "c1": 35,
+                    "c2": 45,
+                    "c3": 15,
+                    "c4": 5,
+                    "c11": 40,
+                    "c12": 60,
+                    "c21": 30,
+                    "c22": 50,
+                    "c23": 20,
+                    "c31": 60,
+                    "c32": 40
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 7,
+              "followers": [
+                {
+                  "id": "i4",
+                  "name": "Overall output",
+                  "isArchived": false
+                },
+                {
+                  "id": "i5",
+                  "name": "Moravica — closing year",
+                  "isArchived": false
+                },
+                {
+                  "id": "i6",
+                  "name": "Monthly output — June 2026",
+                  "isArchived": false
+                },
+                {
+                  "id": "i10",
+                  "name": "Monthly output — May 2026",
+                  "isArchived": true
+                },
+                {
+                  "id": "i7",
+                  "name": "June catch-up run",
+                  "isArchived": false
+                },
+                {
+                  "id": "i11",
+                  "name": "Unfunded work — 2027",
+                  "isArchived": false
+                },
+                {
+                  "id": "i9",
+                  "name": "Maps watch",
+                  "isArchived": true
+                }
+              ]
+            },
+            {
+              "id": "<U2>",
+              "name": "Periodicals push",
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 20,
+                "c2": 70,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 3,
+              "followers": [
+                {
+                  "id": "i1",
+                  "name": "NDK Periodika — 2026 Q3",
+                  "isArchived": false
+                },
+                {
+                  "id": "i3",
+                  "name": "Regional catch-up",
+                  "isArchived": false
+                },
+                {
+                  "id": "i8",
+                  "name": "Periodicals push — watch",
+                  "isArchived": false
+                }
+              ]
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read mixes",
+            "code": "forbidden"
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": [
+            {
+              "id": "<U1>",
+              "name": "House mix",
+              "isPrimary": true,
+              "archivedAt": null,
+              "shares": {
+                "c1": 35,
+                "c2": 45,
+                "c3": 15,
+                "c4": 5,
+                "c11": 40,
+                "c12": 60,
+                "c21": 30,
+                "c22": 50,
+                "c23": 20,
+                "c31": 60,
+                "c32": 40
+              },
+              "revision": 4,
+              "revisions": [
+                {
+                  "revision": 4,
+                  "shares": {
+                    "c1": 35,
+                    "c2": 45,
+                    "c3": 15,
+                    "c4": 5,
+                    "c11": 40,
+                    "c12": 60,
+                    "c21": 30,
+                    "c22": 50,
+                    "c23": 20,
+                    "c31": 60,
+                    "c32": 40
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 7,
+              "followers": [
+                {
+                  "id": "i4",
+                  "name": "Overall output",
+                  "isArchived": false
+                },
+                {
+                  "id": "i5",
+                  "name": "Moravica — closing year",
+                  "isArchived": false
+                },
+                {
+                  "id": "i6",
+                  "name": "Monthly output — June 2026",
+                  "isArchived": false
+                },
+                {
+                  "id": "i10",
+                  "name": "Monthly output — May 2026",
+                  "isArchived": true
+                },
+                {
+                  "id": "i7",
+                  "name": "June catch-up run",
+                  "isArchived": false
+                },
+                {
+                  "id": "i11",
+                  "name": "Unfunded work — 2027",
+                  "isArchived": false
+                },
+                {
+                  "id": "i9",
+                  "name": "Maps watch",
+                  "isArchived": true
+                }
+              ]
+            },
+            {
+              "id": "<U2>",
+              "name": "Periodicals push",
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 20,
+                "c2": 70,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 3,
+              "followers": [
+                {
+                  "id": "i1",
+                  "name": "NDK Periodika — 2026 Q3",
+                  "isArchived": false
+                },
+                {
+                  "id": "i3",
+                  "name": "Regional catch-up",
+                  "isArchived": false
+                },
+                {
+                  "id": "i8",
+                  "name": "Periodicals push — watch",
+                  "isArchived": false
+                }
+              ]
+            }
+          ],
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d1",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read mixes",
+            "code": "forbidden"
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d1",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/unknown",
+          "status": 404,
+          "code": "not_found",
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "create-save-snapshot-primary-archive",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 20,
+              "c2": 70,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 1,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {
+            "name": "Recording mix",
+            "fromMixId": "d2",
+            "fromRevision": 2
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d3",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 20,
+              "c2": 70,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 1,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d3/sets",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0
+            },
+            "revision": 1
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d3",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d3/snapshots",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": "Approved"
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {
+            "revision": 1,
+            "label": "Approved"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d3",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": "Approved"
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d3/primary",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": true,
+            "archivedAt": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": "Approved"
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": [
+            {
+              "id": "<U2>",
+              "name": "House mix",
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 35,
+                "c2": 45,
+                "c3": 15,
+                "c4": 5,
+                "c11": 40,
+                "c12": 60,
+                "c21": 30,
+                "c22": 50,
+                "c23": 20,
+                "c31": 60,
+                "c32": 40
+              },
+              "revision": 4,
+              "revisions": [
+                {
+                  "revision": 4,
+                  "shares": {
+                    "c1": 35,
+                    "c2": 45,
+                    "c3": 15,
+                    "c4": 5,
+                    "c11": 40,
+                    "c12": 60,
+                    "c21": 30,
+                    "c22": 50,
+                    "c23": 20,
+                    "c31": 60,
+                    "c32": 40
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 7,
+              "followers": [
+                {
+                  "id": "i4",
+                  "name": "Overall output",
+                  "isArchived": false
+                },
+                {
+                  "id": "i5",
+                  "name": "Moravica — closing year",
+                  "isArchived": false
+                },
+                {
+                  "id": "i6",
+                  "name": "Monthly output — June 2026",
+                  "isArchived": false
+                },
+                {
+                  "id": "i10",
+                  "name": "Monthly output — May 2026",
+                  "isArchived": true
+                },
+                {
+                  "id": "i7",
+                  "name": "June catch-up run",
+                  "isArchived": false
+                },
+                {
+                  "id": "i11",
+                  "name": "Unfunded work — 2027",
+                  "isArchived": false
+                },
+                {
+                  "id": "i9",
+                  "name": "Maps watch",
+                  "isArchived": true
+                }
+              ]
+            },
+            {
+              "id": "<U3>",
+              "name": "Periodicals push",
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 20,
+                "c2": 70,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 3,
+              "followers": [
+                {
+                  "id": "i1",
+                  "name": "NDK Periodika — 2026 Q3",
+                  "isArchived": false
+                },
+                {
+                  "id": "i3",
+                  "name": "Regional catch-up",
+                  "isArchived": false
+                },
+                {
+                  "id": "i8",
+                  "name": "Periodicals push — watch",
+                  "isArchived": false
+                }
+              ]
+            },
+            {
+              "id": "<U1>",
+              "name": "Recording mix",
+              "isPrimary": true,
+              "archivedAt": null,
+              "shares": {
+                "c1": 25,
+                "c2": 65,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 1,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": "Approved"
+                },
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 25,
+                    "c2": 65,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": false,
+              "usageCount": 0,
+              "followers": []
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d1/primary",
+          "status": 200,
+          "body": {
+            "id": "<U2>",
+            "name": "House mix",
+            "isPrimary": true,
+            "archivedAt": null,
+            "shares": {
+              "c1": 35,
+              "c2": 45,
+              "c3": 15,
+              "c4": 5,
+              "c11": 40,
+              "c12": 60,
+              "c21": 30,
+              "c22": 50,
+              "c23": 20,
+              "c31": 60,
+              "c32": 40
+            },
+            "revision": 4,
+            "revisions": [
+              {
+                "revision": 4,
+                "shares": {
+                  "c1": 35,
+                  "c2": 45,
+                  "c3": 15,
+                  "c4": 5,
+                  "c11": 40,
+                  "c12": 60,
+                  "c21": 30,
+                  "c22": 50,
+                  "c23": 20,
+                  "c31": 60,
+                  "c32": 40
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": true,
+            "usageCount": 7,
+            "followers": [
+              {
+                "id": "i4",
+                "name": "Overall output",
+                "isArchived": false
+              },
+              {
+                "id": "i5",
+                "name": "Moravica — closing year",
+                "isArchived": false
+              },
+              {
+                "id": "i6",
+                "name": "Monthly output — June 2026",
+                "isArchived": false
+              },
+              {
+                "id": "i10",
+                "name": "Monthly output — May 2026",
+                "isArchived": true
+              },
+              {
+                "id": "i7",
+                "name": "June catch-up run",
+                "isArchived": false
+              },
+              {
+                "id": "i11",
+                "name": "Unfunded work — 2027",
+                "isArchived": false
+              },
+              {
+                "id": "i9",
+                "name": "Maps watch",
+                "isArchived": true
+              }
+            ]
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d3/archive",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": "<time>",
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": "Approved"
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes/d3",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Recording mix",
+            "isPrimary": false,
+            "archivedAt": "<time>",
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": "Approved"
+              },
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 25,
+                  "c2": 65,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "delete-unused",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Unused recording mix",
+            "isPrimary": false,
+            "archivedAt": null,
+            "shares": {},
+            "revision": 1,
+            "revisions": [
+              {
+                "revision": 1,
+                "shares": {},
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": false,
+            "usageCount": 0,
+            "followers": []
+          },
+          "requestBody": {
+            "name": "Unused recording mix",
+            "fromMixId": null,
+            "fromRevision": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/mixes/d3",
+          "status": 200,
+          "body": null,
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 200,
+          "body": [
+            {
+              "id": "<U2>",
+              "name": "House mix",
+              "isPrimary": true,
+              "archivedAt": null,
+              "shares": {
+                "c1": 35,
+                "c2": 45,
+                "c3": 15,
+                "c4": 5,
+                "c11": 40,
+                "c12": 60,
+                "c21": 30,
+                "c22": 50,
+                "c23": 20,
+                "c31": 60,
+                "c32": 40
+              },
+              "revision": 4,
+              "revisions": [
+                {
+                  "revision": 4,
+                  "shares": {
+                    "c1": 35,
+                    "c2": 45,
+                    "c3": 15,
+                    "c4": 5,
+                    "c11": 40,
+                    "c12": 60,
+                    "c21": 30,
+                    "c22": 50,
+                    "c23": 20,
+                    "c31": 60,
+                    "c32": 40
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 7,
+              "followers": [
+                {
+                  "id": "i4",
+                  "name": "Overall output",
+                  "isArchived": false
+                },
+                {
+                  "id": "i5",
+                  "name": "Moravica — closing year",
+                  "isArchived": false
+                },
+                {
+                  "id": "i6",
+                  "name": "Monthly output — June 2026",
+                  "isArchived": false
+                },
+                {
+                  "id": "i10",
+                  "name": "Monthly output — May 2026",
+                  "isArchived": true
+                },
+                {
+                  "id": "i7",
+                  "name": "June catch-up run",
+                  "isArchived": false
+                },
+                {
+                  "id": "i11",
+                  "name": "Unfunded work — 2027",
+                  "isArchived": false
+                },
+                {
+                  "id": "i9",
+                  "name": "Maps watch",
+                  "isArchived": true
+                }
+              ]
+            },
+            {
+              "id": "<U3>",
+              "name": "Periodicals push",
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 20,
+                "c2": 70,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 3,
+              "followers": [
+                {
+                  "id": "i1",
+                  "name": "NDK Periodika — 2026 Q3",
+                  "isArchived": false
+                },
+                {
+                  "id": "i3",
+                  "name": "Regional catch-up",
+                  "isArchived": false
+                },
+                {
+                  "id": "i8",
+                  "name": "Periodicals push — watch",
+                  "isArchived": false
+                }
+              ]
+            }
+          ],
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "mix-refusals",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/mixes",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "name": "Denied mix",
+            "fromMixId": null,
+            "fromRevision": null
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes",
+          "status": 409,
+          "code": "mix.name_taken",
+          "requestBody": {
+            "name": "House mix",
+            "fromMixId": null,
+            "fromRevision": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes",
+          "status": 422,
+          "code": "mix.revision_not_found",
+          "requestBody": {
+            "name": "Bad revision mix",
+            "fromMixId": "d1",
+            "fromRevision": 999
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d1/sets",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0
+            },
+            "revision": 4
+          },
+          "as": "u5"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d1/sets",
+          "status": 409,
+          "code": "mix.revision",
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0
+            },
+            "revision": 3
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d1/sets",
+          "status": 422,
+          "code": "mix.child_missing",
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 30
+            },
+            "revision": 4
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d1/sets",
+          "status": 422,
+          "code": "mix.over_hundred",
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 50,
+              "c2": 50,
+              "c3": 10,
+              "c4": 0
+            },
+            "revision": 4
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d1/snapshots",
+          "status": 422,
+          "code": "mix.revision_not_found",
+          "requestBody": {
+            "revision": 999,
+            "label": "Missing"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d1/snapshots",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/mix.revision_not_found",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "No such revision",
+            "code": "mix.revision_not_found"
+          },
+          "requestBody": {
+            "revision": 1,
+            "label": "First label"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d1/snapshots",
+          "status": 422,
+          "code": "mix.revision_not_found",
+          "requestBody": {
+            "revision": 1,
+            "label": "Again"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d1/archive",
+          "status": 409,
+          "code": "mix.is_primary",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/mixes/d1",
+          "status": 409,
+          "code": "mix.is_primary",
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/mixes/d2",
+          "status": 409,
+          "code": "mix.in_use",
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d2/archive",
+          "status": 200,
+          "body": {
+            "id": "<U1>",
+            "name": "Periodicals push",
+            "isPrimary": false,
+            "archivedAt": "<time>",
+            "shares": {
+              "c1": 20,
+              "c2": 70,
+              "c3": 10,
+              "c4": 0,
+              "c11": 50,
+              "c12": 50,
+              "c21": 55,
+              "c22": 35,
+              "c31": 50,
+              "c32": 50
+            },
+            "revision": 2,
+            "revisions": [
+              {
+                "revision": 2,
+                "shares": {
+                  "c1": 20,
+                  "c2": 70,
+                  "c3": 10,
+                  "c4": 0,
+                  "c11": 50,
+                  "c12": 50,
+                  "c21": 55,
+                  "c22": 35,
+                  "c31": 50,
+                  "c32": 50
+                },
+                "at": "<time>",
+                "label": null
+              }
+            ],
+            "everUsed": true,
+            "usageCount": 3,
+            "followers": [
+              {
+                "id": "i1",
+                "name": "NDK Periodika — 2026 Q3",
+                "isArchived": false
+              },
+              {
+                "id": "i3",
+                "name": "Regional catch-up",
+                "isArchived": false
+              },
+              {
+                "id": "i8",
+                "name": "Periodicals push — watch",
+                "isArchived": false
+              }
+            ]
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mixes/d2/sets",
+          "status": 409,
+          "code": "mix.is_archived",
+          "requestBody": {
+            "parentId": null,
+            "shares": {
+              "c1": 25,
+              "c2": 65,
+              "c3": 10,
+              "c4": 0
+            },
+            "revision": 2
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/mixes/d2/primary",
+          "status": 409,
+          "code": "mix.is_archived",
+          "requestBody": {},
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}

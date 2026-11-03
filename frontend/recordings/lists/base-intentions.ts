@@ -1,0 +1,216 @@
+const profiles = [
+  "admin",
+  "curator",
+  "digitization",
+  "staff",
+  "reader",
+  "no-access",
+  "project-user",
+] as const;
+const get = (path: string, as: (typeof profiles)[number], compare: "body" | "code" = "body") => ({
+  as,
+  method: "GET",
+  path,
+  compare,
+});
+const act = (
+  method: string,
+  path: string,
+  as: string,
+  compare: "body" | "code" = "body",
+  requestBody?: unknown,
+) => ({ as, method, path, compare, ...(requestBody === undefined ? {} : { requestBody }) });
+const draft = (name: string) => ({
+  name,
+  description: "",
+  funding: { kind: "any" },
+  scopeCategoryId: null,
+  countsFrom: "2026-07-01",
+  endsOn: "2026-12-31",
+  targetPages: 1000,
+  mix: { kind: "use", mixId: "d1", revision: null },
+});
+const template = {
+  namePattern: "Weekly maps — {period}",
+  every: "month",
+  funding: { kind: "any" },
+  scopeCategoryId: null,
+  mix: { kind: "use", mixId: "d1", revision: null },
+  targetPages: null,
+  isArchivingPrevious: true,
+};
+export default {
+  seed: "base",
+  moment: "2026-06-25T08:40:00.000Z",
+  mask: "decisions",
+  scenarios: [
+    {
+      name: "reads",
+      calls: [
+        ...profiles.map((profile) =>
+          get(
+            "/api/intentions/overview",
+            profile,
+            ["reader", "staff", "no-access"].includes(profile) ? "code" : "body",
+          ),
+        ),
+        get("/api/intentions/i8/mix", "digitization"),
+        get("/api/intentions/i8/mix", "reader", "code"),
+        get("/api/intentions/unknown/mix", "admin", "code"),
+        get("/api/intentions/i8/correction?pages=3000", "digitization"),
+        get("/api/intentions/i8/deletion", "digitization"),
+      ],
+    },
+    {
+      name: "preview-create-save",
+      calls: [
+        act("POST", "/api/intentions/preview", "digitization", "body", {
+          funding: { kind: "any" },
+          scopeCategoryId: null,
+          countsFrom: "2026-07-01",
+          endsOn: "2026-12-31",
+          intentionId: null,
+          mix: { kind: "use", mixId: "d1", revision: null },
+        }),
+        act("POST", "/api/intentions", "digitization", "body", draft("Recording intention")),
+        get("/api/intentions/overview", "digitization"),
+        act("PUT", "/api/intentions/i8", "digitization", "body", {
+          name: "Periodicals push — watch",
+          description: "Updated for recording.",
+          funding: { kind: "any" },
+          scopeCategoryId: "c2",
+          countsFrom: "2026-01-01",
+          endsOn: null,
+          targetPages: 4000,
+          mix: { kind: "use", mixId: "d1", revision: null },
+        }),
+        get("/api/intentions/overview", "digitization"),
+      ],
+    },
+    {
+      name: "archive-unarchive-delete",
+      calls: [
+        act("POST", "/api/intentions/i8/archive", "digitization", "body", {}),
+        act("PUT", "/api/intentions/i8", "digitization", "code", {
+          name: "Periodicals push — watch",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: "c2",
+          countsFrom: "2026-01-01",
+          endsOn: null,
+          targetPages: null,
+          mix: { kind: "use", mixId: "d2", revision: null },
+        }),
+        get("/api/intentions/overview", "digitization"),
+        act("POST", "/api/intentions/i8/unarchive", "digitization", "body", {}),
+        get("/api/intentions/overview", "digitization"),
+        act("GET", "/api/intentions/i3/deletion", "digitization"),
+        act("DELETE", "/api/intentions/i8", "digitization"),
+        get("/api/intentions/overview", "digitization"),
+      ],
+    },
+    {
+      name: "repeat-create-save",
+      calls: [
+        act("POST", "/api/intention-templates", "admin", "body", template),
+        get("/api/intentions/overview", "admin"),
+        act("PUT", "/api/intention-templates/t1", "admin", "body", template),
+        get("/api/intentions/overview", "admin"),
+      ],
+    },
+    {
+      name: "intention-refusals",
+      calls: [
+        act("POST", "/api/mixes/d2/archive", "admin", "body", {}),
+        act("POST", "/api/intentions", "staff", "code", draft("Denied intention")),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Invalid intention"),
+          endsOn: "2026-01-01",
+        }),
+        act("POST", "/api/intentions", "digitization", "code", draft("overall OUTPUT")),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Unknown category"),
+          scopeCategoryId: "c999",
+        }),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Unknown property"),
+          scopeConditions: [{ key: "notaproperty", contains: "x" }],
+        }),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Archived mix"),
+          mix: { kind: "use", mixId: "d2", revision: null },
+        }),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Stale revision"),
+          mix: { kind: "use", mixId: "d1", revision: 999 },
+        }),
+        act("POST", "/api/intentions", "digitization", "code", {
+          ...draft("Unknown project"),
+          funding: { kind: "project", projectId: "p999" },
+        }),
+        act("PUT", "/api/intentions/i4", "digitization", "code", {
+          ...draft("Overall output"),
+          targetPages: 500,
+        }),
+        act("PUT", "/api/intentions/i10", "digitization", "code", {
+          name: "Monthly output — May 2026",
+          description: "What the scanning room should deliver this month.",
+          funding: { kind: "any" },
+          scopeCategoryId: null,
+          countsFrom: "2026-05-01",
+          endsOn: "2026-05-31",
+          targetPages: 3000,
+          mix: { kind: "use", mixId: "d1", revision: null },
+        }),
+        act("PUT", "/api/intentions/i8", "digitization", "code", {
+          name: "Periodicals push — watch",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: "c2",
+          countsFrom: "2026-02-01",
+          endsOn: null,
+          targetPages: 4000,
+          mix: { kind: "use", mixId: "d2", revision: null },
+        }),
+        act("PUT", "/api/intentions/i8", "digitization", "code", {
+          name: "Periodicals push — watch",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: "c2",
+          countsFrom: "2026-01-01",
+          endsOn: null,
+          targetPages: 4000,
+          mix: { kind: "use", mixId: "d2", revision: 999 },
+        }),
+        act("POST", "/api/intentions/i4/archive", "digitization", "code", {}),
+        act("POST", "/api/intentions/i2/archive", "digitization", "code", {}),
+        act("POST", "/api/intentions/i2/unarchive", "digitization", "code", {}),
+        act("DELETE", "/api/intentions/i4", "digitization", "code"),
+        act("GET", "/api/intentions/i8/correction", "digitization", "code"),
+        act("GET", "/api/intentions/i8/correction?pages=3000", "curator", "code"),
+        act("POST", "/api/intention-templates", "digitization", "code", template),
+        act("POST", "/api/intention-templates", "admin", "code", {
+          ...template,
+          namePattern: "Maps",
+        }),
+        act("POST", "/api/intention-templates", "admin", "code", {
+          ...template,
+          mix: { kind: "use", mixId: "d9", revision: null },
+        }),
+        act("POST", "/api/intention-templates", "admin", "code", {
+          ...template,
+          mix: { kind: "use", mixId: "d1", revision: 999 },
+        }),
+        act("POST", "/api/intention-templates", "admin", "code", {
+          ...template,
+          scopeCategoryId: "c999",
+        }),
+        act("POST", "/api/intention-templates", "admin", "code", {
+          ...template,
+          scopeConditions: [{ key: "notaproperty", contains: "x" }],
+        }),
+        act("PUT", "/api/intention-templates/t1", "staff", "code", template),
+      ],
+    },
+  ],
+} as const;
