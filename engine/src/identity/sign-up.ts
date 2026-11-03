@@ -3,6 +3,7 @@ import { endpoints } from "@vera/contract/endpoints";
 import { safeReturnTo } from "@vera/contract/return-to";
 import { hashOf, openSession, sessionCookie } from "../access/sessions";
 import type { Engine } from "../engine";
+import { newCorrelationId, recordEvent } from "../events";
 import type { Endpoint } from "../http/endpoint";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
@@ -204,11 +205,25 @@ const confirmEmail = implement(endpoints.confirmEmail, ({ engine, body }) => {
       instance,
       { externalId: row.username, name: row.name, email: row.email },
       engine.clock.now().toISOString(),
+      false,
     );
     engine.db
       .query(`INSERT INTO local_passwords (instance_id, username, hash) VALUES (?, ?, ?)
         ON CONFLICT (instance_id, username) DO UPDATE SET hash = excluded.hash`)
       .run(row.instance_id, row.username, row.password_hash);
+    recordEvent(engine, {
+      code: "user.created",
+      subjectKind: "user",
+      subjectId: id,
+      actor: { kind: "user", userId: id },
+      correlationId: newCorrelationId(),
+      data: {
+        changes: [
+          { field: "how", from: null, to: "sign_up" },
+          { field: "instanceId", from: null, to: row.instance_id },
+        ],
+      },
+    });
     return id;
   })();
   const session = openSession(engine, userId, row.instance_id);

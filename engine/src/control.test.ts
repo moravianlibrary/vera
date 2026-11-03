@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from "bun:test";
 import { call, testEngine } from "../test/engine";
 import { openSession } from "./access/sessions";
 import type { Engine } from "./engine";
+import { recordEvent } from "./events";
 
 let engine: Engine;
 
@@ -77,6 +78,22 @@ describe("/_engine", () => {
       ran: 1,
       failed: 0,
     });
+  });
+
+  it("lists audit rows and refuses an explicit send without an endpoint", async () => {
+    const endpoint = process.env.VERA_ENGINE_OTEL_ENDPOINT;
+    delete process.env.VERA_ENGINE_OTEL_ENDPOINT;
+    recordEvent(engine, {
+      code: "user.created",
+      subjectKind: "user",
+      subjectId: "u1",
+      actor: { kind: "system" },
+      correlationId: "c1",
+      data: { changes: [] },
+    });
+    expect(await (await call(engine, "GET", "/_engine/audit")).json()).toHaveLength(1);
+    expect((await call(engine, "POST", "/_engine/audit/send")).status).toBe(409);
+    if (endpoint !== undefined) process.env.VERA_ENGINE_OTEL_ENDPOINT = endpoint;
   });
 
   it("is not served outside development", async () => {

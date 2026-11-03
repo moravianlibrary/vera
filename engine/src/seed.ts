@@ -14,6 +14,7 @@ import {
   roleSchema,
 } from "@vera/domain/access";
 import { categorySchema, userSchema } from "@vera/domain/entities";
+import { eventEntrySchema } from "@vera/domain/events";
 import { z } from "zod";
 
 export const seedsDir = join(import.meta.dir, "..", "seeds");
@@ -53,6 +54,7 @@ export const seedSchema = z.object({
         }),
       )
       .optional(),
+    statusLog: z.array(eventEntrySchema).optional(),
     pluginImplementations: z
       .array(
         z.looseObject({ id, name: z.string(), kind: z.string(), versions: z.array(z.unknown()) }),
@@ -109,6 +111,22 @@ export function readSeed(name: string, dir: string = seedsDir, chain: string[] =
 // Writes the collections step 1's tables hold. The caller runs it in a transaction.
 export function loadSeed(db: Database, seed: Seed): void {
   const { users, roles, userAccess, categories, groups, categoryMembers } = seed.collections;
+  for (const entry of seed.collections.statusLog ?? []) {
+    const parsed = eventEntrySchema.parse(entry);
+    db.query(`INSERT INTO events (id,code,subject_kind,subject_id,at,actor,correlation_id,data,reason_public,reason_internal)
+      VALUES (?,?,?,?,?,?,?,?,?,?)`).run(
+      parsed.id,
+      parsed.code,
+      parsed.subjectKind,
+      parsed.subjectId,
+      parsed.at,
+      JSON.stringify(parsed.actor),
+      parsed.correlationId,
+      JSON.stringify(parsed.data),
+      parsed.reason.public,
+      parsed.reason.internal,
+    );
+  }
   const insertUser = db.query(
     "INSERT INTO users (id, name, kind, email, entry, suspended_at) VALUES (?, ?, ?, ?, ?, ?)",
   );

@@ -2,6 +2,7 @@
 import { endpoints } from "@vera/contract/endpoints";
 import { managersOf } from "@vera/domain/access";
 import type { Engine } from "../engine";
+import { actorOf, configurationOf, newCorrelationId, recordEvent } from "../events";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { accessUser, groupsOf, identityInstancesOf, requireManage } from "./index";
@@ -36,11 +37,23 @@ export const userEndpoints = [
     if (body.roleId !== null && !rolesOf(engine.db).some((role) => role.id === body.roleId))
       return problem(422, "Choose an existing role", { code: "role.not_found" });
     const settings = JSON.parse(row.settings ?? "null");
-    engine.db.transaction(() =>
+    const oldSettings = settings;
+    engine.db.transaction(() => {
       engine.db
         .query("UPDATE plugin_instances SET settings=? WHERE id=?")
-        .run(JSON.stringify({ ...settings, defaultRoleId: body.roleId }), params.id),
-    )();
+        .run(JSON.stringify({ ...settings, defaultRoleId: body.roleId }), params.id);
+      if (settings.defaultRoleId !== body.roleId)
+        recordEvent(engine, {
+          code: "plugin_instance.default_role_changed",
+          subjectKind: "plugin_instance",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf([
+            { field: "defaultRoleId", from: oldSettings.defaultRoleId ?? null, to: body.roleId },
+          ]),
+        });
+    })();
     const identityInstance = identityInstancesOf(engine).find(
       (instance) => instance.id === params.id,
     );
@@ -82,6 +95,18 @@ export const userEndpoints = [
           "INSERT INTO user_identities (user_id,instance_id,external_id,last_login_at) VALUES (?,?,?,NULL)",
         )
         .run(id, local.id, body.username);
+      recordEvent(engine, {
+        code: "user.created",
+        subjectKind: "user",
+        subjectId: id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([
+          { field: "how", from: null, to: "local_account" },
+          { field: "roleIds", from: [], to: [...new Set(body.roleIds)] },
+          { field: "instanceId", from: null, to: local.id },
+        ]),
+      });
     })();
     return { body: accessUser(engine, id) };
   }),
@@ -92,6 +117,8 @@ export const userEndpoints = [
     const roles = rolesOf(engine.db);
     if (body.roleIds.some((id) => !roles.some((role) => role.id === id))) return unknown("role");
     const changed = [...new Set(body.roleIds)];
+    const before = accessUser(engine, params.id);
+    if (!before) return unknown("user");
     const candidate = manageUsers(engine).map((u) =>
       u.id === params.id ? { ...u, handRoleIds: changed } : u,
     );
@@ -103,6 +130,15 @@ export const userEndpoints = [
         engine.db
           .query("INSERT INTO user_hand_roles (user_id,role_id) VALUES (?,?)")
           .run(params.id, roleId);
+      if (JSON.stringify([...before.handRoleIds].sort()) !== JSON.stringify([...changed].sort()))
+        recordEvent(engine, {
+          code: "user.roles_changed",
+          subjectKind: "user",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf([{ field: "handRoleIds", from: before.handRoleIds, to: changed }]),
+        });
     })();
     return { body: accessUser(engine, params.id) };
   }),
@@ -113,12 +149,23 @@ export const userEndpoints = [
     const groups = groupsOf(engine);
     if (body.groupIds.some((id) => !groups.some((g) => g.id === id))) return unknown("group");
     const wanted = [...new Set(body.groupIds)];
+    const before = accessUser(engine, params.id);
+    if (!before) return unknown("user");
     engine.db.transaction(() => {
       engine.db.query("DELETE FROM group_members WHERE user_id=?").run(params.id);
       for (const groupId of wanted)
         engine.db
           .query("INSERT INTO group_members (group_id,user_id) VALUES (?,?)")
           .run(groupId, params.id);
+      if (JSON.stringify([...before.groupIds].sort()) !== JSON.stringify([...wanted].sort()))
+        recordEvent(engine, {
+          code: "user.groups_changed",
+          subjectKind: "user",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf([{ field: "groupIds", from: before.groupIds, to: wanted }]),
+        });
     })();
     return { body: accessUser(engine, params.id) };
   }),
@@ -146,13 +193,21 @@ export const userEndpoints = [
         `${instance.name} ${body.externalId} is already ${accessUser(engine, holder.user_id)?.name ?? holder.user_id}`,
         { code: "access.identity_taken" },
       );
-    engine.db.transaction(() =>
+    engine.db.transaction(() => {
       engine.db
         .query(
           "INSERT INTO user_identities (user_id,instance_id,external_id,last_login_at) VALUES (?,?,?,NULL)",
         )
-        .run(params.id, body.instanceId, body.externalId),
-    )();
+        .run(params.id, body.instanceId, body.externalId);
+      recordEvent(engine, {
+        code: "user.identity_linked",
+        subjectKind: "user",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "instanceId", from: null, to: body.instanceId }]),
+      });
+    })();
     return {
       body: { instanceId: body.instanceId, externalId: body.externalId, lastLoginAt: null },
     };
@@ -160,7 +215,8 @@ export const userEndpoints = [
   implement(endpoints.identityUnlink, ({ engine, caller, params }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
-    if (!accessUser(engine, params.id)) return unknown("user");
+    const user = accessUser(engine, params.id);
+    if (!user) return unknown("user");
     const found = engine.db
       .query<{ user_id: string }, [string, string, string]>(
         "SELECT user_id FROM user_identities WHERE user_id=? AND instance_id=? AND external_id=?",
@@ -177,11 +233,19 @@ export const userEndpoints = [
       return problem(409, "It is their only way in; suspend them instead", {
         code: "access.last_identity",
       });
-    engine.db.transaction(() =>
+    engine.db.transaction(() => {
       engine.db
         .query("DELETE FROM user_identities WHERE user_id=? AND instance_id=? AND external_id=?")
-        .run(params.id, params.instanceId, params.externalId),
-    )();
+        .run(params.id, params.instanceId, params.externalId);
+      recordEvent(engine, {
+        code: "user.identity_unlinked",
+        subjectKind: "user",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "instanceId", from: params.instanceId, to: null }]),
+      });
+    })();
     return { status: 204, body: undefined };
   }),
   implement(endpoints.userSuspend, ({ engine, caller, params }) => {
@@ -202,6 +266,14 @@ export const userEndpoints = [
     engine.db.transaction(() => {
       engine.db.query("UPDATE users SET suspended_at=? WHERE id=?").run(now, params.id);
       engine.db.query("DELETE FROM sessions WHERE user_id=?").run(params.id);
+      recordEvent(engine, {
+        code: "user.suspended",
+        subjectKind: "user",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "suspendedAt", from: null, to: now }]),
+      });
     })();
     return { body: accessUser(engine, params.id) };
   }),
@@ -212,9 +284,17 @@ export const userEndpoints = [
     if (!user) return unknown("user");
     if (user.suspendedAt === null)
       return problem(409, `${user.name} is not suspended`, { code: "access.not_suspended" });
-    engine.db.transaction(() =>
-      engine.db.query("UPDATE users SET suspended_at=NULL WHERE id=?").run(params.id),
-    )();
+    engine.db.transaction(() => {
+      engine.db.query("UPDATE users SET suspended_at=NULL WHERE id=?").run(params.id);
+      recordEvent(engine, {
+        code: "user.restored",
+        subjectKind: "user",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "suspendedAt", from: user.suspendedAt, to: null }]),
+      });
+    })();
     return { body: accessUser(engine, params.id) };
   }),
 ];

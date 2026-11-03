@@ -11,6 +11,7 @@ import { fieldErrorsOf, problem } from "./http/problem";
 import { identityInstance } from "./identity/instances";
 import { outboxChannels } from "./outbox";
 import { SeedNotFound } from "./seed";
+import { sendAudit } from "./telemetry/audit";
 
 export const controlPrefix = "/_engine";
 
@@ -159,6 +160,24 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
       }
 
       return Response.json(engine.outbox.list(query.data.channel));
+    }
+
+    if (is("GET", "/audit")) {
+      const records = engine.db
+        .query<{ id: number; at: string; record: string }, []>(
+          "SELECT id,at,record FROM audit_outbox ORDER BY id",
+        )
+        .all();
+      return Response.json(
+        records.map((row) => ({ id: row.id, at: row.at, record: JSON.parse(row.record) })),
+      );
+    }
+    if (is("POST", "/audit/send")) {
+      const endpoint = process.env.VERA_ENGINE_OTEL_ENDPOINT;
+      if (!endpoint) return problem(409, "There is no audit collector endpoint configured.");
+      return Response.json(
+        await sendAudit(engine, { endpoint, key: process.env.VERA_ENGINE_OTEL_KEY }),
+      );
     }
 
     if (is("POST", "/jobs/run")) {

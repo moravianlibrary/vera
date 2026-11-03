@@ -1,6 +1,7 @@
 // Request custodies are stored here; step 3 owns proposal placement and impacts.
 import { endpoints } from "@vera/contract/endpoints";
 import { hasPermission } from "@vera/domain/permissions";
+import { actorOf, configurationOf, newCorrelationId, recordEvent } from "../events";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { custodiesOf, groupsOf, requireCaller, requireManage } from "./index";
@@ -36,11 +37,22 @@ export const custodyEndpoints = [
       openCount: 0,
       placedByIds: [],
     };
-    engine.db.transaction(() =>
+    engine.db.transaction(() => {
       engine.db
         .query("INSERT INTO request_custodies (id,name,description,is_fallback) VALUES (?,?,?,0)")
-        .run(id, body.name, body.description),
-    )();
+        .run(id, body.name, body.description);
+      recordEvent(engine, {
+        code: "custody.created",
+        subjectKind: "custody",
+        subjectId: id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([
+          { field: "name", from: null, to: body.name },
+          { field: "description", from: null, to: body.description },
+        ]),
+      });
+    })();
     return { body: value };
   }),
   implement(endpoints.custodySave, ({ engine, caller, params, body }) => {
@@ -53,11 +65,31 @@ export const custodyEndpoints = [
       return problem(422, "The fallback keeps its name", { code: "access.fallback" });
     if (records.some((c) => c.id !== params.id && c.name === body.name))
       return nameTaken(body.name);
-    engine.db.transaction(() =>
+    engine.db.transaction(() => {
       engine.db
         .query("UPDATE request_custodies SET name=?,description=? WHERE id=?")
-        .run(body.name, body.description, params.id),
-    )();
+        .run(body.name, body.description, params.id);
+      const changes = ["name", "description"].flatMap((field) =>
+        old[field as "name" | "description"] === body[field as "name" | "description"]
+          ? []
+          : [
+              {
+                field,
+                from: old[field as "name" | "description"],
+                to: body[field as "name" | "description"],
+              },
+            ],
+      );
+      if (changes.length)
+        recordEvent(engine, {
+          code: "custody.changed",
+          subjectKind: "custody",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf(changes),
+        });
+    })();
     return { body: { ...old, ...body } };
   }),
   implement(endpoints.custodyMembers, ({ engine, caller, params, body }) => {
@@ -78,6 +110,8 @@ export const custodyEndpoints = [
       return problem(404, "No such group");
     const users = [...new Set(body.userIds)],
       groupIds = [...new Set(body.groupIds)];
+    const beforeUsers = old.memberIds,
+      beforeGroups = old.groupIds;
     engine.db.transaction(() => {
       engine.db.query("DELETE FROM request_custody_members WHERE custody_id=?").run(params.id);
       engine.db.query("DELETE FROM request_custody_groups WHERE custody_id=?").run(params.id);
@@ -89,6 +123,21 @@ export const custodyEndpoints = [
         engine.db
           .query("INSERT INTO request_custody_groups (custody_id,group_id) VALUES (?,?)")
           .run(params.id, id);
+      if (
+        JSON.stringify([...beforeUsers].sort()) !== JSON.stringify([...users].sort()) ||
+        JSON.stringify([...beforeGroups].sort()) !== JSON.stringify([...groupIds].sort())
+      )
+        recordEvent(engine, {
+          code: "custody.members_changed",
+          subjectKind: "custody",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf([
+            { field: "memberIds", from: beforeUsers, to: users },
+            { field: "groupIds", from: beforeGroups, to: groupIds },
+          ]),
+        });
     })();
     return { body: { ...old, memberIds: users, groupIds } };
   }),
@@ -103,6 +152,14 @@ export const custodyEndpoints = [
       engine.db.query("DELETE FROM request_custody_members WHERE custody_id=?").run(params.id);
       engine.db.query("DELETE FROM request_custody_groups WHERE custody_id=?").run(params.id);
       engine.db.query("DELETE FROM request_custodies WHERE id=?").run(params.id);
+      recordEvent(engine, {
+        code: "custody.deleted",
+        subjectKind: "custody",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "name", from: old.name, to: null }]),
+      });
     })();
     return { status: 204, body: undefined };
   }),

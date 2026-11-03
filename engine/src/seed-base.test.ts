@@ -27,6 +27,16 @@ describe("the base seed", () => {
     expect(engine.clock.now().toISOString()).toBe("2026-06-25T08:40:00.000Z");
   });
 
+  it("loads the seed history as events and leaves the audit outbox empty", () => {
+    const seed = readSeed("base");
+    expect(engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM events").get()?.n).toBe(
+      seed.collections.statusLog?.length ?? 0,
+    );
+    expect(
+      engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM audit_outbox").get()?.n,
+    ).toBe(0);
+  });
+
   it("binds defects and verdict keys to Validation instances and iteration history", () => {
     const seed = readSeed("base");
     const validationIds = new Set(

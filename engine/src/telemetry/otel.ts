@@ -1,7 +1,5 @@
 // Optional OpenTelemetry setup, imported only when an endpoint is configured.
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { context, logs, propagation, trace } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { W3CTraceContextPropagator } from "@opentelemetry/core";
@@ -20,6 +18,7 @@ import {
   SimpleSpanProcessor,
   TracerProvider,
 } from "@opentelemetry/sdk-trace";
+import { resourceAttributes } from "./telemetry";
 
 export interface TestingExporters {
   spans: InMemorySpanExporter;
@@ -33,12 +32,7 @@ export function setUp(
   supplied?: { spans: InMemorySpanExporter; logs: InMemoryLogRecordExporter },
 ) {
   const headers = key === undefined ? undefined : { authorization: key };
-  const resource = resourceFromAttributes({
-    "service.name": "vera-engine",
-    "service.version": JSON.parse(readFileSync(join(import.meta.dir, "../../package.json"), "utf8"))
-      .version,
-    "deployment.environment": "development",
-  });
+  const resource = resourceFromAttributes(resourceAttributes);
   const spans = testing ? (supplied?.spans ?? new InMemorySpanExporter()) : undefined;
   const logRecords = testing ? (supplied?.logs ?? new InMemoryLogRecordExporter()) : undefined;
   const spanProcessor = testing

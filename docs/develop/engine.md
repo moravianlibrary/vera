@@ -87,6 +87,8 @@ Development and tests only, under `/_engine`:
 | `POST /_engine/reset` | drop the database and load a named seed |
 | `POST /_engine/clock` | set or advance the clock; due jobs run |
 | `GET /_engine/outbox` | the mail, chat and webhook messages the fakes "sent" |
+| `GET /_engine/audit` | audit records waiting for the collector, oldest first |
+| `POST /_engine/audit/send` | send pending audit records once to the configured collector |
 | `POST /_engine/jobs/run` | run due jobs now |
 | `POST /_engine/sessions` | open a session for a user, `{ userId }`, with its cookie |
 | `GET /_engine/identity/:instanceId` | the fake provider's page for a login under way |

@@ -137,6 +137,16 @@ describe("access acts", () => {
         .query("SELECT 1 FROM user_mapped_roles WHERE user_id=? AND role_id='curator'")
         .get(person.user_id),
     ).not.toBeNull();
+    const createdEvent = engine.db
+      .query<{ record: string }, [string]>(
+        "SELECT record FROM audit_outbox WHERE json_extract(record,'$.subject.id')=? AND json_extract(record,'$.code')='user.created'",
+      )
+      .get(person.user_id);
+    expect(JSON.parse(createdEvent?.record ?? "{}").changes).toContainEqual({
+      field: "how",
+      from: null,
+      to: "first_login",
+    });
     engine.close();
   });
   it("ACT-role-save: creates and names a new role", async () => {
@@ -279,6 +289,25 @@ describe("access acts", () => {
     engine.close();
   });
 
+  it("ACT-user-roles: records nothing when saving the same roles", async () => {
+    const engine = testEngine("base");
+    await call(engine, "PUT", api(accessRecordActionRoute("users", "u4", "roles")), {
+      as: "u3",
+      body: { roleIds: ["reader"] },
+    });
+    const before = engine.db
+      .query<{ n: number }, []>("SELECT count(*) AS n FROM audit_outbox")
+      .get()?.n;
+    await call(engine, "PUT", api(accessRecordActionRoute("users", "u4", "roles")), {
+      as: "u3",
+      body: { roleIds: ["reader"] },
+    });
+    expect(
+      engine.db.query<{ n: number }, []>("SELECT count(*) AS n FROM audit_outbox").get()?.n,
+    ).toBe(before);
+    engine.close();
+  });
+
   it("ACT-user-groups: replaces a person's group memberships", async () => {
     const engine = testEngine("base");
     expect(
@@ -302,6 +331,15 @@ describe("access acts", () => {
         })
       ).status,
     ).toBe(200);
+    const row = engine.db
+      .query<{ record: string }, []>("SELECT record FROM audit_outbox ORDER BY id DESC LIMIT 1")
+      .get();
+    const audit = JSON.parse(row?.record ?? "{}");
+    expect(audit).toMatchObject({
+      code: "user.identity_linked",
+      changes: [{ field: "instanceId", to: "pi41" }],
+    });
+    expect(JSON.stringify(audit)).not.toContain("one-off");
     engine.close();
   });
 
@@ -395,6 +433,13 @@ describe("access acts", () => {
       }),
     );
     expect(signedOut.status).toBe(401);
+    const audit = engine.db
+      .query<{ record: string }, []>("SELECT record FROM audit_outbox ORDER BY id DESC LIMIT 1")
+      .get();
+    expect(JSON.parse(audit?.record ?? "{}")).toMatchObject({
+      code: "user.suspended",
+      actor: { kind: "user", userId: "u3", name: "Petr Dvořák" },
+    });
     engine.close();
   });
 

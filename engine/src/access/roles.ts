@@ -4,6 +4,7 @@ import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@v
 import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@vera/domain/permissions";
 import { rolesOf } from "../access/session";
 import type { Engine } from "../engine";
+import { actorOf, configurationOf, newCorrelationId, recordEvent } from "../events";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { accessUser, requireCaller, requireManage } from "./index";
@@ -83,7 +84,7 @@ export const roleEndpoints = [
       proposalBatchLimit: body.proposalBatchLimit,
       proposalDailyLimit: body.proposalDailyLimit,
     };
-    engine.db.transaction(() =>
+    engine.db.transaction(() => {
       engine.db
         .query(
           "INSERT INTO roles (id,name,description,is_shipped,grants,proposal_batch_limit,proposal_daily_limit) VALUES (?,?,?,?,?,?,?)",
@@ -96,8 +97,22 @@ export const roleEndpoints = [
           JSON.stringify(value.grants),
           value.proposalBatchLimit,
           value.proposalDailyLimit,
-        ),
-    )();
+        );
+      recordEvent(engine, {
+        code: "role.created",
+        subjectKind: "role",
+        subjectId: id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([
+          { field: "name", from: null, to: name },
+          { field: "description", from: null, to: body.description },
+          { field: "grants", from: [], to: body.grants },
+          { field: "proposalBatchLimit", from: null, to: body.proposalBatchLimit },
+          { field: "proposalDailyLimit", from: null, to: body.proposalDailyLimit },
+        ]),
+      });
+    })();
     return { body: value };
   }),
   implement(endpoints.roleSave, ({ engine, caller, params, body }) => {
@@ -121,7 +136,20 @@ export const roleEndpoints = [
     const next = rolesOf(engine.db).map((r) => (r.id === params.id ? updated : r));
     if (!managerExists(engine, next))
       return problem(409, "Nobody could manage access after this", { code: "access.last_manager" });
-    engine.db.transaction(() =>
+    const changes = [
+      "name",
+      "description",
+      "grants",
+      "proposalBatchLimit",
+      "proposalDailyLimit",
+    ].flatMap((field) => {
+      const before = old[field as keyof typeof old],
+        after = updated[field as keyof typeof updated];
+      return JSON.stringify(before) === JSON.stringify(after)
+        ? []
+        : [{ field, from: before, to: after }];
+    });
+    engine.db.transaction(() => {
       engine.db
         .query(
           "UPDATE roles SET name=?,description=?,grants=?,proposal_batch_limit=?,proposal_daily_limit=? WHERE id=?",
@@ -133,8 +161,19 @@ export const roleEndpoints = [
           updated.proposalBatchLimit,
           updated.proposalDailyLimit,
           params.id,
-        ),
-    )();
+        );
+      if (changes.length)
+        recordEvent(engine, {
+          code: changes.every(({ field }) => field === "name" || field === "description")
+            ? "role.renamed"
+            : "role.permissions_changed",
+          subjectKind: "role",
+          subjectId: params.id,
+          actor: actorOf(caller),
+          correlationId: newCorrelationId(),
+          data: configurationOf(changes),
+        });
+    })();
     return { body: updated };
   }),
   implement(endpoints.roleDelete, ({ engine, caller, params }) => {
@@ -159,6 +198,14 @@ export const roleEndpoints = [
       engine.db.query("DELETE FROM user_hand_roles WHERE role_id=?").run(params.id);
       engine.db.query("DELETE FROM user_mapped_roles WHERE role_id=?").run(params.id);
       engine.db.query("DELETE FROM roles WHERE id=?").run(params.id);
+      recordEvent(engine, {
+        code: "role.deleted",
+        subjectKind: "role",
+        subjectId: params.id,
+        actor: actorOf(caller),
+        correlationId: newCorrelationId(),
+        data: configurationOf([{ field: "name", from: old.name, to: null }]),
+      });
     })();
     return { status: 204, body: undefined };
   }),

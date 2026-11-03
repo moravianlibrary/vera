@@ -1,5 +1,6 @@
 import { nextUserId } from "../access/users";
 import type { Engine } from "../engine";
+import { newCorrelationId, recordEvent } from "../events";
 import type { IdentityInstance, ProvidedIdentity } from "./plugin";
 
 export function createLinkedPerson(
@@ -7,6 +8,7 @@ export function createLinkedPerson(
   instance: IdentityInstance,
   identity: { externalId: string; name: string; email: string | null },
   now: string,
+  recordFirstLogin = true,
 ): string {
   const userId = nextUserId(engine);
   engine.db
@@ -25,6 +27,20 @@ export function createLinkedPerson(
         "INSERT INTO user_mapped_roles (user_id, role_id, instance_id, claim) VALUES (?, ?, ?, 'default role')",
       )
       .run(userId, instance.settings.defaultRoleId, instance.id);
+  if (recordFirstLogin)
+    recordEvent(engine, {
+      code: "user.created",
+      subjectKind: "user",
+      subjectId: userId,
+      actor: { kind: "system" },
+      correlationId: newCorrelationId(),
+      data: {
+        changes: [
+          { field: "how", from: null, to: "first_login" },
+          { field: "instanceId", from: null, to: instance.id },
+        ],
+      },
+    });
   return userId;
 }
 
@@ -74,6 +90,11 @@ export function logIn(
       linked = { user_id: createLinkedPerson(engine, instance, identity, now) };
     }
     const userId = linked.user_id;
+    const beforeMappings = engine.db
+      .query<{ role_id: string; claim: string }, [string, string]>(
+        "SELECT role_id,claim FROM user_mapped_roles WHERE user_id=? AND instance_id=? AND claim<>'default role' ORDER BY rowid",
+      )
+      .all(userId, instance.id);
     engine.db
       .query(
         "DELETE FROM user_mapped_roles WHERE user_id = ? AND instance_id = ? AND claim <> 'default role'",
@@ -91,6 +112,28 @@ export function logIn(
       .query(`DELETE FROM user_mapped_roles WHERE user_id = ? AND instance_id IN
       (SELECT id FROM plugin_instances WHERE is_enabled = 0 OR is_deleted = 1)`)
       .run(userId);
+    const afterMappings = engine.db
+      .query<{ role_id: string; claim: string }, [string, string]>(
+        "SELECT role_id,claim FROM user_mapped_roles WHERE user_id=? AND instance_id=? AND claim<>'default role' ORDER BY rowid",
+      )
+      .all(userId, instance.id);
+    if (JSON.stringify(beforeMappings) !== JSON.stringify(afterMappings))
+      recordEvent(engine, {
+        code: "user.roles_changed",
+        subjectKind: "user",
+        subjectId: userId,
+        actor: { kind: "system" },
+        correlationId: newCorrelationId(),
+        data: {
+          changes: [
+            {
+              field: "mappedRoleIds",
+              from: beforeMappings.map((role) => role.role_id),
+              to: afterMappings.map((role) => role.role_id),
+            },
+          ],
+        },
+      });
     engine.db
       .query(
         "UPDATE user_identities SET last_login_at = ? WHERE user_id = ? AND instance_id = ? AND external_id = ?",

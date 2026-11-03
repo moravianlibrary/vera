@@ -1,5 +1,7 @@
 // A safe facade: callers can use it before the optional OpenTelemetry SDK loads.
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { Tracer } from "@opentelemetry/api";
 import {
   context,
@@ -13,6 +15,13 @@ import {
 import type { InMemoryLogRecordExporter } from "@opentelemetry/sdk-logs";
 import type { InMemorySpanExporter } from "@opentelemetry/sdk-trace";
 import { jobAttributesOf } from "./rules";
+
+export const resourceAttributes: Record<string, string> = {
+  "service.name": "vera-engine",
+  "service.version": JSON.parse(readFileSync(join(import.meta.dir, "../../package.json"), "utf8"))
+    .version,
+  "deployment.environment": "development",
+};
 
 export interface TelemetrySettings {
   endpoint: string | undefined;

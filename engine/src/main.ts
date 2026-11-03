@@ -10,6 +10,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createEngine } from "./engine";
+import { sendAudit } from "./telemetry/audit";
 import { startTelemetry, stopTelemetry } from "./telemetry/telemetry";
 
 const port = Number(process.env.VERA_ENGINE_PORT ?? 8080);
@@ -24,12 +25,30 @@ const engine = createEngine({ databasePath, development });
 const server = Bun.serve({ hostname: "127.0.0.1", port, fetch: engine.fetch });
 
 console.log(
-  `VERA engine on ${server.url} (${development ? "development" : "no dev header, no /_engine"}), database ${databasePath}, clock ${engine.clock.now().toISOString()}, ${telemetryEndpoint ? `telemetry to ${telemetryEndpoint}` : "no telemetry"}`,
+  `VERA engine on ${server.url} (${development ? "development" : "no dev header, no /_engine"}), database ${databasePath}, clock ${engine.clock.now().toISOString()}, ${telemetryEndpoint ? `telemetry to ${telemetryEndpoint}` : "audit kept locally"}`,
 );
+
+let sending: Promise<void> | null = null;
+const auditSettings = { endpoint: telemetryEndpoint, key: process.env.VERA_ENGINE_OTEL_KEY };
+const sendPendingAudit = async () => {
+  if (!telemetryEndpoint) return;
+  if (sending !== null) return sending;
+  sending = sendAudit(engine, auditSettings)
+    .then(() => undefined)
+    .finally(() => {
+      sending = null;
+    });
+  return sending;
+};
+if (telemetryEndpoint)
+  setInterval(() => {
+    void sendPendingAudit();
+  }, 5_000);
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, async () => {
     server.stop();
+    await sendPendingAudit();
     await stopTelemetry();
     engine.close();
     process.exit(0);
