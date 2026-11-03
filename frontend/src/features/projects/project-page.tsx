@@ -46,7 +46,7 @@ import {
 import { useProjectQuery } from "@/features/projects/use-projects-query";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { formatDay, formatShortCalendarDay } from "@/lib/format-date";
+import { formatDay, formatLongDay, formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount, formatPageUnit } from "@/lib/format-number";
 
 const backToIndex = { label: "projects:projectPage.projects", href: "/projects" };
@@ -258,7 +258,7 @@ function AboutCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
             ? t("projectPage.notYet")
             : t("projectPage.decisionMade", {
                 state: t(`projectState.${project.state}`),
-                date: formatDay(project.at),
+                date: formatLongDay(project.at),
                 name: nameOf(project.actorId),
               })
         }

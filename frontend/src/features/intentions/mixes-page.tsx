@@ -52,6 +52,7 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { i18n } from "@/i18n";
+import { formatLongDay } from "@/lib/format-date";
 
 const mixQueryKey = ["mixes"] as const;
 type Editor = "new" | "copy" | "snapshot" | "archive" | "delete" | "set" | null;
@@ -404,7 +405,7 @@ export function MixesPage() {
                 {current.revisions.toReversed().map((version) => (
                   <DetailRow
                     key={version.revision}
-                    aside={version.label ?? new Date(version.at).toLocaleDateString()}
+                    aside={version.label ?? formatLongDay(version.at)}
                   >
                     <button
                       type="button"

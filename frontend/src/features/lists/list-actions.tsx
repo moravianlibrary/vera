@@ -32,7 +32,7 @@ import { listInvalidations, listsQueryKey } from "@/features/lists/use-lists-que
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatLongCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 
 const listRefusalTextsOf = (t: (key: string) => string) => ({
@@ -130,7 +130,9 @@ export function useListActions({ detail, session, onDeleted }: ListActionsOption
         isOpen={openDialog === "start"}
         onClose={() => setOpenDialog(null)}
         title={t("listActions.startTitle", { name: list.name })}
-        description={t("listActions.startDescription", { date: formatCalendarDay(list.startsOn) })}
+        description={t("listActions.startDescription", {
+          date: formatLongCalendarDay(list.startsOn),
+        })}
         consequences={[
           { text: t("listActions.startConsequence") },
           {

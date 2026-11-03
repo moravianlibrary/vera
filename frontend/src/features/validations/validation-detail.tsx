@@ -48,7 +48,7 @@ import { IterationStatus } from "@/features/validations/validation-list";
 import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
 // What the pane says once an act has taken the item out of the view.
@@ -321,7 +321,7 @@ function ReviewNote({ row, nameOf }: RowProps) {
         className="mb-4"
         title={t("detail.forbiddenBy", {
           rule: restriction.rule,
-          date: formatDay(restriction.foundAt),
+          date: formatLongDay(restriction.foundAt),
         })}
       >
         {restriction.internalText !== null && `${restriction.internalText} `}
@@ -339,7 +339,10 @@ function ReviewNote({ row, nameOf }: RowProps) {
         title={
           denial === undefined
             ? t("review.denied")
-            : t("detail.deniedBy", { actor: nameOf(denial.actorId), date: formatDay(denial.at) })
+            : t("detail.deniedBy", {
+                actor: nameOf(denial.actorId),
+                date: formatLongDay(denial.at),
+              })
         }
       >
         {denial?.note && `${denial.note} `}
@@ -389,7 +392,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
     if (row.review === "Forbidden") {
       return {
         label: t("detail.forbiddenSince"),
-        value: formatDay(row.waitingSince),
+        value: formatLongDay(row.waitingSince),
         foot: t("detail.byRule"),
         isText: true,
       };
@@ -404,7 +407,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
     if (verdict !== undefined) {
       return {
         label: t(row.review === "Denied" ? "decision.denied" : "review.accepted"),
-        value: formatDay(verdict.at),
+        value: formatLongDay(verdict.at),
         foot: t("detail.byActor", { actor: nameOf(verdict.actorId) }),
         isText: true,
       };
@@ -412,7 +415,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
 
     return {
       label: t("filter.waitingSince"),
-      value: formatDay(row.waitingSince),
+      value: formatLongDay(row.waitingSince),
       foot:
         firstAskerId === undefined
           ? undefined
@@ -469,7 +472,7 @@ function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode
                   ? t("review.accepted")
                   : t("detail.acceptedBy", {
                       actor: nameOf(acceptance.actorId),
-                      date: formatDay(acceptance.at),
+                      date: formatLongDay(acceptance.at),
                     })
               }
             >

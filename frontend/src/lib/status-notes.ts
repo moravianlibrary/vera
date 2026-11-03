@@ -20,7 +20,7 @@ import {
   validationOf,
 } from "@vera/domain/status";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 
 const message = (key: string, options?: Record<string, unknown>) =>
   i18n.t(key, { ns: "documents", ...options });
@@ -141,7 +141,7 @@ export function iterationNoteOf(
     text: message("statusNote.copyFoundAfterApprovalText", {
       source: late.source,
       state: late.state.toLowerCase(),
-      date: formatDay(late.seenAt),
+      date: formatLongDay(late.seenAt),
     }),
     actedBy: null,
   };

@@ -6,7 +6,7 @@ import type { TargetVerdict } from "@vera/domain/intentions";
 import { mixBand } from "@vera/domain/intentions";
 import type { Tone } from "@/components/status-badge";
 import { i18n } from "@/i18n";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 
 export const intentionColumns = ["target", "track"] as const;
@@ -66,7 +66,9 @@ export function windowTextOf(row: Pick<IntentionRow, "intention" | "state">): st
   const { intention } = row;
   const from = formatCalendarDay(intention.countsFrom);
   if (intention.isOverall) {
-    return i18n.t("intentions:window.overall", { from });
+    return i18n.t("intentions:window.overall", {
+      from: formatCalendarDay(intention.countsFrom),
+    });
   }
 
   if (intention.endsOn !== null) {
@@ -74,8 +76,8 @@ export function windowTextOf(row: Pick<IntentionRow, "intention" | "state">): st
   }
 
   return row.state === "Upcoming"
-    ? i18n.t("intentions:window.upcoming", { from })
-    : i18n.t("intentions:window.running", { from });
+    ? i18n.t("intentions:window.upcoming", { from: formatCalendarDay(intention.countsFrom) })
+    : i18n.t("intentions:window.running", { from: formatCalendarDay(intention.countsFrom) });
 }
 
 // Short, for a row in a fold or on a project.
@@ -131,14 +133,14 @@ export function outputBasisOf(row: IntentionRow): string | null {
   }
 
   return row.state === "Upcoming"
-    ? i18n.t("intentions:output.upcoming", { from: formatCalendarDay(intention.countsFrom) })
+    ? i18n.t("intentions:output.upcoming", { from: formatLongCalendarDay(intention.countsFrom) })
     : i18n.t("intentions:output.none");
 }
 
 export function outputSinceOf(row: IntentionRow): string {
   const { intention } = row;
   return intention.endsOn === null
-    ? i18n.t("intentions:output.since", { from: formatCalendarDay(intention.countsFrom) })
+    ? i18n.t("intentions:output.since", { from: formatLongCalendarDay(intention.countsFrom) })
     : i18n.t("intentions:output.window", {
         from: formatCalendarDay(intention.countsFrom),
         to: formatCalendarDay(intention.endsOn),

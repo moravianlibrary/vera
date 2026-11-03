@@ -55,5 +55,6 @@ describe("Preferences", () => {
     expect(await screen.findByText("Sign-in identities")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Account" })).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "What you can do" })).toBeInTheDocument();
+    expect(await screen.findAllByText(/June 2026 at \d{2}:\d{2}/)).toHaveLength(2);
   });
 });

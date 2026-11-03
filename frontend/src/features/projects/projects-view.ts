@@ -19,7 +19,7 @@ import { projectPeriods } from "@vera/domain/projects";
 import type { DayPreset } from "@vera/domain/value-range";
 import type { Tone } from "@/components/status-badge";
 import { i18n } from "@/i18n";
-import { formatCalendarDay, formatDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay, formatLongDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import type { NoteTone } from "@/lib/status-notes";
 import type { ViewDefinition } from "@/lib/view-definition";
@@ -241,7 +241,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
       return {
         tone: "red",
         title: i18n.t("projects:projectNote.rejectedTitle", {
-          date: formatDay(project.at),
+          date: formatLongDay(project.at),
           name: decidedBy,
         }),
         body: i18n.t("projects:projectNote.rejectedBody", { reason: project.reason }),
@@ -254,7 +254,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "slate",
       title: i18n.t("projects:projectNote.upcomingTitle", {
-        date: formatCalendarDay(project.startsOn),
+        date: formatLongCalendarDay(project.startsOn),
       }),
       body: i18n.t("projects:projectNote.upcomingBody"),
     };
@@ -265,7 +265,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
       return {
         tone: "slate",
         title: i18n.t("projects:projectNote.endedNoTargetTitle", {
-          date: formatCalendarDay(project.endsOn),
+          date: formatLongCalendarDay(project.endsOn),
         }),
         body: i18n.t("projects:projectNote.endedNoTargetBody", {
           pages: formatCount(row.deliveredPages),
@@ -279,10 +279,10 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
       title:
         delivered >= 100
           ? i18n.t("projects:projectNote.endedTargetMetTitle", {
-              date: formatCalendarDay(project.endsOn),
+              date: formatLongCalendarDay(project.endsOn),
             })
           : i18n.t("projects:projectNote.endedTargetTitle", {
-              date: formatCalendarDay(project.endsOn),
+              date: formatLongCalendarDay(project.endsOn),
               percent: delivered,
             }),
       body: i18n.t("projects:projectNote.endedTargetBody", {
@@ -300,7 +300,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "amber",
       title: i18n.t("projects:projectNote.runningUnfundedTitle", {
-        date: formatCalendarDay(project.startsOn),
+        date: formatLongCalendarDay(project.startsOn),
       }),
       body: i18n.t("projects:projectNote.runningUnfundedBody", { days: daysLeft }),
     };
@@ -310,7 +310,7 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "slate",
       title: i18n.t("projects:projectNote.runningNoTargetTitle", {
-        date: formatCalendarDay(project.startsOn),
+        date: formatLongCalendarDay(project.startsOn),
       }),
       body: i18n.t("projects:projectNote.runningNoTargetBody", {
         days: daysLeft,

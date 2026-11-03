@@ -1,4 +1,5 @@
 // Shape: Settings.
+
 import { useQuery } from "@tanstack/react-query";
 import { languages } from "@vera/contract/user-settings";
 import { pushChannelId } from "@vera/contract/watchlists";
@@ -44,6 +45,7 @@ import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { i18n } from "@/i18n";
 import { languageNames } from "@/i18n/language";
+import { formatLongDayAndTime } from "@/lib/format-date";
 
 const sections = ["watchlists", "notifications", "display", "account"] as const;
 type Section = (typeof sections)[number];
@@ -487,7 +489,7 @@ function AccountPreferences() {
                     <p className="text-xs text-muted-foreground">
                       {identity.lastLoginAt
                         ? t("account.lastUsed", {
-                            date: new Date(identity.lastLoginAt).toLocaleString(),
+                            date: formatLongDayAndTime(identity.lastLoginAt),
                           })
                         : t("account.neverUsed")}
                     </p>

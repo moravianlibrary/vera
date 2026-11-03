@@ -29,7 +29,7 @@ import { PropertyValueDialog } from "@/features/properties/property-value-dialog
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
 // Whether the person may enter it here: defined for hand entry, not a catalog fact, and the
@@ -196,7 +196,7 @@ function PropertyRow({
                 {joinDetails([
                   sourceNameOf(source.source),
                   t("propertiesCard.tier", { count: source.tier }),
-                  formatDay(source.observedAt),
+                  formatLongDay(source.observedAt),
                   source.setBy === null ? null : nameOf(source.setBy),
                 ])}
               </Muted>

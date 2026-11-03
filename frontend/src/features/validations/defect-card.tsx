@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 
 interface DefectRowProps {
   defect: Defect;
@@ -40,7 +40,7 @@ export function DefectRow({ defect, aside, children }: DefectRowProps) {
         </b>
         <span className="font-mono text-xs text-muted-foreground">{defect.subject}</span>
         <span className="ml-auto text-xs text-muted-foreground">
-          {aside ?? t("defect.found", { date: formatDay(defect.firstSeenAt) })}
+          {aside ?? t("defect.found", { date: formatLongDay(defect.firstSeenAt) })}
         </span>
       </div>
       {defect.internalText !== null && <p className="mt-1">{defect.internalText}</p>}

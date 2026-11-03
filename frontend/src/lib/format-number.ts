@@ -1,8 +1,9 @@
 // Counts as the views print them, grouped in thousands: "4,812".
 import { i18n } from "@/i18n";
+import { localeOf } from "@/lib/locale";
 
 export function formatCount(count: number): string {
-  return count.toLocaleString(i18n.language === "cs" ? "cs-CZ" : "en-GB");
+  return count.toLocaleString(localeOf());
 }
 
 export function formatPages(count: number): string {

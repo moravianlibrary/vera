@@ -180,6 +180,6 @@ describe("projectNoteOf", () => {
         { ...row, intention: { id: "i", targetPages: null }, fundedCount: 2, deliveredPages: 80 },
         "",
       ).title,
-    ).toBe("Running since 1 Jan 2026, with no target");
+    ).toBe("Running since 1 January 2026, with no target");
   });
 });

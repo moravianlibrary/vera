@@ -34,6 +34,7 @@ import type { PagedList } from "@/hooks/use-paged-list";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 import type { ViewGroupingOption } from "@/lib/view-definition";
 
 interface DocumentListProps {
@@ -189,7 +190,7 @@ export function staffDocumentColumns(
       isNumeric: true,
       cell: (record) => {
         const pages = effectivePageCount(record.document);
-        return pages === null ? <Muted>—</Muted> : pages.value.toLocaleString("en-US");
+        return pages === null ? <Muted>—</Muted> : formatCount(pages.value);
       },
     },
     {

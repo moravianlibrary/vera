@@ -27,7 +27,8 @@ import { StatusNote } from "@/components/status-note";
 import { useIsShownBatch, useProjectsQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
 import { publicWordingOf, wordingOf } from "@/lib/event-wording";
-import { formatDay } from "@/lib/format-date";
+import { formatDay, formatLongDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 import { joinDetails } from "@/lib/join-details";
 
 // Who asked, newest first: each ask's reason, its project before approval and its batch.
@@ -167,7 +168,7 @@ export function CopiesCard({
               copy.foundAfterApproval
                 ? "recordCards.copySeenAfterApproval"
                 : "recordCards.copySeen",
-              { date: formatDay(copy.seenAt) },
+              { date: formatLongDay(copy.seenAt) },
             )}
           </Muted>
         </DetailRow>
@@ -178,7 +179,7 @@ export function CopiesCard({
           className="mt-2"
           title={t("recordCards.approvedRescan", {
             name: nameOf(rescan.rescan.actorId),
-            date: formatDay(rescan.rescan.at),
+            date: formatLongDay(rescan.rescan.at),
           })}
         >
           {rescan.rescan.note}
@@ -203,8 +204,8 @@ export function CopiesCard({
               {entry.registry}{" "}
               <Muted>
                 {entry.state === "CheckFailed"
-                  ? t("recordCards.registryUnreachable", { date: formatDay(entry.observedAt) })
-                  : t("recordCards.registryObserved", { date: formatDay(entry.observedAt) })}
+                  ? t("recordCards.registryUnreachable", { date: formatLongDay(entry.observedAt) })
+                  : t("recordCards.registryObserved", { date: formatLongDay(entry.observedAt) })}
               </Muted>
             </DetailRow>
           ))}
@@ -342,7 +343,7 @@ export function CatalogCard({
               key={source.source}
               aside={
                 <span className="tabular-nums">
-                  {source.value.toLocaleString("en-GB")}{" "}
+                  {formatCount(source.value)}{" "}
                   {source === inUse && <ToneBadge tone="green">{t("recordCards.inUse")}</ToneBadge>}
                 </span>
               }
@@ -366,7 +367,7 @@ export function CatalogCard({
               <Muted>
                 {joinDetails([
                   t("recordCards.tier", { count: row.source.tier }),
-                  t("recordCards.observed", { date: formatDay(row.source.observedAt) }),
+                  t("recordCards.observed", { date: formatLongDay(row.source.observedAt) }),
                   row.source.setBy === null ? null : nameOf(row.source.setBy),
                 ])}
               </Muted>
@@ -405,7 +406,7 @@ export function HistoryCard({
           key={entry.id}
           aside={
             <Muted>
-              {joinDetails([formatDay(entry.at), isPublic ? null : actorName(entry.actor)])}
+              {joinDetails([formatLongDay(entry.at), isPublic ? null : actorName(entry.actor)])}
             </Muted>
           }
         >

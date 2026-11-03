@@ -25,7 +25,7 @@ import { StatusNote } from "@/components/status-note";
 import { ItemActions, useListActions } from "@/features/lists/list-actions";
 import { MixMeters } from "@/features/lists/list-intentions";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
-import { formatCalendarDay, formatDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay, formatLongDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 
 const blockerTexts = {
@@ -164,7 +164,7 @@ function IntentionCards({ detail, canOpen }: { detail: ListDetail; canOpen: bool
                 pages: formatCount(generated.pages),
                 allocation:
                   generated.allocation === null ? "" : t("listDetail.correctingAllocation"),
-                date: formatDay(generated.at),
+                date: formatLongDay(generated.at),
               })}
             </span>
           </p>
@@ -275,7 +275,7 @@ function MemberFlag({ item }: { item: ListItem }) {
         {t("listDetail.lateCopy", {
           source: item.lateCopy.source,
           state: item.lateCopy.state.toLowerCase(),
-          date: formatDay(item.lateCopy.seenAt),
+          date: formatLongDay(item.lateCopy.seenAt),
         })}
       </div>
     );
@@ -301,7 +301,7 @@ function StateNote({ detail, nameOf }: { detail: ListDetail; nameOf: (userId: st
         className="mb-4"
         title={t("listDetail.doneTitle", {
           name: nameOf(list.done.actorId),
-          date: formatDay(list.done.at),
+          date: formatLongDay(list.done.at),
         })}
       >
         {t("listDetail.doneBody", {
@@ -321,7 +321,7 @@ function StateNote({ detail, nameOf }: { detail: ListDetail; nameOf: (userId: st
       <StatusNote
         tone="blue"
         className="mb-4"
-        title={t("listDetail.plannedTitle", { date: formatCalendarDay(list.startsOn) })}
+        title={t("listDetail.plannedTitle", { date: formatLongCalendarDay(list.startsOn) })}
       >
         {row.itemCount === 0
           ? t("listDetail.plannedEmpty")
@@ -335,7 +335,7 @@ function StateNote({ detail, nameOf }: { detail: ListDetail; nameOf: (userId: st
       <StatusNote
         tone="amber"
         className="mb-4"
-        title={t("listDetail.overdueTitle", { date: formatCalendarDay(list.endsOn) })}
+        title={t("listDetail.overdueTitle", { date: formatLongCalendarDay(list.endsOn) })}
       >
         {t("listDetail.overdueBody", { scanned })}
       </StatusNote>
@@ -346,9 +346,9 @@ function StateNote({ detail, nameOf }: { detail: ListDetail; nameOf: (userId: st
     <StatusNote
       tone="blue"
       className="mb-4"
-      title={t("listDetail.inProgressTitle", { date: formatCalendarDay(list.startsOn) })}
+      title={t("listDetail.inProgressTitle", { date: formatLongCalendarDay(list.startsOn) })}
     >
-      {t("listDetail.inProgressBody", { date: formatCalendarDay(list.endsOn), scanned })}
+      {t("listDetail.inProgressBody", { date: formatLongCalendarDay(list.endsOn), scanned })}
     </StatusNote>
   );
 }

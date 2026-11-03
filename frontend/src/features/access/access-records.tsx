@@ -46,7 +46,7 @@ import {
 } from "@/features/access/access-words";
 import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 import { agoText } from "@/lib/format-moment";
 import { cn } from "@/lib/utils";
 
@@ -357,7 +357,7 @@ export function UserRecord({
       {user.suspendedAt !== null && (
         <StatusNote
           tone="red"
-          title={t("record.suspended", { date: formatDay(user.suspendedAt) })}
+          title={t("record.suspended", { date: formatLongDay(user.suspendedAt) })}
           className="mb-1"
         >
           {t("record.suspendedDescription")}

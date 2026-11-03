@@ -3,10 +3,11 @@
 
 import type { Cadence } from "@vera/domain/schedules";
 import { i18n } from "@/i18n";
+import { localeOf } from "@/lib/locale";
 
 export function weekdayName(weekday: number): string {
   const date = new Date(Date.UTC(2023, 0, 1 + weekday));
-  return new Intl.DateTimeFormat(i18n.language === "cs" ? "cs-CZ" : "en-GB", {
+  return new Intl.DateTimeFormat(localeOf(), {
     weekday: "short",
     timeZone: "UTC",
   }).format(date);

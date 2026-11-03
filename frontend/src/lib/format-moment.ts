@@ -2,10 +2,10 @@
 // browser's, says how long ago something happened or how soon it is due: "12 min ago", "today
 // 06:00", "tomorrow 02:00". Tasks and Schedules word runs with it, Users & Groups a last login.
 import { i18n } from "@/i18n";
+import { localeOf } from "@/lib/locale";
 
 const minuteMilliseconds = 60_000;
 
-const localeOf = () => (i18n.language === "cs" ? "cs-CZ" : "en-GB");
 const clockFormat = () =>
   new Intl.DateTimeFormat(localeOf(), { hour: "2-digit", minute: "2-digit" });
 const shortDayFormat = () =>

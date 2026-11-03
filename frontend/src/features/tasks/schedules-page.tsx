@@ -46,7 +46,8 @@ import { useSessionQuery } from "@/hooks/use-session-query";
 import type { PerTier } from "@/hooks/use-tier";
 import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
-import { agoText, aheadText, dayAndTimeOf, shortDayOf } from "@/lib/format-moment";
+import { formatLongDay } from "@/lib/format-date";
+import { agoText, aheadText, dayAndTimeOf } from "@/lib/format-moment";
 import { cn } from "@/lib/utils";
 
 // Which dialog is open, on which schedule.
@@ -308,7 +309,7 @@ function PauseNote({ schedule, nameOf }: { schedule: ScheduleRow; nameOf: NameOf
     <StatusNote tone="slate" title={i18n.t("tasks:schedulesPage.pausedTitle")}>
       {i18n.t("tasks:schedulesPage.pausedBy", {
         name: nameOf(schedule.pause.pausedBy),
-        date: shortDayOf(schedule.pause.pausedAt),
+        date: formatLongDay(schedule.pause.pausedAt),
         reason: schedule.pause.reason,
       })}
     </StatusNote>

@@ -33,7 +33,8 @@ import { requestsView } from "@/features/requests/requests-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useIsShownBatch } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatDay, formatLongDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 
 export interface RequestReferences {
   users: readonly User[];
@@ -179,7 +180,7 @@ export function requestColumns(references: RequestReferences): ColumnDefinition<
       isNumeric: true,
       cell: (row) => {
         const pages = effectivePageCount(row.record.document);
-        return pages === null ? <Muted>—</Muted> : pages.value.toLocaleString("en-US");
+        return pages === null ? <Muted>—</Muted> : formatCount(pages.value);
       },
     },
     {
@@ -250,7 +251,7 @@ function WhyLine({ row, references, homeBatchId }: WhyLineProps) {
   if (row.decision === "Withdrawn" && first?.decision === "Withdrawn") {
     return (
       <>
-        <b className="font-semibold">{t("status.withdrawn")}</b> {formatDay(first.withdrawnAt)}
+        <b className="font-semibold">{t("status.withdrawn")}</b> {formatLongDay(first.withdrawnAt)}
         {first.reason !== null && ` — “${first.reason}”`}
       </>
     );

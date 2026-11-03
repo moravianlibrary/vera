@@ -65,7 +65,7 @@ import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { isSameSet, useDraft } from "@/hooks/use-draft";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
-import { formatCalendarDay, formatDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay, formatLongDay } from "@/lib/format-date";
 import { formatCount, formatPages } from "@/lib/format-number";
 
 interface ListFields {
@@ -477,7 +477,7 @@ function LateCopy({ item }: { item: ListItem }) {
     <>
       <b className="font-semibold text-tone-amber-foreground">
         ⚠ {item.lateCopy.source}: {item.lateCopy.state.toLowerCase()} since{" "}
-        {formatDay(item.lateCopy.seenAt)}
+        {formatLongDay(item.lateCopy.seenAt)}
       </b>{" "}
       — {t("listEditor.lateCopy")}
     </>
@@ -822,7 +822,7 @@ function IntentionsStrip({
                     ? ""
                     : ` → ${formatCalendarDay(generatedShape.endsOn)}`,
               })}
-          {t("listEditor.moveStartIntoWindow", { date: formatCalendarDay(reading.startsOn) })}
+          {t("listEditor.moveStartIntoWindow", { date: formatLongCalendarDay(reading.startsOn) })}
         </StatusNote>
       )}
       {isDatesChanged && reading.stopsCountingTowards.length > 0 && (
@@ -834,7 +834,7 @@ function IntentionsStrip({
         >
           {t("listEditor.stopsCountingBody", {
             count: reading.stopsCountingTowards.length,
-            date: formatCalendarDay(reading.startsOn),
+            date: formatLongCalendarDay(reading.startsOn),
           })}
         </StatusNote>
       )}

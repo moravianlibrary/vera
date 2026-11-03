@@ -1,7 +1,7 @@
 // Client wording for event codes (EVENT-wording).
 import type { EventCode, EventEntry } from "@vera/domain/events";
 import { i18n } from "@/i18n";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { joinDetails } from "@/lib/join-details";
 
@@ -208,7 +208,7 @@ export function wordingOf(
     case "list.started_early":
       line = i18n.t("list.startedEarly", {
         ns: "history",
-        day: formatCalendarDay(entry.data.starts),
+        day: formatLongCalendarDay(entry.data.starts),
       });
       break;
     case "list.marked_done":

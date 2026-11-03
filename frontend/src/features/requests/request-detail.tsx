@@ -65,7 +65,7 @@ import {
   useUsersQuery,
 } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatLongDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 
 // What the pane says once a decision has taken the proposal off the list.
@@ -406,7 +406,7 @@ function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string
         className="mb-4"
         title={t("note.declinedBy", {
           actor: nameOf(decline.actorId),
-          date: formatDay(decline.at),
+          date: formatLongDay(decline.at),
         })}
       >
         {decline.internalText !== null && `${decline.internalText} `}
@@ -420,7 +420,7 @@ function RequestNote({ row, nameOf }: { row: RequestRow; nameOf: (userId: string
       <StatusNote
         tone="slate"
         className="mb-4"
-        title={t("note.withdrawnByAsker", { date: formatDay(first.withdrawnAt) })}
+        title={t("note.withdrawnByAsker", { date: formatLongDay(first.withdrawnAt) })}
       >
         {first.reason === null ? t("fact.noReason") : `“${first.reason}”`}
       </StatusNote>
@@ -469,7 +469,7 @@ function RequestFacts({ row }: { row: RequestRow }) {
         { label: t("fact.askers"), value: askerIdsOf(row).length },
         {
           label: t(row.decision === "Pending" ? "fact.waitingSince" : "fact.firstAsked"),
-          value: first === null ? "—" : formatDay(first.at),
+          value: first === null ? "—" : formatLongDay(first.at),
           foot: batchLine,
           isText: true,
         },

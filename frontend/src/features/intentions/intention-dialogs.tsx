@@ -62,7 +62,7 @@ import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery, useProjectsQuery } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay } from "@/lib/format-date";
 import { formatCount, formatPageUnit } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
@@ -446,7 +446,7 @@ function OverallNote({ row }: { row: IntentionRow }) {
   return (
     <p className="text-xs text-muted-foreground">
       {message("intentionDialog.overallNote", {
-        date: formatCalendarDay(row.intention.countsFrom),
+        date: formatLongCalendarDay(row.intention.countsFrom),
       })}
     </p>
   );
@@ -594,7 +594,7 @@ function IntentionFields({
           <div className="grid gap-1.5 text-sm">
             <span className="font-medium">{message("intentionDialog.countsFrom")}</span>
             <span>
-              {formatCalendarDay(edited.intention.countsFrom)}{" "}
+              {formatLongCalendarDay(edited.intention.countsFrom)}{" "}
               <span className="text-muted-foreground">· {message("intentionDialog.fixed")}</span>
             </span>
             {onCopy !== undefined && (
@@ -1074,7 +1074,7 @@ export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionD
           {message("intentionDialog.correctionSummary", {
             scope: within,
             output: formatCount(row.outputPages),
-            since: formatCalendarDay(intention.countsFrom),
+            since: formatLongCalendarDay(intention.countsFrom),
           })}
         </p>
         <Field id={`${id}-pages`} label={message("intentionDialog.pagesForList")}>

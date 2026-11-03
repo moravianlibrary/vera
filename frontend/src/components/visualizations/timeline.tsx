@@ -6,7 +6,7 @@
 
 import { useTranslation } from "react-i18next";
 import { useTier } from "@/hooks/use-tier";
-import { i18n } from "@/i18n";
+import { localeOf } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 export const timelineSpans = ["day", "week", "month"] as const;
@@ -44,8 +44,6 @@ const phoneDenseAt = 24;
 
 const hourMilliseconds = 3_600_000;
 const dayMilliseconds = 24 * hourMilliseconds;
-
-const localeOf = () => (i18n.language === "cs" ? "cs-CZ" : "en-GB");
 
 function formatsOf() {
   const locale = localeOf();

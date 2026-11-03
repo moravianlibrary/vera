@@ -37,7 +37,7 @@ import { conditionTextOf } from "@/features/properties/scope-conditions-field";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useTier } from "@/hooks/use-tier";
 import { i18n } from "@/i18n";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatLongCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
@@ -212,7 +212,7 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
         <p className="text-ui text-muted-foreground">
           {message("intentionCard.pagesPerWeekNeeded", {
             pages: formatCount(row.pagesPerWeekNeeded),
-            date: formatCalendarDay(intention.endsOn),
+            date: formatLongCalendarDay(intention.endsOn),
           })}
         </p>
       )}

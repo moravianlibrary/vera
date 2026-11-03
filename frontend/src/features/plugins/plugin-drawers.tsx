@@ -43,7 +43,7 @@ import {
 import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
 import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
-import { formatCalendarDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongCalendarDay } from "@/lib/format-date";
 import { agoText, shortDayOf } from "@/lib/format-moment";
 
 const linkClass = "text-primary underline-offset-2 hover:underline";
@@ -452,7 +452,7 @@ export function InstanceDrawer({
             },
             {
               label: i18n.t("plugins:pluginDrawers.created"),
-              value: `${formatCalendarDay(instance.createdAt)} · ${names.userOf(instance.createdBy)}`,
+              value: `${formatLongCalendarDay(instance.createdAt)} · ${names.userOf(instance.createdBy)}`,
             },
           ]}
         />

@@ -82,7 +82,7 @@ import {
   useUsersQuery,
 } from "@/hooks/use-reference-query";
 import { i18n } from "@/i18n";
-import { formatDay } from "@/lib/format-date";
+import { formatCalendarDay, formatLongDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { joinDetails } from "@/lib/join-details";
 import type { StatusNote as StatusNoteParts } from "@/lib/status-notes";
@@ -368,7 +368,7 @@ function AddingCard({
             : []),
           {
             label: i18n.t("detail.submitted", { ns: "documents" }),
-            value: joinDetails([formatDay(batch.submittedAt), nameOf(batch.submittedBy)]),
+            value: joinDetails([formatLongDay(batch.submittedAt), nameOf(batch.submittedBy)]),
           },
           { label: i18n.t("detail.ingest", { ns: "documents" }), value: ingest },
           {
@@ -472,7 +472,7 @@ function DigitizationCard({
               list.name
             )}{" "}
             <Muted>
-              · {formatDay(list.startsOn)} → {formatDay(list.endsOn)}
+              · {formatCalendarDay(list.startsOn)} → {formatCalendarDay(list.endsOn)}
             </Muted>
           </>
         ) : (
@@ -516,7 +516,7 @@ function DigitizationCard({
                     {" · "}
                     {nameOf(link.setBy)}
                     {" · "}
-                    {formatDay(link.setAt)}
+                    {formatLongDay(link.setAt)}
                   </Muted>
                   {hasPermission(session, "iteration.publish") && (
                     <PublicationLinkActions iteration={iteration} link={link} title={title} />
@@ -538,7 +538,7 @@ function DigitizationCard({
           cancellation.cause === "Decided"
             ? i18n.t("detail.yes", { ns: "documents" })
             : i18n.t("detail.couldNotDigitize", { ns: "documents" }),
-          `${nameOf(cancellation.actorId)}, ${formatDay(cancellation.at)}`,
+          `${nameOf(cancellation.actorId)}, ${formatLongDay(cancellation.at)}`,
         ])
       ),
   });
@@ -716,7 +716,7 @@ function EarlierCard({ record }: { record: DocumentRecord }) {
               iteration.scanDpi === null ? null : `${iteration.scanDpi} dpi`,
               i18n.t("detail.digitizedAt", {
                 ns: "documents",
-                day: iteration.digitizedAt === null ? "—" : formatDay(iteration.digitizedAt),
+                day: iteration.digitizedAt === null ? "—" : formatLongDay(iteration.digitizedAt),
               }),
             ])}
           </Muted>
@@ -746,7 +746,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
           details={[
             latest === undefined
               ? null
-              : i18n.t("detail.askedAt", { ns: "documents", day: formatDay(latest.at) }),
+              : i18n.t("detail.askedAt", { ns: "documents", day: formatLongDay(latest.at) }),
           ]}
         />
         <DocumentActions record={record} session={session} isOwn className="mb-4" />
@@ -761,7 +761,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
           },
           {
             label: i18n.t("field.asked", { ns: "documents" }),
-            value: latest === undefined ? "—" : formatDay(latest.at),
+            value: latest === undefined ? "—" : formatLongDay(latest.at),
             isText: true,
           },
           {
@@ -829,7 +829,7 @@ function RecordNote({
           ns: "documents",
           title: note.title,
           name: nameOf(note.actedBy.actorId),
-          day: formatDay(note.actedBy.at),
+          day: formatLongDay(note.actedBy.at),
         });
   return (
     <StatusNote tone={note.tone} title={title} className="mb-4">
