@@ -826,6 +826,11 @@ type EventEntryBase = z.infer<typeof baseEntry>;
 
 // The explicit payload map retains the code/data pairing across zod's refinement type.
 export type EventEntry = EventEntryBase & EventEntryData;
+export type EventEntryInput = EventEntry extends infer Entry
+  ? Entry extends { id: string }
+    ? Omit<Entry, "id">
+    : never
+  : never;
 
 // Validate each entry as the discriminated union before checking its catalogue subject.
 export const eventEntrySchema = z

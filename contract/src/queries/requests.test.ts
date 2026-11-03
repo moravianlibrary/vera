@@ -33,6 +33,7 @@ function store(): RecordStore {
   return {
     today: new Date("2026-01-01"),
     catalogPropertyKeys: new Set(),
+    roles: [],
     users: [{ id: "reader", name: "Reader", kind: "person", email: null }],
     groups: [],
     categories: [],

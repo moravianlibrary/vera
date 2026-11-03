@@ -290,6 +290,7 @@ import {
   canSubmitRateLimited,
   checkItem,
   getRateLimitStatus,
+  mockProposalPlugins,
   proposableProjectsOf,
   proposalLimitOf,
   proposalSettingsOf,
@@ -1428,7 +1429,7 @@ export function createHandlers(profile: MockUserProfile) {
     iterationAction("overrule", overruleSchema, overruleRestriction),
 
     http.get(route(apiRoutes.proposalSettings), () =>
-      HttpResponse.json(proposalSettingsOf(currentSession())),
+      HttpResponse.json(proposalSettingsOf(mockStore(), mockProposalPlugins, currentSession())),
     ),
 
     // ACT-ways-in: each is the proposer's, like the lookup.
@@ -1481,7 +1482,7 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.proposalRateLimit), () => {
       const session = currentSession();
-      return HttpResponse.json(getRateLimitStatus(session));
+      return HttpResponse.json(getRateLimitStatus(mockStore(), session, new Date()));
     }),
 
     http.post(route(apiRoutes.proposalLookup), async ({ request }) => {
@@ -1495,7 +1496,10 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(lookup.error);
       }
 
-      return HttpResponse.json(lookup.data.items.map((item) => checkItem(session, item)));
+      const store = mockStore();
+      return HttpResponse.json(
+        lookup.data.items.map((item) => checkItem(store, mockProposalPlugins, session, item)),
+      );
     }),
 
     http.post(route(apiRoutes.proposals), async ({ request }) => {
@@ -1511,7 +1515,8 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 403, message: "You may not propose this" });
       }
 
-      const batchLimit = proposalLimitOf(session);
+      const store = mockStore();
+      const batchLimit = proposalLimitOf(store, session);
       if (batchLimit !== null && draft.data.items.length > batchLimit) {
         return problemResponse({
           status: 422,
@@ -1520,7 +1525,14 @@ export function createHandlers(profile: MockUserProfile) {
         });
       }
 
-      if (!canSubmitRateLimited(session, submittableProposalItemCount(session, draft.data))) {
+      if (
+        !canSubmitRateLimited(
+          store,
+          session,
+          submittableProposalItemCount(store, mockProposalPlugins, session, draft.data),
+          new Date(),
+        )
+      ) {
         return problemResponse({
           status: 429,
           code: "proposal.daily_limit",
@@ -1530,7 +1542,9 @@ export function createHandlers(profile: MockUserProfile) {
 
       const isProjectRefused =
         draft.data.projectId !== null &&
-        !proposableProjectsOf(session).some((project) => project.id === draft.data.projectId);
+        !proposableProjectsOf(store, session).some(
+          (project) => project.id === draft.data.projectId,
+        );
       if (isProjectRefused) {
         return problemResponse({
           status: 422,

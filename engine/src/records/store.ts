@@ -4,6 +4,7 @@ import type { StoredPropertyDefinition } from "@vera/domain/properties";
 import type { StoredRequestCustody } from "@vera/domain/request-custody";
 import type { RecordStore } from "@vera/domain/store";
 import { accessUser, custodiesOf, groupsOf } from "../access/index";
+import { rolesOf } from "../access/session";
 import type { Engine } from "../engine";
 
 export function pragueMidnightOf(at: Date): Date {
@@ -58,6 +59,7 @@ export function engineStore(engine: Engine): RecordStore {
     today: pragueMidnightOf(engine.clock.now()),
     catalogPropertyKeys,
     users,
+    roles: rolesOf(engine.db),
     groups: groupsOf(engine),
     categories,
     projects: all<Project>("SELECT record FROM projects ORDER BY rowid"),

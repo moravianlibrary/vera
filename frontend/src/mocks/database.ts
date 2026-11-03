@@ -123,6 +123,7 @@ export function mockStore(): RecordStore {
     ),
     // Query indexes use array identity, so each store snapshots every collection.
     users: [...database.users],
+    roles: [...database.roles],
     groups: [...database.groups],
     categories: [...database.categories],
     projects: [...database.projects],

@@ -3,22 +3,9 @@
 // resolves too; the mock catalog reads those from the documents themselves. A record of several
 // volumes or issues lists them, and a barcode names one of them.
 
-import type { DocumentType } from "@vera/domain/entities";
+import type { CatalogRecord } from "@vera/domain/catalog";
 
-export interface CatalogRecord {
-  catalogId: string;
-  title: string;
-  type: DocumentType;
-  // Null for a record that is one document; otherwise the units the catalog enumerates.
-  units: readonly string[] | null;
-  // NBN, ISBN and ISSN that resolve to the record.
-  identifiers: readonly string[];
-  // Shelf mark to the unit the catalog says it is on, or null when it names no one unit
-  // (DOC-units).
-  shelfMarks: Readonly<Record<string, string | null>>;
-  // Barcode to the unit it is on; a monograph's barcode names the whole record.
-  barcodes: Readonly<Record<string, string | null>>;
-}
+export type { CatalogRecord } from "@vera/domain/catalog";
 
 export const catalogRecords: readonly CatalogRecord[] = [
   {

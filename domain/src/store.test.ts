@@ -8,6 +8,7 @@ describe("record store", () => {
     const store: RecordStore = {
       today: new Date("2026-01-01"),
       catalogPropertyKeys: new Set(),
+      roles: [],
       users: [],
       groups: [],
       categories: [],

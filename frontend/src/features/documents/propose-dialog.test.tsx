@@ -6,8 +6,9 @@ import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
+import { mockStore } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
-import { proposalSettingsOf } from "@/mocks/proposals";
+import { mockProposalPlugins, proposalSettingsOf } from "@/mocks/proposals";
 import { resolveSession } from "@/mocks/session";
 
 const server = setupServer();
@@ -63,7 +64,7 @@ describe("ProposeDialog", () => {
   it("asks which type when two Identifier instances recognise a pasted line", async () => {
     openPropose(
       {
-        ...proposalSettingsOf(resolveSession("reader")),
+        ...proposalSettingsOf(mockStore(), mockProposalPlugins, resolveSession("reader")),
         canDetectTypes: true,
         identifierTypes: [
           {

@@ -18,6 +18,7 @@ describe("record store property declarations", () => {
     const store: RecordStore = {
       today: new Date("2026-01-01"),
       catalogPropertyKeys: new Set(["from_catalog"]),
+      roles: [],
       users: [],
       groups: [],
       categories: [],
