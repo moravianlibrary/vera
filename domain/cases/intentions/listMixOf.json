@@ -1,0 +1,134 @@
+{
+  "function": "listMixOf",
+  "base": {
+    "categories": [
+      {
+        "id": "mono",
+        "name": "Monographs",
+        "parentId": null
+      },
+      {
+        "id": "per",
+        "name": "Periodicals",
+        "parentId": null
+      },
+      {
+        "id": "reg",
+        "name": "Regional",
+        "parentId": "per"
+      },
+      {
+        "id": "nat",
+        "name": "National",
+        "parentId": "per"
+      },
+      {
+        "id": "spec",
+        "name": "Specialist",
+        "parentId": "per"
+      }
+    ],
+    "iterations": [
+      {
+        "id": "a",
+        "categoryId": "reg"
+      },
+      {
+        "id": "b",
+        "categoryId": "nat"
+      },
+      {
+        "id": "c",
+        "categoryId": "mono"
+      },
+      {
+        "id": "d",
+        "categoryId": "mono"
+      },
+      {
+        "id": "e",
+        "categoryId": "spec"
+      }
+    ],
+    "pagesById": {
+      "a": 100,
+      "b": 200,
+      "c": 50,
+      "d": 400,
+      "e": 300
+    }
+  },
+  "cases": [
+    {
+      "name": "mix fill against target or allocation",
+      "rule": "PLAN-fill",
+      "input": {
+        "intention": {
+          "scopeCategoryId": "per"
+        },
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "memberIds": ["a", "b"],
+        "goal": {
+          "targetPages": 1000,
+          "allocation": null
+        }
+      },
+      "expected": [["reg", 50, 100, 500], ["nat", 30, 200, 300], ["spec", null, 0, null]]
+    },
+    {
+      "name": "mix fill uses explicit allocation",
+      "rule": "PLAN-fill",
+      "input": {
+        "intention": {
+          "scopeCategoryId": "per"
+        },
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "memberIds": ["a", "b"],
+        "goal": {
+          "targetPages": 1000,
+          "allocation": {
+            "reg": 70
+          }
+        }
+      },
+      "expected": [["reg", 50, 100, 70], ["nat", 30, 200, 0], ["spec", null, 0, 0]]
+    },
+    {
+      "name": "leaf scope reads all of itself",
+      "rule": "PLAN-mix-within-scope",
+      "input": {
+        "intention": {
+          "scopeCategoryId": "reg"
+        },
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "memberIds": ["a", "b"],
+        "goal": {
+          "targetPages": null,
+          "allocation": null
+        }
+      },
+      "expected": [["reg", 100, 100, 100]]
+    }
+  ]
+}

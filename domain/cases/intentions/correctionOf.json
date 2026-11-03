@@ -1,0 +1,83 @@
+{
+  "function": "correctionOf",
+  "base": {
+    "rows": [
+      {
+        "categoryId": "mono",
+        "intended": 40,
+        "outputPages": 100
+      },
+      {
+        "categoryId": "per",
+        "intended": 60,
+        "outputPages": 400
+      },
+      {
+        "categoryId": "maps",
+        "intended": null,
+        "outputPages": 0
+      }
+    ],
+    "outputPages": 500,
+    "readyPagesByCategory": {
+      "mono": 100,
+      "per": 1000
+    }
+  },
+  "cases": [
+    {
+      "name": "fills each category gap and records remaining short pages",
+      "rule": "PLAN-generate-correcting",
+      "input": {
+        "pages": 500
+      },
+      "expected": {
+        "isCut": false,
+        "rows": [["mono", 300, 40, 200], ["per", 200, 60, 0], ["maps", 0, 0, 0]]
+      }
+    },
+    {
+      "name": "cuts gaps proportionally when they exceed pages",
+      "rule": "PLAN-generate-correcting",
+      "input": {
+        "pages": 100
+      },
+      "expected": {
+        "isCut": true,
+        "rows": [
+          ["mono", 100, 33.33333333333333, 0],
+          ["per", 0, 66.66666666666666, 0],
+          ["maps", 0, 0, 0]
+        ]
+      }
+    },
+    {
+      "name": "allocates leftover pages by shares when mix is partly unallocated",
+      "rule": "PLAN-generate-correcting",
+      "input": {
+        "rows": [
+          {
+            "categoryId": "mono",
+            "intended": 40,
+            "outputPages": 100
+          },
+          {
+            "categoryId": "per",
+            "intended": 50,
+            "outputPages": 400
+          }
+        ],
+        "outputPages": 500,
+        "pages": 500,
+        "readyPagesByCategory": {
+          "mono": 1000,
+          "per": 1000
+        }
+      },
+      "expected": {
+        "isCut": false,
+        "rows": [["mono", 340, 44, 0], ["per", 160, 56.00000000000001, 0]]
+      }
+    }
+  ]
+}

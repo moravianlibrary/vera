@@ -2,6 +2,15 @@
   "function": "isInWindow",
   "cases": [
     {
+      "name": "includes first day",
+      "rule": "PLAN-counting",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "calendarDate": "2026-06-01"
+      },
+      "expected": true
+    },
+    {
       "name": "includes first and last day",
       "rule": "PLAN-counting",
       "input": {

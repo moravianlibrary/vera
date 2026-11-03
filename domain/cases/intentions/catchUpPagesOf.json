@@ -1,0 +1,39 @@
+{
+  "function": "catchUpPagesOf",
+  "cases": [
+    {
+      "name": "planned pages catch up to an even pace",
+      "rule": "PLAN-catch-up",
+      "input": {
+        "input": {
+          "intention": {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "targetPages": 1000
+          },
+          "plannedPages": 100,
+          "deliveredPages": 100,
+          "today": "2026-06-16"
+        }
+      },
+      "expected": 400
+    },
+    {
+      "name": "already delivered at pace needs no catch-up",
+      "rule": "PLAN-catch-up",
+      "input": {
+        "input": {
+          "intention": {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "targetPages": 1000
+          },
+          "plannedPages": 100,
+          "deliveredPages": 500,
+          "today": "2026-06-16"
+        }
+      },
+      "expected": null
+    }
+  ]
+}

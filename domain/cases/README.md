@@ -9,3 +9,5 @@ set results as sorted arrays.
 An optional top-level `base` object supplies fields shared by partial inputs. For status cases, the
 runner merges each input iteration over this base iteration; each input only needs the fields it
 changes.
+
+A runner adapter turns lookup tables into callbacks and projects results to the values compared in cases. The backend's runner does the same.

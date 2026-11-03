@@ -2,6 +2,15 @@
   "function": "intentionStateOf",
   "cases": [
     {
+      "name": "open intention remains running",
+      "rule": "PLAN-intention",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": null },
+        "today": "2030-01-01"
+      },
+      "expected": "Running"
+    },
+    {
       "name": "upcoming",
       "rule": "PLAN-intention",
       "input": {

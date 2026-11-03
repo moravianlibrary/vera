@@ -1,0 +1,146 @@
+{
+  "function": "mixReadingOf",
+  "base": {
+    "categories": [
+      {
+        "id": "mono",
+        "name": "Monographs",
+        "parentId": null
+      },
+      {
+        "id": "per",
+        "name": "Periodicals",
+        "parentId": null
+      },
+      {
+        "id": "reg",
+        "name": "Regional",
+        "parentId": "per"
+      },
+      {
+        "id": "nat",
+        "name": "National",
+        "parentId": "per"
+      },
+      {
+        "id": "spec",
+        "name": "Specialist",
+        "parentId": "per"
+      }
+    ],
+    "iterations": [
+      {
+        "id": "a",
+        "categoryId": "reg"
+      },
+      {
+        "id": "b",
+        "categoryId": "nat"
+      },
+      {
+        "id": "c",
+        "categoryId": "mono"
+      },
+      {
+        "id": "d",
+        "categoryId": "mono"
+      },
+      {
+        "id": "e",
+        "categoryId": "spec"
+      }
+    ],
+    "pagesById": {
+      "a": 100,
+      "b": 200,
+      "c": 50,
+      "d": 400,
+      "e": 300
+    }
+  },
+  "cases": [
+    {
+      "name": "reads output shares in scope and reports unallocated share",
+      "rule": "PLAN-mix-reading",
+      "input": {
+        "intention": {
+          "scopeCategoryId": "per"
+        },
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "count": {
+          "plannedIds": ["a", "b"],
+          "outputIds": ["a", "b", "e"],
+          "plannedPages": 300,
+          "outputPages": 600,
+          "deliveredIds": ["a", "b"]
+        }
+      },
+      "expected": {
+        "rows": [["reg", "under"], ["nat", "inBand"], ["spec", "noShare"]],
+        "unallocated": 20,
+        "outOfBandCount": 1
+      }
+    },
+    {
+      "name": "used category with zero share remains in band at zero output",
+      "rule": "PLAN-mix-flags",
+      "input": {
+        "intention": {
+          "scopeCategoryId": null
+        },
+        "distribution": {
+          "shares": {
+            "mono": 0,
+            "per": 100
+          }
+        },
+        "count": {
+          "plannedIds": ["a", "b"],
+          "outputIds": ["a", "b", "e"],
+          "plannedPages": 300,
+          "outputPages": 600,
+          "deliveredIds": ["a", "b"]
+        }
+      },
+      "expected": {
+        "rows": [["mono", "inBand"], ["per", "inBand"]],
+        "unallocated": 0,
+        "outOfBandCount": 0
+      }
+    },
+    {
+      "name": "output in excluded category is flagged",
+      "rule": "PLAN-mix-flags",
+      "input": {
+        "intention": {
+          "scopeCategoryId": null
+        },
+        "distribution": {
+          "shares": {
+            "mono": 100,
+            "per": 0
+          }
+        },
+        "count": {
+          "plannedIds": ["a", "b"],
+          "outputIds": ["a", "b", "e"],
+          "plannedPages": 300,
+          "outputPages": 600,
+          "deliveredIds": ["a", "b"]
+        }
+      },
+      "expected": {
+        "rows": [["mono", "under"], ["per", "excludedUsed"]],
+        "unallocated": 0,
+        "outOfBandCount": 2
+      }
+    }
+  ]
+}

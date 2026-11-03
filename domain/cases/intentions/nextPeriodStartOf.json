@@ -2,6 +2,12 @@
   "function": "nextPeriodStartOf",
   "cases": [
     {
+      "name": "next Monday from Monday",
+      "rule": "PLAN-intention",
+      "input": { "period": "week", "today": "2026-06-29" },
+      "expected": "2026-07-06"
+    },
+    {
       "name": "next Monday",
       "rule": "PLAN-intention",
       "input": { "period": "week", "today": "2026-06-25" },
@@ -12,6 +18,12 @@
       "rule": "PLAN-intention",
       "input": { "period": "month", "today": "2026-12-15" },
       "expected": "2027-01-01"
+    },
+    {
+      "name": "next quarter from quarter start",
+      "rule": "PLAN-intention",
+      "input": { "period": "quarter", "today": "2026-07-01" },
+      "expected": "2026-10-01"
     },
     {
       "name": "next quarter",

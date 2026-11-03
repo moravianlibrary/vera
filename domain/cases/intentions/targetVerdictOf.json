@@ -2,26 +2,124 @@
   "function": "targetVerdictOf",
   "cases": [
     {
-      "name": "open intention without planned or delivered target",
+      "name": "running target within pace slack",
       "rule": "PLAN-target",
       "input": {
-        "intention": { "countsFrom": "2026-06-01", "endsOn": null, "targetPages": 1000 },
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": "2026-06-30",
+          "targetPages": 1000
+        },
         "plannedPages": 0,
+        "deliveredPages": 400,
+        "today": "2026-06-16"
+      },
+      "expected": "onPace"
+    },
+    {
+      "name": "running target behind pace",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": "2026-06-30",
+          "targetPages": 1000
+        },
+        "plannedPages": 0,
+        "deliveredPages": 300,
+        "today": "2026-06-16"
+      },
+      "expected": "behindPace"
+    },
+    {
+      "name": "open target without progress",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": null,
+          "targetPages": 1000
+        },
+        "plannedPages": 500,
         "deliveredPages": 0,
         "today": "2026-06-16"
       },
       "expected": null
     },
     {
-      "name": "target met",
+      "name": "open target fully planned",
       "rule": "PLAN-target",
       "input": {
-        "intention": { "countsFrom": "2026-06-01", "endsOn": null, "targetPages": 1000 },
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": null,
+          "targetPages": 1000
+        },
+        "plannedPages": 1000,
+        "deliveredPages": 0,
+        "today": "2026-06-16"
+      },
+      "expected": "fullyPlanned"
+    },
+    {
+      "name": "open target met",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": null,
+          "targetPages": 1000
+        },
         "plannedPages": 0,
         "deliveredPages": 1000,
         "today": "2026-06-16"
       },
       "expected": "targetMet"
+    },
+    {
+      "name": "ended target short",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": "2026-06-30",
+          "targetPages": 1000
+        },
+        "plannedPages": 0,
+        "deliveredPages": 999,
+        "today": "2026-07-01"
+      },
+      "expected": "short"
+    },
+    {
+      "name": "upcoming target fully planned",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": "2026-06-30",
+          "targetPages": 1000
+        },
+        "plannedPages": 1000,
+        "deliveredPages": 0,
+        "today": "2026-05-01"
+      },
+      "expected": "fullyPlanned"
+    },
+    {
+      "name": "targetless intention has no verdict",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": {
+          "countsFrom": "2026-06-01",
+          "endsOn": "2026-06-30",
+          "targetPages": null
+        },
+        "plannedPages": 0,
+        "deliveredPages": 0,
+        "today": "2026-06-16"
+      },
+      "expected": null
     }
   ]
 }

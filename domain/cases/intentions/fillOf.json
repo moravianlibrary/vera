@@ -1,0 +1,86 @@
+{
+  "function": "fillOf",
+  "base": {
+    "categories": [
+      {
+        "id": "mono",
+        "name": "Monographs",
+        "parentId": null
+      },
+      {
+        "id": "per",
+        "name": "Periodicals",
+        "parentId": null
+      },
+      {
+        "id": "reg",
+        "name": "Regional",
+        "parentId": "per"
+      },
+      {
+        "id": "nat",
+        "name": "National",
+        "parentId": "per"
+      },
+      {
+        "id": "spec",
+        "name": "Specialist",
+        "parentId": "per"
+      }
+    ],
+    "iterations": [
+      {
+        "id": "a",
+        "categoryId": "reg"
+      },
+      {
+        "id": "b",
+        "categoryId": "nat"
+      },
+      {
+        "id": "c",
+        "categoryId": "mono"
+      },
+      {
+        "id": "d",
+        "categoryId": "mono"
+      },
+      {
+        "id": "e",
+        "categoryId": "spec"
+      }
+    ],
+    "pagesById": {
+      "a": 100,
+      "b": 200,
+      "c": 50,
+      "d": 400,
+      "e": 300
+    }
+  },
+  "cases": [
+    {
+      "name": "splits target across scope leaves",
+      "rule": "PLAN-fill",
+      "input": {
+        "intention": {
+          "scopeCategoryId": "per",
+          "targetPages": 1000
+        },
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "count": {
+          "plannedIds": ["a", "b"],
+          "deliveredIds": ["a", "b"]
+        }
+      },
+      "expected": [["reg", 500, 100, true], ["nat", 300, 200, true], ["spec", null, 0, false]]
+    }
+  ]
+}

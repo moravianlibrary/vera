@@ -1,0 +1,136 @@
+{
+  "function": "countsTowardsOf",
+  "base": {
+    "categories": [
+      {
+        "id": "mono",
+        "name": "Monographs",
+        "parentId": null
+      },
+      {
+        "id": "per",
+        "name": "Periodicals",
+        "parentId": null
+      },
+      {
+        "id": "reg",
+        "name": "Regional",
+        "parentId": "per"
+      },
+      {
+        "id": "nat",
+        "name": "National",
+        "parentId": "per"
+      },
+      {
+        "id": "spec",
+        "name": "Specialist",
+        "parentId": "per"
+      }
+    ],
+    "iterations": [
+      {
+        "id": "a",
+        "categoryId": "reg",
+        "projectId": "p1"
+      },
+      {
+        "id": "b",
+        "categoryId": "nat",
+        "projectId": null
+      },
+      {
+        "id": "c",
+        "categoryId": "mono",
+        "projectId": null
+      },
+      {
+        "id": "d",
+        "categoryId": "mono",
+        "projectId": null
+      },
+      {
+        "id": "e",
+        "categoryId": "spec",
+        "projectId": null
+      }
+    ],
+    "pagesById": {
+      "a": 100,
+      "b": 200,
+      "c": 50,
+      "d": 400,
+      "e": 300
+    }
+  },
+  "cases": [
+    {
+      "name": "counts matching unarchived intentions while list start is in window",
+      "rule": "PLAN-counting",
+      "input": {
+        "intentions": [
+          {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": null,
+            "archived": null,
+            "id": "i"
+          },
+          {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "funding": {
+              "kind": "project",
+              "projectId": "p1"
+            },
+            "scopeCategoryId": null,
+            "archived": null,
+            "id": "p"
+          },
+          {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": null,
+            "archived": {
+              "actor": {
+                "kind": "system"
+              },
+              "at": "2026-06-30T00:00:00Z"
+            },
+            "id": "x"
+          }
+        ],
+        "memberIds": ["a", "d"],
+        "startsOn": "2026-06-05"
+      },
+      "expected": [["i", 2, 500], ["p", 1, 100]]
+    },
+    {
+      "name": "returns no intentions when list starts outside window",
+      "rule": "PLAN-counting",
+      "input": {
+        "intentions": [
+          {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": null,
+            "archived": null,
+            "id": "i"
+          }
+        ],
+        "memberIds": ["a", "d"],
+        "startsOn": "2026-07-06"
+      },
+      "expected": []
+    }
+  ]
+}

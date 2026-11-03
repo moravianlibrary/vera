@@ -1,0 +1,22 @@
+{
+  "function": "pagesPerWeekNeededOf",
+  "cases": [
+    {
+      "name": "remaining target spread across weeks",
+      "rule": "PLAN-catch-up",
+      "input": {
+        "input": {
+          "intention": {
+            "countsFrom": "2026-06-01",
+            "endsOn": "2026-06-30",
+            "targetPages": 1000
+          },
+          "plannedPages": 100,
+          "deliveredPages": 100,
+          "today": "2026-06-16"
+        }
+      },
+      "expected": 420
+    }
+  ]
+}

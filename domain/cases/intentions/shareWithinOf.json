@@ -1,0 +1,102 @@
+{
+  "function": "shareWithinOf",
+  "base": {
+    "categories": [
+      {
+        "id": "mono",
+        "name": "Monographs",
+        "parentId": null
+      },
+      {
+        "id": "per",
+        "name": "Periodicals",
+        "parentId": null
+      },
+      {
+        "id": "reg",
+        "name": "Regional",
+        "parentId": "per"
+      },
+      {
+        "id": "nat",
+        "name": "National",
+        "parentId": "per"
+      },
+      {
+        "id": "spec",
+        "name": "Specialist",
+        "parentId": "per"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "share from root scope",
+      "rule": "PLAN-mix-within-scope",
+      "input": {
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "scopeCategoryId": null,
+        "categoryId": "reg"
+      },
+      "expected": 30
+    },
+    {
+      "name": "share within parent scope",
+      "rule": "PLAN-mix-within-scope",
+      "input": {
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "scopeCategoryId": "per",
+        "categoryId": "reg"
+      },
+      "expected": 50
+    },
+    {
+      "name": "no share below unallocated category",
+      "rule": "PLAN-mix-within-scope",
+      "input": {
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "scopeCategoryId": "per",
+        "categoryId": "spec"
+      },
+      "expected": null
+    },
+    {
+      "name": "category outside scope",
+      "rule": "PLAN-mix-within-scope",
+      "input": {
+        "distribution": {
+          "shares": {
+            "mono": 40,
+            "per": 60,
+            "reg": 50,
+            "nat": 30
+          }
+        },
+        "scopeCategoryId": "per",
+        "categoryId": "mono"
+      },
+      "expected": null
+    }
+  ]
+}
