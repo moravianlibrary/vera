@@ -1,0 +1,17 @@
+{
+  "function": "lastDaysRange",
+  "cases": [
+    {
+      "name": "counts across month end",
+      "rule": null,
+      "input": {
+        "today": "2026-07-02T00:00:00.000Z",
+        "count": 7
+      },
+      "expected": {
+        "from": "2026-06-26",
+        "to": "2026-07-02"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "function": "intentionStateOf",
+  "cases": [
+    {
+      "name": "upcoming",
+      "rule": "PLAN-intention",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "today": "2026-05-31"
+      },
+      "expected": "Upcoming"
+    },
+    {
+      "name": "running",
+      "rule": "PLAN-intention",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "today": "2026-06-30"
+      },
+      "expected": "Running"
+    },
+    {
+      "name": "ended",
+      "rule": "PLAN-intention",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "today": "2026-07-01"
+      },
+      "expected": "Ended"
+    }
+  ]
+}

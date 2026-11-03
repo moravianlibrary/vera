@@ -1,0 +1,81 @@
+{
+  "function": "valueInUseAt",
+  "cases": [
+    {
+      "name": "past day value",
+      "rule": "PLAN-scope",
+      "input": {
+        "values": {
+          "key": "pages",
+          "sources": [
+            {
+              "source": {
+                "kind": "plugin",
+                "instanceId": "pi1",
+                "instanceName": "MZK Aleph"
+              },
+              "tier": 50,
+              "value": 300,
+              "observedAt": "2026-01-01T09:00:00Z",
+              "setBy": null
+            },
+            {
+              "source": {
+                "kind": "hand"
+              },
+              "tier": 100,
+              "value": 320,
+              "observedAt": "2026-06-01T09:00:00Z",
+              "setBy": "u2"
+            }
+          ]
+        },
+        "at": "2026-03-01T00:00:00Z"
+      },
+      "expected": {
+        "source": {
+          "kind": "plugin",
+          "instanceId": "pi1",
+          "instanceName": "MZK Aleph"
+        },
+        "tier": 50,
+        "value": 300,
+        "observedAt": "2026-01-01T09:00:00Z",
+        "setBy": null
+      }
+    },
+    {
+      "name": "before any observation",
+      "rule": "PLAN-scope",
+      "input": {
+        "values": {
+          "key": "pages",
+          "sources": [
+            {
+              "source": {
+                "kind": "plugin",
+                "instanceId": "pi1",
+                "instanceName": "MZK Aleph"
+              },
+              "tier": 50,
+              "value": 300,
+              "observedAt": "2026-01-01T09:00:00Z",
+              "setBy": null
+            },
+            {
+              "source": {
+                "kind": "hand"
+              },
+              "tier": 100,
+              "value": 320,
+              "observedAt": "2026-06-01T09:00:00Z",
+              "setBy": "u2"
+            }
+          ]
+        },
+        "at": "2025-01-01T00:00:00Z"
+      },
+      "expected": null
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "function": "monthRange",
+  "cases": [
+    {
+      "name": "whole month",
+      "rule": null,
+      "input": {
+        "today": "2026-06-25T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-06-01",
+        "to": "2026-06-30"
+      }
+    }
+  ]
+}

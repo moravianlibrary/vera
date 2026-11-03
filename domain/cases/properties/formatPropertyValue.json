@@ -1,0 +1,45 @@
+{
+  "function": "formatPropertyValue",
+  "cases": [
+    {
+      "name": "formats named values",
+      "rule": "DOC-property-values",
+      "input": {
+        "definition": {
+          "key": "machines",
+          "names": {
+            "en": "Machines",
+            "cs": "Skenery"
+          },
+          "visibility": "staff",
+          "type": {
+            "kind": "enum",
+            "values": [
+              {
+                "value": "zeutschel",
+                "names": {
+                  "en": "Zeutschel",
+                  "cs": "Zeutschel"
+                }
+              },
+              {
+                "value": "bookeye",
+                "names": {
+                  "en": "Bookeye",
+                  "cs": "Bookeye"
+                }
+              }
+            ]
+          },
+          "isList": true,
+          "about": "attempt",
+          "handTier": 100,
+          "isPredefined": false,
+          "isCatalogFact": false
+        },
+        "value": ["bookeye", "zeutschel"]
+      },
+      "expected": "Bookeye, Zeutschel"
+    }
+  ]
+}

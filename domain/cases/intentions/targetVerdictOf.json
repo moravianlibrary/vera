@@ -1,0 +1,27 @@
+{
+  "function": "targetVerdictOf",
+  "cases": [
+    {
+      "name": "open intention without planned or delivered target",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": null, "targetPages": 1000 },
+        "plannedPages": 0,
+        "deliveredPages": 0,
+        "today": "2026-06-16"
+      },
+      "expected": null
+    },
+    {
+      "name": "target met",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": null, "targetPages": 1000 },
+        "plannedPages": 0,
+        "deliveredPages": 1000,
+        "today": "2026-06-16"
+      },
+      "expected": "targetMet"
+    }
+  ]
+}

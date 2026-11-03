@@ -1,0 +1,23 @@
+{
+  "function": "withTextCondition",
+  "cases": [
+    {
+      "name": "replaces text match while keeping other condition",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "contains": "x",
+          "hasNoValue": true
+        },
+        "match": "endsWith",
+        "text": "a b "
+      },
+      "expected": {
+        "key": "title",
+        "hasNoValue": true,
+        "endsWith": "a b "
+      }
+    }
+  ]
+}

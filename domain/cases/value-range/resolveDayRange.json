@@ -1,0 +1,116 @@
+{
+  "function": "resolveDayRange",
+  "cases": [
+    {
+      "name": "resolves last 30 days",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "last-30-days"
+        },
+        "today": "2026-06-25T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-05-27",
+        "to": "2026-06-25"
+      }
+    },
+    {
+      "name": "resolves this month",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "this-month"
+        },
+        "today": "2026-06-25T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-06-01",
+        "to": "2026-06-30"
+      }
+    },
+    {
+      "name": "keeps explicit range",
+      "rule": null,
+      "input": {
+        "range": {
+          "from": "2026-06-01"
+        },
+        "today": "2026-06-25T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-06-01"
+      }
+    },
+    {
+      "name": "resolves this week across year boundary",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "this-week"
+        },
+        "today": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2025-12-29",
+        "to": "2026-01-04"
+      }
+    },
+    {
+      "name": "resolves last week across year boundary",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "last-week"
+        },
+        "today": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2025-12-22",
+        "to": "2025-12-28"
+      }
+    },
+    {
+      "name": "resolves next week across year boundary",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "next-week"
+        },
+        "today": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-01-05",
+        "to": "2026-01-11"
+      }
+    },
+    {
+      "name": "resolves last month across year boundary",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "last-month"
+        },
+        "today": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2025-12-01",
+        "to": "2025-12-31"
+      }
+    },
+    {
+      "name": "resolves next month across year boundary",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "next-month"
+        },
+        "today": "2026-01-01T00:00:00.000Z"
+      },
+      "expected": {
+        "from": "2026-02-01",
+        "to": "2026-02-28"
+      }
+    }
+  ]
+}

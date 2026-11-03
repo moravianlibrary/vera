@@ -1,0 +1,17 @@
+{
+  "function": "daysUntil",
+  "cases": [
+    {
+      "name": "future date",
+      "rule": "LC-PROJ-period",
+      "input": { "calendarDate": "2026-07-02", "today": "2026-06-25" },
+      "expected": 7
+    },
+    {
+      "name": "past date",
+      "rule": "LC-PROJ-period",
+      "input": { "calendarDate": "2026-06-20", "today": "2026-06-25" },
+      "expected": -5
+    }
+  ]
+}

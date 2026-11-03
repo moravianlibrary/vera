@@ -1,0 +1,25 @@
+{
+  "function": "formatDayRange",
+  "cases": [
+    {
+      "name": "formats a day preset",
+      "rule": null,
+      "input": {
+        "range": {
+          "preset": "last-14-days"
+        }
+      },
+      "expected": "last-14-days"
+    },
+    {
+      "name": "formats an open day range",
+      "rule": null,
+      "input": {
+        "range": {
+          "from": "2026-06-01"
+        }
+      },
+      "expected": "2026-06-01.."
+    }
+  ]
+}

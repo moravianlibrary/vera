@@ -1,0 +1,153 @@
+{
+  "function": "meetsCondition",
+  "cases": [
+    {
+      "name": "matches any list value",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "machines",
+          "anyOf": ["zeutschel"]
+        },
+        "value": ["bookeye", "zeutschel"],
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "does not match absent list value",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "machines",
+          "anyOf": ["zeutschel"]
+        },
+        "value": ["bookeye"],
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "text contains case-insensitively",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "contains": "NOVINY"
+        },
+        "value": "Lidov\u00e9 noviny",
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "text starts with",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "startsWith": "lidov\u00e9 "
+        },
+        "value": "Lidov\u00e9 noviny",
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "text prefix mismatch",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "startsWith": "noviny"
+        },
+        "value": "Lidov\u00e9 noviny",
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "text ends with",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "endsWith": "Noviny"
+        },
+        "value": "Lidov\u00e9 noviny",
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "number lower bound matches",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "pages",
+          "numberRange": {
+            "from": 100
+          }
+        },
+        "value": 320,
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "number upper bound excludes",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "pages",
+          "numberRange": {
+            "to": 99
+          }
+        },
+        "value": 320,
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "no value condition matches null",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "size",
+          "hasNoValue": true
+        },
+        "value": null,
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    },
+    {
+      "name": "value choice does not match null",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "size",
+          "anyOf": ["A4"]
+        },
+        "value": null,
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": false
+    },
+    {
+      "name": "either condition matches existing value",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "size",
+          "hasNoValue": true,
+          "anyOf": ["A4"]
+        },
+        "value": "A4",
+        "today": "2026-06-25T12:00:00.000Z"
+      },
+      "expected": true
+    }
+  ]
+}

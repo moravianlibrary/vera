@@ -1,0 +1,45 @@
+{
+  "function": "valueInUseOf",
+  "cases": [
+    {
+      "name": "highest tier with a value",
+      "rule": "DOC-property-values",
+      "input": {
+        "values": {
+          "key": "pages",
+          "sources": [
+            {
+              "source": {
+                "kind": "plugin",
+                "instanceId": "pi1",
+                "instanceName": "MZK Aleph"
+              },
+              "tier": 50,
+              "value": 300,
+              "observedAt": "2026-01-01T09:00:00Z",
+              "setBy": null
+            },
+            {
+              "source": {
+                "kind": "hand"
+              },
+              "tier": 100,
+              "value": 320,
+              "observedAt": "2026-06-01T09:00:00Z",
+              "setBy": "u2"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "source": {
+          "kind": "hand"
+        },
+        "tier": 100,
+        "value": 320,
+        "observedAt": "2026-06-01T09:00:00Z",
+        "setBy": "u2"
+      }
+    }
+  ]
+}

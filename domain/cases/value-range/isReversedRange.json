@@ -1,0 +1,17 @@
+{
+  "function": "isReversedRange",
+  "cases": [
+    {
+      "name": "detects reversed ends",
+      "rule": null,
+      "input": { "range": { "from": 1000, "to": 200 } },
+      "expected": true
+    },
+    {
+      "name": "open range is not reversed",
+      "rule": null,
+      "input": { "range": { "from": "2026-06-01" } },
+      "expected": false
+    }
+  ]
+}

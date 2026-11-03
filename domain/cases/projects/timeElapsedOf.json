@@ -1,0 +1,41 @@
+{
+  "function": "timeElapsedOf",
+  "cases": [
+    {
+      "name": "at the start",
+      "rule": "LC-PROJ-period",
+      "input": {
+        "project": {
+          "startsOn": "2026-01-01",
+          "endsOn": "2026-12-31"
+        },
+        "today": "2026-01-01"
+      },
+      "expected": 0
+    },
+    {
+      "name": "clamps after the end",
+      "rule": "LC-PROJ-period",
+      "input": {
+        "project": {
+          "startsOn": "2026-01-01",
+          "endsOn": "2026-12-31"
+        },
+        "today": "2028-01-01"
+      },
+      "expected": 1
+    },
+    {
+      "name": "elapsed share by midyear",
+      "rule": "LC-PROJ-period",
+      "input": {
+        "project": {
+          "startsOn": "2026-01-01",
+          "endsOn": "2026-12-31"
+        },
+        "today": "2026-07-02"
+      },
+      "expected": 0.4986301369863014
+    }
+  ]
+}

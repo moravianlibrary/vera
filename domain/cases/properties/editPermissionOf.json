@@ -1,0 +1,13 @@
+{
+  "function": "editPermissionOf",
+  "cases": [
+    {
+      "name": "names a property's permission",
+      "rule": "PERM-property-edit",
+      "input": {
+        "key": "size"
+      },
+      "expected": "property.size.edit"
+    }
+  ]
+}

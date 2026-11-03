@@ -1,0 +1,16 @@
+{
+  "function": "textSummaryOf",
+  "cases": [
+    {
+      "name": "summarizes prefix",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "startsWith": "Lidov\u00e9"
+        }
+      },
+      "expected": "starts with \u201cLidov\u00e9\u201d"
+    }
+  ]
+}

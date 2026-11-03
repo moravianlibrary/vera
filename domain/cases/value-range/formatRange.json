@@ -1,0 +1,23 @@
+{
+  "function": "formatRange",
+  "cases": [
+    {
+      "name": "formats an open lower bound",
+      "rule": null,
+      "input": { "range": { "from": 1000 } },
+      "expected": "1000.."
+    },
+    {
+      "name": "formats an open upper bound",
+      "rule": null,
+      "input": { "range": { "to": 200 } },
+      "expected": "..200"
+    },
+    {
+      "name": "empty range writes nothing",
+      "rule": null,
+      "input": { "range": {} },
+      "expected": null
+    }
+  ]
+}

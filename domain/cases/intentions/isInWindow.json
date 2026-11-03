@@ -1,0 +1,32 @@
+{
+  "function": "isInWindow",
+  "cases": [
+    {
+      "name": "includes first and last day",
+      "rule": "PLAN-counting",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "calendarDate": "2026-06-30"
+      },
+      "expected": true
+    },
+    {
+      "name": "excludes date after end",
+      "rule": "PLAN-counting",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "calendarDate": "2026-07-01"
+      },
+      "expected": false
+    },
+    {
+      "name": "open window continues",
+      "rule": "PLAN-counting",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": null },
+        "calendarDate": "2030-01-01"
+      },
+      "expected": true
+    }
+  ]
+}

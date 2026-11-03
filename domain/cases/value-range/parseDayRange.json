@@ -1,0 +1,43 @@
+{
+  "function": "parseDayRange",
+  "cases": [
+    {
+      "name": "parses a month preset",
+      "rule": null,
+      "input": {
+        "raw": "this-month"
+      },
+      "expected": {
+        "preset": "this-month"
+      }
+    },
+    {
+      "name": "parses an open range",
+      "rule": null,
+      "input": {
+        "raw": "2026-06-01.."
+      },
+      "expected": {
+        "from": "2026-06-01"
+      }
+    },
+    {
+      "name": "rejects unknown preset",
+      "rule": null,
+      "input": {
+        "raw": "yesterday"
+      },
+      "expected": null
+    },
+    {
+      "name": "parses last week",
+      "rule": null,
+      "input": {
+        "raw": "last-week"
+      },
+      "expected": {
+        "preset": "last-week"
+      }
+    }
+  ]
+}

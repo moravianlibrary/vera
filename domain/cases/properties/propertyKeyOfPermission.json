@@ -1,0 +1,21 @@
+{
+  "function": "propertyKeyOfPermission",
+  "cases": [
+    {
+      "name": "reads property key",
+      "rule": "PERM-property-edit",
+      "input": {
+        "permission": "property.page_count.edit"
+      },
+      "expected": "page_count"
+    },
+    {
+      "name": "rejects general definition permission",
+      "rule": "PERM-property-edit",
+      "input": {
+        "permission": "property.define"
+      },
+      "expected": null
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { caseFileJsonSchema, caseFileSchema } from "../cases/case-file";
 import type { Iteration, RepeatEvery, Request } from "./entities";
+import { intentionStateOf, isInWindow, nextPeriodStartOf, targetVerdictOf } from "./intentions";
 import type {
   Grant,
   GrantHolder,
@@ -26,6 +27,18 @@ import {
   scopesOf,
   withRequirements,
 } from "./permissions";
+import { daysUntil, periodOf, timeElapsedOf } from "./projects";
+import {
+  editPermissionOf,
+  formatPropertyValue,
+  isValueOf,
+  meetsCondition,
+  propertyKeyOfPermission,
+  textSummaryOf,
+  valueInUseAt,
+  valueInUseOf,
+  withTextCondition,
+} from "./properties";
 import type { Cadence } from "./schedules";
 import { isTooFrequent, nextOccurrenceOf, occurrencesOf, repeatCadenceOf } from "./schedules";
 import {
@@ -35,6 +48,19 @@ import {
   statusFootnoteOf,
   validationOf,
 } from "./status";
+import {
+  formatDayRange,
+  formatRange,
+  isReversedRange,
+  isWithinRange,
+  lastDaysRange,
+  monthRange,
+  parseCount,
+  parseDay,
+  parseDayRange,
+  parseRange,
+  resolveDayRange,
+} from "./value-range";
 
 const root = join(import.meta.dir, "../cases");
 const functions: Record<string, (...args: unknown[]) => unknown> = {
@@ -61,6 +87,42 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   nextOccurrenceOf: (...args) => nextOccurrenceOf(args[0] as Cadence, date(args[1])),
   repeatCadenceOf: (...args) => repeatCadenceOf(args[0] as RepeatEvery),
   isTooFrequent: (...args) => isTooFrequent(args[0] as Cadence),
+  formatRange: (...args) => formatRange(args[0] as never),
+  parseRange: (...args) =>
+    parseRange(
+      args[0] as string,
+      (args[1] === "day" ? parseDay : parseCount) as (raw: string) => never,
+    ),
+  isWithinRange: (...args) => isWithinRange(args[0] as never, args[1] as never),
+  isReversedRange: (...args) => isReversedRange(args[0] as never),
+  lastDaysRange: (...args) => lastDaysRange(date(args[0]), args[1] as number),
+  monthRange: (...args) => monthRange(date(args[0])),
+  formatDayRange: (...args) => formatDayRange(args[0] as never),
+  parseDayRange: (...args) => parseDayRange(args[0] as string),
+  resolveDayRange: (...args) => resolveDayRange(args[0] as never, date(args[1])),
+  isInWindow: (...args) => isInWindow(args[0] as never, args[1] as string),
+  intentionStateOf: (...args) => intentionStateOf(args[0] as never, args[1] as string),
+  targetVerdictOf: (...args) =>
+    targetVerdictOf({
+      intention: args[0] as never,
+      plannedPages: args[1] as number,
+      deliveredPages: args[2] as number,
+      today: args[3] as string,
+    }),
+  nextPeriodStartOf: (...args) => nextPeriodStartOf(args[0] as never, args[1] as string),
+  periodOf: (...args) => periodOf(args[0] as never, args[1] as string),
+  timeElapsedOf: (...args) => timeElapsedOf(args[0] as never, args[1] as string),
+  daysUntil: (...args) => daysUntil(args[0] as string, args[1] as string),
+  valueInUseOf: (...args) => valueInUseOf(args[0] as never),
+  valueInUseAt: (...args) => valueInUseAt(args[0] as never, args[1] as string),
+  isValueOf: (...args) => isValueOf(args[0] as never, args[1] as never),
+  formatPropertyValue: (...args) => formatPropertyValue(args[0] as never, args[1] as never),
+  textSummaryOf: (...args) => textSummaryOf(args[0] as never),
+  withTextCondition: (...args) =>
+    withTextCondition(args[0] as never, args[1] as never, args[2] as string),
+  editPermissionOf: (...args) => editPermissionOf(args[0] as string),
+  propertyKeyOfPermission: (...args) => propertyKeyOfPermission(args[0] as never),
+  meetsCondition: (...args) => meetsCondition(args[0] as never, args[1] as never, date(args[2])),
 };
 
 function date(value: unknown): Date {
@@ -108,6 +170,9 @@ describe("case file schema", () => {
 });
 
 function normalize(value: unknown): unknown {
+  if (value === undefined) {
+    return null;
+  }
   if (value instanceof Date) {
     return value.toISOString();
   }

@@ -1,0 +1,47 @@
+{
+  "function": "parseRange",
+  "cases": [
+    {
+      "name": "parses a count range",
+      "rule": null,
+      "input": { "raw": "200..1000", "kind": "count" },
+      "expected": { "from": 200, "to": 1000 }
+    },
+    {
+      "name": "parses a day range",
+      "rule": null,
+      "input": { "raw": "..2026-06-30", "kind": "day" },
+      "expected": { "to": "2026-06-30" }
+    },
+    {
+      "name": "rejects malformed ranges",
+      "rule": null,
+      "input": { "raw": "1..2..3", "kind": "count" },
+      "expected": null
+    },
+    {
+      "name": "rejects input without separator",
+      "rule": null,
+      "input": { "raw": "1000", "kind": "count" },
+      "expected": null
+    },
+    {
+      "name": "rejects invalid count",
+      "rule": null,
+      "input": { "raw": "ten..20", "kind": "count" },
+      "expected": null
+    },
+    {
+      "name": "rejects invalid day",
+      "rule": null,
+      "input": { "raw": "2026-02-30..", "kind": "day" },
+      "expected": null
+    },
+    {
+      "name": "rejects empty range",
+      "rule": null,
+      "input": { "raw": "..", "kind": "count" },
+      "expected": null
+    }
+  ]
+}

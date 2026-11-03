@@ -1,0 +1,63 @@
+{
+  "function": "isWithinRange",
+  "cases": [
+    {
+      "name": "includes lower boundary",
+      "rule": null,
+      "input": {
+        "value": 200,
+        "range": {
+          "from": 200,
+          "to": 1000
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "includes upper boundary",
+      "rule": null,
+      "input": {
+        "value": 1000,
+        "range": {
+          "from": 200,
+          "to": 1000
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "excludes values above range",
+      "rule": null,
+      "input": {
+        "value": 1001,
+        "range": {
+          "from": 200,
+          "to": 1000
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "open day lower bound",
+      "rule": null,
+      "input": {
+        "value": "2026-06-01",
+        "range": {
+          "from": "2026-06-01"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "open day lower bound",
+      "rule": null,
+      "input": {
+        "value": "2026-06-01",
+        "range": {
+          "from": "2026-06-01"
+        }
+      },
+      "expected": true
+    }
+  ]
+}
