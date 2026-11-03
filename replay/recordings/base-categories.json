@@ -1,0 +1,3907 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "reads",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": {
+              "mixId": "<U1>",
+              "mixName": "House mix",
+              "intention": {
+                "description": "All digitized work from the reporting baseline.",
+                "funding": {
+                  "kind": "any"
+                },
+                "projectId": null,
+                "scopeCategoryId": null,
+                "distributionId": "<U1>",
+                "targetPages": null,
+                "endsOn": null,
+                "isOverall": true,
+                "templateId": null,
+                "archived": null,
+                "id": "i4",
+                "name": "Overall output",
+                "countsFrom": "2019-01-01",
+                "mixRevision": null
+              },
+              "outputPages": 0,
+              "unallocated": 0,
+              "noShareIds": [],
+              "nodes": [
+                {
+                  "categoryId": "c1",
+                  "share": 35,
+                  "ofWhole": 35,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c11",
+                  "share": 40,
+                  "ofWhole": 14,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c12",
+                  "share": 60,
+                  "ofWhole": 21,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c2",
+                  "share": 45,
+                  "ofWhole": 45,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c21",
+                  "share": 30,
+                  "ofWhole": 13.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c22",
+                  "share": 50,
+                  "ofWhole": 22.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c23",
+                  "share": 20,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c3",
+                  "share": 15,
+                  "ofWhole": 15,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c31",
+                  "share": 60,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c32",
+                  "share": 40,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c4",
+                  "share": 5,
+                  "ofWhole": 5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                }
+              ]
+            },
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": null,
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": {
+              "mixId": "<U1>",
+              "mixName": "House mix",
+              "intention": {
+                "description": "All digitized work from the reporting baseline.",
+                "funding": {
+                  "kind": "any"
+                },
+                "projectId": null,
+                "scopeCategoryId": null,
+                "distributionId": "<U1>",
+                "targetPages": null,
+                "endsOn": null,
+                "isOverall": true,
+                "templateId": null,
+                "archived": null,
+                "id": "i4",
+                "name": "Overall output",
+                "countsFrom": "2019-01-01",
+                "mixRevision": null
+              },
+              "outputPages": 0,
+              "unallocated": 0,
+              "noShareIds": [],
+              "nodes": [
+                {
+                  "categoryId": "c1",
+                  "share": 35,
+                  "ofWhole": 35,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c11",
+                  "share": 40,
+                  "ofWhole": 14,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c12",
+                  "share": 60,
+                  "ofWhole": 21,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c2",
+                  "share": 45,
+                  "ofWhole": 45,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c21",
+                  "share": 30,
+                  "ofWhole": 13.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c22",
+                  "share": 50,
+                  "ofWhole": 22.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c23",
+                  "share": 20,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c3",
+                  "share": 15,
+                  "ofWhole": 15,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c31",
+                  "share": 60,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c32",
+                  "share": 40,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c4",
+                  "share": 5,
+                  "ofWhole": 5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                }
+              ]
+            },
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read categories",
+            "code": "forbidden"
+          },
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read categories",
+            "code": "forbidden"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read categories",
+            "code": "forbidden"
+          },
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read categories",
+            "code": "forbidden"
+          },
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/c22/impact",
+          "status": 200,
+          "body": {
+            "documentCount": 6,
+            "pages": 10457,
+            "shares": [
+              {
+                "mix": {
+                  "id": "<U1>",
+                  "name": "House mix"
+                },
+                "share": 50,
+                "intentionCount": 7
+              },
+              {
+                "mix": {
+                  "id": "<U2>",
+                  "name": "Periodicals push"
+                },
+                "share": 35,
+                "intentionCount": 3
+              }
+            ],
+            "otherMixCount": 0,
+            "grantCount": 0,
+            "scopedIntentions": [],
+            "scopedIntentionCount": 0
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/c22/impact",
+          "status": 404,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/not_found",
+            "title": "Not found",
+            "status": 404,
+            "detail": "No such category",
+            "code": "not_found"
+          },
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/c404/impact",
+          "status": 404,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/not_found",
+            "title": "Not found",
+            "status": 404,
+            "detail": "No such category",
+            "code": "not_found"
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "create-category",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 200,
+          "body": {
+            "id": "c33",
+            "name": "Recording child",
+            "parentId": "c2"
+          },
+          "requestBody": {
+            "name": "Recording child",
+            "parentId": "c2"
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            },
+            {
+              "id": "c33",
+              "name": "Recording child",
+              "parentId": "c2"
+            }
+          ],
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c33",
+                "documentCount": 0,
+                "pages": 0,
+                "deliveredPages": 0,
+                "readyPages": 0,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": null,
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u8"
+        }
+      ]
+    },
+    {
+      "name": "save-category",
+      "calls": [
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 200,
+          "body": {
+            "id": "c23",
+            "name": "Specialist press",
+            "parentId": "c1"
+          },
+          "requestBody": {
+            "name": "Specialist press",
+            "parentId": "c1"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist press",
+              "parentId": "c1"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 13,
+                "pages": 4664,
+                "deliveredPages": 1240,
+                "readyPages": 1914,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 19,
+                "pages": 25487,
+                "deliveredPages": 5867,
+                "readyPages": 6200,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": {
+              "mixId": "<U1>",
+              "mixName": "House mix",
+              "intention": {
+                "description": "All digitized work from the reporting baseline.",
+                "funding": {
+                  "kind": "any"
+                },
+                "projectId": null,
+                "scopeCategoryId": null,
+                "distributionId": "<U1>",
+                "targetPages": null,
+                "endsOn": null,
+                "isOverall": true,
+                "templateId": null,
+                "archived": null,
+                "id": "i4",
+                "name": "Overall output",
+                "countsFrom": "2019-01-01",
+                "mixRevision": null
+              },
+              "outputPages": 0,
+              "unallocated": 0,
+              "noShareIds": [],
+              "nodes": [
+                {
+                  "categoryId": "c1",
+                  "share": 35,
+                  "ofWhole": 35,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": [
+                    "c23"
+                  ]
+                },
+                {
+                  "categoryId": "c11",
+                  "share": 40,
+                  "ofWhole": 14,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c12",
+                  "share": 60,
+                  "ofWhole": 21,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c2",
+                  "share": 45,
+                  "ofWhole": 45,
+                  "actual": null,
+                  "unallocated": 20,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c21",
+                  "share": 30,
+                  "ofWhole": 13.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c22",
+                  "share": 50,
+                  "ofWhole": 22.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c23",
+                  "share": null,
+                  "ofWhole": null,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c3",
+                  "share": 15,
+                  "ofWhole": 15,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c31",
+                  "share": 60,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c32",
+                  "share": 40,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c4",
+                  "share": 5,
+                  "ofWhole": 5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                }
+              ]
+            },
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "delete-category",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 200,
+          "body": {
+            "id": "c33",
+            "name": "Disposable category",
+            "parentId": null
+          },
+          "requestBody": {
+            "name": "Disposable category",
+            "parentId": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c33",
+          "status": 204,
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": {
+              "mixId": "<U1>",
+              "mixName": "House mix",
+              "intention": {
+                "description": "All digitized work from the reporting baseline.",
+                "funding": {
+                  "kind": "any"
+                },
+                "projectId": null,
+                "scopeCategoryId": null,
+                "distributionId": "<U1>",
+                "targetPages": null,
+                "endsOn": null,
+                "isOverall": true,
+                "templateId": null,
+                "archived": null,
+                "id": "i4",
+                "name": "Overall output",
+                "countsFrom": "2019-01-01",
+                "mixRevision": null
+              },
+              "outputPages": 0,
+              "unallocated": 0,
+              "noShareIds": [],
+              "nodes": [
+                {
+                  "categoryId": "c1",
+                  "share": 35,
+                  "ofWhole": 35,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c11",
+                  "share": 40,
+                  "ofWhole": 14,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c12",
+                  "share": 60,
+                  "ofWhole": 21,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c2",
+                  "share": 45,
+                  "ofWhole": 45,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c21",
+                  "share": 30,
+                  "ofWhole": 13.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c22",
+                  "share": 50,
+                  "ofWhole": 22.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c23",
+                  "share": 20,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c3",
+                  "share": 15,
+                  "ofWhole": 15,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c31",
+                  "share": 60,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c32",
+                  "share": 40,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c4",
+                  "share": 5,
+                  "ofWhole": 5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                }
+              ]
+            },
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "set-category-custody",
+      "calls": [
+        {
+          "method": "PUT",
+          "path": "/api/categories/c22/custody",
+          "status": 200,
+          "body": {
+            "categoryId": "c22",
+            "documentCount": 6,
+            "pages": 10457,
+            "deliveredPages": 3447,
+            "readyPages": 2560,
+            "grants": [
+              {
+                "kind": "person",
+                "id": "u4",
+                "name": "Eva Horáková"
+              }
+            ],
+            "reach": [
+              {
+                "userId": "u1",
+                "name": "Jana Nováková",
+                "group": {
+                  "id": "g1",
+                  "name": "Periodicals Curators"
+                },
+                "grantedOn": {
+                  "id": "c2",
+                  "name": "Periodicals"
+                }
+              },
+              {
+                "userId": "u8",
+                "name": "Kateřina Novotná",
+                "group": {
+                  "id": "g1",
+                  "name": "Periodicals Curators"
+                },
+                "grantedOn": {
+                  "id": "c2",
+                  "name": "Periodicals"
+                }
+              },
+              {
+                "userId": "u4",
+                "name": "Eva Horáková",
+                "group": null,
+                "grantedOn": {
+                  "id": "c22",
+                  "name": "National"
+                }
+              }
+            ]
+          },
+          "requestBody": {
+            "groupIds": [],
+            "userIds": [
+              "u4"
+            ]
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u4",
+                    "name": "Eva Horáková"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u4",
+                    "name": "Eva Horáková",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c22",
+                      "name": "National"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              }
+            ],
+            "mix": null,
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u8"
+        }
+      ]
+    },
+    {
+      "name": "refine-category",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/categories/c32/refine",
+          "status": 200,
+          "body": {
+            "id": "c33",
+            "name": "Before 1800",
+            "parentId": "c32"
+          },
+          "requestBody": {
+            "name": "Before 1800"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monographs",
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20th century",
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodicals",
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regional",
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "National",
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Specialist",
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Manuscripts",
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Medieval",
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Early modern",
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Maps",
+              "parentId": null
+            },
+            {
+              "id": "c33",
+              "name": "Before 1800",
+              "parentId": "c32"
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/categories/overview",
+          "status": 200,
+          "body": {
+            "totals": {
+              "documentCount": 41,
+              "pages": 32833,
+              "deliveredPages": 8975,
+              "readyPages": 8682
+            },
+            "nodes": [
+              {
+                "categoryId": "c1",
+                "documentCount": 7,
+                "pages": 2492,
+                "deliveredPages": 1240,
+                "readyPages": 764,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c11",
+                "documentCount": 2,
+                "pages": 608,
+                "deliveredPages": 420,
+                "readyPages": 188,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c12",
+                "documentCount": 5,
+                "pages": 1884,
+                "deliveredPages": 820,
+                "readyPages": 576,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c2",
+                "documentCount": 25,
+                "pages": 27659,
+                "deliveredPages": 5867,
+                "readyPages": 7350,
+                "grants": [
+                  {
+                    "kind": "group",
+                    "id": "g1",
+                    "name": "Periodicals Curators"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c21",
+                "documentCount": 13,
+                "pages": 15030,
+                "deliveredPages": 2420,
+                "readyPages": 3640,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c22",
+                "documentCount": 6,
+                "pages": 10457,
+                "deliveredPages": 3447,
+                "readyPages": 2560,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c23",
+                "documentCount": 6,
+                "pages": 2172,
+                "deliveredPages": 0,
+                "readyPages": 1150,
+                "grants": [],
+                "reach": [
+                  {
+                    "userId": "u1",
+                    "name": "Jana Nováková",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  },
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": {
+                      "id": "g1",
+                      "name": "Periodicals Curators"
+                    },
+                    "grantedOn": {
+                      "id": "c2",
+                      "name": "Periodicals"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c3",
+                "documentCount": 6,
+                "pages": 2070,
+                "deliveredPages": 1258,
+                "readyPages": 568,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c31",
+                "documentCount": 2,
+                "pages": 456,
+                "deliveredPages": 0,
+                "readyPages": 212,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c32",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              },
+              {
+                "categoryId": "c4",
+                "documentCount": 3,
+                "pages": 612,
+                "deliveredPages": 610,
+                "readyPages": 0,
+                "grants": [
+                  {
+                    "kind": "person",
+                    "id": "u8",
+                    "name": "Kateřina Novotná"
+                  }
+                ],
+                "reach": [
+                  {
+                    "userId": "u8",
+                    "name": "Kateřina Novotná",
+                    "group": null,
+                    "grantedOn": {
+                      "id": "c4",
+                      "name": "Maps"
+                    }
+                  }
+                ]
+              },
+              {
+                "categoryId": "c33",
+                "documentCount": 4,
+                "pages": 1614,
+                "deliveredPages": 1258,
+                "readyPages": 356,
+                "grants": [],
+                "reach": []
+              }
+            ],
+            "mix": {
+              "mixId": "<U1>",
+              "mixName": "House mix",
+              "intention": {
+                "description": "All digitized work from the reporting baseline.",
+                "funding": {
+                  "kind": "any"
+                },
+                "projectId": null,
+                "scopeCategoryId": null,
+                "distributionId": "<U1>",
+                "targetPages": null,
+                "endsOn": null,
+                "isOverall": true,
+                "templateId": null,
+                "archived": null,
+                "id": "i4",
+                "name": "Overall output",
+                "countsFrom": "2019-01-01",
+                "mixRevision": null
+              },
+              "outputPages": 0,
+              "unallocated": 0,
+              "noShareIds": [],
+              "nodes": [
+                {
+                  "categoryId": "c1",
+                  "share": 35,
+                  "ofWhole": 35,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c11",
+                  "share": 40,
+                  "ofWhole": 14,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c12",
+                  "share": 60,
+                  "ofWhole": 21,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c2",
+                  "share": 45,
+                  "ofWhole": 45,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c21",
+                  "share": 30,
+                  "ofWhole": 13.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c22",
+                  "share": 50,
+                  "ofWhole": 22.5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c23",
+                  "share": 20,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c3",
+                  "share": 15,
+                  "ofWhole": 15,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c31",
+                  "share": 60,
+                  "ofWhole": 9,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c32",
+                  "share": 40,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c4",
+                  "share": 5,
+                  "ofWhole": 5,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                },
+                {
+                  "categoryId": "c33",
+                  "share": 100,
+                  "ofWhole": 6,
+                  "actual": null,
+                  "unallocated": 0,
+                  "noShareIds": []
+                }
+              ]
+            },
+            "unheldIds": [
+              "c1",
+              "c3"
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "category-refusals",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may change the tree only inside your own custody",
+            "code": "forbidden"
+          },
+          "requestBody": {
+            "name": "No permission",
+            "parentId": "c2"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.not_found",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "No category c404",
+            "code": "category.not_found"
+          },
+          "requestBody": {
+            "name": "Missing parent",
+            "parentId": "c404"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.holds_documents",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "It holds documents, so it cannot take a child: refine it instead",
+            "code": "category.holds_documents"
+          },
+          "requestBody": {
+            "name": "Brno",
+            "parentId": "c21"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.name_taken",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "A category beside it already has that name",
+            "code": "category.name_taken"
+          },
+          "requestBody": {
+            "name": "Regional",
+            "parentId": "c2"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/invalid",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Too small: expected string to have >=1 characters",
+            "code": "invalid",
+            "errors": [
+              {
+                "pointer": "/name",
+                "code": "too_small",
+                "detail": "Too small: expected string to have >=1 characters"
+              }
+            ]
+          },
+          "requestBody": {
+            "name": " ",
+            "parentId": "c2"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not change this category",
+            "code": "forbidden"
+          },
+          "requestBody": {
+            "name": "No permission",
+            "parentId": "c2"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/invalid",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Too small: expected string to have >=1 characters",
+            "code": "invalid",
+            "errors": [
+              {
+                "pointer": "/name",
+                "code": "too_small",
+                "detail": "Too small: expected string to have >=1 characters"
+              }
+            ]
+          },
+          "requestBody": {
+            "name": " ",
+            "parentId": "c2"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c1",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.under_itself",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "A category cannot go under itself",
+            "code": "category.under_itself"
+          },
+          "requestBody": {
+            "name": "Monographs",
+            "parentId": "c11"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.not_found",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "No category c404",
+            "code": "category.not_found"
+          },
+          "requestBody": {
+            "name": "Specialist",
+            "parentId": "c404"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.holds_documents",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "It holds documents, so it cannot take a child: refine it instead",
+            "code": "category.holds_documents"
+          },
+          "requestBody": {
+            "name": "Specialist",
+            "parentId": "c21"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c23",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.name_taken",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "A category beside it already has that name",
+            "code": "category.name_taken"
+          },
+          "requestBody": {
+            "name": "Regional",
+            "parentId": "c2"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c21/custody",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.custody_member_unknown",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Custody goes to existing groups and people",
+            "code": "category.custody_member_unknown"
+          },
+          "requestBody": {
+            "groupIds": [],
+            "userIds": [
+              "missing"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c11/custody",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not grant custody here",
+            "code": "forbidden"
+          },
+          "requestBody": {
+            "groupIds": [],
+            "userIds": []
+          },
+          "as": "u8"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/categories/c22/custody",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.custody_member_unknown",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Custody goes to existing groups and people",
+            "code": "category.custody_member_unknown"
+          },
+          "requestBody": {
+            "groupIds": [
+              "g404"
+            ],
+            "userIds": []
+          },
+          "as": "u8"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c22",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not delete this category",
+            "code": "forbidden"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c3",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.has_children",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "Only a category with nothing under it is deleted",
+            "code": "category.has_children"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c21",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.holds_documents",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "It holds documents; reclassify them first",
+            "code": "category.holds_documents"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c22",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.holds_documents",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "It holds documents; reclassify them first",
+            "code": "category.holds_documents"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories/c3/refine",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/category.has_children",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "Only a leaf is refined; this one has children already",
+            "code": "category.has_children"
+          },
+          "requestBody": {
+            "name": "Refined child"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories/c3/refine",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not change this category",
+            "code": "forbidden"
+          },
+          "requestBody": {
+            "name": "No permission"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories/c32/refine",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/invalid",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Too small: expected string to have >=1 characters",
+            "code": "invalid",
+            "errors": [
+              {
+                "pointer": "/name",
+                "code": "too_small",
+                "detail": "Too small: expected string to have >=1 characters"
+              }
+            ]
+          },
+          "requestBody": {
+            "name": " "
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/categories/c31/refine",
+          "status": 200,
+          "body": {
+            "id": "c33",
+            "name": "Medieval",
+            "parentId": "c31"
+          },
+          "requestBody": {
+            "name": "Medieval"
+          },
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}
