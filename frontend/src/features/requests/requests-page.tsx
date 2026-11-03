@@ -145,8 +145,8 @@ export function RequestsPage() {
           facets: summary?.propertyFacets,
           onChange: (properties) => view.setQuery({ ...query, properties }),
         }}
-        searchLabel="requests:page.search"
-        searchPlaceholder="requests:page.searchPlaceholder"
+        searchLabel={t("page.search")}
+        searchPlaceholder={t("page.searchPlaceholder")}
       />
 
       <MasterDetail

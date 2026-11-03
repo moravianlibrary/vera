@@ -16,8 +16,6 @@ afterAll(() => server.close());
 describe("mix revision dates", () => {
   it("uses the shared long date format for a revision", async () => {
     server.use(...createHandlers("admin"));
-    // The page currently passes its translated placeholder through the shared FilterBar translator.
-    i18n.addResource("en", "common", "Search category mixes", "Search category mixes");
     render(
       <QueryClientProvider
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}

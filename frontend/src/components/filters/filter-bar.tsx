@@ -52,6 +52,7 @@ interface FilterBarProps<Query extends FilterableQuery> {
   // From the list's first slice; undefined until it answers.
   facets: Facets | undefined;
   onQueryChange: (query: Query) => void;
+  // Already translated by the caller.
   searchLabel: string;
   searchPlaceholder: string;
   // Toggles that are not fields, after the quick fields: Documents' "Mine".
@@ -73,7 +74,6 @@ export function FilterBar<Query extends FilterableQuery>({
   activeExtraCount = 0,
   properties,
 }: FilterBarProps<Query>) {
-  // Labels may be keys or server text; missing keys stay plain text.
   const { t } = useTranslation("common");
   const tier = useTier();
   const propertyChips = usePropertyChips(properties);
@@ -167,9 +167,9 @@ export function FilterBar<Query extends FilterableQuery>({
       <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
-        aria-label={t(searchLabel)}
+        aria-label={searchLabel}
         className="h-8 pl-8"
-        placeholder={t(searchPlaceholder)}
+        placeholder={searchPlaceholder}
         defaultValue={query.search}
         onChange={(event) => onQueryChange({ ...query, search: event.target.value })}
       />
