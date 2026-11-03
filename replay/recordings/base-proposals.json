@@ -1,8 +1,9 @@
 {
-  "people": [
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
     {
-      "profile": "admin",
-      "userId": "u3",
+      "name": "u3",
       "calls": [
         {
           "method": "GET",
@@ -117,7 +118,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u3"
         },
         {
           "method": "GET",
@@ -125,7 +127,8 @@
           "status": 200,
           "body": {
             "perDay": null
-          }
+          },
+          "as": "u3"
         },
         {
           "method": "POST",
@@ -211,7 +214,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u3"
         },
         {
           "method": "GET",
@@ -227,7 +231,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u3"
         },
         {
           "method": "POST",
@@ -239,7 +244,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u3"
         },
         {
           "method": "POST",
@@ -255,7 +261,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u3"
         },
         {
           "method": "POST",
@@ -264,13 +271,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u3",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "curator",
-      "userId": "u8",
+      "name": "u8",
       "calls": [
         {
           "method": "GET",
@@ -385,7 +396,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u8"
         },
         {
           "method": "GET",
@@ -393,7 +405,8 @@
           "status": 200,
           "body": {
             "perDay": null
-          }
+          },
+          "as": "u8"
         },
         {
           "method": "POST",
@@ -479,7 +492,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u8"
         },
         {
           "method": "GET",
@@ -495,7 +509,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u8"
         },
         {
           "method": "POST",
@@ -507,7 +522,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u8"
         },
         {
           "method": "POST",
@@ -523,7 +539,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u8"
         },
         {
           "method": "POST",
@@ -532,13 +549,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u8",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "digitization",
-      "userId": "u2",
+      "name": "u2",
       "calls": [
         {
           "method": "GET",
@@ -653,7 +674,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u2"
         },
         {
           "method": "GET",
@@ -661,7 +683,8 @@
           "status": 200,
           "body": {
             "perDay": null
-          }
+          },
+          "as": "u2"
         },
         {
           "method": "POST",
@@ -747,7 +770,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u2"
         },
         {
           "method": "GET",
@@ -763,7 +787,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u2"
         },
         {
           "method": "POST",
@@ -775,7 +800,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u2"
         },
         {
           "method": "POST",
@@ -791,7 +817,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u2"
         },
         {
           "method": "POST",
@@ -800,13 +827,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u2",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "staff",
-      "userId": "u4",
+      "name": "u4",
       "calls": [
         {
           "method": "GET",
@@ -921,7 +952,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u4"
         },
         {
           "method": "GET",
@@ -929,7 +961,8 @@
           "status": 200,
           "body": {
             "perDay": 300
-          }
+          },
+          "as": "u4"
         },
         {
           "method": "POST",
@@ -1015,7 +1048,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u4"
         },
         {
           "method": "GET",
@@ -1031,7 +1065,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u4"
         },
         {
           "method": "POST",
@@ -1043,7 +1078,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u4"
         },
         {
           "method": "POST",
@@ -1059,7 +1095,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u4"
         },
         {
           "method": "POST",
@@ -1068,13 +1105,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u4",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "reader",
-      "userId": "u5",
+      "name": "u5",
       "calls": [
         {
           "method": "GET",
@@ -1189,7 +1230,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u5"
         },
         {
           "method": "GET",
@@ -1197,7 +1239,8 @@
           "status": 200,
           "body": {
             "perDay": 100
-          }
+          },
+          "as": "u5"
         },
         {
           "method": "POST",
@@ -1282,7 +1325,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u5"
         },
         {
           "method": "GET",
@@ -1298,7 +1342,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u5"
         },
         {
           "method": "POST",
@@ -1310,7 +1355,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u5"
         },
         {
           "method": "POST",
@@ -1326,7 +1372,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u5"
         },
         {
           "method": "POST",
@@ -1335,13 +1382,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u5",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "no-access",
-      "userId": "u10",
+      "name": "u10",
       "calls": [
         {
           "method": "GET",
@@ -1456,7 +1507,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "GET",
@@ -1464,7 +1516,8 @@
           "status": 200,
           "body": {
             "perDay": 0
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "POST",
@@ -1510,7 +1563,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "GET",
@@ -1522,7 +1576,8 @@
             "status": 403,
             "detail": "You may not propose",
             "code": "forbidden"
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "POST",
@@ -1538,7 +1593,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "POST",
@@ -1554,7 +1610,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u10"
         },
         {
           "method": "POST",
@@ -1567,13 +1624,17 @@
             "detail": "You may not propose",
             "code": "forbidden"
           },
-          "formPhotoSize": 0
+          "as": "u10",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
     },
     {
-      "profile": "project-user",
-      "userId": "u9",
+      "name": "u9",
       "calls": [
         {
           "method": "GET",
@@ -1688,7 +1749,8 @@
                 "recogniser": null
               }
             ]
-          }
+          },
+          "as": "u9"
         },
         {
           "method": "GET",
@@ -1696,7 +1758,8 @@
           "status": 200,
           "body": {
             "perDay": 300
-          }
+          },
+          "as": "u9"
         },
         {
           "method": "POST",
@@ -1782,7 +1845,8 @@
                 "unit": null
               }
             ]
-          }
+          },
+          "as": "u9"
         },
         {
           "method": "GET",
@@ -1798,7 +1862,8 @@
                 "name": "MZK Aleph"
               }
             }
-          ]
+          ],
+          "as": "u9"
         },
         {
           "method": "POST",
@@ -1810,7 +1875,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "https://vufind.mzk.cz/Record/MZK01-001277001"
-          }
+          },
+          "as": "u9"
         },
         {
           "method": "POST",
@@ -1826,7 +1892,8 @@
           "requestBody": {
             "catalogInstanceId": "pi1",
             "link": "not a catalog record"
-          }
+          },
+          "as": "u9"
         },
         {
           "method": "POST",
@@ -1835,16 +1902,17 @@
           "body": {
             "code": null
           },
-          "formPhotoSize": 0
+          "as": "u9",
+          "form": {
+            "photo": {
+              "photoBytes": 0
+            }
+          }
         }
       ]
-    }
-  ],
-  "scenarios": [
+    },
     {
       "name": "a-reader-then-admin-and-reader-pages",
-      "submitterId": "u5",
-      "projectId": null,
       "calls": [
         {
           "as": "u5",
@@ -5654,8 +5722,6 @@
     },
     {
       "name": "b-admin-approve-now",
-      "submitterId": "u3",
-      "projectId": null,
       "calls": [
         {
           "as": "u3",
@@ -5847,8 +5913,6 @@
     },
     {
       "name": "c-project-user-project-custody",
-      "submitterId": "u9",
-      "projectId": "p1",
       "calls": [
         {
           "as": "u9",
@@ -7708,5 +7772,5 @@
       ]
     }
   ],
-  "scenarioCProjectUsed": "p1"
+  "mask": "proposals"
 }

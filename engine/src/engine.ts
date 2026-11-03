@@ -51,7 +51,7 @@ export interface Engine {
   fetch(request: Request): Promise<Response>;
   // Drops everything, builds the schema and loads the named seed; the clock goes to the seed's
   // moment.
-  reset(seed: string): void;
+  reset(seed: string, frozen?: boolean): void;
   close(): void;
 }
 
@@ -99,7 +99,7 @@ export function createEngine(options: EngineOptions): Engine {
 
       return problem(404, `Nothing is served at ${pathname}.`, {});
     },
-    reset(name) {
+    reset(name, resetFrozen = frozen) {
       // Read first: an unknown seed leaves the database as it was.
       const seed = readSeed(name, options.seedsDir ?? seedsDir);
       dropEverything(db);
@@ -109,7 +109,7 @@ export function createEngine(options: EngineOptions): Engine {
         const remember = db.query("INSERT INTO engine_state (key, value) VALUES (?, ?)");
         remember.run(seedKey, seed.name);
         remember.run(schemaKey, schema.hash);
-        clock.reset(new Date(seed.now), frozen);
+        clock.reset(new Date(seed.now), resetFrozen);
       })();
     },
     close() {

@@ -15,7 +15,10 @@ import { sendAudit } from "./telemetry/audit";
 
 export const controlPrefix = "/_engine";
 
-const resetSchema = z.object({ seed: z.string().min(1).default("base") });
+const resetSchema = z.object({
+  seed: z.string().min(1).default("base"),
+  frozen: z.boolean().optional(),
+});
 
 const clockSchema = z
   .object({
@@ -94,7 +97,7 @@ export async function serveControl(request: Request, engine: Engine): Promise<Re
         return invalid(change.error);
       }
 
-      engine.reset(change.data.seed);
+      engine.reset(change.data.seed, change.data.frozen);
       return Response.json({ seed: change.data.seed, now: engine.clock.now().toISOString() });
     }
 

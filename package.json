@@ -5,7 +5,8 @@
     "frontend",
     "contract",
     "domain",
-    "engine"
+    "engine",
+    "replay"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.0"

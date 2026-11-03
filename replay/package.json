@@ -1,0 +1,19 @@
+{
+  "name": "@vera/replay",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vera/contract": "workspace:*"
+  },
+  "devDependencies": {
+    "@vera/engine": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.8.3",
+    "zod": "^4.1.8"
+  }
+}

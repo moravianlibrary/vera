@@ -1,4 +1,6 @@
 {
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
   "scenarios": [
     {
       "name": "a-curator-approves-multi-ask-row",
@@ -3865,5 +3867,6 @@
         }
       ]
     }
-  ]
+  ],
+  "mask": "decisions"
 }

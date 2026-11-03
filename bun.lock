@@ -106,6 +106,19 @@
         "vitest": "^3.2.4",
       },
     },
+    "replay": {
+      "name": "@vera/replay",
+      "version": "0.1.0",
+      "dependencies": {
+        "@vera/contract": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@vera/engine": "workspace:*",
+        "typescript": "^5.8.3",
+        "zod": "^4.1.8",
+      },
+    },
   },
   "packages": {
     "@adobe/css-tools": ["@adobe/css-tools@4.5.0", "", {}, "sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q=="],
@@ -597,6 +610,8 @@
     "@vera/domain": ["@vera/domain@workspace:domain"],
 
     "@vera/engine": ["@vera/engine@workspace:engine"],
+
+    "@vera/replay": ["@vera/replay@workspace:replay"],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@5.2.0", "", { "dependencies": { "@babel/core": "^7.29.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-rc.3", "@types/babel__core": "^7.20.5", "react-refresh": "^0.18.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw=="],
 

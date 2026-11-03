@@ -27,7 +27,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test replay frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -85,6 +85,9 @@ engine-reset: ## Reset the running engine to a seed (SEED=base)
 
 engine-test: ## Run the engine's tests
 	cd engine && bun test
+
+replay: ## Replay the recordings against VERA_API_URL or an in-process engine
+	cd replay && bun test
 
 dev-frontend: frontend-env $(engine-for-api) ## Run the frontend dev server (API_MODE=live against the engine, or mock)
 	cd frontend && $(api-env) bun run dev
@@ -195,6 +198,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd contract && bun run typecheck
 	cd domain && bun run typecheck
 	cd engine && bun run typecheck
+	cd replay && bun run typecheck
 
 check: format-check lint ui-check typecheck version-check docs-check openapi-check ## Run the project checks
 
@@ -215,6 +219,7 @@ test: ## Run the frontend tests and the shared packages' tests
 	cd contract && bun test
 	cd domain && bun test
 	cd engine && bun test
+	cd replay && bun test
 
 version-check: ## Ensure package version matches VERSION
 	@test "$$(node -p "require('./frontend/package.json').version")" = "$$(cat VERSION)" || { echo "frontend/package.json and VERSION differ"; exit 1; }

@@ -88,7 +88,7 @@ Development and tests only, under `/_engine`:
 
 | Endpoint | Does |
 |---|---|
-| `POST /_engine/reset` | drop the database and load a named seed |
+| `POST /_engine/reset` | drop the database and load a named seed; takes `{ seed, frozen }` |
 | `POST /_engine/clock` | set or advance the clock; due jobs run |
 | `GET /_engine/outbox` | the mail, chat and webhook messages the fakes "sent" |
 | `GET /_engine/audit` | audit records waiting for the collector, oldest first |

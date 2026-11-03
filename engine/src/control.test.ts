@@ -23,6 +23,17 @@ describe("/_engine", () => {
     );
   });
 
+  it("keeps the clock still when a development reset asks to freeze it", async () => {
+    engine.clock.unfreeze();
+    const response = await call(engine, "POST", "/_engine/reset", {
+      body: { seed: "base", frozen: true },
+    });
+    expect(await response.json()).toEqual({ seed: "base", now: "2026-06-25T08:40:00.000Z" });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(engine.clock.isFrozen()).toBe(true);
+    expect(engine.clock.now().toISOString()).toBe("2026-06-25T08:40:00.000Z");
+  });
+
   it("refuses a seed that does not exist, and keeps the database", async () => {
     const response = await call(engine, "POST", "/_engine/reset", { body: { seed: "../etc" } });
     expect(response.status).toBe(404);
