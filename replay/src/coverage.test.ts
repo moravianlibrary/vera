@@ -5,57 +5,9 @@ import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
 import type { Recording } from "./recording";
 
-// This list only shrinks as each recording session covers its endpoints.
-const notYetRecorded = [
-  "loginStart",
-  "loginCallback",
-  "identityLink",
-  "identityDefaultRole",
-  "identityUnlink",
-  "userSuspend",
-  "userRestore",
-  "groupCreate",
-  "groupSave",
-  "groupMembers",
-  "custodyCreate",
-  "custodySave",
-  "custodyMembers",
-  "custodyDelete",
-  "settingsGet",
-  "settingsPatch",
-  "proposalPhoto",
-  "users",
-  "groups",
-  "roles",
-  "watchlistChannels",
-  "pushDevices",
-  "pushDeviceRegister",
-  "notificationPreferenceGet",
-  "notificationPreferencePatch",
-  "notificationHooks",
-  "messageChannels",
-  "messageHandOff",
-  "messageSend",
-  "hooks",
-  "hookCreate",
-  "hookSave",
-  "hookDelete",
-  "hookPause",
-  "hookResume",
-  "hookRetry",
-  "hookSendNow",
-  "hookDeliveryRetry",
-  "hookDeliveryDiscard",
-  "hookPreview",
-  "hookTest",
-  "watchlists",
-  "watchlistCreate",
-  "watchlistReach",
-  "watchlistSave",
-  "watchlistViewer",
-  "watchlistSeen",
-  "watchlistDelete",
-];
+// The mock fakes provider login, so these are covered by the engine's own tests
+// (engine/src/identity/login.test.ts) and, for the backend, by the user journeys.
+const notRecordable = ["loginStart", "loginCallback"] as const;
 
 it("covers every endpoint with a recording call", () => {
   const directory = join(import.meta.dir, "../recordings");
@@ -67,21 +19,21 @@ it("covers every endpoint with a recording call", () => {
   );
   const uncovered = Object.entries(endpoints).filter(([name]) => {
     const recorded = calls.some((call) => endpointOf(call) === name);
-    if (notYetRecorded.includes(name)) {
-      expect(recorded, `${name} is listed as not yet recorded`).toBe(false);
-      return true;
+    if (notRecordable.includes(name as (typeof notRecordable)[number])) {
+      expect(recorded, `${name} is not recordable from the mock`).toBe(false);
+      return false;
     }
     return !recorded;
   });
 
-  for (const name of notYetRecorded) {
+  for (const name of notRecordable) {
     expect(Object.hasOwn(endpoints, name), `${name} is an endpoint name`).toBe(true);
     expect(
-      uncovered.some(([uncoveredName]) => uncoveredName === name),
-      `${name} is uncovered`,
-    ).toBe(true);
+      calls.some((call) => endpointOf(call) === name),
+      `${name} is not recorded from the mock`,
+    ).toBe(false);
   }
-  console.log(`notYetRecorded: ${JSON.stringify(notYetRecorded)}`);
+  console.log(`notRecordable: ${JSON.stringify(notRecordable)}`);
   console.log(`uncovered: ${JSON.stringify(uncovered.map(([name]) => name))}`);
-  expect(uncovered.map(([name]) => name)).toEqual([...notYetRecorded]);
+  expect(uncovered.map(([name]) => name)).toEqual([]);
 });

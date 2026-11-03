@@ -1,0 +1,1476 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "reads",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [
+            {
+              "name": "Awaiting a decision",
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 0,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Forbidden",
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Urgent, no copy",
+              "filter": {
+                "priority": "Urgent,High",
+                "copy": "None"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-1",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 10,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 2,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Review needed",
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 3,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Could not be added",
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 4,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": true
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [
+            {
+              "name": "Awaiting a decision",
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": false,
+              "viewer": {
+                "seenAt": null,
+                "position": 0,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Forbidden",
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": false,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Urgent, no copy",
+              "filter": {
+                "priority": "Urgent,High",
+                "copy": "None"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u8-documents-1",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 10,
+              "newCount": 0,
+              "createdBy": "u8",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 15,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Review needed",
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u8-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u8",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 16,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Could not be added",
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u8-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u8",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 17,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": true
+            }
+          ],
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [
+            {
+              "name": "Awaiting a decision",
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": false,
+              "viewer": {
+                "seenAt": null,
+                "position": 0,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Forbidden",
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": false,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Urgent, no copy",
+              "filter": {
+                "priority": "Urgent,High",
+                "copy": "None"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u2-documents-1",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 10,
+              "newCount": 0,
+              "createdBy": "u2",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 18,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Review needed",
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u2-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u2",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 19,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Could not be added",
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u2-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u2",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 20,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": true
+            }
+          ],
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [],
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": true
+            }
+          ],
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [],
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": false
+            }
+          ],
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [],
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": false
+            }
+          ],
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [],
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/watchlist-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi16",
+              "name": "MZK SMTP",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi17",
+              "name": "Mailgun — requesters",
+              "reach": {
+                "by": "email"
+              },
+              "canReach": true
+            },
+            {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "reach": {
+                "by": "claim",
+                "claim": "slack_id"
+              },
+              "canReach": true
+            }
+          ],
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 0
+          },
+          "as": "u9"
+        }
+      ]
+    },
+    {
+      "name": "admin-watchlist-and-push-acts",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/watchlists/reach",
+          "status": 200,
+          "body": {
+            "userCount": 0,
+            "outOfViewCount": 0,
+            "duplicateCount": 0
+          },
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            },
+            "watchlistId": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 201,
+          "body": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "filter": {
+              "q": "recording-watchlist-unique"
+            },
+            "audience": {
+              "kind": "personal"
+            },
+            "id": "<U1>",
+            "createdAt": "<time>"
+          },
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1",
+          "status": 200,
+          "body": {
+            "name": "Recording watchlist renamed",
+            "filter": {
+              "priority": "Urgent,High",
+              "copy": "None"
+            },
+            "view": "documents",
+            "createdAt": "<time>",
+            "id": "W-u3-documents-1",
+            "audience": {
+              "kind": "personal"
+            },
+            "filterVersion": 1
+          },
+          "requestBody": {
+            "name": "Recording watchlist renamed"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1/viewer",
+          "status": 200,
+          "body": {
+            "seenAt": null,
+            "position": 2,
+            "push": true,
+            "pushSince": null,
+            "channels": {
+              "pi18": {
+                "isOn": true,
+                "since": "<time>"
+              }
+            },
+            "confirmedFilter": null
+          },
+          "requestBody": {
+            "position": 2,
+            "channels": {
+              "pi18": true
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists/W-u3-documents-1/seen",
+          "status": 200,
+          "body": {
+            "seenAt": "<time>",
+            "position": 2,
+            "push": true,
+            "pushSince": null,
+            "channels": {
+              "pi18": {
+                "isOn": true,
+                "since": "<time>"
+              }
+            },
+            "confirmedFilter": null
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [
+            {
+              "name": "Awaiting a decision",
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Forbidden",
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 2,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Recording watchlist renamed",
+              "filter": {
+                "priority": "Urgent,High",
+                "copy": "None"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-1",
+              "audience": {
+                "kind": "personal"
+              },
+              "filterVersion": 1,
+              "itemCount": 10,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": "<time>",
+                "position": 2,
+                "push": true,
+                "pushSince": null,
+                "channels": {
+                  "pi18": {
+                    "isOn": true,
+                    "since": "<time>"
+                  }
+                },
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Review needed",
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 3,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Could not be added",
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 4,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Recording watchlist",
+              "view": "documents",
+              "filter": {
+                "q": "recording-watchlist-unique"
+              },
+              "audience": {
+                "kind": "personal"
+              },
+              "id": "<U1>",
+              "createdAt": "<time>",
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 5,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 1
+          },
+          "requestBody": {
+            "endpoint": "https://push.example/recording-browser",
+            "keys": {
+              "p256dh": "recording-key",
+              "auth": "recording-secret"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/session/push-devices",
+          "status": 200,
+          "body": {
+            "publicKey": "BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs",
+            "deviceCount": 1
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists/reach",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            },
+            "watchlistId": null
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-shared-2",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "requestBody": {
+            "name": "Changed"
+          },
+          "as": "u8"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/watchlists/W-shared-2",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "as": "u8"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/watchlists/W-u3-documents-1",
+          "status": 204,
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "body": [
+            {
+              "name": "Awaiting a decision",
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Forbidden",
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 2,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Review needed",
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 3,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Could not be added",
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 4,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Recording watchlist",
+              "view": "documents",
+              "filter": {
+                "q": "recording-watchlist-unique"
+              },
+              "audience": {
+                "kind": "personal"
+              },
+              "id": "<U1>",
+              "createdAt": "<time>",
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 5,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "watchlist-refusals",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents&mode=manage-system",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists/reach",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "requestBody": {
+            "name": "Recording shared watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "everyone"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            },
+            "watchlistId": null
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists/reach",
+          "status": 422,
+          "code": "watchlist.invalid_filter",
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "status": "Available"
+            },
+            "watchlistId": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 422,
+          "code": "watchlist.invalid_filter",
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "status": "Available"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists/reach",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 403,
+          "code": "watchlist.manager_required",
+          "requestBody": {
+            "name": "Recording shared watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "everyone"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 422,
+          "code": "watchlist.source_unavailable",
+          "requestBody": {
+            "name": "Recording watchlist",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "q": "recording-watchlist-unique"
+            },
+            "copyOf": "not-a-watchlist"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/watchlists",
+          "status": 409,
+          "code": "watchlist.already_saved",
+          "requestBody": {
+            "name": "Duplicate personal filter",
+            "view": "documents",
+            "audience": {
+              "kind": "personal"
+            },
+            "filter": {
+              "priority": "Urgent,High",
+              "copy": "None"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1",
+          "status": 422,
+          "code": "watchlist.invalid_filter",
+          "requestBody": {
+            "filter": {
+              "status": "Available"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1",
+          "status": 200,
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1/viewer",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {
+            "channels": {
+              "pi18": "yes"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-shared-1",
+          "status": 409,
+          "code": "watchlist.system_to_personal",
+          "requestBody": {
+            "audience": {
+              "kind": "personal"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-1",
+          "status": 409,
+          "code": "watchlist.personal_to_system",
+          "requestBody": {
+            "audience": {
+              "kind": "everyone"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PATCH",
+          "path": "/api/watchlists/W-u3-documents-2",
+          "status": 409,
+          "code": "watchlist.already_saved",
+          "requestBody": {
+            "filter": {
+              "priority": "Urgent,High",
+              "copy": "None"
+            }
+          },
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}

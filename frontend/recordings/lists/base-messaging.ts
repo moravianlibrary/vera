@@ -1,0 +1,97 @@
+const profiles = [
+  "admin",
+  "curator",
+  "digitization",
+  "staff",
+  "reader",
+  "no-access",
+  "project-user",
+] as const;
+export default {
+  seed: "base",
+  moment: "2026-06-25T08:40:00.000Z",
+  mask: "decisions",
+  scenarios: [
+    {
+      name: "reads-and-message-scenarios",
+      calls: [
+        ...profiles.map((as) => ({
+          as,
+          method: "GET",
+          path: "/api/message-channels",
+          compare: "body",
+        })),
+        ...[
+          ["admin", "proposal", "D20"],
+          ["admin", "overrule", "IT14"],
+          ["admin", "forbiddenAskers", "IT6"],
+          ["admin", "project", "p1"],
+          ["curator", "listedItem", "IT1"],
+          ["staff", "proposal", "D31"],
+          ["curator", "overrule", "IT16"],
+        ].map(([as, subject, id]) => ({
+          as,
+          method: "GET",
+          path: `/api/messages/hand-off?subject=${subject}&id=${id}`,
+          compare: (subject === "overrule" && id === "IT16") || as === "staff" ? "code" : "body",
+        })),
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D20",
+          requestBody: { channelId: "pi43", text: "Please help" },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D20",
+          requestBody: { channelId: "pi26", text: "Please help" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D20",
+          requestBody: { channelId: "pi43", text: "" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D22",
+          requestBody: { channelId: "pi43", text: "Please help" },
+          compare: "code",
+        },
+        { as: "admin", method: "GET", path: "/api/messages/hand-off", compare: "code" },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/messages/hand-off?subject=proposal&id=D999",
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send",
+          requestBody: { channelId: "pi43", text: "Please help" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D999",
+          requestBody: { channelId: "pi43", text: "Please help" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/messages/send?subject=proposal&id=D20",
+          requestBody: {},
+          compare: "code",
+        },
+      ],
+    },
+  ],
+} as const;

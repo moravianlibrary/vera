@@ -1,0 +1,2318 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "reads",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "asOf": "<time>",
+            "retentionDays": 30,
+            "hooks": [
+              {
+                "id": "H-01",
+                "name": "Notify Kramerius on publish",
+                "events": [
+                  "iteration.published"
+                ],
+                "filter": "category under Periodicals",
+                "channelId": "pi20",
+                "recipient": "https://kramerius.mzk.cz/api/notify",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-02",
+                "name": "Email the requester",
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "filter": "",
+                "channelId": "pi17",
+                "recipient": "the requester",
+                "message": "Your request for {title} was {decision}. {public_text}",
+                "batch": {
+                  "waitMinutes": 15,
+                  "maxMinutes": 60,
+                  "by": "recipient"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "recipientPreference": {
+                  "label": "Request decisions",
+                  "defaultEnabled": true
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "filter": "",
+                "channelId": "pi20",
+                "recipient": "https://ops.internal/hooks/vera",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-06",
+                "name": "Failed runs to #digitalizace",
+                "events": [
+                  "run.failed"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "#digitalizace",
+                "message": ":warning: {task} failed — {error} {link}",
+                "batch": null,
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-07",
+                "name": "New list to the Digitization Office",
+                "events": [
+                  "list.created",
+                  "list.started",
+                  "list.marked_done"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "Digitization Office › Lists",
+                "message": "New list {list} — {pages} pp, starts {starts}. {link}",
+                "batch": {
+                  "waitMinutes": 60,
+                  "maxMinutes": 240,
+                  "by": "all"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "state": "active",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "events": [
+                  "list.created"
+                ],
+                "filter": "",
+                "channelId": "pi21",
+                "recipient": "/incoming",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "paused",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": {
+                  "by": "u2",
+                  "at": "<time>",
+                  "reason": "Scan-ops moved to a new server."
+                }
+              }
+            ],
+            "channels": [
+              {
+                "id": "pi16",
+                "name": "MZK SMTP",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi17",
+                "name": "Mailgun — requesters",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi18",
+                "name": "MZK Slack",
+                "interface": "Chat",
+                "isEnabled": true
+              },
+              {
+                "id": "pi20",
+                "name": "Webhooks",
+                "interface": "Webhook",
+                "isEnabled": true
+              },
+              {
+                "id": "pi21",
+                "name": "Scan-ops SFTP",
+                "interface": "File",
+                "isEnabled": true
+              }
+            ],
+            "deliveries": [
+              {
+                "id": "DL-14",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT7"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT7 ingest failed: HTTP 502",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "connect ETIMEDOUT ops.internal:443"
+              },
+              {
+                "id": "DL-13",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT17"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT17 ingest failed: no 245 field",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "503 Service Unavailable"
+              },
+              {
+                "id": "HD-21",
+                "hookId": "H-02",
+                "recipient": "lucie.benesova@gmail.com",
+                "subjects": [
+                  "<R1>",
+                  "<R2>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your requests were decided: R21 declined; R23 approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              },
+              {
+                "id": "HD-22",
+                "hookId": "H-02",
+                "recipient": "tomas.marek@muni.cz",
+                "subjects": [
+                  "<R3>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your request R10 was approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              }
+            ],
+            "attempts": [
+              {
+                "id": "X-4402",
+                "deliveryId": "DL-14",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "connect ETIMEDOUT ops.internal:443",
+                "durationMs": 0
+              },
+              {
+                "id": "X-4380",
+                "deliveryId": "DL-13",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "503 Service Unavailable",
+                "durationMs": 0
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read hooks",
+            "code": "forbidden"
+          },
+          "as": "u9"
+        }
+      ]
+    },
+    {
+      "name": "admin-hook-lifecycle-and-delivery-actions",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 200,
+          "body": {
+            "channel": {
+              "id": "pi18",
+              "name": "MZK Slack",
+              "interface": "Chat",
+              "isEnabled": true
+            },
+            "recipient": "#digitalizace",
+            "event": "run.failed",
+            "sampleSubject": "T-9897",
+            "publicText": "Sample task failed: A public error summary"
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 200,
+          "body": {
+            "sent": true,
+            "detail": "Test delivered",
+            "durationMs": 212
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "id": "<H1>",
+            "state": "active",
+            "createdBy": "u3",
+            "createdAt": "<time>",
+            "pause": null
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 200,
+          "body": {
+            "id": "H-01",
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "state": "active",
+            "createdBy": "u3",
+            "createdAt": "<time>",
+            "pause": null
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/pause",
+          "status": 200,
+          "body": {
+            "id": "H-03",
+            "name": "Ops channel on ingest failure",
+            "events": [
+              "iteration.ingest_failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "https://ops.internal/hooks/vera",
+            "message": "",
+            "batch": null,
+            "retry": {
+              "attempts": 5,
+              "backoff": "exponential"
+            },
+            "state": "paused",
+            "createdBy": "u3",
+            "createdAt": "<time>",
+            "pause": {
+              "by": "u3",
+              "at": "<time>",
+              "reason": "Maintenance"
+            }
+          },
+          "requestBody": {
+            "reason": "Maintenance"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/resume",
+          "status": 200,
+          "body": {
+            "id": "H-03",
+            "name": "Ops channel on ingest failure",
+            "events": [
+              "iteration.ingest_failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "https://ops.internal/hooks/vera",
+            "message": "",
+            "batch": null,
+            "retry": {
+              "attempts": 5,
+              "backoff": "exponential"
+            },
+            "state": "active",
+            "createdBy": "u3",
+            "createdAt": "<time>",
+            "pause": null
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-01/retry",
+          "status": 200,
+          "body": [],
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-01/send-now",
+          "status": 200,
+          "body": [],
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/hooks/H-01",
+          "status": 204,
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "asOf": "<time>",
+            "retentionDays": 30,
+            "hooks": [
+              {
+                "id": "H-02",
+                "name": "Email the requester",
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "filter": "",
+                "channelId": "pi17",
+                "recipient": "the requester",
+                "message": "Your request for {title} was {decision}. {public_text}",
+                "batch": {
+                  "waitMinutes": 15,
+                  "maxMinutes": 60,
+                  "by": "recipient"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "recipientPreference": {
+                  "label": "Request decisions",
+                  "defaultEnabled": true
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "filter": "",
+                "channelId": "pi20",
+                "recipient": "https://ops.internal/hooks/vera",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-06",
+                "name": "Failed runs to #digitalizace",
+                "events": [
+                  "run.failed"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "#digitalizace",
+                "message": ":warning: {task} failed — {error} {link}",
+                "batch": null,
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-07",
+                "name": "New list to the Digitization Office",
+                "events": [
+                  "list.created",
+                  "list.started",
+                  "list.marked_done"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "Digitization Office › Lists",
+                "message": "New list {list} — {pages} pp, starts {starts}. {link}",
+                "batch": {
+                  "waitMinutes": 60,
+                  "maxMinutes": 240,
+                  "by": "all"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "state": "active",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "events": [
+                  "list.created"
+                ],
+                "filter": "",
+                "channelId": "pi21",
+                "recipient": "/incoming",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "paused",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": {
+                  "by": "u2",
+                  "at": "<time>",
+                  "reason": "Scan-ops moved to a new server."
+                }
+              },
+              {
+                "name": "Recording hook",
+                "events": [
+                  "run.failed"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "#digitalizace",
+                "message": "{task} failed: {error}",
+                "batch": null,
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "id": "<H1>",
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              }
+            ],
+            "channels": [
+              {
+                "id": "pi16",
+                "name": "MZK SMTP",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi17",
+                "name": "Mailgun — requesters",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi18",
+                "name": "MZK Slack",
+                "interface": "Chat",
+                "isEnabled": true
+              },
+              {
+                "id": "pi20",
+                "name": "Webhooks",
+                "interface": "Webhook",
+                "isEnabled": true
+              },
+              {
+                "id": "pi21",
+                "name": "Scan-ops SFTP",
+                "interface": "File",
+                "isEnabled": true
+              }
+            ],
+            "deliveries": [
+              {
+                "id": "DL-14",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT7"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT7 ingest failed: HTTP 502",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "connect ETIMEDOUT ops.internal:443"
+              },
+              {
+                "id": "DL-13",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT17"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT17 ingest failed: no 245 field",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "503 Service Unavailable"
+              },
+              {
+                "id": "HD-21",
+                "hookId": "H-02",
+                "recipient": "lucie.benesova@gmail.com",
+                "subjects": [
+                  "<R1>",
+                  "<R2>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your requests were decided: R21 declined; R23 approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              },
+              {
+                "id": "HD-22",
+                "hookId": "H-02",
+                "recipient": "tomas.marek@muni.cz",
+                "subjects": [
+                  "<R3>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your request R10 was approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              }
+            ],
+            "attempts": [
+              {
+                "id": "X-4402",
+                "deliveryId": "DL-14",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "connect ETIMEDOUT ops.internal:443",
+                "durationMs": 0
+              },
+              {
+                "id": "X-4380",
+                "deliveryId": "DL-13",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "503 Service Unavailable",
+                "durationMs": 0
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/HD-21/retry",
+          "status": 409,
+          "code": "hook.not_exhausted",
+          "requestBody": {},
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "hook-refusals",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "code": "hook.channel_unavailable",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi4",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "code": "hook.recipient",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "not-an-https-url",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "code": "hook.recipient_preference",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "recipientPreference": {
+              "label": "Recording hook",
+              "defaultEnabled": true
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "code": "hook.filter_unsupported",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "an unsupported condition",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 422,
+          "code": "hook.channel_unavailable",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi4",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 422,
+          "code": "hook.recipient",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "not-an-https-url",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 422,
+          "code": "hook.recipient_preference",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "recipientPreference": {
+              "label": "Recording hook",
+              "defaultEnabled": true
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 422,
+          "code": "hook.filter_unsupported",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "an unsupported condition",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 422,
+          "code": "hook.channel_unavailable",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi4",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 422,
+          "code": "hook.recipient",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "not-an-https-url",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 422,
+          "code": "hook.recipient_preference",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "recipientPreference": {
+              "label": "Recording hook",
+              "defaultEnabled": true
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 422,
+          "code": "hook.filter_unsupported",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "an unsupported condition",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 422,
+          "code": "hook.channel_unavailable",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi4",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 422,
+          "code": "hook.recipient",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi20",
+            "recipient": "not-an-https-url",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 422,
+          "code": "hook.recipient_preference",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "recipientPreference": {
+              "label": "Recording hook",
+              "defaultEnabled": true
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 422,
+          "code": "hook.filter_unsupported",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "an unsupported condition",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/hooks/H-01",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/preview",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/test",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "run.failed"
+            ],
+            "filter": "",
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-04/pause",
+          "status": 409,
+          "code": "hook.already_paused",
+          "requestBody": {
+            "reason": "Again"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/pause",
+          "status": 422,
+          "code": "invalid",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/resume",
+          "status": 409,
+          "code": "hook.active",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-04/send-now",
+          "status": 409,
+          "code": "hook.already_paused",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/unknown/resume",
+          "status": 404,
+          "code": "not_found",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/hooks/unknown",
+          "status": 404,
+          "code": "not_found",
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/HD-21/retry",
+          "status": 409,
+          "code": "hook.not_exhausted",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/HD-21/discard",
+          "status": 409,
+          "code": "hook.not_exhausted",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/plugin-instances/pi20/disable",
+          "status": 200,
+          "body": {
+            "id": "pi20",
+            "name": "Webhooks",
+            "implementationId": "pt17",
+            "kind": "DeliveryChannel",
+            "version": "2.0.1",
+            "isEnabled": false,
+            "configuration": {
+              "timeout": "10s",
+              "sign": "hmac-sha256"
+            },
+            "secretsSet": [
+              "secret"
+            ],
+            "linkedCategoryId": null,
+            "triggers": [
+              "OnEvent"
+            ],
+            "settings": null,
+            "isPredefined": false,
+            "policy": {
+              "tiers": [],
+              "copyStates": [],
+              "agent": null
+            },
+            "createdBy": "u3",
+            "createdAt": "2026-01-15",
+            "schedules": [],
+            "hooks": [
+              {
+                "id": "H-01",
+                "name": "Notify Kramerius on publish",
+                "state": "active"
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "state": "active"
+              }
+            ],
+            "recentRuns": [],
+            "runCount": 0,
+            "lastRunAt": "<time>"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/retry",
+          "status": 409,
+          "code": "hook.channel_unavailable",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/send-now",
+          "status": 409,
+          "code": "hook.channel_unavailable",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/DL-14/retry",
+          "status": 409,
+          "code": "hook.channel_unavailable",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/plugin-instances/pi20/enable",
+          "status": 200,
+          "body": {
+            "id": "pi20",
+            "name": "Webhooks",
+            "implementationId": "pt17",
+            "kind": "DeliveryChannel",
+            "version": "2.0.1",
+            "isEnabled": true,
+            "configuration": {
+              "timeout": "10s",
+              "sign": "hmac-sha256"
+            },
+            "secretsSet": [
+              "secret"
+            ],
+            "linkedCategoryId": null,
+            "triggers": [
+              "OnEvent"
+            ],
+            "settings": null,
+            "isPredefined": false,
+            "policy": {
+              "tiers": [],
+              "copyStates": [],
+              "agent": null
+            },
+            "createdBy": "u3",
+            "createdAt": "2026-01-15",
+            "schedules": [],
+            "hooks": [
+              {
+                "id": "H-01",
+                "name": "Notify Kramerius on publish",
+                "state": "active"
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "state": "active"
+              }
+            ],
+            "recentRuns": [],
+            "runCount": 0,
+            "lastRunAt": "<time>"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/plugin-instances/pi21/disable",
+          "status": 200,
+          "body": {
+            "id": "pi21",
+            "name": "Scan-ops SFTP",
+            "implementationId": "pt18",
+            "kind": "DeliveryChannel",
+            "version": "1.0.0",
+            "isEnabled": false,
+            "configuration": {
+              "host": "scan-ops",
+              "user": "vera",
+              "key": "vera_rsa",
+              "format": "csv"
+            },
+            "secretsSet": [],
+            "linkedCategoryId": null,
+            "triggers": [
+              "OnEvent"
+            ],
+            "settings": null,
+            "isPredefined": false,
+            "policy": {
+              "tiers": [],
+              "copyStates": [],
+              "agent": null
+            },
+            "createdBy": "u2",
+            "createdAt": "2026-03-01",
+            "schedules": [],
+            "hooks": [
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "state": "paused"
+              }
+            ],
+            "recentRuns": [],
+            "runCount": 0,
+            "lastRunAt": "<time>"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-04/resume",
+          "status": 200,
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/plugin-instances/pi21/enable",
+          "status": 200,
+          "body": {
+            "id": "pi21",
+            "name": "Scan-ops SFTP",
+            "implementationId": "pt18",
+            "kind": "DeliveryChannel",
+            "version": "1.0.0",
+            "isEnabled": true,
+            "configuration": {
+              "host": "scan-ops",
+              "user": "vera",
+              "key": "vera_rsa",
+              "format": "csv"
+            },
+            "secretsSet": [],
+            "linkedCategoryId": null,
+            "triggers": [
+              "OnEvent"
+            ],
+            "settings": null,
+            "isPredefined": false,
+            "policy": {
+              "tiers": [],
+              "copyStates": [],
+              "agent": null
+            },
+            "createdBy": "u2",
+            "createdAt": "2026-03-01",
+            "schedules": [],
+            "hooks": [
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "state": "active"
+              }
+            ],
+            "recentRuns": [],
+            "runCount": 0,
+            "lastRunAt": "<time>"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/pause",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {
+            "reason": "No permission"
+          },
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/resume",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {},
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/retry",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {},
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/H-03/send-now",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {},
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/DL-14/retry",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {},
+          "as": "u5"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/HD-21/discard",
+          "status": 403,
+          "code": "forbidden",
+          "requestBody": {},
+          "as": "u5"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/hooks/H-03",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u5"
+        }
+      ]
+    },
+    {
+      "name": "admin-retries-an-exhausted-delivery",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/DL-14/retry",
+          "status": 200,
+          "body": {
+            "id": "DL-14",
+            "hookId": "H-03",
+            "recipient": "https://ops.internal/hooks/vera",
+            "subjects": [
+              "IT7"
+            ],
+            "events": [
+              "iteration.ingest_failed"
+            ],
+            "publicText": "IT7 ingest failed: HTTP 502",
+            "state": "waiting",
+            "firstAt": "<time>",
+            "lastAt": "<time>",
+            "sendAt": "<time>",
+            "attempts": 1,
+            "lastError": "connect ETIMEDOUT ops.internal:443",
+            "manageNotificationsUrl": null
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "asOf": "<time>",
+            "retentionDays": 30,
+            "hooks": [
+              {
+                "id": "H-01",
+                "name": "Notify Kramerius on publish",
+                "events": [
+                  "iteration.published"
+                ],
+                "filter": "category under Periodicals",
+                "channelId": "pi20",
+                "recipient": "https://kramerius.mzk.cz/api/notify",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-02",
+                "name": "Email the requester",
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "filter": "",
+                "channelId": "pi17",
+                "recipient": "the requester",
+                "message": "Your request for {title} was {decision}. {public_text}",
+                "batch": {
+                  "waitMinutes": 15,
+                  "maxMinutes": 60,
+                  "by": "recipient"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "recipientPreference": {
+                  "label": "Request decisions",
+                  "defaultEnabled": true
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "filter": "",
+                "channelId": "pi20",
+                "recipient": "https://ops.internal/hooks/vera",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-06",
+                "name": "Failed runs to #digitalizace",
+                "events": [
+                  "run.failed"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "#digitalizace",
+                "message": ":warning: {task} failed — {error} {link}",
+                "batch": null,
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-07",
+                "name": "New list to the Digitization Office",
+                "events": [
+                  "list.created",
+                  "list.started",
+                  "list.marked_done"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "Digitization Office › Lists",
+                "message": "New list {list} — {pages} pp, starts {starts}. {link}",
+                "batch": {
+                  "waitMinutes": 60,
+                  "maxMinutes": 240,
+                  "by": "all"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "state": "active",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "events": [
+                  "list.created"
+                ],
+                "filter": "",
+                "channelId": "pi21",
+                "recipient": "/incoming",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "paused",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": {
+                  "by": "u2",
+                  "at": "<time>",
+                  "reason": "Scan-ops moved to a new server."
+                }
+              }
+            ],
+            "channels": [
+              {
+                "id": "pi16",
+                "name": "MZK SMTP",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi17",
+                "name": "Mailgun — requesters",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi18",
+                "name": "MZK Slack",
+                "interface": "Chat",
+                "isEnabled": true
+              },
+              {
+                "id": "pi20",
+                "name": "Webhooks",
+                "interface": "Webhook",
+                "isEnabled": true
+              },
+              {
+                "id": "pi21",
+                "name": "Scan-ops SFTP",
+                "interface": "File",
+                "isEnabled": true
+              }
+            ],
+            "deliveries": [
+              {
+                "id": "DL-14",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT7"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT7 ingest failed: HTTP 502",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 1,
+                "lastError": "connect ETIMEDOUT ops.internal:443",
+                "manageNotificationsUrl": null
+              },
+              {
+                "id": "DL-13",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT17"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT17 ingest failed: no 245 field",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "503 Service Unavailable"
+              },
+              {
+                "id": "HD-21",
+                "hookId": "H-02",
+                "recipient": "lucie.benesova@gmail.com",
+                "subjects": [
+                  "<R1>",
+                  "<R2>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your requests were decided: R21 declined; R23 approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              },
+              {
+                "id": "HD-22",
+                "hookId": "H-02",
+                "recipient": "tomas.marek@muni.cz",
+                "subjects": [
+                  "<R3>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your request R10 was approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              }
+            ],
+            "attempts": [
+              {
+                "id": "X-4402",
+                "deliveryId": "DL-14",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "connect ETIMEDOUT ops.internal:443",
+                "durationMs": 0
+              },
+              {
+                "id": "X-4380",
+                "deliveryId": "DL-13",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "503 Service Unavailable",
+                "durationMs": 0
+              },
+              {
+                "id": "<HX1>",
+                "deliveryId": "DL-14",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "connect ETIMEDOUT ops.internal:443",
+                "durationMs": 0
+              }
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "admin-discards-an-exhausted-delivery",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/hooks/deliveries/DL-14/discard",
+          "status": 200,
+          "body": {
+            "id": "DL-14",
+            "hookId": "H-03",
+            "recipient": "https://ops.internal/hooks/vera",
+            "subjects": [
+              "IT7"
+            ],
+            "events": [
+              "iteration.ingest_failed"
+            ],
+            "publicText": "IT7 ingest failed: HTTP 502",
+            "state": "discarded",
+            "firstAt": "<time>",
+            "lastAt": "<time>",
+            "sendAt": null,
+            "attempts": 5,
+            "lastError": "connect ETIMEDOUT ops.internal:443"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "asOf": "<time>",
+            "retentionDays": 30,
+            "hooks": [
+              {
+                "id": "H-01",
+                "name": "Notify Kramerius on publish",
+                "events": [
+                  "iteration.published"
+                ],
+                "filter": "category under Periodicals",
+                "channelId": "pi20",
+                "recipient": "https://kramerius.mzk.cz/api/notify",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-02",
+                "name": "Email the requester",
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "filter": "",
+                "channelId": "pi17",
+                "recipient": "the requester",
+                "message": "Your request for {title} was {decision}. {public_text}",
+                "batch": {
+                  "waitMinutes": 15,
+                  "maxMinutes": 60,
+                  "by": "recipient"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "recipientPreference": {
+                  "label": "Request decisions",
+                  "defaultEnabled": true
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-03",
+                "name": "Ops channel on ingest failure",
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "filter": "",
+                "channelId": "pi20",
+                "recipient": "https://ops.internal/hooks/vera",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-06",
+                "name": "Failed runs to #digitalizace",
+                "events": [
+                  "run.failed"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "#digitalizace",
+                "message": ":warning: {task} failed — {error} {link}",
+                "batch": null,
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "exponential"
+                },
+                "state": "active",
+                "createdBy": "u3",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-07",
+                "name": "New list to the Digitization Office",
+                "events": [
+                  "list.created",
+                  "list.started",
+                  "list.marked_done"
+                ],
+                "filter": "",
+                "channelId": "pi18",
+                "recipient": "Digitization Office › Lists",
+                "message": "New list {list} — {pages} pp, starts {starts}. {link}",
+                "batch": {
+                  "waitMinutes": 60,
+                  "maxMinutes": 240,
+                  "by": "all"
+                },
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "fixed"
+                },
+                "state": "active",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": null
+              },
+              {
+                "id": "H-04",
+                "name": "Export a new list for scanning",
+                "events": [
+                  "list.created"
+                ],
+                "filter": "",
+                "channelId": "pi21",
+                "recipient": "/incoming",
+                "message": "",
+                "batch": null,
+                "retry": {
+                  "attempts": 5,
+                  "backoff": "exponential"
+                },
+                "state": "paused",
+                "createdBy": "u2",
+                "createdAt": "<time>",
+                "pause": {
+                  "by": "u2",
+                  "at": "<time>",
+                  "reason": "Scan-ops moved to a new server."
+                }
+              }
+            ],
+            "channels": [
+              {
+                "id": "pi16",
+                "name": "MZK SMTP",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi17",
+                "name": "Mailgun — requesters",
+                "interface": "Email",
+                "isEnabled": true
+              },
+              {
+                "id": "pi18",
+                "name": "MZK Slack",
+                "interface": "Chat",
+                "isEnabled": true
+              },
+              {
+                "id": "pi20",
+                "name": "Webhooks",
+                "interface": "Webhook",
+                "isEnabled": true
+              },
+              {
+                "id": "pi21",
+                "name": "Scan-ops SFTP",
+                "interface": "File",
+                "isEnabled": true
+              }
+            ],
+            "deliveries": [
+              {
+                "id": "DL-14",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT7"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT7 ingest failed: HTTP 502",
+                "state": "discarded",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "connect ETIMEDOUT ops.internal:443"
+              },
+              {
+                "id": "DL-13",
+                "hookId": "H-03",
+                "recipient": "https://ops.internal/hooks/vera",
+                "subjects": [
+                  "IT17"
+                ],
+                "events": [
+                  "iteration.ingest_failed"
+                ],
+                "publicText": "IT17 ingest failed: no 245 field",
+                "state": "gave_up",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": null,
+                "attempts": 5,
+                "lastError": "503 Service Unavailable"
+              },
+              {
+                "id": "HD-21",
+                "hookId": "H-02",
+                "recipient": "lucie.benesova@gmail.com",
+                "subjects": [
+                  "<R1>",
+                  "<R2>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your requests were decided: R21 declined; R23 approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              },
+              {
+                "id": "HD-22",
+                "hookId": "H-02",
+                "recipient": "tomas.marek@muni.cz",
+                "subjects": [
+                  "<R3>"
+                ],
+                "events": [
+                  "request.approved",
+                  "request.declined"
+                ],
+                "publicText": "Your request R10 was approved.",
+                "state": "waiting",
+                "firstAt": "<time>",
+                "lastAt": "<time>",
+                "sendAt": "<time>",
+                "attempts": 0,
+                "lastError": null
+              }
+            ],
+            "attempts": [
+              {
+                "id": "X-4402",
+                "deliveryId": "DL-14",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "connect ETIMEDOUT ops.internal:443",
+                "durationMs": 0
+              },
+              {
+                "id": "X-4380",
+                "deliveryId": "DL-13",
+                "at": "<time>",
+                "result": "failed",
+                "detail": "503 Service Unavailable",
+                "durationMs": 0
+              }
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}

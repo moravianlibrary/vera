@@ -1,0 +1,514 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "reads-and-message-scenarios",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/message-channels",
+          "status": 200,
+          "body": [
+            {
+              "id": "pi26",
+              "name": "Email",
+              "description": "opens your mail, pre-filled",
+              "result": "redirect"
+            },
+            {
+              "id": "pi27",
+              "name": "MZK Slack",
+              "description": "opens a Slack message",
+              "result": "redirect"
+            },
+            {
+              "id": "pi43",
+              "name": "MZK Slack bot",
+              "description": "sends a Slack direct message",
+              "result": "sent"
+            }
+          ],
+          "as": "u9"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=proposal&id=D20",
+          "status": 200,
+          "body": {
+            "about": {
+              "label": "Národní listy · MZK01-001622010 · 1889",
+              "path": "/requests?id=D20"
+            },
+            "context": "Proposed for digitization · 4 asks · NDK Periodika",
+            "recipients": [
+              {
+                "userId": "u6",
+                "name": "Lucie Benešová"
+              },
+              {
+                "userId": "u5",
+                "name": "Tomáš Marek"
+              },
+              {
+                "userId": "u7",
+                "name": "Ondřej Krejčí"
+              },
+              {
+                "userId": "u4",
+                "name": "Eva Horáková"
+              }
+            ],
+            "handOffs": [
+              {
+                "channelId": "pi26",
+                "reachableIds": [
+                  "u6",
+                  "u5",
+                  "u7",
+                  "u4"
+                ],
+                "href": "mailto:lucie.benesova@gmail.com,tomas.marek@muni.cz,ondrej.krejci@seznam.cz,eva.horakova@mzk.cz?subject=%5BVERA%5D%20N%C3%A1rodn%C3%AD%20listy%20%C2%B7%20MZK01-001622010%20%C2%B7%201889&body=Proposed%20for%20digitization%20%C2%B7%204%20asks%20%C2%B7%20NDK%20Periodika%0A%0Ahttp%3A%2F%2Flocalhost%2Frequests%3Fid%3DD20"
+              },
+              {
+                "channelId": "pi27",
+                "reachableIds": [
+                  "u4"
+                ],
+                "href": "https://slack.com/app_redirect?team=mzk&users=ehorakova&text=Proposed+for+digitization+%C2%B7+4+asks+%C2%B7+NDK+Periodika%0A%0Ahttp%3A%2F%2Flocalhost%2Frequests%3Fid%3DD20"
+              },
+              {
+                "channelId": "pi43",
+                "reachableIds": [
+                  "u4"
+                ],
+                "href": null
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=overrule&id=IT14",
+          "status": 200,
+          "body": {
+            "about": {
+              "label": "Čas · MZK01-001290877 · roč. 21",
+              "path": "/review/documents?id=IT14&review=Forbidden"
+            },
+            "context": "Forbidden by Copyright: Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
+            "recipients": [],
+            "handOffs": [
+              {
+                "channelId": "pi26",
+                "reachableIds": [],
+                "href": null
+              },
+              {
+                "channelId": "pi27",
+                "reachableIds": [],
+                "href": null
+              },
+              {
+                "channelId": "pi43",
+                "reachableIds": [],
+                "href": null
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=forbiddenAskers&id=IT6",
+          "status": 200,
+          "body": {
+            "about": {
+              "label": "Graduál rajhradský · MZK05-000004412",
+              "path": "/review/documents?id=IT6&review=Forbidden"
+            },
+            "context": "Forbidden by Conservation hold: Binding unstable; conservation report 2026/114 prohibits handling until restored.",
+            "recipients": [
+              {
+                "userId": "u1",
+                "name": "Jana Nováková"
+              }
+            ],
+            "handOffs": [
+              {
+                "channelId": "pi26",
+                "reachableIds": [
+                  "u1"
+                ],
+                "href": "mailto:jana.novakova@mzk.cz?subject=%5BVERA%5D%20Gradu%C3%A1l%20rajhradsk%C3%BD%20%C2%B7%20MZK05-000004412&body=Forbidden%20by%20Conservation%20hold%3A%20Binding%20unstable%3B%20conservation%20report%202026%2F114%20prohibits%20handling%20until%20restored.%0A%0Ahttp%3A%2F%2Flocalhost%2Freview%2Fdocuments%3Fid%3DIT6%26review%3DForbidden"
+              },
+              {
+                "channelId": "pi27",
+                "reachableIds": [
+                  "u1"
+                ],
+                "href": "https://slack.com/app_redirect?team=mzk&users=jnovakova&text=Forbidden+by+Conservation+hold%3A+Binding+unstable%3B+conservation+report+2026%2F114+prohibits+handling+until+restored.%0A%0Ahttp%3A%2F%2Flocalhost%2Freview%2Fdocuments%3Fid%3DIT6%26review%3DForbidden"
+              },
+              {
+                "channelId": "pi43",
+                "reachableIds": [
+                  "u1"
+                ],
+                "href": null
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=project&id=p1",
+          "status": 200,
+          "body": {
+            "about": {
+              "label": "NDK Periodika",
+              "path": "/projects?id=p1"
+            },
+            "context": "Project · Approved",
+            "recipients": [
+              {
+                "userId": "u2",
+                "name": "Martin Svoboda"
+              }
+            ],
+            "handOffs": [
+              {
+                "channelId": "pi26",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": "mailto:martin.svoboda@mzk.cz?subject=%5BVERA%5D%20NDK%20Periodika&body=Project%20%C2%B7%20Approved%0A%0Ahttp%3A%2F%2Flocalhost%2Fprojects%3Fid%3Dp1"
+              },
+              {
+                "channelId": "pi27",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": "https://slack.com/app_redirect?team=mzk&users=msvoboda&text=Project+%C2%B7+Approved%0A%0Ahttp%3A%2F%2Flocalhost%2Fprojects%3Fid%3Dp1"
+              },
+              {
+                "channelId": "pi43",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": null
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=listedItem&id=IT1",
+          "status": 200,
+          "body": {
+            "about": {
+              "label": "Lidové noviny · MZK01-001284756 · 1918–1925",
+              "path": "/documents?id=D1"
+            },
+            "context": "On the list Moravica — June",
+            "recipients": [
+              {
+                "userId": "u2",
+                "name": "Martin Svoboda"
+              }
+            ],
+            "handOffs": [
+              {
+                "channelId": "pi26",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": "mailto:martin.svoboda@mzk.cz?subject=%5BVERA%5D%20Lidov%C3%A9%20noviny%20%C2%B7%20MZK01-001284756%20%C2%B7%201918%E2%80%931925&body=On%20the%20list%20Moravica%20%E2%80%94%20June%0A%0Ahttp%3A%2F%2Flocalhost%2Fdocuments%3Fid%3DD1"
+              },
+              {
+                "channelId": "pi27",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": "https://slack.com/app_redirect?team=mzk&users=msvoboda&text=On+the+list+Moravica+%E2%80%94+June%0A%0Ahttp%3A%2F%2Flocalhost%2Fdocuments%3Fid%3DD1"
+              },
+              {
+                "channelId": "pi43",
+                "reachableIds": [
+                  "u2"
+                ],
+                "href": null
+              }
+            ]
+          },
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=proposal&id=D31",
+          "status": 404,
+          "code": "message.subject_not_found",
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=overrule&id=IT16",
+          "status": 404,
+          "code": "message.subject_not_found",
+          "as": "u8"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D20",
+          "status": 200,
+          "body": {
+            "reachedIds": [
+              "u4"
+            ]
+          },
+          "requestBody": {
+            "channelId": "pi43",
+            "text": "Please help"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D20",
+          "status": 422,
+          "code": "message.not_sending",
+          "requestBody": {
+            "channelId": "pi26",
+            "text": "Please help"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D20",
+          "status": 422,
+          "code": "message.recipient_missing",
+          "requestBody": {
+            "channelId": "pi43",
+            "text": ""
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D22",
+          "status": 422,
+          "code": "message.unreachable",
+          "requestBody": {
+            "channelId": "pi43",
+            "text": "Please help"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off",
+          "status": 422,
+          "code": "message.subject_missing",
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/messages/hand-off?subject=proposal&id=D999",
+          "status": 404,
+          "code": "message.subject_not_found",
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send",
+          "status": 422,
+          "code": "message.recipient_missing",
+          "requestBody": {
+            "channelId": "pi43",
+            "text": "Please help"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D999",
+          "status": 404,
+          "code": "message.subject_not_found",
+          "requestBody": {
+            "channelId": "pi43",
+            "text": "Please help"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/messages/send?subject=proposal&id=D20",
+          "status": 422,
+          "code": "message.recipient_missing",
+          "requestBody": {},
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}
