@@ -68,9 +68,9 @@ and an act on it is refused (409).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)) *(no log)* |
-| `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once; one with a copy, or not yet checked, stays Pending for review |
-| `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409); there is at most one ([LC-REQ-check](../lifecycles/request.md#lc-req-check)) | that ask Withdrawn; others' asks stand; log *Withdrawn* |
+| `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)); `request.created` per request, one cause for the submission |
+| `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once (`request.approved` after its `request.created`); one with a copy, or not yet checked, stays Pending for review |
+| `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409); there is at most one ([LC-REQ-check](../lifecycles/request.md#lc-req-check)) | that ask Withdrawn; others' asks stand; `request.withdrawn` |
 
 #### ACT-ways-in
 
@@ -132,8 +132,8 @@ An outside portal links to `/ask` to open *Propose…* with one item filled in
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-approve` | *Approve…* | `request.decide`, the proposal in the person's custody | Pending; its checks have answered (409); a leaf category (422); a rescan note when a copy exists (422) | every open ask of the document approved; one iteration, which the oldest ask originates; log *Approved* per ask |
-| `ACT-decline` | *Decline…* | `request.decide`, as above | Pending | every open ask declined, with the two texts; log *Declined* per ask |
+| `ACT-approve` | *Approve…* | `request.decide`, the proposal in the person's custody | Pending; its checks have answered (409); a leaf category (422); a rescan note when a copy exists (422) | every open ask of the document approved; one iteration, which the oldest ask originates; `request.approved` per ask, one cause |
+| `ACT-decline` | *Decline…* | `request.decide`, as above | Pending | every open ask declined, with the two texts; `request.declined` per ask, one cause |
 | `ACT-approve-batch` | *Approve N…*, on the batch's header | `request.decide` | the open, checked proposals of a batch that need no rescan; some may be unticked | as *Approve…* for each; rescans and unchecked ones are left out and counted |
 | `ACT-retry-batch` | *Retry failed* | `request.retry` | some of the batch failed to be added (409), and some of that within the grant's scope (403) | each failed item within the scope back to ingest with its attempt counted; log *Ingest retried* |
 

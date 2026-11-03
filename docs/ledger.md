@@ -15,7 +15,17 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-None.
+### L76: The classifier's suggestion on an approval
+
+Rules: [EVENT-destinations](reference/model/events.md#event-destinations),
+[ACT-reason-two-texts](reference/access/acts.md#act-reason-two-texts).
+
+The mock added sentences to an approval's internal reason: the classifier's suggestion and
+whether the decider kept it, the existing copies, and the request custodies. An entry's reason
+is the two texts the act took and its data is never a sentence (events.md), so they were removed
+with step 3 (2026-11-03). Nothing now records whether a suggestion was kept, which would show a
+classifier that is usually overruled. Keep it as typed data on `request.approved` (the suggested
+category and the classifier instance), or not at all? → decision, then engine.
 
 ## Not built yet
 
@@ -45,36 +55,17 @@ Rules: [ACCESS-provenance](reference/access/people.md#access-provenance),
 [OBS-audit](reference/integrations/observability.md#obs-audit),
 [OBS-audit-delivery](reference/integrations/observability.md#obs-audit-delivery).
 
-Changes on Users & Groups, Categories, Intentions, mixes, Plugins, Hooks and Schedules are
-recorded nowhere (`TODO(rrandiak)` in `mocks/access.ts`).
+Changes on Categories, Intentions, mixes, Plugins, Hooks and Schedules are recorded nowhere
+(`TODO(rrandiak)` in `mocks/access.ts`). Users & Groups, first login, the mappings at login and
+sign-up record their configuration codes in the engine (built 2026-11-03), and the engine sends
+them to the collector.
 
 Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): they go to the
 Audit stream in ClickStack, not to the log, with the configuration codes of the
 [catalogue](reference/model/events.md#configuration); no History card on the admin pages. Needs:
 the engine's outbox and its job, the collector's audit table with no expiry, and the ready-made
-HyperDX dashboards. The mock records nothing. → engine, then deployment.
-
-### L10: The library day
-
-Rules: [ROLE-library-day](reference/access/roles.md#role-library-day).
-
-The daily limit counts against the browser's clock rather than the mock's, and its count is lost
-on reload. The engine counts accepted items from stored requests against its own clock. →
-engine.
-
-### L23: Event codes
-
-Rules: [LOG-public](reference/model/log.md#log-public).
-
-Log events are free text (`TODO(rrandiak)` in `domain/entities.ts`), and the public wording is
-matched by prefix.
-
-Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): one
-[catalogue](reference/model/events.md) of codes, each with its data, its public wording and
-the destinations that take it; an entry is a code, data and the two reasons, worded by the
-client. The engine writes codes from step 3; the client words them and the mock and the seeds
-(`engine/seeds/base.json`, `engine/tools/volume/history.ts`) move to them. → engine, then
-frontend.
+HyperDX dashboards. The mock records nothing. The rest come with the engine's steps for those
+pages; the collector's table and the dashboards with deployment. → engine, then deployment.
 
 ### L25: Ingest
 
@@ -113,7 +104,7 @@ A list event carries every member as a whole document (decided on 2026-10-15), s
 plugin can turn it into, say, a list of documents for staff to prepare.
 
 The field names and event type names were settled on 2026-10-30, together with
-[L23](#l23-event-codes) ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): `type` is the
+[L23](#built-2026-11-03) ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): `type` is the
 code, `changes` a list, machine values in snake case, times in UTC, the staff actor named.
 → engine.
 
@@ -223,6 +214,16 @@ viewer's language and its editors gain *Add language*. → engine (contract and 
 frontend.
 
 ## Done
+
+### Built, 2026-11-03
+
+- **L10:** the daily proposal limit counts the requests stored on the library's day (Prague),
+  in the mock and the engine alike, against the server's clock
+  ([ROLE-library-day](reference/access/roles.md#role-library-day)).
+- **L23:** the engine writes event codes from its first entry, through one function that sends
+  each to History and the Audit stream as the [catalogue](reference/model/events.md) says; the
+  client words them, and the mock and the seeds hold codes
+  ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)).
 
 ### Built, 2026-11-02
 

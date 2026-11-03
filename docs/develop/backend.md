@@ -344,7 +344,7 @@ A small feature keeps fewer files; a large one splits a file into a subpackage w
 | `clock` | the clock (B5) |
 | `jobs` | the queue, the worker loop, the `JobKind` interface a feature implements |
 | `pluginhost` | loading, verifying and calling plugins (B6) |
-| `log` | writing log entries, the event codes ([L23](../ledger.md#l23-event-codes)) |
+| `log` | writing log entries, the event codes ([L23](../ledger.md#built-2026-11-03)) |
 | `events` | recording hook events in the act's transaction ([L33](../ledger.md#l33-hook-events)) |
 | `telemetry` | the attribute allow-list, the act and run on each record |
 

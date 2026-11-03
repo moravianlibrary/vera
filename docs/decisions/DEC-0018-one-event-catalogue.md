@@ -1,7 +1,7 @@
 # DEC-0018: One event catalogue, taken in part by the log, hooks and an audit stream
 
 **Context.** The log's events were free text, matched by prefix for the public wording
-([L23](../ledger.md#l23-event-codes)); the hooks had event names of their own, coarser than the
+([L23](../ledger.md#built-2026-11-03)); the hooks had event names of their own, coarser than the
 log's ([L33](../ledger.md#l33-hook-events)); the payload's field names were a draft
 ([L49](../ledger.md#l49-hook-payload)); and what an admin changes (access, categories,
 intentions, mixes, plugins, hooks, schedules) was recorded nowhere

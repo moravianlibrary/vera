@@ -48,10 +48,6 @@ A requester reads their request's story in plain words: only the codes that have
 wording in the [catalogue](events.md) (*Asked*, *Accepted*, *On hold*, *Digitized*…), with no
 actor named and no internal reason.
 
-> **Open — [L23](../../ledger.md#l23-event-codes).** Entries are free text today
-> (`TODO(rrandiak)` in `domain/entities.ts`), and the public wording is matched by prefix. The
-> catalogue is decided; the engine and the client do not use it yet.
-
 #### LOG-ingest-detail
 
 The error in an ingest entry's data (the failure text) is withheld from anyone without

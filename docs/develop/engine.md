@@ -1,7 +1,7 @@
 # The engine
 
-> **Plan for part 4.** Drafted on 2026-10-14 and settled on 2026-10-15 (below). Step 1, the
-> skeleton, is built (2026-10-16); the later steps are not.
+> **Plan for part 4.** Drafted on 2026-10-14 and settled on 2026-10-15 (below). Steps 1 to 3
+> are built (2026-10-16, 2026-10-29, 2026-11-03); the later steps are not.
 
 ## What it is for
 
@@ -47,7 +47,8 @@ flowchart LR
   1. checks the permission and scope;
   2. checks the state, refusing with the status and code the act lists;
   3. writes the change, its log entries and its hook events in one transaction.
-- **Queries.** One per page read model (the overview endpoints), computed from SQLite.
+- **Queries.** One per page read model (the overview endpoints). The query code is shared with
+  the mock (`contract/src/queries/`), over a record store the engine reads from SQLite (E17).
 - **Domain.** The pure functions in `domain/src` (permissions, status, counting,
   mixes) are used as they are, so the frontend and the engine cannot disagree.
 - **Jobs.** Ingest, custody placement, registry checks, scheduled runs, hook deliveries,
@@ -121,8 +122,8 @@ Readers' and curators' acts come first, so the core journey works as early as po
 2. **Access** (built 2026-10-29): sessions with a sliding cookie, login through the Identity
    plugins against fake providers, local sign-up with email verification and password reset,
    Users & Groups, the account and the settings.
-3. **Asking and deciding:** propose, check, custody placement, Requests, approve and decline,
-   My Documents.
+3. **Asking and deciding** (built 2026-11-03): propose, check, custody placement, Requests,
+   approve and decline, withdraw, My Documents, and the events and audit stream of every act.
 4. **Ingest and review:** the ingest job, validation and restriction fakes, Documents
    Validations, the iteration acts (including resume, overrule and withdraw, which are not built
    yet).
@@ -144,7 +145,7 @@ Decided on 2026-10-15:
   small fixtures.
 - **E5. Vocabulary:** event codes, log subjects and the hook payload's fields
   ([L7](../ledger.md#l7-access-and-planning-changes-are-not-logged),
-  [L23](../ledger.md#l23-event-codes), [L49](../ledger.md#l49-hook-payload)) are settled in one
+  [L23](../ledger.md#built-2026-11-03), [L49](../ledger.md#l49-hook-payload)) are settled in one
   pass before step 3. Settled on 2026-10-30 in [DEC-0018](../decisions/DEC-0018-one-event-catalogue.md):
   the [event catalogue](../reference/model/events.md).
 - **E6. Volume:** a large seed variant for lists and generation at volume. Seeds are later
@@ -201,7 +202,34 @@ Decided on 2026-10-16 and 2026-10-29, built with step 2:
 - **E1, built.** The endpoint table in `contract/src/endpoints.ts` holds every endpoint step 2
   serves, each marked public or redirecting where it is, and the engine serves exactly the table.
 
+Decided and built on 2026-11-03, with step 3:
+- **E17. Shared queries over a record store.** The mock's reads and the logic of its acts moved
+  into `contract/src/queries/`, over a `RecordStore` (`domain/src/store.ts`); the mock and the
+  engine run the same code, so their pages cannot drift. The engine keeps each record whole, as
+  JSON, in a table of its own with the columns its lookups need (`engine/schema/records.sql`),
+  and reads the store afresh for each request. A store's arrays are a snapshot, so what is
+  derived from one is cached by the array (`domain/src/store-index.ts`). On the volume seed a
+  Requests or Documents page answers in about a second and the seed loads in a few seconds.
+- **E18. Planned acts.** An act is planned by shared code, which checks it and returns what to
+  write (`planSubmission`, `planApproval`, `planDecline`, `planWithdrawal`, `planBulkApproval`);
+  the mock writes the plan into its arrays, the engine into its tables and events in one
+  transaction.
+- **E19. Fakes are seed data.** What a fake plugin answers comes from the seed's `fakes`
+  (custody placements and rules, the catalog's records and bases, the photo reader, the catalog
+  adapter's reading), never from code naming an id. The plugins' answers reach the queries as
+  interfaces (`RequestPlugins`, `ProposalPlugins`).
+- **E20. Events.** Every act records what happened through one function, `recordEvent`, which
+  writes the History row and the audit outbox row the [catalogue](../reference/model/events.md)
+  sends it to, in the act's transaction. An entry's reason is the two texts the act took, never a
+  sentence the server makes. The audit outbox is sent to the collector as OTLP log records and a
+  record is removed only once accepted ([OBS-audit-delivery](../reference/integrations/observability.md#obs-audit-delivery)).
+- **E21. Recordings.** What the mock answers is recorded once for every dev person and for
+  scenarios of acts followed by the pages they change (`engine/test/base-records.json`,
+  `base-proposals.json`, `base-decisions.json`), and the engine's tests replay them. A
+  difference is a bug in one of the two, never a reason to edit a recording. They found two mock
+  defects, fixed with step 3.
+
 > **Open.** The session limits are placeholders until the library sets its own. Renewal through
 > the Identity plugin (`renew`) is not built: a session lives on its own limits. The OpenAPI
-> document is made from the endpoint table once step 3's endpoints are in. Sign-up limits only
+> document can now be made from the endpoint table, which holds step 3's endpoints. Sign-up limits only
 > per email; a limit per address waits for the proxy's client address.
