@@ -241,6 +241,8 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   method: Method;
   path: string;
   summary: string;
+  // The success status when not 200 (or 204 for an entry with no response).
+  status?: 201 | 202;
   params?: z.ZodType<Params>;
   query?: z.ZodType<Query>;
   body?: z.ZodType<Body>;
@@ -410,6 +412,7 @@ export const endpoints = {
     method: "POST",
     path: `${apiRoutes.signUp}/:instanceId`,
     summary: "Starts a local account sign-up.",
+    status: 202,
     params: z.object({ instanceId: z.string() }),
     body: signUpSchema,
     codes: ["access.password_short", "access.username_taken"],
@@ -428,6 +431,7 @@ export const endpoints = {
     method: "POST",
     path: `${apiRoutes.emailVerification}/:instanceId`,
     summary: "Sends another email verification link.",
+    status: 202,
     params: z.object({ instanceId: z.string() }),
     body: emailOnlySchema,
     codes: [],
@@ -445,6 +449,7 @@ export const endpoints = {
     method: "POST",
     path: `${apiRoutes.passwordReset}/:instanceId`,
     summary: "Sends a local account password reset link.",
+    status: 202,
     params: z.object({ instanceId: z.string() }),
     body: emailOnlySchema,
     codes: [],
@@ -718,6 +723,7 @@ export const endpoints = {
     method: "POST",
     path: apiRoutes.proposals,
     summary: "Submit a proposal.",
+    status: 201,
     body: proposalDraftSchema,
     response: proposalReportSchema,
     codes: [
@@ -993,7 +999,7 @@ export const endpoints = {
   propertyDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.properties}/:id`,
-    summary: "Deletes a property definition (204).",
+    summary: "Deletes a property definition.",
     params: z.object({ id: z.string() }),
     codes: ["property.predefined"],
     engine: false,
@@ -1149,6 +1155,7 @@ export const endpoints = {
     method: "POST",
     path: apiRoutes.digitizationLists,
     summary: "Creates a digitization list.",
+    status: 201,
     body: listDraftSchema,
     response: listDetailSchema,
     codes: ["list.ends_before_start", "list.member_unknown", "list.member_unavailable"],
@@ -1269,7 +1276,7 @@ export const endpoints = {
   listDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.digitizationLists}/:listId`,
-    summary: "Deletes a digitization list (204).",
+    summary: "Deletes a digitization list.",
     params: z.object({ listId: z.string() }),
     codes: ["list.done"],
     engine: false,
@@ -1318,7 +1325,8 @@ export const endpoints = {
   projectCreate: spec({
     method: "POST",
     path: apiRoutes.projects,
-    summary: "Creates a project (201).",
+    summary: "Creates a project.",
+    status: 201,
     body: projectDraftSchema,
     response: projectDetailSchema,
     codes: [],
@@ -1386,7 +1394,7 @@ export const endpoints = {
   projectDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.projects}/:projectId`,
-    summary: "Deletes a project (204).",
+    summary: "Deletes a project.",
     params: z.object({ projectId: z.string() }),
     codes: ["project.has_proposals"],
     engine: false,
@@ -1436,7 +1444,7 @@ export const endpoints = {
   categoryDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.categories}/:categoryId`,
-    summary: "Deletes a category (204).",
+    summary: "Deletes a category.",
     params: z.object({ categoryId: z.string() }),
     codes: ["category.has_children", "category.holds_documents", "category.scope"],
     engine: false,
@@ -1540,7 +1548,7 @@ export const endpoints = {
   mixDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.mixes}/:mixId`,
-    summary: "Deletes a mix (204).",
+    summary: "Deletes a mix.",
     params: z.object({ mixId: z.string() }),
     codes: ["mix.is_primary", "mix.in_use"],
     engine: false,
@@ -1550,6 +1558,7 @@ export const endpoints = {
     method: "POST",
     path: apiRoutes.intentions,
     summary: "Creates an intention.",
+    status: 201,
     body: intentionDraftSchema,
     response: intentionRowSchema,
     codes: [
@@ -1584,6 +1593,7 @@ export const endpoints = {
     method: "POST",
     path: apiRoutes.intentionTemplates,
     summary: "Creates an intention template.",
+    status: 201,
     body: intentionTemplateDraftSchema,
     response: intentionTemplateRowSchema,
     codes: [
@@ -1666,7 +1676,7 @@ export const endpoints = {
   intentionDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.intentions}/:intentionId`,
-    summary: "Deletes an intention (204).",
+    summary: "Deletes an intention.",
     params: z.object({ intentionId: z.string() }),
     codes: ["intention.is_archived", "intention.overall", "intention.project"],
     engine: false,
@@ -1748,7 +1758,7 @@ export const endpoints = {
   pluginInstanceDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.pluginInstances}/:id`,
-    summary: "Deletes a plugin instance (204).",
+    summary: "Deletes a plugin instance.",
     params: z.object({ id: z.string() }),
     codes: ["plugin.last_identity", "plugin.predefined"],
     engine: false,
@@ -1943,7 +1953,7 @@ export const endpoints = {
   scheduleDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.schedules}/:scheduleId`,
-    summary: "Deletes a schedule (204).",
+    summary: "Deletes a schedule.",
     params: z.object({ scheduleId: z.string() }),
     codes: [],
     engine: false,
@@ -2020,7 +2030,7 @@ export const endpoints = {
   hookDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.hooks}/:id`,
-    summary: "Deletes a hook (204).",
+    summary: "Deletes a hook.",
     params: z.object({ id: z.string() }),
     codes: [],
     engine: false,
@@ -2130,7 +2140,8 @@ export const endpoints = {
   watchlistCreate: spec({
     method: "POST",
     path: apiRoutes.watchlists,
-    summary: "Creates a watchlist (201).",
+    summary: "Creates a watchlist.",
+    status: 201,
     body: watchlistDraftSchema,
     response: watchlistSchema,
     codes: [
@@ -2189,7 +2200,7 @@ export const endpoints = {
   watchlistDelete: spec({
     method: "DELETE",
     path: `${apiRoutes.watchlists}/:watchlistId`,
-    summary: "Deletes a watchlist (204).",
+    summary: "Deletes a watchlist.",
     params: z.object({ watchlistId: z.string() }),
     codes: ["watchlist.manager_required"],
     engine: false,

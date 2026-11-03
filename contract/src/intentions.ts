@@ -29,13 +29,13 @@ export const mixFlagSchema = z.enum(mixFlags);
 const namedSchema = z.object({ id: z.string(), name: z.string() });
 
 // The mix it chose, which any number of intentions may share (PLAN-mix), and the revision read.
-export const intentionMixSchema = z.object({
+export const intentionMixSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   revision: z.number().int().positive(),
 });
 
-export type IntentionMix = z.infer<typeof intentionMixSchema>;
+export type IntentionMix = z.infer<typeof intentionMixSummarySchema>;
 
 // One category the mix is read across: the scope's children, or the top of the tree.
 export const mixRowSchema = z.object({
@@ -102,7 +102,7 @@ export const intentionRowSchema = z.object({
   project: namedSchema.nullable(),
   // The scope node's path from the root.
   scope: z.object({ id: z.string(), path: z.array(z.string()) }).nullable(),
-  mix: intentionMixSchema.nullable(),
+  mix: intentionMixSummarySchema.nullable(),
   mixRows: z.array(mixRowSchema),
   unallocated: percent,
   outOfBandCount: count,

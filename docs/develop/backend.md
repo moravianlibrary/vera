@@ -85,6 +85,8 @@ Settled on 2026-10-30. The contract stays in TypeScript and stays the source. Fr
   refusal codes as an extension (`x-vera-codes`), `public` and `redirects` likewise;
 - the check in `make docs-check`'s manner, that the file is not stale.
 
+The file is written by `make openapi`, and `make openapi-check` checks it for staleness.
+
 The backend **does not generate code** from it. It:
 1. writes its request and answer types by hand, as Java records and sealed interfaces;
 2. checks every request against the document's schema at the boundary, with a JSON Schema
