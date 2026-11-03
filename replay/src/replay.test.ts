@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
+import { endpointOf } from "./endpoints";
 import { knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
@@ -22,20 +23,11 @@ const recordings = files.map((file) => ({
   ) as Recording,
 }));
 
-function endpointOf(call: RecordingCall) {
-  const path = new URL(call.path, "http://recording.invalid").pathname;
-  return Object.values(endpoints).find((endpoint) => {
-    if (endpoint.method !== call.method) return false;
-    const pattern = endpoint.path
-      .split("/")
-      .map((part) => (part.startsWith(":") ? "[^/]+" : part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
-      .join("/");
-    return new RegExp(`^${pattern}$`).test(path);
-  });
-}
-
 function unsupported(scenario: Recording["scenarios"][number]) {
-  return scenario.calls.find((call) => endpointOf(call)?.engine === false);
+  return scenario.calls.find((call) => {
+    const name = endpointOf(call);
+    return name !== undefined && endpoints[name].engine === false;
+  });
 }
 
 function knownGap(file: string, scenario: Recording["scenarios"][number]) {

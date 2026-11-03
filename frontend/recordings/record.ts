@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { readdirSync, writeFileSync } from "node:fs";
 import { setupServer } from "msw/node";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
@@ -40,7 +40,10 @@ if (!/^https?:\/\//.test(apiBase))
 const parsedApiBase = new URL(apiBase);
 if (parsedApiBase.origin === "null")
   throw new Error(`VITE_API_BASE_URL must be an absolute URL; received "${apiBase}"`);
-const names = ["base-records", "base-proposals", "base-decisions", "base-access"];
+const names = readdirSync(new URL("./lists/", import.meta.url))
+  .filter((file) => file.endsWith(".ts"))
+  .map((file) => file.slice(0, -3))
+  .toSorted();
 const selected = process.argv.slice(2);
 const listNames = selected.length === 0 ? names : selected;
 const NativeDate = Date;
