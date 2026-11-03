@@ -200,7 +200,9 @@ Decided on 2026-10-16 and 2026-10-29, built with step 2:
   server has a loopback address of its own, and tests open a session through `/_engine/sessions`.
 - **E13, amended.** Seeds hold no dev people. A seed may extend one other: `base` extends
   `installation`, which holds what VERA installs, the six shipped roles and the fallback custody;
-  the child's own fields win and its collections merge in by id.
+  the child's own fields win and its collections merge in by id. The seed format is
+  `contract/seed/seed.ts`, written as JSON Schema to `contract/seed/seed.schema.json` for the
+  backend's loader; `extends` merges as `contract/src/seed-extends.ts` does.
 - **E14. Sessions:** a random token in an HttpOnly, SameSite=Lax cookie, `vera_session`, stored
   only as its SHA-256. A session slides, 30 minutes idle and 12 hours at most, its cookie
   reissued on every answer. Logging out, suspension and a password reset end sessions.

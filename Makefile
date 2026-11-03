@@ -27,7 +27,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -203,7 +203,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd engine && bun run typecheck
 	cd replay && bun run typecheck
 
-check: format-check lint ui-check typecheck version-check docs-check openapi-check ## Run the project checks
+check: format-check lint ui-check typecheck version-check docs-check openapi-check seed-schema-check ## Run the project checks
 
 docs: ## Rewrite the generated blocks in the reference from the code
 	cd frontend && bun ../docs/tools/docs.ts
@@ -216,6 +216,12 @@ openapi: ## Write contract/openapi.json from the endpoint table
 
 openapi-check: ## Check contract/openapi.json against the endpoint table
 	cd contract && bun tools/openapi.ts --check
+
+seed-schema: ## Write JSON Schemas for the complete and patch seed formats
+	cd contract && bun tools/seed-schema.ts
+
+seed-schema-check: ## Check the committed seed JSON Schemas
+	cd contract && bun tools/seed-schema.ts --check
 
 test: ## Run the frontend tests and the shared packages' tests
 	cd frontend && bun run test
