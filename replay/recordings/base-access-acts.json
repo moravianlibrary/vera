@@ -1,0 +1,6116 @@
+{
+  "seed": "base",
+  "moment": "2026-06-25T08:40:00.000Z",
+  "scenarios": [
+    {
+      "name": "access-index-and-role-management",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 200,
+          "body": {
+            "properties": [
+              {
+                "key": "page_count",
+                "name": "Page count"
+              },
+              {
+                "key": "material_type",
+                "name": "Material type"
+              },
+              {
+                "key": "shelf_mark",
+                "name": "Shelf mark"
+              },
+              {
+                "key": "title",
+                "name": "Title"
+              },
+              {
+                "key": "size",
+                "name": "Size"
+              },
+              {
+                "key": "machines",
+                "name": "Machines"
+              }
+            ],
+            "asOf": "<time>",
+            "users": [
+              {
+                "id": "u1",
+                "name": "Jana Nováková",
+                "kind": "person",
+                "email": "jana.novakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-curators"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "jnovakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u2",
+                "name": "Martin Svoboda",
+                "kind": "person",
+                "email": "martin.svoboda@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "dig-curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-digitization"
+                  }
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "msvoboda",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u3",
+                "name": "Petr Dvořák",
+                "kind": "person",
+                "email": "petr.dvorak@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "admin"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "pdvorak",
+                    "lastLoginAt": "<time>"
+                  },
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "admin",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u4",
+                "name": "Eva Horáková",
+                "kind": "person",
+                "email": "eva.horakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g3"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "ehorakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u8",
+                "name": "Kateřina Novotná",
+                "kind": "person",
+                "email": "katerina.novotna@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "curator"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "knovotna",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u9",
+                "name": "Radek Šimek",
+                "kind": "person",
+                "email": "radek.simek@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "project-user"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "rsimek",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u5",
+                "name": "Tomáš Marek",
+                "kind": "person",
+                "email": "tomas.marek@muni.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "reader",
+                    "instanceId": "pi41",
+                    "claim": "default role"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi41",
+                    "externalId": "marek@muni.cz",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u6",
+                "name": "Lucie Benešová",
+                "kind": "person",
+                "email": "lucie.benesova@gmail.com",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "lbenesova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u7",
+                "name": "Ondřej Krejčí",
+                "kind": "person",
+                "email": "ondrej.krejci@seznam.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "okrejci",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u10",
+                "name": "Adam Kolář",
+                "kind": "person",
+                "email": "adam.kolar@post.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "akolar",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "a1",
+                "name": "Kramerius sweep",
+                "kind": "agent",
+                "email": null,
+                "entry": "Additions",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a2",
+                "name": "Periodical gaps",
+                "kind": "agent",
+                "email": null,
+                "entry": "Proposals",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a3",
+                "name": "Publication detector",
+                "kind": "agent",
+                "email": null,
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              }
+            ],
+            "roles": [
+              {
+                "id": "reader",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 100,
+                "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "reader",
+                "isShipped": true
+              },
+              {
+                "id": "staff",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Library staff: the reader grants with a higher daily proposal limit.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "staff",
+                "isShipped": true
+              },
+              {
+                "id": "project-user",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Starts projects and runs those they manage; follows the documents and intentions of the projects they are on.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "project"
+                  }
+                ],
+                "name": "project-user",
+                "isShipped": true
+              },
+              {
+                "id": "curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  }
+                ],
+                "name": "curator",
+                "isShipped": true
+              },
+              {
+                "id": "dig-curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Plans the work: lists, intentions, projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "dig-curator",
+                "isShipped": true
+              },
+              {
+                "id": "admin",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Everything, at any scope.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "restriction.overrule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watchlist.manage_system",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_payload",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.repeat",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.schedule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.upload_code",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.run",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.define",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "admin",
+                "isShipped": true
+              }
+            ],
+            "groups": [
+              {
+                "id": "g1",
+                "name": "Periodicals Curators",
+                "description": "Curators of the periodicals collection.",
+                "categoryIds": [
+                  "c2"
+                ],
+                "memberIds": [
+                  "u1",
+                  "u8"
+                ]
+              },
+              {
+                "id": "g2",
+                "name": "Digitization Office",
+                "description": "Plans lists and runs the funded projects.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u2",
+                  "u9"
+                ]
+              },
+              {
+                "id": "g3",
+                "name": "Reading Room",
+                "description": "Reading-room staff.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u4"
+                ]
+              }
+            ],
+            "custodies": [
+              {
+                "id": "pc0",
+                "name": "Fallback",
+                "description": "What no Custody rule placed.",
+                "isFallback": true,
+                "memberIds": [
+                  "u3"
+                ],
+                "groupIds": [],
+                "openCount": 1,
+                "placedByIds": []
+              },
+              {
+                "id": "pc1",
+                "name": "Periodicals",
+                "description": "Serials and newspapers, by material type.",
+                "isFallback": false,
+                "memberIds": [
+                  "u8"
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "openCount": 9,
+                "placedByIds": [
+                  "pi25"
+                ]
+              },
+              {
+                "id": "pc2",
+                "name": "19th-century prints",
+                "description": "Anything published 1800–1899, from field 260.",
+                "isFallback": false,
+                "memberIds": [
+                  "u1"
+                ],
+                "groupIds": [],
+                "openCount": 5,
+                "placedByIds": [
+                  "pi34"
+                ]
+              },
+              {
+                "id": "pc3",
+                "name": "Moravica",
+                "description": "Proposals into the Moravica project.",
+                "isFallback": false,
+                "memberIds": [
+                  "u2"
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "openCount": 1,
+                "placedByIds": [
+                  "pi35"
+                ]
+              }
+            ],
+            "identityInstances": [
+              {
+                "id": "pi22",
+                "name": "MZK Keycloak",
+                "userIdClaim": "preferred_username",
+                "defaultRoleId": null,
+                "mappings": [
+                  {
+                    "claim": "group mzk-staff",
+                    "roleId": "staff"
+                  },
+                  {
+                    "claim": "group mzk-curators",
+                    "roleId": "curator"
+                  },
+                  {
+                    "claim": "group mzk-digitization",
+                    "roleId": "dig-curator"
+                  }
+                ],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi24",
+                "name": "Local accounts",
+                "userIdClaim": "username",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": true,
+                "isEnabled": true
+              },
+              {
+                "id": "pi41",
+                "name": "Google",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi42",
+                "name": "Seznam",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              }
+            ],
+            "categoryMemberships": [
+              {
+                "categoryId": "c4",
+                "userIds": [
+                  "u8"
+                ]
+              }
+            ],
+            "categories": [
+              {
+                "id": "c1",
+                "name": "Monographs",
+                "parentId": null
+              },
+              {
+                "id": "c11",
+                "name": "19th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c12",
+                "name": "20th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c2",
+                "name": "Periodicals",
+                "parentId": null
+              },
+              {
+                "id": "c21",
+                "name": "Regional",
+                "parentId": "c2"
+              },
+              {
+                "id": "c22",
+                "name": "National",
+                "parentId": "c2"
+              },
+              {
+                "id": "c23",
+                "name": "Specialist",
+                "parentId": "c2"
+              },
+              {
+                "id": "c3",
+                "name": "Manuscripts",
+                "parentId": null
+              },
+              {
+                "id": "c31",
+                "name": "Medieval",
+                "parentId": "c3"
+              },
+              {
+                "id": "c32",
+                "name": "Early modern",
+                "parentId": "c3"
+              },
+              {
+                "id": "c4",
+                "name": "Maps",
+                "parentId": null
+              }
+            ],
+            "proposals": [
+              {
+                "id": "<D1>",
+                "title": "Národní listy",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D2>",
+                "title": "Ostravský deník",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D3>",
+                "title": "Průvodce Moravským krasem",
+                "custodyIds": [
+                  "pc3"
+                ]
+              },
+              {
+                "id": "<D4>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D5>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D6>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D7>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D8>",
+                "title": "Brněnský kalendář",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D9>",
+                "title": "Plán města Brna",
+                "custodyIds": [
+                  "pc0"
+                ]
+              },
+              {
+                "id": "<D10>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D11>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              }
+            ],
+            "projects": [
+              {
+                "id": "p1",
+                "name": "NDK Periodika",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1",
+                  "u4"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p2",
+                "name": "VISK 7 / 2026",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p3",
+                "name": "Moravica",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p4",
+                "name": "Hudebniny — NAKI III",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p8",
+                "name": "Brněnské kalendáře",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4",
+                  "u5"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p9",
+                "name": "Pohlednice Brna",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p5",
+                "name": "VISK 7 / 2025",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p6",
+                "name": "Staré tisky — restoration scans",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p7",
+                "name": "Mapy Moravy — NAKI II",
+                "managerId": "u3",
+                "memberIds": [
+                  "u3",
+                  "u2"
+                ],
+                "memberGroupIds": []
+              }
+            ],
+            "sharedWatchlists": [
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-1",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Forbidden",
+                "filter": {
+                  "forbidden": "Yes"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-2",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-3",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Periodicals",
+                "filter": {
+                  "decision": "Pending",
+                  "type": "Periodical"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-4",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [
+                    "g1"
+                  ],
+                  "roleIds": []
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Review needed",
+                "filter": {
+                  "review": "Needed"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-5",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Page counts",
+                "filter": {
+                  "review": "Needed",
+                  "defect": "pi9"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-6",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [],
+                  "roleIds": [
+                    "curator"
+                  ]
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Denied in review",
+                "filter": {
+                  "review": "Denied"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-7",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Current",
+                "filter": {
+                  "state": "Planned,InProgress"
+                },
+                "view": "lists",
+                "createdAt": "<time>",
+                "id": "W-shared-8",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Proposed",
+                "filter": {
+                  "state": "Proposed"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-9",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Active",
+                "filter": {
+                  "state": "Approved",
+                  "period": "Active"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-10",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Ended",
+                "filter": {
+                  "period": "Ended"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-11",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Rejected",
+                "filter": {
+                  "state": "Rejected"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-12",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Repeats",
+                "filter": {
+                  "type": "Repeat"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-13",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Targets",
+                "filter": {
+                  "type": "Target"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-14",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Output",
+                "filter": {
+                  "type": "Output"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-15",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Running",
+                "filter": {
+                  "state": "Running"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-16",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Failed in last 7 days",
+                "filter": {
+                  "state": "Failed",
+                  "started": "last-7-days"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-17",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Without custody",
+                "filter": {
+                  "custody": "Unheld"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-18",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Mix gaps",
+                "filter": {
+                  "attention": "Unallocated,NoShare"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-19",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Waiting for review",
+                "filter": {
+                  "status": "WaitingForReview"
+                },
+                "view": "my-documents",
+                "createdAt": "<time>",
+                "id": "W-shared-20",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "a1",
+                  "a2",
+                  "a3"
+                ],
+                "outOfViewUserIds": [
+                  "u10"
+                ]
+              }
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u8"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u4"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u5"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "code": "forbidden",
+          "as": "u10"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 403,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not read users and groups",
+            "code": "forbidden"
+          },
+          "as": "u9"
+        },
+        {
+          "method": "POST",
+          "path": "/api/access/roles",
+          "status": 200,
+          "body": {
+            "id": "maps-curator",
+            "name": "maps-curator",
+            "description": "Maps only.",
+            "isShipped": false,
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "requestBody": {
+            "name": "Maps Curator",
+            "description": "Maps only.",
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/roles/maps-curator",
+          "status": 200,
+          "body": {
+            "id": "maps-curator",
+            "name": "maps-curator",
+            "description": "Updated.",
+            "isShipped": false,
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "requestBody": {
+            "name": "Maps Curator",
+            "description": "Updated.",
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/access/roles",
+          "status": 422,
+          "code": "role.requires",
+          "requestBody": {
+            "name": "Maps Specialist",
+            "description": "",
+            "grants": [
+              {
+                "permission": "iteration.publish",
+                "scope": "custody"
+              },
+              {
+                "permission": "iteration.read",
+                "scope": "project"
+              }
+            ],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/roles/curator",
+          "status": 409,
+          "code": "access.name_taken",
+          "requestBody": {
+            "name": "Reader",
+            "description": "",
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/roles/curator",
+          "status": 422,
+          "code": "role.requires",
+          "requestBody": {
+            "name": "Curator",
+            "description": "",
+            "grants": [
+              {
+                "permission": "iteration.publish",
+                "scope": "custody"
+              },
+              {
+                "permission": "iteration.read",
+                "scope": "project"
+              }
+            ],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/access/roles/maps-curator",
+          "status": 204,
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/access/roles",
+          "status": 409,
+          "code": "access.name_taken",
+          "requestBody": {
+            "name": "Reader",
+            "description": "",
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/roles/admin",
+          "status": 409,
+          "code": "access.last_manager",
+          "requestBody": {
+            "name": "Administrators",
+            "description": "",
+            "grants": [],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 300
+          },
+          "as": "u3"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/access/roles/admin",
+          "status": 409,
+          "code": "access.last_manager",
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 200,
+          "body": {
+            "properties": [
+              {
+                "key": "page_count",
+                "name": "Page count"
+              },
+              {
+                "key": "material_type",
+                "name": "Material type"
+              },
+              {
+                "key": "shelf_mark",
+                "name": "Shelf mark"
+              },
+              {
+                "key": "title",
+                "name": "Title"
+              },
+              {
+                "key": "size",
+                "name": "Size"
+              },
+              {
+                "key": "machines",
+                "name": "Machines"
+              }
+            ],
+            "asOf": "<time>",
+            "users": [
+              {
+                "id": "u1",
+                "name": "Jana Nováková",
+                "kind": "person",
+                "email": "jana.novakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-curators"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "jnovakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u2",
+                "name": "Martin Svoboda",
+                "kind": "person",
+                "email": "martin.svoboda@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "dig-curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-digitization"
+                  }
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "msvoboda",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u3",
+                "name": "Petr Dvořák",
+                "kind": "person",
+                "email": "petr.dvorak@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "admin"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "pdvorak",
+                    "lastLoginAt": "<time>"
+                  },
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "admin",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u4",
+                "name": "Eva Horáková",
+                "kind": "person",
+                "email": "eva.horakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g3"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "ehorakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u8",
+                "name": "Kateřina Novotná",
+                "kind": "person",
+                "email": "katerina.novotna@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "curator"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "knovotna",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u9",
+                "name": "Radek Šimek",
+                "kind": "person",
+                "email": "radek.simek@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "project-user"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "rsimek",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u5",
+                "name": "Tomáš Marek",
+                "kind": "person",
+                "email": "tomas.marek@muni.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "reader",
+                    "instanceId": "pi41",
+                    "claim": "default role"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi41",
+                    "externalId": "marek@muni.cz",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u6",
+                "name": "Lucie Benešová",
+                "kind": "person",
+                "email": "lucie.benesova@gmail.com",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "lbenesova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u7",
+                "name": "Ondřej Krejčí",
+                "kind": "person",
+                "email": "ondrej.krejci@seznam.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "okrejci",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u10",
+                "name": "Adam Kolář",
+                "kind": "person",
+                "email": "adam.kolar@post.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "akolar",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "a1",
+                "name": "Kramerius sweep",
+                "kind": "agent",
+                "email": null,
+                "entry": "Additions",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a2",
+                "name": "Periodical gaps",
+                "kind": "agent",
+                "email": null,
+                "entry": "Proposals",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a3",
+                "name": "Publication detector",
+                "kind": "agent",
+                "email": null,
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              }
+            ],
+            "roles": [
+              {
+                "id": "reader",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 100,
+                "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "reader",
+                "isShipped": true
+              },
+              {
+                "id": "staff",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Library staff: the reader grants with a higher daily proposal limit.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "staff",
+                "isShipped": true
+              },
+              {
+                "id": "project-user",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Starts projects and runs those they manage; follows the documents and intentions of the projects they are on.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "project"
+                  }
+                ],
+                "name": "project-user",
+                "isShipped": true
+              },
+              {
+                "id": "curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  }
+                ],
+                "name": "curator",
+                "isShipped": true
+              },
+              {
+                "id": "dig-curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Plans the work: lists, intentions, projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "dig-curator",
+                "isShipped": true
+              },
+              {
+                "id": "admin",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Everything, at any scope.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "restriction.overrule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watchlist.manage_system",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_payload",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.repeat",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.schedule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.upload_code",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.run",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.define",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "admin",
+                "isShipped": true
+              }
+            ],
+            "groups": [
+              {
+                "id": "g1",
+                "name": "Periodicals Curators",
+                "description": "Curators of the periodicals collection.",
+                "categoryIds": [
+                  "c2"
+                ],
+                "memberIds": [
+                  "u1",
+                  "u8"
+                ]
+              },
+              {
+                "id": "g2",
+                "name": "Digitization Office",
+                "description": "Plans lists and runs the funded projects.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u2",
+                  "u9"
+                ]
+              },
+              {
+                "id": "g3",
+                "name": "Reading Room",
+                "description": "Reading-room staff.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u4"
+                ]
+              }
+            ],
+            "custodies": [
+              {
+                "id": "pc0",
+                "name": "Fallback",
+                "description": "What no Custody rule placed.",
+                "isFallback": true,
+                "memberIds": [
+                  "u3"
+                ],
+                "groupIds": [],
+                "openCount": 1,
+                "placedByIds": []
+              },
+              {
+                "id": "pc1",
+                "name": "Periodicals",
+                "description": "Serials and newspapers, by material type.",
+                "isFallback": false,
+                "memberIds": [
+                  "u8"
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "openCount": 9,
+                "placedByIds": [
+                  "pi25"
+                ]
+              },
+              {
+                "id": "pc2",
+                "name": "19th-century prints",
+                "description": "Anything published 1800–1899, from field 260.",
+                "isFallback": false,
+                "memberIds": [
+                  "u1"
+                ],
+                "groupIds": [],
+                "openCount": 5,
+                "placedByIds": [
+                  "pi34"
+                ]
+              },
+              {
+                "id": "pc3",
+                "name": "Moravica",
+                "description": "Proposals into the Moravica project.",
+                "isFallback": false,
+                "memberIds": [
+                  "u2"
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "openCount": 1,
+                "placedByIds": [
+                  "pi35"
+                ]
+              }
+            ],
+            "identityInstances": [
+              {
+                "id": "pi22",
+                "name": "MZK Keycloak",
+                "userIdClaim": "preferred_username",
+                "defaultRoleId": null,
+                "mappings": [
+                  {
+                    "claim": "group mzk-staff",
+                    "roleId": "staff"
+                  },
+                  {
+                    "claim": "group mzk-curators",
+                    "roleId": "curator"
+                  },
+                  {
+                    "claim": "group mzk-digitization",
+                    "roleId": "dig-curator"
+                  }
+                ],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi24",
+                "name": "Local accounts",
+                "userIdClaim": "username",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": true,
+                "isEnabled": true
+              },
+              {
+                "id": "pi41",
+                "name": "Google",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi42",
+                "name": "Seznam",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              }
+            ],
+            "categoryMemberships": [
+              {
+                "categoryId": "c4",
+                "userIds": [
+                  "u8"
+                ]
+              }
+            ],
+            "categories": [
+              {
+                "id": "c1",
+                "name": "Monographs",
+                "parentId": null
+              },
+              {
+                "id": "c11",
+                "name": "19th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c12",
+                "name": "20th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c2",
+                "name": "Periodicals",
+                "parentId": null
+              },
+              {
+                "id": "c21",
+                "name": "Regional",
+                "parentId": "c2"
+              },
+              {
+                "id": "c22",
+                "name": "National",
+                "parentId": "c2"
+              },
+              {
+                "id": "c23",
+                "name": "Specialist",
+                "parentId": "c2"
+              },
+              {
+                "id": "c3",
+                "name": "Manuscripts",
+                "parentId": null
+              },
+              {
+                "id": "c31",
+                "name": "Medieval",
+                "parentId": "c3"
+              },
+              {
+                "id": "c32",
+                "name": "Early modern",
+                "parentId": "c3"
+              },
+              {
+                "id": "c4",
+                "name": "Maps",
+                "parentId": null
+              }
+            ],
+            "proposals": [
+              {
+                "id": "<D1>",
+                "title": "Národní listy",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D2>",
+                "title": "Ostravský deník",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D3>",
+                "title": "Průvodce Moravským krasem",
+                "custodyIds": [
+                  "pc3"
+                ]
+              },
+              {
+                "id": "<D4>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D5>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D6>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D7>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D8>",
+                "title": "Brněnský kalendář",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D9>",
+                "title": "Plán města Brna",
+                "custodyIds": [
+                  "pc0"
+                ]
+              },
+              {
+                "id": "<D10>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D11>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              }
+            ],
+            "projects": [
+              {
+                "id": "p1",
+                "name": "NDK Periodika",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1",
+                  "u4"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p2",
+                "name": "VISK 7 / 2026",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p3",
+                "name": "Moravica",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p4",
+                "name": "Hudebniny — NAKI III",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p8",
+                "name": "Brněnské kalendáře",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4",
+                  "u5"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p9",
+                "name": "Pohlednice Brna",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p5",
+                "name": "VISK 7 / 2025",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p6",
+                "name": "Staré tisky — restoration scans",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p7",
+                "name": "Mapy Moravy — NAKI II",
+                "managerId": "u3",
+                "memberIds": [
+                  "u3",
+                  "u2"
+                ],
+                "memberGroupIds": []
+              }
+            ],
+            "sharedWatchlists": [
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-1",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Forbidden",
+                "filter": {
+                  "forbidden": "Yes"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-2",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-3",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Periodicals",
+                "filter": {
+                  "decision": "Pending",
+                  "type": "Periodical"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-4",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [
+                    "g1"
+                  ],
+                  "roleIds": []
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Review needed",
+                "filter": {
+                  "review": "Needed"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-5",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Page counts",
+                "filter": {
+                  "review": "Needed",
+                  "defect": "pi9"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-6",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [],
+                  "roleIds": [
+                    "curator"
+                  ]
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Denied in review",
+                "filter": {
+                  "review": "Denied"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-7",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Current",
+                "filter": {
+                  "state": "Planned,InProgress"
+                },
+                "view": "lists",
+                "createdAt": "<time>",
+                "id": "W-shared-8",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Proposed",
+                "filter": {
+                  "state": "Proposed"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-9",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Active",
+                "filter": {
+                  "state": "Approved",
+                  "period": "Active"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-10",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Ended",
+                "filter": {
+                  "period": "Ended"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-11",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Rejected",
+                "filter": {
+                  "state": "Rejected"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-12",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Repeats",
+                "filter": {
+                  "type": "Repeat"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-13",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Targets",
+                "filter": {
+                  "type": "Target"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-14",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Output",
+                "filter": {
+                  "type": "Output"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-15",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Running",
+                "filter": {
+                  "state": "Running"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-16",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Failed in last 7 days",
+                "filter": {
+                  "state": "Failed",
+                  "started": "last-7-days"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-17",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Without custody",
+                "filter": {
+                  "custody": "Unheld"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-18",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Mix gaps",
+                "filter": {
+                  "attention": "Unallocated,NoShare"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-19",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u4",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3"
+                ]
+              },
+              {
+                "name": "Waiting for review",
+                "filter": {
+                  "status": "WaitingForReview"
+                },
+                "view": "my-documents",
+                "createdAt": "<time>",
+                "id": "W-shared-20",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "a1",
+                  "a2",
+                  "a3"
+                ],
+                "outOfViewUserIds": [
+                  "u10"
+                ]
+              }
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "local-account-and-user-access-acts",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/access/users",
+          "status": 200,
+          "body": {
+            "id": "u11",
+            "name": "Hana Malá",
+            "kind": "person",
+            "email": null,
+            "entry": null,
+            "handRoleIds": [
+              "reader"
+            ],
+            "mappedRoles": [],
+            "groupIds": [],
+            "identities": [
+              {
+                "instanceId": "pi24",
+                "externalId": "hmala",
+                "lastLoginAt": null
+              }
+            ],
+            "suspendedAt": null
+          },
+          "requestBody": {
+            "name": "Hana Malá",
+            "username": "hmala",
+            "email": "",
+            "roleIds": [
+              "reader"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/users/u4/roles",
+          "status": 200,
+          "body": {
+            "id": "u4",
+            "name": "Eva Horáková",
+            "kind": "person",
+            "email": "eva.horakova@mzk.cz",
+            "entry": null,
+            "handRoleIds": [
+              "curator"
+            ],
+            "mappedRoles": [
+              {
+                "roleId": "staff",
+                "instanceId": "pi22",
+                "claim": "group mzk-staff"
+              }
+            ],
+            "groupIds": [
+              "g3"
+            ],
+            "identities": [
+              {
+                "instanceId": "pi22",
+                "externalId": "ehorakova",
+                "lastLoginAt": "<time>"
+              }
+            ],
+            "suspendedAt": null
+          },
+          "requestBody": {
+            "roleIds": [
+              "curator"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/users/u9/groups",
+          "status": 200,
+          "body": {
+            "id": "u9",
+            "name": "Radek Šimek",
+            "kind": "person",
+            "email": "radek.simek@mzk.cz",
+            "entry": null,
+            "handRoleIds": [
+              "project-user"
+            ],
+            "mappedRoles": [
+              {
+                "roleId": "staff",
+                "instanceId": "pi22",
+                "claim": "group mzk-staff"
+              }
+            ],
+            "groupIds": [
+              "g3"
+            ],
+            "identities": [
+              {
+                "instanceId": "pi22",
+                "externalId": "rsimek",
+                "lastLoginAt": "<time>"
+              }
+            ],
+            "suspendedAt": null
+          },
+          "requestBody": {
+            "groupIds": [
+              "g3"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/access/users",
+          "status": 409,
+          "code": "access.identity_taken",
+          "requestBody": {
+            "name": "Hana",
+            "username": "hmala",
+            "email": "",
+            "roleIds": []
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/users/u3/roles",
+          "status": 409,
+          "code": "access.last_manager",
+          "requestBody": {
+            "roleIds": []
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/access",
+          "status": 200,
+          "body": {
+            "properties": [
+              {
+                "key": "page_count",
+                "name": "Page count"
+              },
+              {
+                "key": "material_type",
+                "name": "Material type"
+              },
+              {
+                "key": "shelf_mark",
+                "name": "Shelf mark"
+              },
+              {
+                "key": "title",
+                "name": "Title"
+              },
+              {
+                "key": "size",
+                "name": "Size"
+              },
+              {
+                "key": "machines",
+                "name": "Machines"
+              }
+            ],
+            "asOf": "<time>",
+            "users": [
+              {
+                "id": "u1",
+                "name": "Jana Nováková",
+                "kind": "person",
+                "email": "jana.novakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-curators"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "jnovakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u2",
+                "name": "Martin Svoboda",
+                "kind": "person",
+                "email": "martin.svoboda@mzk.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "dig-curator",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-digitization"
+                  }
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "msvoboda",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u3",
+                "name": "Petr Dvořák",
+                "kind": "person",
+                "email": "petr.dvorak@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "admin"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "pdvorak",
+                    "lastLoginAt": "<time>"
+                  },
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "admin",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u4",
+                "name": "Eva Horáková",
+                "kind": "person",
+                "email": "eva.horakova@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "curator"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g3"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "ehorakova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u8",
+                "name": "Kateřina Novotná",
+                "kind": "person",
+                "email": "katerina.novotna@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "curator"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "knovotna",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u9",
+                "name": "Radek Šimek",
+                "kind": "person",
+                "email": "radek.simek@mzk.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "project-user"
+                ],
+                "mappedRoles": [
+                  {
+                    "roleId": "staff",
+                    "instanceId": "pi22",
+                    "claim": "group mzk-staff"
+                  }
+                ],
+                "groupIds": [
+                  "g3"
+                ],
+                "identities": [
+                  {
+                    "instanceId": "pi22",
+                    "externalId": "rsimek",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u5",
+                "name": "Tomáš Marek",
+                "kind": "person",
+                "email": "tomas.marek@muni.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [
+                  {
+                    "roleId": "reader",
+                    "instanceId": "pi41",
+                    "claim": "default role"
+                  }
+                ],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi41",
+                    "externalId": "marek@muni.cz",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u6",
+                "name": "Lucie Benešová",
+                "kind": "person",
+                "email": "lucie.benesova@gmail.com",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "lbenesova",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u7",
+                "name": "Ondřej Krejčí",
+                "kind": "person",
+                "email": "ondrej.krejci@seznam.cz",
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "okrejci",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "u10",
+                "name": "Adam Kolář",
+                "kind": "person",
+                "email": "adam.kolar@post.cz",
+                "entry": null,
+                "handRoleIds": [],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "akolar",
+                    "lastLoginAt": "<time>"
+                  }
+                ],
+                "suspendedAt": null
+              },
+              {
+                "id": "a1",
+                "name": "Kramerius sweep",
+                "kind": "agent",
+                "email": null,
+                "entry": "Additions",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a2",
+                "name": "Periodical gaps",
+                "kind": "agent",
+                "email": null,
+                "entry": "Proposals",
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "a3",
+                "name": "Publication detector",
+                "kind": "agent",
+                "email": null,
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [],
+                "suspendedAt": null
+              },
+              {
+                "id": "u11",
+                "name": "Hana Malá",
+                "kind": "person",
+                "email": null,
+                "entry": null,
+                "handRoleIds": [
+                  "reader"
+                ],
+                "mappedRoles": [],
+                "groupIds": [],
+                "identities": [
+                  {
+                    "instanceId": "pi24",
+                    "externalId": "hmala",
+                    "lastLoginAt": null
+                  }
+                ],
+                "suspendedAt": null
+              }
+            ],
+            "roles": [
+              {
+                "id": "reader",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 100,
+                "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "reader",
+                "isShipped": true
+              },
+              {
+                "id": "staff",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Library staff: the reader grants with a higher daily proposal limit.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  }
+                ],
+                "name": "staff",
+                "isShipped": true
+              },
+              {
+                "id": "project-user",
+                "proposalBatchLimit": 10,
+                "proposalDailyLimit": 300,
+                "description": "Starts projects and runs those they manage; follows the documents and intentions of the projects they are on.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "project"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "project"
+                  }
+                ],
+                "name": "project-user",
+                "isShipped": true
+              },
+              {
+                "id": "curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Decides proposals in their request custody; validates, classifies and publishes inside their category custody; decides projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "managed"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  }
+                ],
+                "name": "curator",
+                "isShipped": true
+              },
+              {
+                "id": "dig-curator",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Plans the work: lists, intentions, projects.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "custody"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "dig-curator",
+                "isShipped": true
+              },
+              {
+                "id": "admin",
+                "proposalBatchLimit": null,
+                "proposalDailyLimit": null,
+                "description": "Everything, at any scope.",
+                "grants": [
+                  {
+                    "permission": "request.create",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read_mine",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.withdraw_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "request.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.recheck",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.classify",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.approve",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.deny",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "validation.revoke",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "restriction.overrule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.resume",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "iteration.publish",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "watch",
+                    "scope": null
+                  },
+                  {
+                    "permission": "watchlist.manage_system",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_ingest",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.retry",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "request.read_payload",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "list.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "mix.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "intention.repeat",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.create",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.manage_members",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.delete",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "project.decide",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "category.grant_custody",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.read_own",
+                    "scope": null
+                  },
+                  {
+                    "permission": "task.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.cancel",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "task.schedule",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.upload_code",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "plugin.run",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "hook.configure",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.define",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.read",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "access.manage",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.size.edit",
+                    "scope": "any"
+                  },
+                  {
+                    "permission": "property.machines.edit",
+                    "scope": "any"
+                  }
+                ],
+                "name": "admin",
+                "isShipped": true
+              }
+            ],
+            "groups": [
+              {
+                "id": "g1",
+                "name": "Periodicals Curators",
+                "description": "Curators of the periodicals collection.",
+                "categoryIds": [
+                  "c2"
+                ],
+                "memberIds": [
+                  "u1",
+                  "u8"
+                ]
+              },
+              {
+                "id": "g2",
+                "name": "Digitization Office",
+                "description": "Plans lists and runs the funded projects.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u2"
+                ]
+              },
+              {
+                "id": "g3",
+                "name": "Reading Room",
+                "description": "Reading-room staff.",
+                "categoryIds": [],
+                "memberIds": [
+                  "u4",
+                  "u9"
+                ]
+              }
+            ],
+            "custodies": [
+              {
+                "id": "pc0",
+                "name": "Fallback",
+                "description": "What no Custody rule placed.",
+                "isFallback": true,
+                "memberIds": [
+                  "u3"
+                ],
+                "groupIds": [],
+                "openCount": 1,
+                "placedByIds": []
+              },
+              {
+                "id": "pc1",
+                "name": "Periodicals",
+                "description": "Serials and newspapers, by material type.",
+                "isFallback": false,
+                "memberIds": [
+                  "u8"
+                ],
+                "groupIds": [
+                  "g1"
+                ],
+                "openCount": 9,
+                "placedByIds": [
+                  "pi25"
+                ]
+              },
+              {
+                "id": "pc2",
+                "name": "19th-century prints",
+                "description": "Anything published 1800–1899, from field 260.",
+                "isFallback": false,
+                "memberIds": [
+                  "u1"
+                ],
+                "groupIds": [],
+                "openCount": 5,
+                "placedByIds": [
+                  "pi34"
+                ]
+              },
+              {
+                "id": "pc3",
+                "name": "Moravica",
+                "description": "Proposals into the Moravica project.",
+                "isFallback": false,
+                "memberIds": [
+                  "u2"
+                ],
+                "groupIds": [
+                  "g2"
+                ],
+                "openCount": 1,
+                "placedByIds": [
+                  "pi35"
+                ]
+              }
+            ],
+            "identityInstances": [
+              {
+                "id": "pi22",
+                "name": "MZK Keycloak",
+                "userIdClaim": "preferred_username",
+                "defaultRoleId": null,
+                "mappings": [
+                  {
+                    "claim": "group mzk-staff",
+                    "roleId": "staff"
+                  },
+                  {
+                    "claim": "group mzk-curators",
+                    "roleId": "curator"
+                  },
+                  {
+                    "claim": "group mzk-digitization",
+                    "roleId": "dig-curator"
+                  }
+                ],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi24",
+                "name": "Local accounts",
+                "userIdClaim": "username",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": true,
+                "isEnabled": true
+              },
+              {
+                "id": "pi41",
+                "name": "Google",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              },
+              {
+                "id": "pi42",
+                "name": "Seznam",
+                "userIdClaim": "sub",
+                "defaultRoleId": "reader",
+                "mappings": [],
+                "isLocal": false,
+                "isEnabled": true
+              }
+            ],
+            "categoryMemberships": [
+              {
+                "categoryId": "c4",
+                "userIds": [
+                  "u8"
+                ]
+              }
+            ],
+            "categories": [
+              {
+                "id": "c1",
+                "name": "Monographs",
+                "parentId": null
+              },
+              {
+                "id": "c11",
+                "name": "19th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c12",
+                "name": "20th century",
+                "parentId": "c1"
+              },
+              {
+                "id": "c2",
+                "name": "Periodicals",
+                "parentId": null
+              },
+              {
+                "id": "c21",
+                "name": "Regional",
+                "parentId": "c2"
+              },
+              {
+                "id": "c22",
+                "name": "National",
+                "parentId": "c2"
+              },
+              {
+                "id": "c23",
+                "name": "Specialist",
+                "parentId": "c2"
+              },
+              {
+                "id": "c3",
+                "name": "Manuscripts",
+                "parentId": null
+              },
+              {
+                "id": "c31",
+                "name": "Medieval",
+                "parentId": "c3"
+              },
+              {
+                "id": "c32",
+                "name": "Early modern",
+                "parentId": "c3"
+              },
+              {
+                "id": "c4",
+                "name": "Maps",
+                "parentId": null
+              }
+            ],
+            "proposals": [
+              {
+                "id": "<D1>",
+                "title": "Národní listy",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D2>",
+                "title": "Ostravský deník",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D3>",
+                "title": "Průvodce Moravským krasem",
+                "custodyIds": [
+                  "pc3"
+                ]
+              },
+              {
+                "id": "<D4>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D5>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D6>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D7>",
+                "title": "Moravská orlice",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ]
+              },
+              {
+                "id": "<D8>",
+                "title": "Brněnský kalendář",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D9>",
+                "title": "Plán města Brna",
+                "custodyIds": [
+                  "pc0"
+                ]
+              },
+              {
+                "id": "<D10>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              },
+              {
+                "id": "<D11>",
+                "title": "Hlídka",
+                "custodyIds": [
+                  "pc1"
+                ]
+              }
+            ],
+            "projects": [
+              {
+                "id": "p1",
+                "name": "NDK Periodika",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1",
+                  "u4"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p2",
+                "name": "VISK 7 / 2026",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": [
+                  "g2"
+                ]
+              },
+              {
+                "id": "p3",
+                "name": "Moravica",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p4",
+                "name": "Hudebniny — NAKI III",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p8",
+                "name": "Brněnské kalendáře",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4",
+                  "u5"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p9",
+                "name": "Pohlednice Brna",
+                "managerId": "u4",
+                "memberIds": [
+                  "u4"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p5",
+                "name": "VISK 7 / 2025",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p6",
+                "name": "Staré tisky — restoration scans",
+                "managerId": "u2",
+                "memberIds": [
+                  "u2",
+                  "u1"
+                ],
+                "memberGroupIds": []
+              },
+              {
+                "id": "p7",
+                "name": "Mapy Moravy — NAKI II",
+                "managerId": "u3",
+                "memberIds": [
+                  "u3",
+                  "u2"
+                ],
+                "memberGroupIds": []
+              }
+            ],
+            "sharedWatchlists": [
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-1",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Forbidden",
+                "filter": {
+                  "forbidden": "Yes"
+                },
+                "view": "documents",
+                "createdAt": "<time>",
+                "id": "W-shared-2",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Awaiting a decision",
+                "filter": {
+                  "decision": "Pending"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-3",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Periodicals",
+                "filter": {
+                  "decision": "Pending",
+                  "type": "Periodical"
+                },
+                "view": "requests",
+                "createdAt": "<time>",
+                "id": "W-shared-4",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [
+                    "g1"
+                  ],
+                  "roleIds": []
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Review needed",
+                "filter": {
+                  "review": "Needed"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-5",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Page counts",
+                "filter": {
+                  "review": "Needed",
+                  "defect": "pi9"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-6",
+                "audience": {
+                  "kind": "some",
+                  "groupIds": [],
+                  "roleIds": [
+                    "curator"
+                  ]
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": []
+              },
+              {
+                "name": "Denied in review",
+                "filter": {
+                  "review": "Denied"
+                },
+                "view": "validations",
+                "createdAt": "<time>",
+                "id": "W-shared-7",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Current",
+                "filter": {
+                  "state": "Planned,InProgress"
+                },
+                "view": "lists",
+                "createdAt": "<time>",
+                "id": "W-shared-8",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Proposed",
+                "filter": {
+                  "state": "Proposed"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-9",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Active",
+                "filter": {
+                  "state": "Approved",
+                  "period": "Active"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-10",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Ended",
+                "filter": {
+                  "period": "Ended"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-11",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Rejected",
+                "filter": {
+                  "state": "Rejected"
+                },
+                "view": "projects",
+                "createdAt": "<time>",
+                "id": "W-shared-12",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Repeats",
+                "filter": {
+                  "type": "Repeat"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-13",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Targets",
+                "filter": {
+                  "type": "Target"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-14",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Output",
+                "filter": {
+                  "type": "Output"
+                },
+                "view": "intentions",
+                "createdAt": "<time>",
+                "id": "W-shared-15",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u2",
+                  "u3",
+                  "u9"
+                ],
+                "outOfViewUserIds": [
+                  "u1",
+                  "u4",
+                  "u8",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Running",
+                "filter": {
+                  "state": "Running"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-16",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Failed in last 7 days",
+                "filter": {
+                  "state": "Failed",
+                  "started": "last-7-days"
+                },
+                "view": "tasks",
+                "createdAt": "<time>",
+                "id": "W-shared-17",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Without custody",
+                "filter": {
+                  "custody": "Unheld"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-18",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Mix gaps",
+                "filter": {
+                  "attention": "Unallocated,NoShare"
+                },
+                "view": "categories",
+                "createdAt": "<time>",
+                "id": "W-shared-19",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8"
+                ],
+                "outOfViewUserIds": [
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "u10",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ]
+              },
+              {
+                "name": "Waiting for review",
+                "filter": {
+                  "status": "WaitingForReview"
+                },
+                "view": "my-documents",
+                "createdAt": "<time>",
+                "id": "W-shared-20",
+                "audience": {
+                  "kind": "everyone"
+                },
+                "ownerId": "u3",
+                "reachedUserIds": [
+                  "u1",
+                  "u2",
+                  "u3",
+                  "u4",
+                  "u8",
+                  "u9",
+                  "u5",
+                  "u6",
+                  "u7",
+                  "a1",
+                  "a2",
+                  "a3",
+                  "u11"
+                ],
+                "outOfViewUserIds": [
+                  "u10"
+                ]
+              }
+            ]
+          },
+          "as": "u3"
+        }
+      ]
+    }
+  ],
+  "mask": "decisions"
+}

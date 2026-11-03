@@ -45,8 +45,8 @@ describe("local sign-up and password reset", () => {
       canResetPassword: boolean;
     }[];
     expect(entries.find((entry) => entry.instanceId === "pi24")).toMatchObject({
-      canSignUp: false,
-      canResetPassword: false,
+      canSignUp: true,
+      canResetPassword: true,
     });
     expect(entries.find((entry) => entry.instanceId === "pi22")).toMatchObject({
       canSignUp: false,

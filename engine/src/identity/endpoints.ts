@@ -16,7 +16,7 @@ function mailChannelExists(engine: Engine): boolean {
   return (
     engine.db
       .query(
-        "SELECT 1 FROM plugin_instances i JOIN plugin_implementations p ON p.id = i.implementation_id WHERE p.kind = 'Delivery' AND i.is_enabled = 1 AND i.is_deleted = 0",
+        "SELECT 1 FROM plugin_instances i JOIN plugin_implementations p ON p.id = i.implementation_id WHERE p.kind = 'DeliveryChannel' AND i.is_enabled = 1 AND i.is_deleted = 0",
       )
       .get() !== null
   );

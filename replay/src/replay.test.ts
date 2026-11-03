@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
-import { knownGaps } from "./known-gaps";
+import { knownGapCall, knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
 import { type Recording, type RecordingCall, recordingSchema } from "./recording";
@@ -31,7 +31,9 @@ function unsupported(scenario: Recording["scenarios"][number]) {
 }
 
 function knownGap(file: string, scenario: Recording["scenarios"][number]) {
-  return knownGaps.find((gap) => gap.recording === file && gap.scenario === scenario.name);
+  return knownGaps.find(
+    (gap) => gap.recording === file && gap.scenario === scenario.name && gap.calls === undefined,
+  );
 }
 
 async function postJson(path: string, body: unknown) {
@@ -42,15 +44,22 @@ async function postJson(path: string, body: unknown) {
   });
 }
 
-async function sendCall(call: RecordingCall): Promise<Response> {
+async function sendCall(
+  call: RecordingCall,
+  sessionCookies: Map<string, string>,
+): Promise<Response> {
   const headers = new Headers();
   if (call.as !== undefined) {
-    const opened = await postJson("/_engine/sessions", { userId: call.as });
-    if (opened.status === 200) {
-      const cookie = opened.headers.get("Set-Cookie") ?? "";
-      const token = /(?:^|,\s*)vera_session=([^;,]*)/.exec(cookie)?.[1];
-      if (token) headers.set("Cookie", `vera_session=${token}`);
+    let token = sessionCookies.get(call.as);
+    if (token === undefined) {
+      const opened = await postJson("/_engine/sessions", { userId: call.as });
+      if (opened.status === 200) {
+        const cookie = opened.headers.get("Set-Cookie") ?? "";
+        token = /(?:^|,\s*)vera_session=([^;,]*)/.exec(cookie)?.[1];
+        if (token !== undefined) sessionCookies.set(call.as, token);
+      }
     }
+    if (token !== undefined) headers.set("Cookie", `vera_session=${token}`);
   }
 
   let body: BodyInit | undefined;
@@ -69,7 +78,11 @@ async function sendCall(call: RecordingCall): Promise<Response> {
   return fetch(`${baseUrl}${call.path}`, { method: call.method, headers, body });
 }
 
-async function replay(recording: Recording, scenario: Recording["scenarios"][number]) {
+async function replay(
+  file: string,
+  recording: Recording,
+  scenario: Recording["scenarios"][number],
+) {
   const reset = await postJson("/_engine/reset", { seed: recording.seed, frozen: true });
   expect(reset.status, `${scenario.name}: reset status`).toBe(200);
   const resetAnswer = (await reset.json()) as { now: string };
@@ -85,6 +98,7 @@ async function replay(recording: Recording, scenario: Recording["scenarios"][num
   }
 
   const ids = new Map<string, string>();
+  const sessionCookies = new Map<string, string>();
   const submission = scenario.calls.find(
     (call) => call.method === "POST" && call.path === "/api/proposals",
   );
@@ -104,12 +118,15 @@ async function replay(recording: Recording, scenario: Recording["scenarios"][num
       if (submittedBatchId === undefined)
         throw new Error(`${scenario.name}: no submitted batch for $NEW_DOCUMENT`);
       // Pending proposals appear in requests; approve-now proposals have already moved to documents.
-      const requestsPage = await sendCall({
-        method: "GET",
-        path: `/api/requests?q=${encodeURIComponent(catalogId)}`,
-        as: call.as,
-        status: 200,
-      });
+      const requestsPage = await sendCall(
+        {
+          method: "GET",
+          path: `/api/requests?q=${encodeURIComponent(catalogId)}`,
+          as: call.as,
+          status: 200,
+        },
+        sessionCookies,
+      );
       expect(requestsPage.status, `${scenario.name}: find submitted request`).toBe(200);
       const requestsResult = (await requestsPage.json()) as {
         items?: Array<{
@@ -126,12 +143,15 @@ async function replay(recording: Recording, scenario: Recording["scenarios"][num
           item.record.requests?.some((request) => request.batchId === submittedBatchId),
       )?.record?.document?.id;
       if (documentId === undefined) {
-        const page = await sendCall({
-          method: "GET",
-          path: `/api/documents?q=${encodeURIComponent(catalogId)}`,
-          as: call.as,
-          status: 200,
-        });
+        const page = await sendCall(
+          {
+            method: "GET",
+            path: `/api/documents?q=${encodeURIComponent(catalogId)}`,
+            as: call.as,
+            status: 200,
+          },
+          sessionCookies,
+        );
         expect(page.status, `${scenario.name}: find submitted document`).toBe(200);
         const result = (await page.json()) as {
           items?: Array<{
@@ -150,8 +170,10 @@ async function replay(recording: Recording, scenario: Recording["scenarios"][num
       path = path.replace("$NEW_DOCUMENT", encodeURIComponent(documentId));
     }
     const label = `${scenario.name} ${call.method} ${path}`;
-    const response = await sendCall({ ...call, path });
-    expect(response.status, `${label} status`).toBe(call.status);
+    const response = await sendCall({ ...call, path }, sessionCookies);
+    const callGap = knownGapCall(file, scenario.name, call);
+    expect(response.status, `${label} status`).toBe(callGap?.status ?? call.status);
+    if (callGap !== undefined && process.env.VERA_REPLAY_ALL !== "1") continue;
     if (call.body !== undefined) {
       const answer = await response.json();
       if (call.method === "POST" && call.path === "/api/proposals")
@@ -177,7 +199,7 @@ for (const { file, recording } of recordings) {
       } else if (process.env.VERA_REPLAY_ALL !== "1" && notServed !== undefined) {
         it.skip(`${scenario.name} (engine does not serve ${notServed.method} ${notServed.path})`, () => {});
       } else {
-        it(scenario.name, async () => replay(recording, scenario));
+        it(scenario.name, async () => replay(file, recording, scenario));
       }
     }
   });

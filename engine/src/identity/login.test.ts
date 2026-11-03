@@ -50,6 +50,8 @@ describe("Identity login", () => {
         .filter((entry: { entry: string }) => entry.entry === "form")
         .map((entry: { instanceId: string }) => entry.instanceId),
     ).toEqual(["pi24"]);
+    expect(entries[1].canSignUp).toBe(true);
+    expect(entries[1].canResetPassword).toBe(true);
     expect(entries[2].canSignUp).toBe(false);
     expect(entries[2].canResetPassword).toBe(false);
   });

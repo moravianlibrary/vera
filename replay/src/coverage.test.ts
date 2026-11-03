@@ -5,25 +5,10 @@ import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
 import type { Recording } from "./recording";
 
-// This list only shrinks; R2f empties it.
+// This list only shrinks as each recording session covers its endpoints.
 const notYetRecorded = [
-  "loginEntries",
-  "loginForm",
   "loginStart",
   "loginCallback",
-  "signUp",
-  "confirmEmail",
-  "sendVerificationAgain",
-  "resetPassword",
-  "requestPasswordReset",
-  "session",
-  "logout",
-  "roleCreate",
-  "roleSave",
-  "roleDelete",
-  "localAccount",
-  "userRoles",
-  "userGroups",
   "identityLink",
   "identityDefaultRole",
   "identityUnlink",

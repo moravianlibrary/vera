@@ -513,7 +513,7 @@ export const endpoints = {
     summary: "Creates a local account.",
     body: localAccountSchema,
     response: accessUserSchema,
-    codes: ["access.name_taken"],
+    codes: ["access.identity_taken"],
   }),
   userRoles: spec({
     method: "PUT",

@@ -49,8 +49,27 @@ const listNames = selected.length === 0 ? names : selected;
 const NativeDate = Date;
 const server = setupServer();
 const initial = structuredClone(database);
+const recorderSessionItems = new Map<string, string>();
+if (typeof globalThis.window === "undefined") {
+  // The mock's session handlers use sessionStorage; recording needs it without a browser.
+  const sessionStorage = {
+    getItem: (key: string) => recorderSessionItems.get(key) ?? null,
+    setItem: (key: string, value: string) => recorderSessionItems.set(key, String(value)),
+    removeItem: (key: string) => recorderSessionItems.delete(key),
+    clear: () => recorderSessionItems.clear(),
+    key: (index: number) => [...recorderSessionItems.keys()][index] ?? null,
+    get length() {
+      return recorderSessionItems.size;
+    },
+  } as Storage;
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: { sessionStorage },
+  });
+}
 
 function restoreMock() {
+  recorderSessionItems.clear();
   for (const key of Object.keys(initial) as Array<keyof typeof database>) {
     const current = database[key];
     const saved = structuredClone(initial[key]);
@@ -121,7 +140,7 @@ async function record(list: List, name: string) {
         status: response.status,
       };
       if (asFirst && input.requestBody !== undefined) output.requestBody = input.requestBody;
-      if (response.status !== 204) {
+      if (response.status !== 204 && response.body !== null) {
         const answer = (await response.json()) as unknown;
         if (input.compare === "code") output.code = (answer as { code?: string }).code;
         else output.body = list.mask === "none" ? answer : mask(answer, list.mask, ids);

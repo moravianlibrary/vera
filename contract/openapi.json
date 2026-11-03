@@ -1394,7 +1394,7 @@
           }
         },
         "x-vera-codes": [
-          "access.name_taken"
+          "access.identity_taken"
         ],
         "requestBody": {
           "required": true,

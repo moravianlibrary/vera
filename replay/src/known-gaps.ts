@@ -1,9 +1,46 @@
-export const knownGaps = [
+export type KnownGapCall = { method: string; path: string; status?: number };
+
+type KnownGap = {
+  recording: string;
+  scenario: string;
+  reason: string;
+  calls?: KnownGapCall[];
+};
+
+export const knownGaps: KnownGap[] = [
   // This list only shrinks: the engine gains what the mock answers, or DEC-0022 leaves the area to the backend.
   {
     recording: "base-access.json",
     scenario: "users-and-groups-index-impacts-and-accounts",
+    reason: "the engine's Users & Groups index lacks projects, shared watchlists and properties",
+    calls: [{ method: "GET", path: "/api/access" }],
+  },
+  {
+    recording: "base-access-acts.json",
+    scenario: "access-index-and-role-management",
+    reason: "the engine's Users & Groups index lacks projects, shared watchlists and properties",
+    calls: [{ method: "GET", path: "/api/access" }],
+  },
+  {
+    recording: "base-access-acts.json",
+    scenario: "local-account-and-user-access-acts",
+    reason: "the engine's Users & Groups index lacks projects, shared watchlists and properties",
+    calls: [{ method: "GET", path: "/api/access" }],
+  },
+  {
+    recording: "base-sign-in.json",
+    scenario: "provider-login-mock-only",
     reason:
-      "the engine's Users & Groups index lacks projects, shared watchlists and properties, which remain the backend's",
+      "the mock shortcut POST /api/login/pi22/mock answers 204; the engine completes provider login through /_engine/identity/pi22 after a real start and callback",
   },
 ];
+
+export function knownGapCall(
+  recording: string,
+  scenario: string,
+  call: Pick<KnownGapCall, "method" | "path">,
+): KnownGapCall | undefined {
+  return knownGaps
+    .find((gap) => gap.recording === recording && gap.scenario === scenario)
+    ?.calls?.find((known) => known.method === call.method && known.path === call.path);
+}
