@@ -22,6 +22,8 @@ import {
   validationPageSchema,
   validationSliceSize,
 } from "@vera/contract/validations";
+import type { Arrangement } from "@vera/domain/arrangement";
+import { countValues, groupedBy, sliceOf } from "@vera/domain/arrangement";
 import { categoryLineageOf } from "@vera/domain/categories";
 import { followedIterationId } from "@vera/domain/documents";
 import type { Iteration, Session, StatusLogEntry, ValidationVerdict } from "@vera/domain/entities";
@@ -39,8 +41,6 @@ import {
   waitingSinceOf,
 } from "@vera/domain/validations";
 import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import type { Arrangement } from "@/mocks/arrangement";
-import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { catalogLinkOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import type { Outcome } from "@/mocks/mutations";

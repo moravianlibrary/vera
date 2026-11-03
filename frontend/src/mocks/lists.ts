@@ -19,6 +19,7 @@ import type {
 } from "@vera/contract/lists";
 import { listAttentions, listSliceSize } from "@vera/contract/lists";
 import type { RefusalCode } from "@vera/contract/refusal-codes";
+import { countValues, sliceOf } from "@vera/domain/arrangement";
 import { categoryLineageOf, categoryPathOf } from "@vera/domain/categories";
 import { effectivePageCount } from "@vera/domain/documents";
 import type { DigitizationList, Iteration, Session } from "@vera/domain/entities";
@@ -41,7 +42,6 @@ import { scopeOfProject } from "@vera/domain/projects";
 import { pageCountKey } from "@vera/domain/properties";
 import { isRestricted, statusFootnoteOf, validationOf } from "@vera/domain/status";
 import { dayOf, isReversedRange, resolveDayRange } from "@vera/domain/value-range";
-import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import { recordHookEvent } from "@/mocks/hooks";
 import {

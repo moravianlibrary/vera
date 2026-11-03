@@ -13,7 +13,17 @@ import type {
   PropertyIndex,
   PropertyParams,
 } from "@vera/contract/properties";
-import { conditionsOf, propertyParamKeyOf } from "@vera/contract/properties";
+import { propertyParamKeyOf } from "@vera/contract/properties";
+import {
+  allPropertyDefinitions as queryAllPropertyDefinitions,
+  filterablePropertiesOf as queryFilterablePropertiesOf,
+  mayReadStaffProperties as queryMayReadStaffProperties,
+  propertyFacetsOf as queryPropertyFacetsOf,
+  propertyPredicatesOf as queryPropertyPredicatesOf,
+  publicPropertyKeys as queryPublicPropertyKeys,
+  readablePropertyDefinitions as queryReadablePropertyDefinitions,
+  recordValueOf as queryRecordValueOf,
+} from "@vera/contract/queries/properties";
 import { currentIterationOf } from "@vera/domain/documents";
 import type { Document, Intention, Iteration, Session, Watchlist } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
@@ -27,26 +37,22 @@ import type {
 } from "@vera/domain/properties";
 import {
   editPermissionOf,
-  facetValueOf,
   formatPropertyValue,
-  isActiveCondition,
   isValueOf,
   mayBeEnteredByHand,
   meetsCondition,
   pageCountKey,
   propertyNameOf,
-  valueInUseAt,
   valueInUseOf,
   valuesOf,
 } from "@vera/domain/properties";
 import { isFoundAfterScan, reviewStateOf } from "@vera/domain/validations";
-import { countValues } from "@/mocks/arrangement";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import type { StoredPropertyDefinition } from "@/mocks/fixtures/properties";
 import { recordHookEvent } from "@/mocks/hooks";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
-import { mockNow, mockToday } from "@/mocks/today";
+import { mockNow } from "@/mocks/today";
 import { noteSystemWatchlistChange } from "@/mocks/watchlist-delivery";
 import { audienceReachOf } from "@/mocks/watchlists";
 
@@ -54,46 +60,24 @@ const mayNotDefine: Refusal = { status: 403, message: "You may not define proper
 
 // ---------------------------------------------------------------- reading
 
-// A fact the catalog holds: one a catalog adapter's version declares (PLG-declares).
-function catalogKeys(): Set<string> {
-  return new Set(
-    database.pluginImplementations
-      .filter((implementation) => implementation.kind === "CatalogAdapter")
-      .flatMap((implementation) => implementation.versions)
-      .flatMap((version) => version.declares.properties.map(({ key }) => key)),
-  );
-}
-
 function definitionOf(stored: StoredPropertyDefinition): PropertyDefinition {
-  return { ...stored, isCatalogFact: catalogKeys().has(stored.key) };
+  return { ...stored, isCatalogFact: mockStore().catalogPropertyKeys.has(stored.key) };
 }
 
 export function allPropertyDefinitions(): PropertyDefinition[] {
-  return database.propertyDefinitions.map(definitionOf);
+  return queryAllPropertyDefinitions(mockStore());
 }
 
-// DOC-property-visibility: staff properties are read in staff detail only, with `iteration.read`.
 export function mayReadStaffProperties(session: Session): boolean {
-  return hasPermission(session, "iteration.read");
+  return queryMayReadStaffProperties(session);
 }
 
-// Whoever defines properties, or gives their permissions, reads every definition.
 export function readablePropertyDefinitions(session: Session): PropertyDefinition[] {
-  const readsStaff =
-    mayReadStaffProperties(session) ||
-    hasPermission(session, "property.define") ||
-    hasPermission(session, "access.manage");
-  return allPropertyDefinitions().filter(
-    (definition) => readsStaff || definition.visibility === "public",
-  );
+  return queryReadablePropertyDefinitions(mockStore(), session);
 }
 
 export function publicPropertyKeys(): Set<string> {
-  return new Set(
-    database.propertyDefinitions
-      .filter((definition) => definition.visibility === "public")
-      .map(({ key }) => key),
-  );
+  return queryPublicPropertyKeys(mockStore());
 }
 
 function valueCountOf(key: string): number {
@@ -132,7 +116,7 @@ function draftRefusal(draft: PropertyDraft, key: string): Refusal | null {
   // DOC-property-hand: a fact the catalog holds is never entered by hand, the page count apart.
   if (
     draft.handTier !== null &&
-    !mayBeEnteredByHand({ key, isCatalogFact: catalogKeys().has(key) })
+    !mayBeEnteredByHand({ key, isCatalogFact: mockStore().catalogPropertyKeys.has(key) })
   ) {
     return {
       status: 422,
@@ -603,101 +587,30 @@ export function enterPropertyValues(
 
 // ---------------------------------------------------------------- filtering
 
-// What a record is, for a property: its document, and the attempt a page shows it by.
-export interface PropertySubjectRecord {
-  readonly document: Document;
-  readonly iteration: Iteration | null;
-}
+export type { PropertyPredicate, PropertySubjectRecord } from "@vera/contract/queries/properties";
 
-// The value in use a record holds; the predefined four read the document's own fields
-// (DOC-property-predefined). A day given reads what was in use then (PLAN-scope).
+import type { PropertySubjectRecord } from "@vera/contract/queries/properties";
 export function recordValueOf(
-  { document, iteration }: PropertySubjectRecord,
+  record: PropertySubjectRecord,
   definition: PropertyDefinition,
   at?: string,
 ): PropertyValue | null {
-  switch (definition.key) {
-    case pageCountKey: {
-      const sources = document.pageSources.filter(
-        (source) => at === undefined || source.observedAt <= at,
-      );
-      return sources.toSorted((first, second) => second.tier - first.tier)[0]?.value ?? null;
-    }
-    case "material_type":
-      return document.type;
-    case "shelf_mark":
-      return document.shelfMark;
-    case "title":
-      return document.title;
-  }
-
-  const properties = definition.about === "document" ? document.properties : iteration?.properties;
-  const values = valuesOf(properties ?? [], definition.key);
-  return (at === undefined ? valueInUseOf(values) : valueInUseAt(values, at))?.value ?? null;
+  return queryRecordValueOf(record, definition, at);
 }
-
-export interface PropertyPredicate {
-  readonly key: string;
-  readonly matches: (record: PropertySubjectRecord) => boolean;
-}
-
-// DOC-property-filter: one predicate per condition on a property the caller may read here.
 export function propertyPredicatesOf(
   params: PropertyParams | undefined,
   definitions: readonly PropertyDefinition[],
-): PropertyPredicate[] {
-  return conditionsOf(params, definitions)
-    .filter(isActiveCondition)
-    .flatMap((condition) => {
-      const definition = definitions.find((candidate) => candidate.key === condition.key);
-      return definition === undefined
-        ? []
-        : [
-            {
-              key: condition.key,
-              matches: (record: PropertySubjectRecord) =>
-                meetsCondition(condition, recordValueOf(record, definition), mockToday),
-            },
-          ];
-    });
+) {
+  return queryPropertyPredicatesOf(mockStore(), params, definitions);
 }
-
-// UI-facets: an enum's or a yes/no's values, and no value, over the records every other filter
-// leaves.
 export function propertyFacetsOf(
   definitions: readonly PropertyDefinition[],
   matchingAllBut: (key: string) => readonly PropertySubjectRecord[],
 ): PropertyFacets {
-  return Object.fromEntries(
-    definitions
-      .filter((definition) => definition.type.kind === "enum" || definition.type.kind === "yesNo")
-      .map((definition) => {
-        const records = matchingAllBut(definition.key);
-        const values = records.map((record) => recordValueOf(record, definition));
-        return [
-          definition.key,
-          {
-            values: countValues(
-              values.flatMap((value) =>
-                value === null ? [] : (Array.isArray(value) ? value : [value]).map(facetValueOf),
-              ),
-            ),
-            noValue: values.filter((value) => value === null).length,
-          },
-        ];
-      }),
-  );
+  return queryPropertyFacetsOf(definitions, matchingAllBut);
 }
-
-// The properties a page filters on: what the caller may read, for its audience, the page count
-// apart, which has its own Pages filter.
 export function filterablePropertiesOf(session: Session, isPublic: boolean): PropertyDefinition[] {
-  return readablePropertyDefinitions(session).filter(
-    (definition) =>
-      definition.key !== pageCountKey &&
-      (!isPublic || definition.visibility === "public") &&
-      (isPublic || mayReadStaffProperties(session) || definition.visibility === "public"),
-  );
+  return queryFilterablePropertiesOf(mockStore(), session, isPublic);
 }
 
 // PLAN-scope: an item meets every condition its intention's scope adds, a document property on
@@ -718,13 +631,17 @@ export function meetsScopeConditions(
     return false;
   }
 
-  const definitions = allPropertyDefinitions();
+  const definitions = queryAllPropertyDefinitions(mockStore());
   const at = iteration.digitizedAt ?? undefined;
   return conditions.every((condition) => {
     const definition = definitions.find((candidate) => candidate.key === condition.key);
     return (
       definition === undefined ||
-      meetsCondition(condition, recordValueOf({ document, iteration }, definition, at), mockToday)
+      meetsCondition(
+        condition,
+        queryRecordValueOf({ document, iteration }, definition, at),
+        mockStore().today,
+      )
     );
   });
 }

@@ -21,6 +21,9 @@ import type {
   WithdrawalResult,
 } from "@vera/contract/requests";
 import { requestPageSchema, requestSliceSize } from "@vera/contract/requests";
+import type { Arrangement } from "@vera/domain/arrangement";
+import { countValues, groupedBy, sliceOf } from "@vera/domain/arrangement";
+import { servedBatchOf, shownBatchIdOf } from "@vera/domain/batches";
 import { categoryPathOf } from "@vera/domain/categories";
 import { currentIterationOf, existingCopiesOf } from "@vera/domain/documents";
 import type {
@@ -49,11 +52,8 @@ import {
   rowDecisionOf,
 } from "@vera/domain/requests";
 import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import type { Arrangement } from "@/mocks/arrangement";
-import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
-import { servedBatchOf, shownBatchIdOf } from "@/mocks/batches";
 import { suggestionFor } from "@/mocks/classification";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import { publicPropertiesOf } from "@/mocks/documents";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/request-custodies";
@@ -255,7 +255,7 @@ const fieldValues: FieldValues = {
 
 // Only a batch shown as one can be filtered on (ENT-batch).
 function shownBatchIdsOf(row: RequestRow): string[] {
-  return batchIdsOf(row).flatMap((batchId) => shownBatchIdOf(batchId) ?? []);
+  return batchIdsOf(row).flatMap((batchId) => shownBatchIdOf(mockStore(), batchId) ?? []);
 }
 
 function askerCountOf(row: RequestRow): AskerCount {
@@ -438,13 +438,13 @@ function batchArrangementOf(
   matching: readonly RequestRow[],
   decidable: readonly RequestRow[],
 ): Arrangement<RequestRow, RequestGroup> {
-  const homeOf = (row: RequestRow) => shownBatchIdOf(firstAskOf(row)?.batchId ?? null);
+  const homeOf = (row: RequestRow) => shownBatchIdOf(mockStore(), firstAskOf(row)?.batchId ?? null);
   const order = [...new Set(matching.flatMap((row) => homeOf(row) ?? []))];
   const openInBatch = (batchId: string) =>
     decidable.filter((row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId));
 
   return groupedBy(homeOf, order, (batchId, total, rowCount) => {
-    const batch = batchId === null ? null : servedBatchOf(batchId);
+    const batch = batchId === null ? null : servedBatchOf(mockStore(), batchId);
     const asks = matching.flatMap((row) =>
       asksOf(row).filter((request) => request.batchId === batchId),
     );

@@ -3,7 +3,7 @@
 // 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
 // values became 09:00 UTC.
 
-import type { StoredBatch } from "@/mocks/batches";
+import type { StoredBatch } from "@vera/domain/batches";
 
 export const batches: readonly StoredBatch[] = [
   {

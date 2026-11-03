@@ -7,11 +7,11 @@
 
 import type { Document } from "@vera/domain/entities";
 import type { Grant } from "@vera/domain/permissions";
-import type { PropertyDefinition, PropertyValues } from "@vera/domain/properties";
+import type { PropertyValues, StoredPropertyDefinition } from "@vera/domain/properties";
 import { editPermissionOf } from "@vera/domain/properties";
 
 // What the store keeps; whether the catalog holds it is read from the adapters' declarations.
-export type StoredPropertyDefinition = Omit<PropertyDefinition, "isCatalogFact">;
+export type { StoredPropertyDefinition };
 
 const names = (en: string, cs: string) => ({ en, cs });
 

@@ -14,6 +14,9 @@ import type {
   DocumentSlice,
 } from "@vera/contract/documents";
 import { documentPageSchema, documentSliceSize } from "@vera/contract/documents";
+import type { Arrangement as GenericArrangement } from "@vera/domain/arrangement";
+import { countValues, groupedBy, sliceOf } from "@vera/domain/arrangement";
+import { servedBatches, shownBatchIdOf } from "@vera/domain/batches";
 import { categoryLineageOf } from "@vera/domain/categories";
 import type { AdditionState, AskDecision, Audience, DocumentRecord } from "@vera/domain/documents";
 import {
@@ -52,10 +55,7 @@ import { scopeOfProject } from "@vera/domain/projects";
 import type { PropertyValues } from "@vera/domain/properties";
 import { isRestricted, validationOf } from "@vera/domain/status";
 import { isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
-import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
-import { servedBatches, shownBatchIdOf } from "@/mocks/batches";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import {
   filterablePropertiesOf,
   propertyFacetsOf,
@@ -503,7 +503,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
     ) as Record<AdditionState, number>;
     return { size: records.length, additions };
   };
-  const batchOrder = servedBatches()
+  const batchOrder = servedBatches(mockStore())
     .filter(isShownAsBatch)
     .map((batch) => ({ batch, ...additionsOf(batch.id) }))
     .toSorted(
@@ -513,7 +513,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
     );
   const keys = batchOrder.map((entry) => entry.batch.id);
 
-  const shownOf = (record: DocumentRecord) => shownBatchIdOf(batchIdOf(record));
+  const shownOf = (record: DocumentRecord) => shownBatchIdOf(mockStore(), batchIdOf(record));
   return groupedBy(shownOf, keys, (batchId, total, rowCount) => {
     const entry = batchOrder.find((candidate) => candidate.batch.id === batchId);
     return {

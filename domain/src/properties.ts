@@ -79,6 +79,7 @@ export const propertyDefinitionSchema = propertyDraftSchema.extend({
   isCatalogFact: z.boolean(),
 });
 export type PropertyDefinition = z.infer<typeof propertyDefinitionSchema>;
+export type StoredPropertyDefinition = Omit<PropertyDefinition, "isCatalogFact">;
 
 // DOC-page-count: the one catalog fact entered by hand.
 export const pageCountKey = "page_count";

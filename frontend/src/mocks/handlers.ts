@@ -118,6 +118,7 @@ import {
   watchlistViewerChangeSchema,
   watchlistViewParam,
 } from "@vera/contract/watchlists";
+import { servedBatches } from "@vera/domain/batches";
 import type { Session } from "@vera/domain/entities";
 import { watchlistViewSchema } from "@vera/domain/entities";
 import { canOpenMyDocuments, hasPermission } from "@vera/domain/permissions";
@@ -152,7 +153,6 @@ import {
   unlinkIdentity,
 } from "@/mocks/access";
 import { retryBatch } from "@/mocks/additions";
-import { servedBatches } from "@/mocks/batches";
 import {
   canReadCategories,
   categoryImpact,
@@ -164,7 +164,7 @@ import {
   saveCategoryCustody,
 } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
 import {
   canReadHooks,
@@ -1221,7 +1221,7 @@ export function createHandlers(profile: MockUserProfile) {
       return new HttpResponse(null, { status: 204 });
     }),
     http.get(route(apiRoutes.lists), () => HttpResponse.json(database.lists)),
-    http.get(route(apiRoutes.batches), () => HttpResponse.json(servedBatches())),
+    http.get(route(apiRoutes.batches), () => HttpResponse.json(servedBatches(mockStore()))),
 
     http.get(route(apiRoutes.digitizationLists), ({ request }) => {
       const session = currentSession();

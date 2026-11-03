@@ -4,6 +4,7 @@
 import type { IntentionRow } from "@vera/contract/intentions";
 import type { MixTree } from "@vera/contract/mixes";
 import type { Category, StatusLogEntry, Watchlist } from "@vera/domain/entities";
+import type { RecordStore } from "@vera/domain/store";
 import { env } from "@/config/env";
 import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
@@ -26,6 +27,7 @@ import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import type { StoredUpload } from "@/mocks/plugins";
 import type { MockSystemMail, PasswordResetToken, PendingSignUp } from "@/mocks/sign-up";
+import { mockToday } from "@/mocks/today";
 import { withCopies } from "@/mocks/volume";
 import { readWatchlistBaselines, readWatchlistEntries } from "@/mocks/watchlist-entries";
 import { readWatchlistViewers } from "@/mocks/watchlist-viewer-store";
@@ -109,3 +111,26 @@ export const database = {
   // Changed by Keep runs for… on Tasks.
   taskRetention: { ...retention },
 };
+
+export function mockStore(): RecordStore {
+  return {
+    today: mockToday,
+    catalogPropertyKeys: new Set(
+      database.pluginImplementations
+        .filter((implementation) => implementation.kind === "CatalogAdapter")
+        .flatMap((implementation) => implementation.versions)
+        .flatMap((version) => version.declares.properties.map(({ key }) => key)),
+    ),
+    users: database.users,
+    groups: database.groups,
+    categories: database.categories,
+    projects: database.projects,
+    batches: database.batches,
+    requestCustodies: database.requestCustodies,
+    documents: database.documents,
+    iterations: database.iterations,
+    requests: database.requests,
+    statusLog: database.statusLog,
+    propertyDefinitions: database.propertyDefinitions,
+  };
+}

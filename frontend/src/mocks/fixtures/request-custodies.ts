@@ -3,12 +3,10 @@
 // group. A placement is the plugins' last answer, by the custody each matching rule picked; a
 // proposal not listed here is placed by `houseRuleOf`, the mock's stand-in for the jq rules.
 
-import type { Document, Request, RequestCustody } from "@vera/domain/entities";
+import type { Document, Request } from "@vera/domain/entities";
+import type { StoredRequestCustody } from "@vera/domain/request-custody";
 
-export interface StoredRequestCustody extends RequestCustody {
-  readonly memberIds: readonly string[];
-  readonly groupIds: readonly string[];
-}
+export type { StoredRequestCustody };
 
 export const requestCustodies: readonly StoredRequestCustody[] = [
   {

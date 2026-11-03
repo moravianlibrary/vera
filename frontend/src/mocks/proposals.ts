@@ -12,6 +12,8 @@ import type {
   ProposalSettings,
   RateLimitStatus,
 } from "@vera/contract/proposals";
+import type { StoredBatch } from "@vera/domain/batches";
+import { servedBatchOf } from "@vera/domain/batches";
 import type { DocumentRecord } from "@vera/domain/documents";
 import {
   currentIterationOf,
@@ -31,10 +33,8 @@ import { primaryLinkOf } from "@vera/domain/iterations";
 import { isProjectMember } from "@vera/domain/projects";
 import { defaultBatchNameOf } from "@vera/domain/proposals";
 import { isProgressAtLeast, publicIterationStatusOf } from "@vera/domain/status";
-import type { StoredBatch } from "@/mocks/batches";
-import { servedBatchOf } from "@/mocks/batches";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
 import { catalogPropertyValuesOf } from "@/mocks/fixtures/properties";
@@ -416,7 +416,7 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
   }
 
   return {
-    batch: batch === null ? null : servedBatchOf(batch.id),
+    batch: batch === null ? null : servedBatchOf(mockStore(), batch.id),
     proposed,
     approved,
     joined,

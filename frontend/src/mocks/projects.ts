@@ -24,6 +24,7 @@ import type {
   ProjectRow,
 } from "@vera/contract/projects";
 import { projectPaces, projectStates } from "@vera/contract/projects";
+import { countValues } from "@vera/domain/arrangement";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@vera/domain/documents";
 import type { Intention, Iteration, Project, Request, Session } from "@vera/domain/entities";
 import {
@@ -44,7 +45,6 @@ import {
 } from "@vera/domain/projects";
 import { isProgressAtLeast } from "@vera/domain/status";
 import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import {
   countingData,
