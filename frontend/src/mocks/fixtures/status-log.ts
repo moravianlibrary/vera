@@ -65,6 +65,7 @@ export const statusLog: readonly EventEntry[] = [
     },
     code: "request.approved",
     data: {
+      suggestion: null,
       iterationId: "IT3",
       isRescan: false,
       batchSize: 3,
@@ -86,6 +87,7 @@ export const statusLog: readonly EventEntry[] = [
     },
     code: "request.approved",
     data: {
+      suggestion: null,
       iterationId: "IT3",
       isRescan: false,
       batchSize: 3,
@@ -107,6 +109,7 @@ export const statusLog: readonly EventEntry[] = [
     },
     code: "request.approved",
     data: {
+      suggestion: null,
       iterationId: "IT3",
       isRescan: false,
       batchSize: 3,
@@ -151,6 +154,7 @@ export const statusLog: readonly EventEntry[] = [
     },
     code: "request.approved",
     data: {
+      suggestion: null,
       iterationId: "IT8",
       isRescan: true,
       batchSize: 1,
@@ -253,6 +257,7 @@ export const statusLog: readonly EventEntry[] = [
     },
     code: "request.approved",
     data: {
+      suggestion: null,
       iterationId: "IT16",
       isRescan: true,
       batchSize: 1,

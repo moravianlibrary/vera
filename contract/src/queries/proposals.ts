@@ -488,7 +488,7 @@ export function planSubmission(
         actor: { kind: "user", userId: session.user.id },
         correlationId,
         code: "request.approved",
-        data: { iterationId: iteration.id, isRescan: false, batchSize: null },
+        data: { iterationId: iteration.id, isRescan: false, batchSize: null, suggestion: null },
         reason: { public: null, internal: null },
       });
       approved++;

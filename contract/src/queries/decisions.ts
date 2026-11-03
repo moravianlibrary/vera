@@ -106,6 +106,7 @@ function baseWrites(): DecisionWrites {
 // One iteration for the document: the oldest ask originates it and its project funds it; every
 // other ask follows it (status-model.md §2.7).
 function plannedApproval(
+  categories: RecordStore["categories"],
   session: Session,
   row: RequestRow,
   approval: Approval,
@@ -159,6 +160,19 @@ function plannedApproval(
         iterationId: iteration.id,
         isRescan: rescan !== null,
         batchSize: asks.length > 1 ? asks.length : null,
+        suggestion:
+          row.suggestion === null
+            ? null
+            : {
+                category: {
+                  id: row.suggestion.categoryId,
+                  name: categoryPathOf(categories, row.suggestion.categoryId)
+                    .map((category) => category.name)
+                    .join(" / "),
+                },
+                classifier: row.suggestion.classifier,
+                kept: approval.categoryId === row.suggestion.categoryId,
+              },
       },
       reason: { public: null, internal: rescan === null ? null : rescan.note },
     });
@@ -188,7 +202,7 @@ export function planApproval(
     };
   return {
     value: {
-      writes: plannedApproval(session, row, approval, now, newId),
+      writes: plannedApproval(store.categories, session, row, approval, now, newId),
       result: { documentId, decision: "Approved", askCount: asksOf(row).length },
     },
   };

@@ -83,6 +83,8 @@
   "project.rejectedCount_one": "{{formatted}} declined",
   "project.rejectedCount_other": "{{formatted}} declined",
   "request.rescan": "as a rescan",
+  "request.suggestion.kept": "Suggested by {{classifier}}: {{category}}",
+  "request.suggestion.overruled": "{{classifier}} suggested {{category}}; another was chosen",
   "iteration.copyFound": "{{registry}}: {{state}}",
   "document.registryChanged": "{{registry}}: {{state}}",
   "property.changed": "{{key}}: {{change}}",

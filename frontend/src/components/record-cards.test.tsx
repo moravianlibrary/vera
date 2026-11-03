@@ -15,6 +15,29 @@ const event: EventEntry = {
   data: { batch: { id: "b1", name: "January batch" }, source: null },
 };
 describe("HistoryCard", () => {
+  it("shows a kept classifier suggestion only in staff History", () => {
+    const approved: EventEntry = {
+      ...event,
+      code: "request.approved",
+      data: {
+        iterationId: "IT1",
+        isRescan: false,
+        batchSize: null,
+        suggestion: {
+          category: { id: "cat1", name: "Books / History" },
+          classifier: { id: "cl1", name: "Classifier" },
+          kept: true,
+        },
+      },
+    };
+    const { rerender } = render(
+      <HistoryCard log={[approved]} nameOf={() => "Ada"} isPublic={false} />,
+    );
+    expect(screen.getByText("Suggested by Classifier: Books / History")).toBeInTheDocument();
+    rerender(<HistoryCard log={[approved]} nameOf={() => "Ada"} isPublic />);
+    expect(screen.queryByText("Suggested by Classifier: Books / History")).not.toBeInTheDocument();
+  });
+
   it("shows each logged request once and renders its audience wording", () => {
     const { rerender } = render(
       <HistoryCard log={[event]} nameOf={() => "Ada"} isPublic={false} />,

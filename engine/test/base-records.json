@@ -16578,7 +16578,8 @@
           "data": {
             "iterationId": "IT3",
             "isRescan": false,
-            "batchSize": 3
+            "batchSize": 3,
+            "suggestion": null
           }
         },
         {
@@ -33088,7 +33089,8 @@
           "data": {
             "iterationId": "IT3",
             "isRescan": false,
-            "batchSize": 3
+            "batchSize": 3,
+            "suggestion": null
           }
         },
         {
@@ -50164,7 +50166,8 @@
           "data": {
             "iterationId": "IT3",
             "isRescan": false,
-            "batchSize": 3
+            "batchSize": 3,
+            "suggestion": null
           }
         },
         {

@@ -5831,7 +5831,8 @@
                 "data": {
                   "iterationId": "<IT1>",
                   "isRescan": false,
-                  "batchSize": null
+                  "batchSize": null,
+                  "suggestion": null
                 },
                 "reason": {
                   "public": null,

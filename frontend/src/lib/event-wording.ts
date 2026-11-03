@@ -55,6 +55,18 @@ export function wordingOf(
               count: entry.data.batchSize,
               formatted: formatCount(entry.data.batchSize),
             }),
+        entry.data.suggestion === null
+          ? null
+          : i18n.t(
+              entry.data.suggestion.kept
+                ? "request.suggestion.kept"
+                : "request.suggestion.overruled",
+              {
+                ns: "history",
+                classifier: entry.data.suggestion.classifier.name,
+                category: entry.data.suggestion.category.name,
+              },
+            ),
       ]);
       break;
     case "request.declined":

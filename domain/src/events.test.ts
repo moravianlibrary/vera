@@ -48,7 +48,7 @@ describe("event catalogue and entries (EVENT-catalogue, EVENT-shape)", () => {
     const approved = {
       ...base,
       code: "request.approved" as const,
-      data: { iterationId: "iteration-1", isRescan: false, batchSize: null },
+      data: { iterationId: "iteration-1", isRescan: false, batchSize: null, suggestion: null },
     };
     expect(eventEntrySchema.safeParse(approved).success).toBe(true);
     expect(

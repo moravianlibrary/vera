@@ -95,6 +95,8 @@
   "project.rejectedCount_many": "zamítnuto {{formatted}}",
   "project.rejectedCount_other": "zamítnuto {{formatted}}",
   "request.rescan": "k přeskenování",
+  "request.suggestion.kept": "Navrhl {{classifier}}: {{category}}",
+  "request.suggestion.overruled": "{{classifier}} navrhl {{category}}; zvolena jiná",
   "iteration.copyFound": "{{registry}}: {{state}}",
   "document.registryChanged": "{{registry}}: {{state}}",
   "property.changed": "{{key}}: {{change}}",

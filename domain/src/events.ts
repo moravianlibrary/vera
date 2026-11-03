@@ -675,6 +675,7 @@ export const historyDataSchemas = {
     iterationId: id,
     isRescan: z.boolean(),
     batchSize: nullableCount,
+    suggestion: z.object({ category: ref, classifier: ref, kept: z.boolean() }).nullable(),
   }),
   "request.declined": z.object({ batchSize: nullableCount }),
   "request.held": z.object({ why: z.enum(["copy_exists", "checking"]) }),

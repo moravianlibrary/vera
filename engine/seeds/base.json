@@ -8543,7 +8543,8 @@
         "data": {
           "iterationId": "IT3",
           "isRescan": false,
-          "batchSize": 3
+          "batchSize": 3,
+          "suggestion": null
         }
       },
       {
@@ -8564,7 +8565,8 @@
         "data": {
           "iterationId": "IT3",
           "isRescan": false,
-          "batchSize": 3
+          "batchSize": 3,
+          "suggestion": null
         }
       },
       {
@@ -8585,7 +8587,8 @@
         "data": {
           "iterationId": "IT3",
           "isRescan": false,
-          "batchSize": 3
+          "batchSize": 3,
+          "suggestion": null
         }
       },
       {
@@ -8628,7 +8631,8 @@
         "data": {
           "iterationId": "IT8",
           "isRescan": true,
-          "batchSize": 1
+          "batchSize": 1,
+          "suggestion": null
         }
       },
       {
@@ -8730,7 +8734,8 @@
         "data": {
           "iterationId": "IT16",
           "isRescan": true,
-          "batchSize": 1
+          "batchSize": 1,
+          "suggestion": null
         }
       },
       {

@@ -99,6 +99,62 @@ describe("decision plans", () => {
     expect(writes.events[0]?.reason.internal).toBeNull();
   });
 
+  test("approval records whether it kept the classifier suggestion, or none", () => {
+    const suggestedPlugins: RequestPlugins = {
+      ...plugins,
+      suggestionFor: () => ({
+        categoryId: "leaf",
+        reason: "Suggested",
+        classifier: { id: "cl1", name: "Classifier" },
+      }),
+    };
+    const kept = planApproval(
+      store([ask("r1", "d1")]),
+      suggestedPlugins,
+      session,
+      "d1",
+      approval,
+      new Date(time),
+      newId,
+    );
+    expect("value" in kept && kept.value.writes.events[0]?.data).toMatchObject({
+      suggestion: {
+        category: { id: "leaf", name: "Leaf" },
+        classifier: { id: "cl1", name: "Classifier" },
+        kept: true,
+      },
+    });
+    const initial = store([ask("r1", "d1")]);
+    const other = {
+      ...initial,
+      categories: [...initial.categories, { id: "other", name: "Other", parentId: null }],
+    } as RecordStore;
+    const overruled = planApproval(
+      other,
+      suggestedPlugins,
+      session,
+      "d1",
+      { ...approval, categoryId: "other" },
+      new Date(time),
+      newId,
+    );
+    expect("value" in overruled && overruled.value.writes.events[0]?.data).toMatchObject({
+      suggestion: { kept: false },
+    });
+    const absent = planApproval(
+      store([ask("r1", "d1")]),
+      plugins,
+      session,
+      "d1",
+      approval,
+      new Date(time),
+      newId,
+    );
+    expect("value" in absent && absent.value.writes.events[0]?.data).toMatchObject({
+      suggestion: null,
+    });
+  });
+
   test("approval refuses outside custody, decided rows, pending checks and missing rescan notes", () => {
     const outside: Session = {
       ...session,

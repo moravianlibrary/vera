@@ -90,6 +90,7 @@ export function addHistory(
           iterationId: request.iteration?.id ?? request.id,
           isRescan: Boolean(request.rescan),
           batchSize: null,
+          suggestion: null,
         },
       );
       if (request.existingCopies?.length && request.iteration?.relation === "Tracks")
