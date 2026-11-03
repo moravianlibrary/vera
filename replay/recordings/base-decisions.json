@@ -143,7 +143,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": null
               },
               {
@@ -257,7 +259,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -369,7 +373,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -481,7 +488,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -602,7 +612,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -714,7 +727,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -826,7 +842,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -938,7 +956,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -1031,7 +1051,9 @@
                   ]
                 },
                 "decision": "Withdrawn",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -1148,7 +1170,9 @@
                   ]
                 },
                 "decision": "Denied",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -1569,7 +1593,10 @@
                 ]
               },
               "decision": "Denied",
-              "custodyIds": ["pc1", "pc2"],
+              "custodyIds": [
+                "pc1",
+                "pc2"
+              ],
               "suggestion": {
                 "categoryId": "c21",
                 "reason": "Periodical, Moravian place of publication",
@@ -2332,7 +2359,9 @@
                     ],
                     "verdicts": [
                       {
-                        "defectKeys": ["pi9:R02:pages"],
+                        "defectKeys": [
+                          "pi9:R02:pages"
+                        ],
                         "verdict": "Approved",
                         "actorId": "u1",
                         "at": "<time>",
@@ -3443,7 +3472,9 @@
           "requestBody": {
             "categoryId": "c21",
             "priority": "Normal",
-            "excludedIds": ["D28"]
+            "excludedIds": [
+              "D28"
+            ]
           },
           "body": {
             "approvedCount": 3,
@@ -3569,7 +3600,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -3681,7 +3715,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",

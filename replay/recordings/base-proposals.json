@@ -43,7 +43,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -57,7 +60,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -69,7 +75,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -81,7 +89,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -93,7 +104,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -105,7 +119,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -162,7 +179,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -321,7 +342,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -335,7 +359,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -347,7 +374,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -359,7 +388,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -371,7 +403,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -383,7 +418,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -440,7 +478,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -599,7 +641,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -613,7 +658,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -625,7 +673,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -637,7 +687,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -649,7 +702,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -661,7 +717,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -718,7 +777,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -877,7 +940,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -891,7 +957,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -903,7 +972,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -915,7 +986,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -927,7 +1001,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -939,7 +1016,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -996,7 +1076,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -1155,7 +1239,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -1169,7 +1256,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1181,7 +1271,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -1193,7 +1285,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -1205,7 +1300,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -1217,7 +1315,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1273,7 +1374,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -1432,7 +1537,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -1446,7 +1554,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1458,7 +1569,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -1470,7 +1583,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -1482,7 +1598,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -1494,7 +1613,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1674,7 +1796,10 @@
               {
                 "id": "pi43",
                 "name": "Tlačítko digitalizovat",
-                "allowedOrigins": ["https://www.mzk.cz", "https://tlacitko.osdd.mzk.cz"]
+                "allowedOrigins": [
+                  "https://www.mzk.cz",
+                  "https://tlacitko.osdd.mzk.cz"
+                ]
               }
             ],
             "canScanWithCamera": true,
@@ -1688,7 +1813,10 @@
                 },
                 "recogniser": {
                   "pattern": "[A-Z]{3,4}\\d{2}-\\d{9}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1700,7 +1828,9 @@
                 },
                 "recogniser": {
                   "pattern": "[Cc][Nn][Bb]\\d{9}",
-                  "normalisation": ["trim"],
+                  "normalisation": [
+                    "trim"
+                  ],
                   "checksum": null
                 }
               },
@@ -1712,7 +1842,10 @@
                 },
                 "recogniser": {
                   "pattern": "97[89]\\d{10}",
-                  "normalisation": ["trim", "dropHyphens"],
+                  "normalisation": [
+                    "trim",
+                    "dropHyphens"
+                  ],
                   "checksum": "isbn13"
                 }
               },
@@ -1724,7 +1857,10 @@
                 },
                 "recogniser": {
                   "pattern": "\\d{4}-\\d{3}[\\dX]",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": "issn"
                 }
               },
@@ -1736,7 +1872,10 @@
                 },
                 "recogniser": {
                   "pattern": "MZK-\\d{4}-\\d{6}",
-                  "normalisation": ["trim", "upperCase"],
+                  "normalisation": [
+                    "trim",
+                    "upperCase"
+                  ],
                   "checksum": null
                 }
               },
@@ -1793,7 +1932,11 @@
               "kind": "whichUnit",
               "catalogId": "MZK01-001277001",
               "title": "Slovácké noviny",
-              "units": ["1936–1938", "1939", "1940"]
+              "units": [
+                "1936–1938",
+                "1939",
+                "1940"
+              ]
             },
             {
               "kind": "whichRecord",
@@ -2076,7 +2219,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": null
               },
               {
@@ -2230,7 +2375,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -2348,7 +2496,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc3"],
+                "custodyIds": [
+                  "pc3"
+                ],
                 "suggestion": null
               },
               {
@@ -2462,7 +2612,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -2574,7 +2726,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -2686,7 +2841,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -2807,7 +2965,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -2919,7 +3080,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -3012,7 +3176,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc0"],
+                "custodyIds": [
+                  "pc0"
+                ],
                 "suggestion": {
                   "categoryId": "c4",
                   "reason": "Map",
@@ -3089,7 +3255,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -3201,7 +3369,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -3313,7 +3483,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -3406,7 +3578,9 @@
                   ]
                 },
                 "decision": "Withdrawn",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -3509,7 +3683,9 @@
                   ]
                 },
                 "decision": "Denied",
-                "custodyIds": ["pc0"],
+                "custodyIds": [
+                  "pc0"
+                ],
                 "suggestion": null
               },
               {
@@ -3619,7 +3795,9 @@
                   ]
                 },
                 "decision": "Denied",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -3860,7 +4038,9 @@
                 ]
               },
               "decision": "Pending",
-              "custodyIds": ["pc1"],
+              "custodyIds": [
+                "pc1"
+              ],
               "suggestion": {
                 "categoryId": "c21",
                 "reason": "Periodical, Moravian place of publication",
@@ -4646,7 +4826,9 @@
                     ],
                     "verdicts": [
                       {
-                        "defectKeys": ["pi9:R02:pages"],
+                        "defectKeys": [
+                          "pi9:R02:pages"
+                        ],
                         "verdict": "Approved",
                         "actorId": "u1",
                         "at": "<time>",
@@ -6058,7 +6240,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": null
               },
               {
@@ -6212,7 +6396,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -6330,7 +6517,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc3"],
+                "custodyIds": [
+                  "pc3"
+                ],
                 "suggestion": null
               },
               {
@@ -6444,7 +6633,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -6556,7 +6747,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -6668,7 +6862,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -6789,7 +6986,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -6901,7 +7101,10 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1", "pc2"],
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -6994,7 +7197,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc0"],
+                "custodyIds": [
+                  "pc0"
+                ],
                 "suggestion": {
                   "categoryId": "c4",
                   "reason": "Map",
@@ -7071,7 +7276,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -7183,7 +7390,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -7295,7 +7504,9 @@
                   ]
                 },
                 "decision": "Pending",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c22",
                   "reason": "Periodical, national unless a place says otherwise",
@@ -7388,7 +7599,9 @@
                   ]
                 },
                 "decision": "Withdrawn",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",
@@ -7491,7 +7704,9 @@
                   ]
                 },
                 "decision": "Denied",
-                "custodyIds": ["pc0"],
+                "custodyIds": [
+                  "pc0"
+                ],
                 "suggestion": null
               },
               {
@@ -7601,7 +7816,9 @@
                   ]
                 },
                 "decision": "Denied",
-                "custodyIds": ["pc1"],
+                "custodyIds": [
+                  "pc1"
+                ],
                 "suggestion": {
                   "categoryId": "c21",
                   "reason": "Periodical, Moravian place of publication",

@@ -112,7 +112,13 @@ Seeding functions that generate data at volume come later; what they generate is
 |---|---|---|
 | contract | the engine over HTTP | every endpoint: shape, permission, refusal codes |
 | rules | the engine's commands | each rule ID cited in a test name |
+| recordings | the engine over HTTP | every mock call list in `frontend/recordings/lists/`; set `VERA_REPLAY_ALL=1` to include known gaps and endpoints the engine does not serve |
 | user journeys | Playwright: the frontend in live mode against the engine | each [user journey](../user-journeys/) end to end |
+
+Recordings are call lists in `frontend/recordings/lists/`, recorded through the mock's handlers by
+`make record` and replayed by `make replay` (`VERA_API_URL` targets another server). A change of
+behaviour re-records them ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md));
+`VERA_REPLAY_ALL=1` includes known gaps and endpoints the engine does not serve, as the backend does.
 
 The Java backend later passes the contract and journey tests unchanged.
 

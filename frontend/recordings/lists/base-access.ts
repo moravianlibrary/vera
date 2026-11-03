@@ -1,0 +1,120 @@
+export default {
+  seed: "base",
+  moment: "2026-06-25T08:40:00.000Z",
+  mask: "none",
+  scenarios: [
+    {
+      name: "users-and-groups-index-impacts-and-accounts",
+      calls: [
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/reader/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/staff/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/project-user/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/curator/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/dig-curator/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/roles/admin/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/custodies/pc0/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/custodies/pc1/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/custodies/pc2/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/access/custodies/pc3/impact",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "curator",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "digitization",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "staff",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "reader",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "no-access",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+        {
+          as: "project-user",
+          method: "GET",
+          path: "/api/session/account",
+          compare: "body",
+        },
+      ],
+    },
+  ],
+} as const;

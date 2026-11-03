@@ -14,6 +14,7 @@
       "!**/coverage",
       "!docs/demos",
       "!docs/design",
+      "!replay/recordings",
       "!frontend/public/mockServiceWorker.js"
     ]
   },

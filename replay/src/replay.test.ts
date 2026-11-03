@@ -1,7 +1,8 @@
 import { afterAll, describe, expect, it } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
+import { knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
 import { type Recording, type RecordingCall, recordingSchema } from "./recording";
@@ -11,7 +12,9 @@ const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "") ?? local?.url;
 if (baseUrl === undefined) throw new Error("Could not resolve the API base URL");
 afterAll(() => local?.stop());
 
-const files = ["base-records.json", "base-proposals.json", "base-decisions.json"];
+const files = readdirSync(join(import.meta.dir, "../recordings"))
+  .filter((file) => file.endsWith(".json"))
+  .sort();
 const recordings = files.map((file) => ({
   file,
   recording: recordingSchema.parse(
@@ -31,9 +34,12 @@ function endpointOf(call: RecordingCall) {
   });
 }
 
-function unsupportedLocally(scenario: Recording["scenarios"][number]) {
-  if (local === undefined) return undefined;
+function unsupported(scenario: Recording["scenarios"][number]) {
   return scenario.calls.find((call) => endpointOf(call)?.engine === false);
+}
+
+function knownGap(file: string, scenario: Recording["scenarios"][number]) {
+  return knownGaps.find((gap) => gap.recording === file && gap.scenario === scenario.name);
 }
 
 async function postJson(path: string, body: unknown) {
@@ -172,9 +178,12 @@ async function replay(recording: Recording, scenario: Recording["scenarios"][num
 for (const { file, recording } of recordings) {
   describe(file, () => {
     for (const scenario of recording.scenarios) {
-      const unsupported = unsupportedLocally(scenario);
-      if (unsupported !== undefined) {
-        it.skip(`${scenario.name} (engine does not serve ${unsupported.method} ${unsupported.path})`, () => {});
+      const gap = knownGap(file, scenario);
+      const notServed = unsupported(scenario);
+      if (process.env.VERA_REPLAY_ALL !== "1" && gap !== undefined) {
+        it.skip(`${scenario.name} (known gap: ${gap.reason})`, () => {});
+      } else if (process.env.VERA_REPLAY_ALL !== "1" && notServed !== undefined) {
+        it.skip(`${scenario.name} (engine does not serve ${notServed.method} ${notServed.path})`, () => {});
       } else {
         it(scenario.name, async () => replay(recording, scenario));
       }

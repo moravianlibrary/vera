@@ -16581,10 +16581,10 @@
                 },
                 "code": "request.approved",
                 "data": {
+                  "suggestion": null,
                   "iterationId": "IT3",
                   "isRescan": false,
-                  "batchSize": 3,
-                  "suggestion": null
+                  "batchSize": 3
                 }
               },
               {
@@ -33097,10 +33097,10 @@
                 },
                 "code": "request.approved",
                 "data": {
+                  "suggestion": null,
                   "iterationId": "IT3",
                   "isRescan": false,
-                  "batchSize": 3,
-                  "suggestion": null
+                  "batchSize": 3
                 }
               },
               {
@@ -50179,10 +50179,10 @@
                 },
                 "code": "request.approved",
                 "data": {
+                  "suggestion": null,
                   "iterationId": "IT3",
                   "isRescan": false,
-                  "batchSize": 3,
-                  "suggestion": null
+                  "batchSize": 3
                 }
               },
               {
