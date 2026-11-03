@@ -21,7 +21,12 @@ import type {
   RoleImpact,
   UserGroups,
 } from "@vera/contract/access";
-import { openProposalPlacements, openProposalRows } from "@vera/contract/queries/requests";
+import {
+  accessProposalsOf,
+  custodyImpactOf,
+  openProposalCountsByCustody,
+  custodyRecordOf as sharedCustodyRecordOf,
+} from "@vera/contract/queries/custodies";
 import type {
   AccessGroup,
   AccessUser,
@@ -60,17 +65,10 @@ const lastManager: Refusal = {
 
 // ---------------------------------------------------------------- the page
 
-function openProposalCountsByCustody(): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const custodyId of openProposalPlacements(mockStore(), mockRequestPlugins).flat()) {
-    counts.set(custodyId, (counts.get(custodyId) ?? 0) + 1);
-  }
-
-  return counts;
-}
-
 export function accessIndex(): AccessIndex {
-  const openCounts = openProposalCountsByCustody();
+  const store = mockStore();
+  const rules = custodyRules();
+  const openCounts = openProposalCountsByCustody(store, mockRequestPlugins);
   return {
     properties: allPropertyDefinitions().map((definition) => ({
       key: definition.key,
@@ -82,18 +80,18 @@ export function accessIndex(): AccessIndex {
     groups: database.groups,
     custodies: database.requestCustodies
       .toSorted((first, second) => Number(second.isFallback) - Number(first.isFallback))
-      .map((custody) => custodyRecordOf(custody, openCounts)),
+      .map((custody) => ({
+        ...sharedCustodyRecordOf(custody, openCounts, rules),
+        memberIds: [...custody.memberIds],
+        groupIds: [...custody.groupIds],
+      })),
     identityInstances: identityInstances(),
     categoryMemberships: Object.entries(database.categoryMembers).map(([categoryId, userIds]) => ({
       categoryId,
       userIds: [...userIds],
     })),
     categories: database.categories,
-    proposals: openProposalRows(mockStore(), mockRequestPlugins).map((row) => ({
-      id: row.record.document.id,
-      title: row.record.document.title,
-      custodyIds: row.custodyIds,
-    })),
+    proposals: accessProposalsOf(store, mockRequestPlugins),
     projects: database.projects.map(({ id, name, managerId, memberIds, memberGroupIds }) => ({
       id,
       name,
@@ -108,21 +106,9 @@ export function accessIndex(): AccessIndex {
   };
 }
 
-function custodyRecordOf(
-  custody: StoredRequestCustody,
-  openCounts = openProposalCountsByCustody(),
-): CustodyRecord {
-  return {
-    ...custody,
-    memberIds: [...custody.memberIds],
-    groupIds: [...custody.groupIds],
-    openCount: openCounts.get(custody.id) ?? 0,
-    placedByIds: custody.isFallback
-      ? []
-      : custodyRules()
-          .filter((rule) => rule.custodyId === custody.id)
-          .map(({ instanceId }) => instanceId),
-  };
+function custodyRecordOf(custody: StoredRequestCustody): CustodyRecord {
+  const counts = openProposalCountsByCustody(mockStore(), mockRequestPlugins);
+  return sharedCustodyRecordOf(custody, counts, custodyRules());
 }
 
 // ---------------------------------------------------------------- shared checks
@@ -828,15 +814,8 @@ export function custodyImpact(session: Session, custodyId: string): Outcome<Cust
     return { refusal: unknownRecord("custody") };
   }
 
-  const placements = openProposalPlacements(mockStore(), mockRequestPlugins).filter((placed) =>
-    placed.includes(custodyId),
-  );
   return {
-    value: {
-      openCount: placements.length,
-      toFallbackCount: placements.filter((placed) => placed.length === 1).length,
-      ruleIds: custodyRecordOf(custody).placedByIds,
-    },
+    value: custodyImpactOf(mockStore(), mockRequestPlugins, custodyId, custodyRules()),
   };
 }
 

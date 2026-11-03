@@ -1,10 +1,13 @@
 // Request custodies are stored here; step 3 owns proposal placement and impacts.
 import { endpoints } from "@vera/contract/endpoints";
+import { custodyImpactOf } from "@vera/contract/queries/custodies";
 import { hasPermission } from "@vera/domain/permissions";
 import { actorOf, configurationOf, newCorrelationId, recordEvent } from "../events";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
-import { custodiesOf, groupsOf, requireCaller, requireManage } from "./index";
+import { engineRequestPlugins } from "../records/plugins";
+import { engineStore } from "../records/store";
+import { custodiesOf, engineCustodyRules, groupsOf, requireCaller, requireManage } from "./index";
 
 const nextId = (ids: string[], prefix: string) =>
   `${prefix}${
@@ -28,15 +31,6 @@ export const custodyEndpoints = [
       records.map((c) => c.id),
       "pc",
     );
-    const value = {
-      id,
-      ...body,
-      isFallback: false,
-      memberIds: [],
-      groupIds: [],
-      openCount: 0,
-      placedByIds: [],
-    };
     engine.db.transaction(() => {
       engine.db
         .query("INSERT INTO request_custodies (id,name,description,is_fallback) VALUES (?,?,?,0)")
@@ -53,7 +47,9 @@ export const custodyEndpoints = [
         ]),
       });
     })();
-    return { body: value };
+    const created = custodiesOf(engine).find((custody) => custody.id === id);
+    if (!created) return problem(500, "The custody was not stored");
+    return { body: created };
   }),
   implement(endpoints.custodySave, ({ engine, caller, params, body }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
@@ -90,7 +86,9 @@ export const custodyEndpoints = [
           data: configurationOf(changes),
         });
     })();
-    return { body: { ...old, ...body } };
+    const saved = custodiesOf(engine).find((custody) => custody.id === params.id);
+    if (!saved) return problem(500, "The custody was not stored");
+    return { body: saved };
   }),
   implement(endpoints.custodyMembers, ({ engine, caller, params, body }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
@@ -170,15 +168,13 @@ export const custodyEndpoints = [
       return problem(403, "You may not read users, groups or roles");
     const record = custodiesOf(engine).find((c) => c.id === params.id);
     if (!record) return problem(404, "No such custody");
-    const ruleIds = engine.db
-      .query<{ id: string; settings: string }, []>(
-        "SELECT id,settings FROM plugin_instances WHERE is_enabled=1 AND is_deleted=0 ORDER BY rowid",
-      )
-      .all()
-      .flatMap((i) => {
-        const s = JSON.parse(i.settings ?? "null");
-        return s?.kind === "Custody" && s.custodyId === params.id ? [i.id] : [];
-      });
-    return { body: { openCount: 0, toFallbackCount: 0, ruleIds } };
+    return {
+      body: custodyImpactOf(
+        engineStore(engine),
+        engineRequestPlugins(engine),
+        params.id,
+        engineCustodyRules(engine),
+      ),
+    };
   }),
 ];

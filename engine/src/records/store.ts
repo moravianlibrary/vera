@@ -3,7 +3,7 @@ import type { Document, Iteration, Project, Request, StatusLogEntry } from "@ver
 import type { StoredPropertyDefinition } from "@vera/domain/properties";
 import type { StoredRequestCustody } from "@vera/domain/request-custody";
 import type { RecordStore } from "@vera/domain/store";
-import { accessUser, custodiesOf, groupsOf } from "../access/index";
+import { accessUser, groupsOf, rawCustodiesOf } from "../access/index";
 import { rolesOf } from "../access/session";
 import type { Engine } from "../engine";
 
@@ -70,7 +70,7 @@ export function engineStore(engine: Engine): RecordStore {
     propertyDefinitions: all<StoredPropertyDefinition>(
       "SELECT record FROM property_definitions ORDER BY rowid",
     ),
-    requestCustodies: custodiesOf(engine).map(
+    requestCustodies: rawCustodiesOf(engine).map(
       ({ id, name, description, isFallback, memberIds, groupIds }): StoredRequestCustody => ({
         id,
         name,

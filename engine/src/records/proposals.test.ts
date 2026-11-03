@@ -40,6 +40,14 @@ describe("proposal endpoints", () => {
       item.record.requests.some((entry) => entry.id === request?.id),
     );
     expect(proposedRow?.custodyIds).toContain("pc3");
+    const access = await call(engine, "GET", "/api/access", { as: "u3" });
+    expect(access.status).toBe(200);
+    const index = (await access.json()) as {
+      custodies: { id: string; openCount: number }[];
+      proposals: { id: string; custodyIds: string[] }[];
+    };
+    expect(index.custodies.find((custody) => custody.id === "pc3")?.openCount).toBeGreaterThan(0);
+    expect(index.proposals.some((proposal) => proposal.custodyIds.includes("pc3"))).toBe(true);
     engine.close();
   });
 

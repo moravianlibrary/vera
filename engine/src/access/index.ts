@@ -2,6 +2,11 @@
 
 import { accessIndexSchema } from "@vera/contract/access";
 import { endpoints } from "@vera/contract/endpoints";
+import {
+  accessProposalsOf,
+  openProposalCountsByCustody,
+  custodyRecordOf as sharedCustodyRecordOf,
+} from "@vera/contract/queries/custodies";
 import type {
   AccessGroup,
   AccessUser,
@@ -14,6 +19,8 @@ import { rolesOf, sessionOf } from "../access/session";
 import type { Engine } from "../engine";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
+import { engineRequestPlugins } from "../records/plugins";
+import { engineStore } from "../records/store";
 
 export function accessUser(engine: Engine, id: string): AccessUser | null {
   const user = engine.db
@@ -92,6 +99,13 @@ export function groupsOf(engine: Engine): AccessGroup[] {
 }
 
 export function custodiesOf(engine: Engine): CustodyRecord[] {
+  const store = engineStore(engine);
+  const counts = openProposalCountsByCustody(store, engineRequestPlugins(engine));
+  const rules = engineCustodyRules(engine);
+  return rawCustodiesOf(engine).map((custody) => sharedCustodyRecordOf(custody, counts, rules));
+}
+
+export function rawCustodiesOf(engine: Engine): CustodyRecord[] {
   return engine.db
     .query<{ id: string; name: string; description: string; is_fallback: number }, []>(
       "SELECT * FROM request_custodies ORDER BY is_fallback DESC, rowid",
@@ -114,11 +128,23 @@ export function custodiesOf(engine: Engine): CustodyRecord[] {
         )
         .all(c.id)
         .map((x) => x.group_id),
-      // Step 3 owns proposal placement counts.
       openCount: 0,
-      // Step 3 owns rule placement references.
       placedByIds: [],
     }));
+}
+
+export function engineCustodyRules(engine: Engine) {
+  return engine.db
+    .query<{ id: string; settings: string }, []>(
+      "SELECT id,settings FROM plugin_instances WHERE is_enabled=1 AND is_deleted=0 ORDER BY rowid",
+    )
+    .all()
+    .flatMap((instance) => {
+      const settings = JSON.parse(instance.settings ?? "null");
+      return settings?.kind === "Custody"
+        ? [{ instanceId: instance.id, custodyId: settings.custodyId as string }]
+        : [];
+    });
 }
 
 export function identityInstancesOf(engine: Engine): IdentityInstance[] {
@@ -217,8 +243,7 @@ export const accessIndexEndpoint = implement(endpoints.accessIndex, ({ engine, c
     identityInstances,
     categoryMemberships,
     categories,
-    // Step 3 owns proposal rows and placement answers.
-    proposals: [],
+    proposals: accessProposalsOf(engineStore(engine), engineRequestPlugins(engine)),
     // Step 4 owns project membership.
     projects: [],
     // Step 7 owns shared watchlists.

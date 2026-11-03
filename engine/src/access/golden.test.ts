@@ -14,33 +14,12 @@ const golden = JSON.parse(
   accounts: Record<string, unknown>;
 };
 
-function withoutLaterSteps(index: Record<string, unknown>) {
+function withoutBackendFields(index: Record<string, unknown>) {
   const fields = structuredClone(index);
-  for (const field of [
-    "proposals",
-    "openCount",
-    "projects",
-    "sharedWatchlists",
-    "properties",
-    "placedByIds",
-  ]) {
+  for (const field of ["projects", "sharedWatchlists", "properties"]) {
     delete fields[field];
   }
-  const custodies = (fields.custodies as Record<string, unknown>[]).map((record) => {
-    const comparable = { ...record };
-    delete comparable.openCount;
-    delete comparable.placedByIds;
-    return comparable;
-  });
-  return { ...fields, custodies };
-}
-
-function withoutStepThreeCustodyCounts(impact: Record<string, unknown>) {
-  // Step 3 places proposals (decision 9 and L8); until then these impact counts are zero.
-  const comparable = { ...impact };
-  delete comparable.openCount;
-  delete comparable.toFallbackCount;
-  return comparable;
+  return fields;
 }
 
 describe("access golden answers", () => {
@@ -49,7 +28,7 @@ describe("access golden answers", () => {
     const response = await call(engine, "GET", `/api${apiRoutes.access}`, { as: "u3" });
     expect(response.status).toBe(200);
     const index = (await response.json()) as Record<string, unknown>;
-    expect(withoutLaterSteps(index)).toEqual(withoutLaterSteps(golden.index));
+    expect(withoutBackendFields(index)).toEqual(withoutBackendFields(golden.index));
 
     for (const [roleId, impact] of Object.entries(golden.roleImpacts)) {
       const result = await call(
@@ -69,9 +48,7 @@ describe("access golden answers", () => {
         { as: "u3" },
       );
       expect(result.status).toBe(200);
-      expect(
-        withoutStepThreeCustodyCounts((await result.json()) as Record<string, unknown>),
-      ).toEqual(withoutStepThreeCustodyCounts(impact as Record<string, unknown>));
+      expect(await result.json()).toEqual(impact);
     }
     for (const [userId, account] of Object.entries(golden.accounts)) {
       const result = await call(engine, "GET", `/api${apiRoutes.sessionAccount}`, { as: userId });

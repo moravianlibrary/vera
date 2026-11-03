@@ -4,6 +4,6 @@ export const knownGaps = [
     recording: "base-access.json",
     scenario: "users-and-groups-index-impacts-and-accounts",
     reason:
-      "the engine's Users & Groups index lacks open counts, placements, projects, watchlists and properties of later steps",
+      "the engine's Users & Groups index lacks projects, shared watchlists and properties, which remain the backend's",
   },
 ];
