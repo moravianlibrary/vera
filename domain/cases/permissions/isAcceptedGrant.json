@@ -1,0 +1,27 @@
+{
+  "function": "isAcceptedGrant",
+  "cases": [
+    {
+      "name": "accepts any property grant",
+      "rule": "PERM-property-edit",
+      "input": {
+        "grant": {
+          "permission": "property.size.edit",
+          "scope": "any"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "rejects custody property grant",
+      "rule": "PERM-property-edit",
+      "input": {
+        "grant": {
+          "permission": "property.size.edit",
+          "scope": "custody"
+        }
+      },
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "function": "permissionSchema",
+  "cases": [
+    {
+      "name": "accepts lowercase property key",
+      "rule": "PERM-property-edit",
+      "input": {
+        "value": "property.size.edit"
+      },
+      "expected": true
+    },
+    {
+      "name": "rejects uppercase property key",
+      "rule": "PERM-property-edit",
+      "input": {
+        "value": "property.Size.edit"
+      },
+      "expected": false
+    }
+  ]
+}

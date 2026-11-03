@@ -1,0 +1,27 @@
+{
+  "function": "catalogEntryOf",
+  "cases": [
+    {
+      "name": "groups property under Properties",
+      "rule": "PERM-property-edit",
+      "input": {
+        "permission": "property.size.edit"
+      },
+      "expected": {
+        "group": "Properties",
+        "scopes": ["any"]
+      }
+    },
+    {
+      "name": "groups definition under Administration",
+      "rule": null,
+      "input": {
+        "permission": "property.define"
+      },
+      "expected": {
+        "group": "Administration",
+        "scopes": ["any"]
+      }
+    }
+  ]
+}

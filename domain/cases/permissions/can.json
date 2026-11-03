@@ -1,0 +1,284 @@
+{
+  "function": "can",
+  "cases": [
+    {
+      "name": "asks only for the grant",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "list.create",
+              "scope": null
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "list.create"
+      },
+      "expected": true
+    },
+    {
+      "name": "rejects a missing grant",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "list.create",
+              "scope": null
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "list.delete"
+      },
+      "expected": false
+    },
+    {
+      "name": "reaches iteration in ancestor custody",
+      "rule": "PERM-accepted-scopes",
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "iteration.classify",
+              "scope": "custody"
+            }
+          ],
+          "custodyCategoryIds": ["c1"],
+          "groupIds": ["G1"]
+        },
+        "permission": "iteration.classify",
+        "record": {
+          "kind": "iteration",
+          "categoryPathIds": ["c1", "c11"]
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "does not reach outside custody",
+      "rule": "PERM-accepted-scopes",
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "iteration.classify",
+              "scope": "custody"
+            }
+          ],
+          "custodyCategoryIds": ["c1"],
+          "groupIds": ["G1"]
+        },
+        "permission": "iteration.classify",
+        "record": {
+          "kind": "iteration",
+          "categoryPathIds": ["c2"]
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "uses the widest grant scope",
+      "rule": "PERM-accepted-scopes",
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "iteration.classify",
+              "scope": "custody"
+            },
+            {
+              "permission": "iteration.classify",
+              "scope": "any"
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "iteration.classify",
+        "record": {
+          "kind": "iteration",
+          "categoryPathIds": ["c9"]
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "member does not manage a project",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "project.edit",
+              "scope": "managed"
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "project.edit",
+        "record": {
+          "kind": "project",
+          "managerId": "U2",
+          "memberIds": ["U1"],
+          "memberGroupIds": []
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "manager reaches a project",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "project.edit",
+              "scope": "managed"
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "project.edit",
+        "record": {
+          "kind": "project",
+          "managerId": "U1",
+          "memberIds": ["U1"],
+          "memberGroupIds": []
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "project scope excludes nonmembers",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "project.read",
+              "scope": "project"
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "project.read",
+        "record": {
+          "kind": "project",
+          "managerId": "U2",
+          "memberIds": [],
+          "memberGroupIds": []
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "project scope reaches group member",
+      "rule": null,
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "project.read",
+              "scope": "project"
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "project.read",
+        "record": {
+          "kind": "project",
+          "managerId": "U2",
+          "memberIds": [],
+          "memberGroupIds": ["G1"]
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "self scope reaches own run",
+      "rule": "PERM-self-scoped",
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "task.cancel",
+              "scope": null
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "task.cancel",
+        "record": {
+          "kind": "run",
+          "startedById": "U1"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "self scope excludes another run",
+      "rule": "PERM-self-scoped",
+      "input": {
+        "holder": {
+          "user": {
+            "id": "U1"
+          },
+          "grants": [
+            {
+              "permission": "task.cancel",
+              "scope": null
+            }
+          ],
+          "custodyCategoryIds": [],
+          "groupIds": ["G1"]
+        },
+        "permission": "task.cancel",
+        "record": {
+          "kind": "run",
+          "startedById": "U2"
+        }
+      },
+      "expected": false
+    }
+  ]
+}

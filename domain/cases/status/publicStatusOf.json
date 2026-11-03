@@ -1,0 +1,141 @@
+{
+  "function": "publicStatusOf",
+  "base": {
+    "progress": "Published",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "pending waits for review",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Pending"
+        },
+        "iteration": null
+      },
+      "expected": "WaitingForReview"
+    },
+    {
+      "name": "denied is not accepted",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Denied"
+        },
+        "iteration": null
+      },
+      "expected": "NotAccepted"
+    },
+    {
+      "name": "withdrawn stays withdrawn",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Withdrawn"
+        },
+        "iteration": null
+      },
+      "expected": "Withdrawn"
+    },
+    {
+      "name": "approved before ingest is being added",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": null
+      },
+      "expected": "BeingAdded"
+    },
+    {
+      "name": "cancellation is on hold",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": "OnHold"
+    },
+    {
+      "name": "restriction makes work unavailable",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": {
+          "progress": "Ready",
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-06-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": "NotAvailable"
+    },
+    {
+      "name": "ready work waits to be scheduled",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": "WaitingToBeScheduled"
+    },
+    {
+      "name": "planned work is scheduled",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": {
+          "progress": "Planned"
+        }
+      },
+      "expected": "Scheduled"
+    },
+    {
+      "name": "digitized work is available",
+      "rule": "STAT-public",
+      "input": {
+        "request": {
+          "decision": "Approved"
+        },
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": "Available"
+    },
+    {
+      "name": "duplicate requests show the tracked work status",
+      "rule": "STAT-never-duplicate",
+      "input": {
+        "request": {
+          "decision": "Duplicate"
+        },
+        "iteration": {
+          "progress": "Published"
+        }
+      },
+      "expected": "Available"
+    }
+  ]
+}

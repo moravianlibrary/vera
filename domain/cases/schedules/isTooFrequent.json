@@ -1,0 +1,38 @@
+{
+  "function": "isTooFrequent",
+  "cases": [
+    {
+      "name": "rejects four minutes",
+      "rule": null,
+      "input": {
+        "cadence": {
+          "every": "minutes",
+          "interval": 4
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "accepts five minutes",
+      "rule": null,
+      "input": {
+        "cadence": {
+          "every": "minutes",
+          "interval": 5
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "does not reject hourly cadence",
+      "rule": null,
+      "input": {
+        "cadence": {
+          "every": "hours",
+          "interval": 1
+        }
+      },
+      "expected": false
+    }
+  ]
+}

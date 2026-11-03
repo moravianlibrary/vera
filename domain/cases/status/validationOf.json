@@ -1,0 +1,90 @@
+{
+  "function": "validationOf",
+  "base": {
+    "progress": "Published",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "no defects need no validation",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {}
+      },
+      "expected": "NotRequired"
+    },
+    {
+      "name": "unaccepted defects need review",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "Needed"
+    },
+    {
+      "name": "accepted defects are approved",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Approved"
+            }
+          ]
+        }
+      },
+      "expected": "Approved"
+    },
+    {
+      "name": "denied defects are denied",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "Denied"
+    },
+    {
+      "name": "a denial lapses when its defect is gone",
+      "rule": "STAT-denial-lapses",
+      "input": {
+        "iteration": {
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "NotRequired"
+    }
+  ]
+}

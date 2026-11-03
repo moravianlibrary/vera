@@ -1,0 +1,29 @@
+{
+  "function": "missingRequirementsOf",
+  "cases": [
+    {
+      "name": "requires iteration read at any",
+      "rule": "PERM-property-edit",
+      "input": {
+        "grants": [
+          {
+            "permission": "property.size.edit",
+            "scope": "any"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "grant": {
+            "permission": "property.size.edit",
+            "scope": "any"
+          },
+          "needs": {
+            "permission": "iteration.read",
+            "scope": "any"
+          }
+        }
+      ]
+    }
+  ]
+}

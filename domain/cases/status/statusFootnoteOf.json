@@ -1,0 +1,62 @@
+{
+  "function": "statusFootnoteOf",
+  "base": {
+    "progress": "Published",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "new defect appears beside scanned status",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "ReviewNeeded"
+    },
+    {
+      "name": "denial appears beside scanned status",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "ValidationDenied"
+    },
+    {
+      "name": "pre-scan work has no footnote",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": null
+    }
+  ]
+}

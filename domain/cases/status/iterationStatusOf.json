@@ -1,0 +1,115 @@
+{
+  "function": "iterationStatusOf",
+  "base": {
+    "progress": "Published",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "cancelled work has its hold badge",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": "Cancelled"
+    },
+    {
+      "name": "not digitizable work has its hold badge",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "NotDigitizable"
+          }
+        }
+      },
+      "expected": "NotDigitizable"
+    },
+    {
+      "name": "scanned progress outranks restriction",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-06-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": "Published"
+    },
+    {
+      "name": "restriction outranks validation",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-06-01T00:00:00Z"
+          },
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "Forbidden"
+    },
+    {
+      "name": "denied validation is shown",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "defects": [
+            {
+              "key": "k"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "ValidationDenied"
+    },
+    {
+      "name": "needed validation is shown",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "ReviewNeeded"
+    },
+    {
+      "name": "otherwise progress is shown",
+      "rule": "STAT-badge",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": "Ready"
+    }
+  ]
+}

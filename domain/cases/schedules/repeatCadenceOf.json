@@ -1,0 +1,29 @@
+{
+  "function": "repeatCadenceOf",
+  "cases": [
+    {
+      "name": "weekly repeat starts Monday",
+      "rule": null,
+      "input": {
+        "every": "week"
+      },
+      "expected": {
+        "every": "week",
+        "weekday": 1,
+        "at": "00:00"
+      }
+    },
+    {
+      "name": "monthly repeat starts on day one",
+      "rule": null,
+      "input": {
+        "every": "month"
+      },
+      "expected": {
+        "every": "month",
+        "day": 1,
+        "at": "00:00"
+      }
+    }
+  ]
+}

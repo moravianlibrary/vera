@@ -1,0 +1,78 @@
+{
+  "function": "passesGates",
+  "base": {
+    "progress": "Published",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "clear gates pass",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {}
+      },
+      "expected": true
+    },
+    {
+      "name": "restriction blocks",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-06-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "overrule clears restriction",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-06-01T00:00:00Z"
+          },
+          "restrictionOverride": {
+            "actorId": "u1",
+            "at": "2026-06-02T00:00:00Z",
+            "note": ""
+          }
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "needed validation blocks",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "cancellation blocks",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": false
+    }
+  ]
+}

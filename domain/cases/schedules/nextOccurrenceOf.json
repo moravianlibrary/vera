@@ -1,0 +1,17 @@
+{
+  "function": "nextOccurrenceOf",
+  "cases": [
+    {
+      "name": "is strictly after the moment",
+      "rule": null,
+      "input": {
+        "cadence": {
+          "every": "day",
+          "at": "10:40"
+        },
+        "after": "2026-06-25T10:40:00"
+      },
+      "expected": "2026-06-26T10:40:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "function": "withRequirements",
+  "cases": [
+    {
+      "name": "adds iteration read at any",
+      "rule": "PERM-property-edit",
+      "input": {
+        "grants": [
+          {
+            "permission": "property.size.edit",
+            "scope": "any"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "permission": "property.size.edit",
+          "scope": "any"
+        },
+        {
+          "permission": "iteration.read",
+          "scope": "any"
+        }
+      ]
+    }
+  ]
+}
