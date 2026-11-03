@@ -11,7 +11,7 @@ export async function call(
   engine: Engine,
   method: string,
   path: string,
-  options: { as?: string; body?: unknown } = {},
+  options: { as?: string; body?: unknown; form?: FormData } = {},
 ): Promise<Response> {
   const headers = new Headers();
   if (options.as !== undefined) {
@@ -34,7 +34,7 @@ export async function call(
     new Request(`http://engine.test${path}`, {
       method,
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
     }),
   );
 }

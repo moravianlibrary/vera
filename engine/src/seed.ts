@@ -143,6 +143,36 @@ export function loadSeed(db: Database, seed: Seed): void {
         .record(z.string(), z.object({ categoryId: id, reason: z.string() }))
         .optional(),
       moravianPlaces: z.array(z.string()).optional(),
+      catalogRecords: z
+        .array(
+          z.object({
+            catalogId: id,
+            title: z.string(),
+            type: z.string(),
+            units: z.array(z.string()).nullable(),
+            identifiers: z.array(z.string()),
+            shelfMarks: z.record(z.string(), z.string().nullable()),
+            barcodes: z.record(z.string(), z.string().nullable()),
+          }),
+        )
+        .optional(),
+      catalogBases: z
+        .record(z.string(), z.object({ base: z.string(), opacUrl: z.url() }))
+        .optional(),
+      photo: z
+        .object({
+          seen: z.string(),
+          read: z.array(z.object({ label: z.string(), value: z.string(), confidence: z.number() })),
+          best: z.string(),
+          near: z.string(),
+        })
+        .optional(),
+      catalogReading: z
+        .object({
+          source: z.object({ kind: z.literal("plugin"), instanceId: id, instanceName: z.string() }),
+          tier: z.number(),
+        })
+        .optional(),
     })
     .passthrough();
   const fakes = fakeSchema.parse(seed.fakes ?? {});

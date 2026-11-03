@@ -24,6 +24,7 @@ import { createJobs } from "./jobs";
 import type { Outbox } from "./outbox";
 import { createOutbox } from "./outbox";
 import { recordEndpoints } from "./records/endpoints";
+import { proposalEndpoints } from "./records/proposals";
 import { loadSeed, readSeed, seedsDir } from "./seed";
 
 export interface EngineOptions {
@@ -64,6 +65,7 @@ export const endpoints: readonly Endpoint[] = [
   ...custodyEndpoints,
   ...accountEndpoints,
   ...recordEndpoints,
+  ...proposalEndpoints,
 ];
 
 const seedKey = "seed";

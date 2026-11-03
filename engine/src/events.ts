@@ -25,6 +25,8 @@ export interface EventInput<C extends EventCode> {
   subjectName?: string;
   actor: Actor;
   correlationId: string;
+  // An act that planned at a moment records at it.
+  at?: string;
   data: C extends HistoryCode
     ? C extends keyof typeof historyDataSchemas
       ? z.infer<(typeof historyDataSchemas)[C]>
@@ -50,7 +52,7 @@ export function recordEvent<C extends EventCode>(engine: Engine, input: EventInp
   if ((flags as { isDerived?: boolean }).isDerived || (!flags.history && !flags.audit))
     throw new Error(`Event ${input.code} cannot be recorded`);
   if (input.subjectKind !== flags.subject) throw new Error("Subject kind must match event code");
-  const at = engine.clock.now().toISOString();
+  const at = input.at ?? engine.clock.now().toISOString();
   if (flags.history) {
     if (!(historyCodes as readonly string[]).includes(input.code))
       throw new Error(`Event ${input.code} has no History schema`);

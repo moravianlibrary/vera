@@ -48,8 +48,16 @@ export type WayInRefusal =
   | { status: 404; message: string }
   | { status: 422; code: "proposal.link_unread"; message: string };
 export type WayInOutcome<Value> = { value: Value } | { refusal: WayInRefusal };
-type Instance = StoredPluginInstance;
-type Implementation = StoredPluginImplementation;
+export type ProposalPluginInstance = Pick<
+  StoredPluginInstance,
+  "id" | "name" | "implementationId" | "isEnabled" | "isDeleted" | "settings" | "configuration"
+>;
+export type ProposalPluginImplementation = Pick<
+  StoredPluginImplementation,
+  "id" | "name" | "kind" | "versions"
+>;
+type Instance = ProposalPluginInstance;
+type Implementation = ProposalPluginImplementation;
 type WaysIn = Omit<ProposalSettings, "maxAtOnce">;
 
 function catalogOf(instance: Instance, catalogs: Readonly<Record<string, CatalogBase>>) {

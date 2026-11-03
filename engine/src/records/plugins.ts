@@ -1,6 +1,15 @@
+import type { ProposalPlugins } from "@vera/contract/queries/proposals";
 import type { RequestPlugins } from "@vera/contract/queries/requests";
 import { baseIdOf } from "@vera/contract/queries/requests";
+import {
+  catalogPropertyValuesOf,
+  type ProposalPluginImplementation,
+  type ProposalPluginInstance,
+  waysInOf,
+} from "@vera/contract/queries/ways-in";
+import type { CatalogRecord } from "@vera/domain/catalog";
 import { leafCategoriesOf } from "@vera/domain/categories";
+import type { StoredPluginImplementation, StoredPluginInstance } from "@vera/domain/plugin-store";
 import type { Engine } from "../engine";
 
 const fake = <T>(engine: Engine, key: string, fallback: T): T => {
@@ -9,6 +18,79 @@ const fake = <T>(engine: Engine, key: string, fallback: T): T => {
     .get(key)?.value;
   return value === undefined ? fallback : (JSON.parse(value) as T);
 };
+
+export function engineProposalPlugins(engine: Engine): ProposalPlugins {
+  return engineProposalContext(engine).plugins;
+}
+
+export function engineProposalContext(engine: Engine) {
+  const records = fake<CatalogRecord[]>(engine, "catalogRecords", []);
+  const catalogReading = fake<import("@vera/contract/queries/ways-in").CatalogReadingFake>(
+    engine,
+    "catalogReading",
+    { source: { kind: "plugin", instanceId: "", instanceName: "" }, tier: 50 },
+  );
+  const { implementations, instances, catalogs } = enginePluginTables(engine);
+  const plugins: ProposalPlugins = {
+    catalogRecords: () => records,
+    catalogPropertyValuesOf: (read, at) => catalogPropertyValuesOf(read, at, catalogReading),
+    waysIn: () => waysInOf(instances, implementations, catalogs),
+  };
+  const photo = fake<import("@vera/contract/queries/ways-in").PhotoFake>(engine, "photo", {
+    seen: "",
+    read: [],
+    best: "",
+    near: "",
+  });
+  return { plugins, tables: { implementations, instances, catalogs }, records, photo };
+}
+
+export function enginePluginTables(engine: Engine) {
+  // Tables omit descriptorId and description on implementations, and version, linkedCategoryId,
+  // triggers, createdBy, createdAt, lastRunAt, policy, and isPredefined on instances. The shared
+  // queries read only the projected fields below, so no substitute values are needed.
+  const implementations: ProposalPluginImplementation[] = engine.db
+    .query<{ id: string; name: string; kind: string; versions: string }, []>(
+      "SELECT id,name,kind,versions FROM plugin_implementations ORDER BY rowid",
+    )
+    .all()
+    .map((row) => ({
+      ...row,
+      kind: row.kind as StoredPluginImplementation["kind"],
+      versions: JSON.parse(row.versions) as StoredPluginImplementation["versions"],
+    }));
+  const instances: ProposalPluginInstance[] = engine.db
+    .query<
+      {
+        id: string;
+        name: string;
+        implementation_id: string;
+        configuration: string;
+        settings: string | null;
+        is_enabled: number;
+        is_deleted: number;
+      },
+      []
+    >(
+      "SELECT id,name,implementation_id,configuration,settings,is_enabled,is_deleted FROM plugin_instances ORDER BY rowid",
+    )
+    .all()
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      implementationId: row.implementation_id,
+      configuration: JSON.parse(row.configuration) as Record<string, string>,
+      settings: JSON.parse(row.settings ?? "null") as StoredPluginInstance["settings"],
+      isEnabled: row.is_enabled === 1,
+      isDeleted: row.is_deleted === 1,
+    }));
+  const catalogs = fake<Record<string, import("@vera/contract/queries/ways-in").CatalogBase>>(
+    engine,
+    "catalogBases",
+    {},
+  );
+  return { implementations, instances, catalogs };
+}
 
 export function engineRequestPlugins(engine: Engine): RequestPlugins {
   const placements = fake<Record<string, string[]>>(engine, "custodyPlacements", {});

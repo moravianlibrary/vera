@@ -45,6 +45,19 @@ import {
   verifiedSchema,
 } from "./login";
 import {
+  barcodeReadingSchema,
+  catalogHitSchema,
+  photoReadingSchema,
+  proposalCheckSchema,
+  proposalDraftSchema,
+  proposalLookupSchema,
+  proposalReportSchema,
+  proposalSettingsSchema,
+  rateLimitStatusSchema,
+  recordLinkReadingSchema,
+  recordLinkSchema,
+} from "./proposals";
+import {
   requestDetailSchema,
   requestGroupingParam,
   requestPageSchema,
@@ -63,6 +76,7 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   params?: z.ZodType<Params>;
   query?: z.ZodType<Query>;
   body?: z.ZodType<Body>;
+  form?: readonly string[];
   // Absent for an endpoint that answers 204 with no body.
   response?: z.ZodType<Value>;
   redirects?: boolean;
@@ -433,6 +447,73 @@ export const endpoints = {
     body: userSettingsChangeSchema,
     response: userSettingsSchema,
     codes: [],
+  }),
+  proposalSettings: spec({
+    method: "GET",
+    path: apiRoutes.proposalSettings,
+    summary: "Read proposal settings.",
+    response: proposalSettingsSchema,
+    codes: [],
+  }),
+  proposalRateLimit: spec({
+    method: "GET",
+    path: apiRoutes.proposalRateLimit,
+    summary: "Read the remaining proposal limit.",
+    response: rateLimitStatusSchema,
+    codes: [],
+  }),
+  proposalLookup: spec({
+    method: "POST",
+    path: apiRoutes.proposalLookup,
+    summary: "Check proposed items.",
+    body: proposalLookupSchema,
+    response: z.array(proposalCheckSchema),
+    codes: ["forbidden"],
+  }),
+  proposalCatalogSearch: spec({
+    method: "GET",
+    path: apiRoutes.proposalCatalogSearch,
+    summary: "Search proposal catalogs.",
+    query: z.object({ q: z.string().optional(), catalog: z.string().optional() }),
+    response: z.array(catalogHitSchema),
+    codes: ["forbidden"],
+  }),
+  proposalRecordLink: spec({
+    method: "POST",
+    path: apiRoutes.proposalRecordLink,
+    summary: "Read a catalog record link.",
+    body: recordLinkSchema,
+    response: recordLinkReadingSchema,
+    codes: ["forbidden", "proposal.link_unread"],
+  }),
+  proposalPhoto: spec({
+    method: "POST",
+    path: apiRoutes.proposalPhoto,
+    summary: "Read a catalog photo.",
+    form: ["photo"],
+    response: photoReadingSchema,
+    codes: ["forbidden", "proposal.no_photo_reader", "proposal.photo_missing"],
+  }),
+  proposalBarcode: spec({
+    method: "POST",
+    path: apiRoutes.proposalBarcode,
+    summary: "Read a barcode photo.",
+    form: ["photo"],
+    response: barcodeReadingSchema,
+    codes: ["forbidden", "proposal.no_barcode_reader", "proposal.photo_missing"],
+  }),
+  proposals: spec({
+    method: "POST",
+    path: apiRoutes.proposals,
+    summary: "Submit a proposal.",
+    body: proposalDraftSchema,
+    response: proposalReportSchema,
+    codes: [
+      "forbidden",
+      "proposal.too_many_items",
+      "proposal.daily_limit",
+      "project.not_proposable",
+    ],
   }),
 };
 

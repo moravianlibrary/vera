@@ -11843,7 +11843,6 @@
           }
         ]
       },
-
       {
         "id": "pt9",
         "descriptorId": "cz.mzk.vera.barcode-reader",
@@ -13204,7 +13203,6 @@
         "createdBy": "u3",
         "isDeleted": false
       },
-
       {
         "id": "pi12",
         "name": "Camera",
@@ -17501,8 +17499,14 @@
       "R37": ["pc1"]
     },
     "custodyRules": [
-      { "custodyId": "pc1", "documentType": "Periodical" },
-      { "custodyId": "pc3", "projectId": "p3" }
+      {
+        "custodyId": "pc1",
+        "documentType": "Periodical"
+      },
+      {
+        "custodyId": "pc3",
+        "projectId": "p3"
+      }
     ],
     "advisorReasons": {
       "IT3": "Urgent and asked for an exhibition; its page count was reviewed and accepted.",
@@ -17618,6 +17622,55 @@
           "claims": []
         }
       ]
+    },
+    "catalogBases": {
+      "aleph.mzk.cz": {
+        "base": "MZK",
+        "opacUrl": "https://vufind.mzk.cz"
+      },
+      "aleph.vkol.cz": {
+        "base": "VKOL",
+        "opacUrl": "https://aleph.vkol.cz"
+      },
+      "aleph.nkp.cz": {
+        "base": "NKC",
+        "opacUrl": "https://aleph.nkp.cz"
+      }
+    },
+    "photo": {
+      "seen": "a catalog card",
+      "read": [
+        {
+          "label": "Author",
+          "value": "Kratochvíl, Josef",
+          "confidence": 0.94
+        },
+        {
+          "label": "Title",
+          "value": "Moravské kostely",
+          "confidence": 0.97
+        },
+        {
+          "label": "Published",
+          "value": "Brno : Moravský kraj, 1932",
+          "confidence": 0.71
+        },
+        {
+          "label": "Shelf mark",
+          "value": "MB2-0433",
+          "confidence": 0.62
+        }
+      ],
+      "best": "Moravské kostely",
+      "near": "Kniha o Brně"
+    },
+    "catalogReading": {
+      "source": {
+        "kind": "plugin",
+        "instanceId": "pi1",
+        "instanceName": "MZK Aleph"
+      },
+      "tier": 50
     }
   }
 }
