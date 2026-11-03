@@ -15,6 +15,10 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
+None.
+
+## Not built yet
+
 ### L76: The classifier's suggestion on an approval
 
 Rules: [EVENT-destinations](reference/model/events.md#event-destinations),
@@ -24,12 +28,11 @@ The mock added sentences to an approval's internal reason: the classifier's sugg
 whether the decider kept it, the existing copies, and the request custodies. An entry's reason
 is the two texts the act took and its data is never a sentence (events.md), so they were removed
 with step 3 (2026-11-03). Nothing now records whether a suggestion was kept, which would show a
-classifier that is usually overruled. Keep it as typed data on `request.approved` (the suggested
-category and the classifier instance), or not at all? → decision, then engine.
+classifier that is usually overruled.
 
-## Not built yet
-
-None.
+Decided on 2026-11-03: `request.approved` carries the suggestion as data, the category and the
+classifier instance, or none; *kept* or *overruled* is not stored, it follows from the approved
+category, and the client words it in the History. → frontend and engine.
 
 ## For the engine
 

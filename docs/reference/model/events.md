@@ -60,7 +60,7 @@ destination that takes it.
 | Code | Data | Public | History | Hook | Audit |
 |---|---|---|---|---|---|
 | `request.created` | batch, source | *Asked* | ✓ | ✓ | ✓ |
-| `request.approved` | iteration; rescan; batch size when bulk | *Accepted* | ✓ | ✓ | ✓ |
+| `request.approved` | iteration; rescan; batch size when bulk; the classifier's suggestion (category and instance) or none | *Accepted* | ✓ | ✓ | ✓ |
 | `request.declined` | batch size when bulk | *Not accepted* | ✓ | ✓ | ✓ |
 | `request.held` | why: `copy_exists` \| `checking` | — | ✓ | ✓ | ✓ |
 | `request.withdrawn` | — | *Withdrawn* | ✓ | – | ✓ |
