@@ -29,7 +29,6 @@ const noDeclarations: Declarations = {
   generatorClass: null,
   channelInterface: null,
   operations: [],
-  inputMode: null,
   loginEntry: null,
 };
 
@@ -269,7 +268,6 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       triggers: ["OnDemand"],
       declares: {
         identifierTypes: ["ISBN", "ISSN", "Barcode"],
-        inputMode: "Camera",
         operations: ["readBarcode"],
       },
       fields: ["formats", "beep"],
@@ -286,7 +284,6 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       triggers: ["OnDemand"],
       declares: {
         identifierTypes: ["ISBN", "ISSN", "NBN"],
-        inputMode: "Photo",
         operations: ["readPhoto"],
       },
       fields: ["engine", "lang", "match"],
@@ -474,7 +471,7 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
       installedAt: "2026-10-29",
       triggers: ["OnDemand"],
       fields: ["allowed_origins"],
-      declares: { inputMode: null, operations: ["entry"] },
+      declares: { operations: ["entry"] },
     },
   ),
   implementation("pt40", "ShelfMarkRecognition", "Input", "Recognises shelf marks on spines.", {

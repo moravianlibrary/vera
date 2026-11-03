@@ -96,6 +96,19 @@ const entryPointLabels = {
   proposals: "plugins:pluginWords.entryPoint.proposals",
   additions: "plugins:pluginWords.entryPoint.additions",
 } as const;
+const operationLabels = {
+  readBarcode: "plugins:pluginWords.operation.readBarcode",
+  readPhoto: "plugins:pluginWords.operation.readPhoto",
+  entry: "plugins:pluginWords.operation.entry",
+  readLink: "plugins:pluginWords.operation.readLink",
+  search: "plugins:pluginWords.operation.search",
+  changes: "plugins:pluginWords.operation.changes",
+  sync: "plugins:pluginWords.operation.sync",
+} as const;
+
+export function operationText(operation: keyof typeof operationLabels): string {
+  return i18n.t(operationLabels[operation]);
+}
 
 export function entryPointText(entryPoint: keyof typeof entryPointLabels): string {
   return i18n.t(entryPointLabels[entryPoint]);
@@ -142,9 +155,12 @@ export function suppliesOf(version: PluginVersion): string[] {
             reach: personReachText(declares.personReach),
           }),
         ]),
-    ...(declares.inputMode === null
-      ? []
-      : [i18n.t("plugins:pluginWords.supplyInput", { name: declares.inputMode.toLowerCase() })]),
+    ...(declares.operations?.includes("readBarcode")
+      ? [i18n.t("plugins:pluginWords.supplyInput", { name: "camera" })]
+      : []),
+    ...(declares.operations?.includes("readPhoto")
+      ? [i18n.t("plugins:pluginWords.supplyInput", { name: "photo" })]
+      : []),
     ...(declares.loginEntry === null
       ? []
       : [

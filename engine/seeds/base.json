@@ -11394,7 +11394,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["readLink", "search"],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11455,7 +11454,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11516,7 +11514,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11561,7 +11558,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11604,7 +11600,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11652,7 +11647,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11711,7 +11705,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11756,7 +11749,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11800,7 +11792,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11845,7 +11836,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -11880,7 +11870,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["readBarcode"],
-              "inputMode": "Camera",
               "loginEntry": null
             },
             "configFields": [
@@ -11920,7 +11909,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["readPhoto"],
-              "inputMode": "Photo",
               "loginEntry": null
             },
             "configFields": [
@@ -11965,7 +11953,6 @@
               "generatorClass": "RuleBased",
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12005,7 +11992,6 @@
               "generatorClass": "AiBased",
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12045,7 +12031,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": "Redirect"
             },
             "configFields": [
@@ -12090,7 +12075,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": "Form"
             },
             "configFields": [
@@ -12130,7 +12114,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12165,7 +12148,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12205,7 +12187,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12265,7 +12246,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12300,7 +12280,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12340,7 +12319,6 @@
               "generatorClass": null,
               "channelInterface": "Email",
               "operations": [],
-              "inputMode": null,
               "loginEntry": null,
               "personReach": {
                 "by": "email"
@@ -12393,7 +12371,6 @@
               "generatorClass": null,
               "channelInterface": "Email",
               "operations": [],
-              "inputMode": null,
               "loginEntry": null,
               "personReach": {
                 "by": "email"
@@ -12446,7 +12423,6 @@
               "generatorClass": null,
               "channelInterface": "Chat",
               "operations": [],
-              "inputMode": null,
               "loginEntry": null,
               "personReach": {
                 "by": "claim",
@@ -12495,7 +12471,6 @@
               "generatorClass": null,
               "channelInterface": "Webhook",
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12540,7 +12515,6 @@
               "generatorClass": null,
               "channelInterface": "File",
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12590,7 +12564,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12625,7 +12598,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12660,7 +12632,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["entry"],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": [
@@ -12695,7 +12666,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["readPhoto"],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12724,7 +12694,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": ["readPhoto"],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12753,7 +12722,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12782,7 +12750,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12811,7 +12778,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12840,7 +12806,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12869,7 +12834,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12898,7 +12862,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12927,7 +12890,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []
@@ -12956,7 +12918,6 @@
               "generatorClass": null,
               "channelInterface": null,
               "operations": [],
-              "inputMode": null,
               "loginEntry": null
             },
             "configFields": []

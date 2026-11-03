@@ -10048,17 +10048,6 @@
                             }
                           ]
                         },
-                        "inputMode": {
-                          "anyOf": [
-                            {
-                              "type": "string",
-                              "enum": ["Text", "Camera", "Photo"]
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
                         "loginEntry": {
                           "anyOf": [
                             {
@@ -10079,7 +10068,6 @@
                         "agent",
                         "generatorClass",
                         "channelInterface",
-                        "inputMode",
                         "loginEntry"
                       ]
                     },
@@ -10818,17 +10806,6 @@
                           }
                         ]
                       },
-                      "inputMode": {
-                        "anyOf": [
-                          {
-                            "type": "string",
-                            "enum": ["Text", "Camera", "Photo"]
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
-                      },
                       "loginEntry": {
                         "anyOf": [
                           {
@@ -10849,7 +10826,6 @@
                       "agent",
                       "generatorClass",
                       "channelInterface",
-                      "inputMode",
                       "loginEntry"
                     ]
                   },

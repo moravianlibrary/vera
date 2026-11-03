@@ -184,12 +184,12 @@ Rules: [PLG-api-call](reference/integrations/plugin-api.md#plg-api-call) and the
 Decided on 2026-10-30 and 2026-10-31 ([DEC-0019](decisions/DEC-0019-plugin-api-and-capabilities.md)).
 `readLink` is optional, type detection is the Identifier instances' `recognise`, and an
 `EntryLink` instance reads its portal's link.
-Nothing follows it yet: there are no per-kind types in `domain/src/plugin-api/`, declarations
-have no `operations`, the mock decides search from `configuration.search` and ways in from
-`inputMode`, and no instance has a cursor or a mirror. Type detection already follows it in the
-mock (2026-10-31), with *Which type?* for a line several Identifier instances recognise. The client part (the drawer's mirror line
-and *Reset*, ways in from operations) follows the types. → the plugin API written down (7 of
-[what comes first](develop/backend.md#what-comes-first)), then frontend and backend.
+Written down (2026-11-03): each kind's operations are zod types in `domain/src/plugin-api/`;
+declarations carry `operations`, and ways in and search follow them, an instance's setting
+switching search off. Type detection follows it in the mock (2026-10-31), with *Which type?* for
+a line several Identifier instances recognise. Not built: no instance has a cursor or a mirror,
+so the drawer's mirror line and *Reset* wait for the backend (7 of
+[what comes first](develop/backend.md#what-comes-first) is done).
 
 ### L75: Names in each language
 

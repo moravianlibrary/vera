@@ -487,7 +487,6 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
                 agent: null,
                 generatorClass: null,
                 channelInterface: null,
-                inputMode: null,
                 loginEntry: null,
               },
               configFields: [],

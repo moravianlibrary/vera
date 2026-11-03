@@ -14,7 +14,7 @@ import {
   normalisationSteps,
 } from "@vera/domain/identifiers";
 import type { StoredPluginImplementation, StoredPluginInstance } from "@vera/domain/plugin-store";
-import type { InputMode, PluginKind } from "@vera/domain/plugins";
+import type { PluginKind } from "@vera/domain/plugins";
 import type { PropertyValues } from "@vera/domain/properties";
 import type {
   BarcodeReading,
@@ -41,7 +41,11 @@ export interface CatalogReadingFake {
   tier: number;
 }
 export type WayInRefusal =
-  | { status: 404; code: "proposal.no_photo_reader" | "proposal.no_barcode_reader"; message: string }
+  | {
+      status: 404;
+      code: "proposal.no_photo_reader" | "proposal.no_barcode_reader";
+      message: string;
+    }
   | { status: 404; message: string }
   | { status: 422; code: "proposal.link_unread"; message: string };
 export type WayInOutcome<Value> = QueryOutcome<Value, WayInRefusal>;
@@ -60,18 +64,23 @@ type WaysIn = Omit<ProposalSettings, "maxAtOnce">;
 function catalogOf(instance: Instance, catalogs: Readonly<Record<string, CatalogBase>>) {
   return catalogs[instance.configuration.base_url ?? ""] ?? null;
 }
-// A catalog adapter searches unless its configuration says not to.
-function isSearchable(instance: Instance): boolean {
-  return instance.configuration.search !== "off";
+// PLG-api-capabilities and PLG-api-mirror: search or sync offers search unless this instance switches it off.
+function isSearchable(instance: Instance, implementations: readonly Implementation[]): boolean {
+  const operations = implementationOf(implementations, instance)?.versions[0]?.declares.operations;
+  return (
+    (operations?.includes("search") === true || operations?.includes("sync") === true) &&
+    instance.configuration.search !== "off"
+  );
 }
 function hasInput(
   instances: readonly Instance[],
   implementations: readonly Implementation[],
-  mode: InputMode,
+  operation: "readBarcode" | "readPhoto",
 ) {
-  return enabledInstancesOf(implementations, instances, "Input").some(
-    (instance) =>
-      implementationOf(implementations, instance)?.versions[0]?.declares.inputMode === mode,
+  return enabledInstancesOf(implementations, instances, "Input").some((instance) =>
+    implementationOf(implementations, instance)?.versions[0]?.declares.operations?.includes(
+      operation,
+    ),
   );
 }
 
@@ -148,21 +157,27 @@ export function waysInOf(
   );
   return {
     canDetectTypes: enabled("Identifier").length > 0,
-    searchCatalogs: adapters.filter(isSearchable).map(({ id, name }) => ({ id, name })),
+    searchCatalogs: adapters
+      .filter((instance) => isSearchable(instance, implementations))
+      .map(({ id, name }) => ({ id, name })),
     linkCatalogs: adapters.map((instance) => ({
       id: instance.id,
       name: instance.name,
       opacUrl: catalogOf(instance, catalogs)?.opacUrl ?? null,
     })),
     entrySources: enabled("Input")
-      .filter((instance) => implementationOf(implementations, instance)?.name === "EntryLink")
+      .filter((instance) =>
+        implementationOf(implementations, instance)?.versions[0]?.declares.operations?.includes(
+          "entry",
+        ),
+      )
       .map(({ id, name, configuration }) => ({
         id,
         name,
         allowedOrigins: (configuration.allowed_origins ?? "").split(/\s+/).filter(Boolean),
       })),
-    canScanWithCamera: hasInput(instances, implementations, "Camera"),
-    canReadPhotos: hasInput(instances, implementations, "Photo"),
+    canScanWithCamera: hasInput(instances, implementations, "readBarcode"),
+    canReadPhotos: hasInput(instances, implementations, "readPhoto"),
     identifierTypes: identifierRules(instances, implementations),
   };
 }
@@ -178,7 +193,7 @@ export function searchCatalogs(
 ): CatalogHit[] {
   const needle = query.trim().toLowerCase();
   const searched = enabledInstancesOf(implementations, instances, "CatalogAdapter")
-    .filter(isSearchable)
+    .filter((instance) => isSearchable(instance, implementations))
     .filter((instance) => catalogId === null || instance.id === catalogId);
   if (needle === "") return [];
   // A record VERA holds is known twice, from the catalog and from its documents; once is enough.
@@ -241,7 +256,7 @@ export function readPhoto(
   records: readonly CatalogRecord[],
   fake: PhotoFake,
 ): WayInOutcome<PhotoReading> {
-  if (!hasInput(instances, implementations, "Photo"))
+  if (!hasInput(instances, implementations, "readPhoto"))
     return {
       refusal: {
         status: 404,
@@ -282,7 +297,7 @@ export function barcodeAt(
   instances: readonly Instance[],
   implementations: readonly Implementation[],
 ): WayInOutcome<BarcodeReading> {
-  if (!hasInput(instances, implementations, "Camera"))
+  if (!hasInput(instances, implementations, "readBarcode"))
     return {
       refusal: {
         status: 404,

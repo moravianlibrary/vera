@@ -23,7 +23,6 @@ const none: Declarations = {
   agent: null,
   generatorClass: null,
   channelInterface: null,
-  inputMode: null,
   loginEntry: null,
 };
 

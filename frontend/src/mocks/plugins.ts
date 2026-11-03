@@ -478,11 +478,14 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
   }
 
   const kind = kindOf(instance);
-  const inputMode = versionOf(instance)?.declares.inputMode ?? null;
+  const operations = versionOf(instance)?.declares.operations ?? [];
   const others = enabledInstancesOf(kind).filter(
     (candidate) =>
       candidate.id !== instance.id &&
-      (kind !== "Input" || versionOf(candidate)?.declares.inputMode === inputMode),
+      (kind !== "Input" ||
+        (versionOf(candidate)?.declares.operations ?? []).some((operation) =>
+          operations.includes(operation),
+        )),
   );
   // PLG-delivery-hooks: what a channel switched off stops.
   const stoppedHooks = hooksUsingChannel(instance.id).filter((hook) => hook.state === "active");

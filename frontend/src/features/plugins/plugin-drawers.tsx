@@ -35,6 +35,7 @@ import {
 import {
   entryPointText,
   generatorClassText,
+  operationText,
   personReachText,
   suppliesOf,
   triggerLabels,
@@ -127,7 +128,7 @@ export function ImplementationDrawer({
     <div className="grid gap-4 text-ui">
       {notice}
       <p>{implementation.description}</p>
-      {newest !== undefined && <Contract version={newest} />}
+      {newest !== undefined && <Contract version={newest} kind={implementation.kind} />}
 
       <DetailCard
         title={i18n.t("plugins:pluginDrawers.versionsInstalled", {
@@ -194,7 +195,13 @@ export function ImplementationDrawer({
   );
 }
 
-function Contract({ version }: { version: PluginVersion }) {
+function Contract({
+  version,
+  kind,
+}: {
+  version: PluginVersion;
+  kind: PluginImplementation["kind"];
+}) {
   const { declares } = version;
   const hasUnmapped = declares.rawStates.some((state) => state.state === null);
   return (
@@ -291,13 +298,13 @@ function Contract({ version }: { version: PluginVersion }) {
         </DetailCard>
       )}
       <DetailCard title={i18n.t("plugins:pluginDrawers.whatDeclared")}>
-        <FactGrid facts={declaredFacts(version)} />
+        <FactGrid facts={declaredFacts(version, kind)} />
       </DetailCard>
     </>
   );
 }
 
-function declaredFacts(version: PluginVersion): Fact[] {
+function declaredFacts(version: PluginVersion, kind: PluginImplementation["kind"]): Fact[] {
   const { declares } = version;
   return [
     ...(declares.identifierTypes.length > 0
@@ -340,10 +347,15 @@ function declaredFacts(version: PluginVersion): Fact[] {
             value: personReachText(declares.personReach),
           },
         ]),
-    ...(declares.inputMode === null
+    ...(declares.operations === undefined || declares.operations.length === 0
       ? []
       : [
-          { label: i18n.t("plugins:pluginDrawers.wayIn"), value: declares.inputMode.toLowerCase() },
+          {
+            label: i18n.t(
+              kind === "Input" ? "plugins:pluginDrawers.wayIn" : "plugins:pluginDrawers.can",
+            ),
+            value: declares.operations.map(operationText).join(", "),
+          },
         ]),
     {
       label: i18n.t("plugins:pluginDrawers.runs"),
