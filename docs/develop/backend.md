@@ -271,7 +271,7 @@ from `engine/seeds/`. They live in a `testing` module, wired only under the `tes
 the production image does not contain it.
 
 It also needs the **fakes**: a fake per plugin kind, driven by the seed's data, behaving as the
-mock's and the engine's, as written down ([what comes first](#what-comes-first), 6). They are built as plugins (B6), so loading them exercises the same path the real ones
+mock's and the engine's, as written down ([what comes first](#what-comes-first), 6; [the fakes' behaviour](fakes.md)). They are built as plugins (B6), so loading them exercises the same path the real ones
 take.
 
 A reset per test is fast enough with PostgreSQL's template databases: the seed is loaded once
@@ -383,7 +383,7 @@ Before the backend starts, so that it is judged by tests it did not write
 5. **The seed format written down**: a JSON Schema for a seed (E13), since a second loader will
    read it.
 6. **The fakes' behaviour written down** per kind: what each answers from which seed data, and
-   how it fails, as the mock and the engine play it. The backend's fakes are written from that.
+   how it fails, as the mock and the engine play it ([the fakes' behaviour](fakes.md)). The backend's fakes are written from that.
 7. **The plugin API written down** (B6a): each kind's operations, outcomes and declared
    capabilities as types in `domain/src/plugin-api/`, and `operations` in the declarations, read
    by the dialogs instead of instance settings and `inputMode`.
