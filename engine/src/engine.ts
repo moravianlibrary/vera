@@ -23,6 +23,7 @@ import type { Jobs } from "./jobs";
 import { createJobs } from "./jobs";
 import type { Outbox } from "./outbox";
 import { createOutbox } from "./outbox";
+import { decisionEndpoints } from "./records/decisions";
 import { recordEndpoints } from "./records/endpoints";
 import { proposalEndpoints } from "./records/proposals";
 import { loadSeed, readSeed, seedsDir } from "./seed";
@@ -66,6 +67,7 @@ export const endpoints: readonly Endpoint[] = [
   ...accountEndpoints,
   ...recordEndpoints,
   ...proposalEndpoints,
+  ...decisionEndpoints,
 ];
 
 const seedKey = "seed";

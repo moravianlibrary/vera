@@ -19,15 +19,14 @@ import {
   searchCatalogs,
 } from "@vera/contract/queries/ways-in";
 import type { RefusalCode } from "@vera/contract/refusal-codes";
-import type { EventEntryInput } from "@vera/domain/events";
 import { hasPermission } from "@vera/domain/permissions";
 import { requireCaller } from "../access/index";
 import type { Engine } from "../engine";
-import { recordEvent } from "../events";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { engineProposalContext, engineProposalPlugins } from "./plugins";
 import { engineStore } from "./store";
+import { writePlan } from "./write";
 
 const barcodeCounts = new WeakMap<Engine, number>();
 const forbidden = (message = "You may not propose") => problem(403, message);
@@ -39,28 +38,6 @@ function wayInResponse<Value>(outcome: WayInOutcome<Value>) {
     outcome.refusal.message,
     "code" in outcome.refusal ? { code: outcome.refusal.code satisfies RefusalCode } : {},
   );
-}
-
-function recordPlannedEvent(engine: Engine, event: EventEntryInput): void {
-  if (event.code === "request.created") {
-    if (event.data === null) throw new Error("request.created needs event data");
-    recordEvent(engine, {
-      ...event,
-      subjectKind: "request",
-      data: event.data,
-      at: event.at,
-    });
-  } else if (event.code === "request.approved") {
-    if (event.data === null) throw new Error("request.approved needs event data");
-    recordEvent(engine, {
-      ...event,
-      subjectKind: "request",
-      data: event.data,
-      at: event.at,
-    });
-  } else {
-    throw new Error(`Proposal plan produced unexpected event ${event.code}`);
-  }
 }
 
 export const proposalEndpoints = [
@@ -182,15 +159,7 @@ export const proposalEndpoints = [
         engine.db
           .query("INSERT INTO documents (id,record) VALUES (?,?)")
           .run(record.id, JSON.stringify(record));
-      for (const record of writes.iterations)
-        engine.db
-          .query("INSERT INTO iterations (id,document_id,record) VALUES (?,?,?)")
-          .run(record.id, record.documentId, JSON.stringify(record));
-      for (const record of writes.requests)
-        engine.db
-          .query("INSERT INTO requests (id,document_id,batch_id,record) VALUES (?,?,?,?)")
-          .run(record.id, record.documentId, record.batchId, JSON.stringify(record));
-      for (const event of writes.events) recordPlannedEvent(engine, event);
+      writePlan(engine, writes, "insert");
     })();
     return { status: 201, body: report };
   }),

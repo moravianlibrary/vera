@@ -1,0 +1,3906 @@
+{
+  "scenarios": [
+    {
+      "name": "a-curator-approves-multi-ask-row",
+      "calls": [
+        {
+          "as": "u8",
+          "method": "POST",
+          "path": "/api/requests/D20/approve",
+          "status": 200,
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "body": {
+            "documentId": "<D1>",
+            "decision": "Approved",
+            "askCount": 4
+          }
+        },
+        {
+          "as": "u8",
+          "method": "GET",
+          "path": "/api/requests/D20",
+          "status": 404,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/not_found",
+            "title": "Not found",
+            "status": 404,
+            "detail": "Request not found",
+            "code": "not_found"
+          }
+        },
+        {
+          "as": "u8",
+          "method": "GET",
+          "path": "/api/requests?decision=Approved",
+          "status": 200,
+          "body": {
+            "items": [
+              {
+                "record": {
+                  "document": {
+                    "id": "<D2>",
+                    "catalogId": "MZK01-001640055",
+                    "unit": {
+                      "type": "volume-number",
+                      "value": "roč. 8"
+                    },
+                    "title": "Ostravský deník",
+                    "type": "Periodical",
+                    "shelfMark": "ST2-0644",
+                    "pageSources": [
+                      {
+                        "source": "predictor",
+                        "tier": 20,
+                        "value": 890,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Ostravský deník",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST2-0644",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R1>",
+                      "documentId": "<D2>",
+                      "requesterId": "u5",
+                      "at": "<time>",
+                      "reason": "Regional history project, would like the full run.",
+                      "batchId": "<B1>",
+                      "projectId": null,
+                      "existingCopies": [],
+                      "checkedAt": null,
+                      "decision": "Pending",
+                      "isAfterProjectApproval": false
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": null
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D3>",
+                    "catalogId": "MZK03-000556300",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1902"
+                    },
+                    "title": "Brněnský kalendář",
+                    "type": "Periodical",
+                    "shelfMark": "ST4-0120",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 172,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Brněnský kalendář",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST4-0120",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R2>",
+                      "documentId": "<D3>",
+                      "requesterId": "u5",
+                      "at": "<time>",
+                      "reason": "The local history society is indexing Brno almanacs.",
+                      "batchId": "<B2>",
+                      "projectId": "p8",
+                      "existingCopies": [
+                        {
+                          "source": "Kramerius",
+                          "state": "Published",
+                          "link": "https://kramerius.mzk.cz/view/uuid:demo30",
+                          "iterationId": null,
+                          "seenAt": "<time>",
+                          "foundAfterApproval": false
+                        }
+                      ],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": false
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D4>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1872"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1180,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R3>",
+                      "documentId": "<D4>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B3>",
+                      "projectId": "p1",
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D5>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1873"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1204,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R4>",
+                      "documentId": "<D5>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B3>",
+                      "projectId": "p1",
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D6>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1874"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1236,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "Published",
+                        "rawState": "published",
+                        "linkKind": "content",
+                        "url": "https://kramerius.mzk.cz/view/uuid:demo27",
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R5>",
+                      "documentId": "<D6>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B3>",
+                      "projectId": "p1",
+                      "existingCopies": [
+                        {
+                          "source": "Kramerius",
+                          "state": "Published",
+                          "link": "https://kramerius.mzk.cz/view/uuid:demo27",
+                          "iterationId": null,
+                          "seenAt": "<time>",
+                          "foundAfterApproval": false
+                        }
+                      ],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D7>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1875"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1190,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R6>",
+                      "documentId": "<D7>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B3>",
+                      "projectId": "p1",
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D8>",
+                    "catalogId": "MZK01-000211870",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1910"
+                    },
+                    "title": "Hlídka",
+                    "type": "Periodical",
+                    "shelfMark": "ST3-0233",
+                    "pageSources": [
+                      {
+                        "source": "predictor",
+                        "tier": 20,
+                        "value": 960,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Hlídka",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST3-0233",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R7>",
+                      "documentId": "<D8>",
+                      "requesterId": "a2",
+                      "at": "<time>",
+                      "reason": null,
+                      "batchId": "<B4>",
+                      "projectId": null,
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": false
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": {
+                  "categoryId": "c22",
+                  "reason": "Periodical, national unless a place says otherwise",
+                  "classifier": {
+                    "id": "pi31",
+                    "name": "Material type"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D9>",
+                    "catalogId": "MZK01-000211870",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1911"
+                    },
+                    "title": "Hlídka",
+                    "type": "Periodical",
+                    "shelfMark": "ST3-0233",
+                    "pageSources": [
+                      {
+                        "source": "predictor",
+                        "tier": 20,
+                        "value": 1010,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Hlídka",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST3-0233",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R8>",
+                      "documentId": "<D9>",
+                      "requesterId": "a2",
+                      "at": "<time>",
+                      "reason": null,
+                      "batchId": "<B4>",
+                      "projectId": null,
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": false
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": {
+                  "categoryId": "c22",
+                  "reason": "Periodical, national unless a place says otherwise",
+                  "classifier": {
+                    "id": "pi31",
+                    "name": "Material type"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D10>",
+                    "catalogId": "MZK01-001277001",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1939"
+                    },
+                    "title": "Slovácké noviny",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0789",
+                    "pageSources": [],
+                    "registryRecords": [],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Slovácké noviny",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0789",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R9>",
+                      "documentId": "<D10>",
+                      "requesterId": "u5",
+                      "at": "<time>",
+                      "reason": "Wrong volume — I meant 1937.",
+                      "batchId": "<B5>",
+                      "projectId": null,
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Withdrawn",
+                      "withdrawnAt": "<time>"
+                    }
+                  ]
+                },
+                "decision": "Withdrawn",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D11>",
+                    "catalogId": "MZK03-000556300",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1901"
+                    },
+                    "title": "Brněnský kalendář",
+                    "type": "Periodical",
+                    "shelfMark": "ST4-0120",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 164,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Brněnský kalendář",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST4-0120",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R10>",
+                      "documentId": "<D11>",
+                      "requesterId": "u5",
+                      "at": "<time>",
+                      "reason": "The local history society is indexing Brno almanacs.",
+                      "batchId": "<B2>",
+                      "projectId": "p8",
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Denied",
+                      "decline": {
+                        "actorId": "u1",
+                        "at": "<time>",
+                        "publicText": "This almanac is already being digitized by the Brno City Archives.",
+                        "internalText": "AMB confirmed the run 1880–1940 in their 2026 plan; ask them for the files."
+                      }
+                    }
+                  ]
+                },
+                "decision": "Denied",
+                "custodyIds": [
+                  "pc1"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              }
+            ],
+            "total": 10,
+            "askTotal": 10,
+            "nextCursor": null,
+            "groups": [],
+            "facets": {
+              "decisions": [
+                {
+                  "value": "Pending",
+                  "count": 8
+                },
+                {
+                  "value": "Withdrawn",
+                  "count": 1
+                },
+                {
+                  "value": "Denied",
+                  "count": 1
+                }
+              ],
+              "custodyIds": [
+                {
+                  "value": "pc1",
+                  "count": 10
+                },
+                {
+                  "value": "pc2",
+                  "count": 4
+                }
+              ],
+              "documentTypes": [
+                {
+                  "value": "Periodical",
+                  "count": 10
+                }
+              ],
+              "projectIds": [
+                {
+                  "value": "p1",
+                  "count": 4
+                },
+                {
+                  "value": "p8",
+                  "count": 2
+                }
+              ],
+              "existingCopies": [
+                {
+                  "value": "None",
+                  "count": 8
+                },
+                {
+                  "value": "Published",
+                  "count": 2
+                }
+              ],
+              "askerIds": [
+                {
+                  "value": "u5",
+                  "count": 4
+                },
+                {
+                  "value": "u4",
+                  "count": 4
+                },
+                {
+                  "value": "a2",
+                  "count": 2
+                }
+              ],
+              "batchIds": [
+                {
+                  "value": "<B3>",
+                  "count": 4
+                },
+                {
+                  "value": "<B2>",
+                  "count": 2
+                },
+                {
+                  "value": "<B4>",
+                  "count": 2
+                }
+              ],
+              "sources": [],
+              "askerCounts": [
+                {
+                  "value": "One",
+                  "count": 10
+                }
+              ],
+              "afterProjectApproval": [
+                {
+                  "value": "No",
+                  "count": 6
+                },
+                {
+                  "value": "Yes",
+                  "count": 4
+                }
+              ]
+            },
+            "propertyFacets": {
+              "size": {
+                "values": [],
+                "noValue": 10
+              },
+              "machines": {
+                "values": [],
+                "noValue": 10
+              }
+            }
+          }
+        },
+        {
+          "as": "u5",
+          "method": "GET",
+          "path": "/api/documents/D20?perspective=my",
+          "status": 200,
+          "body": {
+            "audience": "public",
+            "record": {
+              "document": {
+                "id": "<D1>",
+                "catalogId": "MZK01-001622010",
+                "unit": {
+                  "type": "volume-name",
+                  "value": "1889"
+                },
+                "title": "Národní listy",
+                "type": "Periodical",
+                "shelfMark": "ST1-0901",
+                "pageSources": [
+                  {
+                    "source": "catalog",
+                    "tier": 50,
+                    "value": 2210,
+                    "observedAt": "<time>",
+                    "setBy": null
+                  }
+                ],
+                "registryRecords": [
+                  {
+                    "registry": "Kramerius",
+                    "state": "NotFound",
+                    "rawState": null,
+                    "linkKind": null,
+                    "url": null,
+                    "observedAt": "<time>",
+                    "checkedAt": "<time>",
+                    "error": null
+                  },
+                  {
+                    "registry": "RDCZ",
+                    "state": "Planned",
+                    "rawState": "Planned",
+                    "linkKind": "record",
+                    "url": "https://www.registrdigitalizace.cz/rdcz/detail/demo20",
+                    "observedAt": "<time>",
+                    "checkedAt": "<time>",
+                    "error": null
+                  }
+                ],
+                "properties": [
+                  {
+                    "key": "title",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Národní listy",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  },
+                  {
+                    "key": "material_type",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Periodical",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "iterations": [
+                {
+                  "id": "<IT1>",
+                  "documentId": "<D1>",
+                  "attempt": 1,
+                  "requestId": "<R11>",
+                  "categoryId": "c21",
+                  "priority": "Normal",
+                  "projectId": null,
+                  "progress": "Enqueued",
+                  "listId": null,
+                  "formerListName": null,
+                  "restriction": null,
+                  "restrictionOverride": null,
+                  "cancellation": null,
+                  "defects": [],
+                  "verdicts": [],
+                  "ingestFailure": null,
+                  "digitizedAt": null,
+                  "links": [],
+                  "scanDpi": null,
+                  "properties": []
+                }
+              ],
+              "requests": [
+                {
+                  "id": "<R12>",
+                  "documentId": "<D1>",
+                  "requesterId": "u5",
+                  "at": "<time>",
+                  "reason": "Citation chasing — referenced in a 1954 bibliography.",
+                  "batchId": "<B6>",
+                  "projectId": null,
+                  "existingCopies": [],
+                  "checkedAt": "<time>",
+                  "decision": "Approved",
+                  "iteration": {
+                    "relation": "Tracks",
+                    "id": "<IT1>"
+                  },
+                  "rescan": null
+                }
+              ]
+            },
+            "log": [
+              {
+                "subjectKind": "request",
+                "subjectId": "<R12>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "undisclosed"
+                },
+                "correlationId": "<C1>",
+                "code": "request.approved",
+                "data": null,
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "id": "<E1>"
+              },
+              {
+                "id": "<E2>",
+                "subjectKind": "request",
+                "subjectId": "<R12>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "undisclosed"
+                },
+                "correlationId": "<B6>",
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "code": "request.created",
+                "data": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "b-curator-declines-with-both-texts",
+      "calls": [
+        {
+          "as": "u8",
+          "method": "POST",
+          "path": "/api/requests/D25/decline",
+          "status": 200,
+          "requestBody": {
+            "publicText": "This title is already being digitized.",
+            "internalText": "The archive confirmed the planned run."
+          },
+          "body": {
+            "documentId": "<D1>",
+            "decision": "Denied",
+            "askCount": 1
+          }
+        },
+        {
+          "as": "u8",
+          "method": "GET",
+          "path": "/api/requests/D25",
+          "status": 200,
+          "body": {
+            "row": {
+              "record": {
+                "document": {
+                  "id": "<D1>",
+                  "catalogId": "MZK01-000998431",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1872"
+                  },
+                  "title": "Moravská orlice",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0412",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 1180,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Moravská orlice",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "shelf_mark",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "ST1-0412",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R1>",
+                    "documentId": "<D1>",
+                    "requesterId": "u4",
+                    "at": "<time>",
+                    "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                    "batchId": "<B1>",
+                    "projectId": "p1",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Denied",
+                    "decline": {
+                      "actorId": "u8",
+                      "at": "<time>",
+                      "publicText": "This title is already being digitized.",
+                      "internalText": "The archive confirmed the planned run."
+                    }
+                  }
+                ]
+              },
+              "decision": "Denied",
+              "custodyIds": [
+                "pc1",
+                "pc2"
+              ],
+              "suggestion": {
+                "categoryId": "c21",
+                "reason": "Periodical, Moravian place of publication",
+                "classifier": {
+                  "id": "pi30",
+                  "name": "Regional press"
+                }
+              }
+            },
+            "log": [
+              {
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "u8"
+                },
+                "correlationId": "<U1>",
+                "code": "request.declined",
+                "data": {
+                  "batchSize": null
+                },
+                "reason": {
+                  "public": "This title is already being digitized.",
+                  "internal": "The archive confirmed the planned run."
+                },
+                "id": "<E1>"
+              },
+              {
+                "id": "<E2>",
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "u4"
+                },
+                "correlationId": "<B1>",
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "code": "request.created",
+                "data": {
+                  "batch": {
+                    "id": "<B1>",
+                    "name": "shelf ST1-04"
+                  },
+                  "source": null
+                }
+              }
+            ],
+            "canDecide": false
+          }
+        },
+        {
+          "as": "u4",
+          "method": "GET",
+          "path": "/api/documents/D25?perspective=my",
+          "status": 200,
+          "body": {
+            "audience": "public",
+            "record": {
+              "document": {
+                "id": "<D1>",
+                "catalogId": "MZK01-000998431",
+                "unit": {
+                  "type": "volume-name",
+                  "value": "1872"
+                },
+                "title": "Moravská orlice",
+                "type": "Periodical",
+                "shelfMark": "ST1-0412",
+                "pageSources": [
+                  {
+                    "source": "catalog",
+                    "tier": 50,
+                    "value": 1180,
+                    "observedAt": "<time>",
+                    "setBy": null
+                  }
+                ],
+                "registryRecords": [
+                  {
+                    "registry": "Kramerius",
+                    "state": "NotFound",
+                    "rawState": null,
+                    "linkKind": null,
+                    "url": null,
+                    "observedAt": "<time>",
+                    "checkedAt": "<time>",
+                    "error": null
+                  }
+                ],
+                "properties": [
+                  {
+                    "key": "title",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Moravská orlice",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  },
+                  {
+                    "key": "material_type",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Periodical",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "iterations": [],
+              "requests": [
+                {
+                  "id": "<R1>",
+                  "documentId": "<D1>",
+                  "requesterId": "u4",
+                  "at": "<time>",
+                  "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                  "batchId": "<B1>",
+                  "projectId": "p1",
+                  "existingCopies": [],
+                  "checkedAt": "<time>",
+                  "decision": "Denied",
+                  "decline": {
+                    "actorId": "u8",
+                    "at": "<time>",
+                    "publicText": "This title is already being digitized.",
+                    "internalText": null
+                  }
+                }
+              ]
+            },
+            "log": [
+              {
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "undisclosed"
+                },
+                "correlationId": "<U1>",
+                "code": "request.declined",
+                "data": null,
+                "reason": {
+                  "public": "This title is already being digitized.",
+                  "internal": null
+                },
+                "id": "<E1>"
+              },
+              {
+                "id": "<E2>",
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "undisclosed"
+                },
+                "correlationId": "<B1>",
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "code": "request.created",
+                "data": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "c-reader-withdraws-and-refusals",
+      "calls": [
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/requests/D21/withdraw",
+          "status": 200,
+          "body": {
+            "documentId": "<D1>",
+            "requestId": "<R1>"
+          }
+        },
+        {
+          "as": "u5",
+          "method": "GET",
+          "path": "/api/documents?perspective=my",
+          "status": 200,
+          "body": {
+            "audience": "public",
+            "items": [
+              {
+                "document": {
+                  "id": "<D2>",
+                  "catalogId": "MZK03-000556300",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1901"
+                  },
+                  "title": "Brněnský kalendář",
+                  "type": "Periodical",
+                  "shelfMark": "ST4-0120",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 164,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Brněnský kalendář",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R2>",
+                    "documentId": "<D2>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "The local history society is indexing Brno almanacs.",
+                    "batchId": "<B1>",
+                    "projectId": "p8",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Denied",
+                    "decline": {
+                      "actorId": "u1",
+                      "at": "<time>",
+                      "publicText": "This almanac is already being digitized by the Brno City Archives.",
+                      "internalText": null
+                    }
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D3>",
+                  "catalogId": "MZK03-000556300",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1902"
+                  },
+                  "title": "Brněnský kalendář",
+                  "type": "Periodical",
+                  "shelfMark": "ST4-0120",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 172,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Brněnský kalendář",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R3>",
+                    "documentId": "<D3>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "The local history society is indexing Brno almanacs.",
+                    "batchId": "<B1>",
+                    "projectId": "p8",
+                    "existingCopies": [
+                      {
+                        "source": "Kramerius",
+                        "state": "Published",
+                        "link": "https://kramerius.mzk.cz/view/uuid:demo30",
+                        "iterationId": null,
+                        "seenAt": "<time>",
+                        "foundAfterApproval": false
+                      }
+                    ],
+                    "checkedAt": "<time>",
+                    "decision": "Pending",
+                    "isAfterProjectApproval": false
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D4>",
+                  "catalogId": "MZK03-000612045",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1928"
+                  },
+                  "title": "Plán města Brna",
+                  "type": "Map",
+                  "shelfMark": "MP1-0871",
+                  "pageSources": [],
+                  "registryRecords": [],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Plán města Brna",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Map",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R4>",
+                    "documentId": "<D4>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Street plans for a walking-history project.",
+                    "batchId": "<B1>",
+                    "projectId": "p8",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Pending",
+                    "isAfterProjectApproval": false
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D5>",
+                  "catalogId": "MZK01-001622010",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1889"
+                  },
+                  "title": "Národní listy",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0901",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 2210,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    },
+                    {
+                      "registry": "RDCZ",
+                      "state": "Planned",
+                      "rawState": "Planned",
+                      "linkKind": "record",
+                      "url": "https://www.registrdigitalizace.cz/rdcz/detail/demo20",
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Národní listy",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R5>",
+                    "documentId": "<D5>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Citation chasing — referenced in a 1954 bibliography.",
+                    "batchId": "<B2>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Pending",
+                    "isAfterProjectApproval": false
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D1>",
+                  "catalogId": "MZK01-001640055",
+                  "unit": {
+                    "type": "volume-number",
+                    "value": "roč. 8"
+                  },
+                  "title": "Ostravský deník",
+                  "type": "Periodical",
+                  "shelfMark": "ST2-0644",
+                  "pageSources": [
+                    {
+                      "source": "predictor",
+                      "tier": 20,
+                      "value": 890,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Ostravský deník",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R1>",
+                    "documentId": "<D1>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Regional history project, would like the full run.",
+                    "batchId": "<B3>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": null,
+                    "decision": "Withdrawn",
+                    "withdrawnAt": "<time>"
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D6>",
+                  "catalogId": "MZK01-000998431",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1899"
+                  },
+                  "title": "Moravská orlice",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0104",
+                  "pageSources": [
+                    {
+                      "source": "manual",
+                      "tier": 100,
+                      "value": 1120,
+                      "observedAt": "<time>",
+                      "setBy": "u4"
+                    },
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 1098,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    },
+                    {
+                      "registry": "RDCZ",
+                      "state": "Unmapped",
+                      "rawState": "Revision",
+                      "linkKind": "record",
+                      "url": "https://www.registrdigitalizace.cz/rdcz/detail/demo3",
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Moravská orlice",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A3",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT3",
+                    "documentId": "<D6>",
+                    "attempt": 1,
+                    "requestId": "<R6>",
+                    "categoryId": "c21",
+                    "priority": "Urgent",
+                    "projectId": "p3",
+                    "progress": "Ready",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [
+                      {
+                        "key": "pi9:R02:pages",
+                        "instanceId": "pi9",
+                        "ruleCode": "<R7>",
+                        "subject": "pages",
+                        "publicText": "The page count on file differs from the catalogue.",
+                        "internalText": null,
+                        "firstSeenAt": "<time>"
+                      }
+                    ],
+                    "verdicts": [
+                      {
+                        "defectKeys": [
+                          "pi9:R02:pages"
+                        ],
+                        "verdict": "Approved",
+                        "actorId": "u1",
+                        "at": "<time>",
+                        "note": "accepted, 22-page difference is not material.",
+                        "publicText": null
+                      }
+                    ],
+                    "ingestFailure": null,
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R8>",
+                    "documentId": "<D6>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Same exhibition — I am writing the catalogue text.",
+                    "batchId": "<B4>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Duplicate",
+                    "tracksIterationId": "IT3"
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D7>",
+                  "catalogId": "MZK03-000445012",
+                  "unit": null,
+                  "title": "Dějiny Velehradu",
+                  "type": "Monograph",
+                  "shelfMark": "MB2-0140",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 488,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Dějiny Velehradu",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Monograph",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A5",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT10",
+                    "documentId": "<D7>",
+                    "attempt": 1,
+                    "requestId": "<R9>",
+                    "categoryId": "c12",
+                    "priority": "Normal",
+                    "projectId": "p2",
+                    "progress": "Enqueued",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [
+                      {
+                        "key": "pi9:R03:245$a",
+                        "instanceId": "pi9",
+                        "ruleCode": "<R10>",
+                        "subject": "245$a",
+                        "publicText": "The title on the record needs checking.",
+                        "internalText": null,
+                        "firstSeenAt": "<time>"
+                      },
+                      {
+                        "key": "pi10:R01:041$a",
+                        "instanceId": "pi10",
+                        "ruleCode": "<R11>",
+                        "subject": "041$a",
+                        "publicText": "The language of the item is not recorded.",
+                        "internalText": null,
+                        "firstSeenAt": "<time>"
+                      }
+                    ],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R9>",
+                    "documentId": "<D7>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Local history society is preparing an anniversary publication.",
+                    "batchId": "<B5>",
+                    "projectId": "p2",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT10"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D8>",
+                  "catalogId": "MZK03-000601877",
+                  "unit": null,
+                  "title": "Brno — plán regulace",
+                  "type": "Monograph",
+                  "shelfMark": "MB3-0612",
+                  "pageSources": [],
+                  "registryRecords": [],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Brno — plán regulace",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Monograph",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT17",
+                    "documentId": "<D8>",
+                    "attempt": 1,
+                    "requestId": "<R12>",
+                    "categoryId": "c12",
+                    "priority": "Normal",
+                    "projectId": null,
+                    "progress": "IngestFailed",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [],
+                    "verdicts": [],
+                    "ingestFailure": {
+                      "attempts": 1,
+                      "error": null
+                    },
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R12>",
+                    "documentId": "<D8>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Cited in a paper on interwar town planning.",
+                    "batchId": "<B5>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT17"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D9>",
+                  "catalogId": "MZK01-001277001",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1939"
+                  },
+                  "title": "Slovácké noviny",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0789",
+                  "pageSources": [],
+                  "registryRecords": [],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Slovácké noviny",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [],
+                "requests": [
+                  {
+                    "id": "<R13>",
+                    "documentId": "<D9>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Wrong volume — I meant 1937.",
+                    "batchId": "<B6>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Withdrawn",
+                    "withdrawnAt": "<time>"
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D10>",
+                  "catalogId": "MZK03-000112877",
+                  "unit": null,
+                  "title": "Kniha o Brně",
+                  "type": "Monograph",
+                  "shelfMark": "MB4-0921",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 312,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Kniha o Brně",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Monograph",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A4",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT4",
+                    "documentId": "<D10>",
+                    "attempt": 1,
+                    "requestId": "<R14>",
+                    "categoryId": "c12",
+                    "priority": "Normal",
+                    "projectId": null,
+                    "progress": "Ready",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R14>",
+                    "documentId": "<D10>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Came across it in the catalogue, looked interesting.",
+                    "batchId": "<B7>",
+                    "projectId": null,
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT4"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D11>",
+                  "catalogId": "MZK03-000284560",
+                  "unit": null,
+                  "title": "Pověsti z Hané",
+                  "type": "Monograph",
+                  "shelfMark": "MB1-0388",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 188,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Pověsti z Hané",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Monograph",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A5",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT30",
+                    "documentId": "<D11>",
+                    "attempt": 1,
+                    "requestId": "<R15>",
+                    "categoryId": "c11",
+                    "priority": "Normal",
+                    "projectId": "p2",
+                    "progress": "Ready",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R15>",
+                    "documentId": "<D11>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": null,
+                    "batchId": "<B8>",
+                    "projectId": "p2",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT30"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D12>",
+                  "catalogId": "MZK03-000301144",
+                  "unit": null,
+                  "title": "Moravské hory a doly",
+                  "type": "Monograph",
+                  "shelfMark": "MB1-0217",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 420,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Moravské hory a doly",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Monograph",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A4",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT20",
+                    "documentId": "<D12>",
+                    "attempt": 1,
+                    "requestId": "<R16>",
+                    "categoryId": "c11",
+                    "priority": "Normal",
+                    "projectId": "p3",
+                    "progress": "Published",
+                    "listId": "L-2026-012",
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": "<time>",
+                    "links": [
+                      {
+                        "id": "IT20-L1",
+                        "url": "https://kramerius.mzk.cz/view/uuid:demo36",
+                        "instanceId": null,
+                        "setBy": "u1",
+                        "setAt": "<time>",
+                        "isPrimary": true
+                      }
+                    ],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R16>",
+                    "documentId": "<D12>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": null,
+                    "batchId": "<B9>",
+                    "projectId": "p3",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT20"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D13>",
+                  "catalogId": "MZK01-001180225",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1849"
+                  },
+                  "title": "Moravské noviny",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0077",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 1620,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "NotFound",
+                      "rawState": null,
+                      "linkKind": null,
+                      "url": null,
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Moravské noviny",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT27",
+                    "documentId": "<D13>",
+                    "attempt": 1,
+                    "requestId": "<R17>",
+                    "categoryId": "c22",
+                    "priority": "High",
+                    "projectId": "p1",
+                    "progress": "Ready",
+                    "listId": null,
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": null,
+                    "links": [],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R17>",
+                    "documentId": "<D13>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": null,
+                    "batchId": "<B10>",
+                    "projectId": "p1",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT27"
+                    },
+                    "rescan": null
+                  }
+                ]
+              },
+              {
+                "document": {
+                  "id": "<D14>",
+                  "catalogId": "MZK01-001284756",
+                  "unit": {
+                    "type": "volume-name",
+                    "value": "1918–1925"
+                  },
+                  "title": "Lidové noviny",
+                  "type": "Periodical",
+                  "shelfMark": "ST1-0032",
+                  "pageSources": [
+                    {
+                      "source": "catalog",
+                      "tier": 50,
+                      "value": 2847,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    },
+                    {
+                      "source": "predictor",
+                      "tier": 20,
+                      "value": 2600,
+                      "observedAt": "<time>",
+                      "setBy": null
+                    }
+                  ],
+                  "registryRecords": [
+                    {
+                      "registry": "Kramerius",
+                      "state": "Published",
+                      "rawState": "published",
+                      "linkKind": "content",
+                      "url": "https://kramerius.mzk.cz/view/uuid:demo",
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    },
+                    {
+                      "registry": "RDCZ",
+                      "state": "Digitized",
+                      "rawState": "Digitized",
+                      "linkKind": "record",
+                      "url": "https://www.registrdigitalizace.cz/rdcz/detail/demo",
+                      "observedAt": "<time>",
+                      "checkedAt": "<time>",
+                      "error": null
+                    }
+                  ],
+                  "properties": [
+                    {
+                      "key": "title",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Lidové noviny",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "material_type",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "plugin",
+                            "instanceId": "pi1",
+                            "instanceName": "MZK Aleph"
+                          },
+                          "tier": 50,
+                          "value": "Periodical",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    },
+                    {
+                      "key": "size",
+                      "sources": [
+                        {
+                          "source": {
+                            "kind": "hand"
+                          },
+                          "tier": 100,
+                          "value": "A2",
+                          "observedAt": "<time>",
+                          "setBy": null
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "iterations": [
+                  {
+                    "id": "IT1",
+                    "documentId": "<D14>",
+                    "attempt": 1,
+                    "requestId": "<R18>",
+                    "categoryId": "c22",
+                    "priority": "High",
+                    "projectId": "p1",
+                    "progress": "Published",
+                    "listId": "L-2026-012",
+                    "formerListName": null,
+                    "restriction": null,
+                    "restrictionOverride": null,
+                    "cancellation": null,
+                    "defects": [
+                      {
+                        "key": "pi9:R07:260$c",
+                        "instanceId": "pi9",
+                        "ruleCode": "<R19>",
+                        "subject": "260$c",
+                        "publicText": "Publication year is unclear on the record.",
+                        "internalText": null,
+                        "firstSeenAt": "<time>"
+                      }
+                    ],
+                    "verdicts": [],
+                    "ingestFailure": null,
+                    "digitizedAt": "<time>",
+                    "links": [
+                      {
+                        "id": "IT1-L1",
+                        "url": "https://kramerius.mzk.cz/view/uuid:demo",
+                        "instanceId": null,
+                        "setBy": "u1",
+                        "setAt": "<time>",
+                        "isPrimary": true
+                      },
+                      {
+                        "id": "IT1-L2",
+                        "url": "https://www.digitalniknihovna.cz/mzk/uuid/it1",
+                        "instanceId": null,
+                        "setBy": "u1",
+                        "setAt": "<time>",
+                        "isPrimary": false
+                      }
+                    ],
+                    "scanDpi": null,
+                    "properties": []
+                  }
+                ],
+                "requests": [
+                  {
+                    "id": "<R18>",
+                    "documentId": "<D14>",
+                    "requesterId": "u5",
+                    "at": "<time>",
+                    "reason": "Researching interwar press coverage of Brno for a dissertation chapter.",
+                    "batchId": "<B11>",
+                    "projectId": "p1",
+                    "existingCopies": [],
+                    "checkedAt": "<time>",
+                    "decision": "Approved",
+                    "iteration": {
+                      "relation": "Originates",
+                      "id": "IT1"
+                    },
+                    "rescan": null
+                  }
+                ]
+              }
+            ],
+            "total": 14,
+            "nextCursor": null,
+            "groups": [],
+            "facets": {
+              "statuses": [
+                {
+                  "value": "Available",
+                  "count": 2
+                },
+                {
+                  "value": "WaitingToBeScheduled",
+                  "count": 4
+                },
+                {
+                  "value": "BeingChecked",
+                  "count": 1
+                },
+                {
+                  "value": "BeingAdded",
+                  "count": 1
+                },
+                {
+                  "value": "WaitingForReview",
+                  "count": 3
+                },
+                {
+                  "value": "Withdrawn",
+                  "count": 2
+                },
+                {
+                  "value": "NotAccepted",
+                  "count": 1
+                }
+              ],
+              "decisions": [],
+              "progress": [],
+              "validations": [],
+              "forbidden": [],
+              "cancelled": [],
+              "categoryIds": [],
+              "projectIds": [],
+              "priorities": [],
+              "existingCopies": [],
+              "askerIds": []
+            },
+            "propertyFacets": {
+              "material_type": {
+                "values": [
+                  {
+                    "value": "Periodical",
+                    "count": 8
+                  },
+                  {
+                    "value": "Monograph",
+                    "count": 5
+                  },
+                  {
+                    "value": "Map",
+                    "count": 1
+                  }
+                ],
+                "noValue": 0
+              },
+              "size": {
+                "values": [
+                  {
+                    "value": "A2",
+                    "count": 1
+                  },
+                  {
+                    "value": "A3",
+                    "count": 1
+                  },
+                  {
+                    "value": "A4",
+                    "count": 2
+                  },
+                  {
+                    "value": "A5",
+                    "count": 2
+                  }
+                ],
+                "noValue": 8
+              }
+            }
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/requests/D21/withdraw",
+          "status": 409,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/proposal.decided",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "It has been decided meanwhile",
+            "code": "proposal.decided"
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/requests/D2/withdraw",
+          "status": 404,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/request.not_asked",
+            "title": "Not found",
+            "status": 404,
+            "detail": "You have not asked for this document",
+            "code": "request.not_asked"
+          }
+        }
+      ]
+    },
+    {
+      "name": "d-curator-bulk-approves-batch-with-exclusion",
+      "calls": [
+        {
+          "as": "u8",
+          "method": "POST",
+          "path": "/api/requests/batches/B-0143/approve",
+          "status": 200,
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "excludedIds": [
+              "D28"
+            ]
+          },
+          "body": {
+            "approvedCount": 3,
+            "rescanCount": 1,
+            "checkingCount": 0
+          }
+        },
+        {
+          "as": "u8",
+          "method": "GET",
+          "path": "/api/requests?group=batch&batch=B-0143",
+          "status": 200,
+          "body": {
+            "items": [
+              {
+                "record": {
+                  "document": {
+                    "id": "<D1>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1874"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1236,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "Published",
+                        "rawState": "published",
+                        "linkKind": "content",
+                        "url": "https://kramerius.mzk.cz/view/uuid:demo27",
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R1>",
+                      "documentId": "<D1>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B1>",
+                      "projectId": "p1",
+                      "existingCopies": [
+                        {
+                          "source": "Kramerius",
+                          "state": "Published",
+                          "link": "https://kramerius.mzk.cz/view/uuid:demo27",
+                          "iterationId": null,
+                          "seenAt": "<time>",
+                          "foundAfterApproval": false
+                        }
+                      ],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              },
+              {
+                "record": {
+                  "document": {
+                    "id": "<D2>",
+                    "catalogId": "MZK01-000998431",
+                    "unit": {
+                      "type": "volume-name",
+                      "value": "1875"
+                    },
+                    "title": "Moravská orlice",
+                    "type": "Periodical",
+                    "shelfMark": "ST1-0412",
+                    "pageSources": [
+                      {
+                        "source": "catalog",
+                        "tier": 50,
+                        "value": 1190,
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ],
+                    "registryRecords": [
+                      {
+                        "registry": "Kramerius",
+                        "state": "NotFound",
+                        "rawState": null,
+                        "linkKind": null,
+                        "url": null,
+                        "observedAt": "<time>",
+                        "checkedAt": "<time>",
+                        "error": null
+                      }
+                    ],
+                    "properties": [
+                      {
+                        "key": "title",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Moravská orlice",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "material_type",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "Periodical",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      },
+                      {
+                        "key": "shelf_mark",
+                        "sources": [
+                          {
+                            "source": {
+                              "kind": "plugin",
+                              "instanceId": "pi1",
+                              "instanceName": "MZK Aleph"
+                            },
+                            "tier": 50,
+                            "value": "ST1-0412",
+                            "observedAt": "<time>",
+                            "setBy": null
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "iterations": [],
+                  "requests": [
+                    {
+                      "id": "<R2>",
+                      "documentId": "<D2>",
+                      "requesterId": "u4",
+                      "at": "<time>",
+                      "reason": "Reading room: the run is requested weekly and the paper is brittle.",
+                      "batchId": "<B1>",
+                      "projectId": "p1",
+                      "existingCopies": [],
+                      "checkedAt": "<time>",
+                      "decision": "Pending",
+                      "isAfterProjectApproval": true
+                    }
+                  ]
+                },
+                "decision": "Pending",
+                "custodyIds": [
+                  "pc1",
+                  "pc2"
+                ],
+                "suggestion": {
+                  "categoryId": "c21",
+                  "reason": "Periodical, Moravian place of publication",
+                  "classifier": {
+                    "id": "pi30",
+                    "name": "Regional press"
+                  }
+                }
+              }
+            ],
+            "total": 2,
+            "askTotal": 2,
+            "nextCursor": null,
+            "groups": [
+              {
+                "kind": "batch",
+                "batch": {
+                  "id": "<B1>",
+                  "name": "shelf ST1-04",
+                  "submittedBy": "u4",
+                  "submittedAt": "<time>",
+                  "source": null,
+                  "size": 5
+                },
+                "askCount": 2,
+                "elsewhereCount": 0,
+                "approvableCount": 1,
+                "suggestedCounts": [
+                  {
+                    "value": "c21",
+                    "count": 1
+                  }
+                ],
+                "rescanCount": 1,
+                "checkingCount": 0,
+                "total": 2,
+                "rowCount": 2
+              }
+            ],
+            "facets": {
+              "decisions": [
+                {
+                  "value": "Pending",
+                  "count": 2
+                }
+              ],
+              "custodyIds": [
+                {
+                  "value": "pc1",
+                  "count": 2
+                },
+                {
+                  "value": "pc2",
+                  "count": 2
+                }
+              ],
+              "documentTypes": [
+                {
+                  "value": "Periodical",
+                  "count": 2
+                }
+              ],
+              "projectIds": [
+                {
+                  "value": "p1",
+                  "count": 2
+                }
+              ],
+              "existingCopies": [
+                {
+                  "value": "Published",
+                  "count": 1
+                },
+                {
+                  "value": "None",
+                  "count": 1
+                }
+              ],
+              "askerIds": [
+                {
+                  "value": "u4",
+                  "count": 2
+                }
+              ],
+              "batchIds": [
+                {
+                  "value": "<B1>",
+                  "count": 2
+                },
+                {
+                  "value": "<B2>",
+                  "count": 2
+                },
+                {
+                  "value": "<B3>",
+                  "count": 2
+                }
+              ],
+              "sources": [],
+              "askerCounts": [
+                {
+                  "value": "One",
+                  "count": 2
+                }
+              ],
+              "afterProjectApproval": [
+                {
+                  "value": "Yes",
+                  "count": 2
+                }
+              ]
+            },
+            "propertyFacets": {
+              "size": {
+                "values": [],
+                "noValue": 2
+              },
+              "machines": {
+                "values": [],
+                "noValue": 2
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "e-decision-refusals",
+      "calls": [
+        {
+          "as": "u8",
+          "method": "POST",
+          "path": "/api/requests/D22/approve",
+          "status": 403,
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "body": {
+            "type": "https://vera.mzk.cz/problems/proposal.outside_request_custody",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "This proposal is outside your request custody",
+            "code": "proposal.outside_request_custody"
+          }
+        },
+        {
+          "as": "u8",
+          "method": "POST",
+          "path": "/api/requests/D24/approve",
+          "status": 409,
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "body": {
+            "type": "https://vera.mzk.cz/problems/proposal.decided",
+            "title": "Conflict",
+            "status": 409,
+            "detail": "This proposal has already been decided",
+            "code": "proposal.decided"
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/requests/D25/approve",
+          "status": 403,
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "body": {
+            "type": "https://vera.mzk.cz/problems/forbidden",
+            "title": "Forbidden",
+            "status": 403,
+            "detail": "You may not decide proposals",
+            "code": "forbidden"
+          }
+        }
+      ]
+    }
+  ]
+}

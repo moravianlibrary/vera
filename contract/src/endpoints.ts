@@ -58,11 +58,17 @@ import {
   recordLinkSchema,
 } from "./proposals";
 import {
+  approvalSchema,
+  bulkApprovalResultSchema,
+  bulkApprovalSchema,
+  decisionResultSchema,
+  declineSchema,
   requestDetailSchema,
   requestGroupingParam,
   requestPageSchema,
   requestQueryParams,
   requestSliceParams,
+  withdrawalResultSchema,
 } from "./requests";
 import { accessRecordActionRoute, apiRoutes } from "./routes";
 import { userSettingsChangeSchema, userSettingsSchema } from "./user-settings";
@@ -149,6 +155,48 @@ export const endpoints = {
     summary: "Read request custodies.",
     response: z.array(requestCustodySchema),
     codes: [],
+  }),
+  requestApprove: spec({
+    method: "POST",
+    path: `${apiRoutes.requests}/:documentId/approve`,
+    summary: "Approves a proposal.",
+    params: z.object({ documentId: z.string() }),
+    body: approvalSchema,
+    response: decisionResultSchema,
+    codes: [
+      "forbidden",
+      "proposal.outside_request_custody",
+      "proposal.decided",
+      "proposal.checks_pending",
+      "proposal.rescan_reason_missing",
+      "category.not_leaf",
+    ],
+  }),
+  requestDecline: spec({
+    method: "POST",
+    path: `${apiRoutes.requests}/:documentId/decline`,
+    summary: "Declines a proposal.",
+    params: z.object({ documentId: z.string() }),
+    body: declineSchema,
+    response: decisionResultSchema,
+    codes: ["forbidden", "proposal.outside_request_custody", "proposal.decided"],
+  }),
+  requestWithdraw: spec({
+    method: "POST",
+    path: `${apiRoutes.requests}/:documentId/withdraw`,
+    summary: "Withdraws an ask.",
+    params: z.object({ documentId: z.string() }),
+    response: withdrawalResultSchema,
+    codes: ["forbidden", "request.not_asked", "proposal.decided"],
+  }),
+  batchApprove: spec({
+    method: "POST",
+    path: `${apiRoutes.requests}/batches/:batchId/approve`,
+    summary: "Approves eligible proposals in a batch.",
+    params: z.object({ batchId: z.string() }),
+    body: bulkApprovalSchema,
+    response: bulkApprovalResultSchema,
+    codes: ["forbidden", "category.not_leaf", "batch.nothing_to_approve"],
   }),
   batches: spec({
     method: "GET",
