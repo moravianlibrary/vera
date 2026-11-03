@@ -3,6 +3,8 @@
   "message.ask_other": "{{count}} asks",
   "breadcrumb.label": "Breadcrumb",
   "breadcrumb.more": "More",
+  "choiceTabs.scrollLeft": "Scroll left",
+  "choiceTabs.scrollRight": "Scroll right",
   "masterDetail.items": "Items",
   "watchlist.tabsLabel": "Watchlists",
   "watchlist.all": "All",

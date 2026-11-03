@@ -5,6 +5,8 @@
   "message.ask_other": "{{count}} žádostí",
   "breadcrumb.label": "Drobečková navigace",
   "breadcrumb.more": "Další",
+  "choiceTabs.scrollLeft": "Posunout doleva",
+  "choiceTabs.scrollRight": "Posunout doprava",
   "masterDetail.items": "Položky",
   "watchlist.tabsLabel": "Uložené pohledy",
   "watchlist.all": "Vše",

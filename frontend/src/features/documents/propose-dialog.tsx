@@ -672,7 +672,7 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
 
   return (
     <form
-      className="flex flex-wrap items-center gap-2"
+      className="grid grid-cols-1 items-center gap-2 sm:flex sm:flex-wrap"
       onSubmit={(event) => {
         event.preventDefault();
         if (trimmed === "") {
@@ -685,6 +685,7 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
       }}
     >
       <IdentifierTypeSelect
+        className="w-full sm:w-36"
         value={type}
         onChange={(picked) => {
           if (picked !== null) {
@@ -697,16 +698,22 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
         placeholder={i18n.t("proposal.value", { ns: "documents" })}
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        className="h-8 w-44 flex-1 font-mono"
+        className="h-8 w-full min-w-0 font-mono sm:w-44 sm:flex-1"
       />
       <Input
         aria-label={i18n.t("proposal.volumeIssue", { ns: "documents" })}
         placeholder={i18n.t("proposal.volumeIssueOptional", { ns: "documents" })}
         value={unit}
         onChange={(event) => setUnit(event.target.value)}
-        className="h-8 w-48 flex-1"
+        className="h-8 w-full min-w-0 sm:w-48 sm:flex-1"
       />
-      <Button type="submit" size="sm" variant="outline" disabled={trimmed === ""}>
+      <Button
+        type="submit"
+        size="sm"
+        variant="outline"
+        disabled={trimmed === ""}
+        className="w-full sm:w-auto"
+      >
         {i18n.t("proposal.add", { ns: "documents" })}
       </Button>
     </form>
