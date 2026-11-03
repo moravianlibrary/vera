@@ -1,7 +1,9 @@
 # The engine
 
 > **Plan for part 4.** Drafted on 2026-10-14 and settled on 2026-10-15 (below). Steps 1 to 3
-> are built (2026-10-16, 2026-10-29, 2026-11-03); the later steps are not.
+> are built (2026-10-16, 2026-10-29, 2026-11-03). The engine stops there
+> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)): steps 4 to 8
+> are not built, the mock serves those areas, and recordings of the mock judge the backend.
 
 ## What it is for
 
@@ -14,8 +16,9 @@ It is:
   another; state survives a reload; time can be moved forward;
 - **the executable spec:** every rule in the [reference](../reference/) that the server owns is
   enforced here, citing its ID;
-- **the yardstick for the Java backend:** the contract tests and the user-journey tests run
-  against the engine now and against the backend later, unchanged.
+- **the yardstick for the Java backend:** for the areas it serves, the recordings of the mock's
+  answers run against the engine now and against the backend later, unchanged
+  ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 
 It is not a production server: there is no real catalog, registry, identity provider or mail.
 Each of those is a fake plugin.
@@ -124,6 +127,10 @@ Readers' and curators' acts come first, so the core journey works as early as po
    Users & Groups, the account and the settings.
 3. **Asking and deciding** (built 2026-11-03): propose, check, custody placement, Requests,
    approve and decline, withdraw, My Documents, and the events and audit stream of every act.
+Steps 4 to 8 are not built in the engine
+([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)); they are the
+backend's, judged by the mock's recordings:
+
 4. **Ingest and review:** the ingest job, validation and restriction fakes, Documents
    Validations, the iteration acts (including resume, overrule and withdraw, which are not built
    yet).
@@ -131,7 +138,7 @@ Readers' and curators' acts come first, so the core journey works as early as po
    [from-ask-to-scan](../user-journeys/cross-role/from-ask-to-scan.md) passes here.
 6. **Planning:** categories, mixes, intentions, counting, generation, repeats.
 7. **Machinery:** plugins, runs, schedules, hooks and deliveries, watchlists and notifications.
-8. **Retire the mock:** every journey passes against the engine.
+8. **Retire the mock:** every journey passes against the backend.
 
 ## Settled
 

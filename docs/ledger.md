@@ -202,8 +202,8 @@ Nothing follows it yet: there are no per-kind types in `domain/src/plugin-api/`,
 have no `operations`, the mock decides search from `configuration.search` and ways in from
 `inputMode`, and no instance has a cursor or a mirror. Type detection already follows it in the
 mock (2026-10-31), with *Which type?* for a line several Identifier instances recognise. The client part (the drawer's mirror line
-and *Reset*, ways in from operations) follows the engine's. → engine (step 7 of
-[backend.md](develop/backend.md#what-the-engine-has-to-do-first)), then frontend.
+and *Reset*, ways in from operations) follows the types. → the plugin API written down (7 of
+[what comes first](develop/backend.md#what-comes-first)), then frontend and backend.
 
 ### L75: Names in each language
 

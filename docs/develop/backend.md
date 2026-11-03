@@ -1,25 +1,26 @@
 # The Java backend
 
 > **Proposal.** Drafted on 2026-10-30; B1, B2, B6 and where it lives settled the same day,
-> the rest not yet. The backend starts once the engine runs every user journey ([engine.md](engine.md),
-> step 8). Each choice below is numbered `B1`… so it can be settled, changed or rejected one at a
+> the rest not yet. The backend starts once [what comes first](#what-comes-first) is done; the
+> engine stops at its step 3
+> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)). Each choice below is numbered `B1`… so it can be settled, changed or rejected one at a
 > time, as the engine's `E1`… were.
 
 ## What it is for
 
 The backend is VERA in production: the engine's API, rules and jobs, on PostgreSQL, with real
 plugins in place of the fakes. It is done when:
-- the contract tests and the user-journey tests pass against it **unchanged**, as they pass
-  against the engine ([engine.md](engine.md#tests));
+- the recordings of the mock's answers and the user-journey tests pass against it
+  **unchanged**, as the recordings of steps 1 to 3 pass against the engine;
 - the real plugins of the [plugin catalog](plugin-catalog.md) run in it;
 - it is deployed beside the old VERA, the old data is moved by hand, and the old VERA is
   switched off.
 
-The engine stays after that: the frontend's development server, the executable spec, and the
-yardstick a backend change is checked against.
+The engine stays as built: the development server for access, asking and deciding, and a
+working model of the server's shape.
 
-What it is not: a redesign. Where the backend would like to differ from the engine, the engine
-changes first, with its tests, and the backend follows.
+What it is not: a redesign. Where the backend would like to differ, the reference and the
+contract change first, then the mock and its recordings, and the backend follows.
 
 ## Shape
 
@@ -250,13 +251,13 @@ hash.
 - Writing acts are protected by `SameSite=Lax` and by refusing a body that is not
   `application/json`, as the engine does.
 
-### B8. Tests: the engine's tests, over HTTP
+### B8. Tests: the recordings, over HTTP
 
 The backend is accepted by tests it did not write:
 
 | Tests | How they reach the backend |
 |---|---|
-| contract | `bun test` with `VERA_API_URL` set, over HTTP |
+| recordings of the mock's answers ([what comes first](#what-comes-first)) | `bun test` with `VERA_API_URL` set, over HTTP |
 | user journeys | Playwright: the frontend's live mode with `VITE_API_PROXY_TARGET` at the backend |
 | API fuzzing | Schemathesis over `contract/openapi.json` |
 | the shared rule cases (B3) | JUnit |
@@ -268,7 +269,7 @@ from `engine/seeds/`. They live in a `testing` module, wired only under the `tes
 the production image does not contain it.
 
 It also needs the **fakes**: a fake per plugin kind, driven by the seed's data, behaving as the
-engine's. They are built as plugins (B6), so loading them exercises the same path the real ones
+mock's and the engine's, as written down ([what comes first](#what-comes-first), 6). They are built as plugins (B6), so loading them exercises the same path the real ones
 take.
 
 A reset per test is fast enough with PostgreSQL's template databases: the seed is loaded once
@@ -361,28 +362,33 @@ module. Only its verification is used: its event registry is not, since hook eve
 The engine's folders take the same feature names as it grows, so a file in one is found in the
 other by the same path.
 
-## What the engine has to do first
+## What comes first
 
-These are cheap now and expensive later. Each is a step of the engine's, not of the backend's:
+Before the backend starts, so that it is judged by tests it did not write
+([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)):
 
-1. **Contract tests over HTTP only.** Today they call `engine.fetch` in process, and some read
-   `engine.db` with SQL (`engine/src/access/acts.test.ts`). The contract tests move to a package
-   of their own that speaks only to `/api` and `/_engine`, at a base URL; whatever needs the
-   database stays an engine test. Only the former can pass "unchanged" against the backend.
-2. **The OpenAPI document** (B2), from the endpoint table, once step 3's endpoints are in, as
-   E1 already plans.
-3. **Rule cases as data** (B3), starting with permissions, status and schedules.
-4. **The seed format written down**: a JSON Schema for a seed (E13), since a second loader will
+1. **Every endpoint in the table.** `contract/src/endpoints.ts` holds the endpoints the engine
+   serves; the rest of the API, which only the mock serves, is added there too, with its schemas
+   and refusal codes. Nothing serves an entry the engine lacks; it is the spec.
+2. **The OpenAPI document** (B2), made from the endpoint table.
+3. **Recordings over HTTP.** The recordings of the mock's answers (`engine/test/base-*.json`)
+   are replayed by a package of their own that speaks only to `/api` and `/_engine` at a base
+   URL; whatever needs the database stays an engine test. A recording is made for every area,
+   for every dev person and for scenarios of acts followed by the pages they change, by scripts
+   kept in the repository. Against the engine, the areas it serves pass; against the backend,
+   all of them must.
+4. **Rule cases as data** (B3), starting with permissions, status and schedules.
+5. **The seed format written down**: a JSON Schema for a seed (E13), since a second loader will
    read it.
-5. **The fakes' behaviour written down** per kind, in the engine's terms: what each answers from
-   which seed data, and how it fails. The backend's fakes are written from that.
-6. **The 422 body**: the field paths in `errors` named one way (JSON Pointer), so both sides
-   produce the same ones. Tests compare codes and fields, never message texts.
+6. **The fakes' behaviour written down** per kind: what each answers from which seed data, and
+   how it fails, as the mock and the engine play it. The backend's fakes are written from that.
 7. **The plugin API written down** (B6a): each kind's operations, outcomes and declared
-   capabilities as types in `domain/src/plugin-api/`, the fakes implementing them, and
-   `operations` in the declarations, read by the dialogs instead of instance settings and
-   `inputMode`; cursors kept by the engine, and a fake catalog with a mirror (`sync`) searched by
-   the engine. Step 5's fakes are then described by the same types.
+   capabilities as types in `domain/src/plugin-api/`, and `operations` in the declarations, read
+   by the dialogs instead of instance settings and `inputMode`.
+
+The 422 body is settled: the fields in `errors` are named by JSON Pointer, each with a code
+([ACT-refusal-code](../reference/access/acts.md#act-refusal-code)), and tests compare codes and
+fields, never message texts.
 
 ## Repository and build
 
@@ -421,14 +427,16 @@ follows the backend, API, persistence and Helm layers.
 
 ## Order of work
 
-Following the engine's steps, so each lands with tests already written:
+Following the engine's steps, so each lands with its recordings already made:
 
 1. **Skeleton:** the Gradle build, PostgreSQL and the first migrations, the boundary check
    against the OpenAPI document, the clock, the seed loader, `/_engine`. Passes the step-1
-   contract tests.
+   recordings.
 2. **Access:** sessions, the Identity plugins with their fakes, sign-up, Users & Groups.
 3. **Asking and deciding**, then **ingest and review**, **lists and projects**, **planning**,
-   **machinery**: as engine steps 3 to 7, each done when its contract tests pass.
+   **machinery**: the areas of engine steps 3 to 7, each done when its recordings pass. Steps 4
+   to 7 are built here first; the engine does not serve them
+   ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK
    Keycloak), `LocalAccounts`, `AlephOaiCatalogAdapter`, `KrameriusRegistry`, `MarcComparator`,

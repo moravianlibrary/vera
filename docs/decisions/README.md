@@ -26,6 +26,7 @@ decision record keeps the *why*; the rules it led to are in the [reference](../r
 | [DEC-0019](DEC-0019-plugin-api-and-capabilities.md) | The plugin API is written once, and a version declares what it can do |
 | [DEC-0020](DEC-0020-refusals-are-worded-by-code.md) | A refusal is worded by its code, in the person's language |
 | [DEC-0021](DEC-0021-names-in-each-language.md) | A record people name has a name in each language |
+| [DEC-0022](DEC-0022-the-engine-stops-at-asking-and-deciding.md) | The engine stops at asking and deciding; recordings of the mock judge the backend |
 
 A new record takes the next number as its ID, `DEC-NNNN`, and its file is named
 `DEC-NNNN-title.md`. Cite a decision by its ID, as you would a rule. A record is never edited to

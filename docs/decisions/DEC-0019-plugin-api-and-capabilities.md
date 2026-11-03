@@ -8,7 +8,7 @@
 calls on them, with what, and how a call fails. The backend's `plugin-api` module is to be one
 interface per kind ([B6](../develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)),
 and the engine's fakes have to behave as the real plugins will
-([backend.md](../develop/backend.md#what-the-engine-has-to-do-first), step 5). Some ways in
+([backend.md](../develop/backend.md#what-comes-first), 6). Some ways in
 already depend on what a plugin can do: Catalog search needs a catalog adapter that searches,
 and detecting a pasted line's type needs an Input plugin that detects types
 ([ACT-ways-in](../reference/access/acts.md#act-ways-in)). Today the mock decides the first from
