@@ -17,3 +17,6 @@ engine/seeds/volume.json
 frontend/public/seeds/
 .engine.pid
 .engine.log
+backend/.gradle-home/
+backend/.gradle/
+backend/**/build/
