@@ -97,7 +97,7 @@ backend-db-stop: ## Stop the local backend database container
 	docker stop vera-backend-db
 
 backend: backend-db ## Run the backend in the foreground (BACKEND_PORT=8081)
-	cd backend && VERA_PORT=$(BACKEND_PORT) ./gradlew :app:bootRun
+	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract ./gradlew :testing:bootRun
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build

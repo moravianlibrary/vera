@@ -1,3 +1,6 @@
 spring:
   liquibase:
     contexts: test
+  datasource:
+    hikari:
+      allow-pool-suspension: true
