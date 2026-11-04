@@ -10,6 +10,7 @@ ENGINE_URL := http://127.0.0.1:$(ENGINE_PORT)
 ENGINE_PID := .engine.pid
 ENGINE_LOG := .engine.log
 BACKEND_PORT ?= 8081
+BACKEND_DB_PORT ?= 5433
 SEED ?= base
 SEED_NUMBER ?= 1
 SCALE ?= 1
@@ -28,7 +29,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-build backend-test replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-build backend-test backend-db backend-db-stop replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -87,7 +88,15 @@ engine-reset: ## Reset the running engine to a seed (SEED=base)
 engine-test: ## Run the engine's tests
 	cd engine && bun test
 
-backend: ## Run the backend in the foreground (BACKEND_PORT=8081)
+backend-db: ## Start the local PostgreSQL 18 backend database (BACKEND_DB_PORT=5433)
+	@if docker container inspect vera-backend-db >/dev/null 2>&1; then docker start vera-backend-db; else \
+		docker run -d --name vera-backend-db -e POSTGRES_DB=vera -e POSTGRES_USER=vera -e POSTGRES_PASSWORD=vera \
+		-p $(BACKEND_DB_PORT):5432 -v vera-backend-db:/var/lib/postgresql postgres:18; fi
+
+backend-db-stop: ## Stop the local backend database container
+	docker stop vera-backend-db
+
+backend: backend-db ## Run the backend in the foreground (BACKEND_PORT=8081)
 	cd backend && VERA_PORT=$(BACKEND_PORT) ./gradlew :app:bootRun
 
 backend-build: ## Build the backend

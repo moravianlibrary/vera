@@ -1,4 +1,11 @@
 spring:
+  datasource:
+    url: ${VERA_DB_URL:jdbc:postgresql://localhost:5433/vera}
+    username: ${VERA_DB_USER:vera}
+    password: ${VERA_DB_PASSWORD:vera}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    contexts: ${VERA_DB_CONTEXTS:}
   mvc:
     problemdetails:
       enabled: true
