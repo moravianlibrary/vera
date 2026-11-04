@@ -276,6 +276,8 @@ For that, the backend serves the control endpoints of [engine.md](engine.md#cont
 from `engine/seeds/`. They live in a `testing` module, wired only under the `test` profile, and
 the production image does not contain it.
 
+`GET /_engine/endpoints` names what a server serves, and the replay skips the rest.
+
 It also needs the **fakes**: a fake per plugin kind, driven by the seed's data, behaving as the
 mock's and the engine's, as written down ([what comes first](#what-comes-first), 6; [the fakes' behaviour](fakes.md)). They are built as plugins (B6), so loading them exercises the same path the real ones
 take.
@@ -414,12 +416,17 @@ backend/
 ```
 
 `make backend`, `make backend-test`, `make backend-contract` (the contract tests against a running
-backend) and `make backend-journeys` sit beside the engine's targets. A coding conventions layer
-for Java is part of the conventions step ([structure](../structure.md)). The backend starts on the
-backend, API, persistence and Helm layers; the Java layer is written during step 1 from what step
-1 settles.
+backend) and `make backend-journeys` sit beside the engine's targets. The [Java conventions](java.md)
+were written during step 1 from what step 1 settled. The backend starts on the backend, API,
+persistence and Helm layers.
 
 ## Running it
+
+For the local step-1 backend:
+
+- `make backend` runs it in the foreground;
+- `make backend-db` starts PostgreSQL;
+- `make backend-replay` starts the database and backend, replays the recordings, then stops the backend.
 
 - **One image, two roles**: `VERA_ROLE=api`, `worker`, or `all` for a small installation. The
   worker runs jobs, schedules, hook deliveries and watchlist sends; the API never waits on them.
@@ -438,9 +445,10 @@ backend, API, persistence and Helm layers; the Java layer is written during step
 
 Following the engine's steps, so each lands with its recordings already made:
 
-1. **Skeleton:** the Gradle build, PostgreSQL and the first migrations, the boundary check
-   against the OpenAPI document, the clock, the seed loader, `/_engine`. Passes the step-1
-   recordings.
+1. **Skeleton:** (built 2026-11-04) the Gradle build, PostgreSQL and the first migrations, the
+   boundary check against the OpenAPI document, the clock, the seed loader, `/_engine` reset,
+   clock, sessions and endpoints, plus the session and login entries. The replay judges it
+   through `GET /_engine/endpoints`.
 2. **Access:** sessions, the Identity plugins with their fakes, sign-up, Users & Groups.
 3. **Asking and deciding**, then **ingest and review**, **lists and projects**, **planning**,
    **machinery**: the areas of engine steps 3 to 7, each done when its recordings pass. Steps 4

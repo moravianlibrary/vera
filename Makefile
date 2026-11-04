@@ -29,7 +29,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-build backend-test backend-db backend-db-stop replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -98,6 +98,31 @@ backend-db-stop: ## Stop the local backend database container
 
 backend: backend-db ## Run the backend in the foreground (BACKEND_PORT=8081)
 	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract ./gradlew :testing:bootRun
+
+backend-pid = $$(head -n 1 .backend.pid)
+backend-is-running = test -f .backend.pid && \
+	test "$$(ps -o lstart= -p $(backend-pid) 2>/dev/null)" = "$$(tail -n 1 .backend.pid)"
+
+backend-bg: ## Run the backend in the background (pid in .backend.pid, logs in .backend.log)
+	@if $(backend-is-running); then echo "Backend already running (pid $(backend-pid)) on http://127.0.0.1:$(BACKEND_PORT)"; exit 0; fi; \
+	rm -f .backend.pid; \
+	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract setsid sh -c \
+		'{ echo $$$$; ps -o lstart= -p $$$$; } > ../.backend.pid.tmp && mv ../.backend.pid.tmp ../.backend.pid && exec ./gradlew :testing:bootRun' \
+		> ../.backend.log 2>&1 < /dev/null & \
+	while ! test -f .backend.pid; do sleep 0.1; done; \
+	tries=0; while ! grep -q "Started VeraTestingApplication" .backend.log && $(backend-is-running) && [ $$tries -lt 300 ]; do \
+		sleep 0.1; tries=$$((tries + 1)); done; \
+	if grep -q "Started VeraTestingApplication" .backend.log; then echo "Backend on http://127.0.0.1:$(BACKEND_PORT) (pid $(backend-pid))"; \
+	else echo "Backend did not start, see .backend.log"; exit 1; fi
+
+backend-stop: ## Stop the background backend
+	@if ! test -f .backend.pid; then echo "Backend is not running (no .backend.pid)"; exit 0; fi; \
+	if $(backend-is-running); then kill -- -"$(backend-pid)" && echo "Backend stopped (pid $(backend-pid))"; \
+	else echo "Backend was not running: pid $(backend-pid) is gone or now belongs to another process"; fi; \
+	rm -f .backend.pid
+
+backend-replay: backend-db backend-bg ## Replay recordings against the background backend
+	@trap '$(MAKE) backend-stop' EXIT; VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) $(MAKE) replay
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build
@@ -222,6 +247,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd engine && bun run typecheck
 	cd replay && bun run typecheck
 
+# check and test do not build the backend; they will once the backend builds in CI.
 check: format-check lint ui-check typecheck version-check docs-check openapi-check seed-schema-check plugin-schema-check ## Run the project checks
 
 docs: ## Rewrite the generated blocks in the reference from the code

@@ -119,6 +119,7 @@ Recordings are call lists in `frontend/recordings/lists/`, recorded through the 
 `make record` and replayed by `make replay` (`VERA_API_URL` targets another server). A change of
 behaviour re-records them ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md));
 `VERA_REPLAY_ALL=1` includes known gaps and endpoints the engine does not serve, as the backend does.
+`GET /_engine/endpoints` names what a server serves, and the replay skips the rest.
 
 The Java backend later passes the contract and journey tests unchanged.
 

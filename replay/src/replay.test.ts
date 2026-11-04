@@ -13,6 +13,23 @@ const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "") ?? local?.url;
 if (baseUrl === undefined) throw new Error("Could not resolve the API base URL");
 afterAll(() => local?.stop());
 
+const endpointResponse = await fetch(`${baseUrl}/_engine/endpoints`);
+const servedEndpoints =
+  endpointResponse.status === 404
+    ? undefined
+    : endpointResponse.ok
+      ? ((await endpointResponse.json()) as string[])
+      : (() => {
+          throw new Error(`GET /_engine/endpoints returned ${endpointResponse.status}`);
+        })();
+if (
+  servedEndpoints !== undefined &&
+  (!Array.isArray(servedEndpoints) ||
+    !servedEndpoints.every((endpoint) => typeof endpoint === "string"))
+) {
+  throw new Error("GET /_engine/endpoints did not return an array of endpoint names");
+}
+
 const files = readdirSync(join(import.meta.dir, "../recordings"))
   .filter((file) => file.endsWith(".json"))
   .sort();
@@ -31,6 +48,7 @@ function unsupported(scenario: Recording["scenarios"][number]) {
 }
 
 function knownGap(file: string, scenario: Recording["scenarios"][number]) {
+  // These gaps describe the engine; a server that names its endpoints owns its own support set.
   return knownGaps.find(
     (gap) => gap.recording === file && gap.scenario === scenario.name && gap.calls === undefined,
   );
@@ -203,9 +221,29 @@ for (const { file, recording } of recordings) {
     for (const scenario of recording.scenarios) {
       const gap = knownGap(file, scenario);
       const notServed = unsupported(scenario);
-      if (process.env.VERA_REPLAY_ALL !== "1" && gap !== undefined) {
+      const unavailable =
+        servedEndpoints !== undefined
+          ? scenario.calls.find((call) => {
+              const name = endpointOf(call);
+              const path = new URL(call.path, "http://recording.invalid").pathname;
+              return name === undefined
+                ? path.startsWith("/api/")
+                : !servedEndpoints.includes(name);
+            })
+          : undefined;
+      if (process.env.VERA_REPLAY_ALL !== "1" && unavailable !== undefined) {
+        it.skip(`${scenario.name} (server does not serve ${unavailable.method} ${unavailable.path})`, () => {});
+      } else if (
+        process.env.VERA_REPLAY_ALL !== "1" &&
+        servedEndpoints === undefined &&
+        gap !== undefined
+      ) {
         it.skip(`${scenario.name} (known gap: ${gap.reason})`, () => {});
-      } else if (process.env.VERA_REPLAY_ALL !== "1" && notServed !== undefined) {
+      } else if (
+        process.env.VERA_REPLAY_ALL !== "1" &&
+        servedEndpoints === undefined &&
+        notServed !== undefined
+      ) {
         it.skip(`${scenario.name} (engine does not serve ${notServed.method} ${notServed.path})`, () => {});
       } else {
         it(scenario.name, async () => replay(file, recording, scenario));
