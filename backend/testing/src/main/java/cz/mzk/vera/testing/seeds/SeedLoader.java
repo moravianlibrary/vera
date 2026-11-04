@@ -166,6 +166,7 @@ public class SeedLoader {
         for (JsonNode implementation : collections.path("pluginImplementations")) {
             transaction.insertInto(PLUGIN_IMPLEMENTATIONS)
                     .set(PLUGIN_IMPLEMENTATIONS.ID, string(implementation, "id"))
+                    .set(PLUGIN_IMPLEMENTATIONS.DESCRIPTOR_ID, string(implementation, "descriptorId"))
                     .set(PLUGIN_IMPLEMENTATIONS.NAME, string(implementation, "name"))
                     .set(PLUGIN_IMPLEMENTATIONS.KIND, string(implementation, "kind"))
                     .set(PLUGIN_IMPLEMENTATIONS.VERSIONS, JSONB.valueOf(implementation.path("versions").toString()))

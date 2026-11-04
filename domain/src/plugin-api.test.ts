@@ -70,7 +70,7 @@ const examples: [string, unknown, unknown][] = [
   [
     "complete",
     { username: "reader", password: "secret" },
-    { externalId: "r1", email: null, name: "Reader", claims: {} },
+    { externalId: "r1", email: null, emailVerified: false, name: "Reader", claims: [] },
   ],
   ["readBarcode", { photo: "base64" }, { value: null }],
   ["readPhoto", { photo: "base64" }, { seen: "cover", values: [], candidates: [] }],

@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(platform(libs.spring.boot.dependencies))
     implementation(project(":app"))
+    implementation(project(":plugin-api"))
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.jdbc)
     implementation(libs.spring.boot.starter.liquibase)
@@ -20,4 +21,12 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn(project(":testing:fakes:oidc-identity").tasks.named("jar"))
+    dependsOn(project(":testing:fakes:local-accounts").tasks.named("jar"))
+    from(project(":testing:fakes:oidc-identity").tasks.named("jar")) { into("fakes"); rename { "oidc-identity.jar" } }
+    from(project(":testing:fakes:local-accounts").tasks.named("jar")) { into("fakes"); rename { "local-accounts.jar" } }
 }

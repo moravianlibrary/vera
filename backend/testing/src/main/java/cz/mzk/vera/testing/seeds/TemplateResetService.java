@@ -2,6 +2,7 @@ package cz.mzk.vera.testing.seeds;
 
 import com.zaxxer.hikari.HikariDataSource;
 import cz.mzk.vera.testing.control.StoredClock;
+import cz.mzk.vera.testing.fakes.identity.FakeWorld;
 import liquibase.command.CommandScope;
 import liquibase.command.core.UpdateCommandStep;
 import liquibase.database.Database;
@@ -31,16 +32,19 @@ public class TemplateResetService {
     private final SeedReader reader;
     private final SeedLoader loader;
     private final StoredClock clock;
+    private final FakeWorld fakeWorld;
 
     public TemplateResetService(
             HikariDataSource pool,
             SeedReader reader,
             SeedLoader loader,
-            StoredClock clock) {
+            StoredClock clock,
+            FakeWorld fakeWorld) {
         this.pool = pool;
         this.reader = reader;
         this.loader = loader;
         this.clock = clock;
+        this.fakeWorld = fakeWorld;
     }
 
     public Instant reset(String seedName, boolean frozen) {
@@ -63,6 +67,7 @@ public class TemplateResetService {
 
         Instant now = Instant.parse(seed.path("now").asString());
         clock.reset(now, frozen);
+        fakeWorld.reset(seed);
         return now;
     }
 

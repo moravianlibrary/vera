@@ -17,4 +17,4 @@ plugins {
 
 rootProject.name = "vera-backend"
 
-include("plugin-api", "domain", "app", "testing")
+include("plugin-api", "domain", "app", "testing", "testing:fakes:oidc-identity", "testing:fakes:local-accounts")

@@ -11,8 +11,9 @@ export const completeInputSchema = z.union([
 export const completeAnswerSchema = z.object({
   externalId: z.string(),
   email: z.string().nullable(),
+  emailVerified: z.boolean(),
   name: z.string(),
-  claims: z.record(z.string(), z.unknown()),
+  claims: z.array(z.string()),
 });
 export interface Identity {
   begin(input: BeginInput): Promise<BeginAnswer>;

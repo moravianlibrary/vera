@@ -33,7 +33,8 @@ public class SeedReader {
             "db/changelog/0001-people.sql",
             "db/changelog/0002-plugins.sql",
             "db/changelog/0003-sessions.sql",
-            "db/changelog/0004-test-clock.sql");
+            "db/changelog/0004-test-clock.sql",
+            "db/changelog/0005-plugin-descriptor.sql");
     private final ObjectMapper mapper = new ObjectMapper();
     private final Path seedDir;
     private final Path contractDir;

@@ -59,7 +59,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Kind | Operation | Takes | Answers | Refusals |
 |---|---|---|---|---|
 | Identity | `begin` | where to return | a redirect, or nothing for a form entry | — |
-| | `complete` | the provider's callback, or the form's username and password | the external id, email, name and claims | `wrong_credentials`, `suspended`, `not_allowed` |
+| | `complete` | the provider's callback, or the form's username and password | the external id, email and whether the provider verified it, name, and claims as strings | `wrong_credentials`, `suspended`, `not_allowed` |
 | Input | `readBarcode` *(optional)* | a photo | the code read, or none | `unreadable` |
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
 | | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page | the item read from it, and the origin to return to ([PLG-api-entry](#plg-api-entry)) | `origin_not_allowed`, `unreadable` |
