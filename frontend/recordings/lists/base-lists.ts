@@ -71,6 +71,23 @@ export default {
       ],
     },
     {
+      name: "create-list-ends-before-start",
+      calls: [
+        {
+          as: "digitization",
+          method: "POST",
+          path: "/api/digitization-lists",
+          requestBody: {
+            ...listDraft,
+            name: "Backwards",
+            startsOn: "2026-08-10",
+            endsOn: "2026-08-01",
+          },
+          compare: "code",
+        },
+      ],
+    },
+    {
       name: "create-list-refusals",
       calls: [
         {

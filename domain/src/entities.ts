@@ -343,7 +343,6 @@ export type Defect = z.infer<typeof defectSchema>;
 
 // Append-only: a verdict covers exactly the defect keys ruled on in one act. A revocation takes
 // back the acceptances it names, as a row of its own, so the table is never rewritten.
-// TODO(rrandiak): status-model.md §2 lists only Approved and Denied; confirm Revoked as a row.
 export const verdicts = ["Approved", "Denied", "Revoked"] as const;
 export const validationVerdictSchema = z.object({
   defectKeys: z.array(z.string()).min(1),

@@ -5682,13 +5682,35 @@
       ]
     },
     {
+      "name": "create-list-ends-before-start",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/digitization-lists",
+          "status": 422,
+          "code": "list.ends_before_start",
+          "requestBody": {
+            "name": "Backwards",
+            "startsOn": "2026-08-10",
+            "endsOn": "2026-08-01",
+            "targetPages": 2000,
+            "memberIds": [
+              "IT30",
+              "IT31"
+            ]
+          },
+          "as": "u2"
+        }
+      ]
+    },
+    {
       "name": "create-list-refusals",
       "calls": [
         {
           "method": "POST",
           "path": "/api/digitization-lists",
           "status": 422,
-          "code": "invalid",
+          "code": "list.ends_before_start",
           "requestBody": {
             "name": "Backwards",
             "startsOn": "2026-08-10",
@@ -8369,7 +8391,7 @@
           "method": "PUT",
           "path": "/api/digitization-lists/L-2026-014",
           "status": 422,
-          "code": "invalid",
+          "code": "list.ends_before_start",
           "requestBody": {
             "name": "Backwards",
             "startsOn": "2026-08-10",

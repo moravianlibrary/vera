@@ -420,19 +420,14 @@ export type GenerationDraft = z.infer<typeof generationDraftSchema>;
 // What the editor saves, the whole of it at once: the members are the set as it should be.
 // No start date means it starts now. A generation drafted since the editor opened replaces the
 // list's provenance; without one it stays as it was.
-export const listDraftSchema = z
-  .object({
-    name: z.string().trim().min(1, "Name the list"),
-    startsOn: z.iso.date().nullable(),
-    endsOn: z.iso.date(),
-    targetPages: z.number().int().positive().nullable(),
-    memberIds: z.array(z.string().min(1)),
-    generated: listGenerationSchema.optional(),
-  })
-  .refine((draft) => draft.startsOn === null || draft.endsOn >= draft.startsOn, {
-    message: "It cannot end before it starts",
-    path: ["endsOn"],
-  });
+export const listDraftSchema = z.object({
+  name: z.string().trim().min(1, "Name the list"),
+  startsOn: z.iso.date().nullable(),
+  endsOn: z.iso.date(),
+  targetPages: z.number().int().positive().nullable(),
+  memberIds: z.array(z.string().min(1)),
+  generated: listGenerationSchema.optional(),
+});
 
 export type ListDraft = z.infer<typeof listDraftSchema>;
 

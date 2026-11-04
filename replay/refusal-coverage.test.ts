@@ -6,8 +6,6 @@ import { endpoints } from "@vera/contract/endpoints";
 const unreachable = {
   "login.expired":
     "frontend/src/mocks/handlers.ts:490 — the mock exposes only a fake provider login and has no callback or expiring token state.",
-  "list.ends_before_start":
-    "frontend/src/mocks/handlers.ts:1298 — listDraftSchema rejects reversed dates into invalidResponse before createList's list.ends_before_start guard, so API calls cannot reach that refusal.",
   "mix.no_primary":
     "frontend/src/mocks/intentions.ts:464 — primary changes always select another mix, while archive and delete refuse the primary; no API action leaves none active.",
   "plugin.contract":
