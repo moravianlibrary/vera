@@ -45,14 +45,14 @@ text. Nothing else. Every control on the bar reads and writes that one list,
 and the URL is that list, so a filtered page is always an address:
 
 ```
-proposals.html?decision=Pending&type=Periodical,Map&asked=>2026-06-01&q=Brno
+proposals.html?decision=Pending&type=Periodical,Map&asked=2026-06-01..&q=Brno
 ```
 
 | Predicate | Written | Means |
 |---|---|---|
 | equals one of | `type=Periodical,Map` | OR within a field |
 | not | `type=!Map` | |
-| range | `pages=>1000` · `pages=<200` · `asked=2026-06-01..2026-06-30` | numbers and dates |
+| range | `pages=1000..` · `pages=..200` · `asked=2026-06-01..2026-06-30` · `asked=last-7-days` | numbers and dates; both ends inclusive |
 | empty / present | `copy=none` · `copy=any` | *no registry state*, *has a project* |
 | search | `q=Brno` | [[view-rules]] §3, as now |
 

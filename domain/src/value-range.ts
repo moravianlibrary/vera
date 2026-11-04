@@ -2,7 +2,6 @@
 // (filtering.md §2). Either end may be open and both are inclusive. In a URL it is written
 // `from..to`, `from..` or `..to`, so `pages=1000..` and `asked=2026-06-01..2026-06-30`; a range
 // of days may instead be a preset, `asked=last-7-days`.
-// TODO(rrandiak): filtering.md writes `pages=>1000`; settle one syntax with the backend contract.
 
 export interface ValueRange<Value> {
   readonly from?: Value;
