@@ -343,15 +343,12 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
   return (
     <>
       <p className="text-ui text-muted-foreground">
-        {basis ?? (
-          <>
-            {message("intentionCard.digitizedOutput", {
-              period: outputSinceOf(row),
-              pages: formatCount(row.outputPages),
-              scope: row.scope?.path.at(-1),
-            })}
-          </>
-        )}
+        {basis ??
+          message("intentionCard.digitizedOutput", {
+            period: outputSinceOf(row),
+            pages: formatCount(row.outputPages),
+            scope: row.scope?.path.at(-1),
+          })}
       </p>
       {row.outputPages > 0 && row.mix !== null && (
         <div className="grid gap-1.5">

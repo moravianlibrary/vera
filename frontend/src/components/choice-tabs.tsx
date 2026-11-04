@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { i18n } from "@/i18n";
 
+function prefersReducedMotion() {
+  return (
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
 export interface ChoicePanel<Value extends string> {
   value: Value;
   label: string;
@@ -60,9 +67,7 @@ export function ChoiceTabs<Value extends string>({
     if (list === null) return;
     const active = list.querySelector<HTMLElement>('[role="tab"][data-state="active"]');
     const amount = active?.getBoundingClientRect().width ?? list.clientWidth * 0.75;
-    const reducedMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = prefersReducedMotion();
     list.scrollBy({ left: direction * amount, behavior: reducedMotion ? "auto" : "smooth" });
   };
 
@@ -72,9 +77,7 @@ export function ChoiceTabs<Value extends string>({
       onValueChange={(picked) => {
         onChange(picked as Value);
         requestAnimationFrame(() => {
-          const reducedMotion =
-            typeof window.matchMedia === "function" &&
-            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const reducedMotion = prefersReducedMotion();
           listRef.current
             ?.querySelector<HTMLElement>('[role="tab"][data-state="active"]')
             ?.scrollIntoView({

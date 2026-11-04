@@ -342,15 +342,11 @@ export function UserRecord({
         ) : undefined
       }
       sub={
-        user.kind === "agent" ? (
-          user.entry === null ? (
-            <>{t("record.agentDescription")}</>
-          ) : (
-            <>{t("record.agentEntryDescription", { entry: user.entry })}</>
-          )
-        ) : (
-          user.email
-        )
+        user.kind === "agent"
+          ? user.entry === null
+            ? t("record.agentDescription")
+            : t("record.agentEntryDescription", { entry: user.entry })
+          : user.email
       }
       actions={actions}
     >
@@ -672,7 +668,7 @@ export function RoleRecord({
       </Part>
       <Part
         title={t("record.grants")}
-        aside={<>{t("record.grantsDescription", { count: role.grants.length })}</>}
+        aside={t("record.grantsDescription", { count: role.grants.length })}
       >
         {role.grants.length === 0 ? (
           <None text={t("record.noGrantsSeeNothing")} />
