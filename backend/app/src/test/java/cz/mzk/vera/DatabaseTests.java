@@ -46,7 +46,8 @@ class DatabaseTests {
         String rollbackUrl = postgres.getJdbcUrl().replace(postgres.getDatabaseName(), "vera_rollback");
         try (var connection = DriverManager.getConnection(
                 rollbackUrl, postgres.getUsername(), postgres.getPassword())) {
-            var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+            var database = DatabaseFactory.getInstance()
+                    .findCorrectDatabaseImplementation(new JdbcConnection(connection));
             try (Liquibase liquibase = new Liquibase(CHANGELOG, new ClassLoaderResourceAccessor(), database)) {
                 liquibase.update(new Contexts("test"), new LabelExpression());
                 assertThat(connection.getMetaData().getTables(null, "public", "test_clock", null).next())

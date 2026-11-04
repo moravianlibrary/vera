@@ -73,7 +73,10 @@ public final class StoredClock extends Clock {
 
     private void store(Instant at, boolean frozen) {
         jdbc.update(
-                "INSERT INTO test_clock(id, at, wall_at) VALUES (true, ?, ?) ON CONFLICT (id) DO UPDATE SET at=excluded.at, wall_at=excluded.wall_at",
+                """
+                        INSERT INTO test_clock(id, at, wall_at) VALUES (true, ?, ?)
+                        ON CONFLICT (id) DO UPDATE SET at=excluded.at, wall_at=excluded.wall_at
+                        """,
                 Timestamp.from(at),
                 frozen ? null : Timestamp.from(wall.instant()));
     }

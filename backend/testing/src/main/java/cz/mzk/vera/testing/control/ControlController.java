@@ -1,15 +1,25 @@
 package cz.mzk.vera.testing.control;
 
+import static cz.mzk.vera.db.tables.Tables.SESSIONS;
+import static cz.mzk.vera.db.tables.Tables.USERS;
+
 import cz.mzk.vera.testing.seeds.SeedReader;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
-import java.net.URI;
+import cz.mzk.vera.session.SessionFilter;
+import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.Problems;
+import cz.mzk.vera.web.RouteCheck;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import org.jooq.DSLContext;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.exc.MismatchedInputException;
@@ -18,10 +28,12 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.env.Environment;
 
 @RestController
 @RequestMapping("/_engine")
@@ -29,11 +41,18 @@ public class ControlController {
     private final StoredClock clock;
     private final SeedReader reader;
     private final TemplateResetService resetService;
+    private final DSLContext dsl;
+    private final RouteCheck routes;
+    private final Environment environment;
 
-    public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService) {
+    public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService,
+            DSLContext dsl, RouteCheck routes, Environment environment) {
         this.clock = clock;
         this.reader = reader;
         this.resetService = resetService;
+        this.dsl = dsl;
+        this.routes = routes;
+        this.environment = environment;
     }
 
     @PostMapping("/reset")
@@ -46,9 +65,9 @@ public class ControlController {
         }
         try {
             resetService.reset(seed, Boolean.TRUE.equals(input.frozen()));
-            return ResponseEntity.ok(Map.of("seed", seed, "now", clock.instant().toString()));
+            return ResponseEntity.ok(Map.of("seed", seed, "now", Instants.format(clock.instant())));
         } catch (SeedReader.SeedNotFoundException exception) {
-            return problem(404, exception.getMessage(), null, null);
+            return Problems.response(404, exception.getMessage());
         }
     }
 
@@ -83,9 +102,9 @@ public class ControlController {
                 clock.unfreeze();
             }
             // Due jobs are run here when the backend adds them.
-            return ResponseEntity.ok(Map.of("now", clock.instant().toString(), "frozen", clock.isFrozen()));
+            return ResponseEntity.ok(Map.of("now", Instants.format(clock.instant()), "frozen", clock.isFrozen()));
         } catch (StoredClock.ClockBackwardsException exception) {
-            return problem(409, exception.getMessage(), "clock.backwards", null);
+            return Problems.response(409, exception.getMessage(), "clock.backwards", null);
         } catch (DateTimeParseException exception) {
             return invalid(List.of(new FieldError("/at", "invalid_format", "Invalid ISO datetime")));
         }
@@ -170,44 +189,45 @@ public class ControlController {
         return value == null ? 0 : value.longValue();
     }
 
+    @PostMapping("/sessions")
+    public ResponseEntity<?> openSession(@RequestBody(required = false) Map<String, String> input) {
+        String userId = input == null ? null : input.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return invalid(List.of(new FieldError("/userId", "too_small",
+                    "Too small: expected string to have >=1 characters")));
+        }
+        var user = dsl.selectFrom(USERS).where(USERS.ID.eq(userId)).fetchOne();
+        if (user == null) return Problems.response(404, "There is no user named " + userId + ".");
+        if ("agent".equals(user.getKind())) {
+            return Problems.response(422, "An agent cannot sign in.", "access.agent_no_login", null);
+        }
+        if (user.getSuspendedAt() != null) {
+            return Problems.response(403, "This user is suspended.", "access.suspended", null);
+        }
+        String token = UUID.randomUUID().toString().replace("-", "")
+                + UUID.randomUUID().toString().replace("-", "");
+        OffsetDateTime now = clock.instant().atOffset(ZoneOffset.UTC);
+        dsl.insertInto(SESSIONS).set(SESSIONS.TOKEN_HASH, SessionFilter.hashOf(token))
+                .set(SESSIONS.USER_ID, userId).set(SESSIONS.STARTED_AT, now)
+                .set(SESSIONS.SEEN_AT, now).set(SESSIONS.RENEWED_AT, now).execute();
+        boolean secure = !Arrays.asList(environment.getActiveProfiles()).contains("test");
+        String cookie = "vera_session=" + token + "; HttpOnly; SameSite=Lax; Path=/; Max-Age=1800"
+                + (secure ? "; Secure" : "");
+        return ResponseEntity.ok().header("Set-Cookie", cookie).body(Map.of("userId", userId));
+    }
+
+    @GetMapping("/endpoints")
+    public List<String> endpoints() {
+        return routes.servedOperationIds();
+    }
+
     private ResponseEntity<ProblemDetail> invalid(List<FieldError> errors) {
         String detail = errors.isEmpty() ? "Not accepted" : errors.getFirst().detail();
         return problem(422, detail, "invalid", errors);
     }
 
     private ResponseEntity<ProblemDetail> problem(int status, String detail, String code, List<FieldError> errors) {
-        HttpStatus httpStatus = HttpStatus.valueOf(status);
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(httpStatus, detail);
-        String problemCode = code == null ? defaultCode(status) : code;
-        if (problemCode != null) {
-            problem.setType(URI.create("https://vera.mzk.cz/problems/" + problemCode));
-            problem.setProperty("code", problemCode);
-        }
-        problem.setTitle(title(status));
-        if (errors != null) {
-            problem.setProperty("errors", errors);
-        }
-        return ResponseEntity.status(httpStatus).body(problem);
-    }
-
-    private String defaultCode(int status) {
-        return switch (status) {
-            case 400 -> "bad_request";
-            case 404 -> "not_found";
-            case 409 -> "conflict";
-            case 422 -> "invalid";
-            default -> null;
-        };
-    }
-
-    private String title(int status) {
-        return switch (status) {
-            case 400 -> "Bad request";
-            case 404 -> "Not found";
-            case 409 -> "Conflict";
-            case 422 -> "Not accepted";
-            default -> "Error";
-        };
+        return Problems.response(status, detail, code, errors);
     }
 
     public record ResetRequest(String seed, Boolean frozen) {}

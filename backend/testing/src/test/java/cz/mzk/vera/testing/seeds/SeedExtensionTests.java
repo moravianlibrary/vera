@@ -29,8 +29,10 @@ class SeedExtensionTests {
                   "collections": {
                     "users": [],
                     "roles": [
-                      {"id":"reader","name":"Reader","description":"reader","isShipped":true,"grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1},
-                      {"id":"admin","name":"Admin","description":"admin","isShipped":true,"grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
+                      {"id":"reader","name":"Reader","description":"reader","isShipped":true,
+                       "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1},
+                      {"id":"admin","name":"Admin","description":"admin","isShipped":true,
+                       "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
                     ],
                     "groups": [
                       {"id":"g1","name":"Group","description":"group","memberIds":[],"categoryIds":[]}
@@ -55,7 +57,8 @@ class SeedExtensionTests {
                       {"id":"g2","name":"Other","description":"other","memberIds":[],"categoryIds":[]}
                     ],
                     "roles": [
-                      {"id":"admin","name":"Changed Admin","description":"admin","isShipped":true,"grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
+                      {"id":"admin","name":"Changed Admin","description":"admin","isShipped":true,
+                       "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
                     ]
                   }
                 }
@@ -72,7 +75,13 @@ class SeedExtensionTests {
     @Test
     void keepsParentOnlyCollectionsAndAddsChildOnlyCollections() throws Exception {
         Files.writeString(directory.resolve("install.json"), """
-                {"name":"install","now":"2026-06-25T08:40:00Z","collections":{"users":[],"roles":[],"userAccess":{},"categories":[],"groups":[],"categoryMembers":{}},"fakes":{}}
+                {
+                  "name":"install",
+                  "now":"2026-06-25T08:40:00Z",
+                  "collections":{"users":[],"roles":[],"userAccess":{},
+                                "categories":[],"groups":[],"categoryMembers":{}},
+                  "fakes":{}
+                }
                 """);
         Files.writeString(directory.resolve("child.json"), """
                 {"name":"child","extends":"install","now":"2026-06-25T08:40:00Z","collections":{"categories":[]}}
@@ -89,7 +98,12 @@ class SeedExtensionTests {
                 {
                   "name":"install",
                   "now":"2026-06-25T08:40:00Z",
-                  "collections":{"users":[],"roles":[],"userAccess":{"u2":{"handRoleIds":[],"mappedRoles":[],"identities":[],"entry":null}},"categories":[],"groups":[],"categoryMembers":{}},
+                  "collections":{
+                    "users":[],"roles":[],
+                    "userAccess":{"u2":{"handRoleIds":[],"mappedRoles":[],"identities":[],
+                                    "entry":null}},
+                    "categories":[],"groups":[],"categoryMembers":{}
+                  },
                   "fakes":{},
                   "fakes":{"catalogAdapter":{"name":"local"}}
                 }
@@ -130,15 +144,13 @@ class SeedExtensionTests {
     @ParameterizedTest(name = "reads and validates both schemas for seed {0}")
     @MethodSource("repositorySeeds")
     void readsAndChecksEveryRepositorySeed(String name) {
-        SeedReader repositoryReader = new SeedReader();
+        SeedReader repositoryReader = new SeedReader(
+                System.getenv("VERA_SEEDS_DIR"), System.getenv("VERA_CONTRACT_DIR"));
         assertEquals(name, repositoryReader.read(name).path("name").asString());
     }
 
     private static Stream<String> repositorySeeds() throws IOException {
-        Path folder = Path.of("../../engine/seeds");
-        if (!Files.isDirectory(folder)) {
-            folder = Path.of("../engine/seeds");
-        }
+        Path folder = Path.of(System.getenv("VERA_SEEDS_DIR"));
         try (Stream<Path> files = Files.list(folder)) {
             return files.filter(path -> path.getFileName().toString().endsWith(".json"))
                     .map(path -> path.getFileName().toString().replaceFirst("\\.json$", ""))
@@ -149,13 +161,7 @@ class SeedExtensionTests {
     }
 
     private SeedReader reader() {
-        Path contract = Path.of("../../contract");
-        if (!Files.isDirectory(contract)) {
-            contract = Path.of("../contract");
-        }
-        if (!Files.isDirectory(contract)) {
-            contract = Path.of("contract");
-        }
+        Path contract = Path.of(System.getenv("VERA_CONTRACT_DIR"));
         return new SeedReader(directory, contract);
     }
 }

@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -36,9 +38,10 @@ public class SeedReader {
     private final Path seedDir;
     private final Path contractDir;
 
-    public SeedReader() {
-        this(directory("VERA_SEEDS_DIR", "engine/seeds", "../engine/seeds", "../../engine/seeds"),
-                directory("VERA_CONTRACT_DIR", "contract", "../contract", "../../contract"));
+    @Autowired
+    public SeedReader(@Value("${VERA_SEEDS_DIR}") String seedsDirectory,
+            @Value("${VERA_CONTRACT_DIR}") String contractDirectory) {
+        this(Path.of(seedsDirectory), Path.of(contractDirectory));
     }
 
     SeedReader(Path seedDir, Path contractDir) {
@@ -67,19 +70,6 @@ public class SeedReader {
         } catch (IOException | NoSuchAlgorithmException exception) {
             throw new IllegalStateException("Could not hash seed inputs.", exception);
         }
-    }
-
-    private static Path directory(String environment, String... candidates) {
-        if (environment != null && System.getenv(environment) != null) {
-            return Path.of(System.getenv(environment));
-        }
-        for (String candidate : candidates) {
-            Path path = Path.of(candidate);
-            if (Files.exists(path)) {
-                return path;
-            }
-        }
-        return Path.of(candidates[0]);
     }
 
     private void hashSeed(String name, List<String> seen, MessageDigest digest) throws IOException {

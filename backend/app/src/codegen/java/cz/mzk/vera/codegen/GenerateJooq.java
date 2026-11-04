@@ -1,6 +1,7 @@
 package cz.mzk.vera.codegen;
 
 import java.nio.file.Path;
+import java.sql.DriverManager;
 
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -26,9 +27,10 @@ public final class GenerateJooq {
         String changelog = args[2];
         try (PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18")) {
             postgres.start();
-            try (var connection = java.sql.DriverManager.getConnection(
+            try (var connection = DriverManager.getConnection(
                     postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())) {
-                var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+                var database = DatabaseFactory.getInstance()
+                        .findCorrectDatabaseImplementation(new JdbcConnection(connection));
                 try (Liquibase liquibase = new Liquibase(changelog,
                         new DirectoryResourceAccessor(changelogResources), database)) {
                     liquibase.update(new Contexts("test"), new LabelExpression());

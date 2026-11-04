@@ -16,6 +16,14 @@ subprojects {
 
         tasks.withType<Test>().configureEach {
             useJUnitPlatform()
+            environment("VERA_CONTRACT_DIR", rootDir.resolve("../contract").absolutePath)
+            environment("VERA_SEEDS_DIR", rootDir.resolve("../engine/seeds").absolutePath)
+        }
+        tasks.withType<JavaExec>().configureEach {
+            if (name == "bootRun") {
+                environment("VERA_CONTRACT_DIR", rootDir.resolve("../contract").absolutePath)
+                environment("VERA_SEEDS_DIR", rootDir.resolve("../engine/seeds").absolutePath)
+            }
         }
     }
 }

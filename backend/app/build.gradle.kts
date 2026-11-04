@@ -36,6 +36,8 @@ dependencies {
     implementation(libs.spring.boot.starter.jdbc)
     implementation(libs.spring.boot.starter.liquibase)
     implementation(libs.spring.boot.starter.jooq)
+    implementation(libs.spring.modulith.api)
+    implementation(libs.json.schema.validator)
     runtimeOnly(libs.postgresql)
     implementation(project(":plugin-api"))
     implementation(project(":domain"))

@@ -51,13 +51,13 @@ class ControlEndpointTests {
 
         reset("minimal", true);
         assertUserCount("minimal");
-        assertThat(clockResponse().path("now").asString()).isEqualTo("2026-06-25T08:40:00Z");
+        assertThat(clockResponse().path("now").asString()).isEqualTo("2026-06-25T08:40:00.000Z");
         assertThat(clockResponse().path("frozen").asBoolean()).isTrue();
 
         reset("base", true);
         assertUserCount("base");
         assertThat(templateOid("base")).isEqualTo(baseTemplateOid);
-        assertThat(clockResponse().path("now").asString()).isEqualTo("2026-06-25T08:40:00Z");
+        assertThat(clockResponse().path("now").asString()).isEqualTo("2026-06-25T08:40:00.000Z");
         assertThat(clockResponse().path("frozen").asBoolean()).isTrue();
     }
 
