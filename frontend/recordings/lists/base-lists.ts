@@ -486,6 +486,13 @@ export default {
         },
         {
           as: "digitization",
+          method: "POST",
+          path: "/api/digitization-lists/L-2026-014/items/IT5/not-digitizable",
+          requestBody: { message: "It was already stopped." },
+          compare: "code",
+        },
+        {
+          as: "digitization",
           method: "GET",
           path: "/api/digitization-lists/L-2026-014",
           compare: "body",

@@ -445,7 +445,7 @@
           "method": "POST",
           "path": "/api/messages/send?subject=proposal&id=D20",
           "status": 422,
-          "code": "message.recipient_missing",
+          "code": "message.text_missing",
           "requestBody": {
             "channelId": "pi43",
             "text": ""

@@ -7987,6 +7987,290 @@
           }
         }
       ]
+    },
+    {
+      "name": "proposal-refusal-codes",
+      "calls": [
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/proposals",
+          "status": 422,
+          "requestBody": {
+            "items": [
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": null,
+                "reason": null
+              }
+            ],
+            "reason": null,
+            "projectId": null,
+            "batchName": null,
+            "approval": null,
+            "entrySourceId": null
+          },
+          "code": "proposal.too_many_items"
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/proposals",
+          "status": 422,
+          "requestBody": {
+            "items": [
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": "1939",
+                "reason": null
+              }
+            ],
+            "reason": null,
+            "projectId": "p1",
+            "batchName": null,
+            "approval": null,
+            "entrySourceId": null
+          },
+          "code": "project.not_proposable"
+        },
+        {
+          "as": "u3",
+          "method": "POST",
+          "path": "/api/plugin-instances/pi12/disable",
+          "status": 200,
+          "requestBody": {},
+          "body": {
+            "id": "pi12",
+            "name": "Camera",
+            "implementationId": "pt9",
+            "kind": "Input",
+            "version": "0.8.1",
+            "isEnabled": false,
+            "configuration": {
+              "formats": "ean13,code128",
+              "beep": "on"
+            },
+            "secretsSet": [],
+            "linkedCategoryId": null,
+            "triggers": [
+              "OnDemand"
+            ],
+            "settings": null,
+            "isPredefined": false,
+            "policy": {
+              "tiers": [],
+              "copyStates": [],
+              "agent": null
+            },
+            "createdBy": "u3",
+            "createdAt": "2026-02-04",
+            "schedules": [],
+            "hooks": [],
+            "recentRuns": [],
+            "runCount": 0,
+            "lastRunAt": "<time>"
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/proposals/barcode",
+          "status": 404,
+          "code": "proposal.no_barcode_reader",
+          "form": {
+            "photo": {
+              "photoBytes": 2,
+              "fileName": "barcode.jpg"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "proposal-daily-limit",
+      "calls": [
+        {
+          "as": "u3",
+          "method": "PUT",
+          "path": "/api/access/roles/reader",
+          "status": 200,
+          "requestBody": {
+            "name": "Reader",
+            "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+            "grants": [
+              {
+                "permission": "request.create",
+                "scope": null
+              },
+              {
+                "permission": "request.read_mine",
+                "scope": null
+              },
+              {
+                "permission": "request.withdraw_own",
+                "scope": null
+              },
+              {
+                "permission": "watch",
+                "scope": null
+              }
+            ],
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 2
+          },
+          "body": {
+            "id": "reader",
+            "proposalBatchLimit": 10,
+            "proposalDailyLimit": 2,
+            "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
+            "grants": [
+              {
+                "permission": "request.create",
+                "scope": null
+              },
+              {
+                "permission": "request.read_mine",
+                "scope": null
+              },
+              {
+                "permission": "request.withdraw_own",
+                "scope": null
+              },
+              {
+                "permission": "watch",
+                "scope": null
+              }
+            ],
+            "name": "reader",
+            "isShipped": true
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/proposals",
+          "status": 201,
+          "requestBody": {
+            "items": [
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": "1940",
+                "reason": null
+              },
+              {
+                "type": "catalogId",
+                "value": "MZK01-001277001",
+                "unit": "1936–1938",
+                "reason": null
+              }
+            ],
+            "reason": null,
+            "projectId": null,
+            "batchName": null,
+            "approval": null,
+            "entrySourceId": null
+          },
+          "body": {
+            "batch": {
+              "id": "<B1>",
+              "name": "2026-06-25 10:40",
+              "submittedBy": "u5",
+              "submittedAt": "<time>",
+              "source": null,
+              "size": 2
+            },
+            "proposed": 1,
+            "approved": 0,
+            "joined": 1,
+            "skipped": []
+          }
+        },
+        {
+          "as": "u5",
+          "method": "POST",
+          "path": "/api/proposals",
+          "status": 429,
+          "requestBody": {
+            "items": [
+              {
+                "type": "catalogId",
+                "value": "VKOL01-000456123",
+                "unit": "1941",
+                "reason": null
+              }
+            ],
+            "reason": null,
+            "projectId": null,
+            "batchName": null,
+            "approval": null,
+            "entrySourceId": null
+          },
+          "code": "proposal.daily_limit"
+        }
+      ]
     }
   ],
   "mask": "proposals"

@@ -658,5 +658,67 @@ export default {
         },
       ],
     },
+    {
+      name: "property-approval-refusals",
+      calls: [
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/access/roles",
+          requestBody: {
+            name: "Catalog title editor",
+            description: "May edit catalog-sourced properties.",
+            grants: [
+              { permission: "access.read", scope: "any" },
+              { permission: "access.manage", scope: "any" },
+              { permission: "iteration.read", scope: "any" },
+              { permission: "property.title.edit", scope: "any" },
+            ],
+            proposalBatchLimit: null,
+            proposalDailyLimit: null,
+          },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "PUT",
+          path: "/api/access/users/u3/roles",
+          requestBody: { roleIds: ["admin", "catalog-title-editor"] },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "PUT",
+          path: "/api/documents/D1/properties/title",
+          requestBody: { value: "Attempted hand edit" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/requests/D21/approve",
+          requestBody: { categoryId: "c21", priority: "Normal", rescanNote: null },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/requests/D22/approve",
+          requestBody: { categoryId: "c21", priority: "Normal", rescanNote: null },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/requests/batches/B-0143/approve",
+          requestBody: {
+            categoryId: "c21",
+            priority: "Normal",
+            excludedIds: ["D25", "D26", "D27", "D28", "D20"],
+          },
+          compare: "code",
+        },
+      ],
+    },
   ],
 } as const;

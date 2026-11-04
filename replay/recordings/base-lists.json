@@ -11575,6 +11575,16 @@
           "as": "u2"
         },
         {
+          "method": "POST",
+          "path": "/api/digitization-lists/L-2026-014/items/IT5/not-digitizable",
+          "status": 409,
+          "code": "iteration.stopped",
+          "requestBody": {
+            "message": "It was already stopped."
+          },
+          "as": "u2"
+        },
+        {
           "method": "GET",
           "path": "/api/digitization-lists/L-2026-014",
           "status": 200,

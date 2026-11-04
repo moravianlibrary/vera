@@ -784,5 +784,118 @@ export default {
         },
       ],
     },
+    {
+      name: "proposal-refusal-codes",
+      calls: [
+        {
+          as: "reader",
+          method: "POST",
+          path: "/api/proposals",
+          requestBody: {
+            items: Array.from({ length: 11 }, () => ({
+              type: "catalogId",
+              value: "MZK01-001277001",
+              unit: null,
+              reason: null,
+            })),
+            reason: null,
+            projectId: null,
+            batchName: null,
+            approval: null,
+            entrySourceId: null,
+          },
+          compare: "code",
+        },
+        {
+          as: "reader",
+          method: "POST",
+          path: "/api/proposals",
+          requestBody: {
+            items: [
+              {
+                type: "catalogId",
+                value: "MZK01-001277001",
+                unit: "1939",
+                reason: null,
+              },
+            ],
+            reason: null,
+            projectId: "p1",
+            batchName: null,
+            approval: null,
+            entrySourceId: null,
+          },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/plugin-instances/pi12/disable",
+          requestBody: {},
+          compare: "body",
+        },
+        {
+          as: "reader",
+          method: "POST",
+          path: "/api/proposals/barcode",
+          form: { photo: { photoBytes: 2, fileName: "barcode.jpg" } },
+          compare: "code",
+        },
+      ],
+    },
+    {
+      name: "proposal-daily-limit",
+      calls: [
+        {
+          as: "admin",
+          method: "PUT",
+          path: "/api/access/roles/reader",
+          requestBody: {
+            name: "Reader",
+            description: "Proposes and follows their own requests. Holds only self-scoped grants.",
+            grants: [
+              { permission: "request.create", scope: null },
+              { permission: "request.read_mine", scope: null },
+              { permission: "request.withdraw_own", scope: null },
+              { permission: "watch", scope: null },
+            ],
+            proposalBatchLimit: 10,
+            proposalDailyLimit: 2,
+          },
+          compare: "body",
+        },
+        {
+          as: "reader",
+          method: "POST",
+          path: "/api/proposals",
+          requestBody: {
+            items: [
+              { type: "catalogId", value: "MZK01-001277001", unit: "1940", reason: null },
+              { type: "catalogId", value: "MZK01-001277001", unit: "1936–1938", reason: null },
+            ],
+            reason: null,
+            projectId: null,
+            batchName: null,
+            approval: null,
+            entrySourceId: null,
+          },
+          compare: "body",
+        },
+        {
+          as: "reader",
+          method: "POST",
+          path: "/api/proposals",
+          requestBody: {
+            items: [{ type: "catalogId", value: "VKOL01-000456123", unit: "1941", reason: null }],
+            reason: null,
+            projectId: null,
+            batchName: null,
+            approval: null,
+            entrySourceId: null,
+          },
+          compare: "code",
+        },
+      ],
+    },
   ],
 } as const;

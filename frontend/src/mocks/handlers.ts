@@ -1712,11 +1712,21 @@ export function createHandlers(profile: MockUserProfile) {
       const subject = messageSubjectKindSchema.safeParse(params.get(messageSubjectParams.kind));
       const id = params.get(messageSubjectParams.id);
       const body = sendMessageBodySchema.safeParse(await request.json());
-      if (!subject.success || id === null || id === "" || !body.success) {
+      if (!subject.success || id === null || id === "") {
         return problemResponse({
           status: 422,
           code: "message.recipient_missing",
           message: "Say what to send and whom it is about",
+        });
+      }
+      if (!body.success) {
+        const textMissing = body.error.issues.every((issue) => issue.path[0] === "text");
+        return problemResponse({
+          status: 422,
+          code: textMissing ? "message.text_missing" : "message.recipient_missing",
+          message: textMissing
+            ? "Write the message first"
+            : "Say what to send and whom it is about",
         });
       }
       return outcomeResponse(

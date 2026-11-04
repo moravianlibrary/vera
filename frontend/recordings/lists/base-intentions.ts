@@ -119,6 +119,22 @@ export default {
       ],
     },
     {
+      name: "correction-requires-mix",
+      calls: [
+        act("POST", "/api/intentions", "digitization", "body", {
+          name: "Correction without a mix",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: null,
+          countsFrom: "2026-07-01",
+          endsOn: "2026-12-31",
+          targetPages: 1000,
+          mix: { kind: "none" },
+        }),
+        act("GET", "/api/intentions/i20/correction?pages=1000", "digitization", "code"),
+      ],
+    },
+    {
       name: "intention-refusals",
       calls: [
         act("POST", "/api/mixes/d2/archive", "admin", "body", {}),
@@ -151,6 +167,16 @@ export default {
         act("PUT", "/api/intentions/i4", "digitization", "code", {
           ...draft("Overall output"),
           targetPages: 500,
+        }),
+        act("PUT", "/api/intentions/i4", "digitization", "code", {
+          name: "Overall output",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: null,
+          countsFrom: "2019-01-01",
+          endsOn: null,
+          targetPages: 500,
+          mix: { kind: "use", mixId: "d1", revision: null },
         }),
         act("PUT", "/api/intentions/i10", "digitization", "code", {
           name: "Monthly output — May 2026",

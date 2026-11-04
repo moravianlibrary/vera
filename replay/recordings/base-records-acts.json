@@ -38487,6 +38487,163 @@
           "as": "u3"
         }
       ]
+    },
+    {
+      "name": "property-approval-refusals",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/access/roles",
+          "status": 200,
+          "body": {
+            "id": "catalog-title-editor",
+            "name": "catalog-title-editor",
+            "description": "May edit catalog-sourced properties.",
+            "isShipped": false,
+            "grants": [
+              {
+                "permission": "access.read",
+                "scope": "any"
+              },
+              {
+                "permission": "access.manage",
+                "scope": "any"
+              },
+              {
+                "permission": "iteration.read",
+                "scope": "any"
+              },
+              {
+                "permission": "property.title.edit",
+                "scope": "any"
+              }
+            ],
+            "proposalBatchLimit": null,
+            "proposalDailyLimit": null
+          },
+          "requestBody": {
+            "name": "Catalog title editor",
+            "description": "May edit catalog-sourced properties.",
+            "grants": [
+              {
+                "permission": "access.read",
+                "scope": "any"
+              },
+              {
+                "permission": "access.manage",
+                "scope": "any"
+              },
+              {
+                "permission": "iteration.read",
+                "scope": "any"
+              },
+              {
+                "permission": "property.title.edit",
+                "scope": "any"
+              }
+            ],
+            "proposalBatchLimit": null,
+            "proposalDailyLimit": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/access/users/u3/roles",
+          "status": 200,
+          "body": {
+            "id": "u3",
+            "name": "Petr Dvořák",
+            "kind": "person",
+            "email": "petr.dvorak@mzk.cz",
+            "entry": null,
+            "handRoleIds": [
+              "admin",
+              "catalog-title-editor"
+            ],
+            "mappedRoles": [
+              {
+                "roleId": "staff",
+                "instanceId": "pi22",
+                "claim": "group mzk-staff"
+              }
+            ],
+            "groupIds": [],
+            "identities": [
+              {
+                "instanceId": "pi22",
+                "externalId": "pdvorak",
+                "lastLoginAt": "<time>"
+              },
+              {
+                "instanceId": "pi24",
+                "externalId": "admin",
+                "lastLoginAt": "<time>"
+              }
+            ],
+            "suspendedAt": null
+          },
+          "requestBody": {
+            "roleIds": [
+              "admin",
+              "catalog-title-editor"
+            ]
+          },
+          "as": "u3"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/documents/D1/properties/title",
+          "status": 422,
+          "code": "property.not_by_hand",
+          "requestBody": {
+            "value": "Attempted hand edit"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/requests/D21/approve",
+          "status": 409,
+          "code": "proposal.checks_pending",
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/requests/D22/approve",
+          "status": 422,
+          "code": "proposal.rescan_reason_missing",
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "rescanNote": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/requests/batches/B-0143/approve",
+          "status": 409,
+          "code": "batch.nothing_to_approve",
+          "requestBody": {
+            "categoryId": "c21",
+            "priority": "Normal",
+            "excludedIds": [
+              "D25",
+              "D26",
+              "D27",
+              "D28",
+              "D20"
+            ]
+          },
+          "as": "u3"
+        }
+      ]
     }
   ],
   "mask": "decisions"

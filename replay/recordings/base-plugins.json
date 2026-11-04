@@ -13773,6 +13773,14 @@
           "as": "u3"
         },
         {
+          "method": "POST",
+          "path": "/api/plugin-instances/pi1/upgrade",
+          "status": 409,
+          "code": "plugin.up_to_date",
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
           "method": "GET",
           "path": "/api/plugins",
           "status": 200,

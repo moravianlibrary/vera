@@ -25607,6 +25607,223 @@
       ]
     },
     {
+      "name": "correction-requires-mix",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/intentions",
+          "status": 201,
+          "body": {
+            "intention": {
+              "funding": {
+                "kind": "any"
+              },
+              "scopeCategoryId": null,
+              "countsFrom": "2026-07-01",
+              "endsOn": "2026-12-31",
+              "name": "Correction without a mix",
+              "description": "",
+              "targetPages": 1000,
+              "id": "i20",
+              "projectId": null,
+              "distributionId": null,
+              "isOverall": false,
+              "templateId": null,
+              "archived": null,
+              "mixRevision": null
+            },
+            "state": "Upcoming",
+            "timeElapsed": 0,
+            "daysToStart": 6,
+            "daysLeft": 190,
+            "evenPace": null,
+            "verdict": "fullyPlanned",
+            "pagesPerWeekNeeded": null,
+            "catchUpPages": null,
+            "plannedPages": 2540,
+            "deliveredPages": 0,
+            "outputPages": 0,
+            "noDateCount": 0,
+            "noPagesCount": 0,
+            "project": null,
+            "scope": null,
+            "mix": null,
+            "mixRows": [
+              {
+                "categoryId": "c1",
+                "name": "Monographs",
+                "intended": null,
+                "planned": 0,
+                "output": null,
+                "outputPages": 0,
+                "drift": null,
+                "flag": null
+              },
+              {
+                "categoryId": "c2",
+                "name": "Periodicals",
+                "intended": null,
+                "planned": 100,
+                "output": null,
+                "outputPages": 0,
+                "drift": null,
+                "flag": null
+              },
+              {
+                "categoryId": "c3",
+                "name": "Manuscripts",
+                "intended": null,
+                "planned": 0,
+                "output": null,
+                "outputPages": 0,
+                "drift": null,
+                "flag": null
+              },
+              {
+                "categoryId": "c4",
+                "name": "Maps",
+                "intended": null,
+                "planned": 0,
+                "output": null,
+                "outputPages": 0,
+                "drift": null,
+                "flag": null
+              }
+            ],
+            "unallocated": 0,
+            "outOfBandCount": 0,
+            "fill": [
+              {
+                "categoryId": "c11",
+                "path": [
+                  "Monographs",
+                  "19th century"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c12",
+                "path": [
+                  "Monographs",
+                  "20th century"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c21",
+                "path": [
+                  "Periodicals",
+                  "Regional"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 2540,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c22",
+                "path": [
+                  "Periodicals",
+                  "National"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c23",
+                "path": [
+                  "Periodicals",
+                  "Specialist"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c31",
+                "path": [
+                  "Manuscripts",
+                  "Medieval"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c32",
+                "path": [
+                  "Manuscripts",
+                  "Early modern"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              },
+              {
+                "categoryId": "c4",
+                "path": [
+                  "Maps"
+                ],
+                "share": null,
+                "targetPages": null,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": false
+              }
+            ],
+            "lists": [
+              {
+                "id": "L-2026-015",
+                "name": "Regional weeklies",
+                "itemCount": 3,
+                "pages": 2540
+              }
+            ]
+          },
+          "requestBody": {
+            "name": "Correction without a mix",
+            "description": "",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": null,
+            "countsFrom": "2026-07-01",
+            "endsOn": "2026-12-31",
+            "targetPages": 1000,
+            "mix": {
+              "kind": "none"
+            }
+          },
+          "as": "u2"
+        },
+        {
+          "method": "GET",
+          "path": "/api/intentions/i20/correction?pages=1000",
+          "status": 422,
+          "code": "list.correction_needs_mix",
+          "as": "u2"
+        }
+      ]
+    },
+    {
       "name": "intention-refusals",
       "calls": [
         {
@@ -25878,6 +26095,29 @@
             "scopeCategoryId": null,
             "countsFrom": "2026-07-01",
             "endsOn": "2026-12-31",
+            "targetPages": 500,
+            "mix": {
+              "kind": "use",
+              "mixId": "d1",
+              "revision": null
+            }
+          },
+          "as": "u2"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/intentions/i4",
+          "status": 422,
+          "code": "intention.overall_has_no_target",
+          "requestBody": {
+            "name": "Overall output",
+            "description": "",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": null,
+            "countsFrom": "2019-01-01",
+            "endsOn": null,
             "targetPages": 500,
             "mix": {
               "kind": "use",

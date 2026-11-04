@@ -672,6 +672,17 @@
           "as": "u3"
         },
         {
+          "method": "POST",
+          "path": "/api/mixes/d3/snapshots",
+          "status": 409,
+          "code": "mix.revision_labelled",
+          "requestBody": {
+            "revision": 1,
+            "label": "Duplicate label"
+          },
+          "as": "u3"
+        },
+        {
           "method": "GET",
           "path": "/api/mixes/d3",
           "status": 200,

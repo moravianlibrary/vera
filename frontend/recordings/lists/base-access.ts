@@ -116,5 +116,24 @@ export default {
         },
       ],
     },
+    {
+      name: "suspend-user-twice",
+      calls: [
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/access/users/u5/suspend",
+          requestBody: {},
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/access/users/u5/suspend",
+          requestBody: {},
+          compare: "code",
+        },
+      ],
+    },
   ],
 } as const;

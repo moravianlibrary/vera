@@ -2361,6 +2361,50 @@
           "as": "u9"
         }
       ]
+    },
+    {
+      "name": "suspend-user-twice",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/access/users/u5/suspend",
+          "status": 200,
+          "body": {
+            "id": "u5",
+            "name": "Tomáš Marek",
+            "kind": "person",
+            "email": "tomas.marek@muni.cz",
+            "entry": null,
+            "handRoleIds": [],
+            "mappedRoles": [
+              {
+                "roleId": "reader",
+                "instanceId": "pi41",
+                "claim": "default role"
+              }
+            ],
+            "groupIds": [],
+            "identities": [
+              {
+                "instanceId": "pi41",
+                "externalId": "marek@muni.cz",
+                "lastLoginAt": "2026-06-18T07:00:00.000Z"
+              }
+            ],
+            "suspendedAt": "2026-06-25T08:40:00.000Z"
+          },
+          "requestBody": {},
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/access/users/u5/suspend",
+          "status": 409,
+          "code": "access.suspended",
+          "requestBody": {},
+          "as": "u3"
+        }
+      ]
     }
   ],
   "mask": "none"

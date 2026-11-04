@@ -2738,6 +2738,117 @@
       ]
     },
     {
+      "name": "refuse-delete-scoped-category",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/categories",
+          "status": 200,
+          "body": {
+            "id": "c33",
+            "name": "Scoped leaf",
+            "parentId": null
+          },
+          "requestBody": {
+            "name": "Scoped leaf",
+            "parentId": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/intentions",
+          "status": 201,
+          "body": {
+            "intention": {
+              "funding": {
+                "kind": "any"
+              },
+              "scopeCategoryId": "c33",
+              "countsFrom": "2026-07-01",
+              "endsOn": "2026-12-31",
+              "name": "Scoped leaf intention",
+              "description": "",
+              "targetPages": 1000,
+              "id": "i20",
+              "projectId": null,
+              "distributionId": "<U1>",
+              "isOverall": false,
+              "templateId": null,
+              "archived": null,
+              "mixRevision": null
+            },
+            "state": "Upcoming",
+            "timeElapsed": 0,
+            "daysToStart": 6,
+            "daysLeft": 190,
+            "evenPace": null,
+            "verdict": null,
+            "pagesPerWeekNeeded": null,
+            "catchUpPages": null,
+            "plannedPages": 0,
+            "deliveredPages": 0,
+            "outputPages": 0,
+            "noDateCount": 0,
+            "noPagesCount": 0,
+            "project": null,
+            "scope": {
+              "id": "c33",
+              "path": [
+                "Scoped leaf"
+              ]
+            },
+            "mix": {
+              "id": "<U1>",
+              "name": "House mix",
+              "revision": 4
+            },
+            "mixRows": [],
+            "unallocated": 0,
+            "outOfBandCount": 0,
+            "fill": [
+              {
+                "categoryId": "c33",
+                "share": 100,
+                "targetPages": 1000,
+                "plannedPages": 0,
+                "deliveredPages": 0,
+                "isShort": true,
+                "path": [
+                  "Scoped leaf"
+                ]
+              }
+            ],
+            "lists": []
+          },
+          "requestBody": {
+            "name": "Scoped leaf intention",
+            "description": "",
+            "funding": {
+              "kind": "any"
+            },
+            "scopeCategoryId": "c33",
+            "countsFrom": "2026-07-01",
+            "endsOn": "2026-12-31",
+            "targetPages": 1000,
+            "mix": {
+              "kind": "use",
+              "mixId": "d1",
+              "revision": null
+            }
+          },
+          "as": "u2"
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/categories/c33",
+          "status": 409,
+          "code": "category.scope",
+          "as": "u3"
+        }
+      ]
+    },
+    {
       "name": "set-category-custody",
       "calls": [
         {

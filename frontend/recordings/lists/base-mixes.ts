@@ -56,6 +56,10 @@ export default {
         }),
         act("GET", "/api/mixes/d3", "admin"),
         act("POST", "/api/mixes/d3/snapshots", "admin", "body", { revision: 1, label: "Approved" }),
+        act("POST", "/api/mixes/d3/snapshots", "admin", "code", {
+          revision: 1,
+          label: "Duplicate label",
+        }),
         act("GET", "/api/mixes/d3", "admin"),
         act("POST", "/api/mixes/d3/primary", "admin", "body", {}),
         act("GET", "/api/mixes", "admin"),

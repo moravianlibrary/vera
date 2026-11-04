@@ -254,6 +254,13 @@ export default {
           },
           compare: "code",
         },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/plugin-instances/pi1/upgrade",
+          requestBody: {},
+          compare: "code",
+        },
         { as: "admin", method: "GET", path: "/api/plugins", compare: "body" },
       ],
     },

@@ -51,6 +51,23 @@ export default {
       ],
     },
     {
+      name: "refuse-delete-scoped-category",
+      calls: [
+        call("POST", "/api/categories", "admin", { name: "Scoped leaf", parentId: null }),
+        call("POST", "/api/intentions", "digitization", {
+          name: "Scoped leaf intention",
+          description: "",
+          funding: { kind: "any" },
+          scopeCategoryId: "c33",
+          countsFrom: "2026-07-01",
+          endsOn: "2026-12-31",
+          targetPages: 1000,
+          mix: { kind: "use", mixId: "d1", revision: null },
+        }),
+        { as: "admin", method: "DELETE", path: "/api/categories/c33", compare: "code" },
+      ],
+    },
+    {
       name: "set-category-custody",
       calls: [
         call("PUT", "/api/categories/c22/custody", "curator", { groupIds: [], userIds: ["u4"] }),
