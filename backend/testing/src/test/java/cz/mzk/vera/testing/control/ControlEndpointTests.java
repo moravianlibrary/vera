@@ -2,6 +2,10 @@ package cz.mzk.vera.testing.control;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import cz.mzk.vera.domain.events.EventCode;
+import cz.mzk.vera.events.EventInput;
+import cz.mzk.vera.events.EventRecorder;
+import cz.mzk.vera.events.Outbox;
 import cz.mzk.vera.testing.VeraTestingApplication;
 import cz.mzk.vera.testing.seeds.SeedReader;
 import org.junit.jupiter.api.Test;
@@ -19,6 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+// ENGINE-control; EVENT-destinations; OBS-audit-delivery.
 @SpringBootTest(
         classes = VeraTestingApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -38,6 +43,12 @@ class ControlEndpointTests {
 
     @Autowired
     private SeedReader seeds;
+
+    @Autowired
+    private Outbox outbox;
+
+    @Autowired
+    private EventRecorder eventRecorder;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -115,6 +126,40 @@ class ControlEndpointTests {
                 .body("{\"at\":\"2026-06-25T08:40:00Z\",\"advance\":{}}")
                 .exchange()
                 .expectStatus().isEqualTo(422);
+    }
+
+    @Test
+    void readsOutboxByChannelAndRejectsUnknownChannel() {
+        reset("base", true);
+        outbox.send("mail", "reader@example.test", mapper.createObjectNode().put("subject", "Hello"));
+        outbox.send("chat", "u3", mapper.createObjectNode().put("text", "Hello"));
+        client.get().uri("/_engine/outbox").exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$[0].channel").isEqualTo("mail")
+                .jsonPath("$[1].channel").isEqualTo("chat");
+        client.get().uri("/_engine/outbox?channel=mail").exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$[0].recipient").isEqualTo("reader@example.test")
+                .jsonPath("$[1]").doesNotExist();
+        client.get().uri("/_engine/outbox?channel=fax").exchange().expectStatus().isEqualTo(422)
+                .expectBody().jsonPath("$.errors[0].pointer").isEqualTo("/channel");
+        reset("base", true);
+        client.get().uri("/_engine/outbox").exchange().expectStatus().isOk().expectBody().json("[]");
+        client.get().uri("/_engine/audit").exchange().expectStatus().isOk().expectBody().json("[]");
+    }
+
+    @Test
+    void readsAuditRecordsOldestFirstAndResetEmptiesIt() {
+        reset("base", true);
+        var changes = mapper.createObjectNode().set("changes", mapper.createArrayNode());
+        eventRecorder.record(new EventInput(EventCode.USER_SUSPENDED, "user", "u-a", null,
+                new EventInput.System(), "first", null, changes, null));
+        eventRecorder.record(new EventInput(EventCode.USER_SUSPENDED, "user", "u-b", null,
+                new EventInput.System(), "second", null, changes, null));
+        client.get().uri("/_engine/audit").exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.length()").isEqualTo(2)
+                .jsonPath("$[0].record.correlationId").isEqualTo("first")
+                .jsonPath("$[1].record.correlationId").isEqualTo("second");
+        reset("base", true);
+        client.get().uri("/_engine/audit").exchange().expectStatus().isOk().expectBody().json("[]");
     }
 
     private void reset(String seed, boolean frozen) {

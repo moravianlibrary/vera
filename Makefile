@@ -248,7 +248,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd replay && bun run typecheck
 
 # check and test do not build the backend; they will once the backend builds in CI.
-check: format-check lint ui-check typecheck version-check docs-check openapi-check seed-schema-check plugin-schema-check ## Run the project checks
+check: format-check lint ui-check typecheck version-check docs-check openapi-check seed-schema-check plugin-schema-check event-catalogue-check ## Run the project checks
 
 docs: ## Rewrite the generated blocks in the reference from the code
 	cd frontend && bun ../docs/tools/docs.ts
@@ -317,3 +317,9 @@ obs-down: ## Uninstall the local observability stack; the cluster and its volume
 
 obs-cluster-delete: ## Delete the local k3d cluster, with everything it recorded
 	k3d cluster delete $(K3D_CLUSTER)
+
+event-catalogue: ## Write the shared event catalogue
+	cd contract && bun tools/event-catalogue.ts
+
+event-catalogue-check: ## Check the shared event catalogue
+	cd contract && bun tools/event-catalogue.ts --check

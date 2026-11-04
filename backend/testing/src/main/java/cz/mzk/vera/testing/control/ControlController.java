@@ -1,11 +1,13 @@
 package cz.mzk.vera.testing.control;
 
+import static cz.mzk.vera.db.tables.Tables.AUDIT_OUTBOX;
 import static cz.mzk.vera.db.tables.Tables.SESSIONS;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
+import cz.mzk.vera.events.Outbox;
+import cz.mzk.vera.session.SessionFilter;
 import cz.mzk.vera.testing.seeds.SeedReader;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
-import cz.mzk.vera.session.SessionFilter;
 import cz.mzk.vera.web.Instants;
 import cz.mzk.vera.web.Problems;
 import cz.mzk.vera.web.RouteCheck;
@@ -18,12 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.jooq.DSLContext;
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonToken;
-import tools.jackson.databind.exc.MismatchedInputException;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,9 +32,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.core.env.Environment;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.exc.MismatchedInputException;
+import tools.jackson.databind.json.JsonMapper;
 
+// ENGINE-control; OBS-audit-delivery.
 @RestController
 @RequestMapping("/_engine")
 public class ControlController {
@@ -44,15 +50,19 @@ public class ControlController {
     private final DSLContext dsl;
     private final RouteCheck routes;
     private final Environment environment;
+    private final Outbox outbox;
+    private final JsonMapper json;
 
     public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService,
-            DSLContext dsl, RouteCheck routes, Environment environment) {
+            DSLContext dsl, RouteCheck routes, Environment environment, Outbox outbox, JsonMapper json) {
         this.clock = clock;
         this.reader = reader;
         this.resetService = resetService;
         this.dsl = dsl;
         this.routes = routes;
         this.environment = environment;
+        this.outbox = outbox;
+        this.json = json;
     }
 
     @PostMapping("/reset")
@@ -215,6 +225,30 @@ public class ControlController {
                 + (secure ? "; Secure" : "");
         return ResponseEntity.ok().header("Set-Cookie", cookie).body(Map.of("userId", userId));
     }
+
+    @GetMapping("/outbox")
+    public ResponseEntity<?> outbox(@RequestParam(required = false) String channel) {
+        if (channel != null && !List.of("mail", "chat", "webhook", "push").contains(channel)) {
+            return invalid(List.of(new FieldError("/channel", "invalid_value", "Invalid channel")));
+        }
+        return ResponseEntity.ok(outbox.list(Optional.ofNullable(channel)));
+    }
+
+    // Audit collection delivery has no endpoint until a collector exists.
+    @GetMapping("/audit")
+    public List<AuditEntry> audit() {
+        return dsl.selectFrom(AUDIT_OUTBOX)
+                .orderBy(AUDIT_OUTBOX.ID)
+                .fetch(row -> new AuditEntry(
+                        row.getId(),
+                        Instants.format(row.getAt().toInstant()),
+                        json.readTree(row.getRecord().data())));
+    }
+
+    public record AuditEntry(
+            long id,
+            String at,
+            JsonNode record) {}
 
     @GetMapping("/endpoints")
     public List<String> endpoints() {

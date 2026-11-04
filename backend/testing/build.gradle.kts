@@ -14,6 +14,7 @@ dependencies {
     compileOnly(libs.jakarta.xml.bind.api)
     implementation(libs.json.schema.validator)
     runtimeOnly(libs.postgresql)
+    testImplementation(project(":domain"))
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.spring.boot.resttestclient)

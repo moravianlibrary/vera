@@ -1,0 +1,2389 @@
+{
+  "codes": [
+    {
+      "code": "request.created",
+      "subject": "request",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "request.approved",
+      "subject": "request",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "request.declined",
+      "subject": "request",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "request.held",
+      "subject": "request",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "request.withdrawn",
+      "subject": "request",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "request.ingest_retried",
+      "subject": "request",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.ingested",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.ingest_failed",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.rechecked",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.page_count_entered",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.verdict_accepted",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.verdict_denied",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.verdict_revoked",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.restricted",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "iteration.restriction_overruled",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.reclassified",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.cancelled",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "iteration.not_digitizable",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "iteration.resumed",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.listed",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.unlisted",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.digitized",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "iteration.published",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": true
+    },
+    {
+      "code": "iteration.link_added",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.link_changed",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.link_made_primary",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.link_removed",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.copy_found",
+      "subject": "iteration",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "iteration.property_changed",
+      "subject": "iteration",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "document.relinked",
+      "subject": "document",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "document.property_changed",
+      "subject": "document",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "document.registry_changed",
+      "subject": "document",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.created",
+      "subject": "list",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.renamed",
+      "subject": "list",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.dates_moved",
+      "subject": "list",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.members_changed",
+      "subject": "list",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.started_early",
+      "subject": "list",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.started",
+      "subject": "list",
+      "history": false,
+      "hook": true,
+      "audit": false,
+      "isPublic": false,
+      "isDerived": true
+    },
+    {
+      "code": "list.marked_done",
+      "subject": "list",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "list.deleted",
+      "subject": "list",
+      "history": true,
+      "hook": true,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.created",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.details_changed",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.dates_changed",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.member_added",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.member_removed",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.manager_changed",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.approved",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.rejected",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "project.deleted",
+      "subject": "project",
+      "history": true,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "run.finished",
+      "subject": "run",
+      "history": false,
+      "hook": true,
+      "audit": false,
+      "isPublic": false
+    },
+    {
+      "code": "run.failed",
+      "subject": "run",
+      "history": false,
+      "hook": true,
+      "audit": false,
+      "isPublic": false
+    },
+    {
+      "code": "user.created",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.roles_changed",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.groups_changed",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.identity_linked",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.identity_unlinked",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.suspended",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "user.restored",
+      "subject": "user",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "group.created",
+      "subject": "group",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "group.changed",
+      "subject": "group",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "group.members_changed",
+      "subject": "group",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "group.deleted",
+      "subject": "group",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "role.created",
+      "subject": "role",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "role.permissions_changed",
+      "subject": "role",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "role.renamed",
+      "subject": "role",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "role.deleted",
+      "subject": "role",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "custody.created",
+      "subject": "custody",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "custody.changed",
+      "subject": "custody",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "custody.members_changed",
+      "subject": "custody",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "custody.deleted",
+      "subject": "custody",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.created",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.renamed",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.moved",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.refined",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.custody_changed",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "category.deleted",
+      "subject": "category",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "intention.created",
+      "subject": "intention",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "intention.changed",
+      "subject": "intention",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "intention.archived",
+      "subject": "intention",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "intention.deleted",
+      "subject": "intention",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "repeat.changed",
+      "subject": "repeat",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.created",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.revised",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.labelled",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.made_primary",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.archived",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "mix.deleted",
+      "subject": "mix",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin.uploaded",
+      "subject": "plugin",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.created",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.configured",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.disabled",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.enabled",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.upgraded",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.default_role_changed",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "plugin_instance.deleted",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "hook.created",
+      "subject": "hook",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "hook.changed",
+      "subject": "hook",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "hook.paused",
+      "subject": "hook",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "hook.resumed",
+      "subject": "hook",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "hook.deleted",
+      "subject": "hook",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "schedule.created",
+      "subject": "schedule",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "schedule.changed",
+      "subject": "schedule",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "schedule.paused",
+      "subject": "schedule",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "schedule.resumed",
+      "subject": "schedule",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "schedule.deleted",
+      "subject": "schedule",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "property.defined",
+      "subject": "property",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "property.changed",
+      "subject": "property",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
+      "code": "property.deleted",
+      "subject": "property",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    }
+  ],
+  "historyData": {
+    "request.created": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "batch": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "batch",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "request.approved": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "iterationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isRescan": {
+          "type": "boolean"
+        },
+        "batchSize": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suggestion": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "classifier": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "kept": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "category",
+                "classifier",
+                "kept"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "iterationId",
+        "isRescan",
+        "batchSize",
+        "suggestion"
+      ],
+      "additionalProperties": false
+    },
+    "request.declined": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "batchSize": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "batchSize"
+      ],
+      "additionalProperties": false
+    },
+    "request.held": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "why": {
+          "type": "string",
+          "enum": [
+            "copy_exists",
+            "checking"
+          ]
+        }
+      },
+      "required": [
+        "why"
+      ],
+      "additionalProperties": false
+    },
+    "request.withdrawn": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "request.ingest_retried": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "attempt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "attempt"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.ingested": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "iteration.ingest_failed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "attempt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "attempt",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.rechecked": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "by": {
+          "type": "string",
+          "enum": [
+            "act",
+            "catalog_change"
+          ]
+        },
+        "found": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "gone": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "by",
+        "found",
+        "gone"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.page_count_entered": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "pages": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "previous": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "pages",
+        "previous"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.verdict_accepted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "defects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "instance": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "rule": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "instance",
+              "rule"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "defects"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.verdict_denied": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "defects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "instance": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "rule": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "instance",
+              "rule"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "defects"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.verdict_revoked": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "defects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "instance": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "rule": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "instance",
+              "rule"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "defects"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.restricted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "rule": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "forbidden",
+            "restricted"
+          ]
+        }
+      },
+      "required": [
+        "rule",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.restriction_overruled": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "rule": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "rule"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.reclassified": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "to": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "priority": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "Low",
+                        "Normal",
+                        "High",
+                        "Urgent"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "to": {
+                  "type": "string",
+                  "enum": [
+                    "Low",
+                    "Normal",
+                    "High",
+                    "Urgent"
+                  ]
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "category",
+        "priority"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.cancelled": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "list": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "list"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.not_digitizable": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "list"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.resumed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "iteration.listed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "list"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.unlisted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "why": {
+          "type": "string",
+          "enum": [
+            "edited",
+            "cancelled",
+            "list_deleted"
+          ]
+        }
+      },
+      "required": [
+        "list",
+        "why"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.digitized": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "list": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "list"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.published": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "link"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.link_added": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "link"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.link_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        "url": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "to": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "link",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.link_made_primary": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "link"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.link_removed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "link": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        "primary": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "url"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "link",
+        "primary"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.copy_found": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "CheckFailed",
+            "NotFound",
+            "Unmapped",
+            "Planned",
+            "InProgress",
+            "Digitized",
+            "Published"
+          ]
+        }
+      },
+      "required": [
+        "registry",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "iteration.property_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {}
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "document.relinked": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "catalogId": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "to": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "catalogId"
+      ],
+      "additionalProperties": false
+    },
+    "document.property_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {},
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {}
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "document.registry_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "string"
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "CheckFailed",
+                    "NotFound",
+                    "Unmapped",
+                    "Planned",
+                    "InProgress",
+                    "Digitized",
+                    "Published"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "enum": [
+                "CheckFailed",
+                "NotFound",
+                "Unmapped",
+                "Planned",
+                "InProgress",
+                "Digitized",
+                "Published"
+              ]
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "registry",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "list.created": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "generator": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "members": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "generator",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    "list.renamed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "to": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "list.dates_moved": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "starts": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        "ends": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "starts",
+        "ends"
+      ],
+      "additionalProperties": false
+    },
+    "list.members_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "added": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "added",
+        "removed"
+      ],
+      "additionalProperties": false
+    },
+    "list.started_early": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "starts": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        }
+      },
+      "required": [
+        "starts"
+      ],
+      "additionalProperties": false
+    },
+    "list.marked_done": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "digitized": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "digitized"
+      ],
+      "additionalProperties": false
+    },
+    "list.deleted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "returned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "returned"
+      ],
+      "additionalProperties": false
+    },
+    "project.created": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "project.details_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "from": {},
+              "to": {}
+            },
+            "required": [
+              "field",
+              "from",
+              "to"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "project.dates_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "from": {},
+              "to": {}
+            },
+            "required": [
+              "field",
+              "from",
+              "to"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "project.member_added": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "project.member_removed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "project.manager_changed": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "userId"
+      ],
+      "additionalProperties": false
+    },
+    "project.approved": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "priority": {
+          "type": "string",
+          "enum": [
+            "Low",
+            "Normal",
+            "High",
+            "Urgent"
+          ]
+        },
+        "approved": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "priority",
+        "approved"
+      ],
+      "additionalProperties": false
+    },
+    "project.rejected": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "declined": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "declined"
+      ],
+      "additionalProperties": false
+    },
+    "project.deleted": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    }
+  },
+  "configurationData": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "changes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "from": {},
+            "to": {}
+          },
+          "required": [
+            "field",
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "changes"
+    ],
+    "additionalProperties": false
+  }
+}
