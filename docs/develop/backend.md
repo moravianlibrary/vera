@@ -1,7 +1,7 @@
 # The Java backend
 
-> **Proposal.** Drafted on 2026-10-30; B1, B2, B6 and where it lives settled the same day,
-> the rest not yet. The backend starts once [what comes first](#what-comes-first) is done; the
+> **Settled.** Drafted on 2026-10-30; B1, B2, B6 and where it lives settled on 2026-10-30,
+> and B3–B5, B7–B9 on 2026-11-04. The backend starts once [what comes first](#what-comes-first) is done; the
 > engine stops at its step 3
 > ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)). Each choice below is numbered `B1`… so it can be settled, changed or rejected one at a
 > time, as the engine's `E1`… were.
@@ -107,36 +107,40 @@ and enforced in the backend by hand, each with a test.
 
 ### B3. The rules: ported, held together by shared cases
 
-`domain/src` is TypeScript, shared by the frontend and the engine. The backend ports what it
-uses (permissions and scopes, status and the badge, schedules and cadences, value ranges,
-counting and mixes, properties) to plain Java with no framework, in a `domain` module.
+Settled on 2026-11-04. The Java rules are the source. The backend ports what it uses (permissions
+and scopes, status and the badge, schedules and cadences, value ranges, counting and mixes,
+properties) to plain Java with no framework, in a `domain` module. `domain/src` is TypeScript,
+which the frontend keeps using to decide what to show and offer.
 
-To keep the two from drifting, the domain's tests move their cases into JSON files
-(`domain/cases/*.json`: input, expected output, the rule ID), read by the Bun tests and by JUnit
-alike. A rule changed in TypeScript breaks the Java build until it is ported. Java code cites rule
-IDs as the engine does, and `make docs-check` reads `backend/` for cited IDs too.
+The rule cases (`domain/cases/*.json`: input, expected output, the rule ID) are the Java domain's
+tests, read by JUnit. The frontend's TypeScript rules must pass the same cases, so a rule changed
+in Java breaks the frontend's tests until TypeScript follows. The TypeScript engine is dropped
+once the backend serves all it serves, and the Java backend with its seeding takes its place;
+until then the cases hold both. Java code cites rule IDs as the engine does, and `make docs-check`
+reads `backend/` for cited IDs too.
 
 ### B4. PostgreSQL, with migrations
 
-PostgreSQL 18, run by CloudNativePG in production. The schema is new; nothing of the old VERA's
-is kept, and no code moves its data (decided on 2026-10-30: people move what is needed by hand).
-The engine's schema files (`engine/schema/`,
-one per area) are the starting point, translated once: JSON columns to `jsonb`, ISO text times to
-`timestamptz`, the `CHECK` lists kept, text IDs kept (the contract's IDs are strings, and seeds
-name rows by them).
+Settled on 2026-11-04. PostgreSQL 18, run by CloudNativePG in production. The schema is written
+new for the Java backend; nothing of the old VERA's is kept, and no code moves its data (decided
+on 2026-10-30: people move what is needed by hand). The engine's schema files (`engine/schema/`,
+one per area) are a reference for what is stored, not a source to translate. Where they carry
+something only the TypeScript engine needed (JSON text columns, ISO text times), the Java schema
+does it PostgreSQL's way (`jsonb`, `timestamptz`); the `CHECK` lists and text IDs are kept (the
+contract's IDs are strings, and seeds name rows by them).
 
 From the first production deploy, E9 no longer holds: every schema change is a migration,
 written by hand, reviewed, never edited once applied, with its rollback. Liquibase with SQL
 changelogs, because it carries the rollback beside the change.
 
-Data access with jOOQ, its classes generated from the migrated schema at build time: typed SQL,
-joins written out, no lazy loading. Lists, facets and the overview pages are queries over indexes;
+Data access with jOOQ, its classes generated in the build against a PostgreSQL started by
+Testcontainers with the migrations applied: typed SQL, joins written out, no lazy loading. Lists, facets and the overview pages are queries over indexes;
 `pg_trgm` for the text filters. At 17 000 documents there is no case for a search engine; the old
 VERA's reindex runs (4 000 of its 4 862 runs) go away with it.
 
 ### B5. Jobs: one table, claimed with `SKIP LOCKED`
 
-The engine's job model, unchanged in meaning (E10): a job is due at a moment of the clock, runs
+Settled on 2026-11-04. The engine's job model, unchanged in meaning (E10): a job is due at a moment of the clock, runs
 once, and each kind sets its own next attempt
 ([HOOK-retry](../reference/integrations/hooks.md#hook-retry)); runs show on Tasks; a job keeps the
 trace context of the act that queued it.
@@ -242,7 +246,7 @@ session from installing code, not a trusted signer's mistake.
 
 ### B7. Login and sessions
 
-E14, E15 and E16 carry over as they are: the `vera_session` cookie, its SHA-256 stored, the
+Settled on 2026-11-04. E14, E15 and E16 carry over as they are: the `vera_session` cookie, its SHA-256 stored, the
 sliding limits, flows of 10 minutes, the return within VERA, sign-up and reset tokens stored by
 hash.
 - `OidcIdentity` uses the Nimbus OAuth 2.0 / OpenID Connect SDK: discovery, the authorization code
@@ -250,12 +254,14 @@ hash.
   configured on Plugins.
 - `LocalAccounts` hashes with Argon2id; its mail goes through the Delivery channel named by
   `mail_channel`.
+- B1's “no Spring Security” stands: Java libraries are used inside VERA's own design (Nimbus
+  for OIDC, `spring-security-crypto` for Argon2id, a servlet filter for the session cookie).
 - Writing acts are protected by `SameSite=Lax` and by refusing a body that is not
   `application/json`, as the engine does.
 
 ### B8. Tests: the recordings, over HTTP
 
-The backend is accepted by tests it did not write:
+Settled on 2026-11-04. The backend is accepted by tests it did not write:
 
 | Tests | How they reach the backend |
 |---|---|
@@ -280,7 +286,7 @@ Tests running in parallel get one backend each, on its own database.
 
 ### B9. Packages: a feature per group of acts
 
-Everything is under `cz.mzk.vera`. The Gradle modules split what may depend on what; inside
+Settled on 2026-11-04. Everything is under `cz.mzk.vera`. The Gradle modules split what may depend on what; inside
 `app`, the packages split by feature, and each feature holds its layers as files.
 
 **Modules**, each depending only on those before it:
@@ -409,8 +415,9 @@ backend/
 
 `make backend`, `make backend-test`, `make backend-contract` (the contract tests against a running
 backend) and `make backend-journeys` sit beside the engine's targets. A coding conventions layer
-for Java is part of the conventions step ([structure](../structure.md)); until then the backend
-follows the backend, API, persistence and Helm layers.
+for Java is part of the conventions step ([structure](../structure.md)). The backend starts on the
+backend, API, persistence and Helm layers; the Java layer is written during step 1 from what step
+1 settles.
 
 ## Running it
 
