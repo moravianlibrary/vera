@@ -7,6 +7,7 @@ import { knownGapCall, knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
 import { mediaTypeOf, type Recording, type RecordingCall, recordingSchema } from "./recording";
+import { selectScenario } from "./selection";
 
 const local = process.env.VERA_API_URL === undefined ? startLocalEngine() : undefined;
 const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "") ?? local?.url;
@@ -221,18 +222,12 @@ for (const { file, recording } of recordings) {
     for (const scenario of recording.scenarios) {
       const gap = knownGap(file, scenario);
       const notServed = unsupported(scenario);
-      const unavailable =
-        servedEndpoints !== undefined
-          ? scenario.calls.find((call) => {
-              const name = endpointOf(call);
-              const path = new URL(call.path, "http://recording.invalid").pathname;
-              return name === undefined
-                ? path.startsWith("/api/")
-                : !servedEndpoints.includes(name);
-            })
-          : undefined;
-      if (process.env.VERA_REPLAY_ALL !== "1" && unavailable !== undefined) {
-        it.skip(`${scenario.name} (server does not serve ${unavailable.method} ${unavailable.path})`, () => {});
+      const selection =
+        servedEndpoints === undefined || process.env.VERA_REPLAY_ALL === "1"
+          ? undefined
+          : selectScenario(scenario, servedEndpoints, endpointOf);
+      if (process.env.VERA_REPLAY_ALL !== "1" && selection?.kind === "skip") {
+        it.skip(`${scenario.name} (${selection.reason})`, () => {});
       } else if (
         process.env.VERA_REPLAY_ALL !== "1" &&
         servedEndpoints === undefined &&
@@ -246,7 +241,15 @@ for (const { file, recording } of recordings) {
       ) {
         it.skip(`${scenario.name} (engine does not serve ${notServed.method} ${notServed.path})`, () => {});
       } else {
-        it(scenario.name, async () => replay(file, recording, scenario));
+        const replayScenario =
+          selection?.kind === "run-without-reads"
+            ? { ...scenario, calls: selection.calls }
+            : scenario;
+        const name =
+          selection?.kind === "run-without-reads"
+            ? `${scenario.name} (without ${selection.omitted.map((call) => `${call.method} ${call.path}: not served`).join(", ")})`
+            : scenario.name;
+        it(name, async () => replay(file, recording, replayScenario));
       }
     }
   });

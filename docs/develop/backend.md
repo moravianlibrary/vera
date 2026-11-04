@@ -276,7 +276,8 @@ For that, the backend serves the control endpoints of [engine.md](engine.md#cont
 from `engine/seeds/`. They live in a `testing` module, wired only under the `test` profile, and
 the production image does not contain it.
 
-`GET /_engine/endpoints` names what a server serves, and the replay skips the rest.
+`GET /_engine/endpoints` names what a server serves. The replay leaves an unserved read out of its
+scenario, and skips a scenario with an unserved act.
 
 It also needs the **fakes**: a fake per plugin kind, driven by the seed's data, behaving as the
 mock's and the engine's, as written down ([what comes first](#what-comes-first), 6; [the fakes' behaviour](fakes.md)). They are built as plugins (B6), so loading them exercises the same path the real ones
