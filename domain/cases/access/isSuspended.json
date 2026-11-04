@@ -1,0 +1,23 @@
+{
+  "function": "isSuspended",
+  "cases": [
+    {
+      "name": "suspended timestamp is present",
+      "rule": "ACCESS-suspend",
+      "input": { "user": { "suspendedAt": "2026-11-04T10:00:00Z" } },
+      "expected": true
+    },
+    {
+      "name": "suspended timestamp is null",
+      "rule": "ACCESS-suspend",
+      "input": { "user": { "suspendedAt": null } },
+      "expected": false
+    },
+    {
+      "name": "missing suspended timestamp",
+      "rule": "ACCESS-suspend",
+      "input": { "user": {} },
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "function": "heldRoleIdsOf",
+  "cases": [
+    {
+      "name": "unique roles follow hand then mapped order",
+      "rule": "ACCESS-role-ways",
+      "input": {
+        "user": {
+          "handRoleIds": ["r2", "r1"],
+          "mappedRoles": [
+            { "roleId": "r1", "instanceId": "idp1", "claim": "staff" },
+            { "roleId": "r3", "instanceId": "idp2", "claim": "curator" }
+          ]
+        }
+      },
+      "expected": ["r2", "r1", "r3"]
+    },
+    {
+      "name": "empty holdings",
+      "rule": "ACCESS-role-ways",
+      "input": { "user": { "handRoleIds": [], "mappedRoles": [] } },
+      "expected": []
+    }
+  ]
+}

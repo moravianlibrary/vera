@@ -1,0 +1,49 @@
+{
+  "function": "grantsOf",
+  "cases": [
+    {
+      "name": "held roles only, unique grants in first appearance order",
+      "rule": "ROLE-union",
+      "input": {
+        "roles": [
+          {
+            "id": "r1",
+            "grants": [
+              { "permission": "access.read", "scope": "any" },
+              { "permission": "access.manage", "scope": "any" }
+            ]
+          },
+          { "id": "unused", "grants": [{ "permission": "plugin.read", "scope": "any" }] },
+          {
+            "id": "r2",
+            "grants": [
+              { "permission": "access.manage", "scope": "any" },
+              { "permission": "project.read", "scope": "project" }
+            ]
+          }
+        ],
+        "roleIds": ["r1", "r2"]
+      },
+      "expected": [
+        { "permission": "access.read", "scope": "any" },
+        { "permission": "access.manage", "scope": "any" },
+        { "permission": "project.read", "scope": "project" }
+      ]
+    },
+    {
+      "name": "same permission at distinct scopes remains distinct",
+      "rule": "ROLE-union",
+      "input": {
+        "roles": [
+          { "id": "r1", "grants": [{ "permission": "request.create", "scope": null }] },
+          { "id": "r2", "grants": [{ "permission": "request.create", "scope": "any" }] }
+        ],
+        "roleIds": ["r1", "r2"]
+      },
+      "expected": [
+        { "permission": "request.create", "scope": null },
+        { "permission": "request.create", "scope": "any" }
+      ]
+    }
+  ]
+}

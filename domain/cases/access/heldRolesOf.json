@@ -1,0 +1,48 @@
+{
+  "function": "heldRolesOf",
+  "cases": [
+    {
+      "name": "hand first and same role keeps both ways",
+      "rule": "ACCESS-role-ways",
+      "input": {
+        "user": {
+          "handRoleIds": ["r2", "r1"],
+          "mappedRoles": [
+            { "roleId": "r1", "instanceId": "idp1", "claim": "staff" },
+            { "roleId": "r3", "instanceId": "idp2", "claim": "curator" }
+          ]
+        }
+      },
+      "expected": [
+        { "roleId": "r2", "ways": [{ "by": "hand" }] },
+        {
+          "roleId": "r1",
+          "ways": [{ "by": "hand" }, { "by": "mapped", "instanceId": "idp1", "claim": "staff" }]
+        },
+        { "roleId": "r3", "ways": [{ "by": "mapped", "instanceId": "idp2", "claim": "curator" }] }
+      ]
+    },
+    {
+      "name": "preserves mappings order for a mapped role",
+      "rule": "ACCESS-role-ways",
+      "input": {
+        "user": {
+          "handRoleIds": [],
+          "mappedRoles": [
+            { "roleId": "r1", "instanceId": "idp1", "claim": "one" },
+            { "roleId": "r1", "instanceId": "idp2", "claim": "two" }
+          ]
+        }
+      },
+      "expected": [
+        {
+          "roleId": "r1",
+          "ways": [
+            { "by": "mapped", "instanceId": "idp1", "claim": "one" },
+            { "by": "mapped", "instanceId": "idp2", "claim": "two" }
+          ]
+        }
+      ]
+    }
+  ]
+}
