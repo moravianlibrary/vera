@@ -67,9 +67,9 @@ engine-is-running = test -f $(ENGINE_PID) && \
 engine-bg: ## Run the engine in the background (pid in .engine.pid, logs in .engine.log)
 	@if $(engine-is-running); then echo "Engine already running (pid $(engine-pid)) on $(ENGINE_URL)"; exit 0; fi; \
 	rm -f $(ENGINE_PID); \
-	cd engine && VERA_ENGINE_DEVELOPMENT=1 VERA_ENGINE_PORT=$(ENGINE_PORT) setsid sh -c \
+	( cd engine && VERA_ENGINE_DEVELOPMENT=1 VERA_ENGINE_PORT=$(ENGINE_PORT) setsid sh -c \
 		'{ echo $$$$; ps -o lstart= -p $$$$; } > ../$(ENGINE_PID).tmp && mv ../$(ENGINE_PID).tmp ../$(ENGINE_PID) && exec bun run src/main.ts' \
-		> ../$(ENGINE_LOG) 2>&1 < /dev/null & \
+	) > $(ENGINE_LOG) 2>&1 < /dev/null & \
 	while ! test -f $(ENGINE_PID); do sleep 0.1; done; \
 	tries=0; while ! grep -q "VERA engine on" $(ENGINE_LOG) && $(engine-is-running) && [ $$tries -lt 100 ]; do \
 		sleep 0.1; tries=$$((tries + 1)); done; \
@@ -106,9 +106,9 @@ backend-is-running = test -f .backend.pid && \
 backend-bg: ## Run the backend in the background (pid in .backend.pid, logs in .backend.log)
 	@if $(backend-is-running); then echo "Backend already running (pid $(backend-pid)) on http://127.0.0.1:$(BACKEND_PORT)"; exit 0; fi; \
 	rm -f .backend.pid; \
-	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract setsid sh -c \
+	( cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract setsid sh -c \
 		'{ echo $$$$; ps -o lstart= -p $$$$; } > ../.backend.pid.tmp && mv ../.backend.pid.tmp ../.backend.pid && exec ./gradlew :testing:bootRun' \
-		> ../.backend.log 2>&1 < /dev/null & \
+	) > .backend.log 2>&1 < /dev/null & \
 	while ! test -f .backend.pid; do sleep 0.1; done; \
 	tries=0; while ! grep -q "Started VeraTestingApplication" .backend.log && $(backend-is-running) && [ $$tries -lt 300 ]; do \
 		sleep 0.1; tries=$$((tries + 1)); done; \

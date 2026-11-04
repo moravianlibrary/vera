@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.spring.boot)
 }
 
-val codegen by sourceSets.creating
+val codegen = sourceSets.create("codegen")
 
 configurations[codegen.implementationConfigurationName].extendsFrom(configurations.testRuntimeClasspath.get())
 dependencies {
@@ -14,7 +14,7 @@ dependencies {
     add(codegen.implementationConfigurationName, libs.postgresql)
 }
 
-val generateJooq by tasks.registering(JavaExec::class) {
+val generateJooq = tasks.register<JavaExec>("generateJooq") {
     val changelogResources = file("src/main/resources")
     dependsOn(codegen.classesTaskName)
     classpath = codegen.runtimeClasspath

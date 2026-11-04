@@ -44,7 +44,8 @@ public final class GenerateJooq {
                             .withName("org.jooq.codegen.DefaultGenerator")
                             .withDatabase(new Database().withName("org.jooq.meta.postgres.PostgresDatabase")
                                     .withInputSchema("public"))
-                            .withGenerate(new Generate().withPojos(false).withDaos(false))
+                            .withGenerate(new Generate().withPojos(false).withDaos(false)
+                                    .withImplicitJoinPathsToMany(false))
                             .withTarget(new Target().withPackageName("cz.mzk.vera.db.tables")
                                     .withDirectory(output.toString()))));
         }
