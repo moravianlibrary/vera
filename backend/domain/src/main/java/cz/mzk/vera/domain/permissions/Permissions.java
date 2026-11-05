@@ -81,6 +81,9 @@ public final class Permissions {
   private Permissions() {}
 
   public record Entry(String group, List<String> scopes) {}
+  // A permission another needs (PERM-requires). Held at a scope covering the grant's by default;
+  // `any` where the need is only met everywhere; `held` where any scope will do, as creating a
+  // project reaches no project yet. A self-scoped need is met by holding it.
   public record Requirement(String permission, String at) {}
   public record Missing(Grant grant, Grant needs) {}
 
@@ -123,9 +126,6 @@ public final class Permissions {
     return REQUIRES.getOrDefault(permission, List.of());
   }
 
-  // A permission another needs (PERM-requires). Held at a scope covering the grant's by default;
-  // `any` where the need is only met everywhere; `held` where any scope will do, as creating a
-  // project reaches no project yet. A self-scoped need is met by holding it.
   // Whether a grant at `held` reaches everything one at `scope` does: `any` covers every scope,
   // `project` covers `managed`, as a project's manager is on it, and every scope covers `own`.
   public static boolean coversScope(String held, String scope) {

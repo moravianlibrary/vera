@@ -44,17 +44,21 @@ public class HeldAccessQueries {
         List<String> roleIds = Access.isSuspended(holder)
             ? List.of()
             : Access.heldRoleIdsOf(holder);
+        List<Role> roles = roles();
+        return new HeldAccess(roles, roleIds, Access.grantsOf(roles, roleIds));
+    }
+
+    public List<Role> roles() {
         Map<String, List<Grant>> grantsByRole = new LinkedHashMap<>();
         dsl.select(ROLE_GRANTS.ROLE_ID, ROLE_GRANTS.PERMISSION, ROLE_GRANTS.SCOPE)
-            .from(ROLE_GRANTS.join(ROLES).on(ROLE_GRANTS.ROLE_ID.eq(ROLES.ID)))
-            .orderBy(ROLES.POSITION, ROLE_GRANTS.POSITION)
-            .fetch()
-            .forEach(row -> grantsByRole
-                .computeIfAbsent(row.get(ROLE_GRANTS.ROLE_ID), ignored -> new ArrayList<>())
-                .add(new Grant(row.get(ROLE_GRANTS.PERMISSION), row.get(ROLE_GRANTS.SCOPE))));
-        List<Role> roles = dsl.selectFrom(ROLES).orderBy(ROLES.POSITION)
-            .fetch(row -> new Role(row.getId(), grantsByRole.getOrDefault(row.getId(), List.of())));
-        return new HeldAccess(roles, roleIds, Access.grantsOf(roles, roleIds));
+                .from(ROLE_GRANTS.join(ROLES).on(ROLE_GRANTS.ROLE_ID.eq(ROLES.ID)))
+                .orderBy(ROLES.POSITION, ROLE_GRANTS.POSITION)
+                .fetch()
+                .forEach(row -> grantsByRole
+                        .computeIfAbsent(row.get(ROLE_GRANTS.ROLE_ID), ignored -> new ArrayList<>())
+                        .add(new Grant(row.get(ROLE_GRANTS.PERMISSION), row.get(ROLE_GRANTS.SCOPE))));
+        return dsl.selectFrom(ROLES).orderBy(ROLES.POSITION)
+                .fetch(row -> new Role(row.getId(), grantsByRole.getOrDefault(row.getId(), List.of())));
     }
 
     public record HeldAccess(List<Role> roles, List<String> roleIds, List<Grant> grants) {

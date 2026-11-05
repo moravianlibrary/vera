@@ -8,10 +8,12 @@ import static cz.mzk.vera.db.tables.Tables.USERS;
 
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.Correlation;
+import cz.mzk.vera.events.EventChanges;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.login.IdentityInstances.Instance;
 import cz.mzk.vera.plugin.identity.CompleteAnswer;
+import cz.mzk.vera.session.UserIds;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
@@ -22,13 +24,16 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 // ACCESS-first-login; ACCESS-mapping-at-login; ACCESS-login-return.
 @Service
@@ -38,13 +43,16 @@ public class LoginCommands {
     private final Clock clock;
     private final EventRecorder events;
     private final JsonMapper json;
+    private final UserIds userIds;
     private final SecureRandom random = new SecureRandom();
 
-    public LoginCommands(DSLContext dsl, Clock clock, EventRecorder events, JsonMapper json) {
+    public LoginCommands(DSLContext dsl, Clock clock, EventRecorder events, JsonMapper json,
+            UserIds userIds) {
         this.dsl = dsl;
         this.clock = clock;
         this.events = events;
         this.json = json;
+        this.userIds = userIds;
     }
 
     @Transactional
@@ -95,9 +103,9 @@ public class LoginCommands {
         if (!before.equals(after)) {
             events.record(new EventInput(EventCode.USER_ROLES_CHANGED, "user", userId, null,
                     new EventInput.System(), Correlation.newId(), now,
-                    json.createObjectNode().set("changes", json.valueToTree(List.of(change("mappedRoleIds",
+                    EventChanges.configurationOf(json, List.of(EventChanges.change("mappedRoleIds",
                             before.stream().map(Mapped::roleId).toList(),
-                            after.stream().map(Mapped::roleId).toList())))), null));
+                            after.stream().map(Mapped::roleId).toList()))), null));
         }
         dsl.update(USER_IDENTITIES)
                 .set(USER_IDENTITIES.LAST_LOGIN_AT, now.atOffset(ZoneOffset.UTC))
@@ -109,8 +117,9 @@ public class LoginCommands {
     }
 
     @Transactional
-    public String createLinkedPerson(Instance instance, CompleteAnswer answer, Instant now, boolean firstLogin) {
-        String userId = nextUserId();
+    public String createLinkedPerson(Instance instance, CompleteAnswer answer, Instant now,
+            boolean firstLogin) {
+        String userId = userIds.next();
         int userPosition = dsl.select(DSL.coalesce(DSL.max(USERS.POSITION), -1).add(1))
                 .from(USERS)
                 .fetchOne(0, int.class);
@@ -127,9 +136,9 @@ public class LoginCommands {
         }
         if (firstLogin) {
             events.record(new EventInput(EventCode.USER_CREATED, "user", userId, null,
-                    new EventInput.System(), Correlation.newId(), now, json.createObjectNode().set("changes",
-                            json.valueToTree(List.of(change("how", null, "first_login"),
-                                    change("instanceId", null, instance.id())))), null));
+                    new EventInput.System(), Correlation.newId(), now, EventChanges.configurationOf(json,
+                            List.of(EventChanges.change("how", null, "first_login"),
+                                    EventChanges.change("instanceId", null, instance.id()))), null));
         }
         return userId;
     }
@@ -202,19 +211,33 @@ public class LoginCommands {
                 .fetch(row -> new Mapped(row.value1(), row.value2()));
     }
 
-    private String nextUserId() {
-        int max = dsl.select(USERS.ID).from(USERS).fetch(USERS.ID).stream()
-                .filter(id -> id.matches("u[0-9]+"))
-                .mapToInt(id -> Integer.parseInt(id.substring(1))).max().orElse(0);
-        return "u" + (max + 1);
+    @Transactional
+    public String setDefaultRole(String instanceId, String roleId) {
+        var row = dsl.select(PLUGIN_INSTANCES.SETTINGS)
+                .from(PLUGIN_INSTANCES)
+                .where(PLUGIN_INSTANCES.ID.eq(instanceId))
+                .fetchOne();
+        JsonNode current = readSettings(row == null ? null : row.value1());
+        ObjectNode settings = current.isObject()
+                ? ((ObjectNode) current).deepCopy() : json.createObjectNode();
+        JsonNode previousNode = settings.get("defaultRoleId");
+        String previous = previousNode == null || previousNode.isNull() ? null : previousNode.asString();
+        if (!Objects.equals(previous, roleId)) {
+            settings.set("defaultRoleId", roleId == null ? json.nullNode() : json.valueToTree(roleId));
+            dsl.update(PLUGIN_INSTANCES)
+                    .set(PLUGIN_INSTANCES.SETTINGS, JSONB.valueOf(settings.toString()))
+                    .where(PLUGIN_INSTANCES.ID.eq(instanceId))
+                    .execute();
+        }
+        return previous;
     }
 
-    private static Map<String, Object> change(String field, Object from, Object to) {
-        var change = new LinkedHashMap<String, Object>();
-        change.put("field", field);
-        change.put("from", from);
-        change.put("to", to);
-        return change;
+    private JsonNode readSettings(Object value) {
+        try {
+            return value == null ? json.nullNode() : json.readTree(value.toString());
+        } catch (Exception exception) {
+            throw new IllegalStateException("Invalid JSON stored in Identity instance", exception);
+        }
     }
 
     public record LoginFlow(String id, String instanceId, String returnTo, OffsetDateTime createdAt) {}

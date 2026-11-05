@@ -7,6 +7,7 @@ import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.Correlation;
+import cz.mzk.vera.events.EventChanges;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.events.Outbox;
@@ -20,7 +21,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -149,8 +149,9 @@ public class SignUpCommands {
                 .where(PENDING_SIGN_UPS.TOKEN_HASH.eq(tokenHash))
                 .execute();
         localPasswords.save(row.instanceId(), row.username(), row.passwordHash());
-        var data = json.createObjectNode().set("changes", json.valueToTree(List.of(
-                change("how", null, "sign_up"), change("instanceId", null, row.instanceId()))));
+        var data = EventChanges.configurationOf(json, List.of(
+                EventChanges.change("how", null, "sign_up"),
+                EventChanges.change("instanceId", null, row.instanceId())));
         events.record(new EventInput(EventCode.USER_CREATED, "user", userId, null,
                 new EventInput.User(userId), Correlation.newId(), clock.instant(), data, null));
         return new Confirmed(userId, row.instanceId(), row.returnTo());
@@ -229,14 +230,6 @@ public class SignUpCommands {
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private static Map<String, Object> change(String field, Object from, Object to) {
-        var change = new LinkedHashMap<String, Object>();
-        change.put("field", field);
-        change.put("from", from);
-        change.put("to", to);
-        return change;
     }
 
     public enum SignUpResult {

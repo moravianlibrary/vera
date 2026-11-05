@@ -23,25 +23,55 @@ public class IdentityInstances {
     }
 
     public List<Instance> all() {
-        return dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.IMPLEMENTATION_ID,
-                        PLUGIN_INSTANCES.CONFIGURATION, PLUGIN_INSTANCES.SETTINGS, PLUGIN_IMPLEMENTATIONS.VERSIONS)
+        return instances(true);
+    }
+
+    public String firstLocalAccounts() {
+        return dsl.select(PLUGIN_INSTANCES.ID)
                 .from(PLUGIN_INSTANCES.join(PLUGIN_IMPLEMENTATIONS)
                         .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID)))
-                .where(PLUGIN_INSTANCES.IS_ENABLED.isTrue()).and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
-                .orderBy(PLUGIN_INSTANCES.POSITION).fetch().stream().map(row -> {
+                .where(PLUGIN_IMPLEMENTATIONS.NAME.eq("LocalAccounts"))
+                .and(PLUGIN_INSTANCES.IS_ENABLED.isTrue())
+                .and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
+                .orderBy(PLUGIN_INSTANCES.POSITION)
+                .limit(1)
+                .fetchOne(PLUGIN_INSTANCES.ID);
+    }
+
+    public AccessInstance findForAccess(String id) {
+        return instances(false).stream().filter(instance -> instance.id().equals(id))
+                .findFirst().map(Instance::accessInstance).orElse(null);
+    }
+
+    private List<Instance> instances(boolean enabledOnly) {
+        var query = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.IS_ENABLED,
+                        PLUGIN_INSTANCES.IMPLEMENTATION_ID,
+                        PLUGIN_INSTANCES.CONFIGURATION, PLUGIN_INSTANCES.SETTINGS,
+                        PLUGIN_IMPLEMENTATIONS.VERSIONS)
+                .from(PLUGIN_INSTANCES.join(PLUGIN_IMPLEMENTATIONS)
+                        .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID)))
+                .where(PLUGIN_INSTANCES.IS_DELETED.isFalse());
+        if (enabledOnly) {
+            query = query.and(PLUGIN_INSTANCES.IS_ENABLED.isTrue());
+        }
+        return query.orderBy(PLUGIN_INSTANCES.POSITION).fetch().stream().map(row -> {
                     JsonNode settings = read(row.get(PLUGIN_INSTANCES.SETTINGS));
                     if (!"Identity".equals(settings.path("kind").asString())) {
                         return null;
                     }
-                    JsonNode declaration = read(row.get(PLUGIN_IMPLEMENTATIONS.VERSIONS)).path(0).path("declares");
+                    JsonNode declaration = read(row.get(PLUGIN_IMPLEMENTATIONS.VERSIONS))
+                            .path(0).path("declares");
                     JsonNode rawMappings = settings.path("mappings");
                     List<Mapping> mappings = rawMappings.isArray() ? rawMappings.valueStream()
-                            .map(item -> new Mapping(item.path("claim").asString(), item.path("roleId").asString()))
+                            .map(item -> new Mapping(item.path("claim").asString(),
+                                    item.path("roleId").asString()))
                             .toList() : List.of();
-                    Settings values = new Settings(settings.path("label").asString(), settings.path("order").asInt(),
+                    Settings values = new Settings(settings.path("label").asString(),
+                            settings.path("order").asInt(),
                             settings.path("userIdClaim").asString(), nullable(settings.path("defaultRoleId")),
                             settings.path("matchByEmail").asBoolean(false), mappings);
-                    return new Instance(row.get(PLUGIN_INSTANCES.ID), row.get(PLUGIN_INSTANCES.IMPLEMENTATION_ID),
+                    return new Instance(row.get(PLUGIN_INSTANCES.ID), row.get(PLUGIN_INSTANCES.NAME),
+                            row.get(PLUGIN_INSTANCES.IS_ENABLED), row.get(PLUGIN_INSTANCES.IMPLEMENTATION_ID),
                             "Form".equals(declaration.path("loginEntry").asString()) ? "form" : "redirect",
                             read(row.get(PLUGIN_INSTANCES.CONFIGURATION)), values);
                 }).filter(Objects::nonNull)
@@ -91,7 +121,17 @@ public class IdentityInstances {
         return node.isMissingNode() || node.isNull() ? null : node.asString();
     }
 
-    public record Instance(String id, String implementationId, String entry, JsonNode configuration, Settings settings) {}
+    public record Instance(String id, String name, boolean enabled, String implementationId, String entry,
+            JsonNode configuration, Settings settings) {
+        public AccessInstance accessInstance() {
+            return new AccessInstance(id, name, settings.userIdClaim(), settings.defaultRoleId(),
+                    settings.mappings(),
+                    "form".equals(entry), enabled);
+        }
+    }
+
+    public record AccessInstance(String id, String name, String userIdClaim, String defaultRoleId,
+            List<Mapping> mappings, boolean isLocal, boolean isEnabled) {}
     public record Settings(String label, int order, String userIdClaim, String defaultRoleId,
             boolean matchByEmail, List<Mapping> mappings) {}
     public record Mapping(String claim, String roleId) {}
