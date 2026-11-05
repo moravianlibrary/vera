@@ -1,6 +1,7 @@
 package cz.mzk.vera.testing.fakes.identity;
 
 import cz.mzk.vera.plugin.PluginContext;
+import cz.mzk.vera.plugin.PasswordCheck;
 import cz.mzk.vera.plugin.PluginHttp;
 import cz.mzk.vera.plugin.PluginUnavailable;
 import cz.mzk.vera.plugin.identity.BeginAnswer;
@@ -27,6 +28,13 @@ public final class FakeLocalAccounts implements Identity {
     public CompleteAnswer complete(PluginContext context, CompleteInput input) {
         if (!(input instanceof CompleteInput.Form form)) {
             throw new IdentityRefused(IdentityRefusal.NOT_ALLOWED);
+        }
+        PasswordCheck check = context.localPasswords().check(form.username(), form.password());
+        if (check == PasswordCheck.MATCHES) {
+            return new CompleteAnswer(form.username(), null, false, form.username(), List.of());
+        }
+        if (check == PasswordCheck.DIFFERS) {
+            throw new IdentityRefused(IdentityRefusal.WRONG_CREDENTIALS);
         }
         String body = "username=" + encode(form.username()) + "&password=" + encode(form.password());
         URI uri = URI.create("https://local-accounts.fake/" + context.instanceId() + "/check");

@@ -13,6 +13,8 @@ Both are written from this page and from the types in `domain/src/plugin-api/`.
 
 Every call gets the instance's **context**: its configuration, its secrets, an HTTP client, a
 logger and the clock ([B6](../../develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)).
+`LocalAccounts` can check a password through `localPasswords()`, scoped to its own instance; the
+check is read-only and does not expose the stored hash.
 A plugin reaches the outside world only through that client, so its calls are timed out, traced
 and recorded the same way. A call never writes to VERA's database and never calls another plugin:
 VERA gives it what it needs and writes what it answers. The one thing it reads on its own is its

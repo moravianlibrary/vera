@@ -16,4 +16,6 @@ public interface PluginContext {
     System.Logger logger();
 
     Clock clock();
+
+    LocalPasswords localPasswords();
 }

@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 
 import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.PluginHttp;
+import cz.mzk.vera.plugin.LocalPasswords;
 import cz.mzk.vera.plugin.PluginRefused;
 import cz.mzk.vera.plugin.PluginUnavailable;
 import cz.mzk.vera.pluginhost.InstalledPlugins;
@@ -39,22 +40,24 @@ public class PluginCalls {
     private final PluginHttp http;
     private final Clock clock;
     private final ObservationRegistry observations;
+    private final LocalPasswordSource localPasswords;
     private final Duration timeout;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginHttp http, Clock clock,
-            ObservationRegistry observations) {
-        this(dsl, installed, http, clock, observations, PLUGIN_TIMEOUT);
+            ObservationRegistry observations, LocalPasswordSource localPasswords) {
+        this(dsl, installed, http, clock, observations, localPasswords, PLUGIN_TIMEOUT);
     }
 
     PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginHttp http, Clock clock,
-            ObservationRegistry observations, Duration timeout) {
+            ObservationRegistry observations, LocalPasswordSource localPasswords, Duration timeout) {
         this.dsl = dsl;
         this.installed = installed;
         this.http = http;
         this.clock = clock;
         this.observations = observations;
+        this.localPasswords = localPasswords;
         this.timeout = timeout;
     }
 
@@ -109,7 +112,8 @@ public class PluginCalls {
             }
 
             PluginContext context = new Context(
-                    instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock);
+                    instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock,
+                    localPasswords.forInstance(instanceId));
             K implementation = kind.cast(plugin.implementation());
             A answer = invoke(plugin, implementation, context, body);
             if (answer == null) {
@@ -168,10 +172,16 @@ public class PluginCalls {
     }
 
     private record Context(String instanceId, Map<String, String> configuration,
-            Map<String, String> secrets, PluginHttp http, Clock clock) implements PluginContext {
+            Map<String, String> secrets, PluginHttp http, Clock clock,
+            LocalPasswords localPasswords) implements PluginContext {
         @Override
         public System.Logger logger() {
             return System.getLogger("vera.plugin." + instanceId);
+        }
+
+        @Override
+        public LocalPasswords localPasswords() {
+            return localPasswords;
         }
     }
 }

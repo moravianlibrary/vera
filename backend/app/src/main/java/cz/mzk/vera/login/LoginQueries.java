@@ -36,16 +36,10 @@ public class LoginQueries {
     }
 
     List<LoginEntry> loginEntries() {
-        boolean mail = !dsl.select(PLUGIN_INSTANCES.ID)
-                .from(PLUGIN_INSTANCES.join(PLUGIN_IMPLEMENTATIONS)
-                        .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID)))
-                .where(PLUGIN_IMPLEMENTATIONS.KIND.eq("DeliveryChannel"))
-                .and(PLUGIN_INSTANCES.IS_ENABLED.isTrue()).and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
-                .fetch().isEmpty();
         return instances.all().stream().map(instance -> {
             boolean form = instance.entry().equals("form");
             return new LoginEntry(instance.id(), instance.settings().label(), instance.entry(),
-                    form && mail && "on".equals(instance.configuration().path("signup").asString()), form && mail);
+                    instances.canSignUp(instance), form && instances.hasMailChannel(instance.id()));
         }).toList();
     }
 

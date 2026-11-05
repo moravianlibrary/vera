@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import cz.mzk.vera.pluginhost.InstalledPlugins;
 import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.PluginHttp;
+import cz.mzk.vera.plugin.PasswordCheck;
 import cz.mzk.vera.plugin.PluginRefused;
 import cz.mzk.vera.plugin.PluginUnavailable;
 import cz.mzk.vera.plugin.identity.Identity;
@@ -105,7 +106,8 @@ class PluginCallsTests {
                 .isInstanceOf(PluginOutcome.Unavailable.class);
 
         PluginCalls shortTimeout = new PluginCalls(
-                dsl, installed, http, clock, observations, Duration.ofMillis(100));
+                dsl, installed, http, clock, observations, instanceId -> (username, password) ->
+                        PasswordCheck.NONE, Duration.ofMillis(100));
         assertThat(shortTimeout.call("pi22", Identity.class, "slow", (kind, context) -> {
             try {
                 Thread.sleep(1000);

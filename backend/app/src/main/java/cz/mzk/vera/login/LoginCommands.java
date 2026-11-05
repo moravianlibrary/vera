@@ -72,24 +72,7 @@ public class LoginCommands {
                 insertIdentity(userId, instance.id(), answer.externalId(), now);
             }
         } else {
-            userId = nextUserId();
-            int userPosition = dsl.select(DSL.coalesce(DSL.max(USERS.POSITION), -1).add(1))
-                    .from(USERS).fetchOne(0, int.class);
-            dsl.insertInto(USERS)
-                    .set(USERS.ID, userId)
-                    .set(USERS.NAME, answer.name())
-                    .set(USERS.KIND, "person")
-                    .set(USERS.EMAIL, answer.email())
-                    .set(USERS.POSITION, userPosition)
-                    .execute();
-            insertIdentity(userId, instance.id(), answer.externalId(), now);
-            if (instance.settings().defaultRoleId() != null) {
-                insertMapped(userId, instance.settings().defaultRoleId(), instance.id(), "default role");
-            }
-            events.record(new EventInput(EventCode.USER_CREATED, "user", userId, null,
-                    new EventInput.System(), Correlation.newId(), now, json.createObjectNode().set("changes",
-                            json.valueToTree(List.of(change("how", null, "first_login"),
-                                    change("instanceId", null, instance.id())))), null));
+            userId = createLinkedPerson(instance, answer, now, true);
         }
         List<Mapped> before = mappings(userId, instance.id());
         dsl.deleteFrom(USER_MAPPED_ROLES)
@@ -123,6 +106,32 @@ public class LoginCommands {
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(answer.externalId()))
                 .execute();
         return new Result(userId, null);
+    }
+
+    @Transactional
+    public String createLinkedPerson(Instance instance, CompleteAnswer answer, Instant now, boolean firstLogin) {
+        String userId = nextUserId();
+        int userPosition = dsl.select(DSL.coalesce(DSL.max(USERS.POSITION), -1).add(1))
+                .from(USERS)
+                .fetchOne(0, int.class);
+        dsl.insertInto(USERS)
+                .set(USERS.ID, userId)
+                .set(USERS.NAME, answer.name())
+                .set(USERS.KIND, "person")
+                .set(USERS.EMAIL, answer.email())
+                .set(USERS.POSITION, userPosition)
+                .execute();
+        insertIdentity(userId, instance.id(), answer.externalId(), now);
+        if (instance.settings().defaultRoleId() != null) {
+            insertMapped(userId, instance.settings().defaultRoleId(), instance.id(), "default role");
+        }
+        if (firstLogin) {
+            events.record(new EventInput(EventCode.USER_CREATED, "user", userId, null,
+                    new EventInput.System(), Correlation.newId(), now, json.createObjectNode().set("changes",
+                            json.valueToTree(List.of(change("how", null, "first_login"),
+                                    change("instanceId", null, instance.id())))), null));
+        }
+        return userId;
     }
 
     public String startFlow(String instanceId, String returnTo) {

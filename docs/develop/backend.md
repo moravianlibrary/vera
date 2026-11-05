@@ -252,8 +252,9 @@ hash.
 - `OidcIdentity` uses the Nimbus OAuth 2.0 / OpenID Connect SDK: discovery, the authorization code
   flow with PKCE, ID token checks. One instance per provider (Keycloak, Google, Seznam), each
   configured on Plugins.
-- `LocalAccounts` hashes with Argon2id; its mail goes through the Delivery channel named by
-  `mail_channel`.
+- `LocalAccounts` checks passwords kept by VERA in `login` with Argon2id through its context; its
+  mail goes through the Delivery channel named by `mail_channel`. Removal of unverified sign-ups
+  waits for the B5 job.
 - B1's “no Spring Security” stands: Java libraries are used inside VERA's own design (Nimbus
   for OIDC, `spring-security-crypto` for Argon2id, a servlet filter for the session cookie).
 - Writing acts are protected by `SameSite=Lax` and by refusing a body that is not

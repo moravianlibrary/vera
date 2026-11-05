@@ -8,6 +8,8 @@ import cz.mzk.vera.session.SessionFilter;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,7 +110,7 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        assertThat(endpoints.toString()).isEqualTo("[\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"session\"]");
+        assertThat(endpoints.toString()).isEqualTo("[\"confirmEmail\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestPasswordReset\",\"resetPassword\",\"sendVerificationAgain\",\"session\",\"signUp\"]");
     }
 
     @Test
@@ -157,7 +159,7 @@ class ApiBoundaryTests {
                 .returnResult().getResponseBody();
         assertThat(provider).contains("Jana Nováková").contains("href=");
         assertThat(provider.split("<li>").length - 1).isEqualTo(7);
-        java.util.regex.Matcher link = java.util.regex.Pattern.compile("href=\\\"([^\\\"]*jnovakova[^\\\"]*)\\\"")
+        Matcher link = Pattern.compile("href=\\\"([^\\\"]*jnovakova[^\\\"]*)\\\"")
                 .matcher(provider);
         assertThat(link.find()).isTrue();
         String href = java.net.URLDecoder.decode(link.group(1).replace("&amp;", "&"), java.nio.charset.StandardCharsets.UTF_8);
@@ -183,7 +185,7 @@ class ApiBoundaryTests {
             String provider = started.getResponseHeaders().getLocation().toString();
             String flow = java.net.URLDecoder.decode(provider.substring(provider.indexOf("return=") + 7),
                     java.nio.charset.StandardCharsets.UTF_8);
-            java.util.regex.Matcher flowMatch = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(flow);
+            Matcher flowMatch = Pattern.compile("flow=([^&]+)").matcher(flow);
             assertThat(flowMatch.find()).isTrue();
             assertThat(jdbc.queryForObject("SELECT return_to FROM login_flows WHERE id=?", String.class,
                     flowMatch.group(1))).isEqualTo("/");
@@ -193,7 +195,7 @@ class ApiBoundaryTests {
         String provider = started.getResponseHeaders().getLocation().toString();
         String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("return=") + 7),
                 java.nio.charset.StandardCharsets.UTF_8);
-        java.util.regex.Matcher flowMatch = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callbackUrl);
+        Matcher flowMatch = Pattern.compile("flow=([^&]+)").matcher(callbackUrl);
         assertThat(flowMatch.find()).isTrue();
         String flow = flowMatch.group(1);
         client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON).body("{\"advance\":{\"minutes\":11}}")
@@ -211,7 +213,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String crossCallback = java.net.URLDecoder.decode(crossStart.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String crossFlow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(crossCallback).results()
+        String crossFlow = Pattern.compile("flow=([^&]+)").matcher(crossCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi41/callback?flow=" + crossFlow + "&code=google-u1").exchange()
                 .expectStatus().isFound().expectHeader().value("Location", value ->
@@ -220,7 +222,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String unknownCallback = java.net.URLDecoder.decode(unknownStart.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String unknownFlow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(unknownCallback).results()
+        String unknownFlow = Pattern.compile("flow=([^&]+)").matcher(unknownCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?flow=" + unknownFlow + "&code=unknown").exchange()
                 .expectStatus().isFound().expectHeader().value("Location", value ->
@@ -234,7 +236,7 @@ class ApiBoundaryTests {
         String provider = start.getResponseHeaders().getLocation().toString();
         String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("return=") + 7),
                 java.nio.charset.StandardCharsets.UTF_8);
-        String flow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callbackUrl).results()
+        String flow = Pattern.compile("flow=([^&]+)").matcher(callbackUrl).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi41/callback?flow=" + flow + "&code=nova.ctenarka@muni.cz").exchange()
                 .expectStatus().isFound().expectHeader().value("Location", value -> assertThat(value).isEqualTo("/"));
@@ -249,7 +251,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String emailCallback = java.net.URLDecoder.decode(emailStart.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String emailFlow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(emailCallback).results()
+        String emailFlow = Pattern.compile("flow=([^&]+)").matcher(emailCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi41/callback?flow=" + emailFlow + "&code=google-u1").exchange()
                 .expectStatus().isFound();
@@ -264,7 +266,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String flow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callback).results()
+        String flow = Pattern.compile("flow=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?flow=" + flow + "&code=jnovakova").exchange()
                 .expectStatus().isFound();
@@ -275,7 +277,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String secondCallback = java.net.URLDecoder.decode(second.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String secondFlow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(secondCallback).results()
+        String secondFlow = Pattern.compile("flow=([^&]+)").matcher(secondCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?flow=" + secondFlow + "&code=jnovakova").exchange()
                 .expectStatus().isFound();
@@ -291,7 +293,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String flow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callback).results()
+        String flow = Pattern.compile("flow=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         var login = client.get().uri("/api/login/pi22/callback?flow=" + flow + "&code=bez.skupiny")
                 .exchange().expectStatus().isFound().expectBody().returnResult();
@@ -307,7 +309,7 @@ class ApiBoundaryTests {
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
                 .split("return=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
-        String flow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callback).results()
+        String flow = Pattern.compile("flow=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?flow=" + flow + "&code=jnovakova").exchange()
                 .expectStatus().isFound().expectHeader().value("Location", value ->

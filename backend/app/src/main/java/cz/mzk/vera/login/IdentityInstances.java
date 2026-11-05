@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.JsonNode;
@@ -29,7 +30,9 @@ public class IdentityInstances {
                 .where(PLUGIN_INSTANCES.IS_ENABLED.isTrue()).and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
                 .orderBy(PLUGIN_INSTANCES.POSITION).fetch().stream().map(row -> {
                     JsonNode settings = read(row.get(PLUGIN_INSTANCES.SETTINGS));
-                    if (!"Identity".equals(settings.path("kind").asString())) return null;
+                    if (!"Identity".equals(settings.path("kind").asString())) {
+                        return null;
+                    }
                     JsonNode declaration = read(row.get(PLUGIN_IMPLEMENTATIONS.VERSIONS)).path(0).path("declares");
                     JsonNode rawMappings = settings.path("mappings");
                     List<Mapping> mappings = rawMappings.isArray() ? rawMappings.valueStream()
@@ -41,12 +44,39 @@ public class IdentityInstances {
                     return new Instance(row.get(PLUGIN_INSTANCES.ID), row.get(PLUGIN_INSTANCES.IMPLEMENTATION_ID),
                             "Form".equals(declaration.path("loginEntry").asString()) ? "form" : "redirect",
                             read(row.get(PLUGIN_INSTANCES.CONFIGURATION)), values);
-                }).filter(java.util.Objects::nonNull)
+                }).filter(Objects::nonNull)
                 .sorted(Comparator.comparingInt(instance -> instance.settings().order())).toList();
     }
 
     public Instance find(String id) {
         return all().stream().filter(instance -> instance.id().equals(id)).findFirst().orElse(null);
+    }
+
+    public boolean canSignUp(Instance instance) {
+        String channel = instance.configuration().path("mail_channel").asString(null);
+        return "form".equals(instance.entry())
+                && "on".equals(instance.configuration().path("signup").asString())
+                && channel != null
+                && dsl.fetchExists(dsl.selectOne().from(PLUGIN_INSTANCES.join(PLUGIN_IMPLEMENTATIONS)
+                        .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID)))
+                        .where(PLUGIN_INSTANCES.ID.eq(channel))
+                        .and(PLUGIN_IMPLEMENTATIONS.KIND.eq("DeliveryChannel"))
+                        .and(PLUGIN_INSTANCES.IS_ENABLED.isTrue())
+                        .and(PLUGIN_INSTANCES.IS_DELETED.isFalse()));
+    }
+
+    public boolean hasMailChannel(String instanceId) {
+        Instance instance = find(instanceId);
+        if (instance == null) {
+            return false;
+        }
+        String channel = instance.configuration().path("mail_channel").asString(null);
+        return channel != null && dsl.fetchExists(dsl.selectOne().from(PLUGIN_INSTANCES.join(PLUGIN_IMPLEMENTATIONS)
+                .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID)))
+                .where(PLUGIN_INSTANCES.ID.eq(channel))
+                .and(PLUGIN_IMPLEMENTATIONS.KIND.eq("DeliveryChannel"))
+                .and(PLUGIN_INSTANCES.IS_ENABLED.isTrue())
+                .and(PLUGIN_INSTANCES.IS_DELETED.isFalse()));
     }
 
     private JsonNode read(Object value) {
