@@ -11,6 +11,15 @@ import {
   managersOf,
   roleNameOf,
 } from "./access";
+import {
+  additionStateOf,
+  batchIdOf,
+  effectivePageCount,
+  existingCopyStateOf,
+  projectIdOf,
+  publicRecordStatusOf,
+  recordStatusOf,
+} from "./documents";
 import type { Iteration, RepeatEvery, Request } from "./entities";
 import {
   catchUpPagesOf,
@@ -61,11 +70,14 @@ import {
   valueInUseOf,
   withTextCondition,
 } from "./properties";
+import { isBeingChecked, isBulkApprovable, rowDecisionOf } from "./requests";
 import type { Cadence } from "./schedules";
 import { isTooFrequent, nextOccurrenceOf, occurrencesOf, repeatCadenceOf } from "./schedules";
 import {
+  decisionStatusOf,
   iterationStatusOf,
   passesGates,
+  publicIterationStatusOf,
   publicStatusOf,
   statusFootnoteOf,
   validationOf,
@@ -153,6 +165,20 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   editPermissionOf: (...args) => editPermissionOf(args[0] as string),
   propertyKeyOfPermission: (...args) => propertyKeyOfPermission(args[0] as never),
   meetsCondition: (...args) => meetsCondition(args[0] as never, args[1] as never, date(args[2])),
+  publicIterationStatusOf: (...args) => publicIterationStatusOf(args[0] as never),
+  decisionStatusOf: (...args) => decisionStatusOf(args[0] as never),
+  parseCount: (...args) => parseCount(args[0] as string),
+  parseDay: (...args) => parseDay(args[0] as string),
+  recordStatusOf: (...args) => recordStatusOf(args[0] as never),
+  publicRecordStatusOf: (...args) => publicRecordStatusOf(args[0] as never, args[1] as string),
+  additionStateOf: (...args) => additionStateOf(args[0] as never),
+  effectivePageCount: (...args) => effectivePageCount(args[0] as never),
+  existingCopyStateOf: (...args) => existingCopyStateOf(args[0] as never),
+  projectIdOf: (...args) => projectIdOf(args[0] as never),
+  batchIdOf: (...args) => batchIdOf(args[0] as never),
+  rowDecisionOf: (...args) => rowDecisionOf(args[0] as never),
+  isBeingChecked: (...args) => isBeingChecked(args[0] as never),
+  isBulkApprovable: (...args) => isBulkApprovable(args[0] as never),
 };
 
 const adapters: Record<
@@ -349,7 +375,12 @@ function date(value: unknown): Date {
 function withBase(base: Record<string, unknown> | undefined, input: Record<string, unknown>) {
   const result = { ...input };
   for (const [key, value] of Object.entries(result)) {
-    if (key.toLowerCase().includes("iteration") && value && typeof value === "object") {
+    if (
+      key.toLowerCase().includes("iteration") &&
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value)
+    ) {
       result[key] = { ...base, ...value };
     }
   }

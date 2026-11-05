@@ -1,0 +1,56 @@
+{
+  "function": "effectivePageCount",
+  "cases": [
+    {
+      "name": "highest page tier wins",
+      "rule": "DOC-property-values",
+      "input": {
+        "document": {
+          "id": "d",
+          "catalogId": "cat",
+          "unit": null,
+          "title": "Title",
+          "type": "Monograph",
+          "shelfMark": null,
+          "pageSources": [
+            {
+              "source": "manual",
+              "tier": 1,
+              "value": 10
+            },
+            {
+              "source": "catalog",
+              "tier": 2,
+              "value": 20
+            }
+          ],
+          "registryRecords": [],
+          "properties": []
+        }
+      },
+      "expected": {
+        "source": "catalog",
+        "tier": 2,
+        "value": 20
+      }
+    },
+    {
+      "name": "no page source",
+      "rule": "DOC-property-values",
+      "input": {
+        "document": {
+          "id": "d",
+          "catalogId": "cat",
+          "unit": null,
+          "title": "Title",
+          "type": "Monograph",
+          "shelfMark": null,
+          "pageSources": [],
+          "registryRecords": [],
+          "properties": []
+        }
+      },
+      "expected": null
+    }
+  ]
+}

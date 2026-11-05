@@ -1,0 +1,48 @@
+{
+  "function": "rowDecisionOf",
+  "cases": [
+    {
+      "name": "pending takes precedence",
+      "rule": "VIEW-requests",
+      "input": {
+        "requests": [
+          {
+            "id": "r",
+            "documentId": "d",
+            "requesterId": "u",
+            "at": "2026-01-01T00:00:00Z",
+            "reason": null,
+            "batchId": "b",
+            "projectId": null,
+            "existingCopies": [],
+            "checkedAt": "2026-01-01T00:00:00Z",
+            "decision": "Withdrawn",
+            "withdrawnAt": "2026-01-01T00:00:00Z"
+          },
+          {
+            "id": "r",
+            "documentId": "d",
+            "requesterId": "u",
+            "at": "2026-01-01T00:00:00Z",
+            "reason": null,
+            "batchId": "b",
+            "projectId": null,
+            "existingCopies": [],
+            "checkedAt": "2026-01-01T00:00:00Z",
+            "decision": "Pending",
+            "isAfterProjectApproval": false
+          }
+        ]
+      },
+      "expected": "Pending"
+    },
+    {
+      "name": "empty has no row decision",
+      "rule": "VIEW-requests",
+      "input": {
+        "requests": []
+      },
+      "expected": null
+    }
+  ]
+}

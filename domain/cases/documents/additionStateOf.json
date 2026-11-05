@@ -1,0 +1,104 @@
+{
+  "function": "additionStateOf",
+  "cases": [
+    {
+      "name": "pending state",
+      "rule": "ENT-batch",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": [
+            {
+              "id": "r",
+              "documentId": "d",
+              "requesterId": "u",
+              "at": "2026-01-01T00:00:00Z",
+              "reason": null,
+              "batchId": "b",
+              "projectId": null,
+              "existingCopies": [],
+              "checkedAt": "2026-01-01T00:00:00Z",
+              "decision": "Pending",
+              "isAfterProjectApproval": false
+            }
+          ]
+        }
+      },
+      "expected": "awaiting"
+    },
+    {
+      "name": "declined state",
+      "rule": "ENT-batch",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": [
+            {
+              "id": "r",
+              "documentId": "d",
+              "requesterId": "u",
+              "at": "2026-01-01T00:00:00Z",
+              "reason": null,
+              "batchId": "b",
+              "projectId": null,
+              "existingCopies": [],
+              "checkedAt": "2026-01-01T00:00:00Z",
+              "decision": "Denied",
+              "decline": {
+                "actorId": "u",
+                "at": "2026-01-01T00:00:00Z",
+                "publicText": "",
+                "internalText": null
+              }
+            }
+          ]
+        }
+      },
+      "expected": "declined"
+    },
+    {
+      "name": "no state",
+      "rule": "ENT-batch",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": []
+        }
+      },
+      "expected": null
+    }
+  ]
+}

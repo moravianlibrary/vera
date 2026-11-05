@@ -1,0 +1,65 @@
+{
+  "function": "publicRecordStatusOf",
+  "cases": [
+    {
+      "name": "own latest ask",
+      "rule": "VIEW-documents-audience",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": [
+            {
+              "id": "r",
+              "documentId": "d",
+              "requesterId": "u",
+              "at": "2026-01-01T00:00:00Z",
+              "reason": null,
+              "batchId": "b",
+              "projectId": null,
+              "existingCopies": [],
+              "checkedAt": "2026-01-01T00:00:00Z",
+              "decision": "Pending",
+              "isAfterProjectApproval": false
+            }
+          ]
+        },
+        "userId": "u"
+      },
+      "expected": "WaitingForReview"
+    },
+    {
+      "name": "no reachable ask",
+      "rule": "VIEW-documents-audience",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": []
+        },
+        "userId": "u"
+      },
+      "expected": null
+    }
+  ]
+}

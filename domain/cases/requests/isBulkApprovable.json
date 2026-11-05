@@ -1,0 +1,120 @@
+{
+  "function": "isBulkApprovable",
+  "cases": [
+    {
+      "name": "checked open ask without copies",
+      "rule": "VIEW-requests",
+      "input": {
+        "row": {
+          "decision": "Pending",
+          "record": {
+            "document": {
+              "id": "d",
+              "catalogId": "cat",
+              "unit": null,
+              "title": "Title",
+              "type": "Monograph",
+              "shelfMark": null,
+              "pageSources": [],
+              "registryRecords": [],
+              "properties": []
+            },
+            "iterations": [],
+            "requests": [
+              {
+                "id": "r",
+                "documentId": "d",
+                "requesterId": "u",
+                "at": "2026-01-01T00:00:00Z",
+                "reason": null,
+                "batchId": "b",
+                "projectId": null,
+                "existingCopies": [],
+                "checkedAt": "2026-01-01T00:00:00Z",
+                "decision": "Pending",
+                "isAfterProjectApproval": false
+              }
+            ]
+          },
+          "custodyIds": [],
+          "suggestion": null
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "copy prevents bulk approval",
+      "rule": "VIEW-requests",
+      "input": {
+        "row": {
+          "decision": "Pending",
+          "record": {
+            "document": {
+              "id": "d",
+              "catalogId": "cat",
+              "unit": null,
+              "title": "Title",
+              "type": "Monograph",
+              "shelfMark": null,
+              "pageSources": [],
+              "registryRecords": [],
+              "properties": []
+            },
+            "iterations": [],
+            "requests": [
+              {
+                "id": "r",
+                "documentId": "d",
+                "requesterId": "u",
+                "at": "2026-01-01T00:00:00Z",
+                "reason": null,
+                "batchId": "b",
+                "projectId": null,
+                "existingCopies": [
+                  {
+                    "source": "registry",
+                    "state": "Published",
+                    "iterationId": null
+                  }
+                ],
+                "checkedAt": "2026-01-01T00:00:00Z",
+                "decision": "Pending",
+                "isAfterProjectApproval": false
+              }
+            ]
+          },
+          "custodyIds": [],
+          "suggestion": null
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "nonpending row",
+      "rule": "VIEW-requests",
+      "input": {
+        "row": {
+          "decision": "Denied",
+          "record": {
+            "document": {
+              "id": "d",
+              "catalogId": "cat",
+              "unit": null,
+              "title": "Title",
+              "type": "Monograph",
+              "shelfMark": null,
+              "pageSources": [],
+              "registryRecords": [],
+              "properties": []
+            },
+            "iterations": [],
+            "requests": []
+          },
+          "custodyIds": [],
+          "suggestion": null
+        }
+      },
+      "expected": false
+    }
+  ]
+}

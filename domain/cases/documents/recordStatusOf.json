@@ -1,0 +1,108 @@
+{
+  "function": "recordStatusOf",
+  "cases": [
+    {
+      "name": "open ask status",
+      "rule": "STAT-badge",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": [
+            {
+              "id": "r",
+              "documentId": "d",
+              "requesterId": "u",
+              "at": "2026-01-01T00:00:00Z",
+              "reason": null,
+              "batchId": "b",
+              "projectId": null,
+              "existingCopies": [],
+              "checkedAt": "2026-01-01T00:00:00Z",
+              "decision": "Pending",
+              "isAfterProjectApproval": false
+            }
+          ]
+        }
+      },
+      "expected": "AwaitingReview"
+    },
+    {
+      "name": "current iteration status wins",
+      "rule": "STAT-badge",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [
+            {
+              "id": "i",
+              "documentId": "d",
+              "attempt": 1,
+              "requestId": "r",
+              "categoryId": "cat",
+              "priority": "Normal",
+              "projectId": null,
+              "progress": "Ready",
+              "listId": null,
+              "formerListName": null,
+              "restriction": null,
+              "restrictionOverride": null,
+              "cancellation": null,
+              "defects": [],
+              "verdicts": [],
+              "ingestFailure": null,
+              "digitizedAt": null,
+              "links": [],
+              "scanDpi": null,
+              "properties": []
+            }
+          ],
+          "requests": []
+        }
+      },
+      "expected": "Ready"
+    },
+    {
+      "name": "empty record has no status",
+      "rule": "STAT-badge",
+      "input": {
+        "record": {
+          "document": {
+            "id": "d",
+            "catalogId": "cat",
+            "unit": null,
+            "title": "Title",
+            "type": "Monograph",
+            "shelfMark": null,
+            "pageSources": [],
+            "registryRecords": [],
+            "properties": []
+          },
+          "iterations": [],
+          "requests": []
+        }
+      },
+      "expected": null
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "function": "existingCopyStateOf",
+  "cases": [
+    {
+      "name": "no evidence",
+      "rule": "DOC-registry-status",
+      "input": {
+        "document": {
+          "id": "d",
+          "catalogId": "cat",
+          "unit": null,
+          "title": "Title",
+          "type": "Monograph",
+          "shelfMark": null,
+          "pageSources": [],
+          "registryRecords": [
+            {
+              "registry": "r",
+              "state": "NotFound"
+            }
+          ],
+          "properties": []
+        }
+      },
+      "expected": "None"
+    },
+    {
+      "name": "strongest evidence wins",
+      "rule": "DOC-registry-status",
+      "input": {
+        "document": {
+          "id": "d",
+          "catalogId": "cat",
+          "unit": null,
+          "title": "Title",
+          "type": "Monograph",
+          "shelfMark": null,
+          "pageSources": [],
+          "registryRecords": [
+            {
+              "registry": "r",
+              "state": "Planned"
+            },
+            {
+              "registry": "s",
+              "state": "Published"
+            }
+          ],
+          "properties": []
+        }
+      },
+      "expected": "Published"
+    },
+    {
+      "name": "failed check is evidence",
+      "rule": "DOC-registry-status",
+      "input": {
+        "document": {
+          "id": "d",
+          "catalogId": "cat",
+          "unit": null,
+          "title": "Title",
+          "type": "Monograph",
+          "shelfMark": null,
+          "pageSources": [],
+          "registryRecords": [
+            {
+              "registry": "r",
+              "state": "CheckFailed"
+            }
+          ],
+          "properties": []
+        }
+      },
+      "expected": "CheckFailed"
+    }
+  ]
+}
