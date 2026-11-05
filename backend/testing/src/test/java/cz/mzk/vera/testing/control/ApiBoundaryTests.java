@@ -110,7 +110,7 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        assertThat(endpoints.toString()).isEqualTo("[\"confirmEmail\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestPasswordReset\",\"resetPassword\",\"sendVerificationAgain\",\"session\",\"signUp\"]");
+        assertThat(endpoints.toString()).isEqualTo("[\"account\",\"confirmEmail\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestPasswordReset\",\"resetPassword\",\"sendVerificationAgain\",\"session\",\"settingsGet\",\"settingsPatch\",\"signUp\"]");
     }
 
     @Test

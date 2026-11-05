@@ -1,0 +1,29 @@
+{
+  "function": "roleNameOf",
+  "cases": [
+    {
+      "name": "trims and lowercases",
+      "rule": "ACCESS-group-name",
+      "input": { "text": "  Curator " },
+      "expected": "curator"
+    },
+    {
+      "name": "joins words",
+      "rule": "ACCESS-group-name",
+      "input": { "text": "Senior Curator" },
+      "expected": "senior-curator"
+    },
+    {
+      "name": "collapses whitespace",
+      "rule": "ACCESS-group-name",
+      "input": { "text": "Role  With\tSpaces" },
+      "expected": "role-with-spaces"
+    },
+    {
+      "name": "empty stays empty",
+      "rule": "ACCESS-group-name",
+      "input": { "text": "  " },
+      "expected": ""
+    }
+  ]
+}

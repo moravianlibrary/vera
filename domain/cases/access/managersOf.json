@@ -1,0 +1,55 @@
+{
+  "function": "managersOf",
+  "cases": [
+    {
+      "name": "keeps active manager",
+      "rule": "ACCESS-last-manager",
+      "input": {
+        "users": [{ "handRoleIds": ["admin"], "mappedRoles": [], "suspendedAt": null }],
+        "roles": [{ "id": "admin", "grants": [{ "permission": "access.manage", "scope": "any" }] }]
+      },
+      "expected": [{ "handRoleIds": ["admin"], "mappedRoles": [], "suspendedAt": null }]
+    },
+    {
+      "name": "suspended manager gives nothing",
+      "rule": "ACCESS-suspend",
+      "input": {
+        "users": [
+          { "handRoleIds": ["admin"], "mappedRoles": [], "suspendedAt": "2026-01-01T00:00:00.000Z" }
+        ],
+        "roles": [{ "id": "admin", "grants": [{ "permission": "access.manage", "scope": "any" }] }]
+      },
+      "expected": []
+    },
+    {
+      "name": "reader is not a manager",
+      "rule": "ACCESS-last-manager",
+      "input": {
+        "users": [{ "handRoleIds": ["reader"], "mappedRoles": [], "suspendedAt": null }],
+        "roles": [{ "id": "reader", "grants": [{ "permission": "access.read", "scope": "any" }] }]
+      },
+      "expected": []
+    },
+    {
+      "name": "mapped manager role counts",
+      "rule": "ACCESS-role-ways",
+      "input": {
+        "users": [
+          {
+            "handRoleIds": [],
+            "mappedRoles": [{ "roleId": "admin", "instanceId": "idp", "claim": "admin" }],
+            "suspendedAt": null
+          }
+        ],
+        "roles": [{ "id": "admin", "grants": [{ "permission": "access.manage", "scope": "any" }] }]
+      },
+      "expected": [
+        {
+          "handRoleIds": [],
+          "mappedRoles": [{ "roleId": "admin", "instanceId": "idp", "claim": "admin" }],
+          "suspendedAt": null
+        }
+      ]
+    }
+  ]
+}

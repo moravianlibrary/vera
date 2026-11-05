@@ -1,0 +1,64 @@
+{
+  "function": "hasPermission",
+  "cases": [
+    {
+      "name": "held directly",
+      "rule": "PERM-grant",
+      "input": {
+        "holder": {
+          "grants": [
+            {
+              "permission": "access.read",
+              "scope": "any"
+            }
+          ]
+        },
+        "permission": "access.read"
+      },
+      "expected": true
+    },
+    {
+      "name": "not held",
+      "rule": "PERM-grant",
+      "input": {
+        "holder": {
+          "grants": []
+        },
+        "permission": "access.read"
+      },
+      "expected": false
+    },
+    {
+      "name": "different scope still held",
+      "rule": "PERM-grant",
+      "input": {
+        "holder": {
+          "grants": [
+            {
+              "permission": "request.read",
+              "scope": "custody"
+            }
+          ]
+        },
+        "permission": "request.read"
+      },
+      "expected": true
+    },
+    {
+      "name": "another permission does not count",
+      "rule": "PERM-grant",
+      "input": {
+        "holder": {
+          "grants": [
+            {
+              "permission": "access.manage",
+              "scope": "any"
+            }
+          ]
+        },
+        "permission": "access.read"
+      },
+      "expected": false
+    }
+  ]
+}

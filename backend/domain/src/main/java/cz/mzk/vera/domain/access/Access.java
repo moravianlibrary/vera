@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 public final class Access {
   private Access() {}
@@ -47,5 +48,18 @@ public final class Access {
       }
     }
     return List.copyOf(unique.values());
+  }
+
+  // ACCESS-last-manager; ACCESS-suspend: a suspended person's roles give nothing meanwhile.
+  public static <User extends RoleHolder> List<User> managersOf(List<User> users, List<Role> roles) {
+    return users.stream().filter(user -> !isSuspended(user))
+        .filter(user -> grantsOf(roles, heldRoleIdsOf(user)).stream()
+            .anyMatch(grant -> grant.permission().equals("access.manage")))
+        .toList();
+  }
+
+  // Shipped roles are lower-case words joined by hyphens.
+  public static String roleNameOf(String text) {
+    return text.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", "-");
   }
 }

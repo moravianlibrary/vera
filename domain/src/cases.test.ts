@@ -3,7 +3,14 @@
 import { describe, expect, it } from "bun:test";
 import { join } from "node:path";
 import { caseFileJsonSchema, caseFileSchema } from "../cases/case-file";
-import { grantsOf, heldRoleIdsOf, heldRolesOf, isSuspended } from "./access";
+import {
+  grantsOf,
+  heldRoleIdsOf,
+  heldRolesOf,
+  isSuspended,
+  managersOf,
+  roleNameOf,
+} from "./access";
 import type { Iteration, RepeatEvery, Request } from "./entities";
 import {
   catchUpPagesOf,
@@ -86,6 +93,8 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   can: (...args) =>
     can(args[0] as ScopeHolder, args[1] as Permission, args[2] as ScopedRecord | undefined),
   hasPermission: (...args) => hasPermission(args[0] as GrantHolder, args[1] as Permission),
+  managersOf: (...args) => managersOf(args[0] as never, args[1] as never),
+  roleNameOf: (...args) => roleNameOf(args[0] as string),
   scopesOf: (...args) => scopesOf(args[0] as GrantHolder, args[1] as Permission),
   isWithinScope: (...args) =>
     isWithinScope(args[0] as ScopeHolder, args[1] as GrantScope, args[2] as ScopedRecord),

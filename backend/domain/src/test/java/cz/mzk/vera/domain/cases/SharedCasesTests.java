@@ -1,15 +1,12 @@
 package cz.mzk.vera.domain.cases;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 import cz.mzk.vera.domain.access.Access;
 import cz.mzk.vera.domain.access.Grant;
 import cz.mzk.vera.domain.access.MappedRole;
 import cz.mzk.vera.domain.access.Role;
 import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.access.RoleWay;
+import cz.mzk.vera.domain.permissions.Permissions;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +20,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
+// B3. The Java implementations run the same domain cases as TypeScript.
 class SharedCasesTests {
   private static final JsonMapper JSON = JsonMapper.builder().build();
   private static final Map<String, Function<JsonNode, JsonNode>> ADAPTERS = adapters();
@@ -79,13 +81,15 @@ class SharedCasesTests {
     Map<String, Function<JsonNode, JsonNode>> adapters = new LinkedHashMap<>();
     adapters.put("isSuspended", input -> JSON.valueToTree(Access.isSuspended(holder(input.path("user")))));
     adapters.put("heldRolesOf", input -> heldRolesJson(Access.heldRolesOf(holder(input.path("user")))));
-    adapters.put("heldRoleIdsOf", input -> JSON.valueToTree(Access.heldRoleIdsOf(holder(input.path("user")))));
+    adapters.put("heldRoleIdsOf", input -> JSON.valueToTree(
+        Access.heldRoleIdsOf(holder(input.path("user")))));
     adapters.put("grantsOf", input -> {
       List<Role> roles = new ArrayList<>();
       for (JsonNode roleNode : input.path("roles")) {
         List<Grant> grants = new ArrayList<>();
         for (JsonNode grantNode : roleNode.path("grants")) {
-          grants.add(new Grant(grantNode.path("permission").asString(), nullableText(grantNode.path("scope"))));
+          grants.add(new Grant(grantNode.path("permission").asString(),
+              nullableText(grantNode.path("scope"))));
         }
         roles.add(new Role(roleNode.path("id").asString(), grants));
       }
@@ -93,7 +97,58 @@ class SharedCasesTests {
       input.path("roleIds").forEach(node -> roleIds.add(node.asString()));
       return JSON.valueToTree(Access.grantsOf(roles, roleIds));
     });
+    adapters.put("hasPermission", input -> JSON.valueToTree(Permissions.hasPermission(
+        grants(input.path("holder").path("grants")), input.path("permission").asString())));
+    adapters.put("catalogEntryOf", input -> {
+      Permissions.Entry entry = Permissions.catalogEntryOf(input.path("permission").asString());
+      ObjectNode result = JSON.createObjectNode();
+      result.put("group", entry.group());
+      result.set("scopes", JSON.valueToTree(entry.scopes()));
+      return result;
+    });
+    adapters.put("isAcceptedGrant", input -> JSON.valueToTree(Permissions.isAcceptedGrant(
+        grant(input.path("grant")))));
+    adapters.put("missingRequirementsOf", input -> {
+      ArrayNode result = JSON.createArrayNode();
+      for (Permissions.Missing missing : Permissions.missingRequirementsOf(grants(input.path("grants")))) {
+        ObjectNode item = result.addObject();
+        item.set("grant", JSON.valueToTree(missing.grant()));
+        item.set("needs", JSON.valueToTree(missing.needs()));
+      }
+      return result;
+    });
+    adapters.put("withRequirements", input -> JSON.valueToTree(
+        Permissions.withRequirements(grants(input.path("grants")))));
+    adapters.put("permissionSchema", input -> JSON.valueToTree(
+        Permissions.permissionIsValid(input.path("value").asString())));
+    adapters.put("managersOf", input -> {
+      List<RoleHolder> users = new ArrayList<>();
+      input.path("users").forEach(node -> users.add(holder(node)));
+      List<Role> roles = roles(input.path("roles"));
+      return JSON.valueToTree(Access.managersOf(users, roles));
+    });
+    adapters.put("roleNameOf", input -> JSON.valueToTree(Access.roleNameOf(input.path("text").asString())));
     return Map.copyOf(adapters);
+  }
+
+  private static List<Role> roles(JsonNode nodes) {
+    List<Role> roles = new ArrayList<>();
+    for (JsonNode node : nodes) {
+      roles.add(new Role(node.path("id").asString(), grants(node.path("grants"))));
+    }
+    return roles;
+  }
+
+  private static List<Grant> grants(JsonNode nodes) {
+    List<Grant> grants = new ArrayList<>();
+    for (JsonNode node : nodes) {
+      grants.add(grant(node));
+    }
+    return grants;
+  }
+
+  private static Grant grant(JsonNode node) {
+    return new Grant(node.path("permission").asString(), nullableText(node.path("scope")));
   }
 
   private static RoleHolder holder(JsonNode node) {
