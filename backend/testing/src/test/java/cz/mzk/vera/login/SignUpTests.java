@@ -121,6 +121,13 @@ class SignUpTests {
     }
 
     @Test
+    void refusesSignUpWhenTheIdentityInstanceDoesNotOfferIt() {
+        client.post().uri("/api/signup/pi22").contentType(MediaType.APPLICATION_JSON)
+                .body(signUpBody("newuser", "new@example.org", "abcdefghijkl"))
+                .exchange().expectStatus().isNotFound();
+    }
+
+    @Test
     void doesNotEnumerateExistingEmailAddresses() {
         signUp("other", "tomas.marek@muni.cz").expectStatus().isAccepted();
         assertThat(mailSubject("You already have an account")).isTrue();

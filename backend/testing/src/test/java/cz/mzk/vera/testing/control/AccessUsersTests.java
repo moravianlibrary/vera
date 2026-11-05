@@ -240,6 +240,20 @@ class AccessUsersTests {
     }
 
     @Test
+    void access_user_acts_refuse_a_missing_user() {
+        String cookie = session("u3");
+        assertProblem(put("/api/access/users/missing/roles", cookie, Map.of("roleIds", List.of())),
+                404, "not_found");
+        assertProblem(put("/api/access/users/missing/groups", cookie, Map.of("groupIds", List.of())),
+                404, "not_found");
+        assertProblem(post("/api/access/users/missing/identities", cookie,
+                Map.of("instanceId", "pi41", "externalId", "one-off")), 404, "not_found");
+        assertProblem(delete("/api/access/users/missing/identities/pi22/jnovakova", cookie), 404, "not_found");
+        assertProblem(post("/api/access/users/missing/suspend", cookie, Map.of()), 404, "not_found");
+        assertProblem(post("/api/access/users/missing/restore", cookie, Map.of()), 404, "not_found");
+    }
+
+    @Test
     void local_account_reset_request_sets_a_password_that_can_log_in() throws Exception {
         String cookie = session("u3");
         post("/api/access/users", cookie, Map.of("name", "Hana Malá", "username", "hmala",

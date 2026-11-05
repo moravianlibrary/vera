@@ -116,6 +116,12 @@ class RoleGroupTests {
     }
 
     @Test
+    void ACT_role_save_and_delete_refuse_a_missing_role() {
+        assertProblem(put("/api/access/roles/missing", session("u3"), draft("Missing")), 404, "not_found");
+        assertProblem(delete("/api/access/roles/missing", session("u3")), 404, "not_found");
+    }
+
+    @Test
     void role_names_and_ids_follow_engine_rules() {
         JsonNode role = body(post("/api/access/roles", session("u3"), draft("Maps Curator")));
         assertThat(role.path("name").asString()).isEqualTo("maps-curator");
@@ -164,6 +170,23 @@ class RoleGroupTests {
         JsonNode members = body(put("/api/access/groups/g4/members", session("u3"), Map.of("userIds", List.of("u1"))));
         assertThat(members.path("memberIds").toString()).isEqualTo("[\"u1\"]");
         assertAudit("group.members_changed");
+    }
+
+    @Test
+    void ACT_group_save_refuses_a_taken_group_name() {
+        post("/api/access/groups", session("u3"), Map.of("name", "Maps", "description", ""));
+        assertProblem(post("/api/access/groups", session("u3"), Map.of("name", "Maps", "description", "")),
+                409, "access.name_taken");
+        assertProblem(put("/api/access/groups/g3", session("u3"), Map.of("name", "Maps", "description", "")),
+                409, "access.name_taken");
+    }
+
+    @Test
+    void ACT_group_save_and_members_refuse_a_missing_group() {
+        assertProblem(put("/api/access/groups/missing", session("u3"), Map.of("name", "Maps", "description", "")),
+                404, "not_found");
+        assertProblem(put("/api/access/groups/missing/members", session("u3"), Map.of("userIds", List.of())),
+                404, "not_found");
     }
 
     @Test

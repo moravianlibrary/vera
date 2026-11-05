@@ -451,7 +451,11 @@ Following the engine's steps, so each lands with its recordings already made:
    boundary check against the OpenAPI document, the clock, the seed loader, `/_engine` reset,
    clock, sessions and endpoints, plus the session and login entries. The replay judges it
    through `GET /_engine/endpoints`.
-2. **Access:** sessions, the Identity plugins with their fakes, sign-up, Users & Groups.
+2. **Access:** (built 2026-11-05) sessions, the Identity plugins with their fakes, sign-up,
+   Users & Groups, judged by the recorded sign-in, access and access-act scenarios. The Users &
+   Groups index, role and custody impacts, and custody acts wait for the steps whose tables they
+   read (BK2.md, choice C). The 7-day removal of unverified sign-ups waits for jobs (B5; already
+   decided in B7). The real `OidcIdentity` and `LocalAccounts` plugins wait for step 5.
 3. **Asking and deciding**, then **ingest and review**, **lists and projects**, **planning**,
    **machinery**: the areas of engine steps 3 to 7, each done when its recordings pass. Steps 4
    to 7 are built here first; the engine does not serve them

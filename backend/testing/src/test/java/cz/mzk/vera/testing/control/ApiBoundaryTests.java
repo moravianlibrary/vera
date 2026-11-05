@@ -178,6 +178,15 @@ class ApiBoundaryTests {
     }
 
     @Test
+    void redirectsWhenTheIdentityProviderRefusesAnUnknownAccount() {
+        client.get().uri("/api/login/pi22").exchange().expectStatus().isFound();
+        String flow = jdbc.queryForObject("SELECT id FROM login_flows ORDER BY created_at DESC LIMIT 1", String.class);
+        client.get().uri("/api/login/pi22/callback?flow=" + flow + "&code=missing")
+                .exchange().expectStatus().isFound()
+                .expectHeader().value("Location", value -> assertThat(value).isEqualTo("/login?error=login.unknown"));
+    }
+
+    @Test
     void rejectsUnsafeAndExpiredRedirectFlowsAndUnknownProviderCodes() {
         for (String returnTo : new String[] {"//evil.example", "https://evil.example/path", "/login"}) {
             var started = client.get().uri("/api/login/pi22?returnTo=" + returnTo)
