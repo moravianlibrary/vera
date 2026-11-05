@@ -1,7 +1,6 @@
 package cz.mzk.vera.access;
 
 import cz.mzk.vera.session.Caller;
-import cz.mzk.vera.web.Problems;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.http.ProblemDetail;
@@ -34,7 +33,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.localAccount(caller, body));
+        return ActResult.answer(commands.localAccount(caller, body));
     }
 
     @PutMapping("/users/{id}/roles")
@@ -45,7 +44,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.userRoles(caller, id, body.roleIds()));
+        return ActResult.answer(commands.userRoles(caller, id, body.roleIds()));
     }
 
     @PutMapping("/users/{id}/groups")
@@ -56,7 +55,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.userGroups(caller, id, body.groupIds()));
+        return ActResult.answer(commands.userGroups(caller, id, body.groupIds()));
     }
 
     @PostMapping("/users/{id}/identities")
@@ -67,7 +66,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.identityLink(caller, id, body.instanceId(), body.externalId()));
+        return ActResult.answer(commands.identityLink(caller, id, body.instanceId(), body.externalId()));
     }
 
     @DeleteMapping("/users/{id}/identities/{instanceId}/{externalId}")
@@ -78,7 +77,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.identityUnlink(caller, id, instanceId, externalId));
+        return ActResult.answer(commands.identityUnlink(caller, id, instanceId, externalId));
     }
 
     @PutMapping("/identity-instances/{id}/default-role")
@@ -89,7 +88,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.identityDefaultRole(caller, id, body.roleId()));
+        return ActResult.answer(commands.identityDefaultRole(caller, id, body.roleId()));
     }
 
     @PostMapping("/users/{id}/suspend")
@@ -99,7 +98,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.userSuspend(caller, id));
+        return ActResult.answer(commands.userSuspend(caller, id));
     }
 
     @PostMapping("/users/{id}/restore")
@@ -109,17 +108,7 @@ final class AccessUsersController {
         if (refusal != null) {
             return refusal;
         }
-        return answer(commands.userRestore(caller, id));
-    }
-
-    private ResponseEntity<?> answer(AccessUserCommands.Result result) {
-        if (result.status() == 204) {
-            return ResponseEntity.noContent().build();
-        }
-        if (result.detail() != null) {
-            return Problems.response(result.status(), result.detail(), result.code(), null);
-        }
-        return ResponseEntity.ok(result.body());
+        return ActResult.answer(commands.userRestore(caller, id));
     }
 
     record HandRoles(List<String> roleIds) {}

@@ -14,6 +14,7 @@ import cz.mzk.vera.domain.access.Access;
 import cz.mzk.vera.domain.access.MappedRole;
 import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.events.EventCode;
+import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.web.Instants;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -103,6 +104,17 @@ public class EventRecorder {
                     .set(AUDIT_OUTBOX.RECORD, JSONB.valueOf(json.writeValueAsString(record)))
                     .execute();
         }
+    }
+
+    public void recordAct(EventCode code, String subjectKind, String subjectId, Caller caller,
+            List<Map<String, Object>> changes) {
+        recordAct(code, subjectKind, subjectId, caller, changes, null);
+    }
+
+    public void recordAct(EventCode code, String subjectKind, String subjectId, Caller caller,
+            List<Map<String, Object>> changes, Instant at) {
+        record(new EventInput(code, subjectKind, subjectId, null, new EventInput.User(caller.userId()),
+                UUID.randomUUID().toString(), at, EventChanges.configurationOf(json, changes), null));
     }
 
     private ObjectNode historyActor(EventInput.Actor actor) {

@@ -15,9 +15,6 @@ public class UserIds {
     }
 
     public String next() {
-        int max = dsl.select(USERS.ID).from(USERS).fetch(USERS.ID).stream()
-                .filter(id -> id.matches("u[0-9]+"))
-                .mapToInt(id -> Integer.parseInt(id.substring(1))).max().orElse(0);
-        return "u" + (max + 1);
+        return RecordIds.next("u", dsl.select(USERS.ID).from(USERS).fetch(USERS.ID));
     }
 }

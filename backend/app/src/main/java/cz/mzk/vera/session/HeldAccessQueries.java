@@ -50,15 +50,20 @@ public class HeldAccessQueries {
 
     public List<Role> roles() {
         Map<String, List<Grant>> grantsByRole = new LinkedHashMap<>();
-        dsl.select(ROLE_GRANTS.ROLE_ID, ROLE_GRANTS.PERMISSION, ROLE_GRANTS.SCOPE)
-                .from(ROLE_GRANTS.join(ROLES).on(ROLE_GRANTS.ROLE_ID.eq(ROLES.ID)))
+        dsl.select(ROLES.ID, ROLE_GRANTS.PERMISSION, ROLE_GRANTS.SCOPE)
+                .from(ROLES.leftJoin(ROLE_GRANTS).on(ROLE_GRANTS.ROLE_ID.eq(ROLES.ID)))
                 .orderBy(ROLES.POSITION, ROLE_GRANTS.POSITION)
                 .fetch()
-                .forEach(row -> grantsByRole
-                        .computeIfAbsent(row.get(ROLE_GRANTS.ROLE_ID), ignored -> new ArrayList<>())
-                        .add(new Grant(row.get(ROLE_GRANTS.PERMISSION), row.get(ROLE_GRANTS.SCOPE))));
-        return dsl.selectFrom(ROLES).orderBy(ROLES.POSITION)
-                .fetch(row -> new Role(row.getId(), grantsByRole.getOrDefault(row.getId(), List.of())));
+                .forEach(row -> {
+                    List<Grant> grants = grantsByRole.computeIfAbsent(
+                            row.get(ROLES.ID), ignored -> new ArrayList<>());
+                    if (row.get(ROLE_GRANTS.PERMISSION) != null) {
+                        grants.add(new Grant(row.get(ROLE_GRANTS.PERMISSION), row.get(ROLE_GRANTS.SCOPE)));
+                    }
+                });
+        return grantsByRole.entrySet().stream()
+                .map(entry -> new Role(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     public record HeldAccess(List<Role> roles, List<String> roleIds, List<Grant> grants) {

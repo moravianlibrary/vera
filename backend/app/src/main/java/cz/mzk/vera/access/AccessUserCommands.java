@@ -14,9 +14,7 @@ import cz.mzk.vera.domain.access.Access;
 import cz.mzk.vera.domain.access.Role;
 import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.events.EventCode;
-import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventChanges;
-import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.login.IdentityInstances;
 import cz.mzk.vera.login.LoginCommands;
@@ -36,7 +34,6 @@ import java.util.Objects;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.json.JsonMapper;
 
 // ACT-local-account; ACT-user-roles; ACT-user-groups; ACT-identity-link; ACT-identity-unlink;
 // ACT-identity-default-role; ACT-user-suspend; ACT-user-restore.
@@ -44,7 +41,6 @@ import tools.jackson.databind.json.JsonMapper;
 public class AccessUserCommands {
     private final DSLContext dsl;
     private final Clock clock;
-    private final JsonMapper json;
     private final EventRecorder events;
     private final AccessQueries users;
     private final AccessManagerQueries managers;
@@ -53,12 +49,11 @@ public class AccessUserCommands {
     private final LoginCommands loginCommands;
     private final UserIds userIds;
 
-    public AccessUserCommands(DSLContext dsl, Clock clock, EventRecorder events, JsonMapper json,
+    public AccessUserCommands(DSLContext dsl, Clock clock, EventRecorder events,
             AccessQueries users, AccessManagerQueries managers, HeldAccessQueries heldAccess,
             IdentityInstances instances, LoginCommands loginCommands, UserIds userIds) {
         this.dsl = dsl;
         this.clock = clock;
-        this.json = json;
         this.events = events;
         this.users = users;
         this.managers = managers;
@@ -69,21 +64,21 @@ public class AccessUserCommands {
     }
 
     @Transactional
-    public Result localAccount(Caller caller, LocalAccount body) {
+    public ActResult localAccount(Caller caller, LocalAccount body) {
         String instanceId = instances.firstLocalAccounts();
         if (instanceId == null) {
-            return failure(422, "Local accounts are switched off", "access.local_accounts_off");
+            return ActResult.refused(422, "Local accounts are switched off", "access.local_accounts_off");
         }
         if (dsl.fetchExists(dsl.selectOne().from(USER_IDENTITIES)
                 .where(USER_IDENTITIES.INSTANCE_ID.eq(instanceId))
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(body.username())))) {
-            return failure(409, body.username() + " is taken", "access.identity_taken");
+            return ActResult.refused(409, body.username() + " is taken", "access.identity_taken");
         }
         List<String> roleIds = distinct(body.roleIds());
         List<Role> roles = heldAccess.roles();
         List<String> knownRoleIds = roles.stream().map(role -> role.id()).toList();
         if (roleIds.stream().anyMatch(id -> !knownRoleIds.contains(id))) {
-            return unknown("role");
+            return ActResult.unknown("role");
         }
         String userId = userIds.next();
         int userPosition = dsl.select(coalesce(max(USERS.POSITION), -1).add(1))
@@ -104,31 +99,31 @@ public class AccessUserCommands {
                     .execute();
         }
         insertIdentity(userId, instanceId, body.username(), null);
-        record(EventCode.USER_CREATED, "user", userId, caller, List.of(
+        events.recordAct(EventCode.USER_CREATED, "user", userId, caller, List.of(
                 EventChanges.change("how", null, "local_account"),
                 EventChanges.change("roleIds", List.of(), roleIds),
                 EventChanges.change("instanceId", null, instanceId)), clock.instant());
-        return success(users.user(userId));
+        return ActResult.ok(users.user(userId));
     }
 
     @Transactional
-    public Result userRoles(Caller caller, String userId, List<String> requested) {
+    public ActResult userRoles(Caller caller, String userId, List<String> requested) {
         Map<String, Object> before = users.user(userId);
         if (before == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         List<String> roleIds = distinct(requested);
         List<Role> roles = heldAccess.roles();
         List<String> knownRoleIds = roles.stream().map(role -> role.id()).toList();
         if (roleIds.stream().anyMatch(id -> !knownRoleIds.contains(id))) {
-            return unknown("role");
+            return ActResult.unknown("role");
         }
         List<AccessManagerQueries.UserRoles> current = managers.allRoleHolders();
         List<RoleHolder> candidates = current.stream().map(holder -> holder.userId().equals(userId)
                 ? new RoleHolder(roleIds, holder.roles().mappedRoles(), holder.roles().suspendedAt())
                 : holder.roles()).toList();
         if (Access.managersOf(candidates, roles).isEmpty()) {
-            return failure(409, "Nobody could manage access after this", "access.last_manager");
+            return ActResult.refused(409, "Nobody could manage access after this", "access.last_manager");
         }
         List<String> oldRoleIds = strings(before.get("handRoleIds"));
         dsl.deleteFrom(USER_HAND_ROLES).where(USER_HAND_ROLES.USER_ID.eq(userId)).execute();
@@ -140,22 +135,22 @@ public class AccessUserCommands {
                     .execute();
         }
         if (!sameSet(oldRoleIds, roleIds)) {
-            record(EventCode.USER_ROLES_CHANGED, "user", userId, caller,
+            events.recordAct(EventCode.USER_ROLES_CHANGED, "user", userId, caller,
                     List.of(EventChanges.change("handRoleIds", oldRoleIds, roleIds)), clock.instant());
         }
-        return success(users.user(userId));
+        return ActResult.ok(users.user(userId));
     }
 
     @Transactional
-    public Result userGroups(Caller caller, String userId, List<String> requested) {
+    public ActResult userGroups(Caller caller, String userId, List<String> requested) {
         Map<String, Object> before = users.user(userId);
         if (before == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         List<String> groupIds = distinct(requested);
         List<String> knownGroupIds = dsl.select(GROUPS.ID).from(GROUPS).fetch(GROUPS.ID);
         if (groupIds.stream().anyMatch(id -> !knownGroupIds.contains(id))) {
-            return unknown("group");
+            return ActResult.unknown("group");
         }
         List<String> oldGroupIds = strings(before.get("groupIds"));
         dsl.deleteFrom(GROUP_MEMBERS).where(GROUP_MEMBERS.USER_ID.eq(userId)).execute();
@@ -170,133 +165,136 @@ public class AccessUserCommands {
                     .execute();
         }
         if (!sameSet(oldGroupIds, groupIds)) {
-            record(EventCode.USER_GROUPS_CHANGED, "user", userId, caller,
+            events.recordAct(EventCode.USER_GROUPS_CHANGED, "user", userId, caller,
                     List.of(EventChanges.change("groupIds", oldGroupIds, groupIds)), clock.instant());
         }
-        return success(users.user(userId));
+        return ActResult.ok(users.user(userId));
     }
 
     @Transactional
-    public Result identityLink(Caller caller, String userId, String instanceId, String externalId) {
+    public ActResult identityLink(Caller caller, String userId, String instanceId, String externalId) {
         Map<String, Object> user = users.user(userId);
         if (user == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         if ("agent".equals(user.get("kind"))) {
-            return failure(422, "An agent never logs in", "access.agent_no_login");
+            return ActResult.refused(422, "An agent never logs in", "access.agent_no_login");
         }
         IdentityInstances.AccessInstance instance = instances.findForAccess(instanceId);
         if (instance == null) {
-            return unknown("identity provider");
+            return ActResult.unknown("identity provider");
         }
         var holder = dsl.select(USER_IDENTITIES.USER_ID).from(USER_IDENTITIES)
                 .where(USER_IDENTITIES.INSTANCE_ID.eq(instanceId))
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(externalId)).fetchOne();
         if (holder != null) {
             Map<String, Object> heldBy = users.user(holder.value1());
-            return failure(409, instance.name() + " " + externalId + " is already "
+            return ActResult.refused(409, instance.name() + " " + externalId + " is already "
                     + (heldBy == null ? holder.value1() : heldBy.get("name")), "access.identity_taken");
         }
         insertIdentity(userId, instanceId, externalId, null);
-        record(EventCode.USER_IDENTITY_LINKED, "user", userId, caller,
+        events.recordAct(EventCode.USER_IDENTITY_LINKED, "user", userId, caller,
                 List.of(EventChanges.change("instanceId", null, instanceId)), clock.instant());
         Map<String, Object> identity = new LinkedHashMap<>();
         identity.put("instanceId", instanceId);
         identity.put("externalId", externalId);
         identity.put("lastLoginAt", null);
-        return success(identity);
+        return ActResult.ok(identity);
     }
 
     @Transactional
-    public Result identityUnlink(Caller caller, String userId, String instanceId, String externalId) {
+    public ActResult identityUnlink(Caller caller, String userId, String instanceId, String externalId) {
         if (users.user(userId) == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         var identity = dsl.select(USER_IDENTITIES.USER_ID).from(USER_IDENTITIES)
                 .where(USER_IDENTITIES.USER_ID.eq(userId)).and(USER_IDENTITIES.INSTANCE_ID.eq(instanceId))
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(externalId)).fetchOne();
         if (identity == null) {
-            return unknown("identity");
+            return ActResult.unknown("identity");
         }
         int count = dsl.selectCount().from(USER_IDENTITIES).where(USER_IDENTITIES.USER_ID.eq(userId))
                 .fetchOne(0, int.class);
         if (count == 1) {
-            return failure(409, "It is their only way in; suspend them instead", "access.last_identity");
+            return ActResult.refused(409, "It is their only way in; suspend them instead",
+                    "access.last_identity");
         }
         dsl.deleteFrom(USER_IDENTITIES)
                 .where(USER_IDENTITIES.USER_ID.eq(userId))
                 .and(USER_IDENTITIES.INSTANCE_ID.eq(instanceId))
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(externalId))
                 .execute();
-        record(EventCode.USER_IDENTITY_UNLINKED, "user", userId, caller,
+        events.recordAct(EventCode.USER_IDENTITY_UNLINKED, "user", userId, caller,
                 List.of(EventChanges.change("instanceId", instanceId, null)), clock.instant());
-        return new Result(204, null, null, null);
+        return ActResult.noContent();
     }
 
     @Transactional
-    public Result identityDefaultRole(Caller caller, String instanceId, String roleId) {
+    public ActResult identityDefaultRole(Caller caller, String instanceId, String roleId) {
         IdentityInstances.AccessInstance instance = instances.findForAccess(instanceId);
         if (instance == null || !instance.isEnabled()) {
-            return unknown("Identity instance");
+            return ActResult.unknown("Identity instance");
         }
         if (roleId != null && !dsl.fetchExists(dsl.selectOne().from(ROLES).where(ROLES.ID.eq(roleId)))) {
-            return failure(422, "Choose an existing role", "role.not_found");
+            return ActResult.refused(422, "Choose an existing role", "role.not_found");
         }
         String previous = loginCommands.setDefaultRole(instanceId, roleId);
         if (!Objects.equals(previous, roleId)) {
-            record(EventCode.PLUGIN_INSTANCE_DEFAULT_ROLE_CHANGED, "plugin_instance", instanceId, caller,
+            events.recordAct(EventCode.PLUGIN_INSTANCE_DEFAULT_ROLE_CHANGED,
+                    "plugin_instance", instanceId, caller,
                     List.of(EventChanges.change("defaultRoleId", previous, roleId)), clock.instant());
         }
-        return success(instances.findForAccess(instanceId));
+        return ActResult.ok(instances.findForAccess(instanceId));
     }
 
     @Transactional
-    public Result userSuspend(Caller caller, String userId) {
+    public ActResult userSuspend(Caller caller, String userId) {
         Map<String, Object> user = users.user(userId);
         if (user == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         if ("agent".equals(user.get("kind"))) {
-            return failure(422, "An agent never logs in", "access.agent_no_login");
+            return ActResult.refused(422, "An agent never logs in", "access.agent_no_login");
         }
         if (user.get("suspendedAt") != null) {
-            return failure(409, user.get("name") + " is suspended", "access.suspended");
+            return ActResult.refused(409, user.get("name") + " is suspended", "access.suspended");
         }
         Instant now = clock.instant();
         String suspendedAt = Instants.format(now);
         List<Role> roles = heldAccess.roles();
         List<RoleHolder> candidates = managers.allRoleHolders().stream()
                 .map(holder -> holder.userId().equals(userId)
-                        ? new RoleHolder(holder.roles().handRoleIds(), holder.roles().mappedRoles(), suspendedAt)
+                        ? new RoleHolder(holder.roles().handRoleIds(),
+                                holder.roles().mappedRoles(), suspendedAt)
                         : holder.roles())
                 .toList();
         if (Access.managersOf(candidates, roles).isEmpty()) {
-            return failure(409, "Nobody could manage access after this", "access.last_manager");
+            return ActResult.refused(409, "Nobody could manage access after this", "access.last_manager");
         }
         dsl.update(USERS)
                 .set(USERS.SUSPENDED_AT, now.atOffset(ZoneOffset.UTC))
                 .where(USERS.ID.eq(userId))
                 .execute();
         dsl.deleteFrom(SESSIONS).where(SESSIONS.USER_ID.eq(userId)).execute();
-        record(EventCode.USER_SUSPENDED, "user", userId, caller,
+        events.recordAct(EventCode.USER_SUSPENDED, "user", userId, caller,
                 List.of(EventChanges.change("suspendedAt", null, suspendedAt)), now);
-        return success(users.user(userId));
+        return ActResult.ok(users.user(userId));
     }
 
     @Transactional
-    public Result userRestore(Caller caller, String userId) {
+    public ActResult userRestore(Caller caller, String userId) {
         Map<String, Object> user = users.user(userId);
         if (user == null) {
-            return unknown("user");
+            return ActResult.unknown("user");
         }
         Object suspendedAt = user.get("suspendedAt");
         if (suspendedAt == null) {
-            return failure(409, user.get("name") + " is not suspended", "access.not_suspended");
+            return ActResult.refused(409, user.get("name") + " is not suspended", "access.not_suspended");
         }
         dsl.update(USERS).setNull(USERS.SUSPENDED_AT).where(USERS.ID.eq(userId)).execute();
-        record(EventCode.USER_RESTORED, "user", userId, caller,
+        events.recordAct(EventCode.USER_RESTORED, "user", userId, caller,
                 List.of(EventChanges.change("suspendedAt", suspendedAt, null)), clock.instant());
-        return success(users.user(userId));
+        return ActResult.ok(users.user(userId));
     }
 
     private void insertIdentity(String userId, String instanceId, String externalId, Instant lastLoginAt) {
@@ -312,12 +310,6 @@ public class AccessUserCommands {
                 .execute();
     }
 
-    private void record(EventCode code, String kind, String id, Caller caller,
-            List<Map<String, Object>> changes, Instant at) {
-        events.record(new EventInput(code, kind, id, null, new EventInput.User(caller.userId()),
-                Correlation.newId(), at, EventChanges.configurationOf(json, changes), null));
-    }
-
     private static List<String> distinct(List<String> values) {
         return List.copyOf(new LinkedHashSet<>(values));
     }
@@ -331,18 +323,5 @@ public class AccessUserCommands {
         return new LinkedHashSet<>(left).equals(new LinkedHashSet<>(right));
     }
 
-    private static Result unknown(String what) {
-        return failure(404, "No such " + what, "not_found");
-    }
-
-    private static Result success(Object body) {
-        return new Result(200, null, null, body);
-    }
-
-    private static Result failure(int status, String detail, String code) {
-        return new Result(status, detail, code, null);
-    }
-
     public record LocalAccount(String name, String username, String email, List<String> roleIds) {}
-    public record Result(int status, String detail, String code, Object body) {}
 }
