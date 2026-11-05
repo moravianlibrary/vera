@@ -20,4 +20,15 @@ describe("the endpoint table", () => {
       expect(declared, name).toEqual(named);
     }
   });
+
+  it("keeps property filters and rejects undeclared query keys", () => {
+    expect(endpoints.documents.query?.parse({ "p.size": "A2" })).toMatchObject({
+      "p.size": "A2",
+    });
+    expect(endpoints.requests.query?.parse({ "p.size.none": "1" })).toMatchObject({
+      "p.size.none": "1",
+    });
+    expect(endpoints.documents.query?.safeParse({ unexpected: "value" }).success).toBe(false);
+    expect(endpoints.requests.query?.safeParse({ unexpected: "value" }).success).toBe(false);
+  });
 });

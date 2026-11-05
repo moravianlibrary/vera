@@ -245,6 +245,7 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   status?: 201 | 202;
   params?: z.ZodType<Params>;
   query?: z.ZodType<Query>;
+  propertyFilters?: boolean;
   body?: z.ZodType<Body>;
   form?: readonly string[];
   // Absent for an endpoint that answers 204 with no body.
@@ -264,21 +265,34 @@ function spec<Params = undefined, Query = undefined, Body = undefined, Value = u
   return entry;
 }
 
+function searchQueryOf(keys: readonly string[]) {
+  const fixed = new Set(keys);
+  return z
+    .object(Object.fromEntries(keys.map((key) => [key, z.string().optional()])))
+    .catchall(z.string().optional())
+    .superRefine((query, context) => {
+      for (const key of Object.keys(query)) {
+        if (!fixed.has(key) && !key.startsWith("p.")) {
+          context.addIssue({ code: "custom", path: [key], message: "Unknown query parameter" });
+        }
+      }
+    });
+}
+
 export const endpoints = {
   documents: spec({
     method: "GET",
     path: apiRoutes.documents,
     summary: "Search documents.",
-    query: z.object(
-      Object.fromEntries(
-        [
-          ...Object.values(documentQueryParams),
-          ...Object.values(documentSliceParams),
-          documentGroupingParam,
-          "perspective",
-        ].map((key) => [key, z.string().optional()]),
-      ),
+    query: searchQueryOf(
+      [
+        ...Object.values(documentQueryParams),
+        ...Object.values(documentSliceParams),
+        documentGroupingParam,
+        "perspective",
+      ].filter((key) => key !== "p."),
     ),
+    propertyFilters: true,
     response: documentPageSchema,
     codes: [],
   }),
@@ -295,15 +309,14 @@ export const endpoints = {
     method: "GET",
     path: apiRoutes.requests,
     summary: "Search requests.",
-    query: z.object(
-      Object.fromEntries(
-        [
-          ...Object.values(requestQueryParams),
-          ...Object.values(requestSliceParams),
-          requestGroupingParam,
-        ].map((key) => [key, z.string().optional()]),
-      ),
+    query: searchQueryOf(
+      [
+        ...Object.values(requestQueryParams),
+        ...Object.values(requestSliceParams),
+        requestGroupingParam,
+      ].filter((key) => key !== "p."),
     ),
+    propertyFilters: true,
     response: requestPageSchema,
     codes: [],
   }),

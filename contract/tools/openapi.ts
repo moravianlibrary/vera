@@ -179,6 +179,7 @@ function paramsOf(
   schema: z.ZodType | undefined,
   where: "path" | "query",
   components: Record<string, JsonSchema>,
+  propertyFilters = false,
 ): JsonSchema[] {
   if (!schema) return [];
   let full = inlineSchema(schema, "input");
@@ -188,12 +189,32 @@ function paramsOf(
   }
   const properties = full.properties ?? {};
   const required = new Set(full.required ?? []);
-  return Object.entries(properties).map(([name, value]) => ({
-    name,
-    in: where,
-    required: where === "path" || required.has(name),
-    schema: value,
-  }));
+  return [
+    ...Object.entries(properties).map(([name, value]) => ({
+      name,
+      in: where,
+      required: where === "path" || required.has(name),
+      schema: value,
+    })),
+    ...(propertyFilters
+      ? [
+          {
+            name: "properties",
+            in: "query",
+            required: false,
+            style: "form",
+            explode: true,
+            description:
+              "Any property filter parameter whose name starts with p., such as p.size or p.size.none.",
+            schema: {
+              type: "object",
+              patternProperties: { "^p\\.": { type: "string" } },
+              additionalProperties: false,
+            },
+          },
+        ]
+      : []),
+  ];
 }
 
 export function openApiOf(table: Record<string, OpenApiEndpoint>) {
@@ -206,7 +227,7 @@ export function openApiOf(table: Record<string, OpenApiEndpoint>) {
       summary: endpoint.summary,
       parameters: [
         ...paramsOf(endpoint.params, "path", components),
-        ...paramsOf(endpoint.query, "query", components),
+        ...paramsOf(endpoint.query, "query", components, endpoint.propertyFilters),
       ],
       responses: {},
       "x-vera-codes": [...endpoint.codes],

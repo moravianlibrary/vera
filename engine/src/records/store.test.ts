@@ -1,10 +1,36 @@
 import { describe, expect, it } from "bun:test";
-import { testEngine } from "../../test/engine";
+import { call, testEngine } from "../../test/engine";
 import { readSeed } from "../seed";
 import { engineRequestPlugins } from "./plugins";
 import { engineStore, pragueMidnightOf } from "./store";
 
 describe("seeded records", () => {
+  it("filters documents by a property value", async () => {
+    const engine = testEngine("base");
+    const all = await call(engine, "GET", "/api/documents", { as: "u3" });
+    const filtered = await call(engine, "GET", "/api/documents?p.size=A2", { as: "u3" });
+    expect(all.status).toBe(200);
+    expect(filtered.status).toBe(200);
+    const allPage = (await all.json()) as { total: number };
+    const filteredPage = (await filtered.json()) as { total: number };
+    expect(filteredPage.total).toBeGreaterThan(0);
+    expect(filteredPage.total).toBeLessThan(allPage.total);
+    engine.close();
+  });
+
+  it("applies a request property filter when no seed values match", async () => {
+    const engine = testEngine("base");
+    const all = await call(engine, "GET", "/api/requests", { as: "u3" });
+    const filtered = await call(engine, "GET", "/api/requests?p.size=A2", { as: "u3" });
+    expect(all.status).toBe(200);
+    expect(filtered.status).toBe(200);
+    const allPage = (await all.json()) as { total: number };
+    const filteredPage = (await filtered.json()) as { total: number };
+    expect(allPage.total).toBeGreaterThan(0);
+    expect(filteredPage.total).toBe(0);
+    engine.close();
+  });
+
   it("uses Prague midnight with the season's UTC offset", () => {
     expect(pragueMidnightOf(new Date("2026-01-10T12:00:00Z")).toISOString()).toBe(
       "2026-01-09T23:00:00.000Z",
