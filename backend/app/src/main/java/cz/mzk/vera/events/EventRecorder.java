@@ -33,7 +33,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-// EVENT-shape; EVENT-derived; OBS-audit; OBS-audit-delivery; LOG-one-act-one-story.
+// EVENT-shape; EVENT-derived; OBS-audit; OBS-audit-delivery; LOG-one-act-one-story. Joins the caller's transaction.
 @Service
 public class EventRecorder {
     private final DSLContext dsl;

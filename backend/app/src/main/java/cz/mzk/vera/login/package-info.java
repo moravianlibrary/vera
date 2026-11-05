@@ -1,3 +1,5 @@
-@org.springframework.modulith.ApplicationModule(allowedDependencies = {"web", "session", "db :: tables"})
-/** Login discovery and session read endpoints (B9). */
+@org.springframework.modulith.ApplicationModule(allowedDependencies = {
+    "web", "session", "db :: tables", "events", "pluginhost"
+})
+// B9. Login discovery and session read endpoints.
 package cz.mzk.vera.login;

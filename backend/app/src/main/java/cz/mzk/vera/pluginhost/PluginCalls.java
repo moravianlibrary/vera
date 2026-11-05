@@ -7,6 +7,8 @@ import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.PluginHttp;
 import cz.mzk.vera.plugin.PluginRefused;
 import cz.mzk.vera.plugin.PluginUnavailable;
+import cz.mzk.vera.pluginhost.InstalledPlugins;
+import cz.mzk.vera.pluginhost.PluginLoader;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.HashMap;

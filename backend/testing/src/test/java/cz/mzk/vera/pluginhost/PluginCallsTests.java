@@ -3,6 +3,7 @@ package cz.mzk.vera.pluginhost;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import cz.mzk.vera.pluginhost.InstalledPlugins;
 import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.PluginHttp;
 import cz.mzk.vera.plugin.PluginRefused;
@@ -30,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import io.micrometer.observation.ObservationRegistry;
 
+// PLG-api-call.
 @SpringBootTest(classes = VeraTestingApplication.class)
 @ActiveProfiles("test")
 @Testcontainers

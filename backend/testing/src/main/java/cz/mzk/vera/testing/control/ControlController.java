@@ -8,6 +8,7 @@ import cz.mzk.vera.events.Outbox;
 import cz.mzk.vera.session.SessionFilter;
 import cz.mzk.vera.testing.seeds.SeedReader;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
+import cz.mzk.vera.testing.fakes.identity.FakeWorld;
 import cz.mzk.vera.web.Instants;
 import cz.mzk.vera.web.Problems;
 import cz.mzk.vera.web.RouteCheck;
@@ -29,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,9 +54,11 @@ public class ControlController {
     private final Environment environment;
     private final Outbox outbox;
     private final JsonMapper json;
+    private final FakeWorld fakeWorld;
 
     public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService,
-            DSLContext dsl, RouteCheck routes, Environment environment, Outbox outbox, JsonMapper json) {
+            DSLContext dsl, RouteCheck routes, Environment environment, Outbox outbox, JsonMapper json,
+            FakeWorld fakeWorld) {
         this.clock = clock;
         this.reader = reader;
         this.resetService = resetService;
@@ -63,6 +67,52 @@ public class ControlController {
         this.environment = environment;
         this.outbox = outbox;
         this.json = json;
+        this.fakeWorld = fakeWorld;
+    }
+
+    @GetMapping(value = "/identity/{instanceId}", produces = "text/html")
+    public ResponseEntity<?> identityPage(@PathVariable String instanceId,
+            @RequestParam(name = "return", required = false) String returnTo) {
+        var instance = dsl.select(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.ID,
+                        cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.SETTINGS)
+                .from(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES)
+                .join(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS)
+                .on(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IMPLEMENTATION_ID
+                        .eq(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS.ID))
+                .where(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.ID.eq(instanceId))
+                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IS_ENABLED.isTrue())
+                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IS_DELETED.isFalse())
+                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS.KIND.eq("Identity")).fetchOne();
+        if (instance == null) return Problems.response(404, "There is no enabled Identity instance.",
+                "identity.no_instance", null);
+        String label;
+        try {
+            label = json.readTree(instance.get(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.SETTINGS).data())
+                    .path("label").asString();
+        } catch (JacksonException exception) {
+            throw new IllegalStateException("Invalid Identity settings", exception);
+        }
+        StringBuilder html = new StringBuilder("<!doctype html><html><head><meta charset=\"utf-8\"><title>")
+                .append(escapeHtml(label)).append("</title></head><body><h1>").append(escapeHtml(label))
+                .append("</h1><ul>");
+        for (var accountEntry : fakeWorld.accountsForInstance(instanceId).entrySet()) {
+            var account = accountEntry.getValue();
+            String href = (returnTo == null ? "" : returnTo) + "&code="
+                    + java.net.URLEncoder.encode(accountEntry.getKey(), java.nio.charset.StandardCharsets.UTF_8);
+            html.append("<li><a href=\"").append(escapeHtml(href)).append("\">")
+                    .append(escapeHtml(account.path("name").asString()))
+                    .append("</a> — ")
+                    .append(escapeHtml(account.path("email").isNull() ? "" : account.path("email").asString()))
+                    .append("</li>");
+        }
+        html.append("</ul></body></html>");
+        return ResponseEntity.ok().contentType(org.springframework.http.MediaType.TEXT_HTML)
+                .body(html.toString());
+    }
+
+    private static String escapeHtml(String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
     }
 
     @PostMapping("/reset")

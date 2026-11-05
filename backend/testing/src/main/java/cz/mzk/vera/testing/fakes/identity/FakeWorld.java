@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
-// Seed-backed outside identity providers for the test profile.
+// BK2a; PLG-api-call. Seed-backed outside identity providers for the test profile.
 @Component
 @Profile("test")
 public class FakeWorld {
@@ -17,7 +17,7 @@ public class FakeWorld {
     private final Map<String, String> passwords = new ConcurrentHashMap<>();
 
     public synchronized void reset(JsonNode seed) {
-        Map<String, JsonNode> nextAccounts = new HashMap<>();
+        Map<String, JsonNode> nextAccounts = new java.util.LinkedHashMap<>();
         seed.path("fakes").path("identityAccounts").properties().forEach(entry -> {
             for (JsonNode account : entry.getValue()) {
                 String key = accountKey(entry.getKey(), account.path("externalId").asString());
@@ -40,7 +40,7 @@ public class FakeWorld {
             }
         }
 
-        accounts = Map.copyOf(nextAccounts);
+        accounts = java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(nextAccounts));
         issuerInstances = Map.copyOf(nextIssuers);
         passwords.clear();
     }
@@ -51,6 +51,15 @@ public class FakeWorld {
             return null;
         }
         return accounts.get(accountKey(instance, code));
+    }
+
+    public Map<String, JsonNode> accountsForInstance(String instanceId) {
+        String prefix = instanceId + "\u0000";
+        Map<String, JsonNode> result = new java.util.LinkedHashMap<>();
+        accounts.forEach((key, account) -> {
+            if (key.startsWith(prefix)) result.put(key.substring(prefix.length()), account.deepCopy());
+        });
+        return java.util.Collections.unmodifiableMap(result);
     }
 
     public boolean checkPassword(String instanceId, String username, String password) {

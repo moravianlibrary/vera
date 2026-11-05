@@ -25,7 +25,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Resolves and slides the vera_session cookie for each request. */
+// E14. Resolves and slides the vera_session cookie for each request.
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public final class SessionFilter extends OncePerRequestFilter {
@@ -50,7 +50,9 @@ public final class SessionFilter extends OncePerRequestFilter {
         Caller caller = token == null ? null : callerOf(token);
         if (caller != null) {
             request.setAttribute(Caller.class.getName(), caller);
-            response.setHeader("Set-Cookie", cookie(token, isTestProfile));
+            if (!("DELETE".equals(request.getMethod()) && "/api/session/logout".equals(request.getRequestURI()))) {
+                response.setHeader("Set-Cookie", cookie(token, isTestProfile));
+            }
         }
         chain.doFilter(request, response);
     }
@@ -95,7 +97,15 @@ public final class SessionFilter extends OncePerRequestFilter {
     }
 
     public static String cookie(String token, boolean testProfile) {
-        return COOKIE + "=" + token + "; HttpOnly; SameSite=Lax; Path=/; Max-Age=1800"
+        return sessionCookie(token, testProfile, "1800");
+    }
+
+    public static String clearedCookie(boolean testProfile) {
+        return sessionCookie("", testProfile, "0");
+    }
+
+    private static String sessionCookie(String token, boolean testProfile, String maxAge) {
+        return COOKIE + "=" + token + "; HttpOnly; SameSite=Lax; Path=/; Max-Age=" + maxAge
                 + (testProfile ? "" : "; Secure");
     }
 }
