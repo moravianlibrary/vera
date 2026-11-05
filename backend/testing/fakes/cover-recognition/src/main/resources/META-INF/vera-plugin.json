@@ -1,0 +1,22 @@
+{
+  "implementation": "cz.mzk.vera.cover-recognition",
+  "version": "0.3.0",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": ["readPhoto"],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "engine", "isSecret": false, "isRequired": true },
+    { "key": "lang", "isSecret": false, "isRequired": true },
+    { "key": "match", "isSecret": false, "isRequired": true }
+  ]
+}

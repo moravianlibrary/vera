@@ -1,7 +1,18 @@
 package cz.mzk.vera.pluginhost;
 
 import cz.mzk.vera.plugin.ContractVersion;
+import cz.mzk.vera.plugin.catalog.CatalogAdapter;
+import cz.mzk.vera.plugin.catalog.ChangeFeed;
+import cz.mzk.vera.plugin.catalog.LinkReader;
+import cz.mzk.vera.plugin.catalog.MirroredCatalog;
+import cz.mzk.vera.plugin.catalog.SearchableCatalog;
+import cz.mzk.vera.plugin.classifier.Classifier;
+import cz.mzk.vera.plugin.custody.Custody;
 import cz.mzk.vera.plugin.identity.Identity;
+import cz.mzk.vera.plugin.input.BarcodeReader;
+import cz.mzk.vera.plugin.input.EntryLinkInput;
+import cz.mzk.vera.plugin.input.Input;
+import cz.mzk.vera.plugin.input.PhotoReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -21,8 +32,19 @@ import tools.jackson.databind.JsonNode;
 // B6; PLG-api-capabilities.
 @Component
 public class PluginLoader {
-    private static final Map<Class<?>, Map<Class<?>, String>> OPTIONAL_OPERATIONS = Map.of(
-            Identity.class, Map.of());
+    static final Map<Class<?>, Map<Class<?>, String>> OPTIONAL_OPERATIONS = Map.ofEntries(
+            Map.entry(Identity.class, Map.of()),
+            Map.entry(CatalogAdapter.class, Map.of(
+                    LinkReader.class, "readLink",
+                    SearchableCatalog.class, "search",
+                    ChangeFeed.class, "changes",
+                    MirroredCatalog.class, "sync")),
+            Map.entry(Input.class, Map.of(
+                    BarcodeReader.class, "readBarcode",
+                    PhotoReader.class, "readPhoto",
+                    EntryLinkInput.class, "entry")),
+            Map.entry(Custody.class, Map.of()),
+            Map.entry(Classifier.class, Map.of()));
 
     private final PluginDeclarations declarations;
 

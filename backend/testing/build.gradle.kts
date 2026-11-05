@@ -25,9 +25,18 @@ dependencies {
 }
 
 
+val fakeNames = listOf(
+    "oidc-identity", "local-accounts", "aleph-catalog-adapter", "barcode-reader",
+    "cover-recognition", "jq-custody", "place-of-publication", "material-type",
+)
+
 tasks.named<ProcessResources>("processResources") {
-    dependsOn(project(":testing:fakes:oidc-identity").tasks.named("jar"))
-    dependsOn(project(":testing:fakes:local-accounts").tasks.named("jar"))
-    from(project(":testing:fakes:oidc-identity").tasks.named("jar")) { into("fakes"); rename { "oidc-identity.jar" } }
-    from(project(":testing:fakes:local-accounts").tasks.named("jar")) { into("fakes"); rename { "local-accounts.jar" } }
+    fakeNames.forEach { name ->
+        val fakeJar = project(":testing:fakes:$name").tasks.named("jar")
+        dependsOn(fakeJar)
+        from(fakeJar) {
+            into("fakes")
+            rename { "$name.jar" }
+        }
+    }
 }

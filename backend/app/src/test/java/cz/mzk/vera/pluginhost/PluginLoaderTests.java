@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import cz.mzk.vera.plugin.PluginContext;
+import cz.mzk.vera.plugin.catalog.CatalogAdapter;
 import cz.mzk.vera.plugin.identity.CompleteAnswer;
 import cz.mzk.vera.plugin.identity.CompleteInput;
 import cz.mzk.vera.plugin.identity.Identity;
@@ -109,6 +110,29 @@ class PluginLoaderTests {
         String declaration = standardDeclaration().replace("\"operations\":[]", "\"operations\":[\"search\"]");
         assertRefused(jar(declaration, "test.IdentityImpl", Map.of("test.IdentityImpl", source("one", false))),
                 "declared operations do not match");
+    }
+
+    @Test
+    void refusesCatalogDeclaringAnUnimplementedOptionalOperation() throws Exception {
+        String service = "META-INF/services/" + CatalogAdapter.class.getName();
+        String declaration = """
+                {"implementation":"test.catalog","version":"1.0.0","contractVersion":"1.0",
+                "triggers":["OnDemand"],"declares":{"operations":["readLink"],"properties":[],
+                "identifierTypes":[],"rawStates":[],"rules":[],"agent":null,"generatorClass":null,
+                "channelInterface":null,"loginEntry":null},"configFields":[]}
+                """;
+        String source = """
+                package test;
+                import cz.mzk.vera.plugin.PluginContext;
+                import cz.mzk.vera.plugin.catalog.CatalogAdapter;
+                import cz.mzk.vera.plugin.catalog.ReadAnswer;
+                import cz.mzk.vera.plugin.catalog.ReadInput;
+                public final class CatalogImpl implements CatalogAdapter {
+                    public ReadAnswer read(PluginContext context, ReadInput input) { return null; }
+                }
+                """;
+        assertRefused(createJar(Map.of(DECLARATION_PATH, declaration, service, "test.CatalogImpl"),
+                Map.of("test.CatalogImpl", source)), "declared operations do not match");
     }
 
     @Test

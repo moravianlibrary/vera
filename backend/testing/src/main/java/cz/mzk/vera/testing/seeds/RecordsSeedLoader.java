@@ -22,6 +22,7 @@ import static cz.mzk.vera.db.tables.Tables.REQUEST_EXISTING_COPIES;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 
 import cz.mzk.vera.documents.DocumentStates;
+import cz.mzk.vera.requests.RequestPlacements;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -40,9 +41,11 @@ import tools.jackson.databind.JsonNode;
 // B8. Seeds the asking and deciding records before deriving their stored state.
 class RecordsSeedLoader {
     private final DocumentStates states;
+    private final RequestPlacements placements;
 
-    RecordsSeedLoader(DocumentStates states) {
+    RecordsSeedLoader(DocumentStates states, RequestPlacements placements) {
         this.states = states;
+        this.placements = placements;
     }
 
     void load(DSLContext dsl, JsonNode collections) {
@@ -53,6 +56,9 @@ class RecordsSeedLoader {
         documents(dsl, collections.path("documents"));
         iterations(dsl, collections.path("iterations"));
         requests(dsl, collections.path("requests"));
+        for (JsonNode request : collections.path("requests")) {
+            placements.place(dsl, string(request, "id"));
+        }
         events(dsl, collections.path("statusLog"));
         for (JsonNode document : collections.path("documents")) {
             states.recompute(dsl, string(document, "id"));

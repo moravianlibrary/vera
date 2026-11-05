@@ -1,0 +1,23 @@
+{
+  "implementation": "cz.mzk.vera.aleph-catalog-adapter",
+  "version": "2.4.1",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": ["readLink", "search"],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "base_url", "isSecret": false, "isRequired": true },
+    { "key": "protocol", "isSecret": false, "isRequired": true },
+    { "key": "timeout", "isSecret": false, "isRequired": true },
+    { "key": "search", "isSecret": false, "isRequired": false }
+  ]
+}

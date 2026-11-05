@@ -64,7 +64,7 @@ class RecordSeedTests {
     }
 
     @Test
-    void loadsTheExpectedRecordTableCountsAndNoPlacements() {
+    void loadsTheExpectedRecordTableCountsAndSeededPlacements() {
         assertCount(PROJECTS, 9);
         assertCount(PROPERTY_DEFINITIONS, 6);
         assertCount(REQUEST_CUSTODIES, 4);
@@ -88,7 +88,7 @@ class RecordSeedTests {
         assertCount(DOCUMENT_STATES, 54);
         assertCount(ITERATION_STATES, 41);
         assertCount(REQUEST_STATES, 61);
-        assertCount(REQUEST_PLACEMENTS, 0);
+        assertCount(REQUEST_PLACEMENTS, 57);
     }
 
     @Test

@@ -1,0 +1,21 @@
+{
+  "implementation": "cz.mzk.vera.barcode-reader",
+  "version": "0.8.1",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": ["readBarcode"],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "formats", "isSecret": false, "isRequired": true },
+    { "key": "beep", "isSecret": false, "isRequired": true }
+  ]
+}

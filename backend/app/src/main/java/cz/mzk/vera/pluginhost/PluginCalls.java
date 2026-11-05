@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,11 @@ public class PluginCalls {
 
     public <K, A> PluginOutcome<A> call(String instanceId, Class<K> kind, String operation,
             BiFunction<K, PluginContext, A> body) {
+        return call(dsl, instanceId, kind, operation, body);
+    }
+
+    public <K, A> PluginOutcome<A> call(DSLContext source, String instanceId, Class<K> kind,
+            String operation, BiFunction<K, PluginContext, A> body) {
         String kindName = kind.getSimpleName();
         Observation observation = Observation.createNotStarted("vera.plugin.call", observations)
                 .lowCardinalityKeyValue("kind", kindName)
@@ -71,7 +77,7 @@ public class PluginCalls {
         String result = "unavailable";
         observation.start();
         try {
-            var row = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.CONFIGURATION,
+            Record row = source.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.CONFIGURATION,
                             PLUGIN_IMPLEMENTATIONS.DESCRIPTOR_ID, PLUGIN_IMPLEMENTATIONS.VERSIONS)
                     .from(PLUGIN_INSTANCES)
                     .join(PLUGIN_IMPLEMENTATIONS)
