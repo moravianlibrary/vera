@@ -26,3 +26,27 @@ databaseChangeLog:
   - include:
       file: 0009-user-settings.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0010-projects.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0011-properties.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0012-request-custodies.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0013-batches.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0014-documents.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0015-iterations.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0016-requests.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0017-document-states.sql
+      relativeToChangelogFile: true

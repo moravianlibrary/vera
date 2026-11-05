@@ -62,6 +62,9 @@ class EventRecorderTests {
     @BeforeEach
     void resetToBase() {
         resetService.reset("base", true);
+        dsl.deleteFrom(EVENTS).execute();
+        dsl.deleteFrom(AUDIT_OUTBOX).execute();
+        dsl.deleteFrom(OUTBOX).execute();
     }
 
     @Test

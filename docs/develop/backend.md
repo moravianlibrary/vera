@@ -362,7 +362,8 @@ A small feature keeps fewer files; a large one splits a file into a subpackage w
 | `telemetry` | the attribute allow-list, the act and run on each record |
 
 **Between features**:
-- a feature reads and writes only its own tables, through its own package-private repository;
+- a feature writes only its own tables, through its own package-private repository; its queries may
+  read other features' tables in one SQL query, read-only (decided 2026-11-05, BK3 decision 3);
 - it calls another feature only through that feature's commands or queries (approving a proposal
   asks `iterations` for the iteration, and `ingest` for the job);
 - no cycles between features.

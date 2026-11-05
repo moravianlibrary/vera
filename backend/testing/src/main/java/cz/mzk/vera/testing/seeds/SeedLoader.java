@@ -28,9 +28,11 @@ import tools.jackson.databind.JsonNode;
 @Component
 public class SeedLoader {
     private final DSLContext dsl;
+    private final RecordsSeedLoader records;
 
-    public SeedLoader(DSLContext dsl) {
+    public SeedLoader(DSLContext dsl, RecordsSeedLoader records) {
         this.dsl = dsl;
+        this.records = records;
     }
 
     public void load(JsonNode seed) {
@@ -190,7 +192,7 @@ public class SeedLoader {
                     .set(PLUGIN_INSTANCES.POSITION, position++)
                     .execute();
         }
-        // Later seed steps load the collections not held by this step's tables.
+        records.load(transaction, collections);
     }
 
     private String string(JsonNode object, String field) {

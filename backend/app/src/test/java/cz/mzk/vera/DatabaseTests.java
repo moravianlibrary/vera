@@ -68,8 +68,11 @@ class DatabaseTests {
                 liquibase.update(new Contexts("test"), new LabelExpression());
                 assertThat(connection.getMetaData().getTables(null, "public", "test_clock", null).next())
                         .isTrue();
-                liquibase.rollback(9, new Contexts("test"), new LabelExpression());
+                int changesetCount = liquibase.getDatabaseChangeLog().getChangeSets().size();
+                liquibase.rollback(changesetCount, new Contexts("test"), new LabelExpression());
                 assertThat(connection.getMetaData().getTables(null, "public", "users", null).next())
+                        .isFalse();
+                assertThat(connection.getMetaData().getTables(null, "public", "requests", null).next())
                         .isFalse();
                 liquibase.update(new Contexts("test"), new LabelExpression());
                 assertThat(connection.getMetaData().getTables(null, "public", "users", null).next())
