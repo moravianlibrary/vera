@@ -1,36 +1,43 @@
 package cz.mzk.vera.documents;
 
+import static cz.mzk.vera.db.tables.Tables.BATCHES;
 import static cz.mzk.vera.db.tables.Tables.CATEGORY_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
-import static cz.mzk.vera.db.tables.Tables.BATCHES;
-import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBERS;
+import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
+import cz.mzk.vera.testing.seeds.TemplateResetService;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.JsonNode;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.jooq.DSLContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import cz.mzk.vera.testing.seeds.TemplateResetService;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 // VIEW-documents-audience; ENT-batch.
-@SpringBootTest(classes = VeraTestingApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = VeraTestingApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")
 @Testcontainers
@@ -84,6 +91,90 @@ class DocumentReadTests {
     void detailAndBatchesRequireASession() {
         client.get().uri("/api/documents/D1").exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/batches").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/documents").exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void documentListAnswersThePageShapeAndUnknownCursorIsEmpty() {
+        client.get().uri("/api/documents?limit=2").header("Cookie", session("u3")).exchange()
+            .expectStatus().isOk().expectBody().jsonPath("$.audience").isEqualTo("staff")
+            .jsonPath("$.total").isNotEmpty().jsonPath("$.items.length()")
+            .isEqualTo(2).jsonPath("$.facets.statuses").isArray()
+            .jsonPath("$.propertyFacets").isMap();
+        client.get().uri("/api/documents?cursor=unknown").header("Cookie", session("u3")).exchange()
+            .expectStatus().isOk().expectBody().jsonPath("$.items.length()").isEqualTo(0)
+            .jsonPath("$.nextCursor").isEmpty();
+    }
+
+    @Test
+    void documentListFiltersAndFacetsMatchTheRecordings() throws Exception {
+        JsonNode recordings = mapper.readTree(Path.of("../../replay/recordings/base-records-filters.json")
+            .toFile());
+        for (JsonNode scenario : recordings.path("scenarios")) {
+            String name = scenario.path("name").asString();
+            if (!name.equals("documents-admin") && !name.equals("documents-reader")) {
+                continue;
+            }
+            Map<String, String> cookies = new LinkedHashMap<>();
+            for (JsonNode call : scenario.path("calls")) {
+                String path = call.path("path").asString();
+                if (!"GET".equals(call.path("method").asString())
+                        || !path.startsWith("/api/documents")) {
+                    continue;
+                }
+                String userId = call.path("as").asString();
+                String cookie = cookies.computeIfAbsent(userId, this::session);
+                JsonNode expected = call.path("body");
+                var response = client.get().uri(URI.create(path)).header("Cookie", cookie)
+                    .exchange().expectBody(String.class).returnResult();
+                assertThat(response.getStatus()).as(path).isEqualTo(HttpStatus.OK);
+                JsonNode actual = mapper.readTree(response.getResponseBody());
+                assertThat(actual.path("audience")).isEqualTo(expected.path("audience"));
+                assertThat(ids(actual.path("items"))).as(path)
+                    .isEqualTo(ids(expected.path("items")));
+                assertThat(actual.path("total")).isEqualTo(expected.path("total"));
+                assertThat(actual.path("nextCursor")).isEqualTo(expected.path("nextCursor"));
+                assertThat(actual.path("facets")).isEqualTo(expected.path("facets"));
+                assertThat(actual.path("propertyFacets")).isEqualTo(expected.path("propertyFacets"));
+                if (path.contains("group=")) {
+                    assertThat(canonical(actual.path("groups"))).as(path)
+                        .isEqualTo(canonical(expected.path("groups")));
+                }
+            }
+        }
+        JsonNode byRequest = mapper.readTree(client.get().uri("/api/documents?q=R1")
+            .header("Cookie", session("u3")).exchange().expectStatus().isOk().expectBody(String.class)
+            .returnResult().getResponseBody());
+        assertThat(ids(byRequest.path("items"))).contains("D1");
+    }
+
+    @Test
+    void groupingIsUnavailableToPublicAndNeedsReadIngestForStaff() throws Exception {
+        JsonNode publicPage = mapper.readTree(client.get()
+            .uri("/api/documents?perspective=my&group=batch").header("Cookie", session("u3"))
+            .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(publicPage.path("groups")).isEmpty();
+        JsonNode staffPage = mapper.readTree(client.get().uri("/api/documents?group=batch")
+            .header("Cookie", session("u10")).exchange().expectStatus().isOk()
+            .expectBody(String.class).returnResult().getResponseBody());
+        assertThat(staffPage.path("groups")).isEmpty();
+    }
+
+    @Test
+    void batchGroupTotalsSpanSlicesWhileRowCountsFollowEachSlice() throws Exception {
+        String cookie = session("u3");
+        JsonNode first = mapper.readTree(client.get().uri("/api/documents?group=batch&limit=2")
+            .header("Cookie", cookie).exchange().expectStatus().isOk().expectBody(String.class)
+            .returnResult().getResponseBody());
+        assertThat(first.path("groups").path(0).path("kind").asString()).isEqualTo("batch");
+        assertThat(first.path("groups").path(0).path("total").asInt()).isEqualTo(3);
+        assertThat(first.path("groups").path(0).path("rowCount").asInt()).isEqualTo(2);
+        String cursor = first.path("nextCursor").asString();
+        JsonNode second = mapper.readTree(client.get().uri("/api/documents?group=batch&limit=2&cursor=" + cursor)
+            .header("Cookie", cookie).exchange().expectStatus().isOk().expectBody(String.class)
+            .returnResult().getResponseBody());
+        assertThat(second.path("groups").path(0).path("total").asInt()).isEqualTo(3);
+        assertThat(second.path("groups").path(0).path("rowCount").asInt()).isEqualTo(1);
     }
 
     @Test
@@ -107,6 +198,21 @@ class DocumentReadTests {
         client.get().uri("/api/documents/D1?perspective=my").header("Cookie", session("u10"))
             .exchange().expectStatus().isForbidden().expectBody().jsonPath("$.detail")
             .isEqualTo("You may not open My Documents");
+        client.get().uri("/api/documents?perspective=my").header("Cookie", session("u10"))
+            .exchange().expectStatus().isForbidden();
+    }
+
+    @Test
+    void custodyScopedListAndFacetsStayWithinTheCallersReach() throws Exception {
+        grant("reach-custody", "iteration.read", "custody");
+        dsl.insertInto(CATEGORY_MEMBERS).set(CATEGORY_MEMBERS.CATEGORY_ID, "c2")
+            .set(CATEGORY_MEMBERS.USER_ID, "u10").set(CATEGORY_MEMBERS.POSITION, 100).execute();
+        JsonNode page = mapper.readTree(client.get().uri("/api/documents?limit=200")
+            .header("Cookie", session("u10")).exchange().expectStatus().isOk().expectBody(String.class)
+            .returnResult().getResponseBody());
+        List<String> ids = ids(page.path("items"));
+        assertThat(ids).contains("D1").doesNotContain("D4");
+        assertThat(page.path("facets").path("categoryIds").toString()).doesNotContain("c4");
     }
 
     @Test
@@ -145,7 +251,8 @@ class DocumentReadTests {
         dsl.insertInto(CATEGORY_MEMBERS).set(CATEGORY_MEMBERS.CATEGORY_ID, "c2")
             .set(CATEGORY_MEMBERS.USER_ID, "u5").set(CATEGORY_MEMBERS.POSITION, 100).execute();
         client.get().uri("/api/documents/D4").header("Cookie", session("u5"))
-            .exchange().expectStatus().isOk().expectBody().jsonPath("$.record.requests[0].id").isEqualTo("R4");
+            .exchange().expectStatus().isOk().expectBody().jsonPath("$.record.requests[0].id")
+            .isEqualTo("R4");
     }
 
     @Test
@@ -193,7 +300,8 @@ class DocumentReadTests {
             .set(EVENTS.SUBJECT_KIND, first.getSubjectKind()).set(EVENTS.SUBJECT_ID, first.getSubjectId())
             .set(EVENTS.AT, first.getAt()).set(EVENTS.ACTOR, first.getActor())
             .set(EVENTS.CORRELATION_ID, first.getCorrelationId()).set(EVENTS.DATA, first.getData())
-            .set(EVENTS.REASON_PUBLIC, first.getReasonPublic()).set(EVENTS.REASON_INTERNAL, first.getReasonInternal())
+            .set(EVENTS.REASON_PUBLIC, first.getReasonPublic())
+            .set(EVENTS.REASON_INTERNAL, first.getReasonInternal())
             .execute();
 
         var body = client.get().uri("/api/documents/D1").header("Cookie", session("u3"))
@@ -225,6 +333,18 @@ class DocumentReadTests {
         return client.post().uri("/_engine/sessions").contentType(MediaType.APPLICATION_JSON)
             .body(Map.of("userId", userId)).exchange().expectStatus().isOk().expectBody()
             .returnResult().getResponseHeaders().getFirst("Set-Cookie").split(";", 2)[0];
+    }
+
+    private List<String> ids(JsonNode items) {
+        List<String> ids = new ArrayList<>();
+        for (JsonNode item : items) {
+            ids.add(item.path("document").path("id").asString());
+        }
+        return List.copyOf(ids);
+    }
+
+    private JsonNode canonical(JsonNode value) throws Exception {
+        return mapper.readTree(value.toString().replace(".000Z", "Z"));
     }
 
     private void grant(String roleId, String permission, String scope) {

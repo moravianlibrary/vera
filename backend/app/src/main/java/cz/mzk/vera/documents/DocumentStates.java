@@ -1,11 +1,14 @@
 package cz.mzk.vera.documents;
 
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PAGE_SOURCES;
-import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
+import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
+import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_VALUES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_REGISTRY_RECORDS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_STATES;
+import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
+import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_STATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_VERDICTS;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_EXISTING_COPIES;
@@ -37,15 +40,33 @@ import cz.mzk.vera.domain.status.Status;
 import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
 import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.db.tables.tables.records.RequestsRecord;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
+import org.jooq.UpdatableRecord;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 // VIEW-documents; VIEW-requests; STAT-validation; STAT-public. Stores the derived list values.
 @Component
 public class DocumentStates {
+    private final JsonMapper mapper;
+    private final DocumentJson json;
+    private final PropertyDefinitions propertyDefinitions;
+
+    public DocumentStates(JsonMapper mapper, DocumentJson json, PropertyDefinitions propertyDefinitions) {
+        this.mapper = mapper;
+        this.json = json;
+        this.propertyDefinitions = propertyDefinitions;
+    }
+
     public void recompute(DSLContext dsl, String documentId) {
         DocumentsRecord documentRow = dsl.selectFrom(DOCUMENTS)
                 .where(DOCUMENTS.ID.eq(documentId))
@@ -74,6 +95,8 @@ public class DocumentStates {
                 .orderBy(REQUESTS.AT)
                 .fetch(row -> request(dsl, row));
         DocumentRecord record = new DocumentRecord(document, iterations, requests);
+
+        storePropertyValues(dsl, documentId, documentRow, record);
 
         Iteration current = Documents.currentIterationOf(record);
         PageSource pageCount = Documents.effectivePageCount(document);
@@ -141,6 +164,104 @@ public class DocumentStates {
         }
     }
 
+    private void storePropertyValues(DSLContext dsl, String documentId, DocumentsRecord documentRow,
+            DocumentRecord record) {
+        Iteration current = Documents.currentIterationOf(record);
+        String currentId = current == null ? null : current.id();
+        dsl.deleteFrom(DOCUMENT_PROPERTY_VALUES)
+            .where(DOCUMENT_PROPERTY_VALUES.DOCUMENT_ID.eq(documentId))
+            .execute();
+
+        Map<String, PropertyValueInUse> documentValues = new LinkedHashMap<>();
+        Map<String, PropertyValueInUse> iterationValues = new LinkedHashMap<>();
+        dsl.select(DOCUMENT_PROPERTY_SOURCES.KEY, DOCUMENT_PROPERTY_SOURCES.TIER,
+                DOCUMENT_PROPERTY_SOURCES.VALUE)
+            .from(DOCUMENT_PROPERTY_SOURCES)
+            .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId))
+            .orderBy(DOCUMENT_PROPERTY_SOURCES.POSITION)
+            .fetch()
+            .forEach(row -> selectValue(documentValues, row.get(DOCUMENT_PROPERTY_SOURCES.KEY),
+                row.get(DOCUMENT_PROPERTY_SOURCES.TIER), row.get(DOCUMENT_PROPERTY_SOURCES.VALUE)));
+        if (currentId != null) {
+            dsl.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.TIER,
+                    ITERATION_PROPERTY_SOURCES.VALUE)
+                .from(ITERATION_PROPERTY_SOURCES)
+                .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(currentId))
+                .orderBy(ITERATION_PROPERTY_SOURCES.POSITION)
+                .fetch()
+                .forEach(row -> selectValue(iterationValues, row.get(ITERATION_PROPERTY_SOURCES.KEY),
+                    row.get(ITERATION_PROPERTY_SOURCES.TIER), row.get(ITERATION_PROPERTY_SOURCES.VALUE)));
+        }
+
+        List<UpdatableRecord<?>> rows = new ArrayList<>();
+        for (PropertyDefinitions.Definition definition : propertyDefinitions.all(dsl)) {
+            String key = definition.key();
+            PropertyKey propertyKey = PropertyKey.of(key);
+            if (propertyKey == PropertyKey.PAGE_COUNT) {
+                continue;
+            }
+            JsonNode value = switch (propertyKey) {
+                case MATERIAL_TYPE -> mapper.valueToTree(documentRow.getType());
+                case SHELF_MARK -> documentRow.getShelfMark() == null
+                    ? null : mapper.valueToTree(documentRow.getShelfMark());
+                case TITLE -> mapper.valueToTree(documentRow.getTitle());
+                case PAGE_COUNT -> null;
+                case null -> valueFor(key, definition.about(), documentValues, iterationValues);
+            };
+            if (value == null) {
+                continue;
+            }
+            List<JsonNode> scalars;
+            if (value.isArray()) {
+                List<JsonNode> values = new ArrayList<>();
+                value.forEach(values::add);
+                scalars = values;
+            } else {
+                scalars = List.of(value);
+            }
+            int ordinal = 0;
+            for (JsonNode scalar : scalars) {
+                String text;
+                if (scalar.isBoolean()) {
+                    text = scalar.booleanValue() ? "Yes" : "No";
+                } else {
+                    text = scalar.isString() ? scalar.asString() : scalar.toString();
+                }
+                BigDecimal number = definition.type() == PropertyType.NUMBER
+                    && scalar.isNumber() ? scalar.decimalValue() : null;
+                var row = dsl.newRecord(DOCUMENT_PROPERTY_VALUES);
+                row.setDocumentId(documentId);
+                row.setKey(key);
+                row.setOrdinal(ordinal++);
+                row.setTextValue(text);
+                row.setNumberValue(number);
+                rows.add(row);
+            }
+        }
+        if (!rows.isEmpty()) {
+            dsl.batchInsert(rows).execute();
+        }
+    }
+
+    private void selectValue(Map<String, PropertyValueInUse> values, String key, int tier, JSONB value) {
+        PropertyValueInUse previous = values.get(key);
+        if (previous == null || tier > previous.tier()) {
+            // Stable descending tier order keeps the first source in position on an equal tier.
+            values.put(key, new PropertyValueInUse(tier, json.read(value)));
+        }
+    }
+
+    private JsonNode valueFor(String key, PropertyAbout about,
+            Map<String, PropertyValueInUse> documentValues,
+            Map<String, PropertyValueInUse> iterationValues) {
+        Map<String, PropertyValueInUse> values = about == PropertyAbout.DOCUMENT
+            ? documentValues : iterationValues;
+        PropertyValueInUse value = values.get(key);
+        return value == null ? null : value.value();
+    }
+
+    private record PropertyValueInUse(int tier, JsonNode value) {}
+
     private Iteration iteration(DSLContext dsl, IterationsRecord row) {
         String id = row.getId();
         List<Defect> defects = dsl.selectFrom(ITERATION_DEFECTS)
@@ -175,8 +296,9 @@ public class DocumentStates {
         String iterationId = row.getIterationId();
         IterationLink iteration = relation == null ? null
                 : new IterationLink(Relation.valueOf(relation), iterationId);
-        return new Request(id, row.getDocumentId(), row.getRequesterId(), instant(row.getAt()), row.getReason(),
-                row.getBatchId(), row.getProjectId(), Decision.valueOf(row.getDecision()), iteration,
+        return new Request(id, row.getDocumentId(), row.getRequesterId(), instant(row.getAt()),
+                row.getReason(), row.getBatchId(), row.getProjectId(),
+                Decision.valueOf(row.getDecision()), iteration,
                 row.getTracksIterationId(), copies, instant(row.getCheckedAt()),
                 Boolean.TRUE.equals(row.getIsAfterProjectApproval()));
     }

@@ -1,6 +1,5 @@
 package cz.mzk.vera.documents;
 
-import static cz.mzk.vera.db.tables.Tables.PROPERTY_DEFINITIONS;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 
 import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
@@ -16,10 +15,13 @@ import org.springframework.stereotype.Component;
 public class DocumentRedaction {
     private final DSLContext dsl;
     private final DocumentReach reach;
+    private final PropertyDefinitions propertyDefinitions;
 
-    public DocumentRedaction(DSLContext dsl, DocumentReach reach) {
+    public DocumentRedaction(DSLContext dsl, DocumentReach reach,
+            PropertyDefinitions propertyDefinitions) {
         this.dsl = dsl;
         this.reach = reach;
+        this.propertyDefinitions = propertyDefinitions;
     }
 
     @SuppressWarnings("unchecked")
@@ -28,12 +30,10 @@ public class DocumentRedaction {
         List<Map<String, Object>> requests = (List<Map<String, Object>>) record.get("requests");
         List<Map<String, Object>> iterations = (List<Map<String, Object>>) record.get("iterations");
         if (audience == Audience.PUBLIC) {
-            Set<String> publicKeys = new HashSet<>(dsl.select(PROPERTY_DEFINITIONS.KEY)
-                .from(PROPERTY_DEFINITIONS)
-                .where(PROPERTY_DEFINITIONS.VISIBILITY.eq("public")).fetch(PROPERTY_DEFINITIONS.KEY));
+            Set<String> publicKeys = new HashSet<>(propertyDefinitions.publicKeys(dsl));
             Set<String> reachedRequestIds = new HashSet<>(dsl.select(REQUESTS.ID).from(REQUESTS)
                 .where(REQUESTS.DOCUMENT_ID.eq(documentId)
-                    .and(reach.requestCondition(held, callerId))).fetch(REQUESTS.ID));
+                    .and(DocumentReach.requestCondition(held, callerId))).fetch(REQUESTS.ID));
             requests.removeIf(request -> !reachedRequestIds.contains(request.get("id")));
             Set<String> followed = new HashSet<>();
             for (Map<String, Object> request : requests) {
@@ -52,7 +52,7 @@ public class DocumentRedaction {
             for (Map<String, Object> iteration : iterations) {
                 publicIteration(iteration, publicKeys);
             }
-        } else if (!held.hasPermission("request.read_ingest")) {
+        } else if (!held.hasPermission(DocumentCodes.REQUEST_READ_INGEST)) {
             for (Map<String, Object> iteration : iterations) {
                 removeIngestError(iteration);
             }

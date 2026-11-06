@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -22,24 +21,26 @@ import tools.jackson.databind.json.JsonMapper;
 public class DocumentHistory {
     private final DSLContext dsl;
     private final JsonMapper mapper;
+    private final DocumentJson json;
 
-    public DocumentHistory(DSLContext dsl, JsonMapper mapper) {
+    public DocumentHistory(DSLContext dsl, JsonMapper mapper, DocumentJson json) {
         this.dsl = dsl;
         this.mapper = mapper;
+        this.json = json;
     }
 
     public List<Map<String, Object>> logOf(Set<String> subjects, HeldScopes held, Audience audience) {
         List<Map<String, Object>> entries = new ArrayList<>();
         for (var row : dsl.selectFrom(EVENTS).where(EVENTS.SUBJECT_ID.in(subjects))
                 .orderBy(EVENTS.AT.desc(), EVENTS.POSITION.asc()).fetch()) {
-            JsonNode data = json(row.getData().data());
+            JsonNode data = json.read(row.getData());
             EventCode code = EventCode.of(row.getCode());
             if (audience == Audience.PUBLIC
                     && (!code.isPublic() || (code == EventCode.ITERATION_RESTRICTED
                         && !"forbidden".equals(data.path("outcome").asString())))) {
                 continue;
             }
-            Map<String, Object> actor = object(json(row.getActor().data()));
+            Map<String, Object> actor = object(json.read(row.getActor()));
             Object payload = object(data);
             Map<String, Object> reason = new LinkedHashMap<>();
             reason.put("public", row.getReasonPublic());
@@ -50,7 +51,7 @@ public class DocumentHistory {
                 if (!"system".equals(actor.get("kind"))) {
                     actor = new LinkedHashMap<>(Map.of("kind", "undisclosed"));
                 }
-            } else if (!held.hasPermission("request.read_ingest")
+            } else if (!held.hasPermission(DocumentCodes.REQUEST_READ_INGEST)
                     && code == EventCode.ITERATION_INGEST_FAILED && payload instanceof Map<?, ?> values) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> sanitized = (Map<String, Object>) values;
@@ -74,14 +75,6 @@ public class DocumentHistory {
         Set<String> seen = new HashSet<>();
         return entries.stream().filter(entry -> seen.add(
             entry.get("correlationId") + "|" + entry.get("code"))).toList();
-    }
-
-    private JsonNode json(String value) {
-        try {
-            return mapper.readTree(value);
-        } catch (JacksonException exception) {
-            throw new IllegalStateException(exception);
-        }
     }
 
     @SuppressWarnings("unchecked")

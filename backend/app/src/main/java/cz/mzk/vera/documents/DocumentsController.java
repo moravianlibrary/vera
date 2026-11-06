@@ -24,6 +24,20 @@ final class DocumentsController {
         this.queries = queries;
     }
 
+    @GetMapping
+    ResponseEntity<?> page(HttpServletRequest request, @RequestParam Map<String, String> parameters) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        boolean mine = "my".equals(parameters.get("perspective"));
+        if (mine && !queries.canOpenMyDocuments(caller.userId())) {
+            return Problems.response(403, "You may not open My Documents");
+        }
+        return ResponseEntity.ok(queries.page(parameters, caller.userId(), mine));
+    }
+
     @GetMapping("/{documentId}")
     ResponseEntity<?> detail(HttpServletRequest request, @PathVariable String documentId,
             @RequestParam(required = false) String perspective) {

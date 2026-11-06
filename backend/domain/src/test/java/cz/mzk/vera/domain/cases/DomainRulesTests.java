@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cz.mzk.vera.domain.documents.Documents;
+import cz.mzk.vera.domain.listing.Listing;
 import cz.mzk.vera.domain.categories.Categories;
 import cz.mzk.vera.domain.entities.Category;
 import cz.mzk.vera.domain.entities.Batch;
@@ -37,6 +38,8 @@ import cz.mzk.vera.domain.valuerange.Range;
 import cz.mzk.vera.domain.valuerange.ValueRange;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 // LC-REQ-join, STAT-validation, FILTER-range, DOC-property-values, DOC-identifiers.
@@ -49,6 +52,18 @@ class DomainRulesTests {
     assertEquals(List.of("root", "child", "leaf"), Categories.lineageOf(categories, "leaf"));
     assertEquals(List.of("root"), Categories.lineageOf(categories, "root"));
     assertEquals(List.of(), Categories.lineageOf(categories, "missing"));
+  }
+
+  @Test
+  void listSlicesCountValuesAndBuildConsecutiveHeaders() {
+    assertEquals(new Listing.Slice(List.of("b", "c"), "c"),
+        Listing.sliceOf(List.of("a", "b", "c", "d"), "a", 2));
+    assertEquals(new Listing.Slice(List.of(), null),
+        Listing.sliceOf(List.of("a", "b"), "missing", 2));
+    assertEquals(List.of(Map.entry("x", 2), Map.entry("y", 1)),
+        Listing.countValues(List.of("x", "y", "x")));
+    assertEquals(List.of(new Listing.Header("x", 2, 3), new Listing.Header(null, 1, 2)),
+        Listing.headersOf(Arrays.asList("x", "x", null), Arrays.asList("x", "x", "x", null, null)));
   }
 
   private Iteration iteration(Progress progress, Cancellation cancellation) {

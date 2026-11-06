@@ -56,3 +56,9 @@ databaseChangeLog:
   - include:
       file: 0019-property-key-order.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0020-document-list.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0021-project-fields.sql
+      relativeToChangelogFile: true

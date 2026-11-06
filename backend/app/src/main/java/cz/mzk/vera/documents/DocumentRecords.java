@@ -22,19 +22,16 @@ import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Repository;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 
 // DOC-property-values; DOC-identifiers: read each record table in batches, preserving child order.
 @Repository
 public class DocumentRecords {
     private final DSLContext dsl;
-    private final JsonMapper mapper;
+    private final DocumentJson json;
 
-    public DocumentRecords(DSLContext dsl, JsonMapper mapper) {
+    public DocumentRecords(DSLContext dsl, DocumentJson json) {
         this.dsl = dsl;
-        this.mapper = mapper;
+        this.json = json;
     }
 
     public Map<String, Map<String, Object>> recordsOf(Collection<String> documentIds) {
@@ -210,15 +207,7 @@ public class DocumentRecords {
                 properties.add(created);
                 return created;
             });
-        add(property, "sources", map("source", jsonNode(source), "tier", tier, "value", jsonNode(value),
+        add(property, "sources", map("source", json.read(source), "tier", tier, "value", json.read(value),
             "observedAt", time(observedAt), "setBy", setBy));
-    }
-
-    private JsonNode jsonNode(JSONB value) {
-        try {
-            return mapper.readTree(value.data());
-        } catch (JacksonException exception) {
-            throw new IllegalStateException(exception);
-        }
     }
 }

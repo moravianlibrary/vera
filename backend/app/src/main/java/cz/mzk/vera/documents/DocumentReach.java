@@ -35,14 +35,14 @@ public class DocumentReach {
             return exists(selectOne().from(REQUESTS).where(REQUESTS.DOCUMENT_ID.eq(DOCUMENTS.ID)
                 .and(requestCondition(held, callerId))));
         }
-        if (!held.hasPermission("iteration.read")) {
+        if (!held.hasPermission(DocumentCodes.ITERATION_READ)) {
             return DSL.falseCondition();
         }
-        Condition reached = held.scopesOf("iteration.read").contains("any")
+        Condition reached = held.scopesOf(DocumentCodes.ITERATION_READ).contains("any")
             ? DSL.trueCondition() : DSL.falseCondition();
         reached = reached.or(exists(selectOne().from(REQUESTS)
             .where(REQUESTS.DOCUMENT_ID.eq(DOCUMENTS.ID).and(REQUESTS.REQUESTER_ID.eq(callerId)))));
-        if (held.scopesOf("iteration.read").contains("custody")) {
+        if (held.scopesOf(DocumentCodes.ITERATION_READ).contains("custody")) {
             List<Category> allCategories = dsl.selectFrom(CATEGORIES).fetch(this::category);
             Set<String> categories = allCategories.stream()
                 .filter(category -> Categories.lineageOf(
@@ -56,7 +56,7 @@ public class DocumentReach {
                         .and(ITERATIONS.CATEGORY_ID.in(categories)))));
             }
         }
-        if (held.scopesOf("iteration.read").contains("project") && !held.projectIds().isEmpty()) {
+        if (held.scopesOf(DocumentCodes.ITERATION_READ).contains("project") && !held.projectIds().isEmpty()) {
             reached = reached.or(exists(selectOne().from(REQUESTS).where(
                     REQUESTS.DOCUMENT_ID.eq(DOCUMENTS.ID)
                         .and(REQUESTS.PROJECT_ID.in(held.projectIds())))))
@@ -69,9 +69,10 @@ public class DocumentReach {
                 .and(DOCUMENT_STATES.CURRENT_ITERATION_ID.isNotNull()))).and(reached);
     }
 
-    public Condition requestCondition(HeldScopes held, String callerId) {
+    public static Condition requestCondition(HeldScopes held, String callerId) {
         Condition own = REQUESTS.REQUESTER_ID.eq(callerId);
-        if (held.scopesOf("request.read_mine").contains("project") && !held.projectIds().isEmpty()) {
+        if (held.scopesOf(DocumentCodes.REQUEST_READ_MINE).contains("project")
+                && !held.projectIds().isEmpty()) {
             own = own.or(REQUESTS.PROJECT_ID.in(held.projectIds()));
         }
         return own;

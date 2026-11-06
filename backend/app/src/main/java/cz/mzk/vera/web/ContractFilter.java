@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletException;
@@ -124,6 +125,13 @@ public final class ContractFilter extends OncePerRequestFilter {
             for (JsonNode parameter : found.operation().node().path("parameters")) {
                 if ("query".equals(parameter.path("in").asString())
                         && queryName.equals(parameter.path("name").asString())) declared = true;
+                if ("query".equals(parameter.path("in").asString())
+                        && parameter.path("schema").path("patternProperties").isObject()) {
+                    for (Map.Entry<String, JsonNode> pattern
+                            : parameter.path("schema").path("patternProperties").properties()) {
+                        if (Pattern.compile(pattern.getKey()).matcher(queryName).find()) declared = true;
+                    }
+                }
             }
             if (!declared) {
                 writeInvalid(response, request,

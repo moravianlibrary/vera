@@ -76,7 +76,12 @@ class RecordsSeedLoader {
                     .set(PROJECTS.STARTS_ON, LocalDate.parse(string(row, "startsOn")))
                     .set(PROJECTS.ENDS_ON, LocalDate.parse(string(row, "endsOn")))
                     .set(PROJECTS.MANAGER_ID, string(row, "managerId"))
+                    .set(PROJECTS.DESCRIPTION, string(row, "description"))
                     .set(PROJECTS.PRIORITY, nullableString(row, "priority"))
+                    .set(PROJECTS.CREATED_AT, instant(row, "createdAt"))
+                    .set(PROJECTS.ACTED_BY, nullableString(row, "actorId"))
+                    .set(PROJECTS.ACTED_AT, nullableInstant(row, "at"))
+                    .set(PROJECTS.REASON, nullableString(row, "reason"))
                     .set(PROJECTS.POSITION, position++)
                     .execute();
             insertIds(dsl, PROJECT_MEMBERS, PROJECT_MEMBERS.PROJECT_ID, id, row.path("memberIds"));
