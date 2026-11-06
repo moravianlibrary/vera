@@ -210,8 +210,8 @@ class RecordsSeedLoader {
                     .set(ITERATIONS.CANCELLATION_CAUSE, nullableString(cancellation, "cause"))
                     .set(ITERATIONS.CANCELLATION_ACTOR_ID, nullableString(cancellation, "actorId"))
                     .set(ITERATIONS.CANCELLATION_AT, nullableInstant(cancellation, "at"))
-                    .set(ITERATIONS.CANCELLATION_PUBLIC_TEXT, nullableString(cancellation, "public"))
-                    .set(ITERATIONS.CANCELLATION_INTERNAL_TEXT, nullableString(cancellation, "internal"))
+                    .set(ITERATIONS.CANCELLATION_PUBLIC_TEXT, nullableString(cancellation, "publicText"))
+                    .set(ITERATIONS.CANCELLATION_INTERNAL_TEXT, nullableString(cancellation, "internalText"))
                     .set(ITERATIONS.INGEST_FAILURE_ATTEMPTS, nullableInteger(failure, "attempts"))
                     .set(ITERATIONS.INGEST_FAILURE_ERROR, nullableString(failure, "error"))
                     .set(ITERATIONS.DIGITIZED_AT, nullableInstant(row, "digitizedAt"))
@@ -226,8 +226,8 @@ class RecordsSeedLoader {
                         .set(ITERATION_DEFECTS.INSTANCE_ID, string(defect, "instanceId"))
                         .set(ITERATION_DEFECTS.RULE_CODE, string(defect, "ruleCode"))
                         .set(ITERATION_DEFECTS.SUBJECT, string(defect, "subject"))
-                        .set(ITERATION_DEFECTS.PUBLIC_TEXT, string(defect, "public"))
-                        .set(ITERATION_DEFECTS.INTERNAL_TEXT, string(defect, "internal"))
+                        .set(ITERATION_DEFECTS.PUBLIC_TEXT, string(defect, "publicText"))
+                        .set(ITERATION_DEFECTS.INTERNAL_TEXT, string(defect, "internalText"))
                         .set(ITERATION_DEFECTS.FIRST_SEEN_AT, instant(defect, "firstSeenAt"))
                         .execute();
             }
@@ -348,6 +348,7 @@ class RecordsSeedLoader {
 
     private <R extends Record> void propertySources(
             DSLContext dsl, TableField<R, String> ownerField, String owner, JsonNode properties) {
+        int keyPosition = 0;
         for (JsonNode property : properties) {
             int position = 0;
             for (JsonNode source : property.path("sources")) {
@@ -355,6 +356,7 @@ class RecordsSeedLoader {
                 dsl.insertInto(table)
                         .set(ownerField, owner)
                         .set(table.field("key", String.class), string(property, "key"))
+                        .set(table.field("key_position", Integer.class), keyPosition)
                         .set(table.field("position", Integer.class), position++)
                         .set(table.field("source", JSONB.class), JSONB.valueOf(source.path("source").toString()))
                         .set(table.field("tier", Integer.class), source.path("tier").asInt())
@@ -363,6 +365,7 @@ class RecordsSeedLoader {
                         .set(table.field("set_by", String.class), nullableString(source, "setBy"))
                         .execute();
             }
+            keyPosition++;
         }
     }
 

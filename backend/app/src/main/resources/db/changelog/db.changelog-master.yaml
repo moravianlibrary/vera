@@ -50,3 +50,9 @@ databaseChangeLog:
   - include:
       file: 0017-document-states.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0018-insertion-order.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0019-property-key-order.sql
+      relativeToChangelogFile: true

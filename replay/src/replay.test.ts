@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
+import { normalizeInstants } from "./instants";
 import { knownGapCall, knownGaps } from "./known-gaps";
 import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
@@ -201,10 +202,8 @@ async function replay(
       const answer = await response.json();
       if (call.method === "POST" && call.path === "/api/proposals")
         submittedBatchId = (answer as { batch?: { id?: string } | null }).batch?.id;
-      expect(
-        recording.mask === "none" ? answer : mask(answer, recording.mask, ids),
-        `${label} body`,
-      ).toEqual(call.body);
+      const actual = recording.mask === "none" ? answer : mask(answer, recording.mask, ids);
+      expect(normalizeInstants(actual), `${label} body`).toEqual(normalizeInstants(call.body));
     } else if (call.code !== undefined) {
       const answer = (await response.json()) as { code?: string };
       expect(answer.code, `${label} code`).toBe(call.code);

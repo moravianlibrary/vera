@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cz.mzk.vera.domain.documents.Documents;
+import cz.mzk.vera.domain.categories.Categories;
+import cz.mzk.vera.domain.entities.Category;
 import cz.mzk.vera.domain.entities.Batch;
 import cz.mzk.vera.domain.entities.Cancellation;
 import cz.mzk.vera.domain.entities.CancellationCause;
@@ -39,6 +41,16 @@ import org.junit.jupiter.api.Test;
 
 // LC-REQ-join, STAT-validation, FILTER-range, DOC-property-values, DOC-identifiers.
 class DomainRulesTests {
+  @Test
+  void categoryLineageIsRootFirstAndUnknownIsEmpty() {
+    List<Category> categories = List.of(
+        new Category("root", null), new Category("child", "root"),
+        new Category("leaf", "child"));
+    assertEquals(List.of("root", "child", "leaf"), Categories.lineageOf(categories, "leaf"));
+    assertEquals(List.of("root"), Categories.lineageOf(categories, "root"));
+    assertEquals(List.of(), Categories.lineageOf(categories, "missing"));
+  }
+
   private Iteration iteration(Progress progress, Cancellation cancellation) {
     return new Iteration(
         "i", "d", 1, "r", "c", null, progress, null, null, cancellation, List.of(), List.of());

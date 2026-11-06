@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @ConditionalOnProperty(name = "vera.test.invalid-response", havingValue = "true")
 class InvalidResponseController {
-    @GetMapping("/api/batches")
-    Map<String, Boolean> invalidBatchesAnswer() {
+    @GetMapping("/api/tasks")
+    Map<String, Boolean> invalidTasksAnswer() {
         return Map.of("not", true);
     }
 }
