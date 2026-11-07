@@ -8,6 +8,8 @@ import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.access.RoleWay;
 import cz.mzk.vera.domain.documents.Documents;
 import cz.mzk.vera.domain.iterations.Iterations;
+import cz.mzk.vera.domain.intentions.Intentions;
+import cz.mzk.vera.domain.mixes.Mixes;
 import cz.mzk.vera.domain.validations.Validations;
 import cz.mzk.vera.domain.entities.Batch;
 import cz.mzk.vera.domain.entities.Category;
@@ -19,9 +21,14 @@ import cz.mzk.vera.domain.entities.Document;
 import cz.mzk.vera.domain.entities.DocumentRecord;
 import cz.mzk.vera.domain.entities.ExistingCopy;
 import cz.mzk.vera.domain.entities.Iteration;
+import cz.mzk.vera.domain.entities.Intention;
+import cz.mzk.vera.domain.entities.IntentionFunding;
+import cz.mzk.vera.domain.entities.DigitizationList;
+import cz.mzk.vera.domain.entities.Distribution;
 import cz.mzk.vera.domain.entities.IterationLink;
 import cz.mzk.vera.domain.entities.PageSource;
 import cz.mzk.vera.domain.entities.Progress;
+import cz.mzk.vera.domain.entities.PropertyCondition;
 import cz.mzk.vera.domain.entities.RegistryRecord;
 import cz.mzk.vera.domain.entities.RegistryState;
 import cz.mzk.vera.domain.entities.Relation;
@@ -227,11 +234,72 @@ class SharedCasesTests {
         "isBeingChecked", input -> JSON.valueToTree(Requests.isBeingChecked(row(input.path("row")))));
     adapters.put(
         "isBulkApprovable", input -> JSON.valueToTree(Requests.isBulkApprovable(row(input.path("row")))));
+    adapters.put("intentionTimeElapsedOf", input -> JSON.valueToTree(Intentions.intentionTimeElapsedOf(
+        text(input.path("intention"), "countsFrom"), nullableText(input.path("intention").path("endsOn")),
+        text(input, "today"))));
+    adapters.put("isInWindow", input -> JSON.valueToTree(Intentions.isInWindow(
+        text(input.path("intention"), "countsFrom"), nullableText(input.path("intention").path("endsOn")),
+        nullableText(input.path("calendarDate")))));
+    adapters.put("intentionStateOf", input -> JSON.valueToTree(Intentions.intentionStateOf(
+        text(input.path("intention"), "countsFrom"), nullableText(input.path("intention").path("endsOn")),
+        text(input, "today")).name()));
+    adapters.put("isInIntentionScope", input -> JSON.valueToTree(Intentions.isInIntentionScope(
+        intention(input.path("intention")), iteration(input.path("iteration")), categories(input.path("categories")),
+        (conditions, item) -> input.path("conditionsMatch").asBoolean())));
+    adapters.put("effectiveShareOf", input -> numberNode(Mixes.effectiveShareOf(
+        categories(input.path("categories")), shares(input.path("shares")), text(input, "categoryId"))));
+    adapters.put("siblingSetOf", input -> {
+      Mixes.SiblingSet set = Mixes.siblingSetOf(categories(input.path("categories")), shares(input.path("shares")),
+          nullableText(input.path("parentId")));
+      ObjectNode result = JSON.createObjectNode();
+      result.set("unallocated", numberNode(set.unallocated()));
+      result.set("noShareIds", JSON.valueToTree(set.noShareIds()));
+      return result;
+    });
+    adapters.put("mixCategoriesOf", input -> JSON.valueToTree(Intentions.mixCategoriesOf(
+        categories(input.path("categories")), nullableText(input.path("scopeCategoryId"))).stream()
+        .map(Category::id).toList()));
+    adapters.put("mixNodesOf", input -> JSON.valueToTree(Intentions.mixNodesOf(
+        categories(input.path("categories")), nullableText(input.path("scopeCategoryId"))).stream()
+        .map(Category::id).toList()));
+    adapters.put("countIntention", input -> {
+      Intentions.IntentionCount count = Intentions.countIntention(intention(input.path("intention")), countingData(input));
+      ObjectNode out = JSON.createObjectNode();
+      out.set("planned", JSON.valueToTree(count.planned()));
+      out.set("delivered", JSON.valueToTree(count.delivered()));
+      out.set("output", JSON.valueToTree(count.output()));
+      out.put("plannedPages", count.plannedPages());
+      out.put("deliveredPages", count.deliveredPages());
+      out.put("outputPages", count.outputPages());
+      out.put("noDateCount", count.noDateCount());
+      out.put("noPagesCount", count.noPagesCount());
+      return out;
+    });
+    adapters.put("countsTowardsOf", input -> JSON.valueToTree(Intentions.countsTowardsOf(
+        intentions(input.path("intentions")), members(input), text(input, "startsOn"), countingData(input)).stream()
+        .map(row -> List.of(row.intentionId(), row.itemCount(), row.pages())).toList()));
+    adapters.put("shareWithinOf", input -> numberNode(Intentions.shareWithinOf(
+        categories(input.path("categories")), new Distribution(shares(input.path("distribution").path("shares"))),
+        nullableText(input.path("scopeCategoryId")), text(input, "categoryId"))));
+    adapters.put("listMixOf", input -> JSON.valueToTree(Intentions.listMixOf(
+        categories(input.path("categories")), new Distribution(shares(input.path("distribution").path("shares"))),
+        nullableText(input.path("intention").path("scopeCategoryId")), members(input),
+        nullableInt(input.path("goal").path("targetPages")), nullableIntMap(input.path("goal").path("allocation")),
+        item -> nullableInt(input.path("pagesById").path(item.id()))).stream()
+        .map(row -> java.util.Arrays.asList(row.categoryId(), numberNode(row.share()), row.pages(), row.goalPages())).toList()));
+    adapters.put("targetVerdictOf", input -> {
+      Intentions.TargetVerdict verdict = Intentions.targetVerdictOf(intention(input.path("intention")),
+          input.path("plannedPages").asInt(), input.path("deliveredPages").asInt(), text(input, "today"));
+      return JSON.valueToTree(verdict == null ? null : verdict.wireName());
+    });
     return Map.copyOf(adapters);
   }
 
   private static JsonNode mergeBase(JsonNode base, JsonNode input) {
-    ObjectNode result = (ObjectNode) input.deepCopy();
+    ObjectNode result = base.isObject() ? (ObjectNode) base.deepCopy() : JSON.createObjectNode();
+    for (var field : input.properties()) {
+      result.set(field.getKey(), field.getValue());
+    }
     if (base.isObject()) {
       for (var field : input.properties()) {
         JsonNode value = field.getValue();
@@ -264,9 +332,117 @@ class SharedCasesTests {
         Progress.valueOf(node.path("progress").asString("Published")),
         restriction.isNull() ? null : new Restriction(text(restriction, "rule"), text(restriction, "foundAt")),
         override.isNull() ? null : new RestrictionOverride(text(override, "note")),
-        cancellation.isNull() ? null
+        cancellation.isNull() || cancellation.isMissingNode() ? null
                               : new Cancellation(CancellationCause.valueOf(text(cancellation, "cause"))),
-        defects, verdicts);
+        defects, verdicts, List.of(), nullableText(node.path("listId")), nullableText(node.path("digitizedAt")));
+  }
+
+  private static Intention intention(JsonNode node) {
+    JsonNode archived = node.path("archived");
+    return new Intention(text(node, "id"), funding(node.path("funding")),
+        nullableText(node.path("scopeCategoryId")), propertyConditions(node.path("scopeConditions")),
+        text(node, "countsFrom"), nullableText(node.path("endsOn")),
+        nullableInt(node.path("targetPages")), node.path("isOverall").asBoolean(),
+        archived.isNull() || archived.isMissingNode() ? null : text(archived, "at"));
+  }
+
+  private static List<PropertyCondition> propertyConditions(JsonNode nodes) {
+    List<PropertyCondition> conditions = new ArrayList<>();
+    nodes.forEach(node -> {
+      JsonNode numberRange = node.path("numberRange");
+      Map<String, Double> numbers = numberRange.isObject() ? new LinkedHashMap<>() : null;
+      if (numbers != null) {
+        numberRange.properties().forEach(entry -> numbers.put(entry.getKey(), entry.getValue().asDouble()));
+      }
+      JsonNode dayRange = node.path("dayRange");
+      Map<String, String> days = dayRange.isObject() ? new LinkedHashMap<>() : null;
+      if (days != null) {
+        dayRange.properties().forEach(entry -> days.put(entry.getKey(), entry.getValue().asString()));
+      }
+      List<String> anyOf = new ArrayList<>();
+      node.path("anyOf").forEach(value -> anyOf.add(value.asString()));
+      conditions.add(new PropertyCondition(text(node, "key"),
+          node.path("hasNoValue").isMissingNode() ? null : node.path("hasNoValue").asBoolean(),
+          nullableText(node.path("contains")), nullableText(node.path("startsWith")),
+          nullableText(node.path("endsWith")), numbers, days, anyOf));
+    });
+    return conditions;
+  }
+
+  private static Intentions.CountingData countingData(JsonNode input) {
+    java.util.function.BiPredicate<List<PropertyCondition>, Iteration> meetsConditions =
+        input.has("conditionsMatch") ? (conditions, item) -> input.path("conditionsMatch").asBoolean() : null;
+    return new Intentions.CountingData(categories(input.path("categories")), lists(input.path("lists")),
+        iterations(input.path("iterations")), item -> nullableInt(input.path("pagesById").path(item.id())),
+        meetsConditions);
+  }
+
+  private static IntentionFunding funding(JsonNode node) {
+    return new IntentionFunding(text(node, "kind"), nullableText(node.path("projectId")));
+  }
+
+  private static List<Intention> intentions(JsonNode nodes) {
+    List<Intention> values = new ArrayList<>();
+    nodes.forEach(node -> values.add(intention(node)));
+    return values;
+  }
+
+  private static List<Iteration> iterations(JsonNode nodes) {
+    List<Iteration> values = new ArrayList<>();
+    nodes.forEach(node -> values.add(iteration(node)));
+    return values;
+  }
+
+  private static List<Iteration> members(JsonNode input) {
+    Map<String, Iteration> byId = new LinkedHashMap<>();
+    iterations(input.path("iterations")).forEach(item -> byId.put(item.id(), item));
+    List<Iteration> values = new ArrayList<>();
+    input.path("memberIds").forEach(node -> values.add(byId.get(node.asString())));
+    return values;
+  }
+
+  private static List<DigitizationList> lists(JsonNode nodes) {
+    List<DigitizationList> values = new ArrayList<>();
+    nodes.forEach(node -> {
+      JsonNode done = node.path("done");
+      values.add(new DigitizationList(text(node, "id"), text(node, "name"), text(node, "startsOn"),
+          text(node, "endsOn"), nullableInt(node.path("targetPages")),
+          done.isNull() || done.isMissingNode() ? null : text(done, "at")));
+    });
+    return values;
+  }
+
+  private static Map<String, Double> shares(JsonNode node) {
+    Map<String, Double> values = new LinkedHashMap<>();
+    node.properties().forEach(entry -> values.put(entry.getKey(), entry.getValue().asDouble()));
+    return values;
+  }
+
+  private static Map<String, Integer> nullableIntMap(JsonNode node) {
+    if (node.isNull() || node.isMissingNode()) {
+      return null;
+    }
+    Map<String, Integer> values = new LinkedHashMap<>();
+    node.properties().forEach(entry -> values.put(entry.getKey(), entry.getValue().asInt()));
+    return values;
+  }
+
+  private static Integer nullableInt(JsonNode node) {
+    return node.isNull() || node.isMissingNode() ? null : node.asInt();
+  }
+
+  private static JsonNode numberNode(Double value) {
+    if (value == null) {
+      return JSON.nullNode();
+    }
+    if (value == Math.rint(value)) {
+      return JSON.valueToTree(value.intValue());
+    }
+    return JSON.valueToTree(value);
+  }
+
+  private static JsonNode numberNode(double value) {
+    return numberNode(Double.valueOf(value));
   }
 
   private static Defect defect(JsonNode node) {

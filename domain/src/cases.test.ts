@@ -28,8 +28,12 @@ import {
   countsTowardsOf,
   fillOf,
   intentionStateOf,
+  intentionTimeElapsedOf,
+  isInIntentionScope,
   isInWindow,
   listMixOf,
+  mixCategoriesOf,
+  mixNodesOf,
   mixReadingOf,
   nextPeriodStartOf,
   pagesPerWeekNeededOf,
@@ -45,6 +49,7 @@ import {
   progressAfterGates,
   scopeOfIteration,
 } from "./iterations";
+import { effectiveShareOf, siblingSetOf } from "./mixes";
 import type {
   Grant,
   GrantHolder,
@@ -215,6 +220,20 @@ const adapters: Record<
   string,
   { call: (input: Record<string, unknown>) => unknown; project: (result: unknown) => unknown }
 > = {
+  intentionTimeElapsedOf: {
+    call: (input) => intentionTimeElapsedOf(input.intention as never, input.today as string),
+    project: (result) => result,
+  },
+  isInIntentionScope: {
+    call: (input) =>
+      isInIntentionScope(
+        input.intention as never,
+        input.iteration as never,
+        input.categories as never,
+        "conditionsMatch" in input ? () => input.conditionsMatch as boolean : undefined,
+      ),
+    project: (result) => result,
+  },
   scopeOfIteration: {
     call: (input) => scopeOfIteration(input.categories as never, input.categoryId as string),
     project: (result) => result,
@@ -235,6 +254,8 @@ const adapters: Record<
         lists: input.lists,
         iterations: input.iterations,
         pagesOf: (iteration: { id: string }) => pagesById[iteration.id] ?? null,
+        meetsConditions:
+          "conditionsMatch" in input ? () => input.conditionsMatch as boolean : undefined,
       };
       return countIntention(input.intention as never, data as never);
     },
@@ -268,6 +289,38 @@ const adapters: Record<
         input.distribution as never,
         input.scopeCategoryId as string | null,
         input.categoryId as string,
+      ),
+    project: (result) => result,
+  },
+  effectiveShareOf: {
+    call: (input) =>
+      effectiveShareOf(
+        input.categories as never,
+        input.shares as never,
+        input.categoryId as string,
+      ),
+    project: (result) => result,
+  },
+  siblingSetOf: {
+    call: (input) =>
+      siblingSetOf(
+        input.categories as never,
+        input.shares as never,
+        input.parentId as string | null,
+      ),
+    project: (result) => result,
+  },
+  mixCategoriesOf: {
+    call: (input) =>
+      mixCategoriesOf(input.categories as never, input.scopeCategoryId as string | null).map(
+        (item) => item.id,
+      ),
+    project: (result) => result,
+  },
+  mixNodesOf: {
+    call: (input) =>
+      mixNodesOf(input.categories as never, input.scopeCategoryId as string | null).map(
+        (item) => item.id,
       ),
     project: (result) => result,
   },
@@ -371,6 +424,8 @@ const adapters: Record<
       return countsTowardsOf(input.intentions as never, members, input.startsOn as string, {
         categories: input.categories as never,
         pagesOf: (iteration: { id: string }) => pagesById[iteration.id] ?? null,
+        meetsConditions:
+          "conditionsMatch" in input ? () => input.conditionsMatch as boolean : undefined,
       });
     },
     project: (result) =>

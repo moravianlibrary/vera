@@ -1,0 +1,17 @@
+{
+  "function": "mixNodesOf",
+  "base": {
+    "categories": [
+      { "id": "root", "name": "Root", "parentId": null },
+      { "id": "leaf", "name": "Leaf", "parentId": "root" }
+    ]
+  },
+  "cases": [
+    {
+      "name": "leaf scope is its own node",
+      "rule": "PLAN-mix-within-scope",
+      "input": { "scopeCategoryId": "leaf" },
+      "expected": ["leaf"]
+    }
+  ]
+}

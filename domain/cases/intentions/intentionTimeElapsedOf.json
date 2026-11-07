@@ -1,0 +1,23 @@
+{
+  "function": "intentionTimeElapsedOf",
+  "cases": [
+    {
+      "name": "inclusive window elapsed fraction",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": "2026-06-30" },
+        "today": "2026-06-16"
+      },
+      "expected": 0.5
+    },
+    {
+      "name": "open ended has no pace",
+      "rule": "PLAN-target",
+      "input": {
+        "intention": { "countsFrom": "2026-06-01", "endsOn": null },
+        "today": "2026-06-16"
+      },
+      "expected": null
+    }
+  ]
+}

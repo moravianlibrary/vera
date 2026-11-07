@@ -1,0 +1,25 @@
+{
+  "function": "effectiveShareOf",
+  "base": {
+    "categories": [
+      { "id": "root", "name": "Root", "parentId": null },
+      { "id": "child", "name": "Child", "parentId": "root" },
+      { "id": "leaf", "name": "Leaf", "parentId": "child" }
+    ],
+    "shares": { "root": 80, "child": 50, "leaf": 25 }
+  },
+  "cases": [
+    {
+      "name": "multiplies ancestor shares",
+      "rule": "PLAN-mix-sets",
+      "input": { "categoryId": "leaf" },
+      "expected": 10
+    },
+    {
+      "name": "unknown category has no share",
+      "rule": "PLAN-mix-sets",
+      "input": { "categoryId": "missing" },
+      "expected": null
+    }
+  ]
+}

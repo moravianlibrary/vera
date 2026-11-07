@@ -1,0 +1,52 @@
+{
+  "function": "isInIntentionScope",
+  "base": {
+    "categories": [
+      { "id": "root", "name": "Root", "parentId": null },
+      { "id": "leaf", "name": "Leaf", "parentId": "root" }
+    ],
+    "intention": { "funding": { "kind": "any" }, "scopeCategoryId": "root" }
+  },
+  "cases": [
+    {
+      "name": "matches category subtree",
+      "rule": "PLAN-scope",
+      "input": { "iteration": { "categoryId": "leaf", "projectId": null } },
+      "expected": true
+    },
+    {
+      "name": "does not match other branch",
+      "rule": "PLAN-scope",
+      "input": { "iteration": { "categoryId": "other", "projectId": null } },
+      "expected": false
+    },
+    {
+      "name": "matches when all property conditions are met",
+      "rule": "PLAN-scope",
+      "input": {
+        "intention": {
+          "funding": { "kind": "any" },
+          "scopeCategoryId": "root",
+          "scopeConditions": [{ "key": "doc.language", "contains": "Czech" }]
+        },
+        "iteration": { "categoryId": "leaf", "projectId": null },
+        "conditionsMatch": true
+      },
+      "expected": true
+    },
+    {
+      "name": "does not match when a property condition fails",
+      "rule": "PLAN-scope",
+      "input": {
+        "intention": {
+          "funding": { "kind": "any" },
+          "scopeCategoryId": "root",
+          "scopeConditions": [{ "key": "doc.language", "contains": "Czech" }]
+        },
+        "iteration": { "categoryId": "leaf", "projectId": null },
+        "conditionsMatch": false
+      },
+      "expected": false
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "function": "mixCategoriesOf",
+  "base": {
+    "categories": [
+      { "id": "root", "name": "Root", "parentId": null },
+      { "id": "a", "name": "A", "parentId": "root" },
+      { "id": "b", "name": "B", "parentId": "root" }
+    ]
+  },
+  "cases": [
+    {
+      "name": "immediate children form set",
+      "rule": "PLAN-mix-within-scope",
+      "input": { "scopeCategoryId": "root" },
+      "expected": ["a", "b"]
+    }
+  ]
+}

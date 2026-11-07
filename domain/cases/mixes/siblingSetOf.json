@@ -1,0 +1,25 @@
+{
+  "function": "siblingSetOf",
+  "base": {
+    "categories": [
+      { "id": "root", "name": "Root", "parentId": null },
+      { "id": "a", "name": "A", "parentId": "root" },
+      { "id": "b", "name": "B", "parentId": "root" }
+    ],
+    "shares": { "a": 60 }
+  },
+  "cases": [
+    {
+      "name": "unallocated and undecided remain visible",
+      "rule": "PLAN-mix-sets",
+      "input": { "parentId": "root" },
+      "expected": { "unallocated": 40, "noShareIds": ["b"] }
+    },
+    {
+      "name": "leaf set allocates nothing",
+      "rule": "PLAN-mix-sets",
+      "input": { "parentId": "a" },
+      "expected": { "unallocated": 0, "noShareIds": [] }
+    }
+  ]
+}
