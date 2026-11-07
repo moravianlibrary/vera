@@ -102,6 +102,30 @@ class SignUpTests {
     }
 
     @Test
+    void removesAnUnusedSignUpAfterAWeek() {
+        signUp("expires", "expires@example.org").expectStatus().isAccepted();
+        assertThat(dsl.fetchExists(dsl.selectOne().from(PENDING_SIGN_UPS)
+                .where(PENDING_SIGN_UPS.USERNAME.eq("expires")))).isTrue();
+        client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"advance\":{\"days\":7}}").exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$.ran").isEqualTo(1);
+        assertThat(dsl.fetchExists(dsl.selectOne().from(PENDING_SIGN_UPS)
+                .where(PENDING_SIGN_UPS.USERNAME.eq("expires")))).isFalse();
+    }
+
+    @Test
+    void keepsAVerifiedSignUpWhenItsExpiryJobRuns() {
+        signUp("verified", "verified@example.org").expectStatus().isAccepted();
+        String token = token("Verify your email");
+        confirm(token).expectStatus().isOk();
+        client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"advance\":{\"days\":7}}").exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$.ran").isEqualTo(1);
+        assertThat(dsl.fetchExists(dsl.selectOne().from(PENDING_SIGN_UPS)
+                .where(PENDING_SIGN_UPS.USERNAME.eq("verified")))).isTrue();
+    }
+
+    @Test
     void refusesAUsedVerificationToken() {
         signUp("once", "once@example.org").expectStatus().isAccepted();
         String token = token("Verify your email");

@@ -1,0 +1,9 @@
+spring:
+  liquibase:
+    contexts: test
+  datasource:
+    hikari:
+      allow-pool-suspension: true
+vera:
+  jobs:
+    poll: false

@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.SESSIONS;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
 import cz.mzk.vera.events.Outbox;
+import cz.mzk.vera.jobs.JobRunner;
 import cz.mzk.vera.session.SessionFilter;
 import cz.mzk.vera.testing.seeds.SeedReader;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
@@ -55,10 +56,11 @@ public class ControlController {
     private final Outbox outbox;
     private final JsonMapper json;
     private final FakeWorld fakeWorld;
+    private final JobRunner jobs;
 
     public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService,
             DSLContext dsl, RouteCheck routes, Environment environment, Outbox outbox, JsonMapper json,
-            FakeWorld fakeWorld) {
+            FakeWorld fakeWorld, JobRunner jobs) {
         this.clock = clock;
         this.reader = reader;
         this.resetService = resetService;
@@ -68,6 +70,7 @@ public class ControlController {
         this.outbox = outbox;
         this.json = json;
         this.fakeWorld = fakeWorld;
+        this.jobs = jobs;
     }
 
     @GetMapping(value = "/identity/{instanceId}", produces = "text/html")
@@ -98,11 +101,14 @@ public class ControlController {
         for (var accountEntry : fakeWorld.accountsForInstance(instanceId).entrySet()) {
             var account = accountEntry.getValue();
             String href = (returnTo == null ? "" : returnTo) + "&code="
-                    + java.net.URLEncoder.encode(accountEntry.getKey(), java.nio.charset.StandardCharsets.UTF_8);
+                    + java.net.URLEncoder.encode(
+                            accountEntry.getKey(), java.nio.charset.StandardCharsets.UTF_8);
             html.append("<li><a href=\"").append(escapeHtml(href)).append("\">")
                     .append(escapeHtml(account.path("name").asString()))
                     .append("</a> — ")
-                    .append(escapeHtml(account.path("email").isNull() ? "" : account.path("email").asString()))
+                    .append(escapeHtml(account.path("email").isNull()
+                            ? ""
+                            : account.path("email").asString()))
                     .append("</li>");
         }
         html.append("</ul></body></html>");
@@ -161,13 +167,22 @@ public class ControlController {
             } else if (Boolean.FALSE.equals(input.frozen())) {
                 clock.unfreeze();
             }
-            // Due jobs are run here when the backend adds them.
-            return ResponseEntity.ok(Map.of("now", Instants.format(clock.instant()), "frozen", clock.isFrozen()));
+            JobRunner.RunReport report = jobs.runDue();
+            return ResponseEntity.ok(Map.of(
+                    "now", Instants.format(clock.instant()),
+                    "frozen", clock.isFrozen(),
+                    "ran", report.ran(),
+                    "failed", report.failed()));
         } catch (StoredClock.ClockBackwardsException exception) {
             return Problems.response(409, exception.getMessage(), "clock.backwards", null);
         } catch (DateTimeParseException exception) {
             return invalid(List.of(new FieldError("/at", "invalid_format", "Invalid ISO datetime")));
         }
+    }
+
+    @PostMapping("/jobs/run")
+    public JobRunner.RunReport runJobs() {
+        return jobs.runDue();
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -184,7 +199,8 @@ public class ControlController {
             return invalid(List.of(new FieldError(pointer, "invalid_type", detail)));
         }
         String message = cause.getMessage();
-        if (message != null && (message.contains("Unexpected character") || message.contains("Unexpected end"))) {
+        if (message != null && (message.contains("Unexpected character")
+                || message.contains("Unexpected end"))) {
             return problem(400, "The body is not JSON.", null, null);
         }
         return problem(422, message == null ? "Invalid input" : message, "invalid", List.of(
@@ -241,7 +257,8 @@ public class ControlController {
         if (amount < 0) {
             errors.add(new FieldError(pointer, "too_small", "Too small: expected number to be >=0"));
         } else {
-            errors.add(new FieldError(pointer, "invalid_type", "Invalid input: expected int, received number"));
+            errors.add(new FieldError(
+                    pointer, "invalid_type", "Invalid input: expected int, received number"));
         }
     }
 
@@ -310,7 +327,8 @@ public class ControlController {
         return problem(422, detail, "invalid", errors);
     }
 
-    private ResponseEntity<ProblemDetail> problem(int status, String detail, String code, List<FieldError> errors) {
+    private ResponseEntity<ProblemDetail> problem(
+            int status, String detail, String code, List<FieldError> errors) {
         return Problems.response(status, detail, code, errors);
     }
 

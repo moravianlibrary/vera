@@ -12,6 +12,7 @@ import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.events.Outbox;
 import cz.mzk.vera.login.IdentityInstances.Instance;
+import cz.mzk.vera.jobs.Jobs;
 import cz.mzk.vera.plugin.identity.CompleteAnswer;
 import cz.mzk.vera.session.SessionFilter;
 import java.net.URLEncoder;
@@ -52,11 +53,12 @@ public class SignUpCommands {
     private final IdentityInstances instances;
     private final LoginCommands loginCommands;
     private final SignUpQueries queries;
+    private final Jobs jobs;
     private final SecureRandom random = new SecureRandom();
 
     public SignUpCommands(DSLContext dsl, Clock clock, Passwords passwords, LocalPasswordStore localPasswords,
             Outbox outbox, JsonMapper json, EventRecorder events, IdentityInstances instances,
-            LoginCommands loginCommands, SignUpQueries queries) {
+            LoginCommands loginCommands, SignUpQueries queries, Jobs jobs) {
         this.dsl = dsl;
         this.clock = clock;
         this.passwords = passwords;
@@ -67,6 +69,7 @@ public class SignUpCommands {
         this.instances = instances;
         this.loginCommands = loginCommands;
         this.queries = queries;
+        this.jobs = jobs;
     }
 
     @Transactional
@@ -217,7 +220,8 @@ public class SignUpCommands {
                 .set(PENDING_SIGN_UPS.RETURN_TO, ReturnTo.safe(body.returnTo()))
                 .set(PENDING_SIGN_UPS.CREATED_AT, clock.instant().atOffset(ZoneOffset.UTC))
                 .execute();
-        // Removal of this pending sign-up waits for the sign-up.expire job in B5.
+        jobs.enqueue(dsl, "sign-up.expire", clock.instant().plus(SIGN_UP_LIFETIME),
+                Map.of("tokenHash", SessionFilter.hashOf(token)));
         mail(body.email(), VERIFY_SUBJECT, "/verify-email/" + token);
     }
 
