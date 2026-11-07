@@ -1,0 +1,46 @@
+{
+  "function": "scopeOfIteration",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "category scope includes lineage",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categories": [
+          {
+            "id": "root",
+            "parentId": null
+          },
+          {
+            "id": "leaf",
+            "parentId": "root"
+          }
+        ],
+        "categoryId": "leaf"
+      },
+      "expected": {
+        "kind": "iteration",
+        "categoryPathIds": ["root", "leaf"]
+      }
+    },
+    {
+      "name": "unknown category has empty path",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categories": [],
+        "categoryId": "missing"
+      },
+      "expected": {
+        "kind": "iteration",
+        "categoryPathIds": []
+      }
+    }
+  ]
+}

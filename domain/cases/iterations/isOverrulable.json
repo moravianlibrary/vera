@@ -1,0 +1,50 @@
+{
+  "function": "isOverrulable",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "standing restriction",
+      "rule": "ACT-overrule",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-01-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "restriction has override",
+      "rule": "ACT-overrule",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-01-01T00:00:00Z"
+          },
+          "restrictionOverride": {
+            "note": "ok"
+          }
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "no restriction",
+      "rule": "ACT-overrule",
+      "input": {
+        "iteration": {}
+      },
+      "expected": false
+    }
+  ]
+}

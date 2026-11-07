@@ -1,0 +1,46 @@
+{
+  "function": "isResumable",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "held before scan",
+      "rule": "ACT-resume",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "not held",
+      "rule": "ACT-resume",
+      "input": {
+        "iteration": {}
+      },
+      "expected": false
+    },
+    {
+      "name": "scanned hold cannot resume",
+      "rule": "ACT-resume",
+      "input": {
+        "iteration": {
+          "progress": "Digitized",
+          "cancellation": {
+            "cause": "NotDigitizable"
+          }
+        }
+      },
+      "expected": false
+    }
+  ]
+}

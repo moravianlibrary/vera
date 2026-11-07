@@ -1,0 +1,45 @@
+{
+  "function": "defectNameOf",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "instance name and rule code",
+      "rule": "STAT-defect-key",
+      "input": {
+        "defect": {
+          "key": "k1",
+          "instanceId": "i1",
+          "ruleCode": "R01",
+          "subject": "title",
+          "firstSeenAt": "2026-01-02T00:00:00Z"
+        },
+        "instanceNames": {
+          "i1": "Default ruleset"
+        }
+      },
+      "expected": "Default ruleset R01"
+    },
+    {
+      "name": "unknown instance uses id",
+      "rule": "STAT-defect-key",
+      "input": {
+        "defect": {
+          "key": "k1",
+          "instanceId": "i1",
+          "ruleCode": "R01",
+          "subject": "title",
+          "firstSeenAt": "2026-01-02T00:00:00Z"
+        },
+        "instanceNames": {}
+      },
+      "expected": "i1 R01"
+    }
+  ]
+}

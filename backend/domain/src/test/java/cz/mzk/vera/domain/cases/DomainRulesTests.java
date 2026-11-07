@@ -92,7 +92,8 @@ class DomainRulesTests {
   @Test
   void verdictsRevokeApprovalsAndDefectsRemainVisible() {
     Iteration item =
-        new Iteration("i", "d", 1, "r", "c", null, Progress.Ready, null, null, null, List.of(new Defect("k")),
+        new Iteration("i", "d", 1, "r", "c", null, Progress.Ready, null, null, null,
+            List.of(new Defect("k", "instance", "rule", "subject", "2026-01-01T00:00:00Z")),
             List.of(new Verdict(List.of("k"), VerdictKind.Approved),
                 new Verdict(List.of("k"), VerdictKind.Revoked)));
     assertTrue(Status.approvedKeysOf(item).isEmpty());
@@ -103,7 +104,8 @@ class DomainRulesTests {
   @Test
   void restrictionAndPublicIterationBranches() {
     Iteration restricted = new Iteration(
-        "i", "d", 1, "r", "c", null, Progress.Ready, new Restriction("r"), null, null, List.of(), List.of());
+        "i", "d", 1, "r", "c", null, Progress.Ready,
+        new Restriction("r", "2026-01-01T00:00:00Z"), null, null, List.of(), List.of());
     assertTrue(Status.isRestricted(restricted));
     assertEquals(Status.PublicStatus.BeingAdded,
         Status.publicIterationStatusOf(iteration(Progress.IngestFailed, null)));

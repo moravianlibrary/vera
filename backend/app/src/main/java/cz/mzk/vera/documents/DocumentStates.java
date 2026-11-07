@@ -285,7 +285,8 @@ public class DocumentStates {
         List<Defect> defects = dsl.selectFrom(ITERATION_DEFECTS)
                 .where(ITERATION_DEFECTS.ITERATION_ID.eq(id))
                 .orderBy(ITERATION_DEFECTS.POSITION)
-                .fetch(value -> new Defect(value.getKey()));
+                .fetch(value -> new Defect(value.getKey(), value.getInstanceId(), value.getRuleCode(),
+                        value.getSubject(), instant(value.getFirstSeenAt())));
         List<Verdict> verdicts = dsl.selectFrom(ITERATION_VERDICTS)
                 .where(ITERATION_VERDICTS.ITERATION_ID.eq(id))
                 .orderBy(ITERATION_VERDICTS.POSITION)
@@ -297,7 +298,7 @@ public class DocumentStates {
                 .fetch(value -> new PublicationLink(value.getId(), value.getUrl(), value.getIsPrimary()));
         Progress progress = Progress.valueOf(row.getProgress());
         Restriction restriction = row.getRestrictionRule() == null ? null
-                : new Restriction(row.getRestrictionRule());
+                : new Restriction(row.getRestrictionRule(), instant(row.getRestrictionFoundAt()));
         RestrictionOverride override = row.getOverrideNote() == null ? null
                 : new RestrictionOverride(row.getOverrideNote());
         Cancellation cancellation = row.getCancellationCause() == null ? null

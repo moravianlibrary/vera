@@ -1,0 +1,80 @@
+{
+  "function": "acceptedDefectsOf",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "accepted and still present",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            },
+            {
+              "key": "k2",
+              "instanceId": "i2",
+              "ruleCode": "R02",
+              "subject": "author",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Approved"
+            }
+          ]
+        }
+      },
+      "expected": [
+        {
+          "key": "k1",
+          "instanceId": "i1",
+          "ruleCode": "R01",
+          "subject": "title",
+          "firstSeenAt": "2026-01-02T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "revoked acceptance no longer counts",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Approved"
+            },
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Revoked"
+            }
+          ]
+        }
+      },
+      "expected": []
+    }
+  ]
+}

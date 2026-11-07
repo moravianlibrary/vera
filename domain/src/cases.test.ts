@@ -36,6 +36,15 @@ import {
   shareWithinOf,
   targetVerdictOf,
 } from "./intentions";
+import {
+  isCancellable,
+  isOverrulable,
+  isPublishable,
+  isReclassifiable,
+  isResumable,
+  progressAfterGates,
+  scopeOfIteration,
+} from "./iterations";
 import type {
   Grant,
   GrantHolder,
@@ -82,6 +91,15 @@ import {
   statusFootnoteOf,
   validationOf,
 } from "./status";
+import {
+  acceptedDefectsOf,
+  defectNameOf,
+  defectsToRuleOn,
+  deniedDefectsOf,
+  isFoundAfterScan,
+  reviewStateOf,
+  waitingSinceOf,
+} from "./validations";
 import {
   formatDayRange,
   formatRange,
@@ -179,12 +197,36 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   rowDecisionOf: (...args) => rowDecisionOf(args[0] as never),
   isBeingChecked: (...args) => isBeingChecked(args[0] as never),
   isBulkApprovable: (...args) => isBulkApprovable(args[0] as never),
+  isReclassifiable: (...args) => isReclassifiable(args[0] as Iteration),
+  isPublishable: (...args) => isPublishable(args[0] as Iteration),
+  isCancellable: (...args) => isCancellable(args[0] as Iteration),
+  isResumable: (...args) => isResumable(args[0] as Iteration),
+  isOverrulable: (...args) => isOverrulable(args[0] as Iteration),
+  progressAfterGates: (...args) => progressAfterGates(args[0] as Iteration),
+  reviewStateOf: (...args) => reviewStateOf(args[0] as Iteration),
+  waitingSinceOf: (...args) => waitingSinceOf(args[0] as Iteration),
+  defectsToRuleOn: (...args) => defectsToRuleOn(args[0] as Iteration),
+  acceptedDefectsOf: (...args) => acceptedDefectsOf(args[0] as Iteration),
+  deniedDefectsOf: (...args) => deniedDefectsOf(args[0] as Iteration),
+  isFoundAfterScan: (...args) => isFoundAfterScan(args[0] as Iteration),
 };
 
 const adapters: Record<
   string,
   { call: (input: Record<string, unknown>) => unknown; project: (result: unknown) => unknown }
 > = {
+  scopeOfIteration: {
+    call: (input) => scopeOfIteration(input.categories as never, input.categoryId as string),
+    project: (result) => result,
+  },
+  defectNameOf: {
+    call: (input) =>
+      defectNameOf(
+        input.defect as never,
+        (id) => (input.instanceNames as Record<string, string>)[id] ?? id,
+      ),
+    project: (result) => result,
+  },
   countIntention: {
     call: (input) => {
       const pagesById = input.pagesById as Record<string, number | null>;

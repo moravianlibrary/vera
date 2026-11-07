@@ -1,0 +1,83 @@
+{
+  "function": "isFoundAfterScan",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "Enqueued",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Enqueued"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "IngestFailed",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "IngestFailed"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Ready",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Planned",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Planned"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "InProgress",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "InProgress"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Digitized",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Published",
+      "rule": "STAT-checks-after-scan",
+      "input": {
+        "iteration": {
+          "progress": "Published"
+        }
+      },
+      "expected": true
+    }
+  ]
+}

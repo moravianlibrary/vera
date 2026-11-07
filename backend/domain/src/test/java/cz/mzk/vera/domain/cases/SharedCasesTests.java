@@ -7,7 +7,10 @@ import cz.mzk.vera.domain.access.Role;
 import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.access.RoleWay;
 import cz.mzk.vera.domain.documents.Documents;
+import cz.mzk.vera.domain.iterations.Iterations;
+import cz.mzk.vera.domain.validations.Validations;
 import cz.mzk.vera.domain.entities.Batch;
+import cz.mzk.vera.domain.entities.Category;
 import cz.mzk.vera.domain.entities.Cancellation;
 import cz.mzk.vera.domain.entities.CancellationCause;
 import cz.mzk.vera.domain.entities.Decision;
@@ -163,6 +166,20 @@ class SharedCasesTests {
       return JSON.valueToTree(Access.managersOf(users, roles));
     });
     adapters.put("roleNameOf", input -> JSON.valueToTree(Access.roleNameOf(input.path("text").asString())));
+    adapters.put("isReclassifiable", input -> JSON.valueToTree(Iterations.isReclassifiable(iteration(input.path("iteration")))));
+    adapters.put("isPublishable", input -> JSON.valueToTree(Iterations.isPublishable(iteration(input.path("iteration")))));
+    adapters.put("isCancellable", input -> JSON.valueToTree(Iterations.isCancellable(iteration(input.path("iteration")))));
+    adapters.put("isResumable", input -> JSON.valueToTree(Iterations.isResumable(iteration(input.path("iteration")))));
+    adapters.put("isOverrulable", input -> JSON.valueToTree(Iterations.isOverrulable(iteration(input.path("iteration")))));
+    adapters.put("progressAfterGates", input -> JSON.valueToTree(Iterations.progressAfterGates(iteration(input.path("iteration")))));
+    adapters.put("scopeOfIteration", input -> JSON.valueToTree(Iterations.scopeOfIteration(categories(input.path("categories")), input.path("categoryId").asString())));
+    adapters.put("reviewStateOf", input -> JSON.valueToTree(Validations.reviewStateOf(iteration(input.path("iteration")))));
+    adapters.put("waitingSinceOf", input -> JSON.valueToTree(Validations.waitingSinceOf(iteration(input.path("iteration")))));
+    adapters.put("defectsToRuleOn", input -> JSON.valueToTree(Validations.defectsToRuleOn(iteration(input.path("iteration")))));
+    adapters.put("acceptedDefectsOf", input -> JSON.valueToTree(Validations.acceptedDefectsOf(iteration(input.path("iteration")))));
+    adapters.put("deniedDefectsOf", input -> JSON.valueToTree(Validations.deniedDefectsOf(iteration(input.path("iteration")))));
+    adapters.put("isFoundAfterScan", input -> JSON.valueToTree(Validations.isFoundAfterScan(iteration(input.path("iteration")))));
+    adapters.put("defectNameOf", input -> JSON.valueToTree(Validations.defectNameOf(defect(input.path("defect")), id -> input.path("instanceNames").path(id).asString(id))));
     adapters.put(
         "validationOf", input -> JSON.valueToTree(Status.validationOf(iteration(input.path("iteration")))));
     adapters.put(
@@ -232,7 +249,7 @@ class SharedCasesTests {
 
   private static Iteration iteration(JsonNode node) {
     List<Defect> defects = new ArrayList<>();
-    node.path("defects").forEach(item -> defects.add(new Defect(item.path("key").asString())));
+    node.path("defects").forEach(item -> defects.add(defect(item)));
     List<Verdict> verdicts = new ArrayList<>();
     node.path("verdicts").forEach(item -> {
       List<String> keys = new ArrayList<>();
@@ -245,11 +262,22 @@ class SharedCasesTests {
     return new Iteration(text(node, "id"), text(node, "documentId"), 1, text(node, "requestId"),
         text(node, "categoryId"), nullableText(node.path("projectId")),
         Progress.valueOf(node.path("progress").asString("Published")),
-        restriction.isNull() ? null : new Restriction(text(restriction, "rule")),
+        restriction.isNull() ? null : new Restriction(text(restriction, "rule"), text(restriction, "foundAt")),
         override.isNull() ? null : new RestrictionOverride(text(override, "note")),
         cancellation.isNull() ? null
                               : new Cancellation(CancellationCause.valueOf(text(cancellation, "cause"))),
         defects, verdicts);
+  }
+
+  private static Defect defect(JsonNode node) {
+    return new Defect(text(node, "key"), text(node, "instanceId"), text(node, "ruleCode"),
+        text(node, "subject"), text(node, "firstSeenAt"));
+  }
+
+  private static List<Category> categories(JsonNode nodes) {
+    List<Category> result = new ArrayList<>();
+    nodes.forEach(node -> result.add(new Category(text(node, "id"), nullableText(node.path("parentId")))));
+    return result;
   }
 
   private static Request request(JsonNode node) {

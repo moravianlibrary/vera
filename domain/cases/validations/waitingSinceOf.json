@@ -1,0 +1,105 @@
+{
+  "function": "waitingSinceOf",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "restriction starts wait",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-01-03T00:00:00Z"
+          },
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "2026-01-03T00:00:00Z"
+    },
+    {
+      "name": "oldest outstanding finding",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            },
+            {
+              "key": "k2",
+              "instanceId": "i2",
+              "ruleCode": "R02",
+              "subject": "author",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Approved"
+            }
+          ]
+        }
+      },
+      "expected": "2026-01-01T00:00:00Z"
+    },
+    {
+      "name": "oldest finding when none outstanding",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            },
+            {
+              "key": "k2",
+              "instanceId": "i2",
+              "ruleCode": "R02",
+              "subject": "author",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1", "k2"],
+              "verdict": "Approved"
+            }
+          ]
+        }
+      },
+      "expected": "2026-01-01T00:00:00Z"
+    },
+    {
+      "name": "no findings is empty",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {}
+      },
+      "expected": ""
+    }
+  ]
+}

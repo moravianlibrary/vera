@@ -1,0 +1,45 @@
+{
+  "function": "isCancellable",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "not held before scan",
+      "rule": "LC-ITER-cancel",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "already held",
+      "rule": "LC-ITER-cancel",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "scan cannot be cancelled",
+      "rule": "LC-ITER-cancel",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": false
+    }
+  ]
+}

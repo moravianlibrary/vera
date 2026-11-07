@@ -1,0 +1,83 @@
+{
+  "function": "isReclassifiable",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "Enqueued is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "Enqueued"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "IngestFailed is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "IngestFailed"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Ready is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Planned is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "Planned"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "InProgress is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "InProgress"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Digitized is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Published is reclassifiable",
+      "rule": "LC-ITER-reclassify",
+      "input": {
+        "iteration": {
+          "progress": "Published"
+        }
+      },
+      "expected": false
+    }
+  ]
+}

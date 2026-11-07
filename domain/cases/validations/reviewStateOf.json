@@ -1,0 +1,121 @@
+{
+  "function": "reviewStateOf",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "needed review",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "Needed"
+    },
+    {
+      "name": "denied review",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "Denied"
+    },
+    {
+      "name": "approved review",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k1"],
+              "verdict": "Approved"
+            }
+          ]
+        }
+      },
+      "expected": "Approved"
+    },
+    {
+      "name": "restriction is forbidden",
+      "rule": "STAT-gates",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-01-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": "Forbidden"
+    },
+    {
+      "name": "cancellation leaves review queue",
+      "rule": "ACT-resume",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k1",
+              "instanceId": "i1",
+              "ruleCode": "R01",
+              "subject": "title",
+              "firstSeenAt": "2026-01-02T00:00:00Z"
+            }
+          ],
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "no review required",
+      "rule": "STAT-validation",
+      "input": {
+        "iteration": {}
+      },
+      "expected": null
+    }
+  ]
+}

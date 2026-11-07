@@ -1,0 +1,83 @@
+{
+  "function": "isPublishable",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "Enqueued publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "Enqueued"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "IngestFailed publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "IngestFailed"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Ready publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Planned publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "Planned"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "InProgress publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "InProgress"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "Digitized publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "Published publication eligibility",
+      "rule": "P1",
+      "input": {
+        "iteration": {
+          "progress": "Published"
+        }
+      },
+      "expected": true
+    }
+  ]
+}

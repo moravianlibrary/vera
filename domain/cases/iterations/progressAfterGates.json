@@ -1,0 +1,95 @@
+{
+  "function": "progressAfterGates",
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  },
+  "cases": [
+    {
+      "name": "Enqueued advances when clear",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Enqueued"
+        }
+      },
+      "expected": "Ready"
+    },
+    {
+      "name": "Ready moves back when held by cancellation",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": "Ready"
+    },
+    {
+      "name": "Ready moves back for needed validation",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "Enqueued"
+    },
+    {
+      "name": "listed work stays where it is",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Planned",
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": "Planned"
+    },
+    {
+      "name": "scan never moves back",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Digitized",
+          "cancellation": {
+            "cause": "Decided"
+          },
+          "defects": [
+            {
+              "key": "k"
+            }
+          ]
+        }
+      },
+      "expected": "Digitized"
+    },
+    {
+      "name": "Enqueued cancellation holds progress",
+      "rule": "STAT-gates-move-progress",
+      "input": {
+        "iteration": {
+          "progress": "Enqueued",
+          "cancellation": {
+            "cause": "Decided"
+          }
+        }
+      },
+      "expected": "Enqueued"
+    }
+  ]
+}
