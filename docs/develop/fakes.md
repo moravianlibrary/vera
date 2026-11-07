@@ -57,26 +57,43 @@ codes is not established.
 
 **Base instances:** `pi4` MZK Kramerius and `pi5` RDCZ production (`pt2`, `pt3`).
 
-`lookup` returns fixture registry state/link per identifier in the mock; fixture/plugin declarations
-are in `frontend/src/mocks/fixtures/plugins.ts` and registry consumers are in
-`frontend/src/mocks/validations.ts` and ingest handlers. The seed schema has no registry fake key,
-and no engine registry fake is implemented. The exact raw-state fallback and failure behavior of
-the mock registry readers could not be established from the seed readers; the backend must not
-infer network behavior from this document. API operation declares no refusal code.
+`lookup(record, identifiers)` answers the `records` entry for every distinct registry record matching
+any identifier of the record. It returns each record once, with its stored `rawState` and nullable
+`link` (`domain/src/plugin-api/registry.ts`). For an existing document, read its `registryRecords`,
+grouped by `instanceId`; the base seed stores these with documents (`engine/seeds/base.json`,
+`collections.documents[*].registryRecords`, e.g. D1 near line 1745). The fixture identifies `pi4`
+and `pi5` as registry instances (`frontend/src/mocks/fixtures/plugins.ts:73,95–141`). Registry
+evidence and raw-state rules are `docs/reference/integrations/registries.md:5–44`. An absent row
+means no record. For a new catalog document, use `fakes.ingest[catalogId].registryRecords`; default
+is no registry records. Unknown raw states are preserved as evidence and map to Unmapped
+(REG-raw-state/REG-states). The API has no refusal code (`registry.ts:3`). Thrown errors, invalid
+answers and timeout are unavailable under PLG-api-outcome. `fakes.md` Common fault switches affect
+mock HTTP requests only; the engine does not use them. Per-kind `faults` below makes these outcomes
+reproducible in backend tests. L25 fails ingest and keeps the error. The mock has no ingest
+implementation.
 
 ## Property source
 
 **Base instances:** `pi6` Periodicals model and `pi7` Monographs model (`pt4`); additional shipped
 implementations are in `installation.json`, but no additional base instances are recorded.
 
-`values` supplies declared property values and their tiers. Mock stored values, definitions and
-entry/recheck logic are in `frontend/src/mocks/properties.ts` (`allPropertyDefinitions`,
-`enterPropertyValue`, `enterPropertyValues`); fixture definitions are in
-`frontend/src/mocks/fixtures/properties.ts`. Seed `collections.propertyDefinitions` stores
-definitions; `fakes.catalogReading` is read only by the engine proposal query helper and defaults
-to empty source/tier 50 (`engine/src/records/plugins.ts:26–45`). No engine property-source operation
-exists. Operation has no declared refusal; how each model computes values from a record is not
-specified by a seed fake and was not established in inspected code.
+`values(record, iteration)` answers only values attributed to that property-source instance, with
+each key, value and tier (`domain/src/plugin-api/property-source.ts`). For seeded iterations, use
+`iterations[*].properties` values attributed to the instance; the base seed stores them with the
+iterations (`engine/seeds/base.json`, `collections.iterations[*].properties`, e.g. lines 1777–1823).
+Property definitions are in `collections.propertyDefinitions` and the mock fixture
+(`frontend/src/mocks/fixtures/properties.ts`). For catalog properties, use the source and tier in
+`fakes.catalogReading`; the engine query helper reads this key and defaults to tier 50
+(`engine/src/records/plugins.ts:26–45`, `contract/seed/seed.ts:347–356`). Ingest takes page count
+from the document's `pageSources` as the `page_count` property; it does not invent a count. Its
+value follows the highest applicable source: manual tier 100, catalog tier 50 and predictor tier
+20 (`docs/reference/model/documents.md:174–181`, `engine/seeds/base.json`,
+`collections.documents[*].pageSources`, e.g. lines 1729–1743).
+
+For a new document use `fakes.ingest[catalogId].properties`; default is an empty array. The API has
+no refusal (`property-source.ts:4`). Thrown errors, invalid answers and timeout are unavailable;
+per-kind `faults` below triggers these in backend tests. L25 fails ingest and keeps the error. The
+mock's proposal helper catalog reading is not this operation.
 
 ## Harvester
 
@@ -89,28 +106,95 @@ that schema has no harvester fake key. There is no engine implementation (harves
 machinery per `docs/develop/engine.md`, Order of work). The API declares no refusal. Do not infer
 source connectivity or cursor fallback from the implementation description alone.
 
+
 ## Validation
 
 **Base instances:** `pi9` Default ruleset and `pi10` Language check (`pt6`, `pt7`).
 
-`check(record, properties)` produces defects with rule, field and detail. Mock validation rows and
-review state are in `frontend/src/mocks/validations.ts`; ingest handling is in
-`frontend/src/mocks/handlers.ts`. Rule declarations and which properties are read come from
-implementation versions (`frontend/src/mocks/fixtures/plugins.ts`; property rule reader in
-`frontend/src/mocks/properties.ts:isReadByRules`). There is no validation key in seed `fakes`, and
-no engine validation fake; engine does not serve ingest/review (DEC-0022, `docs/develop/engine.md`).
-The API has no refusal code. The exact fake defect-generation rules for every rule were not
-established from the named readers.
+`check(record, properties)` answers defects with rule, field and detail
+(`domain/src/plugin-api/validation.ts`). For a seeded document, take the current iteration's
+defects, preserving `ruleCode`, subject and the stored internal text as answer rule, field and
+detail; route each defect to its `instanceId` (`pi9` or `pi10`). This preserves STAT-defect-key
+(instance, rule, subject) and the stored findings (`engine/seeds/base.json`,
+`collections.iterations[*].defects`, e.g. IT1 lines 6185–6195;
+`docs/reference/model/status.md:24–42`). On recheck, remove defects whose subject is in
+`fakes.catalogRepairs[catalogId]`, as the mock does (`contract/seed/seed.ts:334`,
+`frontend/src/mocks/catalog.ts:16–20`, `frontend/src/mocks/iterations.ts:307–329,363–370`). This is
+the behavior BK4 Choice 1B replaces for `IterationChecks`.
+
+For a new document, read `fakes.ingest[catalogId].defects`; default is no defects. The API has no
+refusal (`validation.ts:4`). Thrown errors, invalid answers and timeout are unavailable; per-kind
+`faults` below triggers these in backend tests. L25 marks ingest failed and keeps the error.
+Defects on repaired subjects disappear; other defects remain.
 
 ## Restriction
 
 **Base instance:** `pi28` Czech copyright (`pt25`).
 
-`check(record, properties)` produces each rule's forbidden flag, end date and reason. Mock rule
-and restriction handling is in `frontend/src/mocks/validations.ts` and handlers; implementation
-declaration is in `frontend/src/mocks/fixtures/plugins.ts`. No restriction fake key or engine fake
-exists. There is no declared operation refusal. The rule's full value-to-finding mapping was not
-established by the inspected seed reader; do not invent it.
+`check(record, properties)` answers the iteration's standing restriction as one finding with
+`forbidden: true`, its `rule`, `until: null` unless stored, and `why` from its internal text
+(`domain/src/plugin-api/restriction.ts`). It returns no per-rule non-forbidden findings. No stored
+restriction means no finding. The seed stores restriction and override on iterations
+(`engine/seeds/base.json`, `collections.iterations[*].restriction`, e.g. IT6 lines 6368–6376);
+STAT-gates uses whether a restriction stands (`docs/reference/model/status.md:48–58`).
+
+For a new document, read `fakes.ingest[catalogId].restriction`; default is null/no restriction.
+The API has no refusal (`restriction.ts:4`). Thrown errors, invalid answers and timeout are
+unavailable; per-kind `faults` below triggers these in backend tests. L25 fails ingest and keeps
+the error. Return the finding even if later overridden; the iteration's override handles the
+gate.
+
+## Per-catalog seed data for ingest (`fakes.ingest`)
+
+BK4g adds this key to `contract/seed/seed.ts`. It lets backend tests arrange answers by data,
+including for a document submitted through `POST /api/proposals` and read from the catalog mirror
+(B6a). Existing collections remain the source for recordings; the catalog-id key handles records
+with no held iteration.
+
+```ts
+type IngestFake = {
+  registryRecords?: Array<{
+    instanceId: string;
+    identifiers: string[];
+    rawState: string;
+    link: string | null;
+  }>;
+  properties?: Array<{
+    key: string;
+    value: unknown;
+    tier: number;
+    instanceId: string;
+  }>;
+  defects?: Array<{
+    instanceId: string;
+    rule: string;
+    field: string;
+    detail: string;
+  }>;
+  restriction?: {
+    rule: string;
+    forbidden: boolean;
+    until: string | null;
+    why: string;
+  } | null;
+  faults?: Partial<
+    Record<
+      "registry" | "propertySource" | "validation" | "restriction",
+      "unavailable" | "malformed" | "timeout"
+    >
+  >;
+};
+type Fakes = { ingest?: Record<string, IngestFake> };
+```
+
+Missing entries default to no registry records, no property values, no defects, no restriction and
+no fault. A per-kind `faults` entry of `unavailable` throws `PluginUnavailable`; `timeout` delays
+past the configured instance timeout and produces unavailable; `malformed` returns an invalid
+answer that the wrapper records as unavailable. There is no refused outcome trigger for these
+kinds because their refusal schemas are `z.never()` (`domain/src/plugin-api/registry.ts:3`,
+`property-source.ts:3`, `validation.ts:3`, `restriction.ts:3`). Shared HTTP switches are mock-only
+(`frontend/src/mocks/faults.ts`); B5 specifies the plugin call timeout. L25 keeps the ingest failure
+error.
 
 ## Custody
 
