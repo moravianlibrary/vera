@@ -457,9 +457,15 @@ Following the engine's steps, so each lands with its recordings already made:
    Groups index, role and custody impacts, and custody acts wait for the steps whose tables they
    read (BK2.md, choice C). The 7-day removal of unverified sign-ups waits for jobs (B5; already
    decided in B7). The real `OidcIdentity` and `LocalAccounts` plugins wait for step 5.
-3. **Asking and deciding**, then **ingest and review**, **lists and projects**, **planning**,
-   **machinery**: the areas of engine steps 3 to 7, each done when its recordings pass. Steps 4
-   to 7 are built here first; the engine does not serve them
+3. **Asking and deciding:** (built 2026-11-07) judged by the recorded records, filters, proposal
+   and decision scenarios. Placing again and suggesting again after a change wait for runs with
+   the jobs (B5, L8). The Plugins acts, including `proposal-refusal-codes`, wait for their step.
+   The entry link `/ask` waits for the Input plugins of step 5. The custody acts, Users & Groups
+   index and impacts wait for the step serving projects, watchlists and properties. The catalog
+   mirror's `sync` and stored catalog tiers wait for the real catalog adapters; the mirror's
+   tables and their filling from the fakes came early, decided with the user on 2026-11-07.
+   **Ingest and review**, **lists and projects**, **planning**, **machinery** follow: the areas of
+   engine steps 4 to 7. Steps 4 to 7 are built here first; the engine does not serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK

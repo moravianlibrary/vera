@@ -209,6 +209,53 @@ class ProposalReadTests {
     }
 
     @Test
+    void recordLinkWithoutAnEnabledCatalogRefuses() {
+        dsl.update(PLUGIN_INSTANCES).set(PLUGIN_INSTANCES.IS_ENABLED, false)
+                .where(PLUGIN_INSTANCES.ID.eq("pi1")).execute();
+        client.post().uri("/api/proposals/record-link").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("catalogInstanceId", "pi1", "link", "https://example.test/record"))
+                .exchange().expectStatus().isNotFound().expectBody()
+                .jsonPath("$.detail").isEqualTo("No such catalog to read a link in");
+    }
+
+    @Test
+    void photoReadWithoutAReaderRefuses() {
+        dsl.update(PLUGIN_INSTANCES).set(PLUGIN_INSTANCES.IS_ENABLED, false)
+                .where(PLUGIN_INSTANCES.ID.eq("pi13")).execute();
+        String multipart = "--proposal-boundary\r\n"
+                + "Content-Disposition: form-data; name=\"photo\"; filename=\"photo.jpg\"\r\n"
+                + "Content-Type: image/jpeg\r\n\r\nimage\r\n--proposal-boundary--\r\n";
+        client.post().uri("/api/proposals/photo").header("Cookie", session("u3"))
+                .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
+                .body(multipart).exchange()
+                .expectStatus().isNotFound().expectBody()
+                .jsonPath("$.code").isEqualTo("proposal.no_photo_reader");
+    }
+
+    @Test
+    void photoReadWithoutAFileRefuses() {
+        String multipart = "--proposal-boundary--\r\n";
+        client.post().uri("/api/proposals/photo").header("Cookie", session("u3"))
+                .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
+                .body(multipart).exchange()
+                .expectStatus().isEqualTo(422).expectBody()
+                .jsonPath("$.detail").isEqualTo("Take a photo to read")
+                .jsonPath("$.code").isEqualTo("proposal.photo_missing");
+    }
+
+    @Test
+    void barcodeReadWithoutAFileRefuses() {
+        String multipart = "--proposal-boundary--\r\n";
+        client.post().uri("/api/proposals/barcode").header("Cookie", session("u3"))
+                .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
+                .body(multipart).exchange()
+                .expectStatus().isEqualTo(422).expectBody()
+                .jsonPath("$.detail").isEqualTo("Photograph a barcode to read")
+                .jsonPath("$.code").isEqualTo("proposal.photo_missing");
+    }
+
+    @Test
     void allSevenProposalReadAndWayInRoutesRequireASession() {
         client.get().uri("/api/proposals/settings").exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/proposals/rate-limit").exchange().expectStatus().isUnauthorized();
