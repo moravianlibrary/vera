@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 final class IterationsController {
     private final AccessGuard guard;
     private final IterationCommands commands;
+    private final IterationReviewCommands reviewCommands;
 
-    IterationsController(AccessGuard guard, IterationCommands commands) {
+    IterationsController(AccessGuard guard, IterationCommands commands,
+            IterationReviewCommands reviewCommands) {
         this.guard = guard;
         this.commands = commands;
+        this.reviewCommands = reviewCommands;
     }
 
     @PostMapping("/api/iterations/{id}/reclassify")
@@ -76,5 +79,60 @@ final class IterationsController {
             return refusal;
         }
         return ActResult.answer(commands.removeLink(caller, id, linkId));
+    }
+
+    @PostMapping("/api/iterations/{id}/page-count")
+    ResponseEntity<?> pageCount(HttpServletRequest request, @PathVariable String id,
+            @RequestBody IterationReviewCommands.PageCount body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.pageCount(caller, id, body));
+    }
+
+    @PostMapping("/api/iterations/{id}/recheck")
+    ResponseEntity<?> recheck(HttpServletRequest request, @PathVariable String id,
+            @RequestBody Map<String, Object> body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.recheck(caller, id));
+    }
+
+    @PostMapping("/api/iterations/{id}/cancel")
+    ResponseEntity<?> cancel(HttpServletRequest request, @PathVariable String id,
+            @RequestBody IterationReviewCommands.Cancellation body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.cancel(caller, id, body));
+    }
+
+    @PostMapping("/api/iterations/{id}/resume")
+    ResponseEntity<?> resume(HttpServletRequest request, @PathVariable String id,
+            @RequestBody Map<String, Object> body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.resume(caller, id));
+    }
+
+    @PostMapping("/api/iterations/{id}/overrule")
+    ResponseEntity<?> overrule(HttpServletRequest request, @PathVariable String id,
+            @RequestBody IterationReviewCommands.Overrule body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.overrule(caller, id, body));
     }
 }

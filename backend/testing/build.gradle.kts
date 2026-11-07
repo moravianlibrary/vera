@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(platform(libs.spring.boot.dependencies))
     implementation(project(":app"))
+    implementation(project(":domain"))
     implementation(project(":plugin-api"))
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.jdbc)
