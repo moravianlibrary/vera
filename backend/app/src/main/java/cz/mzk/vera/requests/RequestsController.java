@@ -19,20 +19,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-// VIEW-requests: authenticate, check the list permission, then delegate the read model.
+// VIEW-requests; ACT-retry-batch: authenticate, then delegate request reads and batch retry.
 @RestController
 final class RequestsController {
     private final AccessGuard guard;
     private final RequestQueries queries;
     private final HeldAccessQueries heldAccess;
     private final RequestDecisions decisions;
+    private final BatchRetry retry;
 
     RequestsController(AccessGuard guard, RequestQueries queries, HeldAccessQueries heldAccess,
-            RequestDecisions decisions) {
+            RequestDecisions decisions, BatchRetry retry) {
         this.guard = guard;
         this.queries = queries;
         this.heldAccess = heldAccess;
         this.decisions = decisions;
+        this.retry = retry;
+    }
+
+    @PostMapping("/api/batches/{batchId}/retry")
+    ResponseEntity<?> retry(HttpServletRequest request, @PathVariable String batchId) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(retry.retry(caller, batchId));
     }
 
     @GetMapping("/api/requests/{documentId}")

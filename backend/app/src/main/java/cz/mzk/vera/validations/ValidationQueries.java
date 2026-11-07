@@ -138,23 +138,21 @@ class ValidationQueries {
 
     private Condition reachCondition(HeldScopes held) {
         Condition reached = DSL.falseCondition();
+        List<Category> categories = dsl.selectFrom(CATEGORIES)
+                .fetch(row -> new Category(row.getId(), row.getParentId()));
         for (String permission : List.of(ValidationCodes.APPROVE, ValidationCodes.DENY,
                 ValidationCodes.REVOKE)) {
             List<String> scopes = held.scopesOf(permission);
             if (scopes.contains("any")) {
                 return ITERATION_STATES.REVIEW_STATE.isNotNull();
             }
-            if (scopes.contains("custody") && !held.custodyCategoryIds().isEmpty()) {
-                List<Category> categories = dsl.selectFrom(CATEGORIES)
-                        .fetch(row -> new Category(row.getId(), row.getParentId()));
-                Set<String> reachedCategories = new LinkedHashSet<>();
+            if (scopes.contains("custody")) {
                 for (Category category : categories) {
-                    if (Categories.lineageOf(categories, category.id()).stream()
-                            .anyMatch(held.custodyCategoryIds()::contains)) {
-                        reachedCategories.add(category.id());
+                    List<String> categoryPath = Categories.lineageOf(categories, category.id());
+                    if (held.reachesIteration(permission, categoryPath)) {
+                        reached = reached.or(ITERATIONS.CATEGORY_ID.eq(category.id()));
                     }
                 }
-                reached = reached.or(ITERATIONS.CATEGORY_ID.in(reachedCategories));
             }
         }
         return ITERATION_STATES.REVIEW_STATE.isNotNull().and(reached);

@@ -47,9 +47,7 @@ public class IterationAccess {
             return Result.refused(ActResult.refused(409,
                     "A later attempt has replaced this one", IterationCodes.NOT_CURRENT));
         }
-        boolean inCustody = scope.categoryPathIds().stream().anyMatch(held.custodyCategoryIds()::contains);
-        if (!held.scopesOf(permission).contains("any")
-                && (!held.scopesOf(permission).contains("custody") || !inCustody)) {
+        if (!held.reachesIteration(permission, scope.categoryPathIds())) {
             return Result.refused(ActResult.refused(403,
                     "This is outside what you may change", IterationCodes.OUTSIDE_CUSTODY));
         }

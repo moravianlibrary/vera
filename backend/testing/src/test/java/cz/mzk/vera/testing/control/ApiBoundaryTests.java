@@ -110,7 +110,7 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batches\",\"confirmEmail\",\"documentDetail\","
+        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batchRetry\",\"batches\",\"confirmEmail\",\"documentDetail\","
                 + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
                 + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\","
                 + "\"iterationCancel\",\"iterationOverrule\",\"iterationPageCount\","
@@ -125,7 +125,8 @@ class ApiBoundaryTests {
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
                 + "\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\","
-                + "\"userSuspend\",\"validationDetail\",\"validations\"]";
+                + "\"userSuspend\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
+                + "\"validationRevoke\",\"validations\"]";
         assertThat(endpoints.toString()).isEqualTo(expectedEndpoints);
     }
 

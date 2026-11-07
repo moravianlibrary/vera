@@ -125,5 +125,11 @@ public class HeldAccessQueries {
             return grants.stream().filter(grant -> grant.permission().equals(permission))
                 .map(grant -> grant.scope() == null ? "own" : grant.scope()).toList();
         }
+
+        public boolean reachesIteration(String permission, List<String> categoryPathIds) {
+            List<String> scopes = scopesOf(permission);
+            return scopes.contains("any") || (scopes.contains("custody")
+                    && categoryPathIds.stream().anyMatch(custodyCategoryIds::contains));
+        }
     }
 }
