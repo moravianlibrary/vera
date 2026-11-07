@@ -8,14 +8,6 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 public class IterationChecksConfiguration {
     @Bean
-    @ConditionalOnMissingBean(IterationChecks.class)
-    IterationChecks noIterationChecks() {
-        return (iteration, document, run) -> {
-            throw new IllegalStateException("No checks are configured");
-        };
-    }
-
-    @Bean
     @ConditionalOnMissingBean(IterationListNames.class)
     IterationListNames iterationListNames() {
         return listId -> listId;

@@ -61,8 +61,7 @@ class IterationHoldTests {
 
     @Test
     void rechecksCatalogRepairsAndMovesEnqueuedToReadyWhenLastDefectClears() throws Exception {
-        dsl.deleteFrom(ITERATION_DEFECTS).where(ITERATION_DEFECTS.ITERATION_ID.eq("IT10")
-                .and(ITERATION_DEFECTS.KEY.eq("pi10:R01:041$a"))).execute();
+        reset.reset("bk4h-recheck", true);
         var response = post("/api/iterations/IT10/recheck", "u3", Map.of(), 200);
         assertThat(response.path("clearedKeys").toString()).contains("pi9:R03:245$a");
         assertThat(response.path("progress").asString()).isEqualTo("Ready");

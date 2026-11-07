@@ -1,0 +1,16 @@
+{
+  "name": "bk4h-ingest-malformed",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK01-001622010": {
+        "faults": {
+          "registry": "malformed",
+          "propertySource": "malformed",
+          "validation": "malformed",
+          "restriction": "malformed"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "bk4h-ingest-unavailable",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK01-001622010": {
+        "faults": {
+          "registry": "unavailable",
+          "propertySource": "unavailable",
+          "validation": "unavailable",
+          "restriction": "unavailable"
+        }
+      }
+    }
+  }
+}

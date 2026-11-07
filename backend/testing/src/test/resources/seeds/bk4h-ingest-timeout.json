@@ -1,0 +1,16 @@
+{
+  "name": "bk4h-ingest-timeout",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK01-001622010": {
+        "faults": {
+          "registry": "timeout",
+          "propertySource": "timeout",
+          "validation": "timeout",
+          "restriction": "timeout"
+        }
+      }
+    }
+  }
+}

@@ -187,7 +187,7 @@ public class ProposalSubmit {
                     iterationId = "IT-" + UUID.randomUUID();
                     int attempt = dsl.selectCount().from(ITERATIONS)
                             .where(ITERATIONS.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class) + 1;
-                    RequestDecisions.insertIteration(dsl, documentId, iterationId, attempt, requestId,
+                    decisions.insertIteration(dsl, documentId, iterationId, attempt, requestId,
                             (String) approval.get("categoryId"), (String) approval.get("priority"), projectId);
                     decision = "Approved";
                     relation = "Originates";

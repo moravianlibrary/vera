@@ -77,10 +77,9 @@ public class SeedReader {
         if (seen.contains(name)) {
             return;
         }
-        Path file = seedDir.resolve(name + ".json");
-        digest.update(file.getFileName().toString().getBytes(StandardCharsets.UTF_8));
-        digest.update(Files.readAllBytes(file));
-        JsonNode patch = mapper.readTree(Files.readString(file));
+        digest.update((name + ".json").getBytes(StandardCharsets.UTF_8));
+        digest.update(seedBytes(name));
+        JsonNode patch = mapper.readTree(seedBytes(name));
         seen.add(name);
         if (patch.path("extends").isString()) {
             hashSeed(patch.path("extends").asString(), seen, digest);
@@ -93,11 +92,10 @@ public class SeedReader {
             path.add(name);
             throw new IllegalArgumentException("seed " + name + " extends itself through " + String.join(" -> ", path));
         }
-        Path file = seedDir.resolve(name + ".json");
-        if (!NAME.matcher(name).matches() || !Files.isRegularFile(file)) {
+        if (!NAME.matcher(name).matches() || !hasSeed(name)) {
             throw new SeedNotFoundException(name);
         }
-        JsonNode patch = parse(file);
+        JsonNode patch = parse(name);
         validate(patch, "seed-patch.schema.json");
         JsonNode result = patch;
         JsonNode parentName = patch.get("extends");
@@ -110,11 +108,29 @@ public class SeedReader {
         return result;
     }
 
-    private JsonNode parse(Path file) {
+    private JsonNode parse(String name) {
         try {
-            return mapper.readTree(Files.readString(file));
+            return mapper.readTree(seedBytes(name));
         } catch (IOException exception) {
-            throw new IllegalArgumentException("Could not read seed " + file.getFileName() + ".", exception);
+            throw new IllegalArgumentException("Could not read seed " + name + ".", exception);
+        }
+    }
+
+    private boolean hasSeed(String name) {
+        return Files.isRegularFile(seedDir.resolve(name + ".json"))
+                || SeedReader.class.getClassLoader().getResource("seeds/" + name + ".json") != null;
+    }
+
+    private byte[] seedBytes(String name) throws IOException {
+        Path file = seedDir.resolve(name + ".json");
+        if (Files.isRegularFile(file)) {
+            return Files.readAllBytes(file);
+        }
+        try (InputStream resource = SeedReader.class.getClassLoader().getResourceAsStream("seeds/" + name + ".json")) {
+            if (resource == null) {
+                throw new IOException("Missing seed " + name);
+            }
+            return resource.readAllBytes();
         }
     }
 

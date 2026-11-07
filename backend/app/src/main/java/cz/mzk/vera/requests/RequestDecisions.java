@@ -24,6 +24,7 @@ import cz.mzk.vera.domain.entities.Category;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
+import cz.mzk.vera.ingest.IngestQueue;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import java.time.Clock;
@@ -57,10 +58,11 @@ public class RequestDecisions {
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
+    private final IngestQueue ingestQueue;
 
     public RequestDecisions(DSLContext dsl, RequestRows rows, RequestReach reach,
             HeldAccessQueries heldAccess, DocumentStates states, EventRecorder events, Clock clock,
-            JsonMapper json) {
+            JsonMapper json, IngestQueue ingestQueue) {
         this.dsl = dsl;
         this.rows = rows;
         this.reach = reach;
@@ -69,6 +71,7 @@ public class RequestDecisions {
         this.events = events;
         this.clock = clock;
         this.json = json;
+        this.ingestQueue = ingestQueue;
     }
 
     @Transactional
@@ -126,7 +129,7 @@ public class RequestDecisions {
     }
 
     // BK3g2 shares the approved iteration insert through this requests-owned method.
-    public static void insertIteration(DSLContext dsl, String documentId, String iterationId, int attempt,
+    public void insertIteration(DSLContext dsl, String documentId, String iterationId, int attempt,
             String requestId, String categoryId, String priority, String projectId) {
         dsl.insertInto(ITERATIONS)
                 .set(ITERATIONS.ID, iterationId)
@@ -138,6 +141,7 @@ public class RequestDecisions {
                 .set(ITERATIONS.PROJECT_ID, projectId)
                 .set(ITERATIONS.PROGRESS, "Enqueued")
                 .execute();
+        ingestQueue.queue(dsl, iterationId);
     }
 
     @Transactional

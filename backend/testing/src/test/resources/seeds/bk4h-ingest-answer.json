@@ -1,0 +1,16 @@
+{
+  "name": "bk4h-ingest-answer",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK03-000778120": {
+        "properties": [
+          { "key": "page_count", "value": 23, "tier": 50, "instanceId": "pi6" }
+        ],
+        "defects": [
+          { "instanceId": "pi9", "rule": "R88", "field": "title", "detail": "Needs a title check." }
+        ]
+      }
+    }
+  }
+}

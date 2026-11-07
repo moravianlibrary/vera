@@ -1,0 +1,9 @@
+{
+  "name": "bk4h-recheck",
+  "extends": "base",
+  "fakes": {
+    "catalogRepairs": {
+      "MZK03-000445012": ["245$a", "041$a"]
+    }
+  }
+}
