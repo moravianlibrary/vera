@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,15 +45,31 @@ final class ProposalController {
     private final ProposalCheck check;
     private final ProposalWaysIn waysIn;
     private final PluginCalls plugins;
+    private final ProposalSubmit submit;
 
     ProposalController(AccessGuard guard, HeldAccessQueries access, ProposalSettings settings,
-            ProposalCheck check, ProposalWaysIn waysIn, PluginCalls plugins) {
+            ProposalCheck check, ProposalWaysIn waysIn, PluginCalls plugins, ProposalSubmit submit) {
         this.guard = guard;
         this.access = access;
         this.settings = settings;
         this.check = check;
         this.waysIn = waysIn;
         this.plugins = plugins;
+        this.submit = submit;
+    }
+
+    @PostMapping
+    ResponseEntity<?> submit(HttpServletRequest request, @RequestBody Map<String, Object> body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        ProposalSubmit.Outcome outcome = submit.submit(caller, body);
+        if (outcome.detail() != null) {
+            return Problems.response(outcome.status(), outcome.detail(), outcome.code(), null);
+        }
+        return ResponseEntity.status(outcome.status()).body(outcome.body());
     }
 
     @GetMapping("/settings")

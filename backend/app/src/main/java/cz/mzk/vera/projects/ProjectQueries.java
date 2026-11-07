@@ -72,4 +72,19 @@ public class ProjectQueries {
             .compare(first.getValue(), second.getValue()));
         return names.stream().map(Map.Entry::getKey).toList();
     }
+
+    // PROJECT-member; ACT-propose: only members may submit into a non-rejected project.
+    public boolean isProposableTo(String projectId, String userId, List<String> groupIds) {
+        var membership = PROJECTS.MANAGER_ID.eq(userId)
+                .or(PROJECT_MEMBERS.USER_ID.eq(userId));
+        if (!groupIds.isEmpty()) {
+            membership = membership.or(PROJECT_MEMBER_GROUPS.GROUP_ID.in(groupIds));
+        }
+        return dsl.fetchExists(dsl.select(PROJECTS.ID).from(PROJECTS)
+                .leftJoin(PROJECT_MEMBERS).on(PROJECT_MEMBERS.PROJECT_ID.eq(PROJECTS.ID))
+                .leftJoin(PROJECT_MEMBER_GROUPS).on(PROJECT_MEMBER_GROUPS.PROJECT_ID.eq(PROJECTS.ID))
+                .where(PROJECTS.ID.eq(projectId))
+                .and(PROJECTS.STATE.ne("Rejected"))
+                .and(membership));
+    }
 }

@@ -102,16 +102,8 @@ public class RequestDecisions {
                 .from(ITERATIONS).where(ITERATIONS.DOCUMENT_ID.eq(row.documentId()))
                 .fetchOne(0, Integer.class);
         OffsetDateTime writtenAt = at.atOffset(ZoneOffset.UTC);
-        dsl.insertInto(ITERATIONS)
-                .set(ITERATIONS.ID, iterationId)
-                .set(ITERATIONS.DOCUMENT_ID, row.documentId())
-                .set(ITERATIONS.ATTEMPT, nextAttempt)
-                .set(ITERATIONS.REQUEST_ID, oldest.id())
-                .set(ITERATIONS.CATEGORY_ID, approval.categoryId())
-                .set(ITERATIONS.PRIORITY, approval.priority())
-                .set(ITERATIONS.PROJECT_ID, oldest.projectId())
-                .set(ITERATIONS.PROGRESS, "Enqueued")
-                .execute();
+        insertIteration(dsl, row.documentId(), iterationId, nextAttempt, oldest.id(),
+                approval.categoryId(), approval.priority(), oldest.projectId());
         for (Ask ask : asks) {
             boolean originating = ask.id().equals(oldest.id());
             dsl.update(REQUESTS)
@@ -131,6 +123,21 @@ public class RequestDecisions {
         states.recompute(dsl, row.documentId());
         return ActResult.ok(Map.of("documentId", row.documentId(), "decision", APPROVED,
                 "askCount", asks.size()));
+    }
+
+    // BK3g2 shares the approved iteration insert through this requests-owned method.
+    public static void insertIteration(DSLContext dsl, String documentId, String iterationId, int attempt,
+            String requestId, String categoryId, String priority, String projectId) {
+        dsl.insertInto(ITERATIONS)
+                .set(ITERATIONS.ID, iterationId)
+                .set(ITERATIONS.DOCUMENT_ID, documentId)
+                .set(ITERATIONS.ATTEMPT, attempt)
+                .set(ITERATIONS.REQUEST_ID, requestId)
+                .set(ITERATIONS.CATEGORY_ID, categoryId)
+                .set(ITERATIONS.PRIORITY, priority)
+                .set(ITERATIONS.PROJECT_ID, projectId)
+                .set(ITERATIONS.PROGRESS, "Enqueued")
+                .execute();
     }
 
     @Transactional

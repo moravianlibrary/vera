@@ -21,6 +21,7 @@ import cz.mzk.vera.domain.entities.Iteration;
 import cz.mzk.vera.domain.entities.IterationLink;
 import cz.mzk.vera.domain.entities.PageSource;
 import cz.mzk.vera.domain.entities.Progress;
+import cz.mzk.vera.domain.entities.PublicationLink;
 import cz.mzk.vera.domain.entities.RegistryRecord;
 import cz.mzk.vera.domain.entities.RegistryState;
 import cz.mzk.vera.domain.entities.Relation;
@@ -32,11 +33,14 @@ import cz.mzk.vera.domain.entities.VerdictKind;
 import cz.mzk.vera.domain.requests.ProposalDecision;
 import cz.mzk.vera.domain.requests.RequestRow;
 import cz.mzk.vera.domain.requests.Requests;
+import cz.mzk.vera.domain.proposals.Proposals;
+import cz.mzk.vera.domain.iterations.Iterations;
 import cz.mzk.vera.domain.status.Status;
 import cz.mzk.vera.domain.valuerange.DayRange;
 import cz.mzk.vera.domain.valuerange.Range;
 import cz.mzk.vera.domain.valuerange.ValueRange;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
@@ -196,6 +200,19 @@ class DomainRulesTests {
     assertEquals("2026-06-01", ValueRange.dayOf(LocalDate.of(2026, 6, 1)));
     assertTrue(ValueRange.isDayPreset(new DayRange(null, ValueRange.DayPreset.ThisMonth)));
     assertFalse(ValueRange.isDayPreset(new DayRange(new Range<>(LocalDate.of(2026, 6, 1), null), null)));
+  }
+
+  @Test
+  void proposalBatchNameUsesPragueTimeAndPrimaryLinkIsSelected() {
+    assertEquals("2026-06-25 10:40",
+        Proposals.defaultBatchNameOf(Instant.parse("2026-06-25T08:40:00Z")));
+    Iteration linked = new Iteration("i", "d", 1, "r", "c", null, Progress.Digitized,
+        null, null, null, List.of(), List.of(), List.of(
+            new PublicationLink("secondary", "https://example.test/2", false),
+            new PublicationLink("primary", "https://example.test/1", true)));
+    assertEquals(new PublicationLink("primary", "https://example.test/1", true),
+        Iterations.primaryLinkOf(linked));
+    assertNull(Iterations.primaryLinkOf(iteration(Progress.Ready, null)));
   }
 
   private DocumentRecord record(List<Iteration> iterations, List<Request> requests) {

@@ -116,7 +116,7 @@ class ApiBoundaryTests {
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
                 + "\"proposalBarcode\",\"proposalCatalogSearch\",\"proposalLookup\","
                 + "\"proposalPhoto\",\"proposalRateLimit\",\"proposalRecordLink\","
-                + "\"proposalSettings\",\"requestApprove\",\"requestCustodies\","
+                + "\"proposalSettings\",\"proposals\",\"requestApprove\",\"requestCustodies\","
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","

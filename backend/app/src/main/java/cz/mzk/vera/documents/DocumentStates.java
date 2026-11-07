@@ -8,6 +8,7 @@ import static cz.mzk.vera.db.tables.Tables.DOCUMENT_STATES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
+import static cz.mzk.vera.db.tables.Tables.ITERATION_LINKS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_STATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_VERDICTS;
@@ -28,6 +29,7 @@ import cz.mzk.vera.domain.entities.Iteration;
 import cz.mzk.vera.domain.entities.IterationLink;
 import cz.mzk.vera.domain.entities.PageSource;
 import cz.mzk.vera.domain.entities.Progress;
+import cz.mzk.vera.domain.entities.PublicationLink;
 import cz.mzk.vera.domain.entities.RegistryRecord;
 import cz.mzk.vera.domain.entities.RegistryState;
 import cz.mzk.vera.domain.entities.Relation;
@@ -289,6 +291,10 @@ public class DocumentStates {
                 .orderBy(ITERATION_VERDICTS.POSITION)
                 .fetch(value -> new Verdict(Arrays.asList(value.getDefectKeys()),
                         VerdictKind.valueOf(value.getVerdict())));
+        List<PublicationLink> links = dsl.selectFrom(ITERATION_LINKS)
+                .where(ITERATION_LINKS.ITERATION_ID.eq(id))
+                .orderBy(ITERATION_LINKS.POSITION)
+                .fetch(value -> new PublicationLink(value.getId(), value.getUrl(), value.getIsPrimary()));
         Progress progress = Progress.valueOf(row.getProgress());
         Restriction restriction = row.getRestrictionRule() == null ? null
                 : new Restriction(row.getRestrictionRule());
@@ -298,7 +304,7 @@ public class DocumentStates {
                 : new Cancellation(CancellationCause.valueOf(row.getCancellationCause()));
         return new Iteration(id, row.getDocumentId(), row.getAttempt(), row.getRequestId(),
                 row.getCategoryId(), row.getProjectId(), progress, restriction, override, cancellation,
-                defects, verdicts);
+                defects, verdicts, links);
     }
 
     private Request request(DSLContext dsl, RequestsRecord row) {
