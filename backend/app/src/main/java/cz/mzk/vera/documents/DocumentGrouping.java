@@ -8,7 +8,6 @@ import static org.jooq.impl.DSL.count;
 import cz.mzk.vera.domain.documents.Documents.AdditionState;
 import cz.mzk.vera.domain.listing.Listing;
 import cz.mzk.vera.projects.ProjectQueries;
-import cz.mzk.vera.proposals.BatchQueries;
 import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
 import java.util.ArrayList;
 import java.util.Comparator;

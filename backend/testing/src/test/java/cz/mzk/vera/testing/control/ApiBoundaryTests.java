@@ -110,7 +110,19 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        assertThat(endpoints.toString()).isEqualTo("[\"account\",\"batchApprove\",\"batches\",\"confirmEmail\",\"documentDetail\",\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"identityDefaultRole\",\"identityLink\",\"identityUnlink\",\"localAccount\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestApprove\",\"requestCustodies\",\"requestDecline\",\"requestDetail\",\"requestPasswordReset\",\"requestWithdraw\",\"resetPassword\",\"roleCreate\",\"roleDelete\",\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\",\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\",\"userSuspend\"]");
+        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batches\",\"confirmEmail\",\"documentDetail\","
+                + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
+                + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\",\"localAccount\","
+                + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
+                + "\"proposalBarcode\",\"proposalCatalogSearch\",\"proposalLookup\","
+                + "\"proposalPhoto\",\"proposalRateLimit\",\"proposalRecordLink\","
+                + "\"proposalSettings\",\"requestApprove\",\"requestCustodies\","
+                + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
+                + "\"requestWithdraw\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
+                + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
+                + "\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\","
+                + "\"userSuspend\"]";
+        assertThat(endpoints.toString()).isEqualTo(expectedEndpoints);
     }
 
     @Test

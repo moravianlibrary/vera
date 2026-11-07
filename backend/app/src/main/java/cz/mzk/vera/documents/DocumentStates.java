@@ -75,26 +75,10 @@ public class DocumentStates {
             throw new IllegalArgumentException("Unknown document " + documentId);
         }
 
-        List<PageSource> pageSources = dsl.selectFrom(DOCUMENT_PAGE_SOURCES)
-                .where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(documentId))
-                .orderBy(DOCUMENT_PAGE_SOURCES.POSITION)
-                .fetch(row -> new PageSource(row.getSource(), row.getTier(), row.getValue()));
-        List<RegistryRecord> registryRecords = dsl.selectFrom(DOCUMENT_REGISTRY_RECORDS)
-                .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(documentId))
-                .orderBy(DOCUMENT_REGISTRY_RECORDS.POSITION)
-                .fetch(row -> new RegistryRecord(row.getRegistry(), RegistryState.valueOf(row.getState())));
-        Document document = new Document(documentId, documentRow.getCatalogId(), documentRow.getUnitValue(),
-                pageSources, registryRecords);
-
-        List<Iteration> iterations = dsl.selectFrom(ITERATIONS)
-                .where(ITERATIONS.DOCUMENT_ID.eq(documentId))
-                .orderBy(ITERATIONS.ATTEMPT)
-                .fetch(row -> iteration(dsl, row));
-        List<Request> requests = dsl.selectFrom(REQUESTS)
-                .where(REQUESTS.DOCUMENT_ID.eq(documentId))
-                .orderBy(REQUESTS.AT)
-                .fetch(row -> request(dsl, row));
-        DocumentRecord record = new DocumentRecord(document, iterations, requests);
+        DocumentRecord record = recordOf(dsl, documentId, documentRow);
+        Document document = record.document();
+        List<Iteration> iterations = record.iterations();
+        List<Request> requests = record.requests();
 
         storePropertyValues(dsl, documentId, documentRow, record);
 
@@ -162,6 +146,38 @@ public class DocumentStates {
                     .set(REQUEST_STATES.IS_ASKER, excluded(REQUEST_STATES.IS_ASKER))
                     .execute();
         }
+    }
+
+    public DocumentRecord recordOf(DSLContext dsl, String documentId) {
+        DocumentsRecord documentRow = dsl.selectFrom(DOCUMENTS)
+                .where(DOCUMENTS.ID.eq(documentId))
+                .fetchOne();
+        if (documentRow == null) {
+            throw new IllegalArgumentException("Unknown document " + documentId);
+        }
+        return recordOf(dsl, documentId, documentRow);
+    }
+
+    private DocumentRecord recordOf(DSLContext dsl, String documentId, DocumentsRecord documentRow) {
+        List<PageSource> pageSources = dsl.selectFrom(DOCUMENT_PAGE_SOURCES)
+                .where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(documentId))
+                .orderBy(DOCUMENT_PAGE_SOURCES.POSITION)
+                .fetch(row -> new PageSource(row.getSource(), row.getTier(), row.getValue()));
+        List<RegistryRecord> registryRecords = dsl.selectFrom(DOCUMENT_REGISTRY_RECORDS)
+                .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(documentId))
+                .orderBy(DOCUMENT_REGISTRY_RECORDS.POSITION)
+                .fetch(row -> new RegistryRecord(row.getRegistry(), RegistryState.valueOf(row.getState())));
+        Document document = new Document(documentId, documentRow.getCatalogId(), documentRow.getUnitValue(),
+                pageSources, registryRecords);
+        List<Iteration> iterations = dsl.selectFrom(ITERATIONS)
+                .where(ITERATIONS.DOCUMENT_ID.eq(documentId))
+                .orderBy(ITERATIONS.ATTEMPT)
+                .fetch(row -> iteration(dsl, row));
+        List<Request> requests = dsl.selectFrom(REQUESTS)
+                .where(REQUESTS.DOCUMENT_ID.eq(documentId))
+                .orderBy(REQUESTS.AT)
+                .fetch(row -> request(dsl, row));
+        return new DocumentRecord(document, iterations, requests);
     }
 
     private void storePropertyValues(DSLContext dsl, String documentId, DocumentsRecord documentRow,

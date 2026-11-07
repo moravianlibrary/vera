@@ -1,6 +1,8 @@
 package cz.mzk.vera.testing.seeds;
 
 import static cz.mzk.vera.db.tables.Tables.BATCHES;
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_KEYS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PAGE_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
@@ -26,10 +28,12 @@ import cz.mzk.vera.requests.RequestPlacements;
 import cz.mzk.vera.requests.RequestSuggestions;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -67,6 +71,97 @@ class RecordsSeedLoader {
         for (JsonNode document : collections.path("documents")) {
             states.recompute(dsl, string(document, "id"));
         }
+    }
+
+    void catalogMirror(DSLContext dsl, JsonNode seed) {
+        JsonNode records = seed.path("fakes").path("catalogRecords");
+        JsonNode bases = seed.path("fakes").path("catalogBases");
+        for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
+            JsonNode implementation = null;
+            for (JsonNode candidate : seed.path("collections").path("pluginImplementations")) {
+                if (candidate.path("id").asString().equals(instance.path("implementationId").asString())) {
+                    implementation = candidate;
+                    break;
+                }
+            }
+            if (implementation == null || !implementation.path("kind").asString().equals("CatalogAdapter")) {
+                continue;
+            }
+            String baseUrl = instance.path("configuration").path("base_url").asString();
+            JsonNode catalog = bases.path(baseUrl);
+            if (catalog.isMissingNode()) {
+                continue;
+            }
+            int position = 0;
+            for (JsonNode record : records) {
+                String catalogId = record.path("catalogId").asString();
+                if (!catalogId.startsWith(catalog.path("base").asString())) {
+                    continue;
+                }
+                int recordPosition = position++;
+                dsl.insertInto(CATALOG_MIRROR)
+                        .set(CATALOG_MIRROR.INSTANCE_ID, instance.path("id").asString())
+                        .set(CATALOG_MIRROR.CATALOG_ID, catalogId)
+                        .set(CATALOG_MIRROR.TITLE, record.path("title").asString())
+                        .set(CATALOG_MIRROR.TYPE, record.path("type").asString())
+                        .set(CATALOG_MIRROR.UNITS, record.path("units").isNull() ? null
+                                : JSONB.valueOf(record.path("units").toString()))
+                        .set(CATALOG_MIRROR.RECORD, JSONB.valueOf(record.toString()))
+                        .set(CATALOG_MIRROR.FETCHED_AT,
+                                Instant.parse(seed.path("now").asString()).atOffset(ZoneOffset.UTC))
+                        .set(CATALOG_MIRROR.POSITION, recordPosition)
+                        .execute();
+                addMirrorKeys(dsl, instance.path("id").asString(), catalogId, "identifier",
+                        record.path("identifiers"));
+                addMirrorKeys(dsl, instance.path("id").asString(), catalogId, "barcode",
+                        record.path("barcodes"));
+                addMirrorKeys(dsl, instance.path("id").asString(), catalogId, "shelfMark",
+                        record.path("shelfMarks"));
+            }
+        }
+    }
+
+    private void addMirrorKeys(DSLContext dsl, String instanceId, String catalogId, String kind,
+            JsonNode values) {
+        int position = 0;
+        if (values.isArray()) {
+            for (JsonNode value : values) {
+                String text = value.asString();
+                dsl.insertInto(CATALOG_MIRROR_KEYS)
+                        .set(CATALOG_MIRROR_KEYS.INSTANCE_ID, instanceId)
+                        .set(CATALOG_MIRROR_KEYS.CATALOG_ID, catalogId)
+                        .set(CATALOG_MIRROR_KEYS.KIND, kind)
+                        .set(CATALOG_MIRROR_KEYS.VALUE, text)
+                        .set(CATALOG_MIRROR_KEYS.NORMALIZED, normalizeKey(kind, text))
+                        .set(CATALOG_MIRROR_KEYS.UNIT, (String) null)
+                        .set(CATALOG_MIRROR_KEYS.POSITION, position++)
+                        .execute();
+            }
+            return;
+        }
+        for (var entry : values.properties()) {
+            String value = entry.getKey();
+            JsonNode unitNode = entry.getValue();
+            dsl.insertInto(CATALOG_MIRROR_KEYS)
+                    .set(CATALOG_MIRROR_KEYS.INSTANCE_ID, instanceId)
+                    .set(CATALOG_MIRROR_KEYS.CATALOG_ID, catalogId)
+                    .set(CATALOG_MIRROR_KEYS.KIND, kind)
+                    .set(CATALOG_MIRROR_KEYS.VALUE, value)
+                    .set(CATALOG_MIRROR_KEYS.NORMALIZED, normalizeKey(kind, value))
+                    .set(CATALOG_MIRROR_KEYS.UNIT, unitNode.isNull() ? null : unitNode.asString())
+                    .set(CATALOG_MIRROR_KEYS.POSITION, position++)
+                    .execute();
+        }
+    }
+
+    private String normalizeKey(String kind, String value) {
+        if (kind.equals("identifier")) {
+            return value.replace("-", "").toLowerCase(Locale.ROOT);
+        }
+        if (kind.equals("shelfMark")) {
+            return value.trim().toUpperCase(Locale.ROOT);
+        }
+        return value;
     }
 
     private void projects(DSLContext dsl, JsonNode rows) {

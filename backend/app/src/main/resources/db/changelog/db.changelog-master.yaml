@@ -65,3 +65,6 @@ databaseChangeLog:
   - include:
       file: 0022-request-suggestions.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0040-catalog-mirror.sql
+      relativeToChangelogFile: true

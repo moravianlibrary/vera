@@ -24,6 +24,7 @@ import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 @Component
 public class SeedLoader {
@@ -178,11 +179,18 @@ public class SeedLoader {
 
         position = 0;
         for (JsonNode instance : collections.path("pluginInstances")) {
+            ObjectNode configuration = (ObjectNode) instance.path("configuration").deepCopy();
+            JsonNode catalog = seed.path("fakes").path("catalogBases").path(
+                    configuration.path("base_url").asString());
+            if (!catalog.isMissingNode()) {
+                configuration.put("opac_url", catalog.path("opacUrl").asString());
+                configuration.put("catalog_base", catalog.path("base").asString());
+            }
             transaction.insertInto(PLUGIN_INSTANCES)
                     .set(PLUGIN_INSTANCES.ID, string(instance, "id"))
                     .set(PLUGIN_INSTANCES.NAME, string(instance, "name"))
                     .set(PLUGIN_INSTANCES.IMPLEMENTATION_ID, string(instance, "implementationId"))
-                    .set(PLUGIN_INSTANCES.CONFIGURATION, JSONB.valueOf(instance.path("configuration").toString()))
+                    .set(PLUGIN_INSTANCES.CONFIGURATION, JSONB.valueOf(configuration.toString()))
                     .set(PLUGIN_INSTANCES.SETTINGS, nullableJson(instance, "settings"))
                     .set(PLUGIN_INSTANCES.TRIGGERS, JSONB.valueOf(instance.path("triggers").toString()))
                     .set(PLUGIN_INSTANCES.IS_ENABLED, instance.path("isEnabled").asBoolean())
@@ -192,6 +200,7 @@ public class SeedLoader {
                     .set(PLUGIN_INSTANCES.POSITION, position++)
                     .execute();
         }
+        records.catalogMirror(transaction, seed);
         records.load(transaction, collections);
     }
 

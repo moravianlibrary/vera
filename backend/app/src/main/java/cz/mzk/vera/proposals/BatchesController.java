@@ -1,6 +1,7 @@
 package cz.mzk.vera.proposals;
 
 import cz.mzk.vera.access.AccessGuard;
+import cz.mzk.vera.documents.BatchQueries;
 import cz.mzk.vera.session.Caller;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ProblemDetail;

@@ -1,4 +1,4 @@
-package cz.mzk.vera.proposals;
+package cz.mzk.vera.documents;
 
 import static cz.mzk.vera.db.tables.Tables.BATCHES;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
