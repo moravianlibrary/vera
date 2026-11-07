@@ -1,12 +1,13 @@
 # Java conventions
 
-These conventions describe the backend at step 3. Each item points to its source.
+These conventions describe the backend at step 4. Each item points to its source.
 
 - **Modules and packages:** `backend/settings.gradle.kts` includes `plugin-api`, `domain`, `app`
   and `testing`. `backend/app/src/main/java/cz/mzk/vera/login/` is a feature package; shared
   code lives in `session`, `events` and `web`, with test controls in `testing/control`. The
-  shared list package is `listing`; step-3 features include `documents`, `requests` and
-  `proposals`. B9 describes module roles in `docs/develop/backend.md`. A module's base package is
+  shared list package is `listing`; features include `documents`, `requests`, `proposals`,
+  `iterations`, `validations`, `ingest` and `jobs`. B9 describes module roles in
+  `docs/develop/backend.md`. A module's base package is
   its API: name modules plainly in `allowedDependencies`, without `@NamedInterface` on a base
   package or an `api` subpackage
   (`backend/app/src/main/java/cz/mzk/vera/login/package-info.java`,
@@ -86,6 +87,38 @@ These conventions describe the backend at step 3. Each item points to its source
   `backend/domain/src/main/java/cz/mzk/vera/domain/categories/Categories.java`,
   `backend/app/src/main/java/cz/mzk/vera/documents/DocumentCodes.java`,
   `backend/app/src/main/java/cz/mzk/vera/proposals/ProposalCodes.java`).
+- **Step 4's shared operations:** `HeldScopes.reachesIteration` is the iteration reach;
+  `IterationAccess.actionableIteration` checks the current attempt and reach. `IterationCheckRun`
+  calls Validation and Restriction for ingest and recheck alike. `IngestQueue.queue` writes the
+  ingest job, and `RequestDecisions.insertIteration` queues it in the creating transaction
+  (`backend/app/src/main/java/cz/mzk/vera/session/HeldAccessQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/iterations/IterationAccess.java`,
+  `backend/app/src/main/java/cz/mzk/vera/iterations/IterationCheckRun.java`,
+  `backend/app/src/main/java/cz/mzk/vera/ingest/IngestQueue.java`,
+  `backend/app/src/main/java/cz/mzk/vera/requests/RequestDecisions.java`).
+- **Jobs:** `Jobs.enqueue` uses the caller's transaction. A kind is a typed `JobKind<T>`; its
+  plugin calls happen in `call` outside a transaction and its writes happen in `apply`. A stale
+  job writes nothing. The worker polls under `vera.jobs.poll` and reads the role once as
+  `VeraRole`; tests run jobs through the controls
+  (`backend/app/src/main/java/cz/mzk/vera/jobs/Jobs.java`,
+  `backend/app/src/main/java/cz/mzk/vera/jobs/JobKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/jobs/JobRunner.java`,
+  `backend/app/src/main/java/cz/mzk/vera/jobs/JobWorker.java`,
+  `backend/app/src/main/java/cz/mzk/vera/jobs/VeraRole.java`,
+  `backend/app/src/main/java/cz/mzk/vera/ingest/IngestJob.java`,
+  `backend/testing/src/main/java/cz/mzk/vera/testing/control/ControlController.java`).
+- **The reference without an engine:** the mock's functions are held to the pure rules by the
+  shared case files in `domain/cases/iterations/` and `domain/cases/validations/`
+  (`frontend/src/mocks/iterations.ts`, `frontend/src/mocks/validations.ts`,
+  `domain/src/iterations.ts`, `domain/src/validations.ts`,
+  `domain/cases/iterations/`, `domain/cases/validations/`).
+- **Fakes:** they answer from the seed as `fakes.md` says. Tests arrange a case through seed data
+  (a seed patch in test resources), never by editing a row a plugin would answer again. Production
+  code never names the test profile or carries a test-only header
+  (`docs/develop/fakes.md`,
+  `backend/testing/src/main/java/cz/mzk/vera/testing/fakes/FakeIngest.java`,
+  `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/SeedReader.java`,
+  `backend/testing/src/test/resources/`).
 - **Problems:** `ProblemShapeAdvice` writes the problem shape without an `instance`, as the
   engine does (`backend/app/src/main/java/cz/mzk/vera/web/ProblemShapeAdvice.java`).
 - **Style:** use imports, never inline qualified names; put one statement on each line; every `if`
@@ -165,3 +198,8 @@ These conventions describe the backend at step 3. Each item points to its source
   rule (`backend/app/build.gradle.kts`, `backend/domain/build.gradle.kts`,
   `backend/plugin-api/build.gradle.kts`,
   `backend/app/src/main/java/cz/mzk/vera/clock/SystemClockConfiguration.java`).
+- **Spring proxies:** a class annotated `@Transactional` is not `final`, because Spring proxies
+  it with CGLIB (`backend/app/src/main/java/cz/mzk/vera/requests/BatchRetry.java`).
+- **Builds:** run one Gradle build at a time per worktree. A `NoSuchFileException` or
+  `EOFException` on `test-results/.../binary` means an earlier run was interrupted; delete that
+  directory and rerun (`backend/build.gradle.kts`).

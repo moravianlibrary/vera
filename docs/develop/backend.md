@@ -464,8 +464,13 @@ Following the engine's steps, so each lands with its recordings already made:
    index and impacts wait for the step serving projects, watchlists and properties. The catalog
    mirror's `sync` and stored catalog tiers wait for the real catalog adapters; the mirror's
    tables and their filling from the fakes came early, decided with the user on 2026-11-07.
-   **Ingest and review**, **lists and projects**, **planning**, **machinery** follow: the areas of
-   engine steps 4 to 7. Steps 4 to 7 are built here first; the engine does not serve them
+   **Ingest and review:** (built 2026-11-07) judged by the recorded record acts. Jobs (B5) are
+   built. Step 4 leaves the property approval refusals and `propertyEntry` for the properties
+   step; lists for their step (cancel takes an item off its list); the registry check schedule
+   and runs for Tasks with the machinery step; the Link and Publication detector kinds for step
+   5 (the link acts read links from instance configuration); and the real plugins for step 5.
+   **Lists and projects**, **planning**, **machinery** follow, with the areas of engine steps 5 to
+   7. Steps 4 to 7 are built here first; the engine does not serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK
