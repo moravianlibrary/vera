@@ -39,6 +39,7 @@ import cz.mzk.vera.domain.entities.RestrictionOverride;
 import cz.mzk.vera.domain.entities.Verdict;
 import cz.mzk.vera.domain.entities.VerdictKind;
 import cz.mzk.vera.domain.status.Status;
+import cz.mzk.vera.domain.validations.Validations;
 import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
 import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.db.tables.tables.records.RequestsRecord;
@@ -115,18 +116,26 @@ public class DocumentStates {
             Status.DisplayStatus iterationStatus = Status.iterationStatusOf(iteration);
             Status.Validation validation = Status.validationOf(iteration);
             boolean isRestricted = Status.isRestricted(iteration);
+            Validations.ReviewState reviewState = Validations.reviewStateOf(iteration);
+            String waitingSince = Validations.waitingSinceOf(iteration);
             dsl.insertInto(ITERATION_STATES)
                     .set(ITERATION_STATES.ITERATION_ID, iteration.id())
                     .set(ITERATION_STATES.DOCUMENT_ID, documentId)
                     .set(ITERATION_STATES.STATUS, iterationStatus.name())
                     .set(ITERATION_STATES.VALIDATION, validation.name())
                     .set(ITERATION_STATES.IS_RESTRICTED, isRestricted)
+                    .set(ITERATION_STATES.REVIEW_STATE,
+                            reviewState == null ? null : reviewState.name())
+                    .set(ITERATION_STATES.WAITING_SINCE,
+                            waitingSince.isEmpty() ? null : OffsetDateTime.parse(waitingSince))
                     .onConflict(ITERATION_STATES.ITERATION_ID)
                     .doUpdate()
                     .set(ITERATION_STATES.DOCUMENT_ID, excluded(ITERATION_STATES.DOCUMENT_ID))
                     .set(ITERATION_STATES.STATUS, excluded(ITERATION_STATES.STATUS))
                     .set(ITERATION_STATES.VALIDATION, excluded(ITERATION_STATES.VALIDATION))
                     .set(ITERATION_STATES.IS_RESTRICTED, excluded(ITERATION_STATES.IS_RESTRICTED))
+                    .set(ITERATION_STATES.REVIEW_STATE, excluded(ITERATION_STATES.REVIEW_STATE))
+                    .set(ITERATION_STATES.WAITING_SINCE, excluded(ITERATION_STATES.WAITING_SINCE))
                     .execute();
         }
 

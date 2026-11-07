@@ -148,6 +148,26 @@ public class DocumentQueries {
         return requestPropertyDefinitions(held).stream().map(PropertyDefinitions.Definition::key).toList();
     }
 
+    public List<String> validationPropertyKeys(HeldScopes held) {
+        return staffPropertyDefinitions(held).stream().map(PropertyDefinitions.Definition::key).toList();
+    }
+
+    public Condition validationPropertyCondition(Map<String, String> parameters, HeldScopes held,
+            String except, LocalDate today) {
+        DocumentSearch search = DocumentSearch.parse(parameters, staffPropertyDefinitions(held));
+        return DocumentField.PROPERTIES.propertyConditions(search.properties(), today, except);
+    }
+
+    public Map<String, FacetSource> validationPropertyFacetSources(HeldScopes held) {
+        Map<String, FacetSource> sources = new LinkedHashMap<>();
+        for (PropertyDefinitions.Definition definition : staffPropertyDefinitions(held)) {
+            if (definition.type() == PropertyType.ENUM || definition.type() == PropertyType.YES_NO) {
+                sources.put(definition.key(), propertyFacetSource(definition));
+            }
+        }
+        return sources;
+    }
+
     public Condition requestPropertyCondition(Map<String, String> parameters, HeldScopes held,
             String except, LocalDate today) {
         List<PropertyDefinitions.Definition> definitions = requestPropertyDefinitions(held);
@@ -166,8 +186,13 @@ public class DocumentQueries {
     }
 
     private List<PropertyDefinitions.Definition> requestPropertyDefinitions(HeldScopes held) {
-        return propertyDefinitions.filterable(dsl, Audience.STAFF).stream()
+        return staffPropertyDefinitions(held).stream()
             .filter(definition -> !definition.key().equals("material_type"))
+            .toList();
+    }
+
+    private List<PropertyDefinitions.Definition> staffPropertyDefinitions(HeldScopes held) {
+        return propertyDefinitions.filterable(dsl, Audience.STAFF).stream()
             .filter(definition -> held.hasPermission(DocumentCodes.ITERATION_READ)
                 || definition.visibility() == PropertyVisibility.PUBLIC)
             .toList();

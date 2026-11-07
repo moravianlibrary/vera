@@ -899,15 +899,14 @@ export const endpoints = {
     method: "GET",
     path: apiRoutes.validations,
     summary: "Search validations.",
-    query: z.object(
-      Object.fromEntries(
-        [
-          ...Object.values(validationQueryParams),
-          ...Object.values(validationSliceParams),
-          validationGroupingParam,
-        ].map((key) => [key, z.string().optional()]),
-      ),
+    query: searchQueryOf(
+      [
+        ...Object.values(validationQueryParams),
+        ...Object.values(validationSliceParams),
+        validationGroupingParam,
+      ].filter((key) => key !== "p."),
     ),
+    propertyFilters: true,
     response: validationPageSchema,
     codes: [],
     engine: false,

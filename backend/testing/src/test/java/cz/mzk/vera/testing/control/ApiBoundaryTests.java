@@ -125,7 +125,7 @@ class ApiBoundaryTests {
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
                 + "\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\","
-                + "\"userSuspend\"]";
+                + "\"userSuspend\",\"validationDetail\",\"validations\"]";
         assertThat(endpoints.toString()).isEqualTo(expectedEndpoints);
     }
 
