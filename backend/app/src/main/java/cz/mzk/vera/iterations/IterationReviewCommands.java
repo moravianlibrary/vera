@@ -4,6 +4,7 @@ import static cz.mzk.vera.db.tables.Tables.CATEGORIES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PAGE_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
+import static cz.mzk.vera.db.tables.Tables.DIGITIZATION_LISTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
@@ -48,19 +49,17 @@ public class IterationReviewCommands {
     private final IterationAccess access;
     private final DocumentStates states;
     private final IterationChecks checks;
-    private final IterationListNames listNames;
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
 
     public IterationReviewCommands(DSLContext dsl, IterationAccess access,
-            DocumentStates states, IterationChecks checks, IterationListNames listNames,
+            DocumentStates states, IterationChecks checks,
             EventRecorder events, Clock clock, JsonMapper json) {
         this.dsl = dsl;
         this.access = access;
         this.states = states;
         this.checks = checks;
-        this.listNames = listNames;
         this.events = events;
         this.clock = clock;
         this.json = json;
@@ -142,6 +141,8 @@ public class IterationReviewCommands {
         }
         OffsetDateTime at = now();
         String listId = row.listId();
+        String listName = listId == null ? null : dsl.select(DIGITIZATION_LISTS.NAME)
+                .from(DIGITIZATION_LISTS).where(DIGITIZATION_LISTS.ID.eq(listId)).fetchOne(0, String.class);
         String progress = row.progress();
         if (listId != null) {
             Iteration released = withProgress(iteration, "Ready");
@@ -158,7 +159,7 @@ public class IterationReviewCommands {
                 .where(REQUESTS.ITERATION_ID.eq(id).or(REQUESTS.TRACKS_ITERATION_ID.eq(id)))
                 .fetch(REQUESTS.REQUESTER_ID).stream().distinct().toList().size();
         Map<String, Object> data = new LinkedHashMap<>();
-        data.put("list", listId == null ? null : Map.of("id", listId, "name", listNames.nameOf(listId)));
+        data.put("list", listId == null ? null : Map.of("id", listId, "name", listName));
         record(EventCode.ITERATION_CANCELLED, id, caller, at, data, body.publicText(), body.internalText());
         states.recompute(dsl, documentId);
         return ActResult.ok(Map.of("progress", progress, "askerCount", askerCount));

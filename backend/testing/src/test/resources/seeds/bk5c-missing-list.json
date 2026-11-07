@@ -1,0 +1,30 @@
+{
+  "name": "bk5c-missing-list",
+  "extends": "base",
+  "collections": {
+    "iterations": [
+      {
+        "id": "IT-BK5C-MISSING-LIST",
+        "documentId": "D1",
+        "attempt": 2,
+        "requestId": "R1",
+        "categoryId": "c22",
+        "priority": "High",
+        "projectId": "p1",
+        "progress": "Ready",
+        "listId": "missing-list",
+        "formerListName": null,
+        "restriction": null,
+        "restrictionOverride": null,
+        "cancellation": null,
+        "defects": [],
+        "verdicts": [],
+        "ingestFailure": null,
+        "digitizedAt": null,
+        "links": [],
+        "scanDpi": null,
+        "properties": []
+      }
+    ]
+  }
+}

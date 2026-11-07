@@ -1,0 +1,30 @@
+{
+  "name": "bk5c-mix-revisions",
+  "extends": "base",
+  "collections": {
+    "distributions": [
+      {
+        "id": "d1",
+        "name": "House mix",
+        "isPrimary": true,
+        "archivedAt": null,
+        "shares": { "c1": 35, "c2": 45, "c3": 15, "c4": 5 },
+        "revision": 5,
+        "revisions": [
+          {
+            "revision": 4,
+            "shares": { "c1": 30, "c2": 45, "c3": 20, "c4": 5 },
+            "at": "2026-05-25T10:40:00Z",
+            "label": "Earlier balance"
+          },
+          {
+            "revision": 5,
+            "shares": { "c1": 35, "c2": 45, "c3": 15, "c4": 5 },
+            "at": "2026-06-25T10:40:00Z",
+            "label": null
+          }
+        ]
+      }
+    ]
+  }
+}

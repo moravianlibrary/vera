@@ -4,11 +4,13 @@ import static cz.mzk.vera.db.tables.Tables.BATCHES;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_KEYS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
+import static cz.mzk.vera.db.tables.Tables.DIGITIZATION_LISTS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PAGE_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_REGISTRY_RECORDS;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
+import static cz.mzk.vera.db.tables.Tables.INTENTIONS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_LINKS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
@@ -16,6 +18,8 @@ import static cz.mzk.vera.db.tables.Tables.ITERATION_VERDICTS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBER_GROUPS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.PROJECTS;
+import static cz.mzk.vera.db.tables.Tables.MIXES;
+import static cz.mzk.vera.db.tables.Tables.MIX_REVISIONS;
 import static cz.mzk.vera.db.tables.Tables.PROPERTY_DEFINITIONS;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_CUSTODIES;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_CUSTODY_GROUPS;
@@ -26,7 +30,6 @@ import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 import cz.mzk.vera.documents.DocumentStates;
 import cz.mzk.vera.requests.RequestPlacements;
 import cz.mzk.vera.requests.RequestSuggestions;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -58,6 +61,9 @@ class RecordsSeedLoader {
     void load(DSLContext dsl, JsonNode collections) {
         projects(dsl, collections.path("projects"));
         properties(dsl, collections.path("propertyDefinitions"));
+        mixes(dsl, collections.path("distributions"));
+        intentions(dsl, collections.path("intentions"));
+        lists(dsl, collections.path("lists"));
         custodies(dsl, collections.path("requestCustodies"));
         batches(dsl, collections.path("batches"));
         documents(dsl, collections.path("documents"));
@@ -70,6 +76,84 @@ class RecordsSeedLoader {
         events(dsl, collections.path("statusLog"));
         for (JsonNode document : collections.path("documents")) {
             states.recompute(dsl, string(document, "id"));
+        }
+    }
+
+    private void mixes(DSLContext dsl, JsonNode rows) {
+        int position = 0;
+        for (JsonNode row : rows) {
+            String id = string(row, "id");
+            dsl.insertInto(MIXES)
+                    .set(MIXES.ID, id)
+                    .set(MIXES.NAME, string(row, "name"))
+                    .set(MIXES.IS_PRIMARY, row.path("isPrimary").asBoolean())
+                    .set(MIXES.ARCHIVED_AT, nullableInstant(row, "archivedAt"))
+                    .set(MIXES.SHARES, JSONB.valueOf(row.path("shares").toString()))
+                    .set(MIXES.REVISION, row.path("revision").asInt())
+                    .set(MIXES.POSITION, position++)
+                    .execute();
+            int revisionPosition = 0;
+            for (JsonNode revision : row.path("revisions")) {
+                dsl.insertInto(MIX_REVISIONS)
+                        .set(MIX_REVISIONS.MIX_ID, id)
+                        .set(MIX_REVISIONS.REVISION, revision.path("revision").asInt())
+                        .set(MIX_REVISIONS.SHARES, JSONB.valueOf(revision.path("shares").toString()))
+                        .set(MIX_REVISIONS.AT, instant(revision, "at"))
+                        .set(MIX_REVISIONS.LABEL, nullableString(revision, "label"))
+                        .set(MIX_REVISIONS.POSITION, revisionPosition++)
+                        .execute();
+            }
+        }
+    }
+
+    private void intentions(DSLContext dsl, JsonNode rows) {
+        int position = 0;
+        for (JsonNode row : rows) {
+            JsonNode funding = row.path("funding");
+            JsonNode archived = row.path("archived");
+            dsl.insertInto(INTENTIONS)
+                    .set(INTENTIONS.ID, string(row, "id"))
+                    .set(INTENTIONS.NAME, string(row, "name"))
+                    .set(INTENTIONS.DESCRIPTION, string(row, "description"))
+                    .set(INTENTIONS.FUNDING_KIND, string(funding, "kind"))
+                    .set(INTENTIONS.FUNDING_PROJECT_ID, nullableString(funding, "projectId"))
+                    .set(INTENTIONS.PROJECT_ID, nullableString(row, "projectId"))
+                    .set(INTENTIONS.SCOPE_CATEGORY_ID, nullableString(row, "scopeCategoryId"))
+                    .set(INTENTIONS.SCOPE_CONDITIONS, nullableJson(row, "scopeConditions"))
+                    .set(INTENTIONS.DISTRIBUTION_ID, nullableString(row, "distributionId"))
+                    .set(INTENTIONS.MIX_REVISION, nullableInteger(row, "mixRevision"))
+                    .set(INTENTIONS.TARGET_PAGES, nullableInteger(row, "targetPages"))
+                    .set(INTENTIONS.COUNTS_FROM, LocalDate.parse(string(row, "countsFrom")))
+                    .set(INTENTIONS.ENDS_ON, nullableDate(row, "endsOn"))
+                    .set(INTENTIONS.IS_OVERALL, row.path("isOverall").asBoolean())
+                    .set(INTENTIONS.TEMPLATE_ID, nullableString(row, "templateId"))
+                    .set(INTENTIONS.ARCHIVED_ACTOR_KIND, archived.isNull()
+                            ? null : string(archived.path("actor"), "kind"))
+                    .set(INTENTIONS.ARCHIVED_ACTOR_USER_ID, archived.isNull()
+                            ? null : nullableString(archived.path("actor"), "userId"))
+                    .set(INTENTIONS.ARCHIVED_AT, archived.isNull() ? null : instant(archived, "at"))
+                    .set(INTENTIONS.POSITION, position++)
+                    .execute();
+        }
+    }
+
+    private void lists(DSLContext dsl, JsonNode rows) {
+        int position = 0;
+        for (JsonNode row : rows) {
+            JsonNode done = row.path("done");
+            dsl.insertInto(DIGITIZATION_LISTS)
+                    .set(DIGITIZATION_LISTS.ID, string(row, "id"))
+                    .set(DIGITIZATION_LISTS.NAME, string(row, "name"))
+                    .set(DIGITIZATION_LISTS.STARTS_ON, LocalDate.parse(string(row, "startsOn")))
+                    .set(DIGITIZATION_LISTS.ENDS_ON, LocalDate.parse(string(row, "endsOn")))
+                    .set(DIGITIZATION_LISTS.TARGET_PAGES, nullableInteger(row, "targetPages"))
+                    .set(DIGITIZATION_LISTS.GENERATED, nullableJson(row, "generated"))
+                    .set(DIGITIZATION_LISTS.CREATED_BY, string(row, "createdBy"))
+                    .set(DIGITIZATION_LISTS.CREATED_AT, instant(row, "createdAt"))
+                    .set(DIGITIZATION_LISTS.DONE_ACTOR_ID, nullableString(done, "actorId"))
+                    .set(DIGITIZATION_LISTS.DONE_AT, nullableInstant(done, "at"))
+                    .set(DIGITIZATION_LISTS.POSITION, position++)
+                    .execute();
         }
     }
 
@@ -485,6 +569,16 @@ class RecordsSeedLoader {
     private Integer nullableInteger(JsonNode row, String field) {
         JsonNode value = row.get(field);
         return value == null || value.isNull() ? null : value.asInt();
+    }
+
+    private LocalDate nullableDate(JsonNode row, String field) {
+        String value = nullableString(row, field);
+        return value == null ? null : LocalDate.parse(value);
+    }
+
+    private JSONB nullableJson(JsonNode row, String field) {
+        JsonNode value = row.get(field);
+        return value == null || value.isNull() ? null : JSONB.valueOf(value.toString());
     }
 
     private OffsetDateTime nullableInstant(JsonNode row, String field) {
