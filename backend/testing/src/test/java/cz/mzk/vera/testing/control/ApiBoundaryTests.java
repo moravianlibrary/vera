@@ -118,7 +118,7 @@ class ApiBoundaryTests {
                 + "\"proposalPhoto\",\"proposalRateLimit\",\"proposalRecordLink\","
                 + "\"proposalSettings\",\"requestApprove\",\"requestCustodies\","
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
-                + "\"requestWithdraw\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
+                + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
                 + "\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\","
                 + "\"userSuspend\"]";

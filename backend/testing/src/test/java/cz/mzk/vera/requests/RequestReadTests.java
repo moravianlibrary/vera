@@ -20,9 +20,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -61,6 +66,35 @@ class RequestReadTests {
     @BeforeEach
     void loadBase() {
         reset.reset("base", true);
+    }
+
+    @ParameterizedTest(name = "recorded request list {0} {1}")
+    @MethodSource("recordedRequestPages")
+    void everyRecordedRequestListCallMatches(String userId, String path, String expectedBody)
+            throws Exception {
+        assertThat(canonical(get(path, session(userId))))
+                .isEqualTo(canonical(mapper.readTree(expectedBody)));
+    }
+
+    static Stream<Arguments> recordedRequestPages() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode recording = mapper.readTree(Path.of("../../replay/recordings/base-records-filters.json")
+                .toFile());
+        List<Arguments> pages = new ArrayList<>();
+        for (JsonNode scenario : recording.path("scenarios")) {
+            String name = scenario.path("name").asString();
+            if (!"requests-admin".equals(name) && !"requests-curator".equals(name)) {
+                continue;
+            }
+            for (JsonNode call : scenario.path("calls")) {
+                if ("GET".equals(call.path("method").asString())
+                        && call.path("path").asString().startsWith("/api/requests")) {
+                    pages.add(Arguments.of(call.path("as").asString(), call.path("path").asString(),
+                            call.path("body").toString()));
+                }
+            }
+        }
+        return pages.stream();
     }
 
     @Test
@@ -223,9 +257,117 @@ class RequestReadTests {
         getStatus("/api/request-custodies", session("u10"), 403);
     }
 
+    @Test
+    void requestsListReturnsTheMatchingSliceAndTotals() throws Exception {
+        JsonNode page = get("/api/requests?limit=2", session("u3"));
+        assertThat(page.path("items").size()).isEqualTo(2);
+        assertThat(page.path("total").asInt()).isGreaterThan(2);
+        assertThat(page.path("askTotal").asInt()).isGreaterThanOrEqualTo(page.path("total").asInt());
+        assertThat(page.path("nextCursor").asString()).isNotEmpty();
+        assertThat(page.path("facets").isObject()).isTrue();
+    }
+
+    @Test
+    void custodyScopedListAndFacetsStayWithinReach() throws Exception {
+        grant("request-custody-reader", "request.read", "custody");
+        dsl.insertInto(REQUEST_CUSTODY_MEMBERS).set(REQUEST_CUSTODY_MEMBERS.CUSTODY_ID, "pc1")
+                .set(REQUEST_CUSTODY_MEMBERS.USER_ID, "u10").set(REQUEST_CUSTODY_MEMBERS.POSITION, 30)
+                .execute();
+        JsonNode page = get("/api/requests?limit=200", session("u10"));
+        assertThat(page.path("total").asInt()).isEqualTo(11);
+        assertThat(page.path("facets").path("custodyIds").toString())
+                .isEqualTo("[{\"value\":\"pc1\",\"count\":11},{\"value\":\"pc2\",\"count\":5}]");
+        int reachableDecisionRows = 0;
+        for (JsonNode decision : page.path("facets").path("decisions")) {
+            reachableDecisionRows += decision.path("count").asInt();
+        }
+        assertThat(reachableDecisionRows).isEqualTo(page.path("total").asInt());
+    }
+
+    @Test
+    void decisionFacetCountsAcrossTheTypeAndDecisionFilters() throws Exception {
+        JsonNode page = get("/api/requests?decision=Pending&type=Periodical", session("u3"));
+        Map<String, Integer> counts = new java.util.LinkedHashMap<>();
+        for (JsonNode value : page.path("facets").path("decisions")) {
+            counts.put(value.path("value").asString(), value.path("count").asInt());
+        }
+        assertThat(counts.get("Denied")).isPositive();
+        assertThat(counts.get("Withdrawn")).isPositive();
+    }
+
+    @Test
+    void batchBulkMetricsDoNotUseTheActiveFilter() throws Exception {
+        String cookie = session("u3");
+        JsonNode unfiltered = get("/api/requests?group=batch", cookie);
+        JsonNode filtered = get("/api/requests?group=batch&decision=Pending", cookie);
+        JsonNode allBatch = batchHeader(unfiltered, "B-0143");
+        JsonNode pendingBatch = batchHeader(filtered, "B-0143");
+        assertThat(pendingBatch.path("approvableCount").asInt())
+                .isEqualTo(allBatch.path("approvableCount").asInt());
+        assertThat(pendingBatch.path("rescanCount").asInt()).isEqualTo(allBatch.path("rescanCount").asInt());
+        assertThat(pendingBatch.path("checkingCount").asInt())
+                .isEqualTo(allBatch.path("checkingCount").asInt());
+    }
+
+    @Test
+    void cursorSlicesContinueInOrderAndGroupCountsFollowEachSlice() throws Exception {
+        String cookie = session("u3");
+        JsonNode first = get("/api/requests?limit=2&group=batch", cookie);
+        String cursor = first.path("nextCursor").asString();
+        JsonNode second = get("/api/requests?limit=2&group=batch&cursor=" + cursor, cookie);
+        assertThat(first.path("items").size()).isEqualTo(2);
+        assertThat(second.path("items").size()).isEqualTo(2);
+        assertThat(first.path("items").get(1).path("record").path("document").path("id").asString())
+                .isEqualTo(cursor);
+        assertThat(second.path("items").get(0).path("record").path("document").path("id").asString())
+                .isNotEqualTo(cursor);
+        assertThat(first.path("groups").get(0).path("rowCount").asInt()).isLessThanOrEqualTo(2);
+        int groupedRows = 0;
+        for (JsonNode group : second.path("groups")) {
+            groupedRows += group.path("rowCount").asInt();
+        }
+        assertThat(groupedRows).isEqualTo(2);
+    }
+
+    @Test
+    void batchGroupingMatchesTheRecordedAdminPage() throws Exception {
+        assertRecordedPage("/api/requests?group=batch");
+    }
+
+    @Test
+    void requesterGroupingMatchesTheRecordedAdminPage() throws Exception {
+        assertRecordedPage("/api/requests?group=requester");
+    }
+
+    private void assertRecordedPage(String path) throws Exception {
+        JsonNode recording = mapper.readTree(Path.of("../../replay/recordings/base-records-filters.json").toFile());
+        JsonNode expected = null;
+        for (JsonNode scenario : recording.path("scenarios")) {
+            if (!"requests-admin".equals(scenario.path("name").asString())) {
+                continue;
+            }
+            for (JsonNode call : scenario.path("calls")) {
+                if (path.equals(call.path("path").asString())) {
+                    expected = call.path("body");
+                }
+            }
+        }
+        assertThat(expected).isNotNull();
+        assertThat(canonical(get(path, session("u3")))).isEqualTo(canonical(expected));
+    }
+
     private JsonNode get(String path, String cookie) {
         return mapper.readTree(client.get().uri(URI.create(path)).header("Cookie", cookie)
                 .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+    }
+
+    private JsonNode batchHeader(JsonNode page, String batchId) {
+        for (JsonNode group : page.path("groups")) {
+            if (batchId.equals(group.path("batch").path("id").asString())) {
+                return group;
+            }
+        }
+        throw new AssertionError("Missing batch group " + batchId);
     }
 
     private void getStatus(String path, String cookie, int status) {

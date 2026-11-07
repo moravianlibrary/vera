@@ -7,6 +7,7 @@ import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.web.Problems;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ProblemDetail;
@@ -59,6 +60,25 @@ final class RequestsController {
             return Problems.response(403, "You may not read requests");
         }
         return ResponseEntity.ok(queries.custodies());
+    }
+
+    @GetMapping("/api/requests")
+    ResponseEntity<?> page(HttpServletRequest request) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        if (!queries.canReadRequests(caller.userId())) {
+            return Problems.response(403, "You may not read requests");
+        }
+        Map<String, String> parameters = new LinkedHashMap<>();
+        request.getParameterMap().forEach((key, values) -> {
+            if (values.length > 0) {
+                parameters.put(key, values[0]);
+            }
+        });
+        return ResponseEntity.ok(queries.page(parameters, caller.userId()));
     }
 
     @PostMapping("/api/requests/{documentId}/approve")

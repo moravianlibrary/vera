@@ -132,11 +132,7 @@ public class DocumentQueries {
             if (definition.type() != PropertyType.ENUM && definition.type() != PropertyType.YES_NO) {
                 continue;
             }
-            var source = new FacetSource(definition.key(),
-                dsl.select(DOCUMENT_PROPERTY_VALUES.DOCUMENT_ID, DOCUMENT_PROPERTY_VALUES.TEXT_VALUE,
-                    DOCUMENT_PROPERTY_VALUES.ORDINAL)
-                    .from(DOCUMENT_PROPERTY_VALUES)
-                    .where(DOCUMENT_PROPERTY_VALUES.KEY.eq(definition.key())), definition.key());
+            var source = propertyFacetSource(definition);
             var matching = dsl.select(DOCUMENTS.ID, DOCUMENTS.POSITION).from(DOCUMENTS)
                 .where(documentReach.and(filters(search, audience, callerId, categories,
                     DocumentField.PROPERTIES.queryName() + definition.key(), held, today)));
@@ -147,6 +143,43 @@ public class DocumentQueries {
             propertyFacets.put(definition.key(), facet);
         }
         return propertyFacets;
+    }
+
+    public List<String> requestPropertyKeys(HeldScopes held) {
+        return requestPropertyDefinitions(held).stream().map(PropertyDefinitions.Definition::key).toList();
+    }
+
+    public Condition requestPropertyCondition(Map<String, String> parameters, HeldScopes held,
+            String except, LocalDate today) {
+        List<PropertyDefinitions.Definition> definitions = requestPropertyDefinitions(held);
+        DocumentSearch search = DocumentSearch.parse(parameters, definitions);
+        return DocumentField.PROPERTIES.propertyConditions(search.properties(), today, except);
+    }
+
+    public Map<String, FacetSource> requestPropertyFacetSources(HeldScopes held) {
+        Map<String, FacetSource> sources = new LinkedHashMap<>();
+        for (PropertyDefinitions.Definition definition : requestPropertyDefinitions(held)) {
+            if (definition.type() == PropertyType.ENUM || definition.type() == PropertyType.YES_NO) {
+                sources.put(definition.key(), propertyFacetSource(definition));
+            }
+        }
+        return sources;
+    }
+
+    private List<PropertyDefinitions.Definition> requestPropertyDefinitions(HeldScopes held) {
+        return propertyDefinitions.filterable(dsl, Audience.STAFF).stream()
+            .filter(definition -> !definition.key().equals("material_type"))
+            .filter(definition -> held.hasPermission(DocumentCodes.ITERATION_READ)
+                || definition.visibility() == PropertyVisibility.PUBLIC)
+            .toList();
+    }
+
+    private FacetSource propertyFacetSource(PropertyDefinitions.Definition definition) {
+        return new FacetSource(definition.key(),
+            dsl.select(DOCUMENT_PROPERTY_VALUES.DOCUMENT_ID, DOCUMENT_PROPERTY_VALUES.TEXT_VALUE,
+                DOCUMENT_PROPERTY_VALUES.ORDINAL)
+                .from(DOCUMENT_PROPERTY_VALUES)
+                .where(DOCUMENT_PROPERTY_VALUES.KEY.eq(definition.key())), definition.key());
     }
 
     private Map<String, Object> pageResult(Audience audience, List<Map<String, Object>> items,

@@ -277,7 +277,7 @@ enum DocumentField {
                 .and(REQUEST_STATES.IS_ASKER.isTrue()).and(range)));
     }
 
-    private Condition propertyConditions(Map<String, DocumentSearch.PropertyCondition> properties,
+    Condition propertyConditions(Map<String, DocumentSearch.PropertyCondition> properties,
             LocalDate today, String except) {
         Condition result = DSL.noCondition();
         for (Map.Entry<String, DocumentSearch.PropertyCondition> entry : properties.entrySet()) {
