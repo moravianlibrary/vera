@@ -62,8 +62,7 @@ public class DocumentQueries {
 
     public Map<String, Object> page(Map<String, String> parameters, String callerId, boolean mine) {
         HeldScopes held = heldAccess.scopesHeldBy(callerId);
-        Audience audience = mine || !held.hasPermission(DocumentCodes.ITERATION_READ)
-            ? Audience.PUBLIC : Audience.STAFF;
+        Audience audience = mine ? Audience.PUBLIC : audienceOf(held);
         List<PropertyDefinitions.Definition> definitions = propertyDefinitions.filterable(dsl, audience);
         DocumentSearch search = DocumentSearch.parse(parameters, definitions);
         List<Category> categories = dsl.selectFrom(CATEGORIES)
@@ -226,8 +225,7 @@ public class DocumentQueries {
 
     public Map<String, Object> detail(String documentId, String callerId, boolean mine) {
         HeldScopes held = heldAccess.scopesHeldBy(callerId);
-        Audience audience = mine || !held.hasPermission(DocumentCodes.ITERATION_READ)
-            ? Audience.PUBLIC : Audience.STAFF;
+        Audience audience = mine ? Audience.PUBLIC : audienceOf(held);
         if (dsl.select(DOCUMENTS.ID).from(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)
                 .and(reach.condition(held, callerId, audience))).fetchOne() == null) {
             return null;
@@ -247,6 +245,14 @@ public class DocumentQueries {
 
     public boolean canOpenMyDocuments(String callerId) {
         return heldAccess.scopesHeldBy(callerId).hasPermission(DocumentCodes.REQUEST_READ_MINE);
+    }
+
+    public Audience audienceOf(String callerId) {
+        return audienceOf(heldAccess.scopesHeldBy(callerId));
+    }
+
+    private Audience audienceOf(HeldScopes held) {
+        return held.hasPermission(DocumentCodes.ITERATION_READ) ? Audience.STAFF : Audience.PUBLIC;
     }
 
     @SuppressWarnings("unchecked")

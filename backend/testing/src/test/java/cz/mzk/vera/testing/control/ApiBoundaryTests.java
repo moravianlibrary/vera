@@ -112,7 +112,9 @@ class ApiBoundaryTests {
                 .expectBody(String.class).returnResult().getResponseBody());
         String expectedEndpoints = "[\"account\",\"batchApprove\",\"batches\",\"confirmEmail\",\"documentDetail\","
                 + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
-                + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\",\"localAccount\","
+                + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\","
+                + "\"iterationPrimaryLink\",\"iterationPublish\",\"iterationReclassify\","
+                + "\"iterationRemoveLink\",\"iterationReplaceLink\",\"localAccount\","
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
                 + "\"proposalBarcode\",\"proposalCatalogSearch\",\"proposalLookup\","
                 + "\"proposalPhoto\",\"proposalRateLimit\",\"proposalRecordLink\","
