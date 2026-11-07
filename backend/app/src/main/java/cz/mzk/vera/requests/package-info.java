@@ -1,5 +1,5 @@
 @org.springframework.modulith.ApplicationModule(allowedDependencies = {
-    "db :: tables", "pluginhost"
+    "db :: tables", "pluginhost", "documents", "session", "access", "web"
 })
 // BK3; ACCESS-custody-by-plugins.
 package cz.mzk.vera.requests;

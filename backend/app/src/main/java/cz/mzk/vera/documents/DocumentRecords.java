@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Repository;
@@ -35,6 +36,11 @@ public class DocumentRecords {
     }
 
     public Map<String, Map<String, Object>> recordsOf(Collection<String> documentIds) {
+        return recordsOf(documentIds, null);
+    }
+
+    public Map<String, Map<String, Object>> recordsOf(Collection<String> documentIds,
+            Collection<String> requestIds) {
         if (documentIds.isEmpty()) {
             return Map.of();
         }
@@ -139,8 +145,12 @@ public class DocumentRecords {
                         row.get(ITERATION_PROPERTY_SOURCES.SET_BY));
                 });
         Map<String, Map<String, Object>> requests = new LinkedHashMap<>();
-        dsl.selectFrom(REQUESTS).where(REQUESTS.DOCUMENT_ID.in(documentIds))
-            .orderBy(REQUESTS.DOCUMENT_ID, REQUESTS.AT).fetch().forEach(row -> {
+        Condition requestCondition = REQUESTS.DOCUMENT_ID.in(documentIds);
+        if (requestIds != null) {
+            requestCondition = requestCondition.and(REQUESTS.ID.in(requestIds));
+        }
+        dsl.selectFrom(REQUESTS).where(requestCondition)
+            .orderBy(REQUESTS.DOCUMENT_ID, REQUESTS.AT, REQUESTS.ID).fetch().forEach(row -> {
                 Map<String, Object> base = map("id", row.getId(), "documentId", row.getDocumentId(),
                     "requesterId", row.getRequesterId(), "at", time(row.getAt()), "reason", row.getReason(),
                     "batchId", row.getBatchId(), "projectId", row.getProjectId(),
@@ -165,14 +175,16 @@ public class DocumentRecords {
                 requests.put(row.getId(), base);
                 add(documents.get(row.getDocumentId()), "requests", base);
             });
-        dsl.selectFrom(REQUEST_EXISTING_COPIES)
-            .where(REQUEST_EXISTING_COPIES.REQUEST_ID.in(requests.keySet()))
-            .orderBy(REQUEST_EXISTING_COPIES.REQUEST_ID, REQUEST_EXISTING_COPIES.POSITION)
-            .fetch().forEach(row -> {
+        if (!requests.isEmpty()) {
+            dsl.selectFrom(REQUEST_EXISTING_COPIES)
+                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.in(requests.keySet()))
+                .orderBy(REQUEST_EXISTING_COPIES.REQUEST_ID, REQUEST_EXISTING_COPIES.POSITION)
+                .fetch().forEach(row -> {
                 add(requests.get(row.getRequestId()), "existingCopies", map("source", row.getSource(),
                     "state", row.getState(), "link", row.getLink(), "iterationId", row.getIterationId(),
                     "seenAt", time(row.getSeenAt()), "foundAfterApproval", row.getFoundAfterApproval()));
             });
+        }
         Map<String, Map<String, Object>> records = new LinkedHashMap<>();
         documents.forEach((id, document) -> records.put(id, map("document", document,
             "iterations", document.remove("iterations"), "requests", document.remove("requests"))));

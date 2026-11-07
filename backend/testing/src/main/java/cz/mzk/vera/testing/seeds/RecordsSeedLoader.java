@@ -23,6 +23,7 @@ import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 
 import cz.mzk.vera.documents.DocumentStates;
 import cz.mzk.vera.requests.RequestPlacements;
+import cz.mzk.vera.requests.RequestSuggestions;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -42,10 +43,12 @@ import tools.jackson.databind.JsonNode;
 class RecordsSeedLoader {
     private final DocumentStates states;
     private final RequestPlacements placements;
+    private final RequestSuggestions suggestions;
 
-    RecordsSeedLoader(DocumentStates states, RequestPlacements placements) {
+    RecordsSeedLoader(DocumentStates states, RequestPlacements placements, RequestSuggestions suggestions) {
         this.states = states;
         this.placements = placements;
+        this.suggestions = suggestions;
     }
 
     void load(DSLContext dsl, JsonNode collections) {
@@ -58,6 +61,7 @@ class RecordsSeedLoader {
         requests(dsl, collections.path("requests"));
         for (JsonNode request : collections.path("requests")) {
             placements.place(dsl, string(request, "id"));
+            suggestions.suggest(dsl, string(request, "id"));
         }
         events(dsl, collections.path("statusLog"));
         for (JsonNode document : collections.path("documents")) {

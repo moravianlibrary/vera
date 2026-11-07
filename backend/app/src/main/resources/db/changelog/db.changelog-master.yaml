@@ -62,3 +62,6 @@ databaseChangeLog:
   - include:
       file: 0021-project-fields.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0022-request-suggestions.sql
+      relativeToChangelogFile: true

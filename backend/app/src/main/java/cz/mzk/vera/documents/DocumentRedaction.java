@@ -60,6 +60,17 @@ public class DocumentRedaction {
         return record;
     }
 
+    // DOC-property-visibility: Requests uses the same public property projection as Documents.
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> publicPropertiesOnly(Map<String, Object> record) {
+        Set<String> publicKeys = new HashSet<>(propertyDefinitions.publicKeys(dsl));
+        publicProperties((Map<String, Object>) record.get("document"), publicKeys);
+        for (Map<String, Object> iteration : (List<Map<String, Object>>) record.get("iterations")) {
+            publicProperties(iteration, publicKeys);
+        }
+        return record;
+    }
+
     @SuppressWarnings("unchecked")
     private void publicProperties(Map<String, Object> owner, Set<String> publicKeys) {
         List<Map<String, Object>> properties = (List<Map<String, Object>>) owner.get("properties");

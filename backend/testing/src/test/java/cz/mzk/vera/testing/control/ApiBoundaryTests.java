@@ -110,7 +110,7 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        assertThat(endpoints.toString()).isEqualTo("[\"account\",\"batches\",\"confirmEmail\",\"documentDetail\",\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"identityDefaultRole\",\"identityLink\",\"identityUnlink\",\"localAccount\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestPasswordReset\",\"resetPassword\",\"roleCreate\",\"roleDelete\",\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\",\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\",\"userSuspend\"]");
+        assertThat(endpoints.toString()).isEqualTo("[\"account\",\"batches\",\"confirmEmail\",\"documentDetail\",\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"identityDefaultRole\",\"identityLink\",\"identityUnlink\",\"localAccount\",\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\",\"requestCustodies\",\"requestDetail\",\"requestPasswordReset\",\"resetPassword\",\"roleCreate\",\"roleDelete\",\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\",\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\",\"userSuspend\"]");
     }
 
     @Test

@@ -30,12 +30,17 @@ public class DocumentHistory {
     }
 
     public List<Map<String, Object>> logOf(Set<String> subjects, HeldScopes held, Audience audience) {
+        return logOf(subjects, held, audience, true);
+    }
+
+    public List<Map<String, Object>> logOf(Set<String> subjects, HeldScopes held, Audience audience,
+            boolean applyRedaction) {
         List<Map<String, Object>> entries = new ArrayList<>();
         for (var row : dsl.selectFrom(EVENTS).where(EVENTS.SUBJECT_ID.in(subjects))
                 .orderBy(EVENTS.AT.desc(), EVENTS.POSITION.asc()).fetch()) {
             JsonNode data = json.read(row.getData());
             EventCode code = EventCode.of(row.getCode());
-            if (audience == Audience.PUBLIC
+            if (applyRedaction && audience == Audience.PUBLIC
                     && (!code.isPublic() || (code == EventCode.ITERATION_RESTRICTED
                         && !"forbidden".equals(data.path("outcome").asString())))) {
                 continue;
@@ -45,13 +50,13 @@ public class DocumentHistory {
             Map<String, Object> reason = new LinkedHashMap<>();
             reason.put("public", row.getReasonPublic());
             reason.put("internal", row.getReasonInternal());
-            if (audience == Audience.PUBLIC) {
+            if (applyRedaction && audience == Audience.PUBLIC) {
                 payload = null;
                 reason.put("internal", null);
                 if (!"system".equals(actor.get("kind"))) {
                     actor = new LinkedHashMap<>(Map.of("kind", "undisclosed"));
                 }
-            } else if (!held.hasPermission(DocumentCodes.REQUEST_READ_INGEST)
+            } else if (applyRedaction && !held.hasPermission(DocumentCodes.REQUEST_READ_INGEST)
                     && code == EventCode.ITERATION_INGEST_FAILED && payload instanceof Map<?, ?> values) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> sanitized = (Map<String, Object>) values;
@@ -69,7 +74,7 @@ public class DocumentHistory {
             entry.put("data", payload);
             entries.add(entry);
         }
-        if (audience == Audience.PUBLIC) {
+        if (applyRedaction && audience == Audience.PUBLIC) {
             return entries;
         }
         Set<String> seen = new HashSet<>();
