@@ -25,4 +25,10 @@ public final class Categories {
     }
     return List.copyOf(lineage);
   }
+
+  public static List<Category> leavesOf(List<Category> categories) {
+    return categories.stream()
+        .filter(category -> categories.stream().noneMatch(child -> category.id().equals(child.parentId())))
+        .toList();
+  }
 }
