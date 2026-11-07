@@ -11957,6 +11957,127 @@
           "required": ["source", "tier"],
           "additionalProperties": false
         },
+        "ingest": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "registryRecords": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "instanceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "identifiers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "rawState": {
+                      "type": "string"
+                    },
+                    "link": {
+                      "type": ["string", "null"]
+                    }
+                  },
+                  "required": ["instanceId", "identifiers", "rawState", "link"],
+                  "additionalProperties": false
+                }
+              },
+              "properties": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "value": {},
+                    "tier": {
+                      "type": "number"
+                    },
+                    "instanceId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["key", "value", "tier", "instanceId"],
+                  "additionalProperties": false
+                }
+              },
+              "defects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "instanceId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "rule": {
+                      "type": "string"
+                    },
+                    "field": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["instanceId", "rule", "field", "detail"],
+                  "additionalProperties": false
+                }
+              },
+              "restriction": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "rule": {
+                        "type": "string"
+                      },
+                      "forbidden": {
+                        "type": "boolean"
+                      },
+                      "until": {
+                        "type": ["string", "null"]
+                      },
+                      "why": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["rule", "forbidden", "until", "why"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "faults": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "enum": ["registry", "propertySource", "validation", "restriction"]
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": ["unavailable", "malformed", "timeout"]
+                },
+                "required": ["registry", "propertySource", "validation", "restriction"]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
         "advisorReasons": {
           "type": "object",
           "propertyNames": {

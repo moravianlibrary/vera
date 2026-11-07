@@ -354,6 +354,56 @@ const fakesSchema = z.strictObject({
       tier: z.number(),
     })
     .optional(),
+  // BK4g: backend fake plugin answers for documents that have not been seeded as held records.
+  ingest: objectMap(
+    z.strictObject({
+      registryRecords: z
+        .array(
+          z.strictObject({
+            instanceId: id,
+            identifiers: z.array(z.string()),
+            rawState: z.string(),
+            link: z.string().nullable(),
+          }),
+        )
+        .optional(),
+      properties: z
+        .array(
+          z.strictObject({
+            key: z.string(),
+            value: z.unknown(),
+            tier: z.number(),
+            instanceId: id,
+          }),
+        )
+        .optional(),
+      defects: z
+        .array(
+          z.strictObject({
+            instanceId: id,
+            rule: z.string(),
+            field: z.string(),
+            detail: z.string(),
+          }),
+        )
+        .optional(),
+      restriction: z
+        .strictObject({
+          rule: z.string(),
+          forbidden: z.boolean(),
+          until: z.string().nullable(),
+          why: z.string(),
+        })
+        .nullable()
+        .optional(),
+      faults: z
+        .record(
+          z.enum(["registry", "propertySource", "validation", "restriction"]),
+          z.enum(["unavailable", "malformed", "timeout"]),
+        )
+        .optional(),
+    }),
+  ).optional(),
   // frontend/src/mocks/list-generation.ts reads recommendation reasons.
   advisorReasons: objectMap(z.string()).optional(),
   // frontend/src/mocks/messages.ts and watchlist-channels.ts read account handles.

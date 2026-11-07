@@ -9,6 +9,10 @@ import cz.mzk.vera.plugin.catalog.SearchableCatalog;
 import cz.mzk.vera.plugin.classifier.Classifier;
 import cz.mzk.vera.plugin.custody.Custody;
 import cz.mzk.vera.plugin.identity.Identity;
+import cz.mzk.vera.plugin.registry.Registry;
+import cz.mzk.vera.plugin.propertysource.PropertySource;
+import cz.mzk.vera.plugin.validation.Validation;
+import cz.mzk.vera.plugin.restriction.Restriction;
 import cz.mzk.vera.plugin.input.BarcodeReader;
 import cz.mzk.vera.plugin.input.EntryLinkInput;
 import cz.mzk.vera.plugin.input.Input;
@@ -44,7 +48,11 @@ public class PluginLoader {
                     PhotoReader.class, "readPhoto",
                     EntryLinkInput.class, "entry")),
             Map.entry(Custody.class, Map.of()),
-            Map.entry(Classifier.class, Map.of()));
+            Map.entry(Classifier.class, Map.of()),
+            Map.entry(Registry.class, Map.of()),
+            Map.entry(PropertySource.class, Map.of()),
+            Map.entry(Validation.class, Map.of()),
+            Map.entry(Restriction.class, Map.of()));
 
     private final PluginDeclarations declarations;
 

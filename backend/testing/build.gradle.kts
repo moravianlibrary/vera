@@ -28,6 +28,8 @@ dependencies {
 val fakeNames = listOf(
     "oidc-identity", "local-accounts", "aleph-catalog-adapter", "barcode-reader",
     "cover-recognition", "jq-custody", "place-of-publication", "material-type",
+    "kramerius-registry", "rdcz-registry", "page-count-predictor", "catalog-validity",
+    "language-check", "copyright-rule",
 )
 
 tasks.named<ProcessResources>("processResources") {

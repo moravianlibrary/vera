@@ -23,6 +23,12 @@ public class FakePluginInstallation {
             installed.install(read("fakes/jq-custody.jar"));
             installed.install(read("fakes/place-of-publication.jar"));
             installed.install(read("fakes/material-type.jar"));
+            installed.install(read("fakes/kramerius-registry.jar"));
+            installed.install(read("fakes/rdcz-registry.jar"));
+            installed.install(read("fakes/page-count-predictor.jar"));
+            installed.install(read("fakes/catalog-validity.jar"));
+            installed.install(read("fakes/language-check.jar"));
+            installed.install(read("fakes/copyright-rule.jar"));
         };
     }
 

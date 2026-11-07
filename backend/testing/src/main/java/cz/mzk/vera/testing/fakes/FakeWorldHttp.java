@@ -21,10 +21,12 @@ import org.springframework.stereotype.Component;
 public class FakeWorldHttp implements PluginHttp {
     private final FakeWorld identities;
     private final FakeRecords records;
+    private final FakeIngest ingest;
 
-    public FakeWorldHttp(FakeWorld identities, FakeRecords records) {
+    public FakeWorldHttp(FakeWorld identities, FakeRecords records, FakeIngest ingest) {
         this.identities = identities;
         this.records = records;
+        this.ingest = ingest;
     }
 
     @Override
@@ -44,7 +46,25 @@ public class FakeWorldHttp implements PluginHttp {
             if (records.isCatalogHost(request.uri().getHost())) {
                 fields.put("catalogHost", List.of(request.uri().getHost()));
             }
-            return response(200, records.answer(path.substring(1), fields));
+            String operation = path.substring(1);
+            String requestedKind = first(fields, "kind");
+            String kind = requestedKind == null ? null : switch (requestedKind) {
+                case "Registry" -> "Registry";
+                case "PropertySource" -> "PropertySource";
+                case "Validation" -> "Validation";
+                case "Restriction" -> "Restriction";
+                default -> null;
+            };
+            if (kind != null) {
+                Map<String, List<String>> answer = ingest.answer(kind, first(fields, "catalogId"),
+                        first(fields, "instanceId"), fields.getOrDefault("identifier", List.of()));
+                String status = first(answer, "httpStatus");
+                if (status != null) {
+                    return response(Integer.parseInt(status), Map.of());
+                }
+                return response(200, answer);
+            }
+            return response(200, records.answer(operation, fields));
         }
         return response(404, Map.of());
     }

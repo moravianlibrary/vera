@@ -1,0 +1,36 @@
+{
+  "implementation": "cz.mzk.vera.copyright-rule",
+  "version": "1.0.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnIngest"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "years",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "unknown_after",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "authority",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

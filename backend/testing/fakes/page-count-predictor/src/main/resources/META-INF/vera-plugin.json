@@ -1,0 +1,31 @@
+{
+  "implementation": "cz.mzk.vera.page-count-predictor",
+  "version": "0.9.2",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnIngest"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "model",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "min_confidence",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

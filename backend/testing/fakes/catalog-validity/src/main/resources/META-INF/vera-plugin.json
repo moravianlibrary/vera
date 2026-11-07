@@ -1,0 +1,31 @@
+{
+  "implementation": "cz.mzk.vera.catalog-validity",
+  "version": "3.1.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnIngest"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "severity",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "rules",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

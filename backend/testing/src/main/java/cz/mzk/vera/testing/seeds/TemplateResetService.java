@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import cz.mzk.vera.testing.control.StoredClock;
 import cz.mzk.vera.testing.fakes.identity.FakeWorld;
 import cz.mzk.vera.testing.fakes.FakeRecords;
+import cz.mzk.vera.testing.fakes.FakeIngest;
 import liquibase.command.CommandScope;
 import liquibase.command.core.UpdateCommandStep;
 import liquibase.database.Database;
@@ -35,6 +36,7 @@ public class TemplateResetService {
     private final StoredClock clock;
     private final FakeWorld fakeWorld;
     private final FakeRecords fakeRecords;
+    private final FakeIngest fakeIngest;
 
     public TemplateResetService(
             HikariDataSource pool,
@@ -42,19 +44,22 @@ public class TemplateResetService {
             SeedLoader loader,
             StoredClock clock,
             FakeWorld fakeWorld,
-            FakeRecords fakeRecords) {
+            FakeRecords fakeRecords,
+            FakeIngest fakeIngest) {
         this.pool = pool;
         this.reader = reader;
         this.loader = loader;
         this.clock = clock;
         this.fakeWorld = fakeWorld;
         this.fakeRecords = fakeRecords;
+        this.fakeIngest = fakeIngest;
     }
 
     public Instant reset(String seedName, boolean frozen) {
         var seed = reader.read(seedName);
         fakeWorld.reset(seed);
         fakeRecords.reset(seed);
+        fakeIngest.reset(seed);
         String hash = reader.contentHash(seedName);
         String appDatabase = databaseName(pool.getJdbcUrl());
         String maintenanceUrl = maintenanceUrl(pool.getJdbcUrl());
