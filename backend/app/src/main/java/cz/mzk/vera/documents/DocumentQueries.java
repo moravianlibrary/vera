@@ -185,6 +185,23 @@ public class DocumentQueries {
         return sources;
     }
 
+    public Condition listPoolPropertyCondition(Map<String, String> parameters, LocalDate today,
+            String except) {
+        DocumentSearch search = DocumentSearch.parse(parameters,
+                propertyDefinitions.filterable(dsl, Audience.STAFF));
+        return DocumentField.PROPERTIES.propertyConditions(search.properties(), today, except);
+    }
+
+    public Map<String, FacetSource> listPoolPropertyFacetSources() {
+        Map<String, FacetSource> sources = new LinkedHashMap<>();
+        for (PropertyDefinitions.Definition definition : propertyDefinitions.filterable(dsl, Audience.STAFF)) {
+            if (definition.type() == PropertyType.ENUM || definition.type() == PropertyType.YES_NO) {
+                sources.put(definition.key(), propertyFacetSource(definition));
+            }
+        }
+        return sources;
+    }
+
     private List<PropertyDefinitions.Definition> requestPropertyDefinitions(HeldScopes held) {
         return staffPropertyDefinitions(held).stream()
             .filter(definition -> !definition.key().equals("material_type"))

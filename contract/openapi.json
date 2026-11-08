@@ -4559,6 +4559,23 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "properties",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Any property filter parameter whose name starts with p., such as p.size or p.size.none.",
+            "schema": {
+              "type": "object",
+              "patternProperties": {
+                "^p\\.": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
           }
         ],
         "responses": {

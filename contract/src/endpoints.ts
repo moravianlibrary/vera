@@ -1184,6 +1184,7 @@ export const endpoints = {
         ].map((key) => [key, z.string().optional()]),
       ),
     ),
+    propertyFilters: true,
     response: poolPageSchema,
     codes: [],
     engine: false,
