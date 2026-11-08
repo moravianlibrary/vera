@@ -1,5 +1,6 @@
 @org.springframework.modulith.ApplicationModule(allowedDependencies = {
-    "db :: tables", "session", "access", "web", "events", "documents :: property-definitions"
+    "db :: tables", "session", "access", "web", "events", "documents :: property-definitions",
+    "documents", "iterations"
 })
-// ACT-property-create; ACT-property-save; ACT-property-delete: definition acts and their impact.
+// ACT-property-create; ACT-property-save; ACT-property-delete; DOC-property-hand: property acts.
 package cz.mzk.vera.properties;

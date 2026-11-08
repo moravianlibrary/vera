@@ -37,16 +37,20 @@ public class IterationCheckRun {
         List<RestrictionCheckInput.PropertyValue> restrictionValues = values.stream()
                 .map(value -> new RestrictionCheckInput.PropertyValue(value.key(), value.value())).toList();
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Validation")) {
-            PluginOutcome<ValidationCheckAnswer> outcome = calls.call(instance.id(), Validation.class, "check",
-                    (plugin, context) -> plugin.check(context, new ValidationCheckInput(record, validationValues)));
+            PluginOutcome<ValidationCheckAnswer> outcome = calls.call(
+                    instance.id(), Validation.class, "check",
+                    (plugin, context) -> plugin.check(context,
+                            new ValidationCheckInput(record, validationValues)));
             if (!(outcome instanceof PluginOutcome.Answered<ValidationCheckAnswer> answer)) {
                 throw new PluginUnavailable("Validation " + instance.name() + " is unavailable");
             }
             validations.add(new ValidationAnswer(instance, answer.answer()));
         }
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Restriction")) {
-            PluginOutcome<RestrictionCheckAnswer> outcome = calls.call(instance.id(), Restriction.class, "check",
-                    (plugin, context) -> plugin.check(context, new RestrictionCheckInput(record, restrictionValues)));
+            PluginOutcome<RestrictionCheckAnswer> outcome = calls.call(
+                    instance.id(), Restriction.class, "check",
+                    (plugin, context) -> plugin.check(context,
+                            new RestrictionCheckInput(record, restrictionValues)));
             if (!(outcome instanceof PluginOutcome.Answered<RestrictionCheckAnswer> answer)) {
                 throw new PluginUnavailable("Restriction " + instance.name() + " is unavailable");
             }
@@ -55,7 +59,7 @@ public class IterationCheckRun {
         return new Result(validations, restrictions);
     }
 
-    public record Value(String key, Object value) {}
+    public record Value(String key, Object value, String sourceKind) {}
     public record ValidationAnswer(PluginInstances.Instance instance, ValidationCheckAnswer answer) {}
     public record RestrictionAnswer(PluginInstances.Instance instance, RestrictionCheckAnswer answer) {}
     public record Result(List<ValidationAnswer> validations, List<RestrictionAnswer> restrictions) {}

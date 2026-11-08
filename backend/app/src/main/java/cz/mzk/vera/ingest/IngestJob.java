@@ -146,18 +146,24 @@ public class IngestJob implements JobKind<IngestJob.Result> {
             propertyAnswers.add(new PropertyAnswer(instance, answer.answer()));
         }
         List<IterationCheckRun.Value> currentValues = dsl.select(DOCUMENT_PROPERTY_SOURCES.KEY,
-                DOCUMENT_PROPERTY_SOURCES.VALUE).from(DOCUMENT_PROPERTY_SOURCES)
+                DOCUMENT_PROPERTY_SOURCES.VALUE, DOCUMENT_PROPERTY_SOURCES.SOURCE)
+                .from(DOCUMENT_PROPERTY_SOURCES)
                 .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId))
                 .orderBy(DOCUMENT_PROPERTY_SOURCES.POSITION)
                 .fetch(value -> new IterationCheckRun.Value(value.get(DOCUMENT_PROPERTY_SOURCES.KEY),
-                        json.readTree(value.get(DOCUMENT_PROPERTY_SOURCES.VALUE).data())));
-        dsl.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.VALUE)
+                        json.readTree(value.get(DOCUMENT_PROPERTY_SOURCES.VALUE).data()),
+                        json.readTree(value.get(DOCUMENT_PROPERTY_SOURCES.SOURCE).data())
+                                .path("kind").asString()));
+        dsl.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.VALUE,
+                ITERATION_PROPERTY_SOURCES.SOURCE)
                 .from(ITERATION_PROPERTY_SOURCES)
                 .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(id))
                 .orderBy(ITERATION_PROPERTY_SOURCES.POSITION)
                 .fetch(value -> currentValues.add(new IterationCheckRun.Value(
                         value.get(ITERATION_PROPERTY_SOURCES.KEY),
-                        json.readTree(value.get(ITERATION_PROPERTY_SOURCES.VALUE).data()))));
+                        json.readTree(value.get(ITERATION_PROPERTY_SOURCES.VALUE).data()),
+                        json.readTree(value.get(ITERATION_PROPERTY_SOURCES.SOURCE).data())
+                                .path("kind").asString())));
         IterationCheckRun.Result checked;
         try {
             checked = checkRun.run(record, currentValues);

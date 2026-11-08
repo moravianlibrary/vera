@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.domain.entities.Progress.valueOf;
 
 import cz.mzk.vera.domain.entities.Defect;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jooq.DSLContext;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 // ACT-recheck; DOC-manual-page-count; STAT-checks-after-scan: use the ingest plugin checks.
@@ -31,6 +33,35 @@ public class PluginIterationChecks implements IterationChecks {
 
     @Override
     public CheckResult run(Iteration iteration, Document document, Run run) {
+        return run(iteration, document, run, null, null);
+    }
+
+    @Override
+    public CheckResult runWithPropertyValue(Iteration iteration, Document document, Run run,
+            String key, JsonNode value) {
+        return run(iteration, document, run, key, value);
+    }
+
+    @Override
+    public boolean readsProperty(String key) {
+        return dsl.select(PLUGIN_IMPLEMENTATIONS.VERSIONS).from(PLUGIN_IMPLEMENTATIONS)
+                .where(PLUGIN_IMPLEMENTATIONS.KIND.eq("Validation"))
+                .fetch().stream().anyMatch(row -> {
+                    for (JsonNode version : json.readTree(row.value1().data())) {
+                        for (JsonNode rule : version.path("declares").path("rules")) {
+                            for (JsonNode read : rule.path("reads")) {
+                                if (key.equals(read.asString())) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                    return false;
+                });
+    }
+
+    private CheckResult run(Iteration iteration, Document document, Run run,
+            String changedKey, JsonNode changedValue) {
         var row = dsl.select(DOCUMENTS.TITLE, DOCUMENTS.TYPE, DOCUMENTS.SHELF_MARK,
                 DOCUMENTS.UNIT_TYPE, DOCUMENTS.UNIT_VALUE)
                 .from(DOCUMENTS).where(DOCUMENTS.ID.eq(document.id())).fetchOne();
@@ -45,18 +76,31 @@ public class PluginIterationChecks implements IterationChecks {
                 .and(CATALOG_MIRROR_KEYS.KIND.eq("identifier"))
                 .orderBy(CATALOG_MIRROR_KEYS.POSITION).fetch(CATALOG_MIRROR_KEYS.VALUE);
         List<IterationCheckRun.Value> values = new ArrayList<>(dsl.select(DOCUMENT_PROPERTY_SOURCES.KEY,
-                DOCUMENT_PROPERTY_SOURCES.VALUE).from(DOCUMENT_PROPERTY_SOURCES)
+                DOCUMENT_PROPERTY_SOURCES.VALUE, DOCUMENT_PROPERTY_SOURCES.SOURCE)
+                .from(DOCUMENT_PROPERTY_SOURCES)
                 .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(document.id()))
                 .orderBy(DOCUMENT_PROPERTY_SOURCES.POSITION)
                 .fetch(rowValue -> new IterationCheckRun.Value(rowValue.get(DOCUMENT_PROPERTY_SOURCES.KEY),
-                        json.readTree(rowValue.get(DOCUMENT_PROPERTY_SOURCES.VALUE).data()))));
-        dsl.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.VALUE)
+                        json.readTree(rowValue.get(DOCUMENT_PROPERTY_SOURCES.VALUE).data()),
+                        json.readTree(rowValue.get(DOCUMENT_PROPERTY_SOURCES.SOURCE).data())
+                                .path("kind").asString())));
+        dsl.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.VALUE,
+                ITERATION_PROPERTY_SOURCES.SOURCE)
                 .from(ITERATION_PROPERTY_SOURCES)
                 .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iteration.id()))
                 .orderBy(ITERATION_PROPERTY_SOURCES.POSITION)
                 .fetch(rowValue -> values.add(new IterationCheckRun.Value(
                         rowValue.get(ITERATION_PROPERTY_SOURCES.KEY),
-                        json.readTree(rowValue.get(ITERATION_PROPERTY_SOURCES.VALUE).data()))));
+                        json.readTree(rowValue.get(ITERATION_PROPERTY_SOURCES.VALUE).data()),
+                        json.readTree(rowValue.get(ITERATION_PROPERTY_SOURCES.SOURCE).data())
+                                .path("kind").asString())));
+        if (changedKey != null) {
+            values.removeIf(value -> changedKey.equals(value.key()) && "hand".equals(value.sourceKind()));
+            if (changedValue != null && !changedValue.isNull()) {
+                values.add(new IterationCheckRun.Value(changedKey,
+                        json.convertValue(changedValue, Object.class), "hand"));
+            }
+        }
         var checked = checkRun.run(record, values);
         List<Defect> found = new ArrayList<>();
         for (var answer : checked.validations()) {

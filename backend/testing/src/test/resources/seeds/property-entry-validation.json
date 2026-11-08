@@ -1,0 +1,47 @@
+{
+  "name": "property-entry-validation",
+  "extends": "base",
+  "collections": {
+    "pluginImplementations": [
+      {
+        "id": "pt6",
+        "descriptorId": "cz.mzk.vera.catalog-validity",
+        "name": "MarcComparator",
+        "kind": "Validation",
+        "description": "Validates a record against SKC and ČNB through the MARC comparator application.",
+        "versions": [
+          {
+            "version": "3.1.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-01-15",
+            "installedBy": "u3",
+            "triggers": ["OnIngest", "OnRecordChange", "OnSchedule", "OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [
+                { "code": "R03", "label": "title well-formed" },
+                { "code": "R07", "label": "publication year resolvable" },
+                {
+                  "code": "R11",
+                  "label": "extent matches what was delivered",
+                  "reads": ["page_count", "size"]
+                }
+              ],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "operations": [],
+              "loginEntry": null
+            },
+            "configFields": [
+              { "key": "severity", "isSecret": false, "isRequired": true },
+              { "key": "rules", "isSecret": false, "isRequired": true }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
