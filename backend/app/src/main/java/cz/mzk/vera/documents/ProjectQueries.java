@@ -1,18 +1,20 @@
-package cz.mzk.vera.projects;
+package cz.mzk.vera.documents;
 
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBER_GROUPS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.PROJECTS;
 
 import cz.mzk.vera.web.Instants;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
-// PROJECT-create; PROJECT-review: serve projectSchema records for document group headers.
+// PROJECT-create; PROJECT-review: documents, proposals and projects read the project record through this query.
 @Repository
 public class ProjectQueries {
     private final DSLContext dsl;
@@ -68,7 +70,7 @@ public class ProjectQueries {
         List<Map.Entry<String, String>> names = new ArrayList<>();
         dsl.select(PROJECTS.ID, PROJECTS.NAME).from(PROJECTS).fetch()
             .forEach(row -> names.add(Map.entry(row.get(PROJECTS.ID), row.get(PROJECTS.NAME))));
-        names.sort((first, second) -> java.text.Collator.getInstance(java.util.Locale.US)
+        names.sort((first, second) -> Collator.getInstance(Locale.US)
             .compare(first.getValue(), second.getValue()));
         return names.stream().map(Map.Entry::getKey).toList();
     }

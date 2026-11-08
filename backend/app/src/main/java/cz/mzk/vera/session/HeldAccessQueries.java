@@ -18,6 +18,7 @@ import cz.mzk.vera.domain.access.MappedRole;
 import cz.mzk.vera.domain.access.Role;
 import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.permissions.Permissions;
+import cz.mzk.vera.domain.projects.Projects;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -79,7 +80,7 @@ public class HeldAccessQueries {
             .where(PROJECTS.MANAGER_ID.eq(userId).or(PROJECT_MEMBERS.USER_ID.eq(userId))
                 .or(GROUP_MEMBERS.USER_ID.eq(userId)))
             .orderBy(PROJECTS.POSITION).fetch(PROJECTS.ID).forEach(projects::add);
-        return new HeldScopes(held.grants(), groupIds, List.copyOf(custody), List.copyOf(projects));
+        return new HeldScopes(userId, held.grants(), groupIds, List.copyOf(custody), List.copyOf(projects));
     }
 
     public List<Role> roles() {
@@ -108,7 +109,7 @@ public class HeldAccessQueries {
         }
     }
 
-    public record HeldScopes(List<Grant> grants, List<String> groupIds,
+    public record HeldScopes(String userId, List<Grant> grants, List<String> groupIds,
             List<String> custodyCategoryIds, List<String> projectIds) {
         public HeldScopes {
             grants = List.copyOf(grants);
@@ -130,6 +131,15 @@ public class HeldAccessQueries {
             List<String> scopes = scopesOf(permission);
             return scopes.contains("any") || (scopes.contains("custody")
                     && categoryPathIds.stream().anyMatch(custodyCategoryIds::contains));
+        }
+
+        public boolean reachesProject(String permission, String managerId, List<String> memberIds,
+                List<String> memberGroupIds) {
+            List<String> scopes = scopesOf(permission);
+            return scopes.contains("any")
+                    || (scopes.contains("project") && Projects.isProjectMember(
+                            new Projects.ProjectMembers(managerId, memberIds, memberGroupIds), userId, groupIds))
+                    || (scopes.contains("managed") && managerId.equals(userId));
         }
     }
 }

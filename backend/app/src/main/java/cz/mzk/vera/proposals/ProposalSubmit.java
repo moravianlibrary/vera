@@ -22,7 +22,7 @@ import cz.mzk.vera.domain.status.Status;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
-import cz.mzk.vera.projects.ProjectQueries;
+import cz.mzk.vera.documents.ProjectQueries;
 import cz.mzk.vera.requests.RequestDecisions;
 import cz.mzk.vera.requests.RequestPlacements;
 import cz.mzk.vera.requests.RequestSuggestions;
