@@ -125,7 +125,7 @@ destination that takes it.
 | `project.member_added` | user | — | ✓ | – | ✓ |
 | `project.member_removed` | user | — | ✓ | – | ✓ |
 | `project.manager_changed` | from, to | — | ✓ | – | ✓ |
-| `project.approved` | priority; proposals approved | — | ✓ | – | ✓ |
+| `project.approved` | priority; proposals passed to Requests to be placed | — | ✓ | – | ✓ |
 | `project.rejected` | proposals declined | — | ✓ | – | ✓ |
 | `project.deleted` | — | — | ✓ | – | ✓ |
 

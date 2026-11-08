@@ -30,10 +30,14 @@ A project's period (upcoming, active, ended) is worked out from its dates, never
 #### LC-PROJ-decide
 
 The decision is final:
-- **Approving** sets the priority its items get, once. It approves every proposal pending in the
-  project at that moment, except those with an existing copy or whose copy check has not
-  answered, which are left for review. A copy check rarely outlasts a project's decision, and a
-  proposal made into the project after its approval is decided like any other.
+- **Approving** sets the priority its items get, once. Every proposal pending in the project at
+  that moment, except those with an existing copy or whose copy check has not answered, is
+  approved by the project but not yet placed: it stays on Requests, marked as after the
+  project's approval, and a curator approves it into a category with the project's priority
+  already chosen. Only then does it get its iteration and go to ingest. The project picks no
+  category, since its items may belong to several (decided 2026-11-08). Those with a copy or an
+  unanswered check are left for review as before. A copy check rarely outlasts a project's
+  decision, and a proposal made into the project after its approval is marked the same way.
 - **Rejecting** declines the project's own pending asks with its reason, which every member
   reads, and archives its intention. A document others asked for outside the project stays
   theirs.

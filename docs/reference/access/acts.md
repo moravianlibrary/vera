@@ -187,7 +187,7 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 | `ACT-project-create` | *New project* | `project.create` | — | Proposed; the creator its manager and only member; its own intention; log *Created* |
 | `ACT-project-save` | *Edit* | `project.edit` at the project | any state; on an Approved one, dates and target stay editable | the intention follows the dates and target; log *Dates or target changed*, *Details changed* |
 | `ACT-project-members` | *Members…* | `project.manage_members` at the project | members are people, never agents (422) | log *Member added*, *Member removed*, *Manager changed* |
-| `ACT-project-approve` | *Approve…* | `project.decide` | Proposed (409 `project.decided`) | priority set once; every pending proposal in it approved except those with a copy; log *Approved* |
+| `ACT-project-approve` | *Approve…* | `project.decide` | Proposed (409 `project.decided`) | priority set once; every pending proposal in it, except those with a copy, stays on Requests marked as after the project's approval, for a curator to place in a category ([LC-PROJ-decide](../lifecycles/project.md#lc-proj-decide)); log *Approved* |
 | `ACT-project-reject` | *Reject…* | `project.decide` | Proposed (409) | its pending proposals declined with the reason; its intention archived; log *Rejected* |
 | `ACT-project-delete` | *Delete…* | `project.delete` at the project | nothing ever proposed into it (409 `project.has_proposals`) | the project and its intention removed; log *Deleted* |
 
