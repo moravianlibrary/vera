@@ -17,6 +17,14 @@ CREATE TABLE digitization_lists (
   CHECK ((done_actor_id IS NULL) = (done_at IS NULL))
 );
 
+-- Lists were not stored before this changeset; a reset reloads them from the seed.
+UPDATE iterations
+SET list_id = NULL
+WHERE list_id IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM digitization_lists WHERE digitization_lists.id = iterations.list_id
+  );
+
 ALTER TABLE iterations
   ADD CONSTRAINT iterations_list_fk FOREIGN KEY (list_id) REFERENCES digitization_lists (id)
     DEFERRABLE INITIALLY DEFERRED,
