@@ -232,13 +232,69 @@ public final class ContractFilter extends OncePerRequestFilter {
     private List<Issue> validate(JsonNode schemaNode, JsonNode value) {
         if (schemaNode == null || schemaNode.isMissingNode()) return List.of();
         try {
-            Schema schema = registry.getSchema(resolve(schemaNode, new HashSet<>()));
-            return schema.validate(value).stream()
-                    .map(error -> new Issue(issuePointer(error), code(error.getKeyword()), error.getMessage()))
+            JsonNode resolved = resolve(schemaNode, new HashSet<>());
+            Schema schema = registry.getSchema(resolved);
+            List<Error> failures = schema.validate(value);
+            return failures.stream()
+                    .filter(error -> !"anyOf".equals(error.getKeyword())
+                            || failures.stream().noneMatch(other -> !"anyOf".equals(other.getKeyword())
+                                    && issuePointer(error).equals(issuePointer(other))))
+                    .filter(error -> !("type".equals(error.getKeyword())
+                            && error.getMessage().contains("null expected")
+                            && failures.stream().anyMatch(other -> !"type".equals(other.getKeyword())
+                                    && issuePointer(error).equals(issuePointer(other)))))
+                    .map(error -> new Issue(issuePointer(error), code(error.getKeyword()),
+                            issueDetail(error, constraintAt(schemaAt(resolved, issuePointer(error)),
+                                    error.getKeyword()), error.getKeyword())))
                     .toList();
         } catch (RuntimeException exception) {
             throw new IllegalStateException("Could not validate OpenAPI schema " + schemaNode, exception);
         }
+    }
+
+    // Recordings carry Zod's wording, so translate schema keywords from their schema values.
+    private String issueDetail(Error error, JsonNode target, String keyword) {
+        if ("enum".equals(keyword) && target.path("enum").isArray()) {
+            return "Invalid option: expected one of " + joinJsonValues(target.path("enum"));
+        }
+        if ("exclusiveMinimum".equals(keyword) && target.has(keyword)) {
+            return "Too small: expected number to be >" + target.path(keyword).toString();
+        }
+        return error.getMessage();
+    }
+
+    private JsonNode schemaAt(JsonNode schema, String pointer) {
+        JsonNode current = schema;
+        if (!pointer.isEmpty()) {
+            for (String segment : pointer.substring(1).split("/")) {
+                current = current.path("properties").path(segment.replace("~1", "/").replace("~0", "~"));
+            }
+        }
+        return current;
+    }
+
+    private JsonNode constraintAt(JsonNode schema, String keyword) {
+        if (schema.has(keyword)) return schema;
+        for (String branch : List.of("anyOf", "oneOf", "allOf")) {
+            JsonNode branches = schema.path(branch);
+            if (branches.isArray()) {
+                for (JsonNode child : branches) {
+                    JsonNode found = constraintAt(child, keyword);
+                    if (found.has(keyword)) return found;
+                }
+            }
+        }
+        return schema;
+    }
+
+    private String joinJsonValues(JsonNode values) {
+        List<String> items = new ArrayList<>();
+        values.forEach(value -> items.add(jsonValue(value)));
+        return String.join("|", items);
+    }
+
+    private String jsonValue(JsonNode value) {
+        return value.toString();
     }
 
     private JsonNode resolve(JsonNode node, Set<String> resolving) {

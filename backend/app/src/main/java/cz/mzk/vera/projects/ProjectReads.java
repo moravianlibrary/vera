@@ -20,6 +20,7 @@ import static org.jooq.impl.DSL.when;
 import cz.mzk.vera.documents.DocumentRecords;
 import cz.mzk.vera.documents.ProjectQueries;
 import cz.mzk.vera.domain.entities.DigitizationList;
+import cz.mzk.vera.domain.entities.Intention;
 import cz.mzk.vera.domain.intentions.Intentions;
 import cz.mzk.vera.domain.intentions.Intentions.IntentionCount;
 import cz.mzk.vera.domain.lists.Lists;
@@ -126,6 +127,25 @@ public class ProjectReads {
         List<Map<String, Object>> selected = List.of(project);
         return detail(project, counting.countingData(), rowStats(projectIds(selected)),
                 memberGroups(selected));
+    }
+
+    public Map<String, Object> projectIntention(String projectId) {
+        StoredIntention intention = counting.intentionOf(counting.countingData(), projectId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("id", intention.rule().id());
+        result.put("targetPages", intention.rule().targetPages());
+        return result;
+    }
+
+    public Map<String, Object> previewCounts(String projectId, String startsOn, String endsOn,
+            Integer targetPages) {
+        CountingSnapshot data = counting.countingData();
+        StoredIntention stored = counting.intentionOf(data, projectId);
+        var rule = new Intention(stored.rule().id(), stored.rule().funding(),
+                stored.rule().scopeCategoryId(), stored.rule().scopeConditions(), startsOn, endsOn,
+                targetPages, stored.rule().isOverall(), stored.rule().archivedAt());
+        IntentionCount count = Intentions.countIntention(rule, data.rules());
+        return Map.of("plannedPages", count.plannedPages(), "deliveredPages", count.deliveredPages());
     }
 
     private List<Map<String, Object>> visibleProjects(String userId, HeldScopes scopes) {

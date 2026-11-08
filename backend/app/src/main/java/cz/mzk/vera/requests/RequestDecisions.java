@@ -97,10 +97,15 @@ public class RequestDecisions {
     // BK3g2 calls this after its own proposal checks, using the same row-based approval write.
     @Transactional
     public ActResult approveRow(String actorId, DecisionRow row, Approval approval, Instant at) {
+        return approveRow(actorId, row, approval, at, "C-" + UUID.randomUUID());
+    }
+
+    @Transactional
+    public ActResult approveRow(String actorId, DecisionRow row, Approval approval, Instant at,
+            String correlationId) {
         List<Ask> asks = row.asks();
         Ask oldest = asks.getFirst();
         String iterationId = "IT-" + UUID.randomUUID();
-        String correlationId = "C-" + UUID.randomUUID();
         int nextAttempt = dsl.select(coalesce(max(ITERATIONS.ATTEMPT), 0).add(1))
                 .from(ITERATIONS).where(ITERATIONS.DOCUMENT_ID.eq(row.documentId()))
                 .fetchOne(0, Integer.class);
@@ -126,6 +131,43 @@ public class RequestDecisions {
         states.recompute(dsl, row.documentId());
         return ActResult.ok(Map.of("documentId", row.documentId(), "decision", APPROVED,
                 "askCount", asks.size()));
+    }
+
+    // LC-PROJ-decide: project approval leaves category choice to the curator on Requests.
+    public void markProjectAsksAfterApproval(String projectId, String documentId) {
+        List<String> askIds = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.PROJECT_ID.eq(projectId).and(REQUESTS.DOCUMENT_ID.eq(documentId))
+                        .and(REQUESTS.DECISION.eq(PENDING)))
+                .fetch(REQUESTS.ID);
+        if (askIds.isEmpty()) {
+            return;
+        }
+        dsl.update(REQUESTS).set(REQUESTS.IS_AFTER_PROJECT_APPROVAL, true)
+                .where(REQUESTS.ID.in(askIds)).execute();
+        states.recompute(dsl, documentId);
+    }
+
+    // LC-PROJ-decide: rejecting a project declines only its asks and retains request event ownership.
+    public void declineProjectAsks(String actorId, String projectId, String decline, Instant at,
+            String correlationId) {
+        List<Ask> asks = dsl.select(REQUESTS.ID, REQUESTS.DOCUMENT_ID).from(REQUESTS)
+                .where(REQUESTS.PROJECT_ID.eq(projectId).and(REQUESTS.DECISION.eq(PENDING)))
+                .orderBy(REQUESTS.AT, REQUESTS.ID)
+                .fetch(row -> new Ask(row.get(REQUESTS.ID), projectId, true));
+        OffsetDateTime writtenAt = at.atOffset(ZoneOffset.UTC);
+        for (Ask ask : asks) {
+            String documentId = dsl.select(REQUESTS.DOCUMENT_ID).from(REQUESTS)
+                    .where(REQUESTS.ID.eq(ask.id())).fetchOne(REQUESTS.DOCUMENT_ID);
+            dsl.update(REQUESTS).set(REQUESTS.DECISION, DENIED)
+                    .set(REQUESTS.IS_AFTER_PROJECT_APPROVAL, (Boolean) null)
+                    .set(REQUESTS.DECLINE_ACTOR_ID, actorId).set(REQUESTS.DECLINE_AT, writtenAt)
+                    .set(REQUESTS.DECLINE_PUBLIC_TEXT, decline).set(REQUESTS.DECLINE_INTERNAL_TEXT, (String) null)
+                    .where(REQUESTS.ID.eq(ask.id())).execute();
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("batchSize", nullableBatchSize(asks.size()));
+            record(EventCode.REQUEST_DECLINED, ask.id(), actorId, correlationId, writtenAt, data, decline, null);
+            states.recompute(dsl, documentId);
+        }
     }
 
     // BK3g2 shares the approved iteration insert through this requests-owned method.

@@ -84,6 +84,24 @@ class ApiBoundaryTests {
     }
 
     @Test
+    void mapsSchemaEnumAndExclusiveMinimumToRecordedZodMessages() {
+        client.post().uri("/api/projects/p8/approve").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"priority\":\"Immediate\"}").exchange().expectStatus().isEqualTo(422)
+                .expectBody().jsonPath("$.errors[0].pointer").isEqualTo("/priority")
+                .jsonPath("$.errors[0].code").isEqualTo("invalid_value")
+                .jsonPath("$.errors[0].detail")
+                .isEqualTo("Invalid option: expected one of \"Low\"|\"Normal\"|\"High\"|\"Urgent\"");
+        client.post().uri("/api/projects/p8/preview").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"name\":\"x\",\"description\":\"\",\"startsOn\":\"2026-01-01\","
+                        + "\"endsOn\":\"2026-01-02\",\"targetPages\":0}")
+                .exchange().expectStatus().isEqualTo(422).expectBody()
+                .jsonPath("$.errors[0].pointer").isEqualTo("/targetPages")
+                .jsonPath("$.errors[0].code").isEqualTo("too_small")
+                .jsonPath("$.errors[0].detail").isEqualTo("Too small: expected number to be >0")
+                .jsonPath("$.errors.length()").isEqualTo(1);
+    }
+
+    @Test
     void servesRecordedLoginSessionAndOperationNames() throws Exception {
         JsonNode recording = mapper.readTree(Path.of("../../replay/recordings/base-sign-in.json").toFile());
         JsonNode expectedLogin = recording.path("scenarios").get(0).path("calls").get(0).path("body");
@@ -122,7 +140,9 @@ class ApiBoundaryTests {
                 + "\"listStart\",\"lists\","
                 + "\"localAccount\","
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
-                + "\"projectDetail\",\"projectIndex\",\"projects\","
+                + "\"projectApprove\",\"projectCreate\",\"projectDecision\",\"projectDelete\","
+                + "\"projectDetail\",\"projectIndex\",\"projectMembers\",\"projectPreview\","
+                + "\"projectReject\",\"projectSave\",\"projects\","
                 + "\"properties\",\"propertyCreate\",\"propertyDelete\",\"propertyEntries\","
                 + "\"propertyEntry\",\"propertyImpact\",\"propertySave\",\"proposalBarcode\","
                 + "\"proposalCatalogSearch\",\"proposalLookup\","

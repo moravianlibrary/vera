@@ -32,6 +32,6 @@ public record ActResult(int status, String detail, String code, Object body) {
         if (result.detail() != null) {
             return Problems.response(result.status(), result.detail(), result.code(), null);
         }
-        return ResponseEntity.ok(result.body());
+        return ResponseEntity.status(result.status()).body(result.body());
     }
 }
