@@ -80,3 +80,6 @@ databaseChangeLog:
   - include:
       file: 0141-intentions-and-mixes.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0150-properties-acts.sql
+      relativeToChangelogFile: true

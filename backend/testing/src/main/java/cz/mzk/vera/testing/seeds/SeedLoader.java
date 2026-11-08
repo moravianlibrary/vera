@@ -2,6 +2,7 @@ package cz.mzk.vera.testing.seeds;
 
 import static cz.mzk.vera.db.tables.Tables.CATEGORIES;
 import static cz.mzk.vera.db.tables.Tables.CATEGORY_MEMBERS;
+import static cz.mzk.vera.db.tables.Tables.DELETED_PROPERTY_KEYS;
 import static cz.mzk.vera.db.tables.Tables.GROUP_CATEGORIES;
 import static cz.mzk.vera.db.tables.Tables.GROUP_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.GROUPS;
@@ -198,6 +199,12 @@ public class SeedLoader {
                     .set(PLUGIN_INSTANCES.CREATED_AT, instant(instance, "createdAt"))
                     .set(PLUGIN_INSTANCES.LAST_RUN_AT, instant(instance, "lastRunAt"))
                     .set(PLUGIN_INSTANCES.POSITION, position++)
+                    .execute();
+        }
+        transaction.deleteFrom(DELETED_PROPERTY_KEYS).execute();
+        for (JsonNode key : collections.path("deletedPropertyKeys")) {
+            transaction.insertInto(DELETED_PROPERTY_KEYS)
+                    .set(DELETED_PROPERTY_KEYS.KEY, key.asString())
                     .execute();
         }
         records.catalogMirror(transaction, seed);
