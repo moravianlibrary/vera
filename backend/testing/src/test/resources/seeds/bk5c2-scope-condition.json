@@ -1,0 +1,24 @@
+{
+  "name": "bk5c2-scope-condition",
+  "extends": "base",
+  "collections": {
+    "intentions": [
+      {
+        "id": "i-scope-test",
+        "name": "Machine-scoped intention",
+        "description": "Counts only items with the requested machine.",
+        "funding": { "kind": "any" },
+        "projectId": null,
+        "scopeCategoryId": "c21",
+        "scopeConditions": [{ "key": "machines", "anyOf": ["zeutschel"] }],
+        "distributionId": null,
+        "targetPages": null,
+        "countsFrom": "2026-03-12",
+        "endsOn": null,
+        "isOverall": false,
+        "templateId": null,
+        "archived": null
+      }
+    ]
+  }
+}
