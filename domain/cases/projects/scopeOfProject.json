@@ -1,0 +1,22 @@
+{
+  "function": "scopeOfProject",
+  "cases": [
+    {
+      "name": "project scope includes members",
+      "rule": "SCOPE-project",
+      "input": {
+        "project": {
+          "managerId": "m",
+          "memberIds": ["u"],
+          "memberGroupIds": ["g"]
+        }
+      },
+      "expected": {
+        "kind": "project",
+        "managerId": "m",
+        "memberIds": ["u"],
+        "memberGroupIds": ["g"]
+      }
+    }
+  ]
+}

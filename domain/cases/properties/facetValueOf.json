@@ -1,0 +1,29 @@
+{
+  "function": "facetValueOf",
+  "cases": [
+    {
+      "name": "boolean yes",
+      "rule": "DOC-property-filter",
+      "input": {
+        "value": true
+      },
+      "expected": "Yes"
+    },
+    {
+      "name": "boolean no",
+      "rule": "DOC-property-filter",
+      "input": {
+        "value": false
+      },
+      "expected": "No"
+    },
+    {
+      "name": "scalar string",
+      "rule": "DOC-property-filter",
+      "input": {
+        "value": "A4"
+      },
+      "expected": "A4"
+    }
+  ]
+}

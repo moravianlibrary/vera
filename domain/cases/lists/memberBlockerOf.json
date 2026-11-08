@@ -1,0 +1,114 @@
+{
+  "function": "memberBlockerOf",
+  "cases": [
+    {
+      "name": "clear member has no blocker",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "restriction": null,
+          "restrictionOverride": null,
+          "cancellation": null,
+          "defects": [],
+          "verdicts": []
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "restricted member is forbidden",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "restriction": {
+            "rule": "r",
+            "foundAt": "2026-01-01T00:00:00.000Z"
+          },
+          "restrictionOverride": null,
+          "cancellation": null,
+          "defects": [],
+          "verdicts": []
+        }
+      },
+      "expected": "Forbidden"
+    },
+    {
+      "name": "needed validation blocks member",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k",
+              "instanceId": "i",
+              "ruleCode": "R",
+              "subject": "x",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "ReviewNeeded"
+    },
+    {
+      "name": "denied validation blocks member",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k",
+              "instanceId": "i",
+              "ruleCode": "R",
+              "subject": "x",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ],
+          "verdicts": [
+            {
+              "defectKeys": ["k"],
+              "verdict": "Denied"
+            }
+          ]
+        }
+      },
+      "expected": "ValidationDenied"
+    },
+    {
+      "name": "scan is not a blocker",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "cancellation is not a blocker",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "cancellation": {
+            "cause": "Decided",
+            "actorId": "u",
+            "at": "2026-01-01T00:00:00Z",
+            "publicText": "",
+            "internalText": null
+          }
+        }
+      },
+      "expected": null
+    }
+  ],
+  "base": {
+    "progress": "Ready",
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  }
+}

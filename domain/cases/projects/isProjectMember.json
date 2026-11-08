@@ -1,0 +1,61 @@
+{
+  "function": "isProjectMember",
+  "cases": [
+    {
+      "name": "manager is member",
+      "rule": "LC-PROJ-members",
+      "input": {
+        "project": {
+          "managerId": "m",
+          "memberIds": ["u"],
+          "memberGroupIds": ["g"]
+        },
+        "userId": "m",
+        "groupIds": []
+      },
+      "expected": true
+    },
+    {
+      "name": "direct member",
+      "rule": "LC-PROJ-members",
+      "input": {
+        "project": {
+          "managerId": "m",
+          "memberIds": ["u"],
+          "memberGroupIds": ["g"]
+        },
+        "userId": "u",
+        "groupIds": []
+      },
+      "expected": true
+    },
+    {
+      "name": "group member",
+      "rule": "LC-PROJ-members",
+      "input": {
+        "project": {
+          "managerId": "m",
+          "memberIds": ["u"],
+          "memberGroupIds": ["g"]
+        },
+        "userId": "x",
+        "groupIds": ["g"]
+      },
+      "expected": true
+    },
+    {
+      "name": "unrelated user",
+      "rule": "LC-PROJ-members",
+      "input": {
+        "project": {
+          "managerId": "m",
+          "memberIds": ["u"],
+          "memberGroupIds": ["g"]
+        },
+        "userId": "x",
+        "groupIds": []
+      },
+      "expected": false
+    }
+  ]
+}

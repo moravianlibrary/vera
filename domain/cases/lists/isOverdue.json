@@ -1,0 +1,84 @@
+{
+  "function": "isOverdue",
+  "cases": [
+    {
+      "name": "before end is not overdue",
+      "rule": "LC-LIST-overdue",
+      "input": {
+        "list": {
+          "id": "l",
+          "name": "List",
+          "startsOn": "2026-06-26",
+          "endsOn": "2026-06-30",
+          "targetPages": null,
+          "generated": null,
+          "createdBy": "u",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "done": null
+        },
+        "today": "2026-06-29"
+      },
+      "expected": false
+    },
+    {
+      "name": "on end is not overdue",
+      "rule": "LC-LIST-overdue",
+      "input": {
+        "list": {
+          "id": "l",
+          "name": "List",
+          "startsOn": "2026-06-26",
+          "endsOn": "2026-06-30",
+          "targetPages": null,
+          "generated": null,
+          "createdBy": "u",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "done": null
+        },
+        "today": "2026-06-30"
+      },
+      "expected": false
+    },
+    {
+      "name": "after end is overdue",
+      "rule": "LC-LIST-overdue",
+      "input": {
+        "list": {
+          "id": "l",
+          "name": "List",
+          "startsOn": "2026-06-26",
+          "endsOn": "2026-06-30",
+          "targetPages": null,
+          "generated": null,
+          "createdBy": "u",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "done": null
+        },
+        "today": "2026-07-01"
+      },
+      "expected": true
+    },
+    {
+      "name": "done list is not overdue",
+      "rule": "LC-LIST-overdue",
+      "input": {
+        "list": {
+          "id": "l",
+          "name": "List",
+          "startsOn": "2026-06-26",
+          "endsOn": "2026-06-30",
+          "targetPages": null,
+          "generated": null,
+          "createdBy": "u",
+          "createdAt": "2026-01-01T00:00:00.000Z",
+          "done": {
+            "actorId": "u",
+            "at": "2026-07-01T00:00:00.000Z"
+          }
+        },
+        "today": "2026-07-02"
+      },
+      "expected": false
+    }
+  ]
+}

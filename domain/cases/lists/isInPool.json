@@ -1,0 +1,93 @@
+{
+  "function": "isInPool",
+  "cases": [
+    {
+      "name": "ready unlisted and clear enters pool",
+      "rule": "LC-LIST-pool",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "listId": null,
+          "restriction": null,
+          "restrictionOverride": null,
+          "cancellation": null,
+          "defects": [],
+          "verdicts": []
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "listed work is not in pool",
+      "rule": "LC-LIST-pool",
+      "input": {
+        "iteration": {
+          "progress": "Ready",
+          "listId": "l",
+          "restriction": null,
+          "restrictionOverride": null,
+          "cancellation": null,
+          "defects": [],
+          "verdicts": []
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "non-ready work is not in pool",
+      "rule": "LC-LIST-pool",
+      "input": {
+        "iteration": {
+          "progress": "Planned",
+          "listId": null,
+          "restriction": null,
+          "restrictionOverride": null,
+          "cancellation": null,
+          "defects": [],
+          "verdicts": []
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "gate failure keeps work out",
+      "rule": "LC-LIST-pool",
+      "input": {
+        "iteration": {
+          "defects": [
+            {
+              "key": "k",
+              "instanceId": "i",
+              "ruleCode": "R",
+              "subject": "x",
+              "firstSeenAt": "2026-01-01T00:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "restriction keeps work out",
+      "rule": "LC-LIST-pool",
+      "input": {
+        "iteration": {
+          "restriction": {
+            "rule": "R",
+            "foundAt": "2026-01-01T00:00:00Z"
+          }
+        }
+      },
+      "expected": false
+    }
+  ],
+  "base": {
+    "progress": "Ready",
+    "listId": null,
+    "restriction": null,
+    "restrictionOverride": null,
+    "cancellation": null,
+    "defects": [],
+    "verdicts": []
+  }
+}

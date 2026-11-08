@@ -49,6 +49,14 @@ import {
   progressAfterGates,
   scopeOfIteration,
 } from "./iterations";
+import {
+  isInPool,
+  isOverdue,
+  isScanned,
+  listStateOf,
+  memberBlockerOf,
+  progressOnList,
+} from "./lists";
 import { effectiveShareOf, siblingSetOf } from "./mixes";
 import type {
   Grant,
@@ -72,16 +80,21 @@ import {
   scopesOf,
   withRequirements,
 } from "./permissions";
-import { daysUntil, periodOf, timeElapsedOf } from "./projects";
+import { daysUntil, isProjectMember, periodOf, scopeOfProject, timeElapsedOf } from "./projects";
 import {
   editPermissionOf,
+  facetValueOf,
   formatPropertyValue,
+  isActiveCondition,
   isValueOf,
+  mayBeEnteredByHand,
   meetsCondition,
   propertyKeyOfPermission,
+  sourcesByTierOf,
   textSummaryOf,
   valueInUseAt,
   valueInUseOf,
+  valuesOf,
   withTextCondition,
 } from "./properties";
 import { isBeingChecked, isBulkApprovable, rowDecisionOf } from "./requests";
@@ -214,6 +227,20 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   acceptedDefectsOf: (...args) => acceptedDefectsOf(args[0] as Iteration),
   deniedDefectsOf: (...args) => deniedDefectsOf(args[0] as Iteration),
   isFoundAfterScan: (...args) => isFoundAfterScan(args[0] as Iteration),
+  listStateOf: (...args) => listStateOf(args[0] as never, args[1] as string),
+  isOverdue: (...args) => isOverdue(args[0] as never, args[1] as string),
+  progressOnList: (...args) => progressOnList(args[0] as never, args[1] as string),
+  isScanned: (...args) => isScanned(args[0] as Iteration),
+  memberBlockerOf: (...args) => memberBlockerOf(args[0] as Iteration),
+  isInPool: (...args) => isInPool(args[0] as Iteration),
+  isProjectMember: (...args) =>
+    isProjectMember(args[0] as never, args[1] as string, args[2] as string[]),
+  scopeOfProject: (...args) => scopeOfProject(args[0] as never),
+  mayBeEnteredByHand: (...args) => mayBeEnteredByHand(args[0] as never),
+  sourcesByTierOf: (...args) => sourcesByTierOf(args[0] as never),
+  valuesOf: (...args) => valuesOf(args[0] as never, args[1] as string),
+  isActiveCondition: (...args) => isActiveCondition(args[0] as never),
+  facetValueOf: (...args) => facetValueOf(args[0] as never),
 };
 
 const adapters: Record<

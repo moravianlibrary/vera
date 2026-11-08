@@ -1,0 +1,38 @@
+{
+  "function": "mayBeEnteredByHand",
+  "cases": [
+    {
+      "name": "ordinary fact may be hand entered",
+      "rule": "DOC-property-hand",
+      "input": {
+        "definition": {
+          "key": "title",
+          "isCatalogFact": false
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "catalog fact is not hand entered",
+      "rule": "DOC-property-hand",
+      "input": {
+        "definition": {
+          "key": "title",
+          "isCatalogFact": true
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "page count may be hand entered",
+      "rule": "DOC-page-count",
+      "input": {
+        "definition": {
+          "key": "page_count",
+          "isCatalogFact": true
+        }
+      },
+      "expected": true
+    }
+  ]
+}

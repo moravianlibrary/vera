@@ -1,0 +1,58 @@
+{
+  "function": "sourcesByTierOf",
+  "cases": [
+    {
+      "name": "higher tier first",
+      "rule": "DOC-property-values",
+      "input": {
+        "values": {
+          "key": "x",
+          "sources": [
+            {
+              "source": {
+                "kind": "hand"
+              },
+              "tier": 1,
+              "value": "a",
+              "observedAt": "2026-01-01T00:00:00.000Z",
+              "setBy": "u"
+            },
+            {
+              "source": {
+                "kind": "plugin",
+                "instanceId": "p",
+                "instanceName": "P"
+              },
+              "tier": 10,
+              "value": "b",
+              "observedAt": "2026-01-02T00:00:00.000Z",
+              "setBy": null
+            }
+          ]
+        }
+      },
+      "expected": [
+        {
+          "source": {
+            "kind": "plugin",
+            "instanceId": "p",
+            "instanceName": "P"
+          },
+          "tier": 10,
+          "value": "b",
+          "observedAt": "2026-01-02T00:00:00.000Z",
+          "setBy": null
+        },
+        {
+          "source": {
+            "kind": "hand"
+          },
+          "tier": 1,
+          "value": "a",
+          "observedAt": "2026-01-01T00:00:00.000Z",
+          "setBy": "u"
+        }
+      ]
+    }
+  ]
+}

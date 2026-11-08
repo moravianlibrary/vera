@@ -1,0 +1,35 @@
+{
+  "function": "isScanned",
+  "cases": [
+    {
+      "name": "ready is not scanned",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Ready"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "digitized is scanned",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Digitized"
+        }
+      },
+      "expected": true
+    },
+    {
+      "name": "published is scanned",
+      "rule": "LC-LIST-blocked",
+      "input": {
+        "iteration": {
+          "progress": "Published"
+        }
+      },
+      "expected": true
+    }
+  ]
+}

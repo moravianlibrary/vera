@@ -1,0 +1,26 @@
+{
+  "function": "isActiveCondition",
+  "cases": [
+    {
+      "name": "empty condition is inactive",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title"
+        }
+      },
+      "expected": false
+    },
+    {
+      "name": "no value condition is active",
+      "rule": "DOC-property-filter",
+      "input": {
+        "condition": {
+          "key": "title",
+          "hasNoValue": true
+        }
+      },
+      "expected": true
+    }
+  ]
+}

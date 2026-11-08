@@ -1,0 +1,35 @@
+{
+  "function": "valuesOf",
+  "cases": [
+    {
+      "name": "find property by key",
+      "rule": "DOC-property-values",
+      "input": {
+        "properties": [
+          {
+            "key": "a",
+            "sources": []
+          },
+          {
+            "key": "b",
+            "sources": []
+          }
+        ],
+        "key": "b"
+      },
+      "expected": {
+        "key": "b",
+        "sources": []
+      }
+    },
+    {
+      "name": "missing property is undefined",
+      "rule": "DOC-property-values",
+      "input": {
+        "properties": [],
+        "key": "b"
+      },
+      "expected": null
+    }
+  ]
+}
