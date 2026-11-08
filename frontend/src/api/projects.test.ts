@@ -26,6 +26,7 @@ import {
   saveProjectMembers,
 } from "@/api/projects";
 import { listGroups } from "@/api/reference";
+import { listRequests } from "@/api/requests";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
 import { eventEntries } from "./event-entries-test";
@@ -360,8 +361,16 @@ describe("deciding a project", () => {
     const approved = await approveProject("p8", { priority: "High" });
 
     expect(approved.row.project).toMatchObject({ state: "Approved", priority: "High" });
-    expect(approved.proposals.find((row) => row.documentId === "D31")?.decision).toBe("Approved");
-    expect(approved.proposals.find((row) => row.documentId === "D30")?.decision).toBe("Pending");
+    const r35 = approved.proposals.find((row) => row.documentId === "D31");
+    const r34 = approved.proposals.find((row) => row.documentId === "D30");
+    expect(r35).toMatchObject({ decision: "Pending" });
+    signInAs("admin");
+    const afterApproval = await listRequests({ afterProjectApproval: ["Yes"] }, { limit: 200 });
+    expect(afterApproval.items.some((row) => row.record.document.id === "D31")).toBe(true);
+    expect(r34).toMatchObject({ decision: "Pending", hasCopy: true });
+    const notAfterApproval = await listRequests({ afterProjectApproval: ["No"] }, { limit: 200 });
+    expect(notAfterApproval.items.some((row) => row.record.document.id === "D30")).toBe(true);
+    expect(approved.funded.some((item) => item.document.id === "D31")).toBe(false);
     expect(approved.log[0]).toMatchObject({ code: "project.approved" });
     expect(await statusOf(rejectProject("p8", { reason: "Too late" }))).toBe(409);
   });

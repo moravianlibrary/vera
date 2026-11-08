@@ -15590,7 +15590,7 @@
                 "pages": 0
               },
               "pending": {
-                "documentCount": 1,
+                "documentCount": 2,
                 "withCopyCount": 1
               },
               "proposalCount": 3,
@@ -15624,8 +15624,8 @@
                 "identifier": "MZK03-000612045 · 1928",
                 "requesterId": "u5",
                 "at": "<time>",
-                "decision": "Approved",
-                "isAfterProjectApproval": false,
+                "decision": "Pending",
+                "isAfterProjectApproval": true,
                 "hasCopy": false
               }
             ],
@@ -15908,7 +15908,7 @@
                   "pages": 0
                 },
                 "pending": {
-                  "documentCount": 1,
+                  "documentCount": 2,
                   "withCopyCount": 1
                 },
                 "proposalCount": 3,
@@ -16176,7 +16176,7 @@
                 "pages": 0
               },
               "pending": {
-                "documentCount": 1,
+                "documentCount": 2,
                 "withCopyCount": 1
               },
               "proposalCount": 3,
@@ -16210,8 +16210,8 @@
                 "identifier": "MZK03-000612045 · 1928",
                 "requesterId": "u5",
                 "at": "<time>",
-                "decision": "Approved",
-                "isAfterProjectApproval": false,
+                "decision": "Pending",
+                "isAfterProjectApproval": true,
                 "hasCopy": false
               }
             ],

@@ -679,9 +679,8 @@ export function previewDecision(session: Session, projectId: string): Outcome<De
   };
 }
 
-// Approving picks the priority, set once (projects.md §2.1), and approves every document pending
-// in it at that moment but those skipped (flows.md D11). Each waits for ingest, which classifies
-// it, before it has an iteration (relationships.md §2).
+// Approving picks the priority, set once (projects.md §2.1); taken proposals stay pending for
+// a curator to place in a category (LC-PROJ-decide).
 export function approveProject(
   session: Session,
   projectId: string,
@@ -699,13 +698,7 @@ export function approveProject(
   const taken = pending.filter((documentId) => !isSkipped(documentId));
   for (const documentId of taken) {
     for (const ask of pendingAsksOf(documentId)) {
-      replaceRequest({
-        ...withoutPendingFields(ask),
-        decision: "Approved",
-        iteration: null,
-        rescan: null,
-      });
-      // Project decisions are recorded on the project; ingest has not created an iteration yet.
+      replaceRequest({ ...ask, isAfterProjectApproval: true });
     }
   }
 
