@@ -111,13 +111,15 @@ class ApiBoundaryTests {
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
         String expectedEndpoints = "[\"account\",\"batchApprove\",\"batchRetry\",\"batches\",\"confirmEmail\","
-                + "\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
+                + "\"digitizationListCreate\",\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
                 + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
                 + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\","
                 + "\"iterationCancel\",\"iterationOverrule\",\"iterationPageCount\","
                 + "\"iterationPrimaryLink\",\"iterationPublish\",\"iterationRecheck\","
                 + "\"iterationReclassify\",\"iterationRemoveLink\",\"iterationReplaceLink\","
-                + "\"iterationResume\",\"listDetail\",\"lists\","
+                + "\"iterationResume\",\"listDelete\",\"listDeletion\",\"listDetail\","
+                + "\"listDone\",\"listDonePreview\",\"listNotDigitizable\",\"listSave\","
+                + "\"listStart\",\"lists\","
                 + "\"localAccount\","
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
                 + "\"projectDetail\",\"projectIndex\",\"projects\","

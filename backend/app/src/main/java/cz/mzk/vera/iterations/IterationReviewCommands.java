@@ -148,8 +148,14 @@ public class IterationReviewCommands {
             Iteration released = withProgress(iteration, "Ready");
             progress = progressAfterGates(released).name();
         }
-        dsl.update(ITERATIONS).set(ITERATIONS.LIST_ID, (String) null)
-                .set(ITERATIONS.PROGRESS, progress).set(ITERATIONS.CANCELLATION_CAUSE, "Decided")
+        var cancelUpdate = dsl.update(ITERATIONS)
+                .set(ITERATIONS.LIST_ID, (String) null)
+                .set(ITERATIONS.PROGRESS, progress)
+                .set(ITERATIONS.CANCELLATION_CAUSE, "Decided");
+        if (listName != null) {
+            cancelUpdate.set(ITERATIONS.FORMER_LIST_NAME, listName);
+        }
+        cancelUpdate
                 .set(ITERATIONS.CANCELLATION_ACTOR_ID, caller.userId())
                 .set(ITERATIONS.CANCELLATION_AT, at)
                 .set(ITERATIONS.CANCELLATION_PUBLIC_TEXT, body.publicText())
@@ -186,13 +192,22 @@ public class IterationReviewCommands {
                 iteration.restriction(), iteration.restrictionOverride(), null, iteration.defects(),
                 iteration.verdicts(), iteration.links());
         String progress = progressAfterGates(released).name();
-        dsl.update(ITERATIONS).set(ITERATIONS.LIST_ID, (String) null)
+        var resumeUpdate = dsl.update(ITERATIONS)
+                .set(ITERATIONS.LIST_ID, (String) null)
                 .set(ITERATIONS.CANCELLATION_CAUSE, (String) null)
                 .set(ITERATIONS.CANCELLATION_ACTOR_ID, (String) null)
                 .set(ITERATIONS.CANCELLATION_AT, (OffsetDateTime) null)
                 .set(ITERATIONS.CANCELLATION_PUBLIC_TEXT, (String) null)
                 .set(ITERATIONS.CANCELLATION_INTERNAL_TEXT, (String) null)
-                .set(ITERATIONS.PROGRESS, progress).where(ITERATIONS.ID.eq(id)).execute();
+                .set(ITERATIONS.PROGRESS, progress);
+        String formerListName = row.listId() == null ? null : dsl.select(DIGITIZATION_LISTS.NAME)
+                .from(DIGITIZATION_LISTS)
+                .where(DIGITIZATION_LISTS.ID.eq(row.listId()))
+                .fetchOne(0, String.class);
+        if (formerListName != null) {
+            resumeUpdate.set(ITERATIONS.FORMER_LIST_NAME, formerListName);
+        }
+        resumeUpdate.where(ITERATIONS.ID.eq(id)).execute();
         String internal = row.listId() == null ? null : "Taken off " + row.listId() + ".";
         internal = combine(internal, progressNote(iteration.progress().name(), progress));
         record(EventCode.ITERATION_RESUMED, id, caller, now(), Map.of(), null, internal);
