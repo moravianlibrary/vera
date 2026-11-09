@@ -6,7 +6,8 @@
 // and move, delete, refine, under `category.edit`; the custody set under
 // `category.grant_custody`. At `custody` each reaches the person's own subtree only, and the top
 // level is `any`'s. Nothing rebalances a mix: a category entering a sibling set has no share there,
-// and one leaving a set leaves its share unallocated, flagged.
+// and a moved or deleted category's share becomes unallocated in a new revision (PLAN-move: an
+// editor opened on the old set is then refused).
 
 import type {
   CategoryDraft,

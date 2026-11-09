@@ -164,15 +164,62 @@ describe("changing the tree", () => {
   it("moves a category with its share left unallocated where it was", async () => {
     signInAs("admin");
 
+    const periodicals = database.distributions.find((mix) => mix.id === "d2");
+    const house = database.distributions.find((mix) => mix.id === "d1");
+    if (periodicals === undefined || house === undefined) throw new Error("Missing fixture mix");
+    const previousPeriodicals = periodicals;
+    database.distributions = database.distributions.map((mix) =>
+      mix.id === "d2"
+        ? { ...mix, archivedAt: "2026-11-09T00:00:00Z", shares: { ...mix.shares, c23: 10 } }
+        : mix,
+    );
+
     await saveCategory("c23", { name: "Specialist press", parentId: "c1" });
     const index = await getCategoryIndex();
 
     expect(sharesOf("d1").c23).toBeUndefined();
+    expect(database.distributions.find((mix) => mix.id === "d1")).toMatchObject({
+      revision: house.revision + 1,
+      revisions: [
+        ...house.revisions,
+        {
+          revision: house.revision + 1,
+          shares: expect.not.objectContaining({ c23: expect.anything() }),
+          at: expect.any(String),
+          label: null,
+        },
+      ],
+    });
+    expect(database.distributions.find((mix) => mix.id === "d2")).toEqual({
+      ...previousPeriodicals,
+      archivedAt: "2026-11-09T00:00:00Z",
+      shares: { ...previousPeriodicals.shares, c23: 10 },
+    });
+    database.distributions = database.distributions.map((mix) =>
+      mix.id === "d2" ? previousPeriodicals : mix,
+    );
     expect(index.mix?.nodes.find((node) => node.categoryId === "c2")).toMatchObject({
       unallocated: 20,
     });
     expect(index.mix?.nodes.find((node) => node.categoryId === "c1")?.noShareIds).toContain("c23");
     expect(await statusOf(saveCategory("c1", { name: "Monographs", parentId: "c11" }))).toBe(422);
+  });
+
+  it("renames a category without writing a mix revision", async () => {
+    signInAs("admin");
+    const category = database.categories.find((candidate) => candidate.id === "c23");
+    if (category === undefined) throw new Error("No Specialist press category");
+    const before = database.distributions.map((mix) => ({
+      id: mix.id,
+      revision: mix.revision,
+      revisions: mix.revisions,
+    }));
+
+    await saveCategory("c23", { name: "Specialist newspapers", parentId: category.parentId });
+
+    expect(
+      database.distributions.map(({ id, revision, revisions }) => ({ id, revision, revisions })),
+    ).toEqual(before);
   });
 
   it("says which mixes give a share, naming only those the caller may read", async () => {
@@ -193,9 +240,41 @@ describe("changing the tree", () => {
     signInAs("admin");
     const empty = await createCategory({ name: "Posters", parentId: null });
     await saveCategoryCustody(empty.id, { groupIds: ["g3"], userIds: [] });
+    const house = database.distributions.find((mix) => mix.id === "d1");
+    const periodicals = database.distributions.find((mix) => mix.id === "d2");
+    if (house === undefined || periodicals === undefined) throw new Error("Missing fixture mix");
+    database.distributions = database.distributions.map((mix) =>
+      mix.id === "d1"
+        ? { ...mix, shares: { ...mix.shares, [empty.id]: 25 } }
+        : mix.id === "d2"
+          ? {
+              ...mix,
+              archivedAt: "2026-11-09T00:00:00Z",
+              shares: { ...mix.shares, [empty.id]: 75 },
+            }
+          : mix,
+    );
 
     await deleteCategory(empty.id);
 
+    expect(sharesOf("d1")[empty.id]).toBeUndefined();
+    expect(database.distributions.find((mix) => mix.id === "d1")?.revision).toBe(
+      house.revision + 1,
+    );
+    expect(database.distributions.find((mix) => mix.id === "d1")?.revisions.at(-1)).toMatchObject({
+      revision: house.revision + 1,
+      shares: expect.not.objectContaining({ [empty.id]: expect.anything() }),
+      at: expect.any(String),
+      label: null,
+    });
+    expect(database.distributions.find((mix) => mix.id === "d2")).toMatchObject({
+      ...periodicals,
+      archivedAt: "2026-11-09T00:00:00Z",
+      shares: { ...periodicals.shares, [empty.id]: 75 },
+    });
+    database.distributions = database.distributions.map((mix) =>
+      mix.id === "d2" ? periodicals : mix,
+    );
     expect(database.categories.some((category) => category.id === empty.id)).toBe(false);
     expect(database.groups.find((group) => group.id === "g3")?.categoryIds).toEqual([]);
     expect(await statusOf(deleteCategory("c21"))).toBe(409); // holds documents
