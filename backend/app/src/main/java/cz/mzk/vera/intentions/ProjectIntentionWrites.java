@@ -60,14 +60,45 @@ public class ProjectIntentionWrites {
             String endsOn,
             Integer targetPages,
             String distributionId,
-            Integer mixRevision) {
-        List<String> ids = dsl.select(INTENTIONS.ID).from(INTENTIONS).fetch(INTENTIONS.ID);
+            Integer mixRevision,
+            String templateId) {
+        return createPlanned(
+                dsl,
+                name,
+                description,
+                fundingKind,
+                projectId,
+                scopeCategoryId,
+                scopeConditions,
+                countsFrom,
+                endsOn,
+                targetPages,
+                distributionId,
+                mixRevision,
+                templateId);
+    }
+
+    public String createPlanned(
+            DSLContext tx,
+            String name,
+            String description,
+            String fundingKind,
+            String projectId,
+            String scopeCategoryId,
+            JSONB scopeConditions,
+            String countsFrom,
+            String endsOn,
+            Integer targetPages,
+            String distributionId,
+            Integer mixRevision,
+            String templateId) {
+        List<String> ids = tx.select(INTENTIONS.ID).from(INTENTIONS).fetch(INTENTIONS.ID);
         String id = RecordIds.next("i", ids);
         int position =
-                dsl.select(coalesce(max(INTENTIONS.POSITION), -1).add(1))
+                tx.select(coalesce(max(INTENTIONS.POSITION), -1).add(1))
                         .from(INTENTIONS)
                         .fetchOne(0, int.class);
-        dsl.insertInto(INTENTIONS)
+        tx.insertInto(INTENTIONS)
                 .set(INTENTIONS.ID, id)
                 .set(INTENTIONS.NAME, name)
                 .set(INTENTIONS.DESCRIPTION, description)
@@ -80,6 +111,7 @@ public class ProjectIntentionWrites {
                 .set(INTENTIONS.TARGET_PAGES, targetPages)
                 .set(INTENTIONS.DISTRIBUTION_ID, distributionId)
                 .set(INTENTIONS.MIX_REVISION, mixRevision)
+                .set(INTENTIONS.TEMPLATE_ID, templateId)
                 .set(INTENTIONS.IS_OVERALL, false)
                 .set(INTENTIONS.POSITION, position)
                 .execute();

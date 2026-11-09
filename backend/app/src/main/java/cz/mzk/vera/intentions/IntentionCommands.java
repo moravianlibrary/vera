@@ -46,6 +46,7 @@ class IntentionCommands {
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
+    private final RepeatQueue repeatQueue;
 
     IntentionCommands(
             DSLContext dsl,
@@ -54,7 +55,8 @@ class IntentionCommands {
             IntentionReads reads,
             EventRecorder events,
             Clock clock,
-            JsonMapper json) {
+            JsonMapper json,
+            RepeatQueue repeatQueue) {
         this.dsl = dsl;
         this.access = access;
         this.writer = writer;
@@ -62,6 +64,7 @@ class IntentionCommands {
         this.events = events;
         this.clock = clock;
         this.json = json;
+        this.repeatQueue = repeatQueue;
     }
 
     @Transactional
@@ -88,7 +91,8 @@ class IntentionCommands {
                         draft.endsOn(),
                         draft.targetPages(),
                         mix.id(),
-                        mix.revision());
+                        mix.revision(),
+                        null);
         events.recordAct(EventCode.INTENTION_CREATED, "intention", id, caller, List.of());
         return new ActResult(201, null, null, row(caller.userId(), id));
     }
@@ -273,7 +277,7 @@ class IntentionCommands {
                         .from(INTENTION_TEMPLATES)
                         .fetchOne(0, int.class);
         writeTemplate(id, draft, mixId, revision, today, next, caller.userId(), position);
-        queueRepeatOccurrence(id);
+        repeatQueue.queue(dsl, id, LocalDate.parse(next));
         events.recordAct(EventCode.REPEAT_CHANGED, "repeat", id, caller, List.of());
         return new ActResult(201, null, null, templateRow(id));
     }
@@ -306,13 +310,12 @@ class IntentionCommands {
                 next,
                 existing.getCreatedBy(),
                 existing.getPosition());
-        queueRepeatOccurrence(id);
+        if (!existing.getNextOn().equals(LocalDate.parse(next))) {
+            repeatQueue.queue(dsl, id, LocalDate.parse(next));
+        }
         events.recordAct(EventCode.REPEAT_CHANGED, "repeat", id, caller, List.of());
         return ActResult.ok(templateRow(id));
     }
-
-    // BK6h queues the repeat occurrence job after its write.
-    private void queueRepeatOccurrence(String id) {}
 
     private void writeTemplate(
             String id,

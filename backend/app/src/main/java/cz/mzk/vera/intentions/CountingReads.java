@@ -56,27 +56,31 @@ public class CountingReads {
 
     // countingData: PLAN-counting; fetch each collection in batches and page sources once.
     public CountingSnapshot countingData() {
-        List<StoredIntention> intentions = dsl.selectFrom(INTENTIONS)
+        return countingData(dsl);
+    }
+
+    public CountingSnapshot countingData(DSLContext database) {
+        List<StoredIntention> intentions = database.selectFrom(INTENTIONS)
                 .orderBy(INTENTIONS.POSITION).fetch(this::storedIntention);
         Map<String, List<StoredRevision>> revisions = new LinkedHashMap<>();
-        dsl.selectFrom(MIX_REVISIONS)
+        database.selectFrom(MIX_REVISIONS)
                 .orderBy(MIX_REVISIONS.MIX_ID, MIX_REVISIONS.POSITION)
                 .fetch().forEach(row -> revisions.computeIfAbsent(row.getMixId(),
                         ignored -> new ArrayList<>()).add(new StoredRevision(row.getRevision(),
                                 readShares(row.getShares()), row.getAt().toInstant().toString(),
                                 row.getLabel())));
-        List<StoredMix> mixes = dsl.selectFrom(MIXES).orderBy(MIXES.POSITION)
+        List<StoredMix> mixes = database.selectFrom(MIXES).orderBy(MIXES.POSITION)
                 .fetch(row -> new StoredMix(row.getId(), row.getName(), readShares(row.getShares()),
                         row.getRevision(), instant(row.getArchivedAt()),
                         revisions.getOrDefault(row.getId(), List.of())));
-        List<Category> categories = dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION)
+        List<Category> categories = database.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION)
                 .fetch(row -> new Category(row.getId(), row.getName(), row.getParentId()));
-        List<DigitizationList> lists = dsl.selectFrom(DIGITIZATION_LISTS)
+        List<DigitizationList> lists = database.selectFrom(DIGITIZATION_LISTS)
                 .orderBy(DIGITIZATION_LISTS.POSITION)
                 .fetch(row -> new DigitizationList(row.getId(), row.getName(),
                         row.getStartsOn().toString(), row.getEndsOn().toString(), row.getTargetPages(),
                         row.getDoneAt() == null ? null : row.getDoneAt().toInstant().toString()));
-        List<Iteration> iterations = dsl.selectFrom(ITERATIONS)
+        List<Iteration> iterations = database.selectFrom(ITERATIONS)
                 .fetch(row -> new Iteration(row.getId(), row.getDocumentId(), row.getAttempt(),
                         row.getRequestId(), row.getCategoryId(), row.getProjectId(),
                         Progress.valueOf(row.getProgress()), null, null,
@@ -85,7 +89,7 @@ public class CountingReads {
                         List.of(), List.of(), List.of(), row.getListId(),
                         row.getDigitizedAt() == null ? null : row.getDigitizedAt().toInstant().toString()));
         Map<String, Integer> pageCounts = new LinkedHashMap<>();
-        dsl.select(DOCUMENT_STATES.DOCUMENT_ID, DOCUMENT_STATES.PAGE_COUNT)
+        database.select(DOCUMENT_STATES.DOCUMENT_ID, DOCUMENT_STATES.PAGE_COUNT)
                 .from(DOCUMENT_STATES).fetch().forEach(row -> {
                     if (row.get(DOCUMENT_STATES.PAGE_COUNT) != null) {
                         pageCounts.put(row.get(DOCUMENT_STATES.DOCUMENT_ID),
@@ -93,12 +97,12 @@ public class CountingReads {
                     }
                 });
         Map<String, String> about = new LinkedHashMap<>();
-        dsl.selectFrom(PROPERTY_DEFINITIONS).fetch()
+        database.selectFrom(PROPERTY_DEFINITIONS).fetch()
                 .forEach(row -> about.put(row.getKey(), row.getAbout()));
         Map<String, List<PropertyValues>> documentProperties = new LinkedHashMap<>();
         Map<String, List<PropertyValues>> iterationProperties = new LinkedHashMap<>();
-        loadPropertySources(documentProperties, true);
-        loadPropertySources(iterationProperties, false);
+        loadPropertySources(database, documentProperties, true);
+        loadPropertySources(database, iterationProperties, false);
         Function<Iteration, Integer> pagesOf = iteration -> pageCounts.get(iteration.documentId());
         String today = LocalDate.now(clock).toString();
         CountingData rules = new CountingData(categories, lists, iterations, pagesOf,
@@ -173,17 +177,18 @@ public class CountingReads {
         }
     }
 
-    private void loadPropertySources(Map<String, List<PropertyValues>> properties, boolean document) {
+    private void loadPropertySources(
+            DSLContext database, Map<String, List<PropertyValues>> properties, boolean document) {
         Map<String, Map<String, List<Source>>> values = new LinkedHashMap<>();
         if (document) {
-            dsl.selectFrom(DOCUMENT_PROPERTY_SOURCES)
+            database.selectFrom(DOCUMENT_PROPERTY_SOURCES)
                     .orderBy(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID, DOCUMENT_PROPERTY_SOURCES.KEY,
                             DOCUMENT_PROPERTY_SOURCES.POSITION)
                     .fetch().forEach(row -> addSource(values, row.getDocumentId(), row.getKey(),
                             row.getSource(), row.getTier(), row.getValue(), row.getObservedAt(),
                             row.getSetBy()));
         } else {
-            dsl.selectFrom(ITERATION_PROPERTY_SOURCES)
+            database.selectFrom(ITERATION_PROPERTY_SOURCES)
                     .orderBy(ITERATION_PROPERTY_SOURCES.ITERATION_ID, ITERATION_PROPERTY_SOURCES.KEY,
                             ITERATION_PROPERTY_SOURCES.POSITION)
                     .fetch().forEach(row -> addSource(values, row.getIterationId(), row.getKey(),

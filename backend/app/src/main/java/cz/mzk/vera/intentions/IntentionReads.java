@@ -144,6 +144,26 @@ class IntentionReads {
         return result;
     }
 
+    Map<String, Object> archiveSnapshot(String intentionId) {
+        return archiveSnapshot(dsl, intentionId);
+    }
+
+    Map<String, Object> archiveSnapshot(DSLContext database, String intentionId) {
+        CountingSnapshot data = counting.countingData(database);
+        StoredIntention stored = find(data, intentionId);
+        if (stored == null) {
+            throw new IllegalArgumentException("Unknown intention " + intentionId);
+        }
+        StoredDistribution distribution = stored.distributionId() == null
+            ? null
+            : counting.distributionOf(data, stored);
+        Map<String, Object> snapshot = new LinkedHashMap<>();
+        snapshot.put("captured_row", archivedRow(stored, data, LocalDate.now(clock), projects()));
+        snapshot.put("mix_tree", distribution == null ? null : mixTree(stored, distribution, data, true));
+        snapshot.put("category_tree", categoryRows(data.rules().categories()));
+        return snapshot;
+    }
+
     ResponseEntity<?> deletion(String userId, String intentionId) {
         CountingSnapshot data = counting.countingData();
         StoredIntention stored = find(data, intentionId);
