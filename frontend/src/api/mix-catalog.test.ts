@@ -147,6 +147,7 @@ it("preserves an archived intention's results when its shared mix changes", asyn
 it("allows a repeat with no target and no mix", async () => {
   server.use(...createHandlers("admin"));
   const template = await createIntentionTemplate({
+    description: "",
     namePattern: `Count ${crypto.randomUUID()} — {period}`,
     every: "month",
     funding: { kind: "any" },

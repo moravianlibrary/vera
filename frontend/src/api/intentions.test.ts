@@ -365,6 +365,7 @@ describe("archiving and deleting an intention", () => {
 
 describe("repeats", () => {
   const repeat: IntentionTemplateDraft = {
+    description: "A recurring description.",
     namePattern: "Weekly maps — {period}",
     every: "month",
     funding: { kind: "any" },

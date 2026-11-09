@@ -5,6 +5,7 @@
     "intentionTemplates": [
       {
         "id": "t1",
+        "description": "",
         "namePattern": "Monthly output — {period}",
         "every": "month",
         "funding": {

@@ -171,6 +171,7 @@ export type RepeatEvery = z.infer<typeof repeatEverySchema>;
 // A repeat makes one intention per period, each with its own window (intentions.md §3.3).
 export const intentionTemplateSchema = z.object({
   id,
+  description: z.string(),
   // "Monthly output — {period}".
   namePattern: z.string(),
   every: repeatEverySchema,

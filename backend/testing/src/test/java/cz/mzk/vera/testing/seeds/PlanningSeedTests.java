@@ -142,6 +142,7 @@ class PlanningSeedTests {
         var template = dsl.selectFrom(INTENTION_TEMPLATES)
                 .where(INTENTION_TEMPLATES.ID.eq("t1")).fetchOne();
         assertThat(template.getNamePattern()).isEqualTo("Monthly output — {period}");
+        assertThat(template.getDescription()).isEqualTo("What the scanning room should deliver this month.");
         assertThat(template.getEvery()).isEqualTo("month");
         assertThat(template.getFundingKind()).isEqualTo("any");
         assertThat(template.getFundingProjectId()).isNull();

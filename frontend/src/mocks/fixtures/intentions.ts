@@ -139,7 +139,7 @@ export const intentions: readonly Intention[] = [
     targetPages: 3000,
     countsFrom: "2026-05-01",
     endsOn: "2026-05-31",
-    archived: { actor: { kind: "system" }, at: "2026-06-01T00:00:00Z" },
+    archived: { actor: { kind: "system" }, at: "2026-05-31T22:00:00Z" },
   },
   {
     ...intentionBase,
@@ -222,6 +222,7 @@ function projectIntention(
 export const intentionTemplates: readonly IntentionTemplate[] = [
   {
     id: "t1",
+    description: "What the scanning room should deliver this month.",
     namePattern: "Monthly output — {period}",
     every: "month",
     funding: everything,

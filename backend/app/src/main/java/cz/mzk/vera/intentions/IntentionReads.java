@@ -89,6 +89,7 @@ class IntentionReads {
             dsl.selectFrom(INTENTION_TEMPLATES).orderBy(INTENTION_TEMPLATES.POSITION).fetch().forEach(row -> {
                 Map<String, Object> template = new LinkedHashMap<>();
                 template.put("id", row.getId());
+                template.put("description", row.getDescription());
                 template.put("namePattern", row.getNamePattern());
                 template.put("every", row.getEvery());
                 template.put("funding", funding(row.getFundingKind(), row.getFundingProjectId()));

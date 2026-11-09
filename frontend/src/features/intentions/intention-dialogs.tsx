@@ -811,6 +811,7 @@ export function DeleteIntentionDialog({
 
 const templateFormSchemaOf = () =>
   z.object({
+    description: z.string(),
     namePattern: z
       .string()
       .trim()
@@ -826,6 +827,7 @@ const templateFormSchemaOf = () =>
 type TemplateForm = z.infer<ReturnType<typeof templateFormSchemaOf>>;
 
 const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
+  description: values.description.trim(),
   namePattern: values.namePattern.trim(),
   every: values.every,
   funding: fundingOf(values.funding),
@@ -881,6 +883,7 @@ export function TemplateFormDialog({
       description={message("intentionDialog.repeatDescription")}
       schema={schema}
       defaultValues={{
+        description: template?.description ?? "",
         namePattern: template?.namePattern ?? "",
         every: template?.every ?? "month",
         funding: template === null ? fundingAny : fundingValueOf(template.funding),
@@ -919,6 +922,13 @@ export function TemplateFormDialog({
               />
             </Field>
             <FieldError message={form.formState.errors.namePattern?.message} />
+            <Field
+              id={`${id}-description`}
+              label={message("intentionDialog.description")}
+              hint={message("intentionDialog.optional")}
+            >
+              <Textarea id={`${id}-description`} rows={2} {...form.register("description")} />
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field id={`${id}-every`} label={message("intentionDialog.every")}>
                 <Select

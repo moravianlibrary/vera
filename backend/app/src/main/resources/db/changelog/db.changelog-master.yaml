@@ -87,6 +87,9 @@ databaseChangeLog:
       file: 0230-mix-deleted-ids.sql
       relativeToChangelogFile: true
   - include:
+      file: 0255-intention-template-descriptions.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0150-properties-acts.sql
       relativeToChangelogFile: true
   - include:

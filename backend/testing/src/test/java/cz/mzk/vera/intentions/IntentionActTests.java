@@ -132,7 +132,7 @@ class IntentionActTests {
                         + "\"scopeCategoryId\":null,\"countsFrom\":\"2026-06-25\",\"endsOn\":null,"
                         + "\"targetPages\":null,\"mix\":{\"kind\":\"none\"}}";
         String repeat =
-                "{\"namePattern\":\"Period {period}\",\"every\":\"month\","
+                "{\"description\":\"\",\"namePattern\":\"Period {period}\",\"every\":\"month\","
                     + "\"funding\":{\"kind\":\"any\"},\"scopeCategoryId\":null,"
                     + "\"mix\":{\"kind\":\"none\"},\"targetPages\":null,\"isArchivingPrevious\":false}";
         client.post()

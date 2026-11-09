@@ -974,7 +974,7 @@
           "actor": {
             "kind": "system"
           },
-          "at": "2026-06-01T00:00:00Z"
+          "at": "2026-05-31T22:00:00Z"
         },
         "id": "i10",
         "name": "Monthly output — May 2026",
@@ -1309,6 +1309,7 @@
     "intentionTemplates": [
       {
         "id": "t1",
+        "description": "What the scanning room should deliver this month.",
         "namePattern": "Monthly output — {period}",
         "every": "month",
         "funding": {

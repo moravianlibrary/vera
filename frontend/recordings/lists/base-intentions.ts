@@ -31,6 +31,7 @@ const draft = (name: string) => ({
   mix: { kind: "use", mixId: "d1", revision: null },
 });
 const template = {
+  description: "A recurring description.",
   namePattern: "Weekly maps — {period}",
   every: "month",
   funding: { kind: "any" },

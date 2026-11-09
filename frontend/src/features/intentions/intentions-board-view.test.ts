@@ -79,6 +79,7 @@ const index: IntentionIndex = {
     {
       template: {
         id: "repeat",
+        description: "Regional work.",
         namePattern: "Regional {period}",
         every: "month",
         funding: { kind: "any" },

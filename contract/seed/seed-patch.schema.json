@@ -1987,6 +1987,9 @@
                 "type": "string",
                 "minLength": 1
               },
+              "description": {
+                "type": "string"
+              },
               "namePattern": {
                 "type": "string"
               },
@@ -2175,6 +2178,7 @@
             },
             "required": [
               "id",
+              "description",
               "namePattern",
               "every",
               "funding",

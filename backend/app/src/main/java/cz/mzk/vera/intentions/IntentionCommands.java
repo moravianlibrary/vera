@@ -326,6 +326,7 @@ class IntentionCommands {
         JsonNode funding = draft.path("funding");
         dsl.insertInto(INTENTION_TEMPLATES)
                 .set(INTENTION_TEMPLATES.ID, id)
+                .set(INTENTION_TEMPLATES.DESCRIPTION, draft.path("description").asString())
                 .set(INTENTION_TEMPLATES.NAME_PATTERN, draft.path("namePattern").asString())
                 .set(INTENTION_TEMPLATES.EVERY, draft.path("every").asString())
                 .set(INTENTION_TEMPLATES.FUNDING_KIND, funding.path("kind").asString())
@@ -418,6 +419,7 @@ class IntentionCommands {
                 dsl.selectFrom(INTENTION_TEMPLATES).where(INTENTION_TEMPLATES.ID.eq(id)).fetchOne();
         Map<String, Object> template = new LinkedHashMap<>();
         template.put("id", row.getId());
+        template.put("description", row.getDescription());
         template.put("namePattern", row.getNamePattern());
         template.put("every", row.getEvery());
         Map<String, Object> funding = new LinkedHashMap<>();

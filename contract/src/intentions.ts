@@ -245,6 +245,7 @@ export const intentionTemplateDraftSchema = z.object({
     .string()
     .trim()
     .includes("{period}", { message: "Put {period} in the name, so each one is told apart" }),
+  description: z.string().trim(),
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: z.string().nullable(),

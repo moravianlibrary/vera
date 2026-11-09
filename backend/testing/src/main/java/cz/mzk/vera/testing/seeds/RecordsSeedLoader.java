@@ -147,6 +147,7 @@ class RecordsSeedLoader {
             JsonNode funding = row.path("funding");
             dsl.insertInto(INTENTION_TEMPLATES)
                     .set(INTENTION_TEMPLATES.ID, string(row, "id"))
+                    .set(INTENTION_TEMPLATES.DESCRIPTION, string(row, "description"))
                     .set(INTENTION_TEMPLATES.NAME_PATTERN, string(row, "namePattern"))
                     .set(INTENTION_TEMPLATES.EVERY, string(row, "every"))
                     .set(INTENTION_TEMPLATES.FUNDING_KIND, string(funding, "kind"))
