@@ -29,6 +29,11 @@ CREATE TABLE archived_intention_snapshots (
   mix_tree jsonb,
   category_tree jsonb NOT NULL
 );
+-- A database filled before this table existed names templates it does not hold; a reset fills
+-- them again from the seed.
+UPDATE intentions SET template_id = NULL
+  WHERE template_id IS NOT NULL
+    AND template_id NOT IN (SELECT id FROM intention_templates);
 ALTER TABLE intentions
   ADD CONSTRAINT intentions_template_fk FOREIGN KEY (template_id) REFERENCES intention_templates (id)
     DEFERRABLE INITIALLY DEFERRED;
