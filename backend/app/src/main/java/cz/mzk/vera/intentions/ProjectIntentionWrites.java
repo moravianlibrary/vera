@@ -1,15 +1,19 @@
 package cz.mzk.vera.intentions;
 
 import static cz.mzk.vera.db.tables.Tables.INTENTIONS;
+
 import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.max;
 
 import cz.mzk.vera.session.RecordIds;
+
+import org.jooq.DSLContext;
+import org.jooq.JSONB;
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
-import org.jooq.DSLContext;
-import org.springframework.stereotype.Service;
 
 // PLAN-no-mix; PLAN-intention: project acts own the project's intention writes.
 @Service
@@ -20,11 +24,14 @@ public class ProjectIntentionWrites {
         this.dsl = dsl;
     }
 
-    public String create(String projectId, String name, String startsOn, String endsOn, Integer targetPages) {
+    public String create(
+            String projectId, String name, String startsOn, String endsOn, Integer targetPages) {
         List<String> ids = dsl.select(INTENTIONS.ID).from(INTENTIONS).fetch(INTENTIONS.ID);
         String id = RecordIds.next("i", ids);
-        int position = dsl.select(coalesce(max(INTENTIONS.POSITION), -1).add(1))
-                .from(INTENTIONS).fetchOne(0, int.class);
+        int position =
+                dsl.select(coalesce(max(INTENTIONS.POSITION), -1).add(1))
+                        .from(INTENTIONS)
+                        .fetchOne(0, int.class);
         dsl.insertInto(INTENTIONS)
                 .set(INTENTIONS.ID, id)
                 .set(INTENTIONS.NAME, name)
@@ -41,7 +48,77 @@ public class ProjectIntentionWrites {
         return id;
     }
 
-    public void follow(String id, String projectId, String name, String startsOn, String endsOn,
+    // ACT-intention-create; project acts and intention acts share this intention row writer.
+    public String createPlanned(
+            String name,
+            String description,
+            String fundingKind,
+            String projectId,
+            String scopeCategoryId,
+            JSONB scopeConditions,
+            String countsFrom,
+            String endsOn,
+            Integer targetPages,
+            String distributionId,
+            Integer mixRevision) {
+        List<String> ids = dsl.select(INTENTIONS.ID).from(INTENTIONS).fetch(INTENTIONS.ID);
+        String id = RecordIds.next("i", ids);
+        int position =
+                dsl.select(coalesce(max(INTENTIONS.POSITION), -1).add(1))
+                        .from(INTENTIONS)
+                        .fetchOne(0, int.class);
+        dsl.insertInto(INTENTIONS)
+                .set(INTENTIONS.ID, id)
+                .set(INTENTIONS.NAME, name)
+                .set(INTENTIONS.DESCRIPTION, description)
+                .set(INTENTIONS.FUNDING_KIND, fundingKind)
+                .set(INTENTIONS.FUNDING_PROJECT_ID, projectId)
+                .set(INTENTIONS.SCOPE_CATEGORY_ID, scopeCategoryId)
+                .set(INTENTIONS.SCOPE_CONDITIONS, scopeConditions)
+                .set(INTENTIONS.COUNTS_FROM, LocalDate.parse(countsFrom))
+                .set(INTENTIONS.ENDS_ON, endsOn == null ? null : LocalDate.parse(endsOn))
+                .set(INTENTIONS.TARGET_PAGES, targetPages)
+                .set(INTENTIONS.DISTRIBUTION_ID, distributionId)
+                .set(INTENTIONS.MIX_REVISION, mixRevision)
+                .set(INTENTIONS.IS_OVERALL, false)
+                .set(INTENTIONS.POSITION, position)
+                .execute();
+        return id;
+    }
+
+    public void savePlanned(
+            String id,
+            String name,
+            String description,
+            String fundingKind,
+            String projectId,
+            String scopeCategoryId,
+            JSONB scopeConditions,
+            String endsOn,
+            Integer targetPages,
+            String distributionId,
+            Integer mixRevision) {
+        dsl.update(INTENTIONS)
+                .set(INTENTIONS.NAME, name)
+                .set(INTENTIONS.DESCRIPTION, description)
+                .set(INTENTIONS.FUNDING_KIND, fundingKind)
+                .set(INTENTIONS.FUNDING_PROJECT_ID, projectId)
+                .set(INTENTIONS.SCOPE_CATEGORY_ID, scopeCategoryId)
+                .set(INTENTIONS.SCOPE_CONDITIONS, scopeConditions)
+                .set(INTENTIONS.ENDS_ON, endsOn == null ? null : LocalDate.parse(endsOn))
+                .set(INTENTIONS.TARGET_PAGES, targetPages)
+                .set(INTENTIONS.DISTRIBUTION_ID, distributionId)
+                .set(INTENTIONS.MIX_REVISION, mixRevision)
+                .where(INTENTIONS.ID.eq(id))
+                .execute();
+    }
+
+    public void follow(
+            String id,
+            String projectId,
+            String name,
+            String startsOn,
+            String endsOn,
             Integer targetPages) {
         dsl.update(INTENTIONS)
                 .set(INTENTIONS.NAME, name)

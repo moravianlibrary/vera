@@ -247,7 +247,9 @@ public class CategoryReads {
         result.put("id", intention.id());
         result.put("name", stored.name());
         result.put("countsFrom", intention.countsFrom());
-        result.put("mixRevision", null);
+        if (stored.mixRevision() != null) {
+            result.put("mixRevision", stored.mixRevision());
+        }
         return result;
     }
 

@@ -1,30 +1,82 @@
 package cz.mzk.vera.intentions;
 
+import cz.mzk.vera.access.ActResult;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.web.Problems;
+
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.util.Map;
 
 // PLAN-counting; PLAN-mix-reading; ACT-refusal: serve intention reads and write-free previews.
 @RestController
 @RequestMapping("/api/intentions")
 final class IntentionsController {
     private final IntentionReads reads;
+    private final IntentionCommands commands;
     private final JsonMapper mapper;
 
-    IntentionsController(IntentionReads reads, JsonMapper mapper) {
+    IntentionsController(IntentionReads reads, IntentionCommands commands, JsonMapper mapper) {
         this.reads = reads;
+        this.commands = commands;
         this.mapper = mapper;
+    }
+
+    @PostMapping
+    ResponseEntity<?> create(HttpServletRequest request, @RequestBody JsonNode body) {
+        Caller caller = caller(request);
+        return caller == null
+                ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.create(caller, body));
+    }
+
+    @PutMapping("/{intentionId}")
+    ResponseEntity<?> save(
+            HttpServletRequest request,
+            @PathVariable String intentionId,
+            @RequestBody JsonNode body) {
+        Caller caller = caller(request);
+        return caller == null
+                ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.save(caller, intentionId, body));
+    }
+
+    @PostMapping("/{intentionId}/archive")
+    ResponseEntity<?> archive(HttpServletRequest request, @PathVariable String intentionId) {
+        Caller caller = caller(request);
+        return caller == null
+                ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.archive(caller, intentionId));
+    }
+
+    @PostMapping("/{intentionId}/unarchive")
+    ResponseEntity<?> unarchive(HttpServletRequest request, @PathVariable String intentionId) {
+        Caller caller = caller(request);
+        return caller == null
+                ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.unarchive(caller, intentionId));
+    }
+
+    @DeleteMapping("/{intentionId}")
+    ResponseEntity<?> delete(HttpServletRequest request, @PathVariable String intentionId) {
+        Caller caller = caller(request);
+        return caller == null
+                ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.delete(caller, intentionId));
     }
 
     @GetMapping("/overview")
@@ -42,12 +94,16 @@ final class IntentionsController {
             return refusal;
         }
         Map<String, Object> result = reads.mix(caller.userId(), intentionId);
-        return result == null ? Problems.response(404, "Intention not found") : ResponseEntity.ok(result);
+        return result == null
+                ? Problems.response(404, "Intention not found")
+                : ResponseEntity.ok(result);
     }
 
     @GetMapping("/{intentionId}/correction")
-    ResponseEntity<?> correction(HttpServletRequest request, @PathVariable String intentionId,
-        @RequestParam(required = false) String pages) {
+    ResponseEntity<?> correction(
+            HttpServletRequest request,
+            @PathVariable String intentionId,
+            @RequestParam(required = false) String pages) {
         Caller caller = caller(request);
         if (caller == null) {
             return Problems.response(401, "Nobody is signed in.");
@@ -57,11 +113,11 @@ final class IntentionsController {
             pageCount = Integer.parseInt(pages);
         } catch (NumberFormatException exception) {
             return Problems.response(
-                422, "Say how many pages the list is for", "list.page_count_required", null);
+                    422, "Say how many pages the list is for", "list.page_count_required", null);
         }
         if (pageCount <= 0) {
             return Problems.response(
-                422, "Say how many pages the list is for", "list.page_count_required", null);
+                    422, "Say how many pages the list is for", "list.page_count_required", null);
         }
         return reads.correction(caller.userId(), intentionId, pageCount);
     }
