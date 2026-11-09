@@ -320,8 +320,7 @@
                 "archived": null,
                 "id": "i4",
                 "name": "Overall output",
-                "countsFrom": "2019-01-01",
-                "mixRevision": null
+                "countsFrom": "2019-01-01"
               },
               "outputPages": 0,
               "unallocated": 0,
@@ -1044,8 +1043,7 @@
                 "archived": null,
                 "id": "i4",
                 "name": "Overall output",
-                "countsFrom": "2019-01-01",
-                "mixRevision": null
+                "countsFrom": "2019-01-01"
               },
               "outputPages": 0,
               "unallocated": 0,
@@ -2184,8 +2182,7 @@
                 "archived": null,
                 "id": "i4",
                 "name": "Overall output",
-                "countsFrom": "2019-01-01",
-                "mixRevision": null
+                "countsFrom": "2019-01-01"
               },
               "outputPages": 0,
               "unallocated": 0,
@@ -2631,8 +2628,7 @@
                 "archived": null,
                 "id": "i4",
                 "name": "Overall output",
-                "countsFrom": "2019-01-01",
-                "mixRevision": null
+                "countsFrom": "2019-01-01"
               },
               "outputPages": 0,
               "unallocated": 0,
@@ -2775,8 +2771,7 @@
               "distributionId": "<U1>",
               "isOverall": false,
               "templateId": null,
-              "archived": null,
-              "mixRevision": null
+              "archived": null
             },
             "state": "Upcoming",
             "timeElapsed": 0,
@@ -3517,8 +3512,7 @@
                 "archived": null,
                 "id": "i4",
                 "name": "Overall output",
-                "countsFrom": "2019-01-01",
-                "mixRevision": null
+                "countsFrom": "2019-01-01"
               },
               "outputPages": 0,
               "unallocated": 0,

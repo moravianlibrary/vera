@@ -33,7 +33,13 @@ import { isInPool, isScanned } from "@vera/domain/lists";
 import type { Permission } from "@vera/domain/permissions";
 import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
-import { countingData, isVisible, nextId, overallIntention } from "@/mocks/intentions";
+import {
+  countingData,
+  isVisible,
+  nextId,
+  overallIntention,
+  withoutUnpinnedRevision,
+} from "@/mocks/intentions";
 import { mixTreeOf } from "@/mocks/mixes";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { replaceIteration, writeLog } from "@/mocks/mutations";
@@ -101,7 +107,11 @@ export function queryCategoryIndex(session: Session, mixId?: string): CategoryIn
   const selected =
     selectedMix === undefined
       ? overallIntention()
-      : { ...overallIntention(), distributionId: selectedMix.id, mixRevision: null };
+      : withoutUnpinnedRevision({
+          ...overallIntention(),
+          distributionId: selectedMix.id,
+          mixRevision: null,
+        });
   return {
     totals: totalsOf(iterations),
     nodes: categories.map((category) => nodeOf(category.id)),

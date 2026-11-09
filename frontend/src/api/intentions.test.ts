@@ -184,7 +184,9 @@ describe("creating and editing an intention", () => {
     const none = await createIntention(draft("No mix", { mix: { kind: "none" } }));
     const push = rowOf(await listIntentionIndex(), "i8");
 
-    expect(latest.intention).toMatchObject({ distributionId: "d1", mixRevision: null });
+    expect(latest.intention).toMatchObject({ distributionId: "d1" });
+    // Following the latest revision stores none.
+    expect(latest.intention.mixRevision).toBeUndefined();
     expect(pinned.intention).toMatchObject({ distributionId: "d2", mixRevision: 2 });
     expect(pinned.mixRows.map((row) => row.intended)).toEqual(
       push.mixRows.map((row) => row.intended),

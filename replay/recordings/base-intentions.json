@@ -6077,8 +6077,7 @@
               "distributionId": "<U1>",
               "isOverall": false,
               "templateId": null,
-              "archived": null,
-              "mixRevision": null
+              "archived": null
             },
             "state": "Upcoming",
             "timeElapsed": 0,
@@ -8886,8 +8885,7 @@
                   "distributionId": "<U1>",
                   "isOverall": false,
                   "templateId": null,
-                  "archived": null,
-                  "mixRevision": null
+                  "archived": null
                 },
                 "state": "Upcoming",
                 "timeElapsed": 0,
@@ -9106,8 +9104,7 @@
               "archived": null,
               "id": "i8",
               "name": "Periodicals push — watch",
-              "countsFrom": "2026-01-01",
-              "mixRevision": null
+              "countsFrom": "2026-01-01"
             },
             "state": "Running",
             "timeElapsed": null,
@@ -10322,8 +10319,7 @@
                   "archived": null,
                   "id": "i8",
                   "name": "Periodicals push — watch",
-                  "countsFrom": "2026-01-01",
-                  "mixRevision": null
+                  "countsFrom": "2026-01-01"
                 },
                 "state": "Running",
                 "timeElapsed": null,
@@ -11895,8 +11891,7 @@
                   "distributionId": "<U1>",
                   "isOverall": false,
                   "templateId": null,
-                  "archived": null,
-                  "mixRevision": null
+                  "archived": null
                 },
                 "state": "Upcoming",
                 "timeElapsed": 0,
@@ -20202,15 +20197,9 @@
                 "kind": "any"
               },
               "scopeCategoryId": null,
-              "mix": {
-                "kind": "use",
-                "mixId": "<U1>",
-                "revision": null
-              },
               "targetPages": null,
               "isArchivingPrevious": true,
               "distributionId": "<U1>",
-              "mixRevision": null,
               "id": "t2",
               "since": "2026-06-25",
               "nextOn": "2026-07-01",
@@ -22871,15 +22860,9 @@
                     "kind": "any"
                   },
                   "scopeCategoryId": null,
-                  "mix": {
-                    "kind": "use",
-                    "mixId": "<U1>",
-                    "revision": null
-                  },
                   "targetPages": null,
                   "isArchivingPrevious": true,
                   "distributionId": "<U1>",
-                  "mixRevision": null,
                   "id": "t2",
                   "since": "2026-06-25",
                   "nextOn": "2026-07-01",
@@ -22912,13 +22895,7 @@
               "isArchivingPrevious": true,
               "since": "2026-05-01",
               "nextOn": "2026-07-01",
-              "createdBy": "u3",
-              "mix": {
-                "kind": "use",
-                "mixId": "<U1>",
-                "revision": null
-              },
-              "mixRevision": null
+              "createdBy": "u3"
             },
             "mix": {
               "id": "<U1>",
@@ -25560,13 +25537,7 @@
                   "isArchivingPrevious": true,
                   "since": "2026-05-01",
                   "nextOn": "2026-07-01",
-                  "createdBy": "u3",
-                  "mix": {
-                    "kind": "use",
-                    "mixId": "<U1>",
-                    "revision": null
-                  },
-                  "mixRevision": null
+                  "createdBy": "u3"
                 },
                 "mix": {
                   "id": "<U1>",
@@ -25581,15 +25552,9 @@
                     "kind": "any"
                   },
                   "scopeCategoryId": null,
-                  "mix": {
-                    "kind": "use",
-                    "mixId": "<U1>",
-                    "revision": null
-                  },
                   "targetPages": null,
                   "isArchivingPrevious": true,
                   "distributionId": "<U1>",
-                  "mixRevision": null,
                   "id": "t2",
                   "since": "2026-06-25",
                   "nextOn": "2026-07-01",
@@ -25629,8 +25594,7 @@
               "distributionId": null,
               "isOverall": false,
               "templateId": null,
-              "archived": null,
-              "mixRevision": null
+              "archived": null
             },
             "state": "Upcoming",
             "timeElapsed": 0,

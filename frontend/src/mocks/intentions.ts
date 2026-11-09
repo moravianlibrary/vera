@@ -444,6 +444,18 @@ export function nextId(prefix: string, ids: readonly string[]): string {
   return `${prefix}${Math.max(0, ...numbers) + 1}`;
 }
 
+// An intention that follows its mix's current revision stores no revision, as the seed's do.
+export function withoutUnpinnedRevision<T extends { mixRevision?: number | null }>(
+  intention: T,
+): T {
+  if (intention.mixRevision !== null) {
+    return intention;
+  }
+
+  const { mixRevision: _unpinned, ...rest } = intention;
+  return rest as T;
+}
+
 // The mix choice applied (PLAN-mix, PLAN-no-mix), or why it cannot be: what to store on the
 // intention.
 function applyMix(
@@ -521,7 +533,7 @@ export function createIntention(session: Session, draft: IntentionDraft): Outcom
     return mix;
   }
 
-  const intention = { ...created, ...mix.value };
+  const intention = withoutUnpinnedRevision({ ...created, ...mix.value });
   database.intentions.push(intention);
   if (intention.distributionId !== null) database.mixUsedIds.add(intention.distributionId);
   return { value: rowOf(intention) };
@@ -588,7 +600,7 @@ export function saveIntention(
   }
 
   const { mix: _mix, ...fields } = draft;
-  const saved: Intention = { ...intention, ...fields, ...mix.value };
+  const saved: Intention = withoutUnpinnedRevision({ ...intention, ...fields, ...mix.value });
   replaceIntention(saved);
   return { value: rowOf(saved) };
 }
@@ -729,6 +741,11 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
   return scopeRefusal(session, scope);
 }
 
+// The draft's mix choice becomes the stored mix and revision; it is not kept on the repeat.
+function withoutMixChoice({ mix: _mix, ...rest }: IntentionTemplateDraft) {
+  return rest;
+}
+
 function templateMixOf(
   draft: IntentionTemplateDraft,
 ): Pick<IntentionTemplate, "distributionId" | "mixRevision"> {
@@ -754,8 +771,8 @@ export function createIntentionTemplate(
     return { refusal };
   }
 
-  const template: IntentionTemplate = {
-    ...draft,
+  const template: IntentionTemplate = withoutUnpinnedRevision({
+    ...withoutMixChoice(draft),
     ...templateMixOf(draft),
     id: nextId(
       "t",
@@ -764,7 +781,7 @@ export function createIntentionTemplate(
     since: today(),
     nextOn: nextPeriodStartOf(draft.every, today()),
     createdBy: session.user.id,
-  };
+  });
   database.intentionTemplates.push(template);
   if (template.distributionId !== null) database.mixUsedIds.add(template.distributionId);
   return { value: templateRowOf(template) };
@@ -786,13 +803,13 @@ export function saveIntentionTemplate(
     return { refusal };
   }
 
-  const saved: IntentionTemplate = {
+  const saved: IntentionTemplate = withoutUnpinnedRevision({
     ...template,
-    ...draft,
+    ...withoutMixChoice(draft),
     ...templateMixOf(draft),
     nextOn:
       draft.every === template.every ? template.nextOn : nextPeriodStartOf(draft.every, today()),
-  };
+  });
   database.intentionTemplates = database.intentionTemplates.map((candidate) =>
     candidate.id === templateId ? saved : candidate,
   );
