@@ -128,7 +128,8 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batchRetry\",\"batches\",\"confirmEmail\","
+        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batchRetry\",\"batches\","
+                + "\"categories\",\"categoryImpact\",\"categoryIndex\",\"confirmEmail\","
                 + "\"digitizationListCreate\",\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
                 + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
                 + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\","
