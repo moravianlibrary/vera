@@ -128,6 +128,14 @@ public class CategoryReads {
         return result;
     }
 
+    public Map<String, Object> categoryNode(String userId, String categoryId) {
+        Map<String, Object> index = index(userId, null);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> nodes = (List<Map<String, Object>>) index.get("nodes");
+        return nodes.stream().filter(node -> categoryId.equals(node.get("categoryId")))
+                .findFirst().orElse(null);
+    }
+
     private Map<String, Object> node(Category category, List<Category> categories,
             CustodyHolders holders, CountingSnapshot data, List<CategoryTotals> totals,
             Map<String, List<Map<String, Object>>> grants, Map<String, String> userNames,
