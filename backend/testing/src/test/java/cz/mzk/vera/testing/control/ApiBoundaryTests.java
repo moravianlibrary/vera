@@ -143,6 +143,8 @@ class ApiBoundaryTests {
                 + "\"listStart\",\"lists\","
                 + "\"localAccount\","
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
+                + "\"mixArchive\",\"mixCreate\",\"mixDelete\",\"mixDetail\",\"mixPrimary\","
+                + "\"mixSetSave\",\"mixSnapshot\",\"mixes\","
                 + "\"projectApprove\",\"projectCreate\",\"projectDecision\",\"projectDelete\","
                 + "\"projectDetail\",\"projectIndex\",\"projectMembers\",\"projectPreview\","
                 + "\"projectReject\",\"projectSave\",\"projects\","
