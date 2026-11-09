@@ -1,0 +1,47 @@
+{
+  "function": "isOutsideScope",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "outside category subtree",
+      "rule": "PLAN-scope",
+      "input": {
+        "scopeCategoryId": "period",
+        "categoryId": "maps"
+      },
+      "expected": true
+    },
+    {
+      "name": "no scope includes all",
+      "rule": "PLAN-scope",
+      "input": {
+        "scopeCategoryId": null,
+        "categoryId": null
+      },
+      "expected": false
+    }
+  ]
+}

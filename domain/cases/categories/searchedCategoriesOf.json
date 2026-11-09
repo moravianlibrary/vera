@@ -1,0 +1,45 @@
+{
+  "function": "searchedCategoriesOf",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "search matching parent and child",
+      "rule": "STATUS-Categories",
+      "input": {
+        "search": "r"
+      },
+      "expected": ["period", "regional", "root"]
+    },
+    {
+      "name": "blank search",
+      "rule": "STATUS-Categories",
+      "input": {
+        "search": " "
+      },
+      "expected": null
+    }
+  ]
+}

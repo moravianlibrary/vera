@@ -1,0 +1,48 @@
+{
+  "function": "unheldCategoriesOf",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "unheld gaps",
+      "rule": "ACCESS-category-custody",
+      "input": {
+        "holders": {
+          "groups": [],
+          "members": {
+            "regional": ["u"]
+          }
+        }
+      },
+      "expected": [
+        {
+          "id": "maps",
+          "name": "Maps",
+          "parentId": "root"
+        }
+      ]
+    }
+  ]
+}

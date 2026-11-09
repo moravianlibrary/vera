@@ -1,6 +1,7 @@
 package cz.mzk.vera.domain.cases;
 
 import cz.mzk.vera.domain.access.Access;
+import cz.mzk.vera.domain.categories.Categories;
 import cz.mzk.vera.domain.access.Grant;
 import cz.mzk.vera.domain.access.MappedRole;
 import cz.mzk.vera.domain.access.Role;
@@ -126,6 +127,25 @@ class SharedCasesTests {
   private static Map<String, Function<JsonNode, JsonNode>> adapters() {
     Map<String, Function<JsonNode, JsonNode>> adapters = new LinkedHashMap<>();
     adapters.put("isSuspended", input -> JSON.valueToTree(Access.isSuspended(holder(input.path("user")))));
+    adapters.put("categoryPathOf", input -> JSON.valueToTree(Categories.categoryPathOf(categories(input.path("categories")), text(input, "categoryId"))));
+    adapters.put("categoryLineageOf", input -> JSON.valueToTree(Categories.lineageOf(categories(input.path("categories")), text(input, "categoryId"))));
+    adapters.put("leafCategoriesOf", input -> JSON.valueToTree(Categories.leavesOf(categories(input.path("categories")))));
+    adapters.put("isInSubtree", input -> JSON.valueToTree(Categories.isInSubtree(categories(input.path("categories")), text(input, "categoryId"), text(input, "topId"))));
+    adapters.put("searchedCategoriesOf", input -> {
+      var result = Categories.searchedCategoriesOf(categories(input.path("categories")), text(input, "search"));
+      return result == null ? JSON.nullNode() : JSON.valueToTree(result.stream().sorted().toList());
+    });
+    adapters.put("isOutsideScope", input -> JSON.valueToTree(Categories.isOutsideScope(categories(input.path("categories")), nullableText(input.path("scopeCategoryId")), nullableText(input.path("categoryId")))));
+    adapters.put("custodyReachOf", input -> JSON.valueToTree(Categories.custodyReachOf(categories(input.path("categories")), custodyHolders(input.path("holders")), text(input, "categoryId"))));
+    adapters.put("unheldCategoriesOf", input -> JSON.valueToTree(Categories.unheldCategoriesOf(categories(input.path("categories")), custodyHolders(input.path("holders")))));
+    adapters.put("scopeOfCategory", input -> {
+      var scope = Categories.scopeOfCategory(categories(input.path("categories")), nullableText(input.path("categoryId")));
+      ObjectNode result = JSON.createObjectNode(); result.put("kind", scope.kind());
+      if (scope.kind().equals("category")) result.set("categoryPathIds", JSON.valueToTree(scope.categoryPathIds()));
+      return result;
+    });
+    adapters.put("placesFor", input -> JSON.valueToTree(Categories.placesFor(categories(input.path("categories")), text(input, "categoryId"), id -> input.path("documentsByCategory").path(id).asBoolean())));
+    adapters.put("isNameTaken", input -> JSON.valueToTree(Categories.isNameTaken(categories(input.path("categories")), nullableText(input.path("parentId")), text(input, "name"), nullableText(input.path("exceptId")))));
     adapters.put("heldRolesOf", input -> heldRolesJson(Access.heldRolesOf(holder(input.path("user")))));
     adapters.put(
         "heldRoleIdsOf", input -> JSON.valueToTree(Access.heldRoleIdsOf(holder(input.path("user")))));
@@ -265,6 +285,39 @@ class SharedCasesTests {
     adapters.put("intentionTimeElapsedOf", input -> JSON.valueToTree(Intentions.intentionTimeElapsedOf(
         text(input.path("intention"), "countsFrom"), nullableText(input.path("intention").path("endsOn")),
         text(input, "today"))));
+    adapters.put("pagesPerWeekNeededOf", input -> JSON.valueToTree(Intentions.pagesPerWeekNeededOf(
+        intention(input.path("input").path("intention")), input.path("input").path("deliveredPages").asInt(), text(input.path("input"), "today"))));
+    adapters.put("catchUpPagesOf", input -> JSON.valueToTree(Intentions.catchUpPagesOf(
+        intention(input.path("input").path("intention")), input.path("input").path("plannedPages").asInt(),
+        input.path("input").path("deliveredPages").asInt(), text(input.path("input"), "today"))));
+    adapters.put("nextPeriodStartOf", input -> JSON.valueToTree(Intentions.nextPeriodStartOf(
+        Intentions.RepeatPeriod.valueOf(text(input, "period")), LocalDate.parse(text(input, "today"))).toString()));
+    adapters.put("scopeOfIntention", input -> JSON.valueToTree(Intentions.scopeOfIntention(funding(input.path("intention").path("funding")), projectScopes(input.path("projects")))));
+    adapters.put("mixReadingOf", input -> {
+      List<Iteration> all = iterations(input.path("iterations"));
+      Map<String, Iteration> byId = new LinkedHashMap<>(); all.forEach(item -> byId.put(item.id(), item));
+      List<Iteration> planned = input.path("count").path("plannedIds").valueStream().map(n -> byId.get(n.asString())).toList();
+      List<Iteration> output = input.path("count").path("outputIds").valueStream().map(n -> byId.get(n.asString())).toList();
+      var reading = Intentions.mixReadingOf(categories(input.path("categories")), new Distribution(shares(input.path("distribution").path("shares"))),
+          nullableText(input.path("intention").path("scopeCategoryId")), planned, output, input.path("count").path("plannedPages").asInt(),
+          input.path("count").path("outputPages").asInt(), item -> nullableInt(input.path("pagesById").path(item.id())));
+      ArrayNode rows = JSON.createArrayNode(); for (var row : reading.rows()) rows.add(JSON.valueToTree(java.util.Arrays.asList(row.categoryId(), row.flag())));
+      ObjectNode result = JSON.createObjectNode(); result.set("rows", rows); result.set("unallocated", numberNode(reading.unallocated())); result.put("outOfBandCount", reading.outOfBandCount()); return result;
+    });
+    adapters.put("fillOf", input -> {
+      List<Iteration> all = iterations(input.path("iterations")); Map<String, Iteration> byId = new LinkedHashMap<>(); all.forEach(item -> byId.put(item.id(), item));
+      List<Iteration> planned = input.path("count").path("plannedIds").valueStream().map(n -> byId.get(n.asString())).toList();
+      List<Iteration> delivered = input.path("count").path("deliveredIds").valueStream().map(n -> byId.get(n.asString())).toList();
+      return JSON.valueToTree(Intentions.fillOf(categories(input.path("categories")), new Distribution(shares(input.path("distribution").path("shares"))),
+          nullableText(input.path("intention").path("scopeCategoryId")), nullableInt(input.path("intention").path("targetPages")), planned, delivered,
+          item -> nullableInt(input.path("pagesById").path(item.id()))).stream().map(row -> java.util.Arrays.asList(row.categoryId(), row.targetPages(), row.plannedPages(), row.isShort())).toList());
+    });
+    adapters.put("correctionOf", input -> {
+      List<Intentions.CorrectionInputRow> rows = new ArrayList<>(); input.path("rows").forEach(row -> rows.add(new Intentions.CorrectionInputRow(text(row, "categoryId"), nullableDouble(row.path("intended")), row.path("outputPages").asInt())));
+      var correction = Intentions.correctionOf(rows, input.path("outputPages").asInt(), input.path("pages").asInt(), integerMap(input.path("readyPagesByCategory")));
+      ObjectNode result = JSON.createObjectNode(); result.put("isCut", correction.isCut());
+      result.set("rows", JSON.valueToTree(correction.rows().stream().map(row -> java.util.Arrays.asList(row.categoryId(), row.newPages(), numberNode(row.after()), row.shortPages())).toList())); return result;
+    });
     adapters.put("isInWindow", input -> JSON.valueToTree(Intentions.isInWindow(
         text(input.path("intention"), "countsFrom"), nullableText(input.path("intention").path("endsOn")),
         nullableText(input.path("calendarDate")))));
@@ -583,7 +636,33 @@ class SharedCasesTests {
 
   private static List<Category> categories(JsonNode nodes) {
     List<Category> result = new ArrayList<>();
-    nodes.forEach(node -> result.add(new Category(text(node, "id"), nullableText(node.path("parentId")))));
+    nodes.forEach(node -> result.add(new Category(text(node, "id"), text(node, "name"), nullableText(node.path("parentId")))));
+    return result;
+  }
+
+  private static Categories.CustodyHolders custodyHolders(JsonNode node) {
+    List<Categories.CustodyGroup> groups = new ArrayList<>();
+    node.path("groups").forEach(group -> groups.add(new Categories.CustodyGroup(text(group, "id"), text(group, "name"),
+        strings(group.path("categoryIds")), strings(group.path("memberIds")))));
+    Map<String, List<String>> members = new LinkedHashMap<>();
+    node.path("members").properties().forEach(field -> members.put(field.getKey(), strings(field.getValue())));
+    return new Categories.CustodyHolders(groups, members);
+  }
+
+  private static List<Intentions.ProjectScope> projectScopes(JsonNode nodes) {
+    List<Intentions.ProjectScope> result = new ArrayList<>();
+    nodes.forEach(node -> result.add(new Intentions.ProjectScope(text(node, "id"), text(node, "managerId"),
+        strings(node.path("memberIds")), strings(node.path("memberGroupIds")))));
+    return result;
+  }
+
+  private static Double nullableDouble(JsonNode node) {
+    return node.isNull() || node.isMissingNode() ? null : node.asDouble();
+  }
+
+  private static Map<String, Integer> integerMap(JsonNode node) {
+    Map<String, Integer> result = new LinkedHashMap<>();
+    node.properties().forEach(entry -> result.put(entry.getKey(), entry.getValue().asInt()));
     return result;
   }
 

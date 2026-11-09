@@ -4,32 +4,56 @@
     {
       "name": "next Monday from Monday",
       "rule": "PLAN-intention",
-      "input": { "period": "week", "today": "2026-06-29" },
+      "input": {
+        "period": "week",
+        "today": "2026-06-29"
+      },
       "expected": "2026-07-06"
     },
     {
       "name": "next Monday",
       "rule": "PLAN-intention",
-      "input": { "period": "week", "today": "2026-06-25" },
+      "input": {
+        "period": "week",
+        "today": "2026-06-25"
+      },
       "expected": "2026-06-29"
     },
     {
       "name": "next month across year",
       "rule": "PLAN-intention",
-      "input": { "period": "month", "today": "2026-12-15" },
+      "input": {
+        "period": "month",
+        "today": "2026-12-15"
+      },
       "expected": "2027-01-01"
     },
     {
       "name": "next quarter from quarter start",
       "rule": "PLAN-intention",
-      "input": { "period": "quarter", "today": "2026-07-01" },
+      "input": {
+        "period": "quarter",
+        "today": "2026-07-01"
+      },
       "expected": "2026-10-01"
     },
     {
       "name": "next quarter",
       "rule": "PLAN-intention",
-      "input": { "period": "quarter", "today": "2026-06-25" },
+      "input": {
+        "period": "quarter",
+        "today": "2026-06-25"
+      },
       "expected": "2026-07-01"
+    },
+    {
+      "name": "next Monday from Sunday",
+      "rule": "PLAN-intention",
+      "input": {
+        "period": "week",
+        "today": "2026-06-28"
+      },
+      "expected": "2026-06-29"
     }
   ]
 }

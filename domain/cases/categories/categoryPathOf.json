@@ -1,0 +1,61 @@
+{
+  "function": "categoryPathOf",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "path to leaf",
+      "rule": "PLAN-tree",
+      "input": {
+        "categoryId": "regional"
+      },
+      "expected": [
+        {
+          "id": "root",
+          "name": "Books",
+          "parentId": null
+        },
+        {
+          "id": "period",
+          "name": "Periodicals",
+          "parentId": "root"
+        },
+        {
+          "id": "regional",
+          "name": "Regional",
+          "parentId": "period"
+        }
+      ]
+    },
+    {
+      "name": "unknown category",
+      "rule": "PLAN-tree",
+      "input": {
+        "categoryId": "missing"
+      },
+      "expected": []
+    }
+  ]
+}

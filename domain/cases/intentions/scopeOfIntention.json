@@ -1,0 +1,25 @@
+{
+  "function": "scopeOfIntention",
+  "cases": [
+    {
+      "name": "project funding carries its project scope",
+      "rule": "permissions.md §3",
+      "input": {
+        "intention": { "funding": { "kind": "project", "projectId": "p" } },
+        "projects": [{ "id": "p", "managerId": "m", "memberIds": ["u"], "memberGroupIds": ["g"] }]
+      },
+      "expected": {
+        "kind": "project",
+        "managerId": "m",
+        "memberIds": ["u"],
+        "memberGroupIds": ["g"]
+      }
+    },
+    {
+      "name": "other funding is unscoped",
+      "rule": "permissions.md §3",
+      "input": { "intention": { "funding": { "kind": "any" } }, "projects": [] },
+      "expected": { "kind": "unscoped" }
+    }
+  ]
+}

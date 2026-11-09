@@ -1,0 +1,50 @@
+{
+  "function": "scopeOfCategory",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "category scope path",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categoryId": "regional"
+      },
+      "expected": {
+        "kind": "category",
+        "categoryPathIds": ["root", "period", "regional"]
+      }
+    },
+    {
+      "name": "tree root unscoped",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categoryId": null
+      },
+      "expected": {
+        "kind": "unscoped"
+      }
+    }
+  ]
+}

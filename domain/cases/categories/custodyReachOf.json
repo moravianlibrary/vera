@@ -1,0 +1,66 @@
+{
+  "function": "custodyReachOf",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "group and person reach descendant",
+      "rule": "ACCESS-category-custody",
+      "input": {
+        "holders": {
+          "groups": [
+            {
+              "id": "g",
+              "name": "Curators",
+              "categoryIds": ["root"],
+              "memberIds": ["u1", "u2"]
+            }
+          ],
+          "members": {
+            "period": ["u2", "u3"]
+          }
+        },
+        "categoryId": "regional"
+      },
+      "expected": [
+        {
+          "userId": "u1",
+          "groupId": "g",
+          "categoryId": "root"
+        },
+        {
+          "userId": "u2",
+          "groupId": "g",
+          "categoryId": "root"
+        },
+        {
+          "userId": "u3",
+          "groupId": null,
+          "categoryId": "period"
+        }
+      ]
+    }
+  ]
+}

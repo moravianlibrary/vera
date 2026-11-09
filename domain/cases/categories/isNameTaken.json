@@ -1,0 +1,49 @@
+{
+  "function": "isNameTaken",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "sibling name is taken ignoring case",
+      "rule": "PLAN-name",
+      "input": {
+        "parentId": "root",
+        "name": " periodicals ",
+        "exceptId": null
+      },
+      "expected": true
+    },
+    {
+      "name": "same name under another parent",
+      "rule": "PLAN-name",
+      "input": {
+        "parentId": "period",
+        "name": "Maps",
+        "exceptId": null
+      },
+      "expected": false
+    }
+  ]
+}

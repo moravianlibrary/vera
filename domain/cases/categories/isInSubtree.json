@@ -1,0 +1,47 @@
+{
+  "function": "isInSubtree",
+  "base": {
+    "categories": [
+      {
+        "id": "root",
+        "name": "Books",
+        "parentId": null
+      },
+      {
+        "id": "period",
+        "name": "Periodicals",
+        "parentId": "root"
+      },
+      {
+        "id": "regional",
+        "name": "Regional",
+        "parentId": "period"
+      },
+      {
+        "id": "maps",
+        "name": "Maps",
+        "parentId": "root"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "descendant is in subtree",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categoryId": "regional",
+        "topId": "period"
+      },
+      "expected": true
+    },
+    {
+      "name": "sibling is outside",
+      "rule": "SCOPE-custody-category",
+      "input": {
+        "categoryId": "maps",
+        "topId": "period"
+      },
+      "expected": false
+    }
+  ]
+}

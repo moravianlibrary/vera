@@ -12,6 +12,19 @@ import {
   roleNameOf,
 } from "./access";
 import {
+  categoryLineageOf,
+  categoryPathOf,
+  custodyReachOf,
+  isInSubtree,
+  isNameTaken,
+  isOutsideScope,
+  leafCategoriesOf,
+  placesFor,
+  scopeOfCategory,
+  searchedCategoriesOf,
+  unheldCategoriesOf,
+} from "./categories";
+import {
   additionStateOf,
   batchIdOf,
   effectivePageCount,
@@ -37,6 +50,7 @@ import {
   mixReadingOf,
   nextPeriodStartOf,
   pagesPerWeekNeededOf,
+  scopeOfIntention,
   shareWithinOf,
   targetVerdictOf,
 } from "./intentions";
@@ -135,6 +149,30 @@ import {
 const root = join(import.meta.dir, "../cases");
 const functions: Record<string, (...args: unknown[]) => unknown> = {
   isSuspended: (...args) => isSuspended(args[0] as never),
+  categoryPathOf: (...args) => categoryPathOf(args[0] as never, args[1] as string),
+  categoryLineageOf: (...args) => categoryLineageOf(args[0] as never, args[1] as string),
+  leafCategoriesOf: (...args) => leafCategoriesOf(args[0] as never),
+  isInSubtree: (...args) => isInSubtree(args[0] as never, args[1] as string, args[2] as string),
+  searchedCategoriesOf: (...args) => searchedCategoriesOf(args[0] as never, args[1] as string),
+  isOutsideScope: (...args) =>
+    isOutsideScope(args[0] as never, args[1] as string | null, args[2] as string | null),
+  custodyReachOf: (...args) =>
+    custodyReachOf(args[0] as never, args[1] as never, args[2] as string),
+  unheldCategoriesOf: (...args) => unheldCategoriesOf(args[0] as never, args[1] as never),
+  scopeOfCategory: (...args) => scopeOfCategory(args[0] as never, args[1] as string | null),
+  placesFor: (...args) =>
+    placesFor(
+      args[0] as never,
+      args[1] as string,
+      (id) => (args[2] as Record<string, boolean>)[id] ?? false,
+    ),
+  isNameTaken: (...args) =>
+    isNameTaken(
+      args[0] as never,
+      args[1] as string | null,
+      args[2] as string,
+      args[3] as string | null,
+    ),
   heldRolesOf: (...args) => heldRolesOf(args[0] as never),
   heldRoleIdsOf: (...args) => heldRoleIdsOf(args[0] as never),
   grantsOf: (...args) => grantsOf(args[0] as never, args[1] as string[]),
@@ -185,6 +223,7 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
       deliveredPages: args[2] as number,
       today: args[3] as string,
     }),
+  scopeOfIntention: (...args) => scopeOfIntention(args[0] as never, args[1] as never),
   pagesPerWeekNeededOf: (...args) => pagesPerWeekNeededOf(args[0] as never),
   catchUpPagesOf: (...args) => catchUpPagesOf(args[0] as never),
   nextPeriodStartOf: (...args) => nextPeriodStartOf(args[0] as never, args[1] as string),
@@ -247,6 +286,73 @@ const adapters: Record<
   string,
   { call: (input: Record<string, unknown>) => unknown; project: (result: unknown) => unknown }
 > = {
+  categoryPathOf: {
+    call: (i) => categoryPathOf(i.categories as never, i.categoryId as string),
+    project: (r) => r,
+  },
+  categoryLineageOf: {
+    call: (i) => categoryLineageOf(i.categories as never, i.categoryId as string),
+    project: (r) => r,
+  },
+  leafCategoriesOf: { call: (i) => leafCategoriesOf(i.categories as never), project: (r) => r },
+  isInSubtree: {
+    call: (i) => isInSubtree(i.categories as never, i.categoryId as string, i.topId as string),
+    project: (r) => r,
+  },
+  searchedCategoriesOf: {
+    call: (i) => searchedCategoriesOf(i.categories as never, i.search as string),
+    project: (r) => r,
+  },
+  isOutsideScope: {
+    call: (i) =>
+      isOutsideScope(
+        i.categories as never,
+        i.scopeCategoryId as string | null,
+        i.categoryId as string | null,
+      ),
+    project: (r) => r,
+  },
+  custodyReachOf: {
+    call: (i) => custodyReachOf(i.categories as never, i.holders as never, i.categoryId as string),
+    project: (r) => r,
+  },
+  unheldCategoriesOf: {
+    call: (i) => unheldCategoriesOf(i.categories as never, i.holders as never),
+    project: (r) => r,
+  },
+  scopeOfCategory: {
+    call: (i) => scopeOfCategory(i.categories as never, i.categoryId as string | null),
+    project: (r) => r,
+  },
+  placesFor: {
+    call: (i) =>
+      placesFor(
+        i.categories as never,
+        i.categoryId as string,
+        (id) => (i.documentsByCategory as Record<string, boolean>)[id] ?? false,
+      ),
+    project: (r) => r,
+  },
+  isNameTaken: {
+    call: (i) =>
+      isNameTaken(
+        i.categories as never,
+        i.parentId as string | null,
+        i.name as string,
+        i.exceptId as string | null,
+      ),
+    project: (r) => r,
+  },
+  pagesPerWeekNeededOf: { call: (i) => pagesPerWeekNeededOf(i.input as never), project: (r) => r },
+  catchUpPagesOf: { call: (i) => catchUpPagesOf(i.input as never), project: (r) => r },
+  nextPeriodStartOf: {
+    call: (i) => nextPeriodStartOf(i.period as never, i.today as string),
+    project: (r) => r,
+  },
+  scopeOfIntention: {
+    call: (i) => scopeOfIntention(i.intention as never, i.projects as never),
+    project: (r) => r,
+  },
   intentionTimeElapsedOf: {
     call: (input) => intentionTimeElapsedOf(input.intention as never, input.today as string),
     project: (result) => result,
