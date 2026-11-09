@@ -62,7 +62,9 @@ pages; the collector's table and the dashboards with deployment. → engine, the
 Rules: [LC-ITER-ingest](reference/lifecycles/iteration.md#lc-iter-ingest).
 
 The mock runs no ingest. Approving a proposal creates its iteration at once, with no defects.
-Approving a project leaves its asks approved with no iteration, *being added*. The engine runs
+Approving a project creates no iteration either: its proposals stay on Requests, marked as after
+the project's approval, until a curator approves each into a category
+([LC-PROJ-decide](reference/lifecycles/project.md#lc-proj-decide)). The engine runs
 ingest:
 - create the iteration;
 - read the record;
