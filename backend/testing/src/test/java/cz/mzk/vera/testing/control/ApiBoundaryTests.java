@@ -133,6 +133,8 @@ class ApiBoundaryTests {
                 + "\"digitizationListCreate\",\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
                 + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
                 + "\"identityDefaultRole\",\"identityLink\",\"identityUnlink\","
+                + "\"intentionCorrection\",\"intentionDeletion\",\"intentionIndex\",\"intentionMix\","
+                + "\"intentionPreview\","
                 + "\"iterationCancel\",\"iterationOverrule\",\"iterationPageCount\","
                 + "\"iterationPrimaryLink\",\"iterationPublish\",\"iterationRecheck\","
                 + "\"iterationReclassify\",\"iterationRemoveLink\",\"iterationReplaceLink\","

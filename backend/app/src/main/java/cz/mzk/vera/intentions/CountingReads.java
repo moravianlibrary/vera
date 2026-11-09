@@ -69,8 +69,8 @@ public class CountingReads {
                 .fetch(row -> new StoredMix(row.getId(), row.getName(), readShares(row.getShares()),
                         row.getRevision(), instant(row.getArchivedAt()),
                         revisions.getOrDefault(row.getId(), List.of())));
-        List<Category> categories = dsl.selectFrom(CATEGORIES)
-                .fetch(row -> new Category(row.getId(), row.getParentId()));
+        List<Category> categories = dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION)
+                .fetch(row -> new Category(row.getId(), row.getName(), row.getParentId()));
         List<DigitizationList> lists = dsl.selectFrom(DIGITIZATION_LISTS)
                 .orderBy(DIGITIZATION_LISTS.POSITION)
                 .fetch(row -> new DigitizationList(row.getId(), row.getName(),
@@ -152,7 +152,9 @@ public class CountingReads {
                 row.get(INTENTIONS.TARGET_PAGES), row.get(INTENTIONS.IS_OVERALL),
                 instant(row.get(INTENTIONS.ARCHIVED_AT)));
         return new StoredIntention(rule, row.get(INTENTIONS.NAME), row.get(INTENTIONS.PROJECT_ID),
-                row.get(INTENTIONS.DISTRIBUTION_ID), row.get(INTENTIONS.MIX_REVISION));
+                row.get(INTENTIONS.DISTRIBUTION_ID), row.get(INTENTIONS.MIX_REVISION),
+                row.get(INTENTIONS.DESCRIPTION), row.get(INTENTIONS.TEMPLATE_ID),
+                row.get(INTENTIONS.ARCHIVED_ACTOR_KIND), row.get(INTENTIONS.ARCHIVED_ACTOR_USER_ID));
     }
 
     private List<PropertyCondition> readConditions(JSONB json) {
@@ -242,7 +244,8 @@ public class CountingReads {
             CountingData rules, Function<Iteration, Integer> pagesOf) {}
 
     public record StoredIntention(Intention rule, String name, String projectId,
-            String distributionId, Integer mixRevision) {}
+            String distributionId, Integer mixRevision, String description, String templateId,
+            String archivedActorKind, String archivedActorUserId) {}
 
     public record StoredMix(String id, String name, Map<String, Double> shares, int revision,
             String archivedAt, List<StoredRevision> revisions) {}
