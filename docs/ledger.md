@@ -35,8 +35,10 @@ run on Tasks. The mock places them at once, and only on delete. → engine.
 
 Rules: [LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat).
 
-Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. Nothing makes occurrences
-yet. → engine, then frontend.
+Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. The
+backend makes occurrences (built 2026-11-09: an `intention.repeat` job queued for each repeat's
+next period start); the mock makes none, and Schedules does not list repeats yet. → backend
+(machinery step: the job on Schedules), then frontend.
 
 ### L7: Access and planning changes are not logged
 
@@ -45,10 +47,11 @@ Rules: [ACCESS-provenance](reference/access/people.md#access-provenance),
 [OBS-audit](reference/integrations/observability.md#obs-audit),
 [OBS-audit-delivery](reference/integrations/observability.md#obs-audit-delivery).
 
-Changes on Categories, Intentions, mixes, Plugins, Hooks and Schedules are recorded nowhere
-(`TODO(rrandiak)` in `mocks/access.ts`). Users & Groups, first login, the mappings at login and
-sign-up record their configuration codes in the engine (built 2026-11-03), and the engine sends
-them to the collector.
+Changes on Plugins, Hooks and Schedules are recorded nowhere (`TODO(rrandiak)` in
+`mocks/access.ts`). Users & Groups, first login, the mappings at login and sign-up record their
+configuration codes in the engine (built 2026-11-03), and the engine sends them to the
+collector. Categories, intentions, repeats and mixes record theirs in the backend (built
+2026-11-09); the mock records none.
 
 Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): they go to the
 Audit stream in ClickStack, not to the log, with the configuration codes of the

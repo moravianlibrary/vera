@@ -50,12 +50,19 @@ window and target follow the project. Rejecting the project archives it.
 
 #### LC-INT-repeat
 
-A repeat makes its first occurrence when the next period starts, and one per period after that.
-Editing a repeat changes the occurrences it makes from then on; those already made keep their
-own definition. A repeat may archive the previous occurrence as it makes the next.
+A repeat makes its first occurrence when the next period starts, and one per period after that,
+at midnight in Prague on the period's first day. Editing a repeat changes the occurrences it
+makes from then on; those already made keep their own definition. A repeat may archive the
+previous occurrence as it makes the next; the system archives it.
+
+An occurrence takes the repeat's description, funding, scope, mix and target, counts from the
+period's first day to its last, and is named by the repeat's pattern with the period in English:
+`June 2026`, `Week 23, 2026` (the ISO week), `Q2 2026` (decided 2026-11-09; the language of
+stored names is [L75](../../ledger.md#l75-names-in-each-language)). An occurrence made late is
+only the current period's; periods missed are skipped.
 
 A new intention's counting start is not prefilled: most intentions are made ahead of time, and a
 default of today would be saved by mistake.
 
-> **Open — [L26](../../ledger.md#l26-repeats).** Nothing makes occurrences yet: the mock has no
-> scheduler. Repeats are to show on Schedules, with when the next occurrence is made.
+> **Open — [L26](../../ledger.md#l26-repeats).** The backend makes occurrences; the mock makes
+> none. Repeats are to show on Schedules, with when the next occurrence is made.

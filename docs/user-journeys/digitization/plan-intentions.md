@@ -29,7 +29,6 @@
 6. Petr (admin) sets a monthly repeat.
    → Its first occurrence comes when the next month starts
    ([LC-INT-repeat](../../reference/lifecycles/intention.md#lc-int-repeat)).
-   **(engine: [L26](../../ledger.md#l26-repeats))**
 7. Petr makes another mix Primary, then archives the old one.
    → Intentions that followed the old mix keep its last revision, pinned
    ([PLAN-mix-archive](../../reference/planning/mixes.md#plan-mix-archive)).
