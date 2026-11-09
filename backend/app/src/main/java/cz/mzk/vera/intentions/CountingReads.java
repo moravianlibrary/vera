@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.function.Function;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
@@ -192,7 +193,7 @@ public class CountingReads {
     }
 
     private void addSource(Map<String, Map<String, List<Source>>> properties, String owner, String key,
-            JSONB sourceValue, int tier, JSONB propertyValue, java.time.OffsetDateTime observedAt,
+            JSONB sourceValue, int tier, JSONB propertyValue, OffsetDateTime observedAt,
             String setBy) {
         var source = mapper.readTree(sourceValue.data());
         String kind = source.path("kind").asString();
@@ -233,7 +234,7 @@ public class CountingReads {
         return true;
     }
 
-    private static String instant(java.time.OffsetDateTime value) {
+    private static String instant(OffsetDateTime value) {
         return value == null ? null : value.toInstant().toString();
     }
 
