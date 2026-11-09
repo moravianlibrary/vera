@@ -1,6 +1,7 @@
 package cz.mzk.vera.fakes;
 
 import cz.mzk.vera.plugin.PluginContext;
+import cz.mzk.vera.plugin.PluginUnavailable;
 import cz.mzk.vera.plugin.listgenerator.GenerateAnswer;
 import cz.mzk.vera.plugin.listgenerator.GenerateInput;
 import cz.mzk.vera.plugin.listgenerator.ShortfallCause;
@@ -24,6 +25,14 @@ final class GeneratorAlgorithm {
     private GeneratorAlgorithm() {}
 
     static GenerateAnswer generate(PluginContext context, GenerateInput input, boolean advisor) {
+        Map<String, List<String>> faultResponse = Wire.send(context, "listGeneratorFault", Wire.fields());
+        String fault = Wire.first(faultResponse, "fault");
+        if ("unavailable".equals(fault)) {
+            throw new PluginUnavailable("List generator is unavailable.");
+        }
+        if ("malformed".equals(fault)) {
+            return new GenerateAnswer(null, 0, List.of());
+        }
         double tolerance = tolerance(context.configuration().get("tolerance"));
         List<GenerateAnswer.Pick> picks = new ArrayList<>();
         Map<String, Integer> got = new HashMap<>();

@@ -27,6 +27,7 @@ public class FakeRecords {
     private volatile List<String> moravianPlaces = List.of();
     private volatile Map<String, JsonNode> categories = Map.of();
     private volatile Map<String, String> advisorReasons = Map.of();
+    private volatile Map<String, JsonNode> ingestFaults = Map.of();
     private final AtomicInteger barcodeCount = new AtomicInteger();
 
     public synchronized void reset(JsonNode seed) {
@@ -60,6 +61,10 @@ public class FakeRecords {
         Map<String, String> reasons = new HashMap<>();
         fakes.path("advisorReasons").properties().forEach(entry -> reasons.put(entry.getKey(), entry.getValue().asString()));
         advisorReasons = Map.copyOf(reasons);
+        Map<String, JsonNode> faults = new HashMap<>();
+        fakes.path("ingest").properties().forEach(entry -> faults.put(entry.getKey(),
+                entry.getValue().path("faults").deepCopy()));
+        ingestFaults = Map.copyOf(faults);
         barcodeCount.set(0);
     }
 
@@ -73,6 +78,7 @@ public class FakeRecords {
             case "place" -> place(input);
             case "suggest" -> suggest(input);
             case "advisorReasons" -> advisorReason(first(input, "iterationId"));
+            case "listGeneratorFault" -> listGeneratorFault(first(input, "instanceId"));
             default -> new LinkedHashMap<>();
         };
     }
@@ -84,6 +90,12 @@ public class FakeRecords {
     private Map<String, List<String>> advisorReason(String iterationId) {
         String reason = advisorReasons.get(iterationId);
         return reason == null ? new LinkedHashMap<>() : response("why", reason);
+    }
+
+    private Map<String, List<String>> listGeneratorFault(String instanceId) {
+        JsonNode faults = ingestFaults.get(instanceId);
+        String fault = faults == null ? null : faults.path("listGenerator").asString(null);
+        return fault == null ? new LinkedHashMap<>() : response("fault", fault);
     }
 
     private Map<String, List<String>> read(String catalogId, String base) {

@@ -1,0 +1,17 @@
+{
+  "name": "bk6i-listgenerator-malformed",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "pi14": {
+        "faults": {
+          "registry": "unavailable",
+          "propertySource": "unavailable",
+          "validation": "unavailable",
+          "restriction": "unavailable",
+          "listGenerator": "malformed"
+        }
+      }
+    }
+  }
+}

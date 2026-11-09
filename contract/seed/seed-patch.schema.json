@@ -12066,13 +12066,18 @@
                 "type": "object",
                 "propertyNames": {
                   "type": "string",
-                  "enum": ["registry", "propertySource", "validation", "restriction"]
+                  "enum": [
+                    "registry",
+                    "propertySource",
+                    "validation",
+                    "restriction",
+                    "listGenerator"
+                  ]
                 },
                 "additionalProperties": {
                   "type": "string",
                   "enum": ["unavailable", "malformed", "timeout"]
-                },
-                "required": ["registry", "propertySource", "validation", "restriction"]
+                }
               }
             },
             "additionalProperties": false

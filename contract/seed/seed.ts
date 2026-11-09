@@ -396,9 +396,10 @@ const fakesSchema = z.strictObject({
         })
         .nullable()
         .optional(),
+      // Each kind is named only when a test seed makes it fail.
       faults: z
-        .record(
-          z.enum(["registry", "propertySource", "validation", "restriction"]),
+        .partialRecord(
+          z.enum(["registry", "propertySource", "validation", "restriction", "listGenerator"]),
           z.enum(["unavailable", "malformed", "timeout"]),
         )
         .optional(),
