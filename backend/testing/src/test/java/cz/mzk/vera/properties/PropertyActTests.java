@@ -132,6 +132,25 @@ class PropertyActTests {
     }
 
     @Test
+    void refusesSavingAnUnknownProperty() throws Exception {
+        JsonNode refused = put("/api/properties/missing", session("u3"),
+                draft("Missing", "text", null, false, "document", 100), 404);
+        assertThat(refused.path("detail").asString()).isEqualTo("No such property");
+    }
+
+    @Test
+    void refusesImpactForAnUnknownProperty() throws Exception {
+        JsonNode refused = get("/api/properties/missing/impact", session("u3"), 404);
+        assertThat(refused.path("detail").asString()).isEqualTo("No such property");
+    }
+
+    @Test
+    void refusesDeletingAnUnknownProperty() throws Exception {
+        JsonNode refused = delete("/api/properties/missing", session("u3"), 404);
+        assertThat(refused.path("detail").asString()).isEqualTo("No such property");
+    }
+
+    @Test
     void everyPropertyActRequiresASession() {
         client.get().uri("/api/properties").exchange().expectStatus().isUnauthorized();
         client.post().uri("/api/properties").contentType(MediaType.APPLICATION_JSON)

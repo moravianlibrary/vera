@@ -1,12 +1,13 @@
 # Java conventions
 
-These conventions describe the backend at step 4. Each item points to its source.
+These conventions describe the backend at step 5. Each item points to its source.
 
 - **Modules and packages:** `backend/settings.gradle.kts` includes `plugin-api`, `domain`, `app`
   and `testing`. `backend/app/src/main/java/cz/mzk/vera/login/` is a feature package; shared
   code lives in `session`, `events` and `web`, with test controls in `testing/control`. The
   shared list package is `listing`; features include `documents`, `requests`, `proposals`,
-  `iterations`, `validations`, `ingest` and `jobs`. B9 describes module roles in
+  `iterations`, `validations`, `ingest`, `jobs`, `lists`, `projects`, `properties` and
+  `intentions`. B9 describes module roles in
   `docs/develop/backend.md`. A module's base package is
   its API: name modules plainly in `allowedDependencies`, without `@NamedInterface` on a base
   package or an `api` subpackage
@@ -96,6 +97,23 @@ These conventions describe the backend at step 4. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/iterations/IterationCheckRun.java`,
   `backend/app/src/main/java/cz/mzk/vera/ingest/IngestQueue.java`,
   `backend/app/src/main/java/cz/mzk/vera/requests/RequestDecisions.java`).
+- **Date-driven moves:** the act that sets a list's start day queues a `list.start` job due that
+  day; the job does nothing if the list is gone, Done or its start day moved, and its derived
+  `list.started` event is never logged (`backend/app/src/main/java/cz/mzk/vera/lists/ListCommands.java`,
+  `backend/app/src/main/java/cz/mzk/vera/lists/ListStartJob.java`).
+- **Step 5's single owners:** `intentions.CountingReads` loads the counting data once;
+  `ProjectIntentionWrites` owns writes to a project's intention; `documents.PropertyDefinitions`
+  is the one property definitions reader; and `HeldScopes.reachesProject` is the one project
+  reach rule. Project rejection settles its proposals through
+  `RequestDecisions.declineProjectAsks`. Domain states and verdicts are enums, and counting
+  keeps intention scope conditions over stored property values
+  (`backend/app/src/main/java/cz/mzk/vera/intentions/CountingReads.java`,
+  `backend/app/src/main/java/cz/mzk/vera/intentions/ProjectIntentionWrites.java`,
+  `backend/app/src/main/java/cz/mzk/vera/documents/PropertyDefinitions.java`,
+  `backend/app/src/main/java/cz/mzk/vera/session/HeldAccessQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/requests/RequestDecisions.java`,
+  `backend/domain/src/main/java/cz/mzk/vera/domain/lists/Lists.java`,
+  `backend/domain/src/main/java/cz/mzk/vera/domain/intentions/Intentions.java`).
 - **Jobs:** `Jobs.enqueue` uses the caller's transaction. A kind is a typed `JobKind<T>`; its
   plugin calls happen in `call` outside a transaction and its writes happen in `apply`. A stale
   job writes nothing. The worker polls under `vera.jobs.poll` and reads the role once as

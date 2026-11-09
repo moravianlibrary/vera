@@ -465,12 +465,17 @@ Following the engine's steps, so each lands with its recordings already made:
    mirror's `sync` and stored catalog tiers wait for the real catalog adapters; the mirror's
    tables and their filling from the fakes came early, decided with the user on 2026-11-07.
    **Ingest and review:** (built 2026-11-07) judged by the recorded record acts. Jobs (B5) are
-   built. Step 4 leaves the property approval refusals and `propertyEntry` for the properties
-   step; lists for their step (cancel takes an item off its list); the registry check schedule
-   and runs for Tasks with the machinery step; the Link and Publication detector kinds for step
-   5 (the link acts read links from instance configuration); and the real plugins for step 5.
-   **Lists and projects**, **planning**, **machinery** follow, with the areas of engine steps 5 to
-   7. Steps 4 to 7 are built here first; the engine does not serve them
+   built. Step 4 leaves the registry check schedule and runs for Tasks to the machinery step;
+   the Link and Publication detector kinds (the link acts read links from instance
+   configuration) and the real plugins to step 5.
+   **Lists and projects:** (built 2026-11-09), judged by the recorded list, project and property
+   scenarios; properties were served here. Step 5 leaves generation, drafts, shapes and generators
+   to planning; intention and mix acts to planning (intentions and mixes are stored from the seed,
+   and project acts write a project's own intention); custody acts, the Users & Groups index and
+   impacts to the step with watchlists and machinery; start-day moves to schedules that may later
+   run the `list.start` job queued by list acts; and the real plugins to their step.
+   **Planning**, **machinery** follow, with the remaining areas of engine steps 6 and 7. Steps 4
+   to 7 are built here first; the engine does not serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK
