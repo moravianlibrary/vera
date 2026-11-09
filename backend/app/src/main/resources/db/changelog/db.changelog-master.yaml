@@ -81,5 +81,8 @@ databaseChangeLog:
       file: 0141-intentions-and-mixes.sql
       relativeToChangelogFile: true
   - include:
+      file: 0210-intention-templates-and-archives.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0150-properties-acts.sql
       relativeToChangelogFile: true

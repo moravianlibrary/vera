@@ -1,0 +1,74 @@
+{
+  "name": "bk6c-archived-intention",
+  "extends": "base",
+  "collections": {
+    "archivedIntentionRows": {
+      "i10": {
+        "intention": {
+          "id": "i10",
+          "name": "Monthly output — May 2026",
+          "description": "What the scanning room should deliver this month.",
+          "funding": { "kind": "any" },
+          "projectId": null,
+          "scopeCategoryId": null,
+          "distributionId": "d1",
+          "targetPages": 3000,
+          "countsFrom": "2026-05-01",
+          "endsOn": "2026-05-31",
+          "isOverall": false,
+          "templateId": "t1",
+          "archived": { "actor": { "kind": "system" }, "at": "2026-06-01T00:00:00Z" }
+        },
+        "state": "Ended",
+        "timeElapsed": 1,
+        "daysToStart": 0,
+        "daysLeft": 0,
+        "evenPace": null,
+        "verdict": "short",
+        "pagesPerWeekNeeded": 0,
+        "catchUpPages": 0,
+        "plannedPages": 0,
+        "deliveredPages": 0,
+        "outputPages": 0,
+        "noDateCount": 0,
+        "noPagesCount": 0,
+        "project": null,
+        "scope": null,
+        "mix": { "id": "d1", "name": "House mix", "revision": 4 },
+        "mixRows": [],
+        "unallocated": 0,
+        "outOfBandCount": 0,
+        "fill": [],
+        "lists": []
+      }
+    },
+    "archivedIntentionMixes": {
+      "i10": {
+        "mixId": "d1",
+        "mixName": "House mix",
+        "intention": {
+          "id": "i10",
+          "name": "Monthly output — May 2026",
+          "description": "What the scanning room should deliver this month.",
+          "funding": { "kind": "any" },
+          "projectId": null,
+          "scopeCategoryId": null,
+          "distributionId": "d1",
+          "targetPages": 3000,
+          "countsFrom": "2026-05-01",
+          "endsOn": "2026-05-31",
+          "isOverall": false,
+          "templateId": "t1",
+          "archived": { "actor": { "kind": "system" }, "at": "2026-06-01T00:00:00Z" }
+        },
+        "outputPages": 0,
+        "nodes": [],
+        "unallocated": 100,
+        "noShareIds": []
+      }
+    },
+    "archivedIntentionCategories": {
+      "i10": [{ "id": "c1", "name": "Periodicals", "parentId": null }]
+    }
+  }
+}

@@ -10,7 +10,9 @@ import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_REGISTRY_RECORDS;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
+import static cz.mzk.vera.db.tables.Tables.ARCHIVED_INTENTION_SNAPSHOTS;
 import static cz.mzk.vera.db.tables.Tables.INTENTIONS;
+import static cz.mzk.vera.db.tables.Tables.INTENTION_TEMPLATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_LINKS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
@@ -62,7 +64,9 @@ class RecordsSeedLoader {
         projects(dsl, collections.path("projects"));
         properties(dsl, collections.path("propertyDefinitions"));
         mixes(dsl, collections.path("distributions"));
+        intentionTemplates(dsl, collections.path("intentionTemplates"));
         intentions(dsl, collections.path("intentions"));
+        archivedIntentionSnapshots(dsl, collections);
         lists(dsl, collections.path("lists"));
         custodies(dsl, collections.path("requestCustodies"));
         batches(dsl, collections.path("batches"));
@@ -133,6 +137,47 @@ class RecordsSeedLoader {
                             ? null : nullableString(archived.path("actor"), "userId"))
                     .set(INTENTIONS.ARCHIVED_AT, archived.isNull() ? null : instant(archived, "at"))
                     .set(INTENTIONS.POSITION, position++)
+                    .execute();
+        }
+    }
+
+    private void intentionTemplates(DSLContext dsl, JsonNode rows) {
+        int position = 0;
+        for (JsonNode row : rows) {
+            JsonNode funding = row.path("funding");
+            dsl.insertInto(INTENTION_TEMPLATES)
+                    .set(INTENTION_TEMPLATES.ID, string(row, "id"))
+                    .set(INTENTION_TEMPLATES.NAME_PATTERN, string(row, "namePattern"))
+                    .set(INTENTION_TEMPLATES.EVERY, string(row, "every"))
+                    .set(INTENTION_TEMPLATES.FUNDING_KIND, string(funding, "kind"))
+                    .set(INTENTION_TEMPLATES.FUNDING_PROJECT_ID, nullableString(funding, "projectId"))
+                    .set(INTENTION_TEMPLATES.SCOPE_CATEGORY_ID, nullableString(row, "scopeCategoryId"))
+                    .set(INTENTION_TEMPLATES.SCOPE_CONDITIONS, nullableJson(row, "scopeConditions"))
+                    .set(INTENTION_TEMPLATES.DISTRIBUTION_ID, nullableString(row, "distributionId"))
+                    .set(INTENTION_TEMPLATES.MIX_REVISION, nullableInteger(row, "mixRevision"))
+                    .set(INTENTION_TEMPLATES.TARGET_PAGES, nullableInteger(row, "targetPages"))
+                    .set(INTENTION_TEMPLATES.IS_ARCHIVING_PREVIOUS, row.path("isArchivingPrevious").asBoolean())
+                    .set(INTENTION_TEMPLATES.SINCE, LocalDate.parse(string(row, "since")))
+                    .set(INTENTION_TEMPLATES.NEXT_ON, LocalDate.parse(string(row, "nextOn")))
+                    .set(INTENTION_TEMPLATES.CREATED_BY, string(row, "createdBy"))
+                    .set(INTENTION_TEMPLATES.POSITION, position++)
+                    .execute();
+        }
+    }
+
+    private void archivedIntentionSnapshots(DSLContext dsl, JsonNode collections) {
+        JsonNode rows = collections.path("archivedIntentionRows");
+        for (var entry : rows.properties()) {
+            String id = entry.getKey();
+            JsonNode mix = collections.path("archivedIntentionMixes").get(id);
+            JsonNode categories = collections.path("archivedIntentionCategories").get(id);
+            dsl.insertInto(ARCHIVED_INTENTION_SNAPSHOTS)
+                    .set(ARCHIVED_INTENTION_SNAPSHOTS.INTENTION_ID, id)
+                    .set(ARCHIVED_INTENTION_SNAPSHOTS.CAPTURED_ROW, JSONB.valueOf(entry.getValue().toString()))
+                    .set(ARCHIVED_INTENTION_SNAPSHOTS.MIX_TREE,
+                            mix == null || mix.isNull() ? null : JSONB.valueOf(mix.toString()))
+                    .set(ARCHIVED_INTENTION_SNAPSHOTS.CATEGORY_TREE,
+                            JSONB.valueOf(categories == null ? "[]" : categories.toString()))
                     .execute();
         }
     }

@@ -1,7 +1,9 @@
 package cz.mzk.vera.testing.seeds;
 
 import static cz.mzk.vera.db.tables.Tables.DIGITIZATION_LISTS;
+import static cz.mzk.vera.db.tables.Tables.ARCHIVED_INTENTION_SNAPSHOTS;
 import static cz.mzk.vera.db.tables.Tables.INTENTIONS;
+import static cz.mzk.vera.db.tables.Tables.INTENTION_TEMPLATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.MIXES;
 import static cz.mzk.vera.db.tables.Tables.MIX_REVISIONS;
@@ -21,7 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.ObjectMapper;
 
-// LC-LIST-state; PLAN-intention; PLAN-mix-revision; B8.
+// LC-LIST-state; LC-INT-repeat; LC-INT-archive; PLAN-intention; PLAN-mix-revision; B8.
 @SpringBootTest(classes = VeraTestingApplication.class)
 @ActiveProfiles("test")
 @Testcontainers
@@ -47,6 +49,8 @@ class PlanningSeedTests {
         assertThat(dsl.selectCount().from(DIGITIZATION_LISTS).fetchOne(0, int.class)).isEqualTo(4);
         assertThat(dsl.selectCount().from(INTENTIONS).fetchOne(0, int.class)).isEqualTo(19);
         assertThat(dsl.selectCount().from(MIXES).fetchOne(0, int.class)).isEqualTo(2);
+        assertThat(dsl.selectCount().from(INTENTION_TEMPLATES).fetchOne(0, int.class)).isEqualTo(1);
+        assertThat(dsl.selectCount().from(ARCHIVED_INTENTION_SNAPSHOTS).fetchOne(0, int.class)).isZero();
 
         var list = dsl.selectFrom(DIGITIZATION_LISTS)
                 .where(DIGITIZATION_LISTS.ID.eq("L-2026-015")).fetchOne();
@@ -131,5 +135,41 @@ class PlanningSeedTests {
     void refusesAnIterationWhoseSeededListIsMissing() {
         assertThatThrownBy(() -> reset.reset("bk5c-missing-list", true))
                 .satisfies(exception -> assertThat(exception).hasStackTraceContaining("iterations_list_fk"));
+    }
+
+    @Test
+    void loadsIntentionTemplateFieldsAndRejectsUnknownMixRevision() throws Exception {
+        var template = dsl.selectFrom(INTENTION_TEMPLATES)
+                .where(INTENTION_TEMPLATES.ID.eq("t1")).fetchOne();
+        assertThat(template.getNamePattern()).isEqualTo("Monthly output — {period}");
+        assertThat(template.getEvery()).isEqualTo("month");
+        assertThat(template.getFundingKind()).isEqualTo("any");
+        assertThat(template.getFundingProjectId()).isNull();
+        assertThat(template.getScopeCategoryId()).isNull();
+        assertThat(template.getScopeConditions()).isNull();
+        assertThat(template.getDistributionId()).isEqualTo("d1");
+        assertThat(template.getMixRevision()).isNull();
+        assertThat(template.getTargetPages()).isEqualTo(3000);
+        assertThat(template.getIsArchivingPrevious()).isTrue();
+        assertThat(template.getSince().toString()).isEqualTo("2026-05-01");
+        assertThat(template.getNextOn().toString()).isEqualTo("2026-07-01");
+        assertThat(template.getCreatedBy()).isEqualTo("u3");
+        assertThat(template.getPosition()).isZero();
+        assertThatThrownBy(() -> reset.reset("bk6c-template-missing-revision", true))
+                .satisfies(exception -> assertThat(exception).hasStackTraceContaining("intention_templates"));
+    }
+
+    @Test
+    void loadsArchivedIntentionSnapshotAndRejectsUnknownTemplate() throws Exception {
+        reset.reset("bk6c-archived-intention", true);
+        var snapshot = dsl.selectFrom(ARCHIVED_INTENTION_SNAPSHOTS)
+                .where(ARCHIVED_INTENTION_SNAPSHOTS.INTENTION_ID.eq("i10")).fetchOne();
+        assertThat(mapper.readTree(snapshot.getCapturedRow().data()).path("intention").path("id").asString())
+                .isEqualTo("i10");
+        assertThat(mapper.readTree(snapshot.getMixTree().data()).path("mixId").asString()).isEqualTo("d1");
+        assertThat(mapper.readTree(snapshot.getCategoryTree().data()).get(0).path("id").asString())
+                .isEqualTo("c1");
+        assertThatThrownBy(() -> reset.reset("bk6c-unknown-template", true))
+                .satisfies(exception -> assertThat(exception).hasStackTraceContaining("intentions_template_fk"));
     }
 }

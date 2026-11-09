@@ -1,0 +1,26 @@
+{
+  "name": "bk6c-unknown-template",
+  "extends": "base",
+  "collections": {
+    "intentions": [
+      {
+        "description": "The quarter of the NDK grant that goes to periodicals.",
+        "funding": {
+          "kind": "project",
+          "projectId": "p1"
+        },
+        "projectId": null,
+        "scopeCategoryId": "c2",
+        "distributionId": "d2",
+        "targetPages": 7500,
+        "endsOn": "2026-09-30",
+        "isOverall": false,
+        "templateId": "missing-template",
+        "archived": null,
+        "id": "i1",
+        "name": "NDK Periodika — 2026 Q3",
+        "countsFrom": "2026-07-01"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "bk6c-template-missing-revision",
+  "extends": "base",
+  "collections": {
+    "intentionTemplates": [
+      {
+        "id": "t1",
+        "namePattern": "Monthly output — {period}",
+        "every": "month",
+        "funding": {
+          "kind": "any"
+        },
+        "scopeCategoryId": null,
+        "distributionId": "d1",
+        "targetPages": 3000,
+        "isArchivingPrevious": true,
+        "since": "2026-05-01",
+        "nextOn": "2026-07-01",
+        "createdBy": "u3",
+        "mixRevision": 99
+      }
+    ]
+  }
+}
