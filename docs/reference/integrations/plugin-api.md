@@ -78,7 +78,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Restriction | `check` | the record and its properties | a finding per rule: forbidden or not, until when, why | — |
 | Custody | `place` | the request and its document | the request custodies that take it | — |
 | Classifier | `suggest` | the request and its document | a category and why, or none | — |
-| List generator | `generate` | the intention, its mix, the pool, the page budget | the picked iterations and why each, and what was short | — |
+| List generator | `generate` | the shaping intention, its leaves and shares in scope, the pool, the current members, the pages, the top categories, a correcting allocation | the picks and why each, how many were spread, and each short leaf with its cause | — |
 | Link | `canonical` | a pasted PID or viewer address | the canonical link and where it is | `not_this_registry`, `malformed` |
 | Publication detector | `detect` | published iterations without a link here | links found | — |
 | Message | `handOff` | recipients, subject, text | an address to open (mailto, a chat link), or *sent* | — |

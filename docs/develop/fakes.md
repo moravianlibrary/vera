@@ -229,13 +229,12 @@ Engine serves this operation for proposals.
 
 **Base instances:** `pi14` Priority, then age and `pi15` Pilot (`pt11`, `pt12`).
 
-`generate` picks iterations from the intention/mix/pool and reports why and shortage. Mock
-selection and explanation are in `frontend/src/mocks/list-generation.ts:enabledGenerators`,
-`generateDraft`, and `causeOf`; recommendation reasons are read from
-`fakes.advisorReasons` (seed comment `contract/seed/seed.ts`). No engine implementation and no
-list-generator key reader in `engine/src/records/plugins.ts`; Lists/generation is mock-only under
-DEC-0022. The API declares no refusal. Exact selection tie/default behavior is in the mock function,
-not seed data; no backend rule should be inferred beyond that source.
+VERA core checks who may generate, picks the shaping intention, narrows and orders the pool,
+and reads the mix inside the intention's scope and the current members; after the answer it adds
+the items, the totals, the counts held in review and the provenance. The generator fills the
+no-mix budget or each leaf's share, spreads shortfall, and answers each pick's reason and each
+short leaf with its cause. The mock's generator is `frontend/src/mocks/list-generator.ts`, its
+core `frontend/src/mocks/list-generation.ts`; the backend fakes come with BK6b2.
 
 ## Link
 

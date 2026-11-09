@@ -14,6 +14,7 @@ import {
 } from "@vera/domain/entities";
 import type { ListState } from "@vera/domain/lists";
 import { listStateSchema, memberBlockerSchema } from "@vera/domain/lists";
+import { shortfallCauseSchema, shortfallCauses } from "@vera/domain/plugin-api/list-generator";
 import { generatorClassSchema } from "@vera/domain/plugins";
 import type { DayRange } from "@vera/domain/value-range";
 import { formatDayRange, parseDayRange } from "@vera/domain/value-range";
@@ -383,9 +384,7 @@ export type GenerationRequest = z.infer<typeof generationRequestSchema>;
 
 // Why a category ends short (intentions.md §4.2 rule 2): left out of the categories asked for,
 // what is ready would overshoot it, nothing more is ready, or the mix gives it no share.
-export const shortfallCauses = ["leftOut", "overshoot", "noSupply", "unallocated"] as const;
-
-export const shortfallCauseSchema = z.enum(shortfallCauses);
+export { shortfallCauseSchema, shortfallCauses };
 
 export type ShortfallCause = z.infer<typeof shortfallCauseSchema>;
 

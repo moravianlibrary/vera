@@ -64,7 +64,6 @@ const intention = {
   templateId: null,
   archived: null,
 };
-const mix = { revision: 1, shares: {}, at: "2026-01-01T00:00:00Z", label: null };
 const examples: [string, unknown, unknown][] = [
   ["begin", { returnTo: "/" }, { redirect: null }],
   [
@@ -102,7 +101,30 @@ const examples: [string, unknown, unknown][] = [
   ["restrictionCheck", { record, properties: [] }, { findings: [] }],
   ["place", { request, document: record }, { custodies: [] }],
   ["suggest", { request, document: record }, null],
-  ["generate", { intention, mix, pool: [iteration], pageBudget: 1 }, { picked: [], shortBy: 0 }],
+  [
+    "generate",
+    {
+      intention,
+      hasMix: true,
+      leaves: [
+        {
+          id: "c1",
+          name: "Category",
+          parentId: null,
+          topCategoryId: "c1",
+          share: 100,
+          nodeId: null,
+        },
+      ],
+      nodes: [{ id: "c1", share: 100 }],
+      pool: [{ iteration, pages: 1, askedAt: "2026-01-01T00:00:00Z" }],
+      members: [],
+      pages: 1,
+      topCategoryIds: [],
+      allocation: null,
+    },
+    { picks: [{ iterationId: "i1", why: "Fits." }], spreadCount: 0, shortfalls: [] },
+  ],
   ["canonical", { pasted: "pid" }, { url: "https://example.org/item", location: "record" }],
   ["detect", { iterations: [] }, { links: [] }],
   [
