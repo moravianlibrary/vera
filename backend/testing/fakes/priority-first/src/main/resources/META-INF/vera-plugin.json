@@ -1,0 +1,21 @@
+{
+  "implementation": "cz.mzk.vera.priority-first",
+  "version": "1.2.0",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": "RuleBased",
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "tolerance", "isSecret": false, "isRequired": true },
+    { "key": "order", "isSecret": false, "isRequired": true }
+  ]
+}

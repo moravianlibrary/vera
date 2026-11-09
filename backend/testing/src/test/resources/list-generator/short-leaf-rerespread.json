@@ -1,0 +1,88 @@
+{
+  "name": "short-leaf-rerespread",
+  "input": {
+    "intention": {
+      "id": "I1",
+      "name": "Case intention"
+    },
+    "hasMix": true,
+    "leaves": [
+      {
+        "id": "c1",
+        "name": "North",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": null
+      },
+      {
+        "id": "c2",
+        "name": "South",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": null
+      },
+      {
+        "id": "c3",
+        "name": "East",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 0,
+        "nodeId": null
+      }
+    ],
+    "nodes": [],
+    "pool": [
+      {
+        "iteration": {
+          "id": "a",
+          "categoryId": "c1",
+          "priority": "Normal"
+        },
+        "pages": 20,
+        "askedAt": "2026-05-11T08:00:00.000Z"
+      },
+      {
+        "iteration": {
+          "id": "b",
+          "categoryId": "c2",
+          "priority": "Normal"
+        },
+        "pages": 30,
+        "askedAt": "2026-05-11T08:00:00.000Z"
+      }
+    ],
+    "members": [],
+    "pages": 100,
+    "topCategoryIds": [],
+    "allocation": null
+  },
+  "configuration": {},
+  "isAdvisor": false,
+  "answer": {
+    "picks": [
+      {
+        "iterationId": "a",
+        "why": "Normal priority · asked 11 May"
+      },
+      {
+        "iterationId": "b",
+        "why": "Normal priority · asked 11 May"
+      }
+    ],
+    "spreadCount": 0,
+    "shortfalls": [
+      {
+        "categoryId": "c1",
+        "pages": 30,
+        "cause": "noSupply"
+      },
+      {
+        "categoryId": "c2",
+        "pages": 20,
+        "cause": "noSupply"
+      }
+    ]
+  }
+}

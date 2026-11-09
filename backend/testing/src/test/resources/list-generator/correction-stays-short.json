@@ -1,0 +1,74 @@
+{
+  "name": "correction-stays-short",
+  "input": {
+    "intention": {
+      "id": "I1",
+      "name": "Case intention"
+    },
+    "hasMix": true,
+    "leaves": [
+      {
+        "id": "c1",
+        "name": "North",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": "n1"
+      },
+      {
+        "id": "c2",
+        "name": "South",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": "n1"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "n1",
+        "share": 100
+      }
+    ],
+    "pool": [
+      {
+        "iteration": {
+          "id": "a",
+          "categoryId": "c1",
+          "priority": "Normal"
+        },
+        "pages": 20,
+        "askedAt": "2026-05-11T08:00:00.000Z"
+      }
+    ],
+    "members": [],
+    "pages": 100,
+    "topCategoryIds": [],
+    "allocation": {
+      "n1": 80
+    }
+  },
+  "configuration": {},
+  "isAdvisor": false,
+  "answer": {
+    "picks": [
+      {
+        "iterationId": "a",
+        "why": "Normal priority · asked 11 May"
+      }
+    ],
+    "spreadCount": 0,
+    "shortfalls": [
+      {
+        "categoryId": "c1",
+        "pages": 20,
+        "cause": "noSupply"
+      },
+      {
+        "categoryId": "c2",
+        "pages": 40,
+        "cause": "noSupply"
+      }
+    ]
+  }
+}

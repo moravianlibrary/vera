@@ -29,6 +29,8 @@ public class FakePluginInstallation {
             installed.install(read("fakes/catalog-validity.jar"));
             installed.install(read("fakes/language-check.jar"));
             installed.install(read("fakes/copyright-rule.jar"));
+            installed.install(read("fakes/priority-first.jar"));
+            installed.install(read("fakes/shelf-advisor.jar"));
         };
     }
 

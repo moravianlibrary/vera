@@ -23,4 +23,5 @@ include("plugin-api", "domain", "app", "testing", "testing:fakes:oidc-identity",
     "testing:fakes:place-of-publication", "testing:fakes:material-type",
     "testing:fakes:kramerius-registry", "testing:fakes:rdcz-registry",
     "testing:fakes:page-count-predictor", "testing:fakes:catalog-validity",
-    "testing:fakes:language-check", "testing:fakes:copyright-rule")
+    "testing:fakes:language-check", "testing:fakes:copyright-rule",
+    "testing:fakes:priority-first", "testing:fakes:shelf-advisor")

@@ -1,0 +1,64 @@
+{
+  "name": "top-category-left-out",
+  "input": {
+    "intention": {
+      "id": "I1",
+      "name": "Case intention"
+    },
+    "hasMix": true,
+    "leaves": [
+      {
+        "id": "c1",
+        "name": "North",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": null
+      },
+      {
+        "id": "c2",
+        "name": "South",
+        "parentId": "top",
+        "topCategoryId": "top",
+        "share": 50,
+        "nodeId": null
+      }
+    ],
+    "nodes": [],
+    "pool": [
+      {
+        "iteration": {
+          "id": "a",
+          "categoryId": "c1",
+          "priority": "Normal"
+        },
+        "pages": 40,
+        "askedAt": "2026-05-11T08:00:00.000Z"
+      }
+    ],
+    "members": [],
+    "pages": 100,
+    "topCategoryIds": [
+      "other"
+    ],
+    "allocation": null
+  },
+  "configuration": {},
+  "isAdvisor": false,
+  "answer": {
+    "picks": [],
+    "spreadCount": 0,
+    "shortfalls": [
+      {
+        "categoryId": "c1",
+        "pages": 50,
+        "cause": "leftOut"
+      },
+      {
+        "categoryId": "c2",
+        "pages": 50,
+        "cause": "leftOut"
+      }
+    ]
+  }
+}

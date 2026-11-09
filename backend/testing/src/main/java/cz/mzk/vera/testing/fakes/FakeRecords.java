@@ -26,6 +26,7 @@ public class FakeRecords {
     private volatile Map<String, JsonNode> materialLeaves = Map.of();
     private volatile List<String> moravianPlaces = List.of();
     private volatile Map<String, JsonNode> categories = Map.of();
+    private volatile Map<String, String> advisorReasons = Map.of();
     private final AtomicInteger barcodeCount = new AtomicInteger();
 
     public synchronized void reset(JsonNode seed) {
@@ -56,6 +57,9 @@ public class FakeRecords {
             nextCategories.put(category.path("id").asString(), category.deepCopy());
         }
         categories = Map.copyOf(nextCategories);
+        Map<String, String> reasons = new HashMap<>();
+        fakes.path("advisorReasons").properties().forEach(entry -> reasons.put(entry.getKey(), entry.getValue().asString()));
+        advisorReasons = Map.copyOf(reasons);
         barcodeCount.set(0);
     }
 
@@ -68,12 +72,18 @@ public class FakeRecords {
             case "readPhoto" -> readPhoto();
             case "place" -> place(input);
             case "suggest" -> suggest(input);
+            case "advisorReasons" -> advisorReason(first(input, "iterationId"));
             default -> new LinkedHashMap<>();
         };
     }
 
     public boolean isCatalogHost(String host) {
         return catalogHosts.containsKey(host);
+    }
+
+    private Map<String, List<String>> advisorReason(String iterationId) {
+        String reason = advisorReasons.get(iterationId);
+        return reason == null ? new LinkedHashMap<>() : response("why", reason);
     }
 
     private Map<String, List<String>> read(String catalogId, String base) {

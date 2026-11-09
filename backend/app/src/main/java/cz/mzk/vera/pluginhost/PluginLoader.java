@@ -17,6 +17,7 @@ import cz.mzk.vera.plugin.input.BarcodeReader;
 import cz.mzk.vera.plugin.input.EntryLinkInput;
 import cz.mzk.vera.plugin.input.Input;
 import cz.mzk.vera.plugin.input.PhotoReader;
+import cz.mzk.vera.plugin.listgenerator.ListGenerator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -52,7 +53,8 @@ public class PluginLoader {
             Map.entry(Registry.class, Map.of()),
             Map.entry(PropertySource.class, Map.of()),
             Map.entry(Validation.class, Map.of()),
-            Map.entry(Restriction.class, Map.of()));
+            Map.entry(Restriction.class, Map.of()),
+            Map.entry(ListGenerator.class, Map.of()));
 
     private final PluginDeclarations declarations;
 

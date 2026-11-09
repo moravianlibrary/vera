@@ -1,0 +1,21 @@
+{
+  "implementation": "cz.mzk.vera.shelf-advisor",
+  "version": "0.4.0",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": "AiBased",
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "model", "isSecret": false, "isRequired": true },
+    { "key": "tolerance", "isSecret": false, "isRequired": true }
+  ]
+}
