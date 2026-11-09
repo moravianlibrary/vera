@@ -474,8 +474,13 @@ Following the engine's steps, so each lands with its recordings already made:
    and project acts write a project's own intention); custody acts, the Users & Groups index and
    impacts to the step with watchlists and machinery; start-day moves to schedules that may later
    run the `list.start` job queued by list acts; and the real plugins to their step.
-   **Planning**, **machinery** follow, with the remaining areas of engine steps 6 and 7. Steps 4
-   to 7 are built here first; the engine does not serve them
+   **Planning** (built 2026-11-09), judged by the recorded category, mix, intention and list
+   generation scenarios. Beyond those recordings, planning records configuration codes for its
+   acts. Repeats make their occurrences through an `intention.repeat` job; the List generator draws
+   the whole draft through the plugin API, with fakes for the seed's two generators. Planning leaves
+   volume testing to production data (E6), placing proposals again after a custody change to L8,
+   and the Schedules page to machinery. **Machinery** follows, with the remaining area of engine
+   step 7. Steps 4 to 7 are built here first; the engine does not serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK

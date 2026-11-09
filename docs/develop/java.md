@@ -1,6 +1,6 @@
 # Java conventions
 
-These conventions describe the backend at step 5. Each item points to its source.
+These conventions describe the backend at step 6. Each item points to its source.
 
 - **Modules and packages:** `backend/settings.gradle.kts` includes `plugin-api`, `domain`, `app`
   and `testing`. `backend/app/src/main/java/cz/mzk/vera/login/` is a feature package; shared
@@ -99,8 +99,16 @@ These conventions describe the backend at step 5. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/requests/RequestDecisions.java`).
 - **Date-driven moves:** the act that sets a list's start day queues a `list.start` job due that
   day; the job does nothing if the list is gone, Done or its start day moved, and its derived
-  `list.started` event is never logged (`backend/app/src/main/java/cz/mzk/vera/lists/ListCommands.java`,
-  `backend/app/src/main/java/cz/mzk/vera/lists/ListStartJob.java`).
+  `list.started` event is never logged. Creating or saving a repeat queues `intention.repeat` for
+  its next period start; a stale job does nothing, and a late run makes only the current period's
+  occurrence (`backend/app/src/main/java/cz/mzk/vera/lists/ListCommands.java`,
+  `backend/app/src/main/java/cz/mzk/vera/lists/ListStartJob.java`,
+  `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionCommands.java`,
+  `backend/app/src/main/java/cz/mzk/vera/intentions/RepeatQueue.java`,
+  `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionRepeatJob.java`).
+- **Plugin calls on a read:** generation calls the List generator with no transaction open; an
+  unavailable, timed-out or unfit answer returns 503 (`backend/app/src/main/java/cz/mzk/vera/lists/ListPlanningQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/pluginhost/PluginCalls.java`).
 - **Step 5's single owners:** `intentions.CountingReads` loads the counting data once;
   `ProjectIntentionWrites` owns writes to a project's intention; `documents.PropertyDefinitions`
   is the one property definitions reader; and `HeldScopes.reachesProject` is the one project
@@ -114,6 +122,17 @@ These conventions describe the backend at step 5. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/requests/RequestDecisions.java`,
   `backend/domain/src/main/java/cz/mzk/vera/domain/lists/Lists.java`,
   `backend/domain/src/main/java/cz/mzk/vera/domain/intentions/Intentions.java`).
+- **Step 6's single owners:** `ProjectIntentionWrites` is the one intention writer shared by
+  intention and project acts; `mixes.MixRefinements` writes mix revisions for refine and drop;
+  `categories.CategoryReads` reads the category tree
+  (`backend/app/src/main/java/cz/mzk/vera/intentions/ProjectIntentionWrites.java`,
+  `backend/app/src/main/java/cz/mzk/vera/mixes/MixRefinements.java`,
+  `backend/app/src/main/java/cz/mzk/vera/categories/CategoryReads.java`).
+- **Response shape:** omit a nullable field the mock leaves out; in particular, omit `mixRevision`
+  when it is unpinned instead of answering `null`. Build response maps as `LinkedHashMap` in
+  contract key order (`backend/app/src/main/java/cz/mzk/vera/intentions/IntentionReads.java`,
+  `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionTemplatesController.java`,
+  `backend/app/src/main/java/cz/mzk/vera/categories/CategoryReads.java`).
 - **Jobs:** `Jobs.enqueue` uses the caller's transaction. A kind is a typed `JobKind<T>`; its
   plugin calls happen in `call` outside a transaction and its writes happen in `apply`. A stale
   job writes nothing. The worker polls under `vera.jobs.poll` and reads the role once as
@@ -131,11 +150,11 @@ These conventions describe the backend at step 5. Each item points to its source
   `domain/src/iterations.ts`, `domain/src/validations.ts`,
   `domain/cases/iterations/`, `domain/cases/validations/`).
 - **Fakes:** they answer from the seed as `fakes.md` says. Tests arrange a case through seed data
-  (a seed patch in test resources), never by editing a row a plugin would answer again. Production
-  code never names the test profile or carries a test-only header
-  (`docs/develop/fakes.md`,
+  (a seed patch in test resources), never by editing a row a plugin would answer again. A patch's
+  rows replace whole rows, so include every field; its `faults` names only the kinds the test makes
+  fail. Production code never names the test profile or carries a test-only header
+  (`docs/develop/fakes.md`, `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/SeedReader.java`,
   `backend/testing/src/main/java/cz/mzk/vera/testing/fakes/FakeIngest.java`,
-  `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/SeedReader.java`,
   `backend/testing/src/test/resources/`).
 - **Problems:** `ProblemShapeAdvice` writes the problem shape without an `instance`, as the
   engine does (`backend/app/src/main/java/cz/mzk/vera/web/ProblemShapeAdvice.java`).
