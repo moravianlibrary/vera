@@ -103,10 +103,17 @@ class PropertyEntryCommands {
         int entered = (int) outcomes.stream().filter(outcome -> outcome.getValue().status() == 200).count();
         List<Map<String, String>> refusals = outcomes.stream()
                 .filter(outcome -> outcome.getValue().status() != 200)
-                .map(outcome -> Map.of("documentId", outcome.getKey(),
-                        "message", outcome.getValue().detail()))
+                .map(outcome -> {
+                    Map<String, String> refusal = new LinkedHashMap<>();
+                    refusal.put("documentId", outcome.getKey());
+                    refusal.put("message", outcome.getValue().detail());
+                    return refusal;
+                })
                 .toList();
-        return ActResult.ok(Map.of("enteredCount", entered, "refusals", refusals));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("enteredCount", entered);
+        result.put("refusals", refusals);
+        return ActResult.ok(result);
     }
 
     private Preflight preflight(Caller caller, String documentId, String key, JsonNode value) {
@@ -194,13 +201,25 @@ class PropertyEntryCommands {
                 new EventInput.User(caller.userId()), Correlation.newId(), clock.instant(),
                 json.valueToTree(data), new EventInput.Reason(null, reason)));
         states.recompute(dsl, documentId);
-        return ActResult.ok(Map.of("isRechecked", checked != null));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("isRechecked", checked != null);
+        return ActResult.ok(result);
     }
 
     private void writeSource(Caller caller, String documentId, Iteration iteration,
             PropertyDefinitionsRecord property, JsonNode value) {
         boolean documentProperty = "document".equals(property.getAbout());
         if (documentProperty) {
+            Integer keyPosition = dsl.select(DOCUMENT_PROPERTY_SOURCES.KEY_POSITION)
+                    .from(DOCUMENT_PROPERTY_SOURCES).where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)
+                            .and(DOCUMENT_PROPERTY_SOURCES.KEY.eq(property.getKey())))
+                    .fetchAnyInto(Integer.class);
+            if (keyPosition == null) {
+                keyPosition = dsl.select(org.jooq.impl.DSL.coalesce(
+                        org.jooq.impl.DSL.max(DOCUMENT_PROPERTY_SOURCES.KEY_POSITION), -1).add(1))
+                        .from(DOCUMENT_PROPERTY_SOURCES)
+                        .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)).fetchOne(0, Integer.class);
+            }
             List<SourceRow> others = dsl.selectFrom(DOCUMENT_PROPERTY_SOURCES)
                     .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)
                             .and(DOCUMENT_PROPERTY_SOURCES.KEY.eq(property.getKey())))
@@ -212,14 +231,24 @@ class PropertyEntryCommands {
                     .and(DOCUMENT_PROPERTY_SOURCES.KEY.eq(property.getKey()))).execute();
             int position = 0;
             for (SourceRow source : others) {
-                insertDocumentSource(documentId, property.getKey(), position++, source.source(), source.tier(),
+                insertDocumentSource(documentId, property.getKey(), keyPosition, position++, source.source(), source.tier(),
                         source.value(), source.observedAt(), source.setBy());
             }
             if (value != null && !value.isNull()) {
-                insertDocumentSource(documentId, property.getKey(), position, JSONB.valueOf("{\"kind\":\"hand\"}"),
+                insertDocumentSource(documentId, property.getKey(), keyPosition, position, JSONB.valueOf("{\"kind\":\"hand\"}"),
                         property.getHandTier(), JSONB.valueOf(value.toString()), now(), caller.userId());
             }
             return;
+        }
+        Integer keyPosition = dsl.select(ITERATION_PROPERTY_SOURCES.KEY_POSITION)
+                .from(ITERATION_PROPERTY_SOURCES).where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iteration.id())
+                        .and(ITERATION_PROPERTY_SOURCES.KEY.eq(property.getKey())))
+                .fetchAnyInto(Integer.class);
+        if (keyPosition == null) {
+            keyPosition = dsl.select(org.jooq.impl.DSL.coalesce(
+                    org.jooq.impl.DSL.max(ITERATION_PROPERTY_SOURCES.KEY_POSITION), -1).add(1))
+                    .from(ITERATION_PROPERTY_SOURCES)
+                    .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iteration.id())).fetchOne(0, Integer.class);
         }
         List<SourceRow> others = dsl.selectFrom(ITERATION_PROPERTY_SOURCES)
                 .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iteration.id())
@@ -232,28 +261,30 @@ class PropertyEntryCommands {
                 .and(ITERATION_PROPERTY_SOURCES.KEY.eq(property.getKey()))).execute();
         int position = 0;
         for (SourceRow source : others) {
-            insertIterationSource(iteration.id(), property.getKey(), position++, source.source(), source.tier(),
+            insertIterationSource(iteration.id(), property.getKey(), keyPosition, position++, source.source(), source.tier(),
                     source.value(), source.observedAt(), source.setBy());
         }
         if (value != null && !value.isNull()) {
-            insertIterationSource(iteration.id(), property.getKey(), position, JSONB.valueOf("{\"kind\":\"hand\"}"),
+            insertIterationSource(iteration.id(), property.getKey(), keyPosition, position, JSONB.valueOf("{\"kind\":\"hand\"}"),
                     property.getHandTier(), JSONB.valueOf(value.toString()), now(), caller.userId());
         }
     }
 
-    private void insertDocumentSource(String documentId, String key, int position, JSONB source, int tier,
+    private void insertDocumentSource(String documentId, String key, int keyPosition, int position, JSONB source, int tier,
             JSONB value, OffsetDateTime observedAt, String setBy) {
         dsl.insertInto(DOCUMENT_PROPERTY_SOURCES).set(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID, documentId)
-                .set(DOCUMENT_PROPERTY_SOURCES.KEY, key).set(DOCUMENT_PROPERTY_SOURCES.POSITION, position)
+                .set(DOCUMENT_PROPERTY_SOURCES.KEY, key).set(DOCUMENT_PROPERTY_SOURCES.KEY_POSITION, keyPosition)
+                .set(DOCUMENT_PROPERTY_SOURCES.POSITION, position)
                 .set(DOCUMENT_PROPERTY_SOURCES.SOURCE, source).set(DOCUMENT_PROPERTY_SOURCES.TIER, tier)
                 .set(DOCUMENT_PROPERTY_SOURCES.VALUE, value).set(DOCUMENT_PROPERTY_SOURCES.OBSERVED_AT, observedAt)
                 .set(DOCUMENT_PROPERTY_SOURCES.SET_BY, setBy).execute();
     }
 
-    private void insertIterationSource(String iterationId, String key, int position, JSONB source, int tier,
+    private void insertIterationSource(String iterationId, String key, int keyPosition, int position, JSONB source, int tier,
             JSONB value, OffsetDateTime observedAt, String setBy) {
         dsl.insertInto(ITERATION_PROPERTY_SOURCES).set(ITERATION_PROPERTY_SOURCES.ITERATION_ID, iterationId)
-                .set(ITERATION_PROPERTY_SOURCES.KEY, key).set(ITERATION_PROPERTY_SOURCES.POSITION, position)
+                .set(ITERATION_PROPERTY_SOURCES.KEY, key).set(ITERATION_PROPERTY_SOURCES.KEY_POSITION, keyPosition)
+                .set(ITERATION_PROPERTY_SOURCES.POSITION, position)
                 .set(ITERATION_PROPERTY_SOURCES.SOURCE, source).set(ITERATION_PROPERTY_SOURCES.TIER, tier)
                 .set(ITERATION_PROPERTY_SOURCES.VALUE, value).set(ITERATION_PROPERTY_SOURCES.OBSERVED_AT, observedAt)
                 .set(ITERATION_PROPERTY_SOURCES.SET_BY, setBy).execute();

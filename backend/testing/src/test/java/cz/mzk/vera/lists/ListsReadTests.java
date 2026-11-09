@@ -165,6 +165,10 @@ class ListsReadTests {
         getStatus("/api/digitization-lists/L-2026-015", null, 401);
         String noRead = session("u8");
         getStatus("/api/digitization-lists?limit=50", noRead, 403);
+        var refused = client.get().uri("/api/digitization-lists?limit=50")
+                .header("Cookie", noRead).exchange();
+        assertThat(refused.expectBody(String.class).returnResult().getResponseBody())
+                .contains("You may not read digitization lists");
         getStatus("/api/digitization-lists/pool?limit=50", noRead, 403);
         getStatus("/api/digitization-lists/L-2026-015", noRead, 403);
     }

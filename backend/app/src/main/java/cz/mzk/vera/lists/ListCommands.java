@@ -183,13 +183,20 @@ class ListCommands {
             String title = dsl.select(DOCUMENTS.TITLE).from(DOCUMENTS).join(ITERATIONS)
                     .on(ITERATIONS.DOCUMENT_ID.eq(DOCUMENTS.ID)).where(ITERATIONS.ID.eq(item.getId()))
                     .fetchOne(DOCUMENTS.TITLE);
-            return Map.<String, Object>of("iterationId", item.getId(),
-                    "title", title == null ? item.getId() : title);
+            Map<String, Object> blockedItem = new LinkedHashMap<>();
+            blockedItem.put("iterationId", item.getId());
+            blockedItem.put("title", title == null ? item.getId() : title);
+            return blockedItem;
         }).toList();
-        return ActResult.ok(Map.of("toDigitized", Map.of("itemCount", moving.size(), "pages", pages),
-                "alreadyScannedCount", members.stream().filter(this::scanned).count(),
-                "notDigitizableCount", members.stream().filter(this::notDigitizable).count(),
-                "blocked", blocked));
+        Map<String, Object> toDigitized = new LinkedHashMap<>();
+        toDigitized.put("itemCount", moving.size());
+        toDigitized.put("pages", pages);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("toDigitized", toDigitized);
+        result.put("alreadyScannedCount", members.stream().filter(this::scanned).count());
+        result.put("notDigitizableCount", members.stream().filter(this::notDigitizable).count());
+        result.put("blocked", blocked);
+        return ActResult.ok(result);
     }
 
     @Transactional
@@ -227,11 +234,16 @@ class ListCommands {
         List<IterationsRecord> members = members(id);
         List<IterationsRecord> open = members.stream().filter(this::open).toList();
         List<IterationsRecord> ready = open.stream().filter(this::gatesClear).toList();
-        return ActResult.ok(Map.of("toReady", Map.of("itemCount", ready.size(), "pages", pages(ready)),
-                "toEnqueuedCount", open.size() - ready.size(),
-                "scannedCount", members.stream().filter(this::scanned).count(),
-                "heldCount", members.stream()
-                        .filter(item -> !scanned(item) && item.getCancellationCause() != null).count()));
+        Map<String, Object> toReady = new LinkedHashMap<>();
+        toReady.put("itemCount", ready.size());
+        toReady.put("pages", pages(ready));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("toReady", toReady);
+        result.put("toEnqueuedCount", open.size() - ready.size());
+        result.put("scannedCount", members.stream().filter(this::scanned).count());
+        result.put("heldCount", members.stream()
+                .filter(item -> !scanned(item) && item.getCancellationCause() != null).count());
+        return ActResult.ok(result);
     }
 
     @Transactional

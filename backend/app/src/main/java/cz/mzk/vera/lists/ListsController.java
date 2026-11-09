@@ -44,7 +44,7 @@ final class ListsController {
             return refusal;
         }
         if (!queries.canRead(caller.userId())) {
-            return Problems.response(403, "You may not read lists");
+            return Problems.response(403, "You may not read digitization lists");
         }
         return ResponseEntity.ok(queries.index(new LinkedHashMap<>(parameters), caller.userId()));
     }
@@ -70,7 +70,7 @@ final class ListsController {
             return refusal;
         }
         if (!queries.canRead(caller.userId())) {
-            return Problems.response(403, "You may not read lists");
+            return Problems.response(403, "You may not read digitization lists");
         }
         var detail = queries.detail(listId, caller.userId());
         if (detail == null) {

@@ -53,18 +53,18 @@ class IterationActTests {
     }
 
     @Test
-    void cancellingAndResumingAListedIterationKeepsItsFormerListNameAndReturnsItToThePool() throws Exception {
+    void cancellingAndResumingAListedIterationLeavesFormerListNameEmptyAndReturnsItToThePool() throws Exception {
         String cookie = session("u8");
         post("/api/iterations/IT21/cancel", cookie,
                 Map.of("publicText", "Not needed", "internalText", "Hold for now"), 200);
         var cancelled = dsl.selectFrom(ITERATIONS).where(ITERATIONS.ID.eq("IT21")).fetchOne();
         assertThat(cancelled.getListId()).isNull();
-        assertThat(cancelled.getFormerListName()).isEqualTo("Periodika — summer run");
+        assertThat(cancelled.getFormerListName()).isNull();
         assertThat(cancelled.getProgress()).isEqualTo("Ready");
         post("/api/iterations/IT21/resume", cookie, Map.of(), 200);
         var resumed = dsl.selectFrom(ITERATIONS).where(ITERATIONS.ID.eq("IT21")).fetchOne();
         assertThat(resumed.getListId()).isNull();
-        assertThat(resumed.getFormerListName()).isEqualTo("Periodika — summer run");
+        assertThat(resumed.getFormerListName()).isNull();
         assertThat(resumed.getProgress()).isEqualTo("Ready");
     }
 

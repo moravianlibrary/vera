@@ -67,6 +67,7 @@ class PropertyEntryTests {
         assertThat(eventCount("document.property_changed", "D1")).isEqualTo(1);
         JsonNode detail = get("/api/documents/D1", cookie, 200);
         assertThat(detail.toString()).contains("A3");
+        assertThat(propertyKeys(detail.path("record").path("document"))).endsWith("size");
     }
 
     @Test
@@ -108,6 +109,24 @@ class PropertyEntryTests {
         assertThat(dsl.fetchCount(dsl.selectFrom(ITERATION_PROPERTY_SOURCES)
                 .where(ITERATION_PROPERTY_SOURCES.KEY.eq("machines")
                         .and(ITERATION_PROPERTY_SOURCES.SET_BY.eq("u3"))))).isEqualTo(1);
+        var hand = dsl.selectFrom(ITERATION_PROPERTY_SOURCES)
+                .where(ITERATION_PROPERTY_SOURCES.KEY.eq("machines")
+                        .and(ITERATION_PROPERTY_SOURCES.SET_BY.eq("u3"))).fetchOne();
+        Integer lastPosition = dsl.select(org.jooq.impl.DSL.max(ITERATION_PROPERTY_SOURCES.KEY_POSITION))
+                .from(ITERATION_PROPERTY_SOURCES)
+                .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(hand.getIterationId())
+                        .and(ITERATION_PROPERTY_SOURCES.KEY.ne("machines"))).fetchOne(0, Integer.class);
+        if (lastPosition == null) {
+            assertThat(hand.getKeyPosition()).isZero();
+        } else {
+            assertThat(hand.getKeyPosition()).isGreaterThan(lastPosition);
+        }
+    }
+
+    private List<String> propertyKeys(JsonNode record) {
+        List<String> keys = new java.util.ArrayList<>();
+        record.path("properties").forEach(property -> keys.add(property.path("key").asString()));
+        return keys;
     }
 
     @Test

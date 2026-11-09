@@ -72,7 +72,11 @@ class PropertyQueries {
                 ? dsl.select(DELETED_PROPERTY_KEYS.KEY).from(DELETED_PROPERTY_KEYS)
                         .orderBy(DELETED_PROPERTY_KEYS.KEY).fetch(DELETED_PROPERTY_KEYS.KEY)
                 : List.of();
-        return Map.of("definitions", definitions, "deletedKeys", deleted, "valueCounts", counts);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("definitions", definitions);
+        result.put("deletedKeys", deleted);
+        result.put("valueCounts", counts);
+        return result;
     }
 
     ActResult impact(Caller caller, String key) {
@@ -102,8 +106,12 @@ class PropertyQueries {
                     }
                 });
         // Watchlists are empty until step 7 adds their storage.
-        return ActResult.ok(Map.of("valueCount", valueCount(key), "roleNames", roleNames,
-                "watchlists", List.of(), "intentionNames", intentionNames));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("valueCount", valueCount(key));
+        result.put("roleNames", roleNames);
+        result.put("watchlists", List.of());
+        result.put("intentionNames", intentionNames);
+        return ActResult.ok(result);
     }
 
     private int valueCount(String key) {

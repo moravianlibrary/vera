@@ -109,10 +109,11 @@ public class ProjectReads {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("rows", rows);
         result.put("total", rows.size());
-        result.put("facets", Map.of(
-                "states", facet(stateRows, "state", List.of("Proposed", "Approved", "Rejected")),
-                "periods", facet(periodRows, "period", List.of("Upcoming", "Active", "Ended")),
-                "paces", paceFacet(paceRows)));
+        Map<String, Object> facets = new LinkedHashMap<>();
+        facets.put("states", facet(stateRows, "state", List.of("Proposed", "Approved", "Rejected")));
+        facets.put("periods", facet(periodRows, "period", List.of("Upcoming", "Active", "Ended")));
+        facets.put("paces", paceFacet(paceRows));
+        result.put("facets", facets);
         return result;
     }
 
@@ -145,7 +146,10 @@ public class ProjectReads {
                 stored.rule().scopeCategoryId(), stored.rule().scopeConditions(), startsOn, endsOn,
                 targetPages, stored.rule().isOverall(), stored.rule().archivedAt());
         IntentionCount count = Intentions.countIntention(rule, data.rules());
-        return Map.of("plannedPages", count.plannedPages(), "deliveredPages", count.deliveredPages());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("plannedPages", count.plannedPages());
+        result.put("deliveredPages", count.deliveredPages());
+        return result;
     }
 
     private List<Map<String, Object>> visibleProjects(String userId, HeldScopes scopes) {
@@ -198,8 +202,14 @@ public class ProjectReads {
         result.put("fundedCount", counts.funded());
         result.put("plannedPages", figures.plannedPages());
         result.put("deliveredPages", figures.deliveredPages());
-        result.put("waiting", Map.of("itemCount", counts.waiting(), "pages", counts.waitingPages()));
-        result.put("pending", Map.of("documentCount", counts.pending(), "withCopyCount", counts.withCopy()));
+        Map<String, Object> waiting = new LinkedHashMap<>();
+        waiting.put("itemCount", counts.waiting());
+        waiting.put("pages", counts.waitingPages());
+        result.put("waiting", waiting);
+        Map<String, Object> pending = new LinkedHashMap<>();
+        pending.put("documentCount", counts.pending());
+        pending.put("withCopyCount", counts.withCopy());
+        result.put("pending", pending);
         result.put("proposalCount", counts.proposals());
         result.put("listCount", counts.listCount());
         result.put("memberGroups", memberGroups);
@@ -264,10 +274,11 @@ public class ProjectReads {
         dsl.select(GROUPS.ID, GROUPS.NAME, count(GROUP_MEMBERS.USER_ID)).from(GROUPS)
                 .leftJoin(GROUP_MEMBERS).on(GROUP_MEMBERS.GROUP_ID.eq(GROUPS.ID))
                 .where(GROUPS.ID.in(ids)).groupBy(GROUPS.ID, GROUPS.NAME).fetch().forEach(row -> {
-                    groups.put(row.get(GROUPS.ID), Map.of(
-                            "id", row.get(GROUPS.ID),
-                            "name", row.get(GROUPS.NAME),
-                            "peopleCount", row.get(count(GROUP_MEMBERS.USER_ID))));
+                    Map<String, Object> group = new LinkedHashMap<>();
+                    group.put("id", row.get(GROUPS.ID));
+                    group.put("name", row.get(GROUPS.NAME));
+                    group.put("peopleCount", row.get(count(GROUP_MEMBERS.USER_ID)));
+                    groups.put(row.get(GROUPS.ID), group);
                 });
         return groups;
     }
@@ -362,7 +373,12 @@ public class ProjectReads {
         for (String value : List.of("BehindPace", "OnTrack")) {
             long count = rows.stream().filter(row -> value.equals("BehindPace")
                     ? "behindPace".equals(row.get("verdict")) : "onPace".equals(row.get("verdict"))).count();
-            if (count > 0) result.add(Map.of("value", value, "count", count));
+            if (count > 0) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("value", value);
+                item.put("count", count);
+                result.add(item);
+            }
         }
         return result;
     }
@@ -513,8 +529,10 @@ public class ProjectReads {
                     if (list.getDoneAt() == null) {
                         listValue.put("done", null);
                     } else {
-                        listValue.put("done", Map.of("actorId", list.getDoneActorId(),
-                                "at", Instants.format(list.getDoneAt().toInstant())));
+                        Map<String, Object> done = new LinkedHashMap<>();
+                        done.put("actorId", list.getDoneActorId());
+                        done.put("at", Instants.format(list.getDoneAt().toInstant()));
+                        listValue.put("done", done);
                     }
                     value.put("list", listValue);
                     DigitizationList stateInput = new DigitizationList(list.getId(), list.getName(),

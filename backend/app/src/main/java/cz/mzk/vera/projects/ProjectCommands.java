@@ -120,9 +120,16 @@ class ProjectCommands {
         int deliveredBefore = (Integer) row.get("deliveredPages");
         // Counting data is evaluated with the proposed window by the shared counting reader.
         Map<String, Object> after = reads.previewCounts(id, draft.startsOn(), draft.endsOn(), draft.targetPages());
-        return ActResult.ok(Map.of("plannedPages", Map.of("before", plannedBefore,
-                        "after", after.get("plannedPages")),
-                "deliveredPages", Map.of("before", deliveredBefore, "after", after.get("deliveredPages"))));
+        Map<String, Object> planned = new LinkedHashMap<>();
+        planned.put("before", plannedBefore);
+        planned.put("after", after.get("plannedPages"));
+        Map<String, Object> delivered = new LinkedHashMap<>();
+        delivered.put("before", deliveredBefore);
+        delivered.put("after", after.get("deliveredPages"));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("plannedPages", planned);
+        result.put("deliveredPages", delivered);
+        return ActResult.ok(result);
     }
 
     @Transactional
@@ -227,11 +234,13 @@ class ProjectCommands {
         }
         List<String> pending = pendingDocuments(id);
         List<Map<String, Object>> rows = pending.stream().map(document -> decidedDocument(id, document)).toList();
-        return ActResult.ok(Map.of("pending", rows,
-                "approves", rows.stream().filter(row -> !Boolean.TRUE.equals(row.get("isAskedByOthers"))
-                        && !hasCopy((String) row.get("documentId"))).toList(),
-                "skips", rows.stream().filter(row -> Boolean.TRUE.equals(row.get("isAskedByOthers"))
-                        || hasCopy((String) row.get("documentId"))).toList()));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("approves", rows.stream().filter(row -> !Boolean.TRUE.equals(row.get("isAskedByOthers"))
+                && !hasCopy((String) row.get("documentId"))).toList());
+        result.put("skips", rows.stream().filter(row -> Boolean.TRUE.equals(row.get("isAskedByOthers"))
+                || hasCopy((String) row.get("documentId"))).toList());
+        result.put("pending", rows);
+        return ActResult.ok(result);
     }
 
     @Transactional
@@ -334,7 +343,11 @@ class ProjectCommands {
         boolean others = dsl.fetchExists(dsl.selectOne().from(REQUESTS)
                 .where(REQUESTS.DOCUMENT_ID.eq(id).and(REQUESTS.DECISION.eq("Pending"))
                         .and(REQUESTS.PROJECT_ID.isNull().or(REQUESTS.PROJECT_ID.ne(projectId)))));
-        return Map.of("documentId", id, "title", document.get(DOCUMENTS.TITLE), "isAskedByOthers", others);
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("documentId", id);
+        row.put("title", document.get(DOCUMENTS.TITLE));
+        row.put("isAskedByOthers", others);
+        return row;
     }
 
     private boolean hasCopy(String documentId) {

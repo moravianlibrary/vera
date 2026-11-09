@@ -127,6 +127,11 @@ class ProjectActTests {
         var dryRun = client.get().uri("/api/projects/p8/decision").header("Cookie", cookie)
                 .exchange().expectStatus().isOk().expectBody(String.class).returnResult();
         assertThat(dryRun.getResponseBody()).contains("approves", "skips", "pending");
+        int approves = dryRun.getResponseBody().indexOf("\"approves\"");
+        int skips = dryRun.getResponseBody().indexOf("\"skips\"");
+        int pending = dryRun.getResponseBody().indexOf("\"pending\"");
+        assertThat(approves).isLessThan(skips);
+        assertThat(skips).isLessThan(pending);
         int ingestJobsBefore = jdbc.queryForObject("SELECT count(*) FROM jobs WHERE kind='ingest'", Integer.class);
         client.post().uri("/api/projects/p8/approve").header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_JSON).body("{\"priority\":\"High\"}")

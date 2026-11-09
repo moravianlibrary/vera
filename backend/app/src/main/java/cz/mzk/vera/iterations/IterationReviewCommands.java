@@ -152,9 +152,6 @@ public class IterationReviewCommands {
                 .set(ITERATIONS.LIST_ID, (String) null)
                 .set(ITERATIONS.PROGRESS, progress)
                 .set(ITERATIONS.CANCELLATION_CAUSE, "Decided");
-        if (listName != null) {
-            cancelUpdate.set(ITERATIONS.FORMER_LIST_NAME, listName);
-        }
         cancelUpdate
                 .set(ITERATIONS.CANCELLATION_ACTOR_ID, caller.userId())
                 .set(ITERATIONS.CANCELLATION_AT, at)
@@ -200,13 +197,6 @@ public class IterationReviewCommands {
                 .set(ITERATIONS.CANCELLATION_PUBLIC_TEXT, (String) null)
                 .set(ITERATIONS.CANCELLATION_INTERNAL_TEXT, (String) null)
                 .set(ITERATIONS.PROGRESS, progress);
-        String formerListName = row.listId() == null ? null : dsl.select(DIGITIZATION_LISTS.NAME)
-                .from(DIGITIZATION_LISTS)
-                .where(DIGITIZATION_LISTS.ID.eq(row.listId()))
-                .fetchOne(0, String.class);
-        if (formerListName != null) {
-            resumeUpdate.set(ITERATIONS.FORMER_LIST_NAME, formerListName);
-        }
         resumeUpdate.where(ITERATIONS.ID.eq(id)).execute();
         String internal = row.listId() == null ? null : "Taken off " + row.listId() + ".";
         internal = combine(internal, progressNote(iteration.progress().name(), progress));

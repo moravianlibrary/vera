@@ -4,6 +4,7 @@ import cz.mzk.vera.access.ActResult;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.web.Problems;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
 import org.springframework.http.ProblemDetail;
@@ -165,7 +166,10 @@ final class ProjectsController {
     }
 
     private ResponseEntity<?> invalid(String pointer, String detail, String issueCode) {
-        return Problems.response(422, detail, "invalid", List.of(Map.of(
-                "pointer", pointer, "code", issueCode, "detail", detail)));
+        Map<String, String> issue = new LinkedHashMap<>();
+        issue.put("pointer", pointer);
+        issue.put("code", issueCode);
+        issue.put("detail", detail);
+        return Problems.response(422, detail, "invalid", List.of(issue));
     }
 }

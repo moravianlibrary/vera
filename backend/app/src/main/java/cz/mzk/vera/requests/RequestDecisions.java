@@ -129,8 +129,11 @@ public class RequestDecisions {
                     originating, writtenAt);
         }
         states.recompute(dsl, row.documentId());
-        return ActResult.ok(Map.of("documentId", row.documentId(), "decision", APPROVED,
-                "askCount", asks.size()));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("documentId", row.documentId());
+        result.put("decision", APPROVED);
+        result.put("askCount", asks.size());
+        return ActResult.ok(result);
     }
 
     // LC-PROJ-decide: project approval leaves category choice to the curator on Requests.
@@ -211,7 +214,11 @@ public class RequestDecisions {
                     decline.publicText(), decline.internalText());
         }
         states.recompute(dsl, documentId);
-        return ActResult.ok(Map.of("documentId", documentId, "decision", DENIED, "askCount", asks.size()));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("documentId", documentId);
+        result.put("decision", DENIED);
+        result.put("askCount", asks.size());
+        return ActResult.ok(result);
     }
 
     @Transactional
@@ -239,7 +246,10 @@ public class RequestDecisions {
         record(EventCode.REQUEST_WITHDRAWN, ask.get(REQUESTS.ID), caller.userId(), Correlation.newId(), at,
                 Map.of(), null, null);
         states.recompute(dsl, documentId);
-        return ActResult.ok(Map.of("documentId", documentId, "requestId", ask.get(REQUESTS.ID)));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("documentId", documentId);
+        result.put("requestId", ask.get(REQUESTS.ID));
+        return ActResult.ok(result);
     }
 
     @Transactional
@@ -280,8 +290,11 @@ public class RequestDecisions {
         }
         int rescans = (int) openRows.stream().filter(this::isRescan).count();
         int checking = (int) openRows.stream().filter(row -> !isRescan(row) && isBeingChecked(row)).count();
-        return ActResult.ok(Map.of("approvedCount", taken.size(), "rescanCount", rescans,
-                "checkingCount", checking));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("approvedCount", taken.size());
+        result.put("rescanCount", rescans);
+        result.put("checkingCount", checking);
+        return ActResult.ok(result);
     }
 
     private RowResult openRowFor(Caller caller, String documentId) {
@@ -364,11 +377,15 @@ public class RequestDecisions {
                 suggestion.get(REQUEST_SUGGESTIONS.CATEGORY_ID)).stream().map(namesById::get).toList();
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("categoryId", suggestion.get(REQUEST_SUGGESTIONS.CATEGORY_ID));
-        result.put("category", Map.of("id", suggestion.get(REQUEST_SUGGESTIONS.CATEGORY_ID),
-                "name", String.join(" / ", names)));
+        Map<String, Object> category = new LinkedHashMap<>();
+        category.put("id", suggestion.get(REQUEST_SUGGESTIONS.CATEGORY_ID));
+        category.put("name", String.join(" / ", names));
+        result.put("category", category);
         result.put("reason", suggestion.get(REQUEST_SUGGESTIONS.REASON));
-        result.put("classifier", Map.of("id", suggestion.get(REQUEST_SUGGESTIONS.CLASSIFIER_ID),
-                "name", suggestion.get(PLUGIN_INSTANCES.NAME)));
+        Map<String, Object> classifier = new LinkedHashMap<>();
+        classifier.put("id", suggestion.get(REQUEST_SUGGESTIONS.CLASSIFIER_ID));
+        classifier.put("name", suggestion.get(PLUGIN_INSTANCES.NAME));
+        result.put("classifier", classifier);
         return result;
     }
 
