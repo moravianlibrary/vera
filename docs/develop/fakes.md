@@ -69,7 +69,7 @@ is no registry records. Unknown raw states are preserved as evidence and map to 
 (REG-raw-state/REG-states). The API has no refusal code (`registry.ts:3`). Thrown errors, invalid
 answers and timeout are unavailable under PLG-api-outcome. `fakes.md` Common fault switches affect
 mock HTTP requests only; the engine does not use them. Per-kind `faults` below makes these outcomes
-reproducible in backend tests. L25 fails ingest and keeps the error. The mock has no ingest
+reproducible in backend tests. Ingest fails and keeps the error. The mock has no ingest
 implementation.
 
 ## Property source
@@ -92,7 +92,7 @@ value follows the highest applicable source: manual tier 100, catalog tier 50 an
 
 For a new document use `fakes.ingest[catalogId].properties`; default is an empty array. The API has
 no refusal (`property-source.ts:4`). Thrown errors, invalid answers and timeout are unavailable;
-per-kind `faults` below triggers these in backend tests. L25 fails ingest and keeps the error. The
+per-kind `faults` below triggers these in backend tests. Ingest fails and keeps the error. The
 mock's proposal helper catalog reading is not this operation.
 
 ## Harvester
@@ -124,7 +124,7 @@ the behavior BK4 Choice 1B replaces for `IterationChecks`.
 
 For a new document, read `fakes.ingest[catalogId].defects`; default is no defects. The API has no
 refusal (`validation.ts:4`). Thrown errors, invalid answers and timeout are unavailable; per-kind
-`faults` below triggers these in backend tests. L25 marks ingest failed and keeps the error.
+`faults` below triggers these in backend tests. Ingest is marked failed and keeps the error.
 Defects on repaired subjects disappear; other defects remain.
 
 ## Restriction
@@ -140,7 +140,7 @@ STAT-gates uses whether a restriction stands (`docs/reference/model/status.md:48
 
 For a new document, read `fakes.ingest[catalogId].restriction`; default is null/no restriction.
 The API has no refusal (`restriction.ts:4`). Thrown errors, invalid answers and timeout are
-unavailable; per-kind `faults` below triggers these in backend tests. L25 fails ingest and keeps
+unavailable; per-kind `faults` below triggers these in backend tests. Ingest fails and keeps
 the error. Return the finding even if later overridden; the iteration's override handles the
 gate.
 
@@ -193,7 +193,7 @@ past the configured instance timeout and produces unavailable; `malformed` retur
 answer that the wrapper records as unavailable. There is no refused outcome trigger for these
 kinds because their refusal schemas are `z.never()` (`domain/src/plugin-api/registry.ts:3`,
 `property-source.ts:3`, `validation.ts:3`, `restriction.ts:3`). Shared HTTP switches are mock-only
-(`frontend/src/mocks/faults.ts`); B5 specifies the plugin call timeout. L25 keeps the ingest failure
+(`frontend/src/mocks/faults.ts`); B5 specifies the plugin call timeout. Ingest keeps the failure's
 error.
 
 ## Custody

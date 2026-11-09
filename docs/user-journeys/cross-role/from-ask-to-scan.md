@@ -26,7 +26,6 @@ pass.
    → Tomáš reads *Being added*; an iteration is Enqueued
    ([LC-ITER-ingest](../../reference/lifecycles/iteration.md#lc-iter-ingest)).
 4. Ingest reads the record and runs the checks; the page count is missing.
-   **(engine: [L25](../../ledger.md#l25-ingest))**
    → The item is *Review needed* on *Documents Validations*; Tomáš reads *Being checked*.
 5. **Kateřina** enters the counted pages.
    → The defect is gone; the item is Ready; Tomáš reads *Waiting to be scheduled*.

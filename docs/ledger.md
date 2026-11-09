@@ -57,22 +57,6 @@ the engine's outbox and its job, the collector's audit table with no expiry, and
 HyperDX dashboards. The mock records nothing. The rest come with the engine's steps for those
 pages; the collector's table and the dashboards with deployment. → engine, then deployment.
 
-### L25: Ingest
-
-Rules: [LC-ITER-ingest](reference/lifecycles/iteration.md#lc-iter-ingest).
-
-The mock runs no ingest. Approving a proposal creates its iteration at once, with no defects.
-Approving a project creates no iteration either: its proposals stay on Requests, marked as after
-the project's approval, until a curator approves each into a category
-([LC-PROJ-decide](reference/lifecycles/project.md#lc-proj-decide)). The engine runs
-ingest:
-- create the iteration;
-- read the record;
-- run the restriction, validation and registry checks and the classifier;
-- move progress, or fail with the error kept.
-
-→ engine.
-
 ### L33: Hook events
 
 Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
@@ -206,6 +190,16 @@ viewer's language and its editors gain *Add language*. → engine (contract and 
 frontend.
 
 ## Done
+
+### Built, 2026-11-07
+
+- **L25:** the backend runs ingest: approving a proposal into a category creates its iteration
+  and queues an `ingest` job, which reads the record and the registry, takes the property
+  sources, runs the restriction and validation checks and moves progress by the gates, keeping
+  the error when it fails. Approving a project creates no iteration; its proposals wait on
+  Requests for a curator ([LC-PROJ-decide](reference/lifecycles/project.md#lc-proj-decide)).
+  The mock runs no ingest and creates the iteration at once, with no defects
+  ([LC-ITER-ingest](reference/lifecycles/iteration.md#lc-iter-ingest)).
 
 ### Built, 2026-11-03
 

@@ -26,11 +26,6 @@ Approval puts the iteration in **Enqueued**. Ingest reads its catalog record and
 checks: restriction rules, validation rules, registries. A failed ingest is **Ingest failed**
 until an administrator retries its batch.
 
-> **Open — [L25](../../ledger.md#l25-ingest).** The mock runs no ingest. Approving a proposal
-> creates the iteration at once with no defects; approving a project leaves its asks approved
-> with no iteration, *being added*. The engine has to run ingest: create the iteration, read the
-> record, run the checks and the classifier, and move progress.
-
 #### LC-ITER-on-list
 
 On a list, an item's progress follows the list: **Planned** before the list's start date,
