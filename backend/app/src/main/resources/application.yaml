@@ -21,3 +21,6 @@ server:
   port: ${VERA_PORT:8081}
 vera:
   public-url: ${VERA_PUBLIC_URL}
+  plugins:
+    # B6 Signed: the deployment's trusted signers, never a page in VERA.
+    trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:}

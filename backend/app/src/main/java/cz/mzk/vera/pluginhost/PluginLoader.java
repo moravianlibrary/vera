@@ -28,6 +28,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +40,8 @@ import java.util.ServiceLoader;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 
 // B6; PLG-api-capabilities.
@@ -65,9 +71,27 @@ public class PluginLoader {
             Map.entry(Message.class, Map.of()));
 
     private final PluginDeclarations declarations;
+    private final Path cacheDirectory;
+
+    @Autowired
+    public PluginLoader(PluginDeclarations declarations,
+            @Value("${vera.plugins.cache-dir:${java.io.tmpdir}/vera-plugin-cache}") String cacheDirectory) {
+        this.declarations = declarations;
+        this.cacheDirectory = Path.of(cacheDirectory);
+        try {
+            Files.createDirectories(this.cacheDirectory);
+            try (var files = Files.list(this.cacheDirectory)) {
+                for (Path file : files.toList()) {
+                    Files.delete(file);
+                }
+            }
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not prepare plugin cache.", exception);
+        }
+    }
 
     public PluginLoader(PluginDeclarations declarations) {
-        this.declarations = declarations;
+        this(declarations, Path.of(System.getProperty("java.io.tmpdir"), "vera-plugin-cache").toString());
     }
 
     public LoadedPlugin load(byte[] jar) {
@@ -83,7 +107,7 @@ public class PluginLoader {
             throw refused(descriptor, version, "Identity loginEntry must not be null");
         }
 
-        PluginClassLoader loader = new PluginClassLoader(jar, PluginLoader.class.getClassLoader());
+        PluginClassLoader loader = new PluginClassLoader(jar, cacheDirectory, PluginLoader.class.getClassLoader());
         List<Object> providers = loadProviders(kind, loader, descriptor, version);
         if (providers.size() != 1) {
             loader.closeQuietly();
@@ -166,14 +190,16 @@ public class PluginLoader {
     }
 
     public static final class PluginClassLoader extends URLClassLoader {
-        PluginClassLoader(byte[] bytes, ClassLoader parent) {
+        PluginClassLoader(byte[] bytes, Path cacheDirectory, ClassLoader parent) {
             super(new URL[0], parent);
             try {
-                Path temp = Files.createTempFile("vera-plugin-", ".jar");
-                Files.write(temp, bytes);
+                String digest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+                Path temp = cacheDirectory.resolve(digest + ".jar");
+                if (!Files.exists(temp)) {
+                    Files.write(temp, bytes, StandardOpenOption.CREATE_NEW);
+                }
                 addURL(temp.toUri().toURL());
-                temp.toFile().deleteOnExit();
-            } catch (IOException exception) {
+            } catch (IOException | NoSuchAlgorithmException exception) {
                 throw new IllegalArgumentException("Could not prepare plugin JAR.", exception);
             }
         }

@@ -6,5 +6,7 @@ spring:
       allow-pool-suspension: true
 vera:
   public-url: http://localhost
+  plugins:
+    trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:classpath:test-plugin-cert.pem}
   jobs:
     poll: false

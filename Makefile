@@ -121,8 +121,10 @@ backend-stop: ## Stop the background backend
 	else echo "Backend was not running: pid $(backend-pid) is gone or now belongs to another process"; fi; \
 	rm -f .backend.pid
 
-backend-replay: backend-db backend-bg ## Replay recordings against the background backend
-	@trap '$(MAKE) backend-stop' EXIT; VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) $(MAKE) replay
+backend-replay: backend-db ## Replay recordings against the background backend
+	cd backend && ./gradlew :testing:pluginPackages
+	$(MAKE) backend-bg
+	@trap '$(MAKE) backend-stop' EXIT; VERA_REPLAY_PACKAGES=$(CURDIR)/backend/testing/build/plugin-packages VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) $(MAKE) replay
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build

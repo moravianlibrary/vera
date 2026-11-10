@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.JsonNode;
 
@@ -26,11 +29,14 @@ class PluginsController {
     private final PluginQueries queries;
     private final PluginCommands commands;
     private final HeldAccessQueries access;
+    private final PluginPackageCommands packages;
 
-    PluginsController(PluginQueries queries, PluginCommands commands, HeldAccessQueries access) {
+    PluginsController(PluginQueries queries, PluginCommands commands, HeldAccessQueries access,
+            PluginPackageCommands packages) {
         this.queries = queries;
         this.commands = commands;
         this.access = access;
+        this.packages = packages;
     }
 
     @GetMapping("/plugins")
@@ -103,6 +109,36 @@ class PluginsController {
         Caller caller = caller(request);
         return caller == null ? Problems.response(401, "Nobody is signed in.")
                 : ActResult.answer(commands.runNow(caller, id));
+    }
+
+    @PostMapping("/plugin-implementations/uploads")
+    ResponseEntity<?> upload(HttpServletRequest request, @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam(required = false) String implementationId) throws java.io.IOException {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(packages.upload(caller, file == null ? null : file.getOriginalFilename(),
+                        implementationId, file == null ? null : file.getBytes()));
+    }
+
+    @PostMapping("/plugin-implementations/uploads/{id}/install")
+    ResponseEntity<?> install(HttpServletRequest request, @PathVariable String id) {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(packages.install(caller, id));
+    }
+
+    @GetMapping("/plugin-instances/{id}/upgrade")
+    ResponseEntity<?> upgradeRead(HttpServletRequest request, @PathVariable String id) {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(packages.upgradeRead(caller, id));
+    }
+
+    @PostMapping("/plugin-instances/{id}/upgrade")
+    ResponseEntity<?> upgrade(HttpServletRequest request, @PathVariable String id) {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(packages.upgrade(caller, id));
     }
 
     private Caller caller(HttpServletRequest request) {

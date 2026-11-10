@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
@@ -87,11 +87,18 @@ async function sendCall(
     const form = new FormData();
     for (const [field, value] of Object.entries(call.form)) {
       if (typeof value === "string") form.append(field, value);
-      else
-        form.append(
-          field,
-          new File([new Uint8Array(value.photoBytes)], value.fileName ?? "photo.jpg"),
-        );
+      else {
+        const fileName = value.fileName ?? "photo.jpg";
+        const packagePath =
+          process.env.VERA_REPLAY_PACKAGES === undefined
+            ? undefined
+            : join(process.env.VERA_REPLAY_PACKAGES, fileName);
+        const fileBytes =
+          packagePath !== undefined && existsSync(packagePath)
+            ? readFileSync(packagePath)
+            : new Uint8Array(value.photoBytes);
+        form.append(field, new File([fileBytes], fileName));
+      }
     }
     body = form;
   } else if (call.requestBody !== undefined) {

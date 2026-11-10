@@ -1,5 +1,11 @@
 # The fakes
 
+The signed plugin upload replay packages are built by `backend/testing:pluginPackages` with
+`jarsigner`. Their test-only certificate and private key are checked in under
+`backend/testing/src/main/resources/test-plugin-cert.pem` and `test-plugin-key.p12`; the key is
+only for tests and must never be used to sign a deployment plugin. Test profile trust points at
+that certificate. Production trust is supplied by `vera.plugins.trusted-certificates`.
+
 This is the observed behavior of the mock and engine fakes, for the backend implementations
 described in [backend.md](backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)
 and [PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds). “Base seed” means

@@ -1,4 +1,6 @@
 vera:
   public-url: http://localhost
+  plugins:
+    trusted-certificates: ""
   jobs:
     poll: false

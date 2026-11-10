@@ -126,5 +126,8 @@ databaseChangeLog:
       file: 0390-identity-claims.sql
       relativeToChangelogFile: true
   - include:
+      file: 0330-plugin-packages.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0370-watchlists.sql
       relativeToChangelogFile: true

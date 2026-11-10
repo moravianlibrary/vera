@@ -120,6 +120,11 @@ public final class ContractFilter extends OncePerRequestFilter {
 
     private byte[] checkParameters(HttpServletRequest request, HttpServletResponse response, Match found)
             throws IOException {
+        boolean multipart = request.getContentType() != null
+                && request.getContentType().toLowerCase(java.util.Locale.ROOT).startsWith("multipart/form-data");
+        if (multipart) {
+            return new byte[0];
+        }
         for (String queryName : request.getParameterMap().keySet()) {
             boolean declared = false;
             for (JsonNode parameter : found.operation().node().path("parameters")) {
@@ -169,6 +174,10 @@ public final class ContractFilter extends OncePerRequestFilter {
     private boolean checkBody(HttpServletRequest request, HttpServletResponse response, Match found, byte[] input)
             throws IOException {
         if (found.operation().node().has("requestBody")) {
+            if (request.getContentType() != null && request.getContentType()
+                    .toLowerCase(java.util.Locale.ROOT).startsWith("multipart/form-data")) {
+                return true;
+            }
             JsonNode body;
             try {
                 body = mapper.readTree(input);
@@ -194,7 +203,9 @@ public final class ContractFilter extends OncePerRequestFilter {
     private void runAndCheckAnswer(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
             Match found, byte[] input) throws IOException, ServletException {
         BufferResponse buffered = new BufferResponse(response);
-        chain.doFilter(new BodyRequest(request, input), buffered);
+        boolean multipart = request.getContentType() != null
+                && request.getContentType().toLowerCase(java.util.Locale.ROOT).startsWith("multipart/form-data");
+        chain.doFilter(multipart ? request : new BodyRequest(request, input), buffered);
         byte[] output = buffered.bytes();
         int status = buffered.getStatus();
         JsonNode responseSchema = responseSchema(found.operation().node(), status);

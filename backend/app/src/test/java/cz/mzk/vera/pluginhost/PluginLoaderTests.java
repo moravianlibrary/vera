@@ -142,6 +142,25 @@ class PluginLoaderTests {
                 "loginEntry must not be null");
     }
 
+    @Test
+    void cachesAPluginJarByContentAndClearsTheCacheWhenTheLoaderStarts() throws Exception {
+        Path cache = Files.createDirectories(tempDir.resolve("plugin-cache"));
+        Files.writeString(cache.resolve("old.jar"), "stale");
+        PluginLoader cachedLoader = new PluginLoader(
+                new PluginDeclarations(System.getenv("VERA_CONTRACT_DIR")), cache.toString());
+        assertThat(Files.list(cache).toList()).isEmpty();
+        InstalledPlugins installed = new InstalledPlugins(cachedLoader);
+        byte[] jar = jar(standardDeclaration(), "test.IdentityImpl",
+                Map.of("test.IdentityImpl", source("one", false)));
+        PluginLoader.LoadedPlugin first = installed.install(jar);
+        PluginLoader.LoadedPlugin second = installed.install(jar);
+        assertThat(second).isSameAs(first);
+        assertThat(Files.list(cache).filter(path -> path.toString().endsWith(".jar")).count()).isEqualTo(1);
+        installed.close();
+        new PluginLoader(new PluginDeclarations(System.getenv("VERA_CONTRACT_DIR")), cache.toString());
+        assertThat(Files.list(cache).toList()).isEmpty();
+    }
+
     private CompleteAnswer complete(PluginLoader.LoadedPlugin plugin) {
         return identity(plugin).complete(null, new CompleteInput.Form("user", "password"));
     }
