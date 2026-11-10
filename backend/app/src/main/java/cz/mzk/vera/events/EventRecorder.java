@@ -2,6 +2,9 @@ package cz.mzk.vera.events;
 
 import static cz.mzk.vera.db.tables.Tables.AUDIT_OUTBOX;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
+import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
+import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
@@ -28,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Record;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
@@ -76,13 +80,14 @@ public class EventRecorder {
 
         Instant at = input.at() == null ? clock.instant() : input.at();
         String formattedAt = Instants.format(at);
+        String eventId = "E-" + UUID.randomUUID();
         if (code.history()) {
             Schema schema = historySchemas.get(code.code());
             if (schema == null || !schema.validate(input.data()).isEmpty()) {
                 throw new IllegalArgumentException("Invalid event data for " + code.code());
             }
             dsl.insertInto(EVENTS)
-                    .set(EVENTS.ID, "E-" + UUID.randomUUID())
+                    .set(EVENTS.ID, eventId)
                     .set(EVENTS.CODE, code.code())
                     .set(EVENTS.SUBJECT_KIND, input.subjectKind())
                     .set(EVENTS.SUBJECT_ID, input.subjectId())
@@ -92,6 +97,39 @@ public class EventRecorder {
                     .set(EVENTS.DATA, JSONB.valueOf(json.writeValueAsString(input.data())))
                     .set(EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
                     .set(EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
+                    .execute();
+        }
+        if (code.hook()) {
+            ObjectNode cause = json.createObjectNode();
+            cause.put("kind", "act");
+            cause.put("act", input.correlationId());
+            cause.putNull("run");
+            ObjectNode actor = json.createObjectNode();
+            if (input.actor() instanceof EventInput.System) {
+                actor.put("kind", "system");
+                actor.putNull("id");
+                actor.putNull("name");
+            } else if (input.actor() instanceof EventInput.User user) {
+                actor.put("kind", "person");
+                actor.put("id", user.userId());
+                actor.set("name", json.nullNode());
+            } else {
+                actor.put("kind", "person");
+                actor.putNull("id");
+                actor.putNull("name");
+            }
+            dsl.insertInto(HOOK_EVENTS)
+                    .set(HOOK_EVENTS.ID, eventId)
+                    .set(HOOK_EVENTS.CODE, code.code())
+                    .set(HOOK_EVENTS.SUBJECT_KIND, input.subjectKind())
+                    .set(HOOK_EVENTS.SUBJECT_ID, input.subjectId())
+                    .set(HOOK_EVENTS.OCCURRED_AT, at.atOffset(ZoneOffset.UTC))
+                    .set(HOOK_EVENTS.CORRELATION_ID, input.correlationId())
+                    .set(HOOK_EVENTS.CAUSE, JSONB.valueOf(cause.toString()))
+                    .set(HOOK_EVENTS.ACTOR, JSONB.valueOf(actor.toString()))
+                    .set(HOOK_EVENTS.CHANGES, JSONB.valueOf(hookChanges(input.data()).toString()))
+                    .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
+                    .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                     .execute();
         }
         if (code.audit()) {
@@ -104,6 +142,107 @@ public class EventRecorder {
                     .set(AUDIT_OUTBOX.RECORD, JSONB.valueOf(json.writeValueAsString(record)))
                     .execute();
         }
+    }
+
+    // EVENT-derived; HOOK-list-transitions. Derived events never create History or Audit rows.
+    public void fire(EventInput input) {
+        EventCode code = input.code();
+        if (!code.hook() || code.history() || code.audit()) {
+            throw new IllegalArgumentException("Event " + code.code() + " cannot be fired as derived");
+        }
+        if (!code.subject().equals(input.subjectKind())) {
+            throw new IllegalArgumentException("Subject kind must match event code");
+        }
+        Instant at = input.at() == null ? clock.instant() : input.at();
+        ObjectNode cause = json.createObjectNode();
+        if (code.derived()) {
+            cause.put("kind", "date");
+            cause.putNull("act");
+            cause.putNull("run");
+        } else {
+            cause.put("kind", "job");
+            cause.putNull("act");
+            ObjectNode run = cause.putObject("run");
+            run.put("id", input.subjectId());
+            Record instance = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME)
+                    .from(RUNS).leftJoin(PLUGIN_INSTANCES)
+                    .on(PLUGIN_INSTANCES.ID.eq(RUNS.INSTANCE_ID))
+                    .where(RUNS.ID.eq(input.subjectId())).fetchOne();
+            ObjectNode instanceData = run.putObject("instance");
+            String instanceId = instance == null ? null : instance.get(PLUGIN_INSTANCES.ID);
+            String instanceName = instance == null ? null : instance.get(PLUGIN_INSTANCES.NAME);
+            instanceData.put("id", instanceId == null ? "core" : instanceId);
+            instanceData.put("name", instanceName == null ? "Core" : instanceName);
+        }
+        ObjectNode actor = json.createObjectNode().put("kind", "system");
+        actor.putNull("id");
+        actor.putNull("name");
+        dsl.insertInto(HOOK_EVENTS)
+                .set(HOOK_EVENTS.ID, "E-" + UUID.randomUUID())
+                .set(HOOK_EVENTS.CODE, code.code())
+                .set(HOOK_EVENTS.SUBJECT_KIND, input.subjectKind())
+                .set(HOOK_EVENTS.SUBJECT_ID, input.subjectId())
+                .set(HOOK_EVENTS.OCCURRED_AT, at.atOffset(ZoneOffset.UTC))
+                .set(HOOK_EVENTS.CORRELATION_ID, input.correlationId())
+                .set(HOOK_EVENTS.CAUSE, JSONB.valueOf(cause.toString()))
+                .set(HOOK_EVENTS.ACTOR, JSONB.valueOf(actor.toString()))
+                .set(HOOK_EVENTS.CHANGES, JSONB.valueOf(hookChanges(input.data()).toString()))
+                .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
+                .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
+                .execute();
+    }
+
+    public void fireAct(EventInput input) {
+        if (!input.code().hook() || input.code().history() || input.code().audit()) {
+            throw new IllegalArgumentException("Event " + input.code().code() + " cannot be fired as hook-only");
+        }
+        if (!input.code().subject().equals(input.subjectKind())) {
+            throw new IllegalArgumentException("Subject kind must match event code");
+        }
+        Instant at = input.at() == null ? clock.instant() : input.at();
+        ObjectNode cause = json.createObjectNode().put("kind", "act").put("act", input.correlationId());
+        cause.putNull("run");
+        ObjectNode actor = json.createObjectNode();
+        if (input.actor() instanceof EventInput.User user) {
+            actor.put("kind", "person").put("id", user.userId());
+            actor.putNull("name");
+        } else {
+            actor.put("kind", "system");
+            actor.putNull("id");
+            actor.putNull("name");
+        }
+        dsl.insertInto(HOOK_EVENTS)
+                .set(HOOK_EVENTS.ID, "E-" + UUID.randomUUID())
+                .set(HOOK_EVENTS.CODE, input.code().code())
+                .set(HOOK_EVENTS.SUBJECT_KIND, input.subjectKind())
+                .set(HOOK_EVENTS.SUBJECT_ID, input.subjectId())
+                .set(HOOK_EVENTS.OCCURRED_AT, at.atOffset(ZoneOffset.UTC))
+                .set(HOOK_EVENTS.CORRELATION_ID, input.correlationId())
+                .set(HOOK_EVENTS.CAUSE, JSONB.valueOf(cause.toString()))
+                .set(HOOK_EVENTS.ACTOR, JSONB.valueOf(actor.toString()))
+                .set(HOOK_EVENTS.CHANGES, JSONB.valueOf(hookChanges(input.data()).toString()))
+                .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
+                .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
+                .execute();
+    }
+
+    private JsonNode hookChanges(JsonNode data) {
+        var changes = json.createArrayNode();
+        data.properties().forEach(entry -> {
+            if ("error".equals(entry.getKey())) {
+                return;
+            }
+            JsonNode value = entry.getValue();
+            ObjectNode change = json.createObjectNode().put("field", entry.getKey());
+            if (value.isObject() && value.has("from") && value.has("to")) {
+                change.set("from", value.get("from"));
+                change.set("to", value.get("to"));
+            } else {
+                change.set("to", value);
+            }
+            changes.add(change);
+        });
+        return changes;
     }
 
     public void recordAct(EventCode code, String subjectKind, String subjectId, Caller caller,

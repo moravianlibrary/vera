@@ -9,6 +9,9 @@ import static cz.mzk.vera.db.tables.Tables.RUN_LOG;
 import static cz.mzk.vera.db.tables.Tables.RUN_TARGETS;
 import static cz.mzk.vera.db.tables.Tables.RUNS;
 
+import cz.mzk.vera.domain.events.EventCode;
+import cz.mzk.vera.events.EventInput;
+import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.jobs.Job;
 import cz.mzk.vera.jobs.JobKind;
 import cz.mzk.vera.jobs.Jobs;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -37,14 +41,16 @@ public class PluginRunJob implements JobKind<PluginRunJob.Chunk> {
     private final JsonMapper json;
     private final Jobs jobs;
     private final List<RunKind> runKinds;
+    private final EventRecorder events;
 
     public PluginRunJob(DSLContext dsl, Clock clock, JsonMapper json,
-            Jobs jobs, List<RunKind> runKinds) {
+            Jobs jobs, List<RunKind> runKinds, EventRecorder events) {
         this.dsl = dsl;
         this.clock = clock;
         this.json = json;
         this.jobs = jobs;
         this.runKinds = runKinds;
+        this.events = events;
     }
 
     @Override
@@ -230,7 +236,11 @@ public class PluginRunJob implements JobKind<PluginRunJob.Chunk> {
                 .where(RUNS.ID.eq(chunk.runId())).execute();
         if (done >= run.get(RUNS.ITEM_COUNT)) {
             tx.update(RUNS).set(RUNS.STATE, errors == 0 ? "Done" : "DoneWithErrors")
-                    .set(RUNS.FINISHED_AT, now).where(RUNS.ID.eq(chunk.runId())).execute();
+                    .set(RUNS.FINISHED_AT, now)
+                    .where(RUNS.ID.eq(chunk.runId())).execute();
+            events.fire(new EventInput(EventCode.RUN_FINISHED, "run", chunk.runId(), null,
+                    new EventInput.System(), "C-" + UUID.randomUUID(), now.toInstant(),
+                    json.createObjectNode(), null));
         } else {
             enqueueNext(tx, chunk.runId(), done);
         }
@@ -281,6 +291,9 @@ public class PluginRunJob implements JobKind<PluginRunJob.Chunk> {
         tx.update(RUNS).set(RUNS.STATE, "Failed").set(RUNS.FAILURE, message)
                 .set(RUNS.FINISHED_AT, now).set(RUNS.ITEMS_PER_MINUTE, (Double) null)
                 .where(RUNS.ID.eq(id)).execute();
+        events.fire(new EventInput(EventCode.RUN_FAILED, "run", id, null,
+                new EventInput.System(), "C-" + UUID.randomUUID(), now.toInstant(),
+                json.createObjectNode(), new EventInput.Reason(message, null)));
     }
 
     public record Chunk(String runId, int offset, RunKind kind, RunKind.Context context, RunKind.Call answer,

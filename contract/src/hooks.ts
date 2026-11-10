@@ -16,6 +16,90 @@ export const hookEventSchema = z.enum(hookEventCodes);
 
 export type HookEvent = z.infer<typeof hookEventSchema>;
 
+// HOOK-payload; HOOK-event-id; HOOK-cause; HOOK-subject-data; HOOK-private.
+const hookPayloadActorSchema = z.object({
+  kind: z.enum(["person", "agent", "system"]),
+  id: id.nullable(),
+  name: z.string().nullable(),
+});
+
+const hookPayloadDocumentSchema = z.object({
+  catalogId: id,
+  unit: z.string().nullable(),
+  title: z.string(),
+  type: id,
+  shelfMark: z.string().nullable(),
+  identifiers: z.array(z.object({ type: id, value: z.string() })),
+  pages: z.number().int().nonnegative().nullable(),
+  properties: z.record(z.string(), z.unknown()),
+  iteration: z
+    .object({
+      id,
+      progress: id,
+      category: id,
+      priority: id,
+      project: id.nullable(),
+      list: id.nullable(),
+      link: z.string().nullable(),
+      links: z.array(z.object({ url: z.string(), where: z.string(), primary: z.boolean() })),
+    })
+    .optional(),
+});
+
+const hookPayloadEventSchema = z
+  .object({
+    id,
+    type: hookEventSchema,
+    occurredAt: timestamp,
+    correlationId: id,
+    subject: z.object({ kind: id, id, url: z.string().url() }),
+    changes: z.array(z.object({ field: id, from: z.unknown().optional(), to: z.unknown() })),
+    cause: z.object({
+      kind: z.enum(["act", "job", "date"]),
+      act: id.nullable(),
+      run: z.object({ id, instance: z.object({ id, name: z.string() }) }).nullable(),
+      actor: hookPayloadActorSchema,
+      reason: z.object({
+        public: z.string().nullable(),
+        internal: z.string().optional(),
+      }),
+    }),
+    document: hookPayloadDocumentSchema.optional(),
+    list: z
+      .object({
+        id,
+        name: z.string(),
+        starts: z.iso.date(),
+        ends: z.iso.date(),
+        pages: count.nullable(),
+      })
+      .optional(),
+    documents: z.array(hookPayloadDocumentSchema).optional(),
+    run: z
+      .object({
+        id,
+        instance: z.object({ id, name: z.string() }),
+        trigger: z.unknown(),
+        state: id,
+        error: z.string().nullable(),
+        items: count,
+        done: count,
+      })
+      .optional(),
+    error: z.string().optional(),
+    askers: z.array(z.object({ id, name: z.string() })).optional(),
+  })
+  .passthrough();
+
+export const hookPayloadSchema = z.object({
+  schema: z.literal("vera.hook/1"),
+  hook: z.object({ id, name: z.string() }),
+  delivery: z.object({ id, attempt: z.number().int().positive() }),
+  events: z.array(hookPayloadEventSchema).min(1),
+});
+
+export type HookPayload = z.infer<typeof hookPayloadSchema>;
+
 export function hookGroupOfEvent(event: HookEvent): (typeof hookGroups)[number] {
   if (event.startsWith("request.")) return "Requests";
   if (event.startsWith("list.")) return "Lists";

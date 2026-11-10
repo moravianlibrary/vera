@@ -104,6 +104,10 @@ class ListCommands {
         eventData.put("generator", generatedInfo(draft.generated()));
         eventData.put("members", draft.memberIds().size());
         record(EventCode.LIST_CREATED, "list", id, caller, correlation, eventData, null, null);
+        if (!LocalDate.parse(start).isAfter(LocalDate.now(clock))) {
+            events.fireAct(new EventInput(EventCode.LIST_STARTED, "list", id, null,
+                    new EventInput.System(), correlation, at.toInstant(), json.createObjectNode(), null));
+        }
         moveMembers(caller, id, draft.name(), start, draft.memberIds(), correlation);
         if (LocalDate.parse(start).isAfter(LocalDate.now(clock))) queue(id, start);
         return ActResult.ok(queries.detail(id, caller.userId()));
@@ -167,8 +171,11 @@ class ListCommands {
                         .and(ITERATIONS.PROGRESS.notIn("Digitized", "Published")))
                 .execute();
         active.forEach(item -> states.recompute(dsl, item.getDocumentId()));
-        record(EventCode.LIST_STARTED_EARLY, "list", id, caller, Correlation.newId(),
+        String correlation = Correlation.newId();
+        record(EventCode.LIST_STARTED_EARLY, "list", id, caller, correlation,
                 Map.of("starts", oldStart), null, null);
+        events.fireAct(new EventInput(EventCode.LIST_STARTED, "list", id, null,
+                new EventInput.User(caller.userId()), correlation, clock.instant(), json.createObjectNode(), null));
         return ActResult.ok(queries.detail(id, caller.userId()));
     }
 
@@ -303,7 +310,8 @@ class ListCommands {
         var at = clock.instant().atOffset(ZoneOffset.UTC);
         tx.update(ITERATIONS).set(ITERATIONS.PROGRESS, "InProgress")
                 .where(ITERATIONS.LIST_ID.eq(id).and(ITERATIONS.PROGRESS.eq("Planned"))).execute();
-        // Derived list.started is delivered to hooks only; the backend hook delivery table is added later.
+        events.fire(new EventInput(EventCode.LIST_STARTED, "list", id, null,
+                new EventInput.System(), Correlation.newId(), clock.instant(), json.createObjectNode(), null));
     }
 
     private ActResult actionable(Caller caller, String id, String permission) {

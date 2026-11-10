@@ -111,5 +111,8 @@ databaseChangeLog:
       file: 0316-run-page-errors.sql
       relativeToChangelogFile: true
   - include:
+      file: 0350-hook-events.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0390-identity-claims.sql
       relativeToChangelogFile: true

@@ -233,6 +233,11 @@ public class ProposalSubmit {
             events.record(new EventInput(EventCode.REQUEST_CREATED, "request", requestId, null,
                     new EventInput.User(userId), correlation, now, json.valueToTree(eventData),
                     new EventInput.Reason(reason, null)));
+            if (approval != null && !copies.isEmpty()) {
+                events.record(new EventInput(EventCode.REQUEST_HELD, "request", requestId, null,
+                        new EventInput.User(userId), correlation, now,
+                        json.valueToTree(Map.of("why", "copy_exists")), new EventInput.Reason(null, null)));
+            }
             if ("Approved".equals(decision)) {
                 Map<String, Object> approvalData = new LinkedHashMap<>();
                 approvalData.put("iterationId", iterationId);

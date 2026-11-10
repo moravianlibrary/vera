@@ -223,6 +223,8 @@ class TasksTests {
                 .isGreaterThan(0);
         assertThat(jdbc.queryForObject("SELECT items_per_minute FROM runs WHERE id=?", Double.class, runId))
                 .isPositive();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_events WHERE code='run.finished' "
+                + "AND subject_id=?", Integer.class, runId)).isEqualTo(1);
     }
 
     @Test
@@ -257,6 +259,8 @@ class TasksTests {
         JsonNode failed = get("/api/tasks/" + runId, "u3");
         assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
         assertThat(failed.path("run").path("failure").asString()).isEqualTo("The source did not answer.");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_events WHERE code='run.failed' "
+                + "AND subject_id=?", Integer.class, runId)).isEqualTo(1);
     }
 
     @Test

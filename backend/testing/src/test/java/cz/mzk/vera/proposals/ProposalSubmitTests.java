@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_STATES;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
+import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_STATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_PLACEMENTS;
@@ -178,6 +179,22 @@ class ProposalSubmitTests {
                 dsl.select(REQUESTS.DOCUMENT_ID).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
                         .fetchOne(REQUESTS.DOCUMENT_ID)))).isEqualTo(1);
         assertThat(dsl.fetchCount(REQUEST_STATES, REQUEST_STATES.REQUEST_ID.eq(requestId))).isEqualTo(1);
+    }
+
+    @Test
+    void approveNowWithAnExistingCopyEmitsRequestHeldOverHttp() {
+        Map<String, Object> draft = draft(List.of(item("catalogId", "MZK01-001277001", "1936–1938")));
+        draft.put("approval", Map.of("categoryId", "c21", "priority", "Normal"));
+        JsonNode report = post(draft, "u3", 201);
+        String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.BATCH_ID.eq(report.path("batch").path("id").asString()))
+                .fetchOne(REQUESTS.ID);
+        assertThat(dsl.select(HOOK_EVENTS.CODE).from(HOOK_EVENTS)
+                .where(HOOK_EVENTS.SUBJECT_ID.eq(requestId)).fetch(HOOK_EVENTS.CODE))
+                .contains("request.created", "request.held");
+        assertThat(dsl.select(HOOK_EVENTS.CORRELATION_ID).from(HOOK_EVENTS)
+                .where(HOOK_EVENTS.SUBJECT_ID.eq(requestId)).fetch(HOOK_EVENTS.CORRELATION_ID).stream()
+                .distinct()).hasSize(1);
     }
 
     @Test

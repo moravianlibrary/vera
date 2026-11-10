@@ -2,12 +2,15 @@ package cz.mzk.vera.lists;
 
 import static cz.mzk.vera.db.tables.Tables.DIGITIZATION_LISTS;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
+import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.JOBS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
+import cz.mzk.vera.events.HookPayloads;
+import cz.mzk.vera.db.tables.tables.records.HookEventsRecord;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -45,6 +48,8 @@ class ListActTests {
     private TemplateResetService reset;
     @Autowired
     private DSLContext dsl;
+    @Autowired
+    private HookPayloads hookPayloads;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -72,6 +77,11 @@ class ListActTests {
                 .fetchOne(ITERATIONS.PROGRESS)).isEqualTo("InProgress");
         assertThat(dsl.selectFrom(EVENTS).where(EVENTS.SUBJECT_ID.eq("L-2026-017")
                 .and(EVENTS.CODE.eq("list.started"))).fetch()).isEmpty();
+        HookEventsRecord hookEvent = dsl.selectFrom(HOOK_EVENTS).where(HOOK_EVENTS.SUBJECT_ID.eq("L-2026-017")
+                .and(HOOK_EVENTS.CODE.eq("list.started"))).fetchOne();
+        assertThat(hookEvent).isNotNull();
+        hookPayloads.validate(hookPayloads.build("H-test", "Test", "D-test", 1,
+                List.of(hookEvent.getId()), false));
     }
 
     @Test
@@ -126,6 +136,17 @@ class ListActTests {
         assertThat(dsl.selectCount().from(JOBS).fetchOne(0, int.class)).isEqualTo(jobsBefore);
         assertThat(dsl.fetchExists(dsl.selectOne().from(EVENTS)
                 .where(EVENTS.SUBJECT_ID.eq(id).and(EVENTS.CODE.eq("list.started"))))).isFalse();
+        HookEventsRecord started = dsl.selectFrom(HOOK_EVENTS).where(HOOK_EVENTS.SUBJECT_ID.eq(id)
+                .and(HOOK_EVENTS.CODE.eq("list.started"))).fetchOne();
+        assertThat(started).isNotNull();
+        HookEventsRecord createdHook = dsl.selectFrom(HOOK_EVENTS).where(HOOK_EVENTS.SUBJECT_ID.eq(id)
+                .and(HOOK_EVENTS.CODE.eq("list.created"))).fetchOne();
+        assertThat(started.getCorrelationId()).isEqualTo(createdHook.getCorrelationId());
+        tools.jackson.databind.node.ObjectNode payload = hookPayloads.build("H-test", "Test", "D-test", 1,
+                List.of(started.getId()), false);
+        hookPayloads.validate(payload);
+        assertThat(payload.path("events").get(0).path("subject").path("url").asString())
+                .isEqualTo("http://localhost/lists/" + id);
     }
 
     @Test
