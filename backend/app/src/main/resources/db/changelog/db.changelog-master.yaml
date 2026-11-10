@@ -114,5 +114,8 @@ databaseChangeLog:
       file: 0350-hook-events.sql
       relativeToChangelogFile: true
   - include:
+      file: 0340-schedule-occurrence.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0390-identity-claims.sql
       relativeToChangelogFile: true

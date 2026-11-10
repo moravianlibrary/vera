@@ -21,6 +21,7 @@ import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
+import cz.mzk.vera.tasks.ScheduleQueue;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Duration;
@@ -45,11 +46,13 @@ public class SeedLoader {
     private final DSLContext dsl;
     private final RecordsSeedLoader records;
     private final JsonMapper json;
+    private final ScheduleQueue scheduleQueue;
 
-    public SeedLoader(DSLContext dsl, RecordsSeedLoader records, JsonMapper json) {
+    public SeedLoader(DSLContext dsl, RecordsSeedLoader records, JsonMapper json, ScheduleQueue scheduleQueue) {
         this.dsl = dsl;
         this.records = records;
         this.json = json;
+        this.scheduleQueue = scheduleQueue;
     }
 
     public void load(JsonNode seed) {
@@ -272,8 +275,11 @@ public class SeedLoader {
                     .execute();
             seedRunDetails(target, run, collections.path("iterations"), done, state, seedAt);
         }
+        int schedulePosition = 0;
         for (JsonNode schedule : collections.path("schedules")) {
             JsonNode pause = schedule.path("pause");
+            Map<String, Object> cadence = scheduleQueue.cadence(schedule.path("cadence").toString());
+            Instant nextAt = pause.isNull() ? scheduleQueue.next(cadence, seedAt) : null;
             target.insertInto(SCHEDULES)
                     .set(SCHEDULES.ID, string(schedule, "id"))
                     .set(SCHEDULES.INSTANCE_ID, string(schedule, "instanceId"))
@@ -285,6 +291,8 @@ public class SeedLoader {
                     .set(SCHEDULES.PAUSE_REASON, nullableString(pause, "reason"))
                     .set(SCHEDULES.CREATED_BY, string(schedule, "createdBy"))
                     .set(SCHEDULES.SINCE, LocalDate.parse(string(schedule, "since")))
+                    .set(SCHEDULES.NEXT_AT, nextAt == null ? null : nextAt.atOffset(ZoneOffset.UTC))
+                    .set(SCHEDULES.POSITION, schedulePosition++)
                     .execute();
         }
         JsonNode retention = collections.path("taskRetention");

@@ -93,8 +93,15 @@ public class Runs {
                     .set(RUN_TARGETS.REQUEST_ID, target.requestId())
                     .execute();
         }
-        JsonNode from = json.valueToTree(trigger.get("from"));
-        String triggerWords = "by " + nameOf(startedBy) + ", from " + from.path("label").asString();
+        String triggerWords;
+        if ("schedule".equals(trigger.get("kind"))) {
+            triggerWords = "schedule " + trigger.get("scheduleId");
+        } else if ("repeat".equals(trigger.get("kind"))) {
+            triggerWords = "intention repeat " + trigger.get("templateId");
+        } else {
+            JsonNode from = json.valueToTree(trigger.get("from"));
+            triggerWords = "by " + nameOf(startedBy) + ", from " + from.path("label").asString();
+        }
         dsl.insertInto(RUN_LOG)
                 .set(RUN_LOG.RUN_ID, id)
                 .set(RUN_LOG.AT, now)

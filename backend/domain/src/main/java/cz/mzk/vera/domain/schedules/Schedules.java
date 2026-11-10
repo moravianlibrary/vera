@@ -9,9 +9,13 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Set;
 
 // ENT-schedule; LC-INT-repeat.
 public final class Schedules {
+  private static final Set<String> SCHEDULABLE_KINDS = Set.of(
+      "CatalogAdapter", "Registry", "Harvester", "PropertySource", "Validation", "Restriction",
+      "PublicationDetector");
   private Schedules() {}
 
   public static Map<String, Object> repeatCadenceOf(String every) {
@@ -21,6 +25,15 @@ public final class Schedules {
       case "quarter" -> Map.of("every", "quarter", "at", "00:00");
       default -> throw new IllegalArgumentException("Unknown repeat cadence: " + every);
     };
+  }
+
+  public static Set<String> schedulableKinds() {
+    return SCHEDULABLE_KINDS;
+  }
+
+  public static boolean isTooFrequent(Map<String, Object> cadence) {
+    return "minutes".equals(cadence.get("every"))
+        && ((Number) cadence.get("interval")).intValue() < 5;
   }
 
   // The next moment strictly after the input; task schedule instants are stored in UTC.
