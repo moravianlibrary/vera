@@ -6,9 +6,9 @@ import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.PROJECTS;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
-import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
+import cz.mzk.vera.account.IdentityClaims;
 import cz.mzk.vera.db.tables.tables.records.DigitizationListsRecord;
 import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.documents.DocumentQueries;
@@ -39,15 +39,18 @@ final class MessageSubjects {
     private final ProjectReads projects;
     private final DocumentQueries documents;
     private final JsonMapper json;
+    private final IdentityClaims identityClaims;
 
     MessageSubjects(DSLContext dsl, HeldAccessQueries access, RequestQueries requests,
-            ProjectReads projects, DocumentQueries documents, JsonMapper json) {
+            ProjectReads projects, DocumentQueries documents, JsonMapper json,
+            IdentityClaims identityClaims) {
         this.dsl = dsl;
         this.access = access;
         this.requests = requests;
         this.projects = projects;
         this.documents = documents;
         this.json = json;
+        this.identityClaims = identityClaims;
     }
 
     Subject resolve(String userId, String kind, String id) {
@@ -113,7 +116,7 @@ final class MessageSubjects {
                     .where(USERS.ID.eq(userId)).fetchOne(USERS.EMAIL)).toList();
         }
         String claimName = handleClaim(instanceId);
-        return userIds.stream().map(userId -> claimValue(userId, claimName)).toList();
+        return userIds.stream().map(userId -> identityClaims.value(userId, claimName)).toList();
     }
 
     private Subject restriction(String userId, String kind, String id) {
@@ -181,7 +184,7 @@ final class MessageSubjects {
                     .where(USERS.ID.eq(userId).and(USERS.EMAIL.isNotNull())));
         }
         String claimName = handleClaim(instanceId);
-        return claimName != null && claimValue(userId, claimName) != null;
+        return claimName != null && identityClaims.value(userId, claimName) != null;
     }
 
     private String handleClaim(String instanceId) {
@@ -198,32 +201,6 @@ final class MessageSubjects {
         }
         String claimName = handle.substring("claim ".length()).trim();
         return claimName.isEmpty() ? null : claimName;
-    }
-
-    private String claimValue(String userId, String claimName) {
-        if (claimName == null) {
-            return null;
-        }
-        List<JSONB> identities = dsl.select(USER_IDENTITIES.CLAIMS).from(USER_IDENTITIES)
-                .where(USER_IDENTITIES.USER_ID.eq(userId)).orderBy(USER_IDENTITIES.POSITION)
-                .fetch(USER_IDENTITIES.CLAIMS);
-        for (JSONB identityClaims : identities) {
-            JsonNode values = json.readTree(identityClaims.data()).get(claimName);
-            if (values == null) {
-                continue;
-            }
-            if (values.isArray()) {
-                for (JsonNode value : values) {
-                    String candidate = value.asString();
-                    if (!candidate.isBlank()) {
-                        return candidate;
-                    }
-                }
-            } else if (values.isString() && !values.asString().isBlank()) {
-                return values.asString();
-            }
-        }
-        return null;
     }
 
     private String label(Map<?, ?> document) {

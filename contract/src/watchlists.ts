@@ -39,6 +39,10 @@ export const watchlistChangeSchema = watchlistDraftSchema
 
 export type WatchlistChange = z.infer<typeof watchlistChangeSchema>;
 
+export const watchlistChangeResponseSchema = watchlistSchema.extend({
+  filterVersion: z.number().int().positive(),
+});
+
 // WATCH-delivery: every enabled Delivery channel instance that can reach a person, named by the
 // instance's name even when it is the only one of its kind; browser push is VERA's own.
 export const pushChannelId = "push";

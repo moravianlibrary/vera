@@ -223,6 +223,7 @@ import {
   verdictResultSchema,
 } from "./validations";
 import {
+  watchlistChangeResponseSchema,
   watchlistChangeSchema,
   watchlistChannelSchema,
   watchlistDraftSchema,
@@ -2179,7 +2180,7 @@ export const endpoints = {
     summary: "Changes a watchlist.",
     params: z.object({ watchlistId: z.string() }),
     body: watchlistChangeSchema,
-    response: watchlistSchema,
+    response: watchlistChangeResponseSchema,
     codes: [
       "watchlist.manager_required",
       "watchlist.invalid_filter",

@@ -162,7 +162,7 @@ class ApiBoundaryTests {
                 + "\"propertyEntry\",\"propertyImpact\",\"propertySave\",\"proposalBarcode\","
                 + "\"proposalCatalogSearch\",\"proposalLookup\","
                 + "\"proposalPhoto\",\"proposalRateLimit\",\"proposalRecordLink\",\"proposalSettings\","
-                + "\"proposals\",\"requestApprove\",\"requestCustodies\","
+                + "\"proposals\",\"pushDeviceRegister\",\"pushDevices\",\"requestApprove\",\"requestCustodies\","
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"runningTasks\",\"scheduleCreate\",\"scheduleDelete\",\"schedulePause\","
@@ -171,7 +171,9 @@ class ApiBoundaryTests {
                 + "\"settingsPatch\",\"signUp\",\"taskCancel\",\"taskDetail\",\"taskLog\",\"taskRerun\","
                 + "\"taskRetention\",\"tasks\",\"userGroups\",\"userRestore\",\"userRoles\","
                 + "\"userSuspend\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
-                + "\"validationRevoke\",\"validations\"]";
+                + "\"validationRevoke\",\"validations\",\"watchlistChannels\",\"watchlistCreate\","
+                + "\"watchlistDelete\",\"watchlistReach\",\"watchlistSave\",\"watchlistSeen\","
+                + "\"watchlistViewer\",\"watchlists\"]";
         assertThat(endpoints.toString()).isEqualTo(expectedEndpoints);
     }
 

@@ -83,6 +83,29 @@ public class DocumentQueries {
         return pageResult(audience, items, orderedIds, slice, arrangement, facets, propertyFacets);
     }
 
+    public int count(Map<String, String> parameters, String callerId, boolean mine) {
+        return counts(List.of(parameters), callerId, mine).getFirst();
+    }
+
+    public List<Integer> counts(List<Map<String, String>> parameterSets, String callerId, boolean mine) {
+        HeldScopes held = heldAccess.scopesHeldBy(callerId);
+        Audience audience = mine ? Audience.PUBLIC : audienceOf(held);
+        List<PropertyDefinitions.Definition> definitions = propertyDefinitions.filterable(dsl, audience);
+        List<Category> categories = dsl.selectFrom(CATEGORIES)
+                .fetch(row -> new Category(row.getId(), row.getParentId()));
+        Condition documentReach = reach.condition(held, callerId, audience);
+        LocalDate today = LocalDate.now(clock);
+        List<Integer> counts = new ArrayList<>();
+        for (Map<String, String> parameters : parameterSets) {
+            DocumentSearch search = DocumentSearch.parse(parameters, definitions);
+            Condition filters = filters(search, audience, callerId, categories, null, held, today);
+            DocumentSearch.Grouping effective = grouping.effective(search, audience, held);
+            DocumentGrouping.Arrangement arrangement = grouping.arrange(effective, documentReach);
+            counts.add(orderedIds(audience, arrangement.rank(), callerId, held, documentReach, filters).size());
+        }
+        return counts;
+    }
+
     private List<String> orderedIds(Audience audience, Field<Integer> rank, String callerId,
             HeldScopes held, Condition documentReach, Condition filters) {
         List<SortField<?>> order = orderedBy(audience, rank, callerId, held);
@@ -286,14 +309,18 @@ public class DocumentQueries {
     }
 
     public boolean canOpenMyDocuments(String callerId) {
-        return heldAccess.scopesHeldBy(callerId).hasPermission(DocumentCodes.REQUEST_READ_MINE);
+        return canOpenMyDocuments(heldAccess.scopesHeldBy(callerId));
+    }
+
+    public boolean canOpenMyDocuments(HeldScopes held) {
+        return held.hasPermission(DocumentCodes.REQUEST_READ_MINE);
     }
 
     public Audience audienceOf(String callerId) {
         return audienceOf(heldAccess.scopesHeldBy(callerId));
     }
 
-    private Audience audienceOf(HeldScopes held) {
+    public Audience audienceOf(HeldScopes held) {
         return held.hasPermission(DocumentCodes.ITERATION_READ) ? Audience.STAFF : Audience.PUBLIC;
     }
 

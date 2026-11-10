@@ -275,6 +275,10 @@ public class RequestQueries {
         return reach.canReadRequests(heldAccess.scopesHeldBy(callerId));
     }
 
+    public boolean canReadRequests(HeldScopes held) {
+        return reach.canReadRequests(held);
+    }
+
     public Map<String, Object> detail(String documentId, String callerId) {
         HeldScopes held = heldAccess.scopesHeldBy(callerId);
         if (dsl.select(DOCUMENTS.ID).from(DOCUMENTS)

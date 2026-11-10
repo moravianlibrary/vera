@@ -21,6 +21,10 @@ import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
+import static cz.mzk.vera.db.tables.Tables.WATCHLISTS;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_VIEWERS;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_ENTRIES;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_BASELINES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
@@ -248,6 +252,7 @@ public class SeedLoader {
         records.load(transaction, collections);
         tasks(transaction, seed, collections);
         hooks(transaction, collections);
+        watchlists(transaction, collections);
     }
 
     // HOOK-model; seeded subscriptions and delivery history follow the contract seed.
@@ -340,6 +345,58 @@ public class SeedLoader {
                     .set(HOOK_ATTEMPTS.DURATION_MS, row.path("durationMs").asInt())
                     .set(HOOK_ATTEMPTS.POSITION, position++)
                     .execute();
+        }
+    }
+
+    private void watchlists(DSLContext target, JsonNode collections) {
+        int position = 0;
+        for (JsonNode row : collections.path("watchlists")) {
+            target.insertInto(WATCHLISTS)
+                    .set(WATCHLISTS.ID, string(row, "id"))
+                    .set(WATCHLISTS.OWNER_ID, string(row, "ownerId"))
+                    .set(WATCHLISTS.NAME, string(row, "name"))
+                    .set(WATCHLISTS.VIEW, string(row, "view"))
+                    .set(WATCHLISTS.FILTER, JSONB.valueOf(row.path("filter").toString()))
+                    .set(WATCHLISTS.AUDIENCE, JSONB.valueOf(row.path("audience").toString()))
+                    .set(WATCHLISTS.CREATED_AT, instant(row, "createdAt"))
+                    .set(WATCHLISTS.COPIED_FROM, nullableString(row, "copiedFrom"))
+                    .set(WATCHLISTS.FILTER_VERSION, row.path("filterVersion").asInt(1))
+                    .set(WATCHLISTS.POSITION, position++)
+                    .execute();
+        }
+        Map<String, Integer> viewerPositions = new LinkedHashMap<>();
+        for (JsonNode row : collections.path("watchlistViewers")) {
+            String userId = string(row, "userId");
+            int viewerPosition = row.has("position") && !row.path("position").isNull()
+                    ? row.path("position").asInt()
+                    : viewerPositions.getOrDefault(userId, 0);
+            target.insertInto(WATCHLIST_VIEWERS)
+                    .set(WATCHLIST_VIEWERS.USER_ID, userId)
+                    .set(WATCHLIST_VIEWERS.WATCHLIST_ID, string(row, "watchlistId"))
+                    .set(WATCHLIST_VIEWERS.SEEN_AT, instant(row, "seenAt"))
+                    .set(WATCHLIST_VIEWERS.POSITION, viewerPosition)
+                    .set(WATCHLIST_VIEWERS.PUSH, row.path("push").asBoolean(true))
+                    .set(WATCHLIST_VIEWERS.PUSH_SINCE, instant(row, "pushSince"))
+                    .set(WATCHLIST_VIEWERS.CHANNELS, JSONB.valueOf(jsonObject(row, "channels")))
+                    .set(WATCHLIST_VIEWERS.CONFIRMED_FILTER, nullableString(row, "confirmedFilter"))
+                    .execute();
+            viewerPositions.put(userId, Math.max(viewerPosition + 1,
+                    viewerPositions.getOrDefault(userId, 0)));
+        }
+        for (JsonNode row : collections.path("watchlistEntries")) {
+            target.insertInto(WATCHLIST_ENTRIES)
+                    .set(WATCHLIST_ENTRIES.USER_ID, string(row, "userId"))
+                    .set(WATCHLIST_ENTRIES.WATCHLIST_ID, string(row, "watchlistId"))
+                    .set(WATCHLIST_ENTRIES.RECORD_ID, string(row, "recordId"))
+                    .set(WATCHLIST_ENTRIES.ENTERED_AT, instant(row, "enteredAt"))
+                    .set(WATCHLIST_ENTRIES.BASELINE, row.path("baseline").asBoolean())
+                    .set(WATCHLIST_ENTRIES.FILTER_VERSION, row.path("filterVersion").asInt(1))
+                    .set(WATCHLIST_ENTRIES.DELIVERED_AT, JSONB.valueOf(jsonObject(row, "deliveredAt")))
+                    .set(WATCHLIST_ENTRIES.PUSH_DELIVERED_AT, instant(row, "pushDeliveredAt"))
+                    .execute();
+        }
+        for (JsonNode baseline : collections.path("watchlistBaselines")) {
+            target.insertInto(WATCHLIST_BASELINES).set(WATCHLIST_BASELINES.ID, baseline.asString()).execute();
         }
     }
 
@@ -534,5 +591,10 @@ public class SeedLoader {
     private JSONB nullableJson(JsonNode object, String field) {
         JsonNode value = object.get(field);
         return value == null || value.isNull() ? null : JSONB.valueOf(value.toString());
+    }
+
+    private String jsonObject(JsonNode object, String field) {
+        JsonNode value = object.get(field);
+        return value == null || value.isNull() ? "{}" : value.toString();
     }
 }

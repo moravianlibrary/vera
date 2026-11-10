@@ -37,7 +37,8 @@ public class SeedReader {
             "db/changelog/0005-plugin-descriptor.sql",
             "db/changelog/0140-digitization-lists.sql",
             "db/changelog/0141-intentions-and-mixes.sql",
-            "db/changelog/0210-intention-templates-and-archives.sql");
+            "db/changelog/0210-intention-templates-and-archives.sql",
+            "db/changelog/0370-watchlists.sql");
     private final ObjectMapper mapper = new ObjectMapper();
     private final Path seedDir;
     private final Path contractDir;
