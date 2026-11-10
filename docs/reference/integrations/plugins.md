@@ -63,8 +63,8 @@ an iteration not yet published.
 - **Validation** and **Restriction:** the instance's rules over documents still in play.
 - **Property source:** documents still in play that lack one of its properties.
 - **Harvester:** what `harvest` finds from its cursor, proposed as its agent.
-- **Publication detector:** digitized iterations; it adds the links it finds and never removes
-  one.
+- **Publication detector:** digitized and published iterations; it adds each link it finds that
+  the iteration does not have yet, and never removes one.
 
 #### PLG-contract
 

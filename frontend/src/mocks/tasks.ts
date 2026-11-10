@@ -531,7 +531,9 @@ export function itemCountForInstance(instanceId: string | null): number {
     case "PropertySource":
       return lackingPropertiesCount(instance);
     case "PublicationDetector":
-      return database.iterations.filter((iteration) => iteration.progress === "Digitized").length;
+      return database.iterations.filter(
+        (iteration) => iteration.progress === "Digitized" || iteration.progress === "Published",
+      ).length;
     default:
       return 0;
   }
