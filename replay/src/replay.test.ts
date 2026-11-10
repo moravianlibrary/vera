@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { endpoints } from "@vera/contract/endpoints";
@@ -216,8 +216,17 @@ async function replay(
   }
 }
 
+// The first reset of a seed builds its database template, which can take longer than a test's
+// 5 seconds; a timed-out reset would go on beside the next scenario's and drop its database.
+const templateBuildMilliseconds = 120_000;
+
 for (const { file, recording } of recordings) {
   describe(file, () => {
+    beforeAll(async () => {
+      const reset = await postJson("/_engine/reset", { seed: recording.seed, frozen: true });
+      expect(reset.status, `${file}: first reset status`).toBe(200);
+    }, templateBuildMilliseconds);
+
     for (const scenario of recording.scenarios) {
       const gap = knownGap(file, scenario);
       const notServed = unsupported(scenario);
