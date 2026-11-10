@@ -13,6 +13,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -28,14 +29,42 @@ public class TaskCommands {
     private final HeldAccessQueries access;
     private final Clock clock;
     private final JsonMapper json;
+    private final Runs runs;
 
     public TaskCommands(DSLContext dsl, TasksQueries queries, HeldAccessQueries access,
-            Clock clock, JsonMapper json) {
+            Clock clock, JsonMapper json, Runs runs) {
         this.dsl = dsl;
         this.queries = queries;
         this.access = access;
         this.clock = clock;
         this.json = json;
+        this.runs = runs;
+    }
+
+    @Transactional
+    public ActResult rerun(Caller caller, String id) {
+        Record row = queries.visibleRun(caller.userId(), id, clock.instant());
+        if (row == null) {
+            return ActResult.unknown("run");
+        }
+        if (row.get(RUNS.INSTANCE_ID) == null
+                || !List.of("Failed", "Cancelled").contains(row.get(RUNS.STATE))) {
+            return ActResult.refused(409, "Only a failed or cancelled plugin run is run again",
+                    "task.not_rerunnable");
+        }
+        List<Grant> grants = access.heldBy(caller.userId()).grants();
+        Tasks.Session session = new Tasks.Session(caller.userId(), grants);
+        Tasks.Run run = new Tasks.Run(row.get(RUNS.STATE), row.get(RUNS.STARTED_BY), true);
+        if (!Tasks.canRunAgain(session, run)) {
+            return ActResult.refused(403, "You may not run this plugin", null);
+        }
+        Map<String, Object> trigger = new LinkedHashMap<>();
+        trigger.put("kind", "manual");
+        trigger.put("from", Map.of("label", "Tasks", "path", "/tasks?run=" + id));
+        String createdId = runs.start(row.get(RUNS.WHAT), row.get(RUNS.INSTANCE_ID), null, trigger,
+                caller.userId(), id);
+        Record created = dsl.selectFrom(RUNS).where(RUNS.ID.eq(createdId)).fetchOne();
+        return ActResult.ok(queries.run(created, clock.instant()));
     }
 
     @Transactional

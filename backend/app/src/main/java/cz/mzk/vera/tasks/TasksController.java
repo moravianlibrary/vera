@@ -87,6 +87,13 @@ final class TasksController {
                 : ActResult.answer(commands.cancel(caller, runId));
     }
 
+    @PostMapping("/{runId}/rerun")
+    ResponseEntity<?> rerun(HttpServletRequest request, @PathVariable String runId) {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.rerun(caller, runId));
+    }
+
     @PutMapping("/retention")
     ResponseEntity<?> retention(HttpServletRequest request, @RequestBody JsonNode body) {
         Caller caller = caller(request);

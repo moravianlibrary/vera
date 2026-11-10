@@ -2,19 +2,14 @@ package cz.mzk.vera.ingest;
 
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_KEYS;
-import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PAGE_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
-import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
-import static cz.mzk.vera.db.tables.Tables.DOCUMENT_REGISTRY_RECORDS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
-import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
 import static cz.mzk.vera.domain.iterations.Iterations.progressAfterGates;
 
 import cz.mzk.vera.documents.DocumentStates;
-import cz.mzk.vera.domain.entities.Defect;
-import cz.mzk.vera.domain.entities.Progress;
+import cz.mzk.vera.documents.PluginAnswerWrites;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
@@ -35,6 +30,7 @@ import cz.mzk.vera.plugin.registry.LookupAnswer;
 import cz.mzk.vera.plugin.registry.LookupInput;
 import cz.mzk.vera.plugin.registry.Registry;
 import cz.mzk.vera.plugin.restriction.RestrictionCheckAnswer;
+import cz.mzk.vera.plugin.validation.ValidationCheckAnswer;
 import cz.mzk.vera.pluginhost.PluginCalls;
 import cz.mzk.vera.pluginhost.PluginInstances;
 import cz.mzk.vera.pluginhost.PluginOutcome;
@@ -43,12 +39,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
-import org.jooq.impl.DSL;
+import org.jooq.Record;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -60,17 +54,20 @@ public class IngestJob implements JobKind<IngestJob.Result> {
     private final PluginCalls calls;
     private final PluginInstances instances;
     private final DocumentStates states;
+    private final PluginAnswerWrites answerWrites;
     private final IterationCheckRun checkRun;
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
 
     public IngestJob(DSLContext dsl, PluginCalls calls, PluginInstances instances, DocumentStates states,
-            IterationCheckRun checkRun, EventRecorder events, Clock clock, JsonMapper json) {
+            PluginAnswerWrites answerWrites, IterationCheckRun checkRun, EventRecorder events,
+            Clock clock, JsonMapper json) {
         this.dsl = dsl;
         this.calls = calls;
         this.instances = instances;
         this.states = states;
+        this.answerWrites = answerWrites;
         this.checkRun = checkRun;
         this.events = events;
         this.clock = clock;
@@ -85,7 +82,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
     @Override
     public Result call(Job job) {
         String id = job.payload().path("iterationId").asString();
-        var row = dsl.select(ITERATIONS.DOCUMENT_ID, ITERATIONS.ATTEMPT, ITERATIONS.REQUEST_ID,
+        Record row = dsl.select(ITERATIONS.DOCUMENT_ID, ITERATIONS.ATTEMPT, ITERATIONS.REQUEST_ID,
                 ITERATIONS.CATEGORY_ID, ITERATIONS.PRIORITY, ITERATIONS.PROJECT_ID, ITERATIONS.PROGRESS,
                 ITERATIONS.LIST_ID, ITERATIONS.FORMER_LIST_NAME, DOCUMENTS.CATALOG_ID,
                 DOCUMENTS.TITLE, DOCUMENTS.TYPE, DOCUMENTS.SHELF_MARK, DOCUMENTS.UNIT_TYPE,
@@ -102,7 +99,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
                 row.get(ITERATIONS.PROJECT_ID), row.get(ITERATIONS.PROGRESS), row.get(ITERATIONS.LIST_ID),
                 row.get(ITERATIONS.FORMER_LIST_NAME), null, null, null, List.of(), List.of(), null, null,
                 List.of(), null, iterationProperties(id));
-        var mirror = dsl.select(CATALOG_MIRROR.RECORD).from(CATALOG_MIRROR)
+        Record mirror = dsl.select(CATALOG_MIRROR.RECORD).from(CATALOG_MIRROR)
                 .where(CATALOG_MIRROR.CATALOG_ID.eq(catalogId)).orderBy(CATALOG_MIRROR.POSITION)
                 .limit(1).fetchOne();
         if (mirror == null) {
@@ -170,12 +167,12 @@ public class IngestJob implements JobKind<IngestJob.Result> {
         } catch (PluginUnavailable failure) {
             return Result.failed(id, documentId, row.get(ITERATIONS.ATTEMPT), failure.getMessage());
         }
-        for (var answer : checked.validations()) {
-            for (var defect : answer.answer().defects()) {
+        for (IterationCheckRun.ValidationAnswer answer : checked.validations()) {
+            for (ValidationCheckAnswer.Defect defect : answer.answer().defects()) {
                 defects.add(new DefectAnswer(answer.instance().id(), defect.rule(), defect.field(), defect.detail()));
             }
         }
-        for (var answer : checked.restrictions()) {
+        for (IterationCheckRun.RestrictionAnswer answer : checked.restrictions()) {
             restrictionAnswers.add(new RestrictionAnswer(answer.instance(), answer.answer()));
         }
         return new Result(id, documentId, row.get(ITERATIONS.ATTEMPT), record, registryAnswers, propertyAnswers,
@@ -188,7 +185,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
             return;
         }
         String id = result.iterationId();
-        var current = tx.select(ITERATIONS.DOCUMENT_ID, ITERATIONS.ATTEMPT, ITERATIONS.PROGRESS)
+        Record current = tx.select(ITERATIONS.DOCUMENT_ID, ITERATIONS.ATTEMPT, ITERATIONS.PROGRESS)
                 .from(ITERATIONS).where(ITERATIONS.ID.eq(id)).fetchOne();
         if (current == null || !result.documentId().equals(current.get(ITERATIONS.DOCUMENT_ID))
                 || result.attempt() != current.get(ITERATIONS.ATTEMPT)
@@ -206,9 +203,8 @@ public class IngestJob implements JobKind<IngestJob.Result> {
         applyProperties(tx, result);
         applyDefects(tx, result);
         applyRestriction(tx, result);
-        var iteration = states.recordOf(tx, result.documentId()).iterations().stream()
-                .filter(value -> value.id().equals(id)).findFirst().orElseThrow();
-        String progress = progressAfterGates(iteration).name();
+        String progress = progressAfterGates(states.recordOf(tx, result.documentId()).iterations().stream()
+                .filter(value -> value.id().equals(id)).findFirst().orElseThrow()).name();
         tx.update(ITERATIONS).set(ITERATIONS.PROGRESS, progress).set(ITERATIONS.INGEST_FAILURE_ERROR, (String) null)
                 .where(ITERATIONS.ID.eq(id)).execute();
         event(tx, EventCode.ITERATION_INGESTED, "iteration", id, Map.of());
@@ -216,148 +212,32 @@ public class IngestJob implements JobKind<IngestJob.Result> {
     }
 
     private void applyDefects(DSLContext tx, Result result) {
-        var old = tx.selectFrom(ITERATION_DEFECTS).where(ITERATION_DEFECTS.ITERATION_ID.eq(result.iterationId()))
-                .fetch();
-        Map<String, java.time.OffsetDateTime> firstSeen = new LinkedHashMap<>();
-        old.forEach(row -> firstSeen.put(row.getKey(), row.getFirstSeenAt()));
-        tx.deleteFrom(ITERATION_DEFECTS).where(ITERATION_DEFECTS.ITERATION_ID.eq(result.iterationId())).execute();
-        int position = 0;
-        for (DefectAnswer defect : result.defects()) {
-            String key = defect.instanceId() + ":" + defect.rule() + ":" + defect.field();
-            var prior = old.stream().filter(row -> row.getInstanceId().equals(defect.instanceId())
-                    && row.getRuleCode().equals(defect.rule()) && row.getSubject().equals(defect.field()))
-                    .findFirst().orElse(null);
-            tx.insertInto(ITERATION_DEFECTS).set(ITERATION_DEFECTS.ITERATION_ID, result.iterationId())
-                    .set(ITERATION_DEFECTS.POSITION, position++).set(ITERATION_DEFECTS.KEY, key)
-                    .set(ITERATION_DEFECTS.INSTANCE_ID, defect.instanceId())
-                    .set(ITERATION_DEFECTS.RULE_CODE, defect.rule()).set(ITERATION_DEFECTS.SUBJECT, defect.field())
-                    .set(ITERATION_DEFECTS.PUBLIC_TEXT, "").set(ITERATION_DEFECTS.INTERNAL_TEXT, defect.detail())
-                    .set(ITERATION_DEFECTS.FIRST_SEEN_AT, prior == null ? now() : prior.getFirstSeenAt()).execute();
+        for (PluginInstances.Instance instance : instances.enabled(tx, "Validation")) {
+            List<ValidationCheckAnswer.Defect> defects = result.defects().stream()
+                    .filter(defect -> defect.instanceId().equals(instance.id()))
+                    .map(defect -> new ValidationCheckAnswer.Defect(
+                            defect.rule(), defect.field(), defect.detail())).toList();
+            answerWrites.defects(tx, result.iterationId(), instance.id(), defects);
         }
     }
 
     private void applyRegistry(DSLContext tx, Result result) {
-        int position = tx.selectCount().from(DOCUMENT_REGISTRY_RECORDS)
-                .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(result.documentId())).fetchOne(0, int.class);
         for (RegistryAnswer answer : result.registryAnswers()) {
-            String oldState = tx.select(DOCUMENT_REGISTRY_RECORDS.STATE).from(DOCUMENT_REGISTRY_RECORDS)
-                    .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(result.documentId())
-                            .and(DOCUMENT_REGISTRY_RECORDS.REGISTRY.eq(answer.instance().name())))
-                    .orderBy(DOCUMENT_REGISTRY_RECORDS.POSITION).limit(1)
-                    .fetchOne(DOCUMENT_REGISTRY_RECORDS.STATE);
-            String newState = answer.answer().records().stream().map(item -> registryState(item.rawState()))
-                    .findFirst().orElse(null);
-            tx.deleteFrom(DOCUMENT_REGISTRY_RECORDS)
-                    .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(result.documentId())
-                            .and(DOCUMENT_REGISTRY_RECORDS.REGISTRY.eq(answer.instance().name())))
-                    .execute();
-            for (var item : answer.answer().records()) {
-                String state = registryState(item.rawState());
-                tx.insertInto(DOCUMENT_REGISTRY_RECORDS).set(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID, result.documentId())
-                        .set(DOCUMENT_REGISTRY_RECORDS.POSITION, position++).set(DOCUMENT_REGISTRY_RECORDS.REGISTRY,
-                                answer.instance().name())
-                        .set(DOCUMENT_REGISTRY_RECORDS.STATE, state).set(DOCUMENT_REGISTRY_RECORDS.RAW_STATE,
-                                item.rawState()).set(DOCUMENT_REGISTRY_RECORDS.URL, item.link())
-                        .set(DOCUMENT_REGISTRY_RECORDS.OBSERVED_AT, now()).set(DOCUMENT_REGISTRY_RECORDS.CHECKED_AT, now())
-                        .execute();
-            }
-            if (newState != null && !newState.equals(oldState)) {
-                Map<String, Object> stateChange = new LinkedHashMap<>();
-                stateChange.put("from", oldState);
-                stateChange.put("to", newState);
-                event(tx, EventCode.DOCUMENT_REGISTRY_CHANGED, "document", result.documentId(),
-                        Map.of("registry", answer.instance().name(), "state", stateChange));
-            }
+            answerWrites.registry(tx, result.documentId(), answer.instance().name(), answer.answer());
         }
-    }
-
-    private String registryState(String raw) {
-        return switch (raw) {
-            case "NotFound", "not_found" -> "NotFound";
-            case "Planned", "planned" -> "Planned";
-            case "InProgress", "in_progress" -> "InProgress";
-            case "Digitized", "digitized" -> "Digitized";
-            case "Published", "published" -> "Published";
-            default -> "Unmapped";
-        };
     }
 
     private void applyProperties(DSLContext tx, Result result) {
-        tx.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.POSITION,
-                ITERATION_PROPERTY_SOURCES.SOURCE)
-                .from(ITERATION_PROPERTY_SOURCES)
-                .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(result.iterationId()))
-                .fetch().stream().filter(row -> "plugin".equals(json.readTree(
-                        row.get(ITERATION_PROPERTY_SOURCES.SOURCE).data()).path("kind").asString()))
-                .forEach(row -> tx.deleteFrom(ITERATION_PROPERTY_SOURCES)
-                        .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(result.iterationId())
-                                .and(ITERATION_PROPERTY_SOURCES.KEY.eq(row.get(ITERATION_PROPERTY_SOURCES.KEY)))
-                                .and(ITERATION_PROPERTY_SOURCES.POSITION.eq(
-                                        row.get(ITERATION_PROPERTY_SOURCES.POSITION))))
-                        .execute());
-        boolean pageCountAnswered = result.propertyAnswers().stream()
-                .flatMap(answer -> answer.answer().values().stream())
-                .anyMatch(value -> "page_count".equals(value.key()));
-        if (pageCountAnswered) {
-            tx.deleteFrom(DOCUMENT_PAGE_SOURCES)
-                    .where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(result.documentId())
-                            .and(DOCUMENT_PAGE_SOURCES.SOURCE.eq("catalog")))
-                    .execute();
-        }
-        int position = 0;
-        int pagePosition = tx.selectCount().from(DOCUMENT_PAGE_SOURCES)
-                .where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(result.documentId())).fetchOne(0, int.class);
         for (PropertyAnswer answer : result.propertyAnswers()) {
-            for (var property : answer.answer().values()) {
-                tx.insertInto(ITERATION_PROPERTY_SOURCES)
-                        .set(ITERATION_PROPERTY_SOURCES.ITERATION_ID, result.iterationId())
-                        .set(ITERATION_PROPERTY_SOURCES.KEY, property.key())
-                        .set(ITERATION_PROPERTY_SOURCES.POSITION, position++)
-                        .set(ITERATION_PROPERTY_SOURCES.SOURCE,
-                                JSONB.valueOf(json.writeValueAsString(Map.of("kind", "plugin", "instanceId",
-                                        answer.instance().id(), "instanceName", answer.instance().name()))))
-                        .set(ITERATION_PROPERTY_SOURCES.TIER, property.tier())
-                        .set(ITERATION_PROPERTY_SOURCES.VALUE,
-                                JSONB.valueOf(json.writeValueAsString(property.value())))
-                        .set(ITERATION_PROPERTY_SOURCES.OBSERVED_AT, now()).execute();
-                if ("page_count".equals(property.key()) && property.value() instanceof Number pages) {
-                    tx.insertInto(DOCUMENT_PAGE_SOURCES).set(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID, result.documentId())
-                            .set(DOCUMENT_PAGE_SOURCES.POSITION, pagePosition++)
-                            .set(DOCUMENT_PAGE_SOURCES.SOURCE, "catalog")
-                            .set(DOCUMENT_PAGE_SOURCES.TIER, property.tier()).set(DOCUMENT_PAGE_SOURCES.VALUE,
-                                    pages.intValue()).set(DOCUMENT_PAGE_SOURCES.OBSERVED_AT, now()).execute();
-                }
-            }
+            answerWrites.properties(tx, result.documentId(), result.iterationId(), answer.instance().id(),
+                    answer.instance().name(), answer.answer());
         }
     }
 
     private void applyRestriction(DSLContext tx, Result result) {
-        var restriction = result.restrictionAnswers().stream().flatMap(value -> value.answer().findings().stream())
-                .filter(value -> value.forbidden()).findFirst().orElse(null);
-        String oldRule = tx.select(ITERATIONS.RESTRICTION_RULE).from(ITERATIONS)
-                .where(ITERATIONS.ID.eq(result.iterationId())).fetchOne(0, String.class);
-        OffsetDateTime oldFoundAt = tx.select(ITERATIONS.RESTRICTION_FOUND_AT).from(ITERATIONS)
-                .where(ITERATIONS.ID.eq(result.iterationId())).fetchOne(0, OffsetDateTime.class);
-        if (restriction == null) {
-            tx.update(ITERATIONS).set(ITERATIONS.RESTRICTION_RULE, (String) null)
-                    .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, (String) null)
-                    .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, (String) null)
-                    .set(ITERATIONS.RESTRICTION_FOUND_AT, (OffsetDateTime) null)
-                    .where(ITERATIONS.ID.eq(result.iterationId())).execute();
-            return;
-        }
-        boolean same = restriction.rule().equals(oldRule);
-        // restrictionSchema in domain/src/entities.ts has no `until`; 0015 stores rule/text/foundAt only.
-        tx.update(ITERATIONS).set(ITERATIONS.RESTRICTION_RULE, restriction.rule())
-                .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, same ? publicText(tx, result.iterationId()) : null)
-                .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, restriction.why())
-                .set(ITERATIONS.RESTRICTION_FOUND_AT, same ? oldFoundAt : now())
-                .where(ITERATIONS.ID.eq(result.iterationId())).execute();
-    }
-
-    private String publicText(DSLContext tx, String id) {
-        return tx.select(ITERATIONS.RESTRICTION_PUBLIC_TEXT).from(ITERATIONS)
-                .where(ITERATIONS.ID.eq(id)).fetchOne(0, String.class);
+        List<RestrictionCheckAnswer.Finding> findings = result.restrictionAnswers().stream()
+                .flatMap(answer -> answer.answer().findings().stream()).toList();
+        answerWrites.restriction(tx, result.iterationId(), new RestrictionCheckAnswer(findings));
     }
 
     private String outcome(String instance, PluginOutcome<?> outcome) {

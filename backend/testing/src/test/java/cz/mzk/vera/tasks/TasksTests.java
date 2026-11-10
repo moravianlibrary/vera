@@ -171,6 +171,177 @@ class TasksTests {
                 .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isForbidden();
     }
 
+    @Test
+    void failedRegistryRunAgainWorksItsFixedSetInChunks() throws Exception {
+        String runId = startAgain("Registry");
+        JsonNode initial = get("/api/tasks/" + runId, "u3");
+        int itemCount = initial.path("run").path("itemCount").asInt();
+        assertThat(itemCount).isGreaterThan(25);
+        jdbc.update("INSERT INTO run_targets(run_id,position,document_id,iteration_id) "
+                        + "SELECT ?, ? + extra.n - 1, seed.document_id, seed.iteration_id "
+                        + "FROM generate_series(1, ?) extra(n) CROSS JOIN (SELECT document_id,iteration_id "
+                        + "FROM run_targets WHERE run_id=? ORDER BY position LIMIT 1) seed",
+                runId, itemCount, 75 - itemCount, runId);
+        jdbc.update("UPDATE runs SET item_count=75 WHERE id=?", runId);
+        assertThat(initial.path("run").path("state").asString()).isEqualTo("Running");
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        JsonNode afterFirstChunk = get("/api/tasks/" + runId, "u3");
+        assertThat(afterFirstChunk.path("run").path("doneCount").asInt()).isEqualTo(25);
+        assertThat(jdbc.queryForObject("SELECT items_per_minute FROM runs WHERE id=?", Double.class, runId))
+                .isNull();
+        assertThat(afterFirstChunk.path("run").path("secondsLeft").isNull()).isTrue();
+        client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"advance\":{\"minutes\":1}}")
+                .exchange().expectStatus().isOk();
+        JsonNode afterSecondChunk = get("/api/tasks/" + runId, "u3");
+        assertThat(afterSecondChunk.path("run").path("doneCount").asInt()).isEqualTo(50);
+        assertThat(jdbc.queryForObject("SELECT items_per_minute FROM runs WHERE id=?", Double.class, runId))
+                .isEqualTo(50);
+        assertThat(afterSecondChunk.path("run").path("secondsLeft").asInt()).isPositive();
+        client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"advance\":{\"minutes\":1}}")
+                .exchange().expectStatus().isOk();
+        JsonNode finished = get("/api/tasks/" + runId, "u3");
+        assertThat(finished.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(finished.path("run").path("doneCount").asInt()).isEqualTo(75);
+        assertThat(finished.path("run").path("changes").get(0).path("label").asString())
+                .contains("registry states");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM document_registry_records", Integer.class))
+                .isGreaterThan(0);
+        assertThat(jdbc.queryForObject("SELECT items_per_minute FROM runs WHERE id=?", Double.class, runId))
+                .isPositive();
+    }
+
+    @Test
+    void validationRunStoresDefects() throws Exception {
+        String runId = startAgain("Validation");
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        JsonNode finished = finishRun(runId);
+        assertThat(finished.path("run").path("state").asString()).isIn("Done", "DoneWithErrors");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM iteration_defects", Integer.class))
+                .isGreaterThan(0);
+    }
+
+    @Test
+    void propertySourceRunWritesValuesForItsMissingPropertySet() throws Exception {
+        String runId = startAgain("PropertySource");
+        int itemCount = get("/api/tasks/" + runId, "u3").path("run").path("itemCount").asInt();
+        assertThat(itemCount).isGreaterThan(0);
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        JsonNode finished = finishRun(runId);
+        assertThat(finished.path("run").path("doneCount").asInt()).isEqualTo(itemCount);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM iteration_property_sources", Integer.class))
+                .isGreaterThan(0);
+    }
+
+    @Test
+    void unavailableInstanceFailsTheRun() throws Exception {
+        String runId = startAgain("Registry");
+        String instanceId = jdbc.queryForObject("SELECT instance_id FROM runs WHERE id=?", String.class, runId);
+        jdbc.update("UPDATE plugin_implementations SET descriptor_id='missing-test-plugin' "
+                + "WHERE id=(SELECT implementation_id FROM plugin_instances WHERE id=?)", instanceId);
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        JsonNode failed = get("/api/tasks/" + runId, "u3");
+        assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
+        assertThat(failed.path("run").path("failure").asString()).isEqualTo("The source did not answer.");
+    }
+
+    @Test
+    void switchedOffInstanceFailsWithThePluginMessage() throws Exception {
+        String runId = startAgain("Registry");
+        String instanceId = jdbc.queryForObject("SELECT instance_id FROM runs WHERE id=?", String.class, runId);
+        jdbc.update("UPDATE plugin_instances SET is_enabled=false WHERE id=?", instanceId);
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        JsonNode failed = get("/api/tasks/" + runId, "u3");
+        assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
+        assertThat(failed.path("run").path("failure").asString()).isEqualTo("The plugin was switched off.");
+    }
+
+    @Test
+    void recordedCatalogRerunStartsWithAnEmptySet() throws Exception {
+        JsonNode started = mapper.readTree(client.post().uri("/api/tasks/T-9897/rerun")
+                .header("Cookie", session("u3")).contentType(MediaType.APPLICATION_JSON).body(Map.of())
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(started.path("id").asString()).isEqualTo("T-9917");
+        assertThat(started.path("itemCount").asInt()).isZero();
+        assertThat(started.path("doneCount").asInt()).isZero();
+        assertThat(started.path("secondsLeft").isNull()).isTrue();
+        assertThat(started.path("rerunOf").asString()).isEqualTo("T-9897");
+    }
+
+    @Test
+    void cancelledRunStopsAtTheNextChunk() throws Exception {
+        String runId = startAgain("Registry");
+        jdbc.update("UPDATE runs SET state='Cancelled', finished_at='2026-06-25T08:40:00Z' WHERE id=?", runId);
+        int before = jdbc.queryForObject("SELECT count(*) FROM document_registry_records", Integer.class);
+        jdbc.update("INSERT INTO jobs(kind,due_at,state,attempt,payload) "
+                        + "VALUES ('plugin.run','2026-06-25T08:40:00Z','due',0,?::jsonb)",
+                "{\"runId\":\"" + runId + "\",\"offset\":25}");
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM document_registry_records", Integer.class))
+                .isEqualTo(before);
+        assertThat(jdbc.queryForObject("SELECT state FROM runs WHERE id=?", String.class, runId))
+                .isEqualTo("Cancelled");
+    }
+
+    @Test
+    void rerunReturnsNotFoundForMissingRun() {
+        client.post().uri("/api/tasks/not-there/rerun").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of())
+                .exchange().expectStatus().isNotFound();
+    }
+
+    @Test
+    void rerunRefusesCoreRuns() {
+        client.post().uri("/api/tasks/T-9905/rerun").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isEqualTo(409)
+                .expectBody().jsonPath("$.code").isEqualTo("task.not_rerunnable");
+    }
+
+    @Test
+    void rerunRefusesWhenCallerCannotRunThePlugin() {
+        String id = insertFailedRun("Registry");
+        jdbc.update("DELETE FROM role_grants WHERE permission='plugin.run'");
+        client.post().uri("/api/tasks/" + id + "/rerun").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of())
+                .exchange().expectStatus().isForbidden();
+    }
+
+    private String startAgain(String kind) throws Exception {
+        String failedId = insertFailedRun(kind);
+        String body = client.post().uri("/api/tasks/" + failedId + "/rerun")
+                .header("Cookie", session("u3")).contentType(MediaType.APPLICATION_JSON).body(Map.of())
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody();
+        JsonNode started = mapper.readTree(body);
+        assertThat(started.path("rerunOf").asString()).isEqualTo(failedId);
+        return started.path("id").asString();
+    }
+
+    private JsonNode finishRun(String runId) throws Exception {
+        JsonNode found = get("/api/tasks/" + runId, "u3");
+        for (int chunk = 0; chunk < 10 && "Running".equals(found.path("run").path("state").asString()); chunk++) {
+            client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"advance\":{\"minutes\":1}}")
+                    .exchange().expectStatus().isOk();
+            found = get("/api/tasks/" + runId, "u3");
+        }
+        return found;
+    }
+
+    private String insertFailedRun(String kind) {
+        String instanceId = jdbc.queryForObject("SELECT pi.id FROM plugin_instances pi "
+                        + "JOIN plugin_implementations p ON p.id=pi.implementation_id "
+                        + "WHERE p.kind=? AND pi.is_enabled AND NOT pi.is_deleted ORDER BY pi.position LIMIT 1",
+                String.class, kind);
+        String id = "T-99999";
+        jdbc.update("INSERT INTO runs(id,what,instance_id,trigger,started_by,state,started_at,item_count,done_count,"
+                        + "changes,failure) VALUES(?, 'BK7d test run', ?, '{\"kind\":\"manual\",\"from\":{"
+                        + "\"label\":\"Tasks\",\"path\":\"/tasks\"}}'::jsonb, 'u1', 'Failed', "
+                        + "'2026-06-25T08:00:00Z', 0, 0, '[]'::jsonb, 'Plugin did not answer')",
+                id, instanceId);
+        return id;
+    }
+
     private boolean isTaskRead(String path) {
         return path.equals("/api/tasks") || path.startsWith("/api/tasks?")
                 || path.equals("/api/tasks/running") || path.matches("/api/tasks/[^/]+")

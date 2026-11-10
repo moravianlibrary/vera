@@ -159,7 +159,7 @@ class ApiBoundaryTests {
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
                 + "\"roleSave\",\"runningTasks\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
-                + "\"settingsPatch\",\"signUp\",\"taskCancel\",\"taskDetail\",\"taskLog\","
+                + "\"settingsPatch\",\"signUp\",\"taskCancel\",\"taskDetail\",\"taskLog\",\"taskRerun\","
                 + "\"taskRetention\",\"tasks\",\"userGroups\",\"userRestore\",\"userRoles\","
                 + "\"userSuspend\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
                 + "\"validationRevoke\",\"validations\"]";
