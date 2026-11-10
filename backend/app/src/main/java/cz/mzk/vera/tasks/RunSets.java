@@ -2,10 +2,10 @@ package cz.mzk.vera.tasks;
 
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
-import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENT_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
+import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 
 import cz.mzk.vera.db.tables.tables.Iterations;
 import java.util.Map;
@@ -60,6 +60,13 @@ public class RunSets {
         if ("CatalogAdapter".equals(kind) || "Harvester".equals(kind)) {
             return List.of();
         }
+        if ("PublicationDetector".equals(kind)) {
+            return dsl.select(DOCUMENTS.ID, ITERATIONS.ID).from(ITERATIONS)
+                    .join(DOCUMENTS).on(DOCUMENTS.ID.eq(ITERATIONS.DOCUMENT_ID))
+                    .where(ITERATIONS.PROGRESS.in("Digitized", "Published"))
+                    .orderBy(ITERATIONS.ID)
+                    .fetch(row -> new Target(row.get(DOCUMENTS.ID), row.get(ITERATIONS.ID)));
+        }
         List<Target> inPlay = documentsStillInPlay(dsl);
         if (!"PropertySource".equals(kind)) {
             return inPlay;
@@ -90,5 +97,21 @@ public class RunSets {
         return missing;
     }
 
+    public List<PlacementTarget> openProposals(DSLContext dsl) {
+        return dsl.select(REQUESTS.ID, REQUESTS.DOCUMENT_ID).from(REQUESTS)
+                .where(REQUESTS.DECISION.eq("Pending")).orderBy(REQUESTS.AT, REQUESTS.ID)
+                .fetch(row -> new PlacementTarget(row.get(REQUESTS.ID), row.get(REQUESTS.DOCUMENT_ID)));
+    }
+
+    public List<Target> heldCatalogTargets(DSLContext dsl, List<String> catalogIds) {
+        if (catalogIds.isEmpty()) {
+            return List.of();
+        }
+        Set<String> documents = new HashSet<>(dsl.select(DOCUMENTS.ID).from(DOCUMENTS)
+                .where(DOCUMENTS.CATALOG_ID.in(catalogIds)).fetch(DOCUMENTS.ID));
+        return documentsStillInPlay(dsl).stream().filter(target -> documents.contains(target.documentId())).toList();
+    }
+
     public record Target(String documentId, String iterationId) { }
+    public record PlacementTarget(String requestId, String documentId) { }
 }

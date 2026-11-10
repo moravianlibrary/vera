@@ -83,11 +83,19 @@ public class ProposalSubmit {
 
     @Transactional
     public Outcome submit(Caller caller, Map<String, Object> draft) {
-        String userId = caller.userId();
+        return submitForActor(caller.userId(), draft, false);
+    }
+
+    @Transactional
+    public Outcome submitAsAgent(String agentId, Map<String, Object> draft) {
+        return submitForActor(agentId, draft, true);
+    }
+
+    private Outcome submitForActor(String userId, Map<String, Object> draft, boolean agent) {
         List<Map<String, Object>> items = itemList(draft);
         boolean approve = draft.get("approval") != null;
         var held = access.heldBy(userId);
-        if (!Permissions.hasPermission(held.grants(), ProposalCodes.REQUEST_CREATE)
+        if ((!agent && !Permissions.hasPermission(held.grants(), ProposalCodes.REQUEST_CREATE))
                 || (approve && !Permissions.hasPermission(held.grants(), ProposalCodes.REQUEST_DECIDE))) {
             return Outcome.refused(403, "You may not propose this", null);
         }

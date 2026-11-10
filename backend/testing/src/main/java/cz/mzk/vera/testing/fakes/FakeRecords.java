@@ -34,6 +34,7 @@ public class FakeRecords {
     private volatile Map<String, String> advisorReasons = Map.of();
     private volatile Map<String, JsonNode> ingestFaults = Map.of();
     private volatile Map<String, JsonNode> harvests = Map.of();
+    private volatile Map<String, Integer> failedCatalogPages = Map.of();
     private volatile Map<String, String> deliveryFaults = Map.of();
     private volatile List<String> rejectedRecipients = List.of();
     private volatile Map<String, String> slackHandles = Map.of();
@@ -84,6 +85,7 @@ public class FakeRecords {
         Map<String, JsonNode> harvestPages = new HashMap<>();
         fakes.path("harvests").properties().forEach(entry -> harvestPages.put(entry.getKey(), entry.getValue().deepCopy()));
         harvests = Map.copyOf(harvestPages);
+        failedCatalogPages = Map.of();
         JsonNode channelFault = seed.path("faults").path("deliveryChannel");
         Map<String, String> unavailable = new HashMap<>();
         for (JsonNode instance : channelFault.path("unavailableInstances")) {
@@ -118,6 +120,8 @@ public class FakeRecords {
             case "read" -> read(first(input, "catalogId"), catalogHosts.get(first(input, "catalogHost")));
             case "readLink" -> readLink(first(input, "pasted"), catalogHosts.get(first(input, "catalogHost")));
             case "search" -> search(first(input, "query"), catalogHosts.get(first(input, "catalogHost")));
+            case "sync", "changes" -> catalogPage(operation, first(input, "instanceId"),
+                    first(input, "cursor"), first(input, "catalogHost"));
             case "readBarcode" -> readBarcode(first(input, "photo"));
             case "readPhoto" -> readPhoto();
             case "place" -> place(input);
@@ -134,6 +138,47 @@ public class FakeRecords {
 
     public boolean isCatalogHost(String host) {
         return catalogHosts.containsKey(host);
+    }
+
+    public synchronized void failCatalogPage(String instanceId, int page) {
+        Map<String, Integer> next = new HashMap<>(failedCatalogPages);
+        next.put(instanceId, page);
+        failedCatalogPages = Map.copyOf(next);
+    }
+
+    public synchronized void clearCatalogFailure(String instanceId) {
+        Map<String, Integer> next = new HashMap<>(failedCatalogPages);
+        next.remove(instanceId);
+        failedCatalogPages = Map.copyOf(next);
+    }
+
+    private Map<String, List<String>> catalogPage(String operation, String instanceId, String cursor, String host) {
+        int page = cursor == null || cursor.isEmpty() ? 0 : Integer.parseInt(cursor);
+        if (failedCatalogPages.getOrDefault(instanceId, -1) == page) {
+            return response("httpStatus", "503");
+        }
+        String base = catalogHosts.get(host);
+        List<JsonNode> records = catalogRecords.stream()
+                .filter(record -> record.path("catalogId").asString().startsWith(base == null ? "" : base))
+                .toList();
+        int start = page * 2;
+        int end = Math.min(start + 2, records.size());
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        for (int index = start; index < end; index++) {
+            JsonNode record = records.get(index);
+            add(result, "catalogId", record.path("catalogId").asString());
+            add(result, "title", record.path("title").asString());
+            add(result, "type", record.path("type").asString());
+            add(result, "units", String.join("\u001f", strings(record.path("units"))));
+            add(result, "identifiers", String.join("\u001f", strings(record.path("identifiers"))));
+        }
+        if (end < records.size()) {
+            add(result, "nextCursor", Integer.toString(page + 1));
+        } else {
+            add(result, "nextCursor", "");
+        }
+        add(result, "hasMore", Boolean.toString(end < records.size()));
+        return result;
     }
 
     private Map<String, List<String>> harvest(String instanceId, String cursor) {

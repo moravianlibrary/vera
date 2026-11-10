@@ -40,6 +40,22 @@ public class Runs {
     public String start(String what, String instanceId, String coreName,
             Map<String, Object> trigger, String startedBy, String rerunOf) {
         List<RunSets.Target> targets = sets.forInstance(dsl, instanceId);
+        return start(what, instanceId, coreName, trigger, startedBy, rerunOf, targets, List.of());
+    }
+
+    @Transactional
+    public String startPlacing(String startedBy, Map<String, Object> from) {
+        Map<String, Object> trigger = new LinkedHashMap<>();
+        trigger.put("kind", "manual");
+        trigger.put("from", from);
+        List<RunSets.PlacementTarget> targets = sets.openProposals(dsl);
+        return start("Placing open proposals again", null, "VERA", trigger, startedBy, null,
+                List.of(), targets);
+    }
+
+    private String start(String what, String instanceId, String coreName,
+            Map<String, Object> trigger, String startedBy, String rerunOf,
+            List<RunSets.Target> targets, List<RunSets.PlacementTarget> placementTargets) {
         int highest = dsl.select(RUNS.ID).from(RUNS).fetch(RUNS.ID).stream()
                 .map(idValue -> Integer.parseInt(idValue.substring(2)))
                 .mapToInt(Integer::intValue).max().orElse(0);
@@ -54,7 +70,7 @@ public class Runs {
                 .set(RUNS.STARTED_BY, startedBy)
                 .set(RUNS.STATE, "Running")
                 .set(RUNS.STARTED_AT, now)
-                .set(RUNS.ITEM_COUNT, targets.size())
+                .set(RUNS.ITEM_COUNT, targets.size() + placementTargets.size())
                 .set(RUNS.DONE_COUNT, 0)
                 .set(RUNS.CHANGES, JSONB.valueOf("[]"))
                 .set(RUNS.RERUN_OF, rerunOf)
@@ -66,6 +82,15 @@ public class Runs {
                     .set(RUN_TARGETS.POSITION, position++)
                     .set(RUN_TARGETS.DOCUMENT_ID, target.documentId())
                     .set(RUN_TARGETS.ITERATION_ID, target.iterationId())
+                    .execute();
+        }
+        position = 0;
+        for (RunSets.PlacementTarget target : placementTargets) {
+            dsl.insertInto(RUN_TARGETS)
+                    .set(RUN_TARGETS.RUN_ID, id)
+                    .set(RUN_TARGETS.POSITION, position++)
+                    .set(RUN_TARGETS.DOCUMENT_ID, target.documentId())
+                    .set(RUN_TARGETS.REQUEST_ID, target.requestId())
                     .execute();
         }
         JsonNode from = json.valueToTree(trigger.get("from"));

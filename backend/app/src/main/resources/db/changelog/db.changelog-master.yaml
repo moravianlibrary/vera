@@ -105,5 +105,11 @@ databaseChangeLog:
       file: 0310-run-targets.sql
       relativeToChangelogFile: true
   - include:
+      file: 0315-plugin-cursors-and-placement-targets.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0316-run-page-errors.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0390-identity-claims.sql
       relativeToChangelogFile: true

@@ -64,7 +64,9 @@ public class FakeWorldHttp implements PluginHttp {
                 }
                 return response(200, answer);
             }
-            return response(200, records.answer(operation, fields));
+            Map<String, List<String>> answer = records.answer(operation, fields);
+            String status = first(answer, "httpStatus");
+            return response(status == null ? 200 : Integer.parseInt(status), answer);
         }
         return response(404, Map.of());
     }

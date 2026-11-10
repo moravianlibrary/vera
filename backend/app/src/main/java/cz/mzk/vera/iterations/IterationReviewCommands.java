@@ -124,6 +124,25 @@ public class IterationReviewCommands {
         return ActResult.ok(answer.body());
     }
 
+    @Transactional
+    public void catalogChanged(String documentId) {
+        List<String> ids = dsl.select(ITERATIONS.ID).from(ITERATIONS)
+                .where(ITERATIONS.DOCUMENT_ID.eq(documentId))
+                .and(ITERATIONS.PROGRESS.ne("Cancelled"))
+                .orderBy(ITERATIONS.ATTEMPT.desc()).fetch(ITERATIONS.ID);
+        for (String id : ids) {
+            DocumentIteration current = load(documentId, id);
+            refreshCatalogReading(documentId);
+            IterationChecks.CheckResult result = checks.run(current.iteration(), current.document(),
+                    IterationChecks.Run.RECHECK);
+            int gone = current.iteration().defects().size() - result.defects().size();
+            applyRecheck(new Caller("a3", null, null), current, result, EventCode.ITERATION_RECHECKED,
+                    Map.of("by", "catalog_change", "found", result.defects().size(), "gone", gone),
+                    "The record was read from the catalog again.");
+            states.recompute(dsl, documentId);
+        }
+    }
+
     // cancelIteration: hold progress and remove any list placement.
     @Transactional
     public ActResult cancel(Caller caller, String id, Cancellation body) {

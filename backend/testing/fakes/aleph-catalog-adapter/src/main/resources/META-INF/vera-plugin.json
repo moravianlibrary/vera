@@ -11,7 +11,7 @@
     "agent": null,
     "generatorClass": null,
     "channelInterface": null,
-    "operations": ["readLink", "search"],
+    "operations": ["readLink", "search", "sync", "changes"],
     "loginEntry": null
   },
   "configFields": [

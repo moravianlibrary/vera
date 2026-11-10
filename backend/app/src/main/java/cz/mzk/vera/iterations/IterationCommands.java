@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -295,6 +296,30 @@ public class IterationCommands {
         } catch (IllegalArgumentException exception) {
             return null;
         }
+    }
+
+    // LC-ITER-links; a detector adds an address with the same link and History writes as a person.
+    public boolean addDetectedLink(DSLContext tx, String iterationId, String instanceId, String url) {
+        Record row = tx.select(ITERATIONS.DOCUMENT_ID).from(ITERATIONS)
+                .where(ITERATIONS.ID.eq(iterationId)).fetchOne();
+        if (row == null || tx.fetchExists(tx.selectOne().from(ITERATION_LINKS)
+                .where(ITERATION_LINKS.ITERATION_ID.eq(iterationId).and(ITERATION_LINKS.URL.eq(url))))) {
+            return false;
+        }
+        Integer maxPosition = tx.select(max(ITERATION_LINKS.POSITION)).from(ITERATION_LINKS)
+                .where(ITERATION_LINKS.ITERATION_ID.eq(iterationId)).fetchOne(0, Integer.class);
+        int position = maxPosition == null ? 0 : maxPosition + 1;
+        String linkId = UUID.randomUUID().toString();
+        OffsetDateTime at = now();
+        insertLink(iterationId, position, linkId, new Link(url, instanceId), "a3", at, position == 0);
+        if (position == 0) {
+            tx.update(ITERATIONS).set(ITERATIONS.PROGRESS, PUBLISHED)
+                    .where(ITERATIONS.ID.eq(iterationId)).execute();
+        }
+        EventCode code = position == 0 ? EventCode.ITERATION_PUBLISHED : EventCode.ITERATION_LINK_ADDED;
+        record(code, iterationId, "a3", Map.of("link", Map.of("id", linkId, "url", url)), emptyReason());
+        states.recompute(tx, row.get(ITERATIONS.DOCUMENT_ID));
+        return true;
     }
 
     private void insertLink(String iterationId, int position, String linkId, Link link, String userId,

@@ -1,11 +1,19 @@
 package cz.mzk.vera.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
+import static cz.mzk.vera.db.tables.Tables.EVENTS;
+import static cz.mzk.vera.db.tables.Tables.ITERATION_LINKS;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_CURSORS;
+import static cz.mzk.vera.db.tables.Tables.REQUESTS;
+import static cz.mzk.vera.db.tables.Tables.RUNS;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
+import cz.mzk.vera.testing.fakes.FakeRecords;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import cz.mzk.vera.tasks.Runs;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.junit.jupiter.Container;
@@ -42,6 +51,10 @@ class TasksTests {
     private JdbcTemplate jdbc;
     @Autowired
     private ObjectMapper mapper;
+    @Autowired
+    private Runs runs;
+    @Autowired
+    private FakeRecords fakeRecords;
 
     @BeforeEach
     void loadBase() {
@@ -255,6 +268,121 @@ class TasksTests {
         JsonNode failed = get("/api/tasks/" + runId, "u3");
         assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
         assertThat(failed.path("run").path("failure").asString()).isEqualTo("The plugin was switched off.");
+    }
+
+    @Test
+    void catalogSyncKeepsPagesRechecksHeldDocumentsResumesAndDoesNotAdvanceOnFailure() throws Exception {
+        declareOperation("pi1", "sync");
+        fakeRecords.failCatalogPage("pi1", 1);
+        String firstRun = startPluginRun("pi1", "Catalog sync");
+        runOneJob();
+        assertThat(jdbc.queryForObject("SELECT cursor FROM plugin_cursors WHERE instance_id='pi1' "
+                + "AND operation='sync'", String.class)).isEqualTo("1");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1'", Integer.class))
+                .isGreaterThan(0);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
+                + "AND subject_id='IT8' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
+        JsonNode failed = finishRun(firstRun);
+        assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
+        assertThat(jdbc.queryForObject("SELECT cursor FROM plugin_cursors WHERE instance_id='pi1' "
+                + "AND operation='sync'", String.class)).isEqualTo("1");
+
+        fakeRecords.clearCatalogFailure("pi1");
+        String resumedRun = startPluginRun("pi1", "Catalog sync again");
+        JsonNode done = finishRun(resumedRun);
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1'", Integer.class))
+                .isGreaterThan(2);
+    }
+
+    @Test
+    void catalogChangesOnlyRechecksHeldDocumentsAmongChanges() throws Exception {
+        declareOperation("pi1", "changes");
+        String runId = startPluginRun("pi1", "Catalog changes");
+        JsonNode done = finishRun(runId);
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_cursors WHERE instance_id='pi1' "
+                + "AND operation='changes'", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
+                + "AND subject_id='IT8' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
+    }
+
+    @Test
+    void pi8HarvestProposesAsItsAgentAndPi29EmptyHarvestFinishesWithNoItems() throws Exception {
+        String harvestRun = startPluginRun("pi8", "Periodical gaps");
+        JsonNode harvested = finishRun(harvestRun);
+        assertThat(harvested.path("run").path("state").asString()).isIn("Done", "DoneWithErrors");
+        assertThat(jdbc.queryForObject("SELECT cursor FROM plugin_cursors WHERE instance_id='pi8' "
+                + "AND operation='harvest'", String.class)).isNull();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_cursors WHERE instance_id='pi8' "
+                + "AND operation='harvest'", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT item_count FROM runs WHERE id=?", Integer.class, harvestRun))
+                .isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT done_count FROM runs WHERE id=?", Integer.class, harvestRun))
+                .isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM batches WHERE submitted_by="
+                + "(SELECT id FROM users WHERE kind='agent' AND name='Periodical gaps')", Integer.class))
+                .isGreaterThan(0);
+
+        String emptyRun = startPluginRun("pi29", "Kramerius sweep");
+        JsonNode empty = finishRun(emptyRun);
+        assertThat(empty.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(empty.path("run").path("itemCount").asInt()).isZero();
+        assertThat(empty.path("run").path("doneCount").asInt()).isZero();
+    }
+
+    @Test
+    void pi33AddsDetectedLinksAsA3WithHistoryAndDoesNotRemoveOrRepeatThem() throws Exception {
+        List<String> linksBefore = jdbc.queryForList("SELECT id FROM iteration_links", String.class);
+        String firstRun = startPluginRun("pi33", "Publication detection");
+        JsonNode first = finishRun(firstRun);
+        assertThat(first.path("run").path("state").asString()).isEqualTo("Done");
+        List<String> linksAfterFirst = jdbc.queryForList("SELECT id FROM iteration_links", String.class);
+        assertThat(linksAfterFirst).containsAll(linksBefore).hasSizeGreaterThan(linksBefore.size());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM iteration_links WHERE set_by='a3'", Integer.class))
+                .isGreaterThan(0);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE code IN "
+                + "('iteration.published','iteration.link_added') AND actor->>'userId'='a3'", Integer.class))
+                .isGreaterThan(0);
+        int linksAfter = linksAfterFirst.size();
+
+        JsonNode second = finishRun(startPluginRun("pi33", "Publication detection again"));
+        assertThat(second.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM iteration_links", Integer.class)).isEqualTo(linksAfter);
+    }
+
+    @Test
+    void placingRunReappliesPlacementsToEveryOpenProposal() throws Exception {
+        int open = jdbc.queryForObject("SELECT count(*) FROM requests WHERE decision='Pending'", Integer.class);
+        String requestId = jdbc.queryForObject("SELECT id FROM requests WHERE decision='Pending' "
+                + "ORDER BY at,id LIMIT 1", String.class);
+        jdbc.update("DELETE FROM request_placements WHERE request_id=?", requestId);
+        // Runs.startPlacing is the small test-only path; the worker itself is reached over HTTP.
+        String runId = runs.startPlacing("u3", Map.of("label", "Custody", "path", "/access"));
+        assertThat(jdbc.queryForObject("SELECT item_count FROM runs WHERE id=?", Integer.class, runId)).isEqualTo(open);
+        JsonNode done = finishRun(runId);
+        assertThat(jdbc.queryForObject("SELECT core_name FROM runs WHERE id=?", String.class, runId))
+                .isEqualTo("VERA");
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(done.path("run").path("doneCount").asInt()).isEqualTo(open);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM request_placements WHERE request_id=?", Integer.class,
+                requestId)).isGreaterThan(0);
+    }
+
+    private String startPluginRun(String instanceId, String what) {
+        return runs.start(what, instanceId, null,
+                Map.of("kind", "manual", "from", Map.of("label", "Plugins", "path", "/plugins")),
+                "u3", null);
+    }
+
+    private void declareOperation(String instanceId, String operation) {
+        jdbc.update("UPDATE plugin_implementations SET versions=jsonb_set(versions, "
+                + "'{0,declares,operations}', to_jsonb(ARRAY[?]::text[])) WHERE id="
+                + "(SELECT implementation_id FROM plugin_instances WHERE id=?)", operation, instanceId);
+    }
+
+    private void runOneJob() {
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
     }
 
     @Test

@@ -33,6 +33,10 @@ public class RequestPlacements {
     }
 
     public void place(DSLContext dsl, String requestId) {
+        apply(dsl, requestId, preview(dsl, requestId));
+    }
+
+    public Placement preview(DSLContext dsl, String requestId) {
         RequestPluginInput input = RequestPluginInput.read(dsl, requestId);
         Set<String> accepted = new LinkedHashSet<>();
         Set<String> knownCustodies = new HashSet<>(dsl.select(REQUEST_CUSTODIES.ID)
@@ -55,9 +59,13 @@ public class RequestPlacements {
                         instance.id(), requestId, outcome.getClass().getSimpleName());
             }
         }
+        return new Placement(List.copyOf(accepted));
+    }
+
+    public void apply(DSLContext dsl, String requestId, Placement placement) {
         dsl.deleteFrom(REQUEST_PLACEMENTS).where(REQUEST_PLACEMENTS.REQUEST_ID.eq(requestId)).execute();
         int position = 0;
-        for (String custodyId : accepted) {
+        for (String custodyId : placement.custodyIds()) {
             dsl.insertInto(REQUEST_PLACEMENTS)
                     .set(REQUEST_PLACEMENTS.REQUEST_ID, requestId)
                     .set(REQUEST_PLACEMENTS.CUSTODY_ID, custodyId)
@@ -65,4 +73,6 @@ public class RequestPlacements {
                     .execute();
         }
     }
+
+    public record Placement(List<String> custodyIds) { }
 }

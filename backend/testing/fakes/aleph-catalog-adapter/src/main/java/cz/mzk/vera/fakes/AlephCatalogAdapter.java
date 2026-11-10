@@ -4,6 +4,12 @@ import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.catalog.CatalogAdapter;
 import cz.mzk.vera.plugin.catalog.CatalogAdapterRefusal;
 import cz.mzk.vera.plugin.catalog.CatalogAdapterRefused;
+import cz.mzk.vera.plugin.catalog.MirroredCatalog;
+import cz.mzk.vera.plugin.catalog.SyncInput;
+import cz.mzk.vera.plugin.catalog.SyncAnswer;
+import cz.mzk.vera.plugin.catalog.ChangeFeed;
+import cz.mzk.vera.plugin.catalog.ChangesInput;
+import cz.mzk.vera.plugin.catalog.ChangesAnswer;
 import cz.mzk.vera.plugin.catalog.LinkReader;
 import cz.mzk.vera.plugin.catalog.ReadAnswer;
 import cz.mzk.vera.plugin.catalog.ReadInput;
@@ -19,7 +25,45 @@ import java.util.Locale;
 import java.util.Map;
 
 // BK3d; PLG-api-kinds: Catalog adapter.
-public final class AlephCatalogAdapter implements CatalogAdapter, LinkReader, SearchableCatalog {
+public final class AlephCatalogAdapter implements CatalogAdapter, LinkReader, SearchableCatalog,
+        MirroredCatalog, ChangeFeed {
+    @Override
+    public SyncAnswer sync(PluginContext context, SyncInput input) {
+        Map<String, List<String>> fields = Wire.fields();
+        Wire.put(fields, "cursor", input.cursor());
+        Map<String, List<String>> answer = Wire.send(context, context.configuration().get("base_url"),
+                "sync", fields);
+        List<SyncAnswer.Keep> keep = new ArrayList<>();
+        List<String> ids = Wire.all(answer, "catalogId");
+        for (int index = 0; index < ids.size(); index++) {
+            Map<String, Object> record = new HashMap<>();
+            record.put("type", Wire.all(answer, "type").get(index));
+            record.put("title", Wire.all(answer, "title").get(index));
+            keep.add(new SyncAnswer.Keep(ids.get(index), Wire.all(answer, "title").get(index),
+                    split(Wire.all(answer, "units").get(index)),
+                    split(Wire.all(answer, "identifiers").get(index)), null, record));
+        }
+        String nextCursor = Wire.first(answer, "nextCursor");
+        return new SyncAnswer(keep, Wire.all(answer, "drop"),
+                nextCursor == null || nextCursor.isEmpty() ? null : nextCursor,
+                "true".equals(Wire.first(answer, "hasMore")));
+    }
+
+    @Override
+    public ChangesAnswer changes(PluginContext context, ChangesInput input) {
+        Map<String, List<String>> fields = Wire.fields();
+        Wire.put(fields, "cursor", input.cursor());
+        Map<String, List<String>> answer = Wire.send(context, context.configuration().get("base_url"),
+                "changes", fields);
+        String nextCursor = Wire.first(answer, "nextCursor");
+        return new ChangesAnswer(Wire.all(answer, "catalogId"),
+                nextCursor == null || nextCursor.isEmpty() ? null : nextCursor);
+    }
+
+    private List<String> split(String value) {
+        return value == null || value.isEmpty() ? List.of() : List.of(value.split("\\u001f", -1));
+    }
+
     @Override
     public ReadAnswer read(PluginContext context, ReadInput input) {
         Map<String, List<String>> fields = Wire.fields();
