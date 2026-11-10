@@ -1,5 +1,5 @@
 {
-  "implementation": "cz.mzk.vera.priority-first",
+  "implementation": "cz.mzk.vera.priority-then-mix",
   "version": "1.2.0",
   "contractVersion": "1.0",
   "triggers": ["OnDemand"],

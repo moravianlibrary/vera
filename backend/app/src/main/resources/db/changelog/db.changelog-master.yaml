@@ -111,10 +111,13 @@ databaseChangeLog:
       file: 0316-run-page-errors.sql
       relativeToChangelogFile: true
   - include:
-      file: 0350-hook-events.sql
+      file: 0320-plugin-instance-details.sql
       relativeToChangelogFile: true
   - include:
       file: 0340-schedule-occurrence.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0350-hook-events.sql
       relativeToChangelogFile: true
   - include:
       file: 0360-hooks.sql

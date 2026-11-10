@@ -11934,7 +11934,7 @@
       },
       {
         "id": "pt11",
-        "descriptorId": "cz.mzk.vera.priority-first",
+        "descriptorId": "cz.mzk.vera.priority-then-mix",
         "name": "PriorityThenMix",
         "kind": "ListGenerator",
         "description": "Fills each category to its share, highest priority first, then the oldest ask. Deterministic.",
@@ -12086,6 +12086,11 @@
               },
               {
                 "key": "password_min",
+                "isSecret": false,
+                "isRequired": true
+              },
+              {
+                "key": "mail_channel",
                 "isSecret": false,
                 "isRequired": true
               }
@@ -13409,7 +13414,8 @@
         },
         "isEnabled": true,
         "createdAt": "2026-10-29",
-        "lastRunAt": null
+        "lastRunAt": null,
+        "version": "2.1.0"
       },
       {
         "id": "pi42",
@@ -13432,7 +13438,8 @@
         },
         "isEnabled": true,
         "createdAt": "2026-10-29",
-        "lastRunAt": null
+        "lastRunAt": null,
+        "version": "2.1.0"
       },
       {
         "id": "pi26",
@@ -13470,6 +13477,27 @@
         "createdAt": "2026-06-24",
         "lastRunAt": null,
         "version": "0.5.0",
+        "isEnabled": true,
+        "linkedCategoryId": null,
+        "createdBy": "u3",
+        "isDeleted": false
+      },
+      {
+        "id": "pi44",
+        "name": "MZK Slack bot",
+        "implementationId": "pt39",
+        "configuration": {
+          "workspace": "mzk",
+          "handle": "claim slack_id"
+        },
+        "triggers": ["OnDemand"],
+        "settings": {
+          "kind": "Message",
+          "order": 3
+        },
+        "createdAt": "2026-10-30",
+        "lastRunAt": null,
+        "version": "1.0.0",
         "isEnabled": true,
         "linkedCategoryId": null,
         "createdBy": "u3",
@@ -13769,27 +13797,6 @@
         "createdAt": "2026-10-07",
         "lastRunAt": "2026-06-24T13:10:00.000Z",
         "version": "1.1.0",
-        "isEnabled": true,
-        "linkedCategoryId": null,
-        "createdBy": "u3",
-        "isDeleted": false
-      },
-      {
-        "id": "pi44",
-        "name": "MZK Slack bot",
-        "implementationId": "pt39",
-        "configuration": {
-          "workspace": "mzk",
-          "handle": "claim slack_id"
-        },
-        "triggers": ["OnDemand"],
-        "settings": {
-          "kind": "Message",
-          "order": 3
-        },
-        "createdAt": "2026-10-30",
-        "lastRunAt": null,
-        "version": "1.0.0",
         "isEnabled": true,
         "linkedCategoryId": null,
         "createdBy": "u3",
