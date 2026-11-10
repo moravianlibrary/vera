@@ -28,7 +28,7 @@ import { database } from "@/mocks/database";
 import type { StoredSchedule } from "@/mocks/fixtures/tasks";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { findInstanceSummary, instanceSummaries } from "@/mocks/plugin-instances";
-import { publicRunOf, startRun } from "@/mocks/tasks";
+import { itemCountForInstance, publicRunOf, startRun } from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 
 const dayMilliseconds = 24 * 60 * 60_000;
@@ -310,6 +310,7 @@ export function resumeSchedule(session: Session, scheduleId: string): Outcome<Sc
   return replaceStored(index, { ...stored, pause: null });
 }
 
+// The server starts a manual run over the instance's set and leaves the schedule unchanged (PLG-run-items).
 export function runScheduleNow(session: Session, scheduleId: string): Outcome<Run> {
   if (!hasPermission(session, "plugin.run")) {
     return { refusal: { status: 403, message: "You may not run plugins" } };
@@ -320,15 +321,12 @@ export function runScheduleNow(session: Session, scheduleId: string): Outcome<Ru
     return { refusal: noSuchSchedule };
   }
 
-  const lastRun = database.runs.find(
-    (run) => run.trigger.kind === "schedule" && run.trigger.scheduleId === scheduleId,
-  );
   const started = startRun({
     what: stored.name,
     instanceId: stored.instanceId,
     trigger: { kind: "manual", from: { label: "Schedules", path: `/schedules?s=${scheduleId}` } },
     startedBy: session.user.id,
-    itemCount: lastRun?.itemCount || 100,
+    itemCount: itemCountForInstance(stored.instanceId),
     rerunOf: null,
   });
   return { value: publicRunOf(started, mockNow()) };

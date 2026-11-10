@@ -3,8 +3,9 @@
 // configuration less its secrets, its schedules, its runs still kept and its last run. Making,
 // editing, switching on and off, moving to a newer version and deleting an instance are
 // `plugin.configure`'s; a configuration is checked against the fields its version declares, and
-// the last way to log in is never switched off. Deleting keeps the instance for its runs and
-// removes its schedules. *Run now* is `plugin.run`'s, for a kind that runs by itself. Uploading is
+// the last way to log in is never switched off. A changed Custody instance starts a placing run
+// (L8). Deleting keeps the instance for its runs and removes its schedules. *Run now* is
+// `plugin.run`'s, for a kind that runs by itself (PLG-run-items). Uploading is
 // `plugin.upload_code`'s: the package is read, by its file name here, and installed only when
 // asked; no instance moves with it.
 
@@ -45,7 +46,6 @@ import {
 } from "@/mocks/fixtures/plugins";
 import { hooksUsingChannel } from "@/mocks/hooks";
 import { patternImplementationName, patternRefusal } from "@/mocks/identifiers";
-import { detectPublications } from "@/mocks/links";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import {
   enabledInstancesOf,
@@ -54,7 +54,13 @@ import {
   liveInstances,
 } from "@/mocks/plugin-instances";
 import { mockRequestPlugins } from "@/mocks/requests";
-import { instanceRunsOf, publicRunOf, startRun } from "@/mocks/tasks";
+import {
+  instanceRunsOf,
+  itemCountForInstance,
+  publicRunOf,
+  startPlacingRun,
+  startRun,
+} from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 
 const recentRunCount = 5;
@@ -370,6 +376,7 @@ export function createInstance(
   return { value: detailOf(instance, mockNow()) };
 }
 
+// The server saves the configuration and re-places open proposals after a Custody change (L8).
 export function saveInstance(
   session: Session,
   instanceId: string,
@@ -397,16 +404,18 @@ export function saveInstance(
     return configuration;
   }
 
-  return {
-    value: replaceInstance({
-      ...instance,
-      name: draft.name.trim(),
-      configuration: configuration.value,
-      linkedCategoryId: draft.linkedCategoryId,
-      settings: draft.settings,
-      policy: draft.policy ?? instance.policy,
-    }),
-  };
+  const saved = replaceInstance({
+    ...instance,
+    name: draft.name.trim(),
+    configuration: configuration.value,
+    linkedCategoryId: draft.linkedCategoryId,
+    settings: draft.settings,
+    policy: draft.policy ?? instance.policy,
+  });
+  if (instance.settings?.kind === "Custody") {
+    startPlacingRun(session, { label: "Plugins", path: `/plugins?i=${instanceId}` });
+  }
+  return { value: saved };
 }
 
 // Nobody could log in at all, the administrators included.
@@ -421,6 +430,7 @@ function lastWayInRefusal(instance: StoredPluginInstance): Refusal | null {
     : null;
 }
 
+// The server re-places open proposals after a Custody instance changes (PLG-disable, L8).
 export function setInstanceEnabled(
   session: Session,
   instanceId: string,
@@ -461,10 +471,11 @@ export function setInstanceEnabled(
     return { refusal };
   }
 
-  // TODO(rrandiak): switching a Custody rule on or off places every open proposal again
-  // (proposal-custody.md §3); the mock keeps the placements, as it does when a custody is
-  // deleted. Ask whether that re-placing is a run on Tasks.
-  return { value: replaceInstance({ ...instance, isEnabled }) };
+  const updated = replaceInstance({ ...instance, isEnabled });
+  if (instance.settings?.kind === "Custody") {
+    startPlacingRun(session, { label: "Plugins", path: `/plugins?i=${instanceId}` });
+  }
+  return { value: updated };
 }
 
 export function instanceImpact(session: Session, instanceId: string): Outcome<PluginImpact> {
@@ -514,6 +525,7 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
 }
 
 // Kept for the runs it made, which stay under retention; its schedules go with it.
+// The server removes the instance and re-places open proposals when it was Custody (PLG-delete, L8).
 export function deleteInstance(session: Session, instanceId: string): Outcome<null> {
   if (!hasPermission(session, "plugin.configure")) {
     return { refusal: mayNotConfigure };
@@ -542,9 +554,13 @@ export function deleteInstance(session: Session, instanceId: string): Outcome<nu
 
   replaceInstance({ ...instance, isEnabled: false, isDeleted: true });
   database.schedules = database.schedules.filter((schedule) => schedule.instanceId !== instanceId);
+  if (instance.settings?.kind === "Custody") {
+    startPlacingRun(session, { label: "Plugins", path: `/plugins?i=${instanceId}` });
+  }
   return { value: null };
 }
 
+// The server stores a run over this kind's set before its job works it (PLG-run-items).
 export function runInstanceNow(session: Session, instanceId: string): Outcome<Run> {
   if (!hasPermission(session, "plugin.run")) {
     return { refusal: { status: 403, message: "You may not run plugins" } };
@@ -569,20 +585,14 @@ export function runInstanceNow(session: Session, instanceId: string): Outcome<Ru
     return { refusal: { status: 409, message: "It is disabled", code: "plugin.disabled" } };
   }
 
-  const lastRun = database.runs.find((run) => run.instanceId === instanceId);
   const started = startRun({
     what: `${instance.name} — run by hand`,
     instanceId,
     trigger: { kind: "manual", from: { label: "Plugins", path: `/plugins?i=${instanceId}` } },
     startedBy: session.user.id,
-    itemCount: lastRun?.itemCount || 100,
+    itemCount: itemCountForInstance(instanceId),
     rerunOf: null,
   });
-  // The mock finds what it would at once, rather than as the run goes (PLG-kinds).
-  if (kindOf(instance) === "PublicationDetector") {
-    detectPublications(instanceId);
-  }
-
   return { value: publicRunOf(started, mockNow()) };
 }
 
