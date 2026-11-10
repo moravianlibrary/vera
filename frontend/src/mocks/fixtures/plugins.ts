@@ -961,7 +961,7 @@ export const pluginInstances: readonly StoredPluginInstance[] = [
     lastRunAt: null,
   }),
   instance({
-    id: "pi43",
+    id: "pi44",
     name: "MZK Slack bot",
     implementationId: "pt39",
     configuration: { workspace: "mzk" },

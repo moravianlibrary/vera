@@ -259,7 +259,8 @@ not established in the mock reader; engine does not serve this area (DEC-0022).
 
 ## Message
 
-**Base instances:** `pi26` Email and `pi27` MZK Slack (`pt23`, `pt24`).
+**Base instances:** `pi26` Email, `pi27` MZK Slack and `pi44` MZK Slack bot (`pt23`, `pt24`,
+`pt39`).
 
 `handOff` builds an address to open (mailto/chat), or reports sent. Mock preparation and dispatch
 are `frontend/src/mocks/messages.ts:prepareMessage`, `sendMessage`, `hrefOf`; channels are from

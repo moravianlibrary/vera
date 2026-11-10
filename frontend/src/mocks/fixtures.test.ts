@@ -21,6 +21,7 @@ import { operationsMatchKind } from "@vera/domain/plugins";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { database } from "@/mocks/database";
+import { pluginImplementations, pluginInstances } from "@/mocks/fixtures/plugins";
 
 describe("fixtures", () => {
   it.each([
@@ -40,6 +41,13 @@ describe("fixtures", () => {
     const result = schema.safeParse(records);
 
     expect(result.error).toBeUndefined();
+  });
+
+  it("give plugin instances and implementations unique ids", () => {
+    for (const records of [pluginInstances, pluginImplementations]) {
+      const ids = records.map((record) => record.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    }
   });
 
   it("reference only records that exist", () => {

@@ -46,7 +46,7 @@ describe("sendMessage", () => {
   it("answers the ids reached by the bot", async () => {
     signInAs("admin");
     await expect(
-      sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi43", text: "Please help" }),
+      sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi44", text: "Please help" }),
     ).resolves.toEqual({ reachedIds: ["u4"] });
   });
 
@@ -60,14 +60,14 @@ describe("sendMessage", () => {
   it("refuses when nobody is reachable", async () => {
     signInAs("admin");
     await expect(
-      sendMessage({ kind: "proposal", id: "D22" }, { channelId: "pi43", text: "Please help" }),
+      sendMessage({ kind: "proposal", id: "D22" }, { channelId: "pi44", text: "Please help" }),
     ).rejects.toMatchObject({ problem: { code: "message.unreachable" } });
   });
 
   it("refuses empty text", async () => {
     signInAs("admin");
     expect(
-      await statusOf(sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi43", text: "" })),
+      await statusOf(sendMessage({ kind: "proposal", id: "D20" }, { channelId: "pi44", text: "" })),
     ).toBe(422);
   });
 });

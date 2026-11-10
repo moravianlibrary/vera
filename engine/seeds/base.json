@@ -12646,6 +12646,40 @@
         ]
       },
       {
+        "id": "pt39",
+        "descriptorId": "cz.mzk.vera.slack-bot-message",
+        "name": "SlackBotMessage",
+        "kind": "Message",
+        "description": "Posts a direct message to reachable Slack recipients.",
+        "versions": [
+          {
+            "version": "1.0.0",
+            "contractVersion": "1.0",
+            "installedAt": "2026-10-30",
+            "installedBy": "u3",
+            "triggers": ["OnDemand"],
+            "declares": {
+              "properties": [],
+              "identifierTypes": [],
+              "rawStates": [],
+              "rules": [],
+              "agent": null,
+              "generatorClass": null,
+              "channelInterface": null,
+              "operations": [],
+              "loginEntry": null
+            },
+            "configFields": [
+              {
+                "key": "workspace",
+                "isSecret": false,
+                "isRequired": true
+              }
+            ]
+          }
+        ]
+      },
+      {
         "id": "pt40",
         "descriptorId": "cz.mzk.vera.shelf-mark-recognition",
         "name": "ShelfMarkRecognition",
@@ -13730,6 +13764,26 @@
         "createdAt": "2026-10-07",
         "lastRunAt": "2026-06-24T13:10:00.000Z",
         "version": "1.1.0",
+        "isEnabled": true,
+        "linkedCategoryId": null,
+        "createdBy": "u3",
+        "isDeleted": false
+      },
+      {
+        "id": "pi44",
+        "name": "MZK Slack bot",
+        "implementationId": "pt39",
+        "configuration": {
+          "workspace": "mzk"
+        },
+        "triggers": ["OnDemand"],
+        "settings": {
+          "kind": "Message",
+          "order": 3
+        },
+        "createdAt": "2026-10-30",
+        "lastRunAt": null,
+        "version": "1.0.0",
         "isEnabled": true,
         "linkedCategoryId": null,
         "createdBy": "u3",

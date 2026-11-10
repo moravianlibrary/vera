@@ -3039,7 +3039,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -3800,7 +3800,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -4102,7 +4102,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -4404,7 +4404,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -4706,7 +4706,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -5008,7 +5008,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -5310,7 +5310,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -5612,7 +5612,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -5736,7 +5736,7 @@
           "path": "/api/plugin-instances",
           "status": 200,
           "body": {
-            "id": "pi44",
+            "id": "pi45",
             "name": "SVKOS Aleph",
             "implementationId": "pt1",
             "kind": "CatalogAdapter",
@@ -8837,7 +8837,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -9414,7 +9414,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi44",
+                "id": "pi45",
                 "name": "SVKOS Aleph",
                 "implementationId": "pt1",
                 "kind": "CatalogAdapter",
@@ -12596,7 +12596,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -13385,7 +13385,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -13516,7 +13516,7 @@
           "path": "/api/plugin-instances",
           "status": 200,
           "body": {
-            "id": "pi44",
+            "id": "pi45",
             "name": "SVKOS Aleph",
             "implementationId": "pt1",
             "kind": "CatalogAdapter",
@@ -16814,7 +16814,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -17391,7 +17391,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi44",
+                "id": "pi45",
                 "name": "SVKOS Aleph",
                 "implementationId": "pt1",
                 "kind": "CatalogAdapter",
@@ -20638,7 +20638,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -24411,7 +24411,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -28141,7 +28141,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -35690,7 +35690,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -36451,7 +36451,7 @@
               "isEnabled": true
             },
             {
-              "id": "pi43",
+              "id": "pi44",
               "name": "MZK Slack bot",
               "plugin": "SlackBotMessage",
               "kind": "Message",
@@ -39871,7 +39871,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
@@ -43680,7 +43680,7 @@
                 "lastRunAt": null
               },
               {
-                "id": "pi43",
+                "id": "pi44",
                 "name": "MZK Slack bot",
                 "implementationId": "pt39",
                 "kind": "Message",
