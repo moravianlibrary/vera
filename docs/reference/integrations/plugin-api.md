@@ -66,7 +66,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
 | | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page | the item read from it, and the origin to return to ([PLG-api-entry](#plg-api-entry)) | `origin_not_allowed`, `unreadable` |
 | Identifier | `recognise` | a value | whether it is this type, and its normal form | `checksum` |
-| Harvester | `harvest` | its cursor ([PLG-api-cursor](#plg-api-cursor)) | new items to propose, and the next cursor | — |
+| Harvester | `harvest` | its cursor ([PLG-api-cursor](#plg-api-cursor)) | new catalog IDs or typed identifiers to propose, and the next cursor | — |
 | Catalog adapter | `read` | a catalog id | the record: fields, units, issuance type, the reading's date | `not_found` |
 | | `readLink` *(optional)* | a record link or id as pasted | the catalog id | `not_this_catalog`, `malformed` |
 | | `search` *(optional)* | a text query | hits: catalog id, title, units | — |

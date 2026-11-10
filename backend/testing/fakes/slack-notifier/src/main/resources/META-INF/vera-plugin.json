@@ -1,0 +1,40 @@
+{
+  "implementation": "cz.mzk.vera.slack-notifier",
+  "version": "1.0.3",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnEvent"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "Chat",
+    "operations": [],
+    "loginEntry": null,
+    "personReach": {
+      "by": "claim",
+      "claim": "slack_id"
+    }
+  },
+  "configFields": [
+    {
+      "key": "workspace",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "bot",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "token",
+      "isSecret": true,
+      "isRequired": true
+    }
+  ]
+}

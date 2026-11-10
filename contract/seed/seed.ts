@@ -34,6 +34,7 @@ import {
   pluginTriggerSchema,
 } from "@vera/domain/plugins";
 import { propertyDefinitionSchema } from "@vera/domain/properties";
+import { proposalItemSchema } from "@vera/domain/plugin-api/input";
 import type { StoredRequestCustody } from "@vera/domain/request-custody";
 import { cadenceSchema, overlapSchema } from "@vera/domain/schedules";
 import { z } from "zod";
@@ -408,6 +409,8 @@ const fakesSchema = z.strictObject({
   ).optional(),
   // frontend/src/mocks/list-generation.ts reads recommendation reasons.
   advisorReasons: objectMap(z.string()).optional(),
+  // BK7b: one page of proposed items per harvest call.
+  harvests: objectMap(z.array(z.array(proposalItemSchema))).optional(),
   // frontend/src/mocks/messages.ts and watchlist-channels.ts read account handles.
   slackHandles: objectMap(z.string()).optional(),
   // frontend/src/mocks/messages.ts reads the Slack workspace name.
@@ -434,6 +437,15 @@ const seedShape = {
   now: z.iso.datetime(),
   collections: seedCollections,
   fakes: fakesSchema.optional(),
+  faults: z
+    .partialRecord(
+      z.enum(["deliveryChannel"]),
+      z.strictObject({
+        unavailableInstances: z.array(id).optional(),
+        rejectedRecipients: z.array(z.string()).optional(),
+      }),
+    )
+    .optional(),
 };
 export const seedSchema = z.strictObject(seedShape);
 export const seedPatchSchema = z.strictObject({
@@ -443,5 +455,6 @@ export const seedPatchSchema = z.strictObject({
   now: z.iso.datetime().optional(),
   collections: seedCollections.partial().optional(),
   fakes: fakesSchema.partial().optional(),
+  faults: seedShape.faults,
 });
 export type Seed = z.infer<typeof seedSchema>;

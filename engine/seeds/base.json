@@ -17731,6 +17731,25 @@
         "instanceName": "MZK Aleph"
       },
       "tier": 50
+    },
+    "harvests": {
+      "pi8": [
+        [
+          { "kind": "catalogId", "catalogId": "MZK03-000778120" },
+          { "kind": "catalogId", "catalogId": "MZK01-001520331" }
+        ],
+        [
+          { "kind": "catalogId", "catalogId": "MZK01-001555012" },
+          { "kind": "catalogId", "catalogId": "VKOL01-000456123" }
+        ]
+      ],
+      "pi29": [[]]
+    }
+  },
+  "faults": {
+    "deliveryChannel": {
+      "unavailableInstances": [],
+      "rejectedRecipients": []
     }
   }
 }

@@ -31,6 +31,17 @@ public class FakePluginInstallation {
             installed.install(read("fakes/copyright-rule.jar"));
             installed.install(read("fakes/priority-first.jar"));
             installed.install(read("fakes/shelf-advisor.jar"));
+            installed.install(read("fakes/harvester-periodical-gaps.jar"));
+            installed.install(read("fakes/harvester-kramerius.jar"));
+            installed.install(read("fakes/publication-detector.jar"));
+            installed.install(read("fakes/smtp-mailer.jar"));
+            installed.install(read("fakes/mailgun-mailer.jar"));
+            installed.install(read("fakes/slack-notifier.jar"));
+            installed.install(read("fakes/http-webhook.jar"));
+            installed.install(read("fakes/sftp-drop.jar"));
+            installed.install(read("fakes/mailto-message.jar"));
+            installed.install(read("fakes/slack-message.jar"));
+            installed.install(read("fakes/slack-bot-message.jar"));
         };
     }
 

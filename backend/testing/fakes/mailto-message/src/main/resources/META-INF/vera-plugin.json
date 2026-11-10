@@ -1,0 +1,26 @@
+{
+  "implementation": "cz.mzk.vera.mailto-message",
+  "version": "1.0.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnDemand"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "cc_sender",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

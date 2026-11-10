@@ -1,0 +1,44 @@
+{
+  "implementation": "cz.mzk.vera.mailgun-mailer",
+  "version": "0.6.2",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnEvent"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "Email",
+    "operations": [],
+    "loginEntry": null,
+    "personReach": {
+      "by": "email"
+    }
+  },
+  "configFields": [
+    {
+      "key": "domain",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "region",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "from",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "api_key",
+      "isSecret": true,
+      "isRequired": true
+    }
+  ]
+}

@@ -24,4 +24,8 @@ include("plugin-api", "domain", "app", "testing", "testing:fakes:oidc-identity",
     "testing:fakes:kramerius-registry", "testing:fakes:rdcz-registry",
     "testing:fakes:page-count-predictor", "testing:fakes:catalog-validity",
     "testing:fakes:language-check", "testing:fakes:copyright-rule",
-    "testing:fakes:priority-first", "testing:fakes:shelf-advisor")
+    "testing:fakes:priority-first", "testing:fakes:shelf-advisor",
+    "testing:fakes:harvester-periodical-gaps", "testing:fakes:harvester-kramerius",
+    "testing:fakes:publication-detector", "testing:fakes:smtp-mailer", "testing:fakes:mailgun-mailer",
+    "testing:fakes:slack-notifier", "testing:fakes:http-webhook", "testing:fakes:sftp-drop",
+    "testing:fakes:mailto-message", "testing:fakes:slack-message", "testing:fakes:slack-bot-message")

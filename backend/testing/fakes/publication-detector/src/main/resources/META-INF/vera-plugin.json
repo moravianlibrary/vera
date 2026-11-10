@@ -1,0 +1,32 @@
+{
+  "implementation": "cz.mzk.vera.kramerius-publication-detector",
+  "version": "1.0.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnSchedule",
+    "OnDemand"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "base_url",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "since",
+      "isSecret": false,
+      "isRequired": false
+    }
+  ]
+}

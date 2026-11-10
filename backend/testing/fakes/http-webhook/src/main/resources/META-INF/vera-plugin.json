@@ -1,0 +1,36 @@
+{
+  "implementation": "cz.mzk.vera.http-webhook",
+  "version": "2.0.1",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnEvent"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "Webhook",
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "timeout",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "sign",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "secret",
+      "isSecret": true,
+      "isRequired": true
+    }
+  ]
+}

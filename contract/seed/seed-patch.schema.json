@@ -12100,6 +12100,52 @@
             "type": "string"
           }
         },
+        "harvests": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "catalogId"
+                      },
+                      "catalogId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["kind", "catalogId"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "const": "identifier"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["kind", "type", "value"]
+                  }
+                ]
+              }
+            }
+          }
+        },
         "slackHandles": {
           "type": "object",
           "propertyNames": {
@@ -12151,6 +12197,32 @@
         }
       },
       "additionalProperties": false
+    },
+    "faults": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": ["deliveryChannel"]
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "unavailableInstances": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rejectedRecipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": false

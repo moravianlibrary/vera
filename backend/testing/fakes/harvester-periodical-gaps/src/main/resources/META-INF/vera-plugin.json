@@ -1,0 +1,42 @@
+{
+  "implementation": "cz.mzk.vera.issnharvester",
+  "version": "1.0.4",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnSchedule",
+    "OnDemand"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [
+      "ISSN"
+    ],
+    "rawStates": [],
+    "rules": [],
+    "agent": {
+      "name": "Periodical gaps",
+      "entryPoint": "proposals"
+    },
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "region",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "since",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "max",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

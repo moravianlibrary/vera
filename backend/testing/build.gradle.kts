@@ -31,6 +31,9 @@ val fakeNames = listOf(
     "cover-recognition", "jq-custody", "place-of-publication", "material-type",
     "kramerius-registry", "rdcz-registry", "page-count-predictor", "catalog-validity",
     "language-check", "copyright-rule", "priority-first", "shelf-advisor",
+    "harvester-periodical-gaps", "harvester-kramerius", "publication-detector", "smtp-mailer",
+    "mailgun-mailer", "slack-notifier", "http-webhook", "sftp-drop", "mailto-message",
+    "slack-message", "slack-bot-message",
 )
 
 tasks.named<ProcessResources>("processResources") {

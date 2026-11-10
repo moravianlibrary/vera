@@ -1,0 +1,44 @@
+{
+  "implementation": "cz.mzk.vera.smtp-mailer",
+  "version": "1.1.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnEvent"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "Email",
+    "operations": [],
+    "loginEntry": null,
+    "personReach": {
+      "by": "email"
+    }
+  },
+  "configFields": [
+    {
+      "key": "host",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "port",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "from",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "tls",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

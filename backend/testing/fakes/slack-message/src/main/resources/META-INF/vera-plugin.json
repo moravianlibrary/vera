@@ -1,0 +1,31 @@
+{
+  "implementation": "cz.mzk.vera.slack-message",
+  "version": "0.5.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnDemand"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "workspace",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "handle",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

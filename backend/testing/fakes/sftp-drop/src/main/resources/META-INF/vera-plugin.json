@@ -1,0 +1,41 @@
+{
+  "implementation": "cz.mzk.vera.sftp-drop",
+  "version": "1.0.0",
+  "contractVersion": "1.0",
+  "triggers": [
+    "OnEvent"
+  ],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "File",
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    {
+      "key": "host",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "user",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "key",
+      "isSecret": false,
+      "isRequired": true
+    },
+    {
+      "key": "format",
+      "isSecret": false,
+      "isRequired": true
+    }
+  ]
+}

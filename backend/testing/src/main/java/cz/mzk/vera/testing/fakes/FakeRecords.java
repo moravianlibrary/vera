@@ -1,23 +1,28 @@
 package cz.mzk.vera.testing.fakes;
 
+import cz.mzk.vera.events.Outbox;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.MissingNode;
 
-// BK3d; PLG-api-call; fakes.md Catalog adapter, Input, Custody and Classifier.
+// BK3d, BK7b; PLG-api-call; fakes.md Catalog adapter, Input, Custody, Classifier, Harvester,
+// Publication detector, Message and Delivery channel.
 @Component
 @Profile("test")
 public class FakeRecords {
+    private final Outbox outbox;
+    private final JsonMapper json;
     private volatile List<JsonNode> catalogRecords = List.of();
     private volatile Map<String, String> catalogHosts = Map.of();
     private volatile JsonNode photo = MissingNode.getInstance();
@@ -28,7 +33,18 @@ public class FakeRecords {
     private volatile Map<String, JsonNode> categories = Map.of();
     private volatile Map<String, String> advisorReasons = Map.of();
     private volatile Map<String, JsonNode> ingestFaults = Map.of();
+    private volatile Map<String, JsonNode> harvests = Map.of();
+    private volatile Map<String, String> deliveryFaults = Map.of();
+    private volatile List<String> rejectedRecipients = List.of();
+    private volatile Map<String, String> slackHandles = Map.of();
+    private volatile String slackWorkspace = "mzk";
+    private volatile String linkBase = "";
     private final AtomicInteger barcodeCount = new AtomicInteger();
+
+    public FakeRecords(Outbox outbox, JsonMapper json) {
+        this.outbox = outbox;
+        this.json = json;
+    }
 
     public synchronized void reset(JsonNode seed) {
         JsonNode fakes = seed.path("fakes");
@@ -65,6 +81,35 @@ public class FakeRecords {
         fakes.path("ingest").properties().forEach(entry -> faults.put(entry.getKey(),
                 entry.getValue().path("faults").deepCopy()));
         ingestFaults = Map.copyOf(faults);
+        Map<String, JsonNode> harvestPages = new HashMap<>();
+        fakes.path("harvests").properties().forEach(entry -> harvestPages.put(entry.getKey(), entry.getValue().deepCopy()));
+        harvests = Map.copyOf(harvestPages);
+        JsonNode channelFault = seed.path("faults").path("deliveryChannel");
+        Map<String, String> unavailable = new HashMap<>();
+        for (JsonNode instance : channelFault.path("unavailableInstances")) {
+            unavailable.put(instance.asString(), "unavailable");
+        }
+        deliveryFaults = Map.copyOf(unavailable);
+        rejectedRecipients = strings(channelFault.path("rejectedRecipients"));
+        Map<String, String> handles = new HashMap<>();
+        fakes.path("slackHandles").properties().forEach(entry -> handles.put(entry.getKey(), entry.getValue().asString()));
+        slackHandles = Map.copyOf(handles);
+        slackWorkspace = fakes.path("slackWorkspace").asString("mzk");
+        Map<String, String> implementationNames = new HashMap<>();
+        for (JsonNode implementation : seed.path("collections").path("pluginImplementations")) {
+            implementationNames.put(implementation.path("id").asString(),
+                    implementation.path("name").asString());
+        }
+        String nextLinkBase = "";
+        for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
+            if (instance.path("isEnabled").asBoolean()
+                    && "KrameriusLink".equals(implementationNames.get(instance.path("implementationId").asString()))) {
+                nextLinkBase = instance.path("configuration").path("base_url").asString("")
+                        .replaceAll("/+$", "");
+                break;
+            }
+        }
+        linkBase = nextLinkBase;
         barcodeCount.set(0);
     }
 
@@ -79,12 +124,115 @@ public class FakeRecords {
             case "suggest" -> suggest(input);
             case "advisorReasons" -> advisorReason(first(input, "iterationId"));
             case "listGeneratorFault" -> listGeneratorFault(first(input, "instanceId"));
+            case "harvest" -> harvest(first(input, "instanceId"), first(input, "cursor"));
+            case "deliverySend", "deliveryTest" -> delivery(operation, input);
+            case "message" -> message(input);
+            case "detectPublications" -> detectPublications(input);
             default -> new LinkedHashMap<>();
         };
     }
 
     public boolean isCatalogHost(String host) {
         return catalogHosts.containsKey(host);
+    }
+
+    private Map<String, List<String>> harvest(String instanceId, String cursor) {
+        JsonNode pages = harvests.get(instanceId);
+        int page = cursor == null || cursor.isEmpty() ? 0 : Integer.parseInt(cursor);
+        JsonNode values = pages == null ? MissingNode.getInstance() : pages.path(page);
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        if (values.isArray()) {
+            for (JsonNode item : values) {
+                add(result, "kind", item.path("kind").asString());
+                add(result, "catalogId", item.path("catalogId").asString());
+                add(result, "type", item.path("type").asString());
+                add(result, "value", item.path("value").asString());
+            }
+        }
+        if (pages != null && page + 1 < pages.size()) {
+            add(result, "nextCursor", Integer.toString(page + 1));
+        } else {
+            add(result, "nextCursor", "");
+        }
+        return result;
+    }
+
+    private Map<String, List<String>> delivery(String operation, Map<String, List<String>> input) {
+        String instanceId = first(input, "instanceId");
+        String recipient = first(input, "recipient");
+        if ("deliverySend".equals(operation) && "unavailable".equals(deliveryFaults.get(instanceId))) {
+            return response("fault", "unavailable");
+        }
+        if ("deliverySend".equals(operation) && rejectedRecipients.contains(recipient)) {
+            return response("fault", "recipient_rejected");
+        }
+        String channel = first(input, "channel");
+        JsonNode payload = json.readTree("deliveryTest".equals(operation)
+                ? "{}" : first(input, "payload"));
+        outbox.send(channel, recipient, payload);
+        return new LinkedHashMap<>();
+    }
+
+    private Map<String, List<String>> message(Map<String, List<String>> input) {
+        String kind = first(input, "kind");
+        List<String> recipients = input.getOrDefault("recipient", List.of());
+        String subject = first(input, "subject");
+        String text = first(input, "text");
+        if ("slackBot".equals(kind)) {
+            JsonNode payload = json.createObjectNode().put("subject", subject).put("text", text);
+            outbox.send("chat", String.join(",", recipients), payload);
+            return response("sent", "true");
+        }
+        String address;
+        if ("mailto".equals(kind)) {
+            address = "mailto:" + String.join(",", recipients) + "?subject="
+                    + java.net.URLEncoder.encode(subject == null ? "" : subject, java.nio.charset.StandardCharsets.UTF_8)
+                    + "&body=" + java.net.URLEncoder.encode(text == null ? "" : text,
+                            java.nio.charset.StandardCharsets.UTF_8);
+        } else {
+            List<String> handles = recipients.stream().map(id -> slackHandles.getOrDefault(id, id)).toList();
+            address = "https://slack.com/app_redirect?team="
+                    + java.net.URLEncoder.encode(slackWorkspace, java.nio.charset.StandardCharsets.UTF_8)
+                    + "&users=" + java.net.URLEncoder.encode(String.join(",", handles),
+                            java.nio.charset.StandardCharsets.UTF_8)
+                    + "&text=" + java.net.URLEncoder.encode(text == null ? "" : text,
+                            java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return response("address", address);
+    }
+
+    private Map<String, List<String>> detectPublications(Map<String, List<String>> input) {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        List<String> ids = input.getOrDefault("iterationId", List.of());
+        List<String> progress = input.getOrDefault("progress", List.of());
+        List<String> heldIds = input.getOrDefault("heldLinkId", List.of());
+        List<String> heldLinks = input.getOrDefault("heldLink", List.of());
+        for (int i = 0; i < ids.size(); i++) {
+            if (!("Digitized".equals(progress.get(i)) || "Published".equals(progress.get(i)))) {
+                continue;
+            }
+            StringBuilder hex = new StringBuilder();
+            for (char character : ids.get(i).toCharArray()) {
+                hex.append(Integer.toHexString(character));
+            }
+            String suffix = ("000000000000" + hex).substring(Math.max(0, hex.length()));
+            if (suffix.length() > 12) {
+                suffix = suffix.substring(suffix.length() - 12);
+            }
+            String url = linkBase + "/uuid/uuid:00000000-0000-4000-8000-" + suffix;
+            boolean held = false;
+            for (int link = 0; link < heldLinks.size(); link++) {
+                if (ids.get(i).equals(heldIds.get(link)) && url.equals(heldLinks.get(link))) {
+                    held = true;
+                    break;
+                }
+            }
+            if (!linkBase.isEmpty() && !held) {
+                add(result, "iterationId", ids.get(i));
+                add(result, "url", url);
+            }
+        }
+        return result;
     }
 
     private Map<String, List<String>> advisorReason(String iterationId) {

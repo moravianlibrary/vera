@@ -97,15 +97,14 @@ mock's proposal helper catalog reading is not this operation.
 
 ## Harvester
 
-**Base instances:** `pi8` Moravian periodicals and `pi29` MZK Kramerius sweep. No instances for
-the other shipped Harvester implementations appear in `base.collections.pluginInstances`.
+**Base instances:** `pi8` Moravian periodicals and `pi29` MZK Kramerius sweep.
 
-`harvest(cursor)` produces items and next cursor. Mock implementation and seed data for each of
-the listed shipped harvesters were not established by the readers named in `contract/seed/seed.ts`;
-that schema has no harvester fake key. There is no engine implementation (harvest is part of later
-machinery per `docs/develop/engine.md`, Order of work). The API declares no refusal. Do not infer
-source connectivity or cursor fallback from the implementation description alone.
-
+`harvest(cursor)` returns one page per call from `fakes.harvests[instanceId]`, an array of pages,
+where each item is a catalog ID or typed identifier. The cursor is the next page index as text and
+is null after the last page. The base seed has two pages of two catalog IDs for `pi8` (IDs present
+in catalog fakes but not held as VERA documents) and one empty page for `pi29`. Missing seed data
+returns an empty page. The fakes use `Wire` through `FakeRecords`; `AdditionalPluginFakesTests` exercises
+both instances through installed JARs.
 
 ## Validation
 
@@ -251,37 +250,33 @@ function return no recognition; do not treat that as a plugin refusal without ch
 
 **Base instance:** `pi33` MZK Kramerius publications (`pt30`).
 
-`detect` finds links for published iterations. Mock scanning is
-`frontend/src/mocks/links.ts:detectPublications`, which derives a PID from the iteration and
-passes it through `canonicalLinkOf`; discovered links are written through `addLink` as agent `a3`.
-No fake key or engine implementation. API declares no refusal. The exact remote lookup behavior is
-not established in the mock reader; engine does not serve this area (DEC-0022).
+`detect` considers Digitized and Published iterations, derives the mock PID from the iteration ID,
+then returns the Kramerius canonical link unless that URL is already among the iteration's links.
+The mock's stable PID rule and canonicalization come from `frontend/src/mocks/links.ts` (`pidOf`,
+`detectPublications`, `canonicalLinkOf`). The fake answers links only; it does not write iterations.
 
 ## Message
 
 **Base instances:** `pi26` Email, `pi27` MZK Slack and `pi44` MZK Slack bot (`pt23`, `pt24`,
 `pt39`).
 
-`handOff` builds an address to open (mailto/chat), or reports sent. Mock preparation and dispatch
-are `frontend/src/mocks/messages.ts:prepareMessage`, `sendMessage`, `hrefOf`; channels are from
-`frontend/src/mocks/fixtures/message-channels.ts`. `fakes.slackHandles` supplies user handles and
-`fakes.slackWorkspace` the workspace name (seed comments `contract/seed/seed.ts`); if absent the
-mock's exact display fallback is determined by `messages.ts`. There is no engine Message operation;
-engine outbox behavior is a later area. No operation refusal is declared. Recipient resolution and
-unreachable-user behavior are in `resolveSubject`/`canReach`; they are mock caller outcomes, not
-PLG refusal codes.
+`pi26` returns a `mailto:` address, `pi27` returns a Slack app redirect using the handles in
+`fakes.slackHandles` and `fakes.slackWorkspace`, and `pi44` returns `sent` after writing the
+message to the outbox. The mappings follow `prepareMessage`, `sendMessage` and `hrefOf` in
+`frontend/src/mocks/messages.ts`; fixture handles and workspace are in
+`frontend/src/mocks/fixtures/message-channels.ts`. The fake world takes the recipient list,
+subject and text supplied by the caller.
 
 ## Delivery channel
 
 **Base instances:** `pi16` MZK SMTP, `pi17` Mailgun — requesters, `pi18` MZK Slack, `pi20`
-Webhooks, `pi21` Scan-ops SFTP (`pt13`, `pt14`, `pt15`, `pt17`, `pt18`).
+Webhooks and `pi21` Scan-ops SFTP (`pt13`, `pt14`, `pt15`, `pt17`, `pt18`).
 
-`send` and `test` answer sent or `recipient_rejected`. The engine outbox described in
-`docs/develop/engine.md` is not an implementation of these plugin operations. Mock channel fixtures
-are `frontend/src/mocks/fixtures/message-channels.ts`; hook delivery call paths are in
-`frontend/src/mocks/handlers.ts`. No channel-specific fake data key or operation implementation
-was established from the seed readers. The behavior and latency of test sends cannot be inferred;
-the API only specifies the result and refusal. These areas are mock-only until backend per DEC-0022.
+`send` and `test` record the recipient and payload in the test outbox. SMTP and Mailgun use
+`mail`, Slack uses `chat`, Webhooks use `webhook`, and SFTP uses `file`. The channel check allows
+`file` from migration `0290`. `faults.deliveryChannel.unavailableInstances` lists instance IDs whose `send`
+throws `PluginUnavailable`; `faults.deliveryChannel.rejectedRecipients` lists recipients refused
+with `recipient_rejected`. A missing entry means neither fault applies.
 
 ## Identity
 

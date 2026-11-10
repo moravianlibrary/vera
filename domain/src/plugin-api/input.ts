@@ -16,11 +16,14 @@ export const entryInputSchema = z.object({
   parameters: z.record(z.string(), z.string()),
   page: z.string().url(),
 });
+export const proposalItemSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("catalogId"), catalogId: z.string() }),
+  z.object({ kind: z.literal("identifier"), type: z.string(), value: z.string() }),
+]);
 export const entryAnswerSchema = z.object({
   item: z
-    .discriminatedUnion("kind", [
-      z.object({ kind: z.literal("catalogId"), catalogId: z.string() }),
-      z.object({ kind: z.literal("identifier"), type: z.string(), value: z.string() }),
+    .union([
+      proposalItemSchema,
       z.object({ kind: z.literal("unit"), value: z.string() }),
       z.object({ kind: z.literal("reason"), value: z.string() }),
     ])

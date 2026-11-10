@@ -18,6 +18,10 @@ import cz.mzk.vera.plugin.input.EntryLinkInput;
 import cz.mzk.vera.plugin.input.Input;
 import cz.mzk.vera.plugin.input.PhotoReader;
 import cz.mzk.vera.plugin.listgenerator.ListGenerator;
+import cz.mzk.vera.plugin.harvester.Harvester;
+import cz.mzk.vera.plugin.publicationdetector.PublicationDetector;
+import cz.mzk.vera.plugin.deliverychannel.DeliveryChannel;
+import cz.mzk.vera.plugin.message.Message;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -54,7 +58,11 @@ public class PluginLoader {
             Map.entry(PropertySource.class, Map.of()),
             Map.entry(Validation.class, Map.of()),
             Map.entry(Restriction.class, Map.of()),
-            Map.entry(ListGenerator.class, Map.of()));
+            Map.entry(ListGenerator.class, Map.of()),
+            Map.entry(Harvester.class, Map.of()),
+            Map.entry(PublicationDetector.class, Map.of()),
+            Map.entry(DeliveryChannel.class, Map.of()),
+            Map.entry(Message.class, Map.of()));
 
     private final PluginDeclarations declarations;
 
