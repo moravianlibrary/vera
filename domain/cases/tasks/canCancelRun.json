@@ -1,0 +1,53 @@
+{
+  "function": "canCancelRun",
+  "cases": [
+    {
+      "name": "the person who started a running run may cancel it",
+      "rule": "ACT-run-cancel",
+      "input": {
+        "userId": "u1",
+        "grants": [],
+        "state": "Running",
+        "startedBy": "u1",
+        "rerunnable": true
+      },
+      "expected": true
+    },
+    {
+      "name": "another person needs task.cancel",
+      "rule": "ACT-run-cancel",
+      "input": {
+        "userId": "u1",
+        "grants": [],
+        "state": "Running",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": false
+    },
+    {
+      "name": "task.cancel lets another person cancel",
+      "rule": "ACT-run-cancel",
+      "input": {
+        "userId": "u1",
+        "grants": [{ "permission": "task.cancel", "scope": "any" }],
+        "state": "Running",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": true
+    },
+    {
+      "name": "a finished run cannot be cancelled",
+      "rule": "ACT-run-cancel",
+      "input": {
+        "userId": "u1",
+        "grants": [{ "permission": "task.cancel", "scope": "any" }],
+        "state": "Done",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": false
+    }
+  ]
+}

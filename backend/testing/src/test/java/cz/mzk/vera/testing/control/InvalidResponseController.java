@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @ConditionalOnProperty(name = "vera.test.invalid-response", havingValue = "true")
 class InvalidResponseController {
-    @GetMapping("/api/tasks")
-    Map<String, Boolean> invalidTasksAnswer() {
+    // The real "/api/tasks/{runId}" pattern, told apart by a header, so it never clashes with the
+    // served route and the contract filter checks the answer against that operation.
+    @GetMapping(value = "/api/tasks/{runId}", headers = "X-Invalid-Answer")
+    Map<String, Boolean> invalidRunAnswer() {
         return Map.of("not", true);
     }
 }

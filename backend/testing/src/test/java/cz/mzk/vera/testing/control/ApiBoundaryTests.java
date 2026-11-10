@@ -158,8 +158,9 @@ class ApiBoundaryTests {
                 + "\"proposals\",\"requestApprove\",\"requestCustodies\","
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
-                + "\"roleSave\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
-                + "\"settingsPatch\",\"signUp\",\"userGroups\",\"userRestore\",\"userRoles\","
+                + "\"roleSave\",\"runningTasks\",\"sendVerificationAgain\",\"session\",\"settingsGet\","
+                + "\"settingsPatch\",\"signUp\",\"taskCancel\",\"taskDetail\",\"taskLog\","
+                + "\"taskRetention\",\"tasks\",\"userGroups\",\"userRestore\",\"userRoles\","
                 + "\"userSuspend\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
                 + "\"validationRevoke\",\"validations\"]";
         assertThat(endpoints.toString()).isEqualTo(expectedEndpoints);

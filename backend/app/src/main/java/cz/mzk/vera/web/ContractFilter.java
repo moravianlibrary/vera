@@ -200,10 +200,16 @@ public final class ContractFilter extends OncePerRequestFilter {
         JsonNode responseSchema = responseSchema(found.operation().node(), status);
         if (responseSchema != null && output.length > 0) {
             JsonNode answer;
-            try {
-                answer = mapper.readTree(output);
-            } catch (JacksonException exception) {
-                answer = mapper.nullNode();
+            if (buffered.getContentType() != null
+                    && buffered.getContentType().startsWith("text/plain")
+                    && responseSchema.path("type").asString().equals("string")) {
+                answer = mapper.valueToTree(new String(output, StandardCharsets.UTF_8));
+            } else {
+                try {
+                    answer = mapper.readTree(output);
+                } catch (JacksonException exception) {
+                    answer = mapper.nullNode();
+                }
             }
             List<Issue> issues = validate(responseSchema, answer);
             if (!issues.isEmpty()) {
@@ -415,8 +421,24 @@ public final class ContractFilter extends OncePerRequestFilter {
     private static final class BufferResponse extends HttpServletResponseWrapper {
         private final ByteArrayOutputStream body = new ByteArrayOutputStream();
         private final Map<String, List<String>> headers = new LinkedHashMap<>();
+        private String contentType;
         BufferResponse(HttpServletResponse response) { super(response); }
         byte[] bytes() { return body.toByteArray(); }
+        @Override
+        public void setContentType(String type) {
+            contentType = type;
+            setHeader("Content-Type", type);
+        }
+        @Override
+        public String getContentType() {
+            if (contentType != null) {
+                return contentType;
+            }
+            return headers.entrySet().stream()
+                    .filter(entry -> entry.getKey().equalsIgnoreCase("Content-Type"))
+                    .flatMap(entry -> entry.getValue().stream())
+                    .findFirst().orElseGet(super::getContentType);
+        }
         @Override
         public boolean containsHeader(String name) {
             return headers.containsKey(name) || super.containsHeader(name);

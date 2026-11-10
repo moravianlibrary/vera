@@ -46,6 +46,8 @@ import cz.mzk.vera.domain.requests.ProposalDecision;
 import cz.mzk.vera.domain.requests.RequestRow;
 import cz.mzk.vera.domain.requests.Requests;
 import cz.mzk.vera.domain.status.Status;
+import cz.mzk.vera.domain.tasks.Tasks;
+import cz.mzk.vera.domain.schedules.Schedules;
 import cz.mzk.vera.domain.valuerange.DayRange;
 import cz.mzk.vera.domain.valuerange.Range;
 import cz.mzk.vera.domain.valuerange.ValueRange;
@@ -53,6 +55,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -167,6 +171,22 @@ class SharedCasesTests {
         input
         -> JSON.valueToTree(Permissions.hasPermission(
             grants(input.path("holder").path("grants")), input.path("permission").asString())));
+    adapters.put("canCancelRun", input -> JSON.valueToTree(Tasks.canCancelRun(
+        taskSession(input), taskRun(input))));
+    adapters.put("canRunAgain", input -> JSON.valueToTree(Tasks.canRunAgain(
+        taskSession(input), taskRun(input))));
+    adapters.put("repeatCadenceOf", input -> JSON.valueToTree(
+        Schedules.repeatCadenceOf(text(input, "every"))));
+    adapters.put("nextOccurrenceOf", input -> {
+      String after = text(input, "after");
+      Instant moment = Instant.parse(after.endsWith("Z") ? after : after + "Z");
+      @SuppressWarnings("unchecked")
+      Map<String, Object> cadence = (Map<String, Object>) generic(input.path("cadence"));
+      Instant next = Schedules.nextOccurrenceOf(cadence, moment);
+      return next == null ? JSON.nullNode() : JSON.valueToTree(
+          DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'")
+              .withZone(ZoneOffset.UTC).format(next));
+    });
     adapters.put("catalogEntryOf", input -> {
       Permissions.Entry entry = Permissions.catalogEntryOf(input.path("permission").asString());
       ObjectNode result = JSON.createObjectNode();
@@ -864,6 +884,15 @@ class SharedCasesTests {
 
   private static Grant grant(JsonNode node) {
     return new Grant(node.path("permission").asString(), nullableText(node.path("scope")));
+  }
+
+  private static Tasks.Session taskSession(JsonNode input) {
+    return new Tasks.Session(text(input, "userId"), grants(input.path("grants")));
+  }
+
+  private static Tasks.Run taskRun(JsonNode input) {
+    return new Tasks.Run(text(input, "state"), nullableText(input.path("startedBy")),
+        input.path("rerunnable").asBoolean());
   }
 
   private static RoleHolder holder(JsonNode node) {

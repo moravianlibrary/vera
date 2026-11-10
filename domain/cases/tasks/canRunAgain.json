@@ -1,0 +1,65 @@
+{
+  "function": "canRunAgain",
+  "cases": [
+    {
+      "name": "the person who started a failed plugin run may run it again",
+      "rule": "ACT-run-again",
+      "input": {
+        "userId": "u1",
+        "grants": [],
+        "state": "Failed",
+        "startedBy": "u1",
+        "rerunnable": true
+      },
+      "expected": true
+    },
+    {
+      "name": "another person needs plugin.run",
+      "rule": "ACT-run-again",
+      "input": {
+        "userId": "u1",
+        "grants": [],
+        "state": "Cancelled",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": false
+    },
+    {
+      "name": "plugin.run permits a rerun",
+      "rule": "ACT-run-again",
+      "input": {
+        "userId": "u1",
+        "grants": [{ "permission": "plugin.run", "scope": "any" }],
+        "state": "Cancelled",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": true
+    },
+    {
+      "name": "a running run cannot be run again",
+      "rule": "ACT-run-again",
+      "input": {
+        "userId": "u1",
+        "grants": [{ "permission": "plugin.run", "scope": "any" }],
+        "state": "Running",
+        "startedBy": "u2",
+        "rerunnable": true
+      },
+      "expected": false
+    },
+    {
+      "name": "core runs cannot be run again",
+      "rule": "ACT-run-again",
+      "input": {
+        "userId": "u1",
+        "grants": [{ "permission": "plugin.run", "scope": "any" }],
+        "state": "Failed",
+        "startedBy": "u2",
+        "rerunnable": false
+      },
+      "expected": false
+    }
+  ]
+}

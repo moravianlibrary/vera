@@ -8,6 +8,12 @@ import static cz.mzk.vera.db.tables.Tables.GROUP_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.GROUPS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
+import static cz.mzk.vera.db.tables.Tables.RUNS;
+import static cz.mzk.vera.db.tables.Tables.RUN_ERRORS;
+import static cz.mzk.vera.db.tables.Tables.RUN_ITEMS;
+import static cz.mzk.vera.db.tables.Tables.RUN_LOG;
+import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
+import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
@@ -17,9 +23,14 @@ import static cz.mzk.vera.db.tables.Tables.USERS;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
@@ -210,6 +221,165 @@ public class SeedLoader {
         }
         records.catalogMirror(transaction, seed);
         records.load(transaction, collections);
+        tasks(transaction, seed, collections);
+    }
+
+    // ENT-run; PLG-run-items.
+    private void tasks(DSLContext target, JsonNode seed, JsonNode collections) {
+        Instant seedAt = Instant.parse(string(seed, "now"));
+        for (JsonNode run : collections.path("runs")) {
+            JsonNode ending = run.path("ending");
+            boolean running = ending.isNull();
+            int done = nullableInteger(run, "doneCount") == null
+                    ? running ? (int) Math.max(0, Math.min(run.path("itemCount").asInt(),
+                            Duration.between(Instant.parse(string(run, "startedAt")), seedAt).toMillis()
+                                    * run.path("itemsPerMinute").asDouble() / 60_000.0))
+                            : ending.path("doneCount").asInt()
+                    : run.path("doneCount").asInt();
+            String state = running ? "Running" : string(ending, "state");
+            if (state.equals("Done") && !run.path("errors").isEmpty()) {
+                state = "DoneWithErrors";
+            }
+            target.insertInto(RUNS)
+                    .set(RUNS.ID, string(run, "id"))
+                    .set(RUNS.WHAT, string(run, "what"))
+                    .set(RUNS.INSTANCE_ID, nullableString(run, "instanceId"))
+                    .set(RUNS.CORE_NAME, nullableString(run, "coreName"))
+                    .set(RUNS.TRIGGER, JSONB.valueOf(run.path("trigger").toString()))
+                    .set(RUNS.STARTED_BY, nullableString(run, "startedBy"))
+                    .set(RUNS.STATE, state)
+                    .set(RUNS.STARTED_AT, instant(run, "startedAt"))
+                    .set(RUNS.FINISHED_AT, running ? null : instant(ending, "finishedAt"))
+                    .set(RUNS.ITEM_COUNT, run.path("itemCount").asInt())
+                    .set(RUNS.DONE_COUNT, done)
+                    .set(RUNS.ITEMS_PER_MINUTE, running ? run.path("itemsPerMinute").asDouble() : null)
+                    .set(RUNS.CHANGES, JSONB.valueOf(run.path("changes").toString()))
+                    .set(RUNS.FAILURE, nullableString(run, "failure"))
+                    .set(RUNS.NOTE, nullableString(run, "note"))
+                    .set(RUNS.CANCELLED_BY, nullableString(run, "cancelledBy"))
+                    .set(RUNS.RERUN_OF, nullableString(run, "rerunOf"))
+                    .execute();
+            seedRunDetails(target, run, collections.path("iterations"), done, state, seedAt);
+        }
+        for (JsonNode schedule : collections.path("schedules")) {
+            JsonNode pause = schedule.path("pause");
+            target.insertInto(SCHEDULES)
+                    .set(SCHEDULES.ID, string(schedule, "id"))
+                    .set(SCHEDULES.INSTANCE_ID, string(schedule, "instanceId"))
+                    .set(SCHEDULES.NAME, string(schedule, "name"))
+                    .set(SCHEDULES.CADENCE, JSONB.valueOf(schedule.path("cadence").toString()))
+                    .set(SCHEDULES.OVERLAP, string(schedule, "overlap"))
+                    .set(SCHEDULES.PAUSED_BY, nullableString(pause, "pausedBy"))
+                    .set(SCHEDULES.PAUSED_AT, instant(pause, "pausedAt"))
+                    .set(SCHEDULES.PAUSE_REASON, nullableString(pause, "reason"))
+                    .set(SCHEDULES.CREATED_BY, string(schedule, "createdBy"))
+                    .set(SCHEDULES.SINCE, LocalDate.parse(string(schedule, "since")))
+                    .execute();
+        }
+        JsonNode retention = collections.path("taskRetention");
+        if (!retention.isMissingNode()) {
+            target.insertInto(TASK_RETENTION)
+                    .set(TASK_RETENTION.ID, 1)
+                    .set(TASK_RETENTION.DAYS, retention.path("days").asInt())
+                    .set(TASK_RETENTION.FAILED_DAYS, retention.path("failedDays").asInt())
+                    .execute();
+        }
+    }
+
+    private void seedRunDetails(DSLContext target, JsonNode run, JsonNode seededIterations,
+            int done, String state, Instant seedAt) {
+        List<JsonNode> visibleErrors = new ArrayList<>();
+        run.path("errors").forEach(error -> {
+            if ((!state.equals("Running") && !state.equals("Cancelled"))
+                    || error.path("atItem").asInt() < done) {
+                visibleErrors.add(error);
+            }
+        });
+        int position = 0;
+        for (JsonNode error : visibleErrors) {
+            String iterationId = string(error, "iterationId");
+            target.insertInto(RUN_ERRORS)
+                    .set(RUN_ERRORS.RUN_ID, string(run, "id"))
+                    .set(RUN_ERRORS.ITERATION_ID, iterationId)
+                    .set(RUN_ERRORS.MESSAGE, string(error, "message"))
+                    .set(RUN_ERRORS.AT_ITEM, error.path("atItem").asInt())
+                    .set(RUN_ERRORS.POSITION, position++)
+                    .execute();
+            insertRunItem(target, string(run, "id"), iterationId, string(error, "message"), position++);
+        }
+        int remaining = Math.max(0, Math.min(6, done - visibleErrors.size()));
+        Set<String> excluded = visibleErrors.stream().map(error -> string(error, "iterationId"))
+                .collect(Collectors.toSet());
+        int added = 0;
+        for (JsonNode iteration : seededIterations) {
+            String iterationId = string(iteration, "id");
+            if (!excluded.contains(iterationId) && added < remaining) {
+                insertRunItem(target, string(run, "id"), iterationId, null, position++);
+                added++;
+            }
+        }
+        if (added != remaining) {
+            throw new IllegalStateException("Seeded run item list is incomplete for " + string(run, "id"));
+        }
+        Instant started = Instant.parse(string(run, "startedAt"));
+        Instant ended = run.path("ending").isNull() ? seedAt
+                : Instant.parse(string(run.path("ending"), "finishedAt"));
+        int logPosition = 0;
+        log(target, string(run, "id"), started, string(run, "id") + " started — "
+                + string(run, "what") + " (" + triggerWords(target, run) + ")", false, logPosition++);
+        if (state.equals("Skipped")) {
+            log(target, string(run, "id"), started, "skipped — " + nullableString(run, "note"),
+                    false, logPosition);
+            return;
+        }
+        int finalDone = done;
+        for (JsonNode error : visibleErrors) {
+            Instant at = started.plusMillis(Duration.between(started, ended).toMillis()
+                    * error.path("atItem").asInt() / Math.max(1, finalDone));
+            log(target, string(run, "id"), at, string(error, "iterationId") + " "
+                    + string(error, "message"), true, logPosition++);
+        }
+    }
+
+    private void insertRunItem(DSLContext target, String runId, String iterationId, String error,
+            int position) {
+        target.insertInto(RUN_ITEMS)
+                .set(RUN_ITEMS.RUN_ID, runId)
+                .set(RUN_ITEMS.ITERATION_ID, iterationId)
+                .set(RUN_ITEMS.ERROR, error)
+                .set(RUN_ITEMS.POSITION, position)
+                .execute();
+    }
+
+    private void log(DSLContext target, String runId, Instant at, String text, boolean isError,
+            int position) {
+        target.insertInto(RUN_LOG)
+                .set(RUN_LOG.RUN_ID, runId)
+                .set(RUN_LOG.AT, at.atOffset(ZoneOffset.UTC))
+                .set(RUN_LOG.TEXT, text)
+                .set(RUN_LOG.IS_ERROR, isError)
+                .set(RUN_LOG.POSITION, position)
+                .execute();
+    }
+
+    private String triggerWords(DSLContext target, JsonNode run) {
+        JsonNode trigger = run.path("trigger");
+        return switch (string(trigger, "kind")) {
+            case "schedule" -> "schedule " + string(trigger, "scheduleId");
+            case "repeat" -> "intention repeat " + string(trigger, "templateId");
+            case "approval" -> "on approval by " + nameOf(target, nullableString(run, "startedBy"));
+            default -> "by " + nameOf(target, nullableString(run, "startedBy")) + ", from "
+                    + string(trigger.path("from"), "label");
+        };
+    }
+
+    private String nameOf(DSLContext target, String userId) {
+        if (userId == null) {
+            return "VERA";
+        }
+        String name = target.select(USERS.NAME).from(USERS).where(USERS.ID.eq(userId))
+                .fetchOne(USERS.NAME);
+        return name == null ? userId : name;
     }
 
     private String string(JsonNode object, String field) {

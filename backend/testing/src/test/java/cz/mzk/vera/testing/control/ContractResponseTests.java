@@ -29,7 +29,7 @@ class ContractResponseTests {
 
     @Test
     void reportsAnAnswerOutsideTheResponseSchemaAsContractResponse() {
-        String body = client.get().uri("/api/tasks").exchange().expectStatus().is5xxServerError()
+        String body = client.get().uri("/api/tasks/T-1").header("X-Invalid-Answer", "yes").exchange().expectStatus().is5xxServerError()
                 .expectBody(String.class).returnResult().getResponseBody();
         assertThat(body).contains("\"code\":\"contract.response\"");
     }

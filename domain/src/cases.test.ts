@@ -123,6 +123,7 @@ import {
   statusFootnoteOf,
   validationOf,
 } from "./status";
+import { canCancelRun, canRunAgain } from "./tasks";
 import {
   acceptedDefectsOf,
   defectNameOf,
@@ -179,6 +180,18 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   can: (...args) =>
     can(args[0] as ScopeHolder, args[1] as Permission, args[2] as ScopedRecord | undefined),
   hasPermission: (...args) => hasPermission(args[0] as GrantHolder, args[1] as Permission),
+  canCancelRun: (...args) =>
+    canCancelRun({ user: { id: args[0] as string }, grants: args[1] as Grant[] }, {
+      state: args[2] as never,
+      startedBy: args[3] as string | null,
+      isRerunnable: args[4] as boolean,
+    } as never),
+  canRunAgain: (...args) =>
+    canRunAgain({ user: { id: args[0] as string }, grants: args[1] as Grant[] }, {
+      state: args[2] as never,
+      startedBy: args[3] as string | null,
+      isRerunnable: args[4] as boolean,
+    } as never),
   managersOf: (...args) => managersOf(args[0] as never, args[1] as never),
   roleNameOf: (...args) => roleNameOf(args[0] as string),
   scopesOf: (...args) => scopesOf(args[0] as GrantHolder, args[1] as Permission),
