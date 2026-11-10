@@ -29,7 +29,9 @@ Rules: [ACCESS-custody-live](reference/access/custody.md#access-custody-live),
 [ACCESS-custody-delete](reference/access/custody.md#access-custody-delete).
 
 Decided on 2026-10-15. Placing open proposals again, after a Custody instance changes or a custody is deleted, is a
-run on Tasks. The mock places them at once, and only on delete. → engine.
+run on Tasks. The mock places them at once, and only on delete. Decided on 2026-11-10: backend
+step 7 builds it as a `custody.place` run started by a custody delete or a Custody instance
+change, and the mock changes first to start that run on both. → frontend, then backend.
 
 ### L26: Repeats
 
@@ -37,7 +39,8 @@ Rules: [LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat).
 
 Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. The
 backend makes occurrences (built 2026-11-09: an `intention.repeat` job queued for each repeat's
-next period start); the mock makes none, and Schedules does not list repeats yet. → backend
+next period start); the mock makes none, and Schedules does not list repeats yet. Decided on
+2026-11-10: backend step 7 lists repeats on Schedules from their queued jobs. → backend
 (machinery step: the job on Schedules), then frontend.
 
 ### L7: Access and planning changes are not logged
@@ -58,7 +61,8 @@ Audit stream in ClickStack, not to the log, with the configuration codes of the
 [catalogue](reference/model/events.md#configuration); no History card on the admin pages. Needs:
 the engine's outbox and its job, the collector's audit table with no expiry, and the ready-made
 HyperDX dashboards. The mock records nothing. The rest come with the engine's steps for those
-pages; the collector's table and the dashboards with deployment. → engine, then deployment.
+pages; the collector's table and the dashboards with deployment. Decided on 2026-11-10: backend
+step 7 records the Plugins, Hooks and Schedules codes. → engine, then deployment.
 
 ### L33: Hook events
 
@@ -69,7 +73,8 @@ The client part is done: the contract, editor and mock use hookable catalogue co
 mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
 The engine fires every event from the act or job that causes it, with a typed condition builder.
-The act matrix then names each act's event. → engine, then docs.
+The act matrix then names each act's event. Decided on 2026-11-10: backend step 7 fires every
+hookable code, each with a test that its act or job fires it. → engine, then docs.
 
 ### L49: Hook payload
 
@@ -85,7 +90,7 @@ plugin can turn it into, say, a list of documents for staff to prepare.
 The field names and event type names were settled on 2026-10-30, together with
 [L23](#built-2026-11-03) ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): `type` is the
 code, `changes` a list, machine values in snake case, times in UTC, the staff actor named.
-→ engine.
+Decided on 2026-11-10: backend step 7 builds the full payload with L33. → engine.
 
 ### L35: Watchlist engine
 
@@ -99,7 +104,10 @@ The frontend simulates membership, batching and outboxes in memory. The engine n
 - signed-link verification;
 - real email and chat transports, faked locally.
 
-→ engine.
+Decided on 2026-11-10: backend step 7 matches and sends as jobs, entries and windows stored as
+rows, links signed with HMAC under a key from the environment; browser push is real Web Push
+(VAPID keys from the environment), captured in `/_engine/outbox` under the test profile; email
+and chat stay on the fakes until the real plugins. → engine.
 
 ### L67: Recheck reads the catalog
 

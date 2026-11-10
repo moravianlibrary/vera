@@ -51,6 +51,21 @@ An instance runs on one or more triggers: on proposal, on ingest, on record chan
 on demand, on login, on event. A new instance gets every trigger its version accepts, except a
 schedule.
 
+#### PLG-run-items
+
+A run of an instance, by hand, again or on a schedule, covers a set fixed when it starts, and its
+item count is the size of that set. A catalog adapter's or a harvester's set is what its first call
+answers, so its count is 0 until then. Documents *still in play* are those with an open request or
+an iteration not yet published.
+- **Catalog adapter:** the records `sync` or `changes` answers that VERA holds; each runs its
+  record-change triggers ([PLG-api-record-change](plugin-api.md#plg-api-record-change)).
+- **Registry:** the copies of documents still in play.
+- **Validation** and **Restriction:** the instance's rules over documents still in play.
+- **Property source:** documents still in play that lack one of its properties.
+- **Harvester:** what `harvest` finds from its cursor, proposed as its agent.
+- **Publication detector:** digitized iterations; it adds the links it finds and never removes
+  one.
+
 #### PLG-contract
 
 Each version declares the contract version it was built for. VERA runs contract 1.x; a version
