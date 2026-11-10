@@ -22,7 +22,7 @@ public class DeliverySupport implements DeliveryChannel {
         Wire.put(fields, "payload", jsonOf(input.payload()));
         Map<String, List<String>> result = Wire.send(context, "deliverySend", fields);
         if ("unavailable".equals(Wire.first(result, "fault"))) {
-            throw new cz.mzk.vera.plugin.PluginUnavailable("Delivery channel unavailable.");
+            throw new cz.mzk.vera.plugin.PluginUnavailable(Wire.first(result, "detail"));
         }
         if ("recipient_rejected".equals(Wire.first(result, "fault"))) {
             throw new DeliveryChannelRefused(DeliveryChannelRefusal.RECIPIENT_REJECTED,
@@ -34,7 +34,11 @@ public class DeliverySupport implements DeliveryChannel {
         Map<String, List<String>> fields = Wire.fields();
         Wire.put(fields, "channel", channel);
         Wire.put(fields, "recipient", input.recipient());
-        Wire.send(context, "deliveryTest", fields);
+        Map<String, List<String>> result = Wire.send(context, "deliveryTest", fields);
+        if ("unavailable".equals(Wire.first(result, "fault"))
+                || "recipient_rejected".equals(Wire.first(result, "fault"))) {
+            return new TestAnswer(false, 0);
+        }
         return new TestAnswer(true, 0);
     }
 

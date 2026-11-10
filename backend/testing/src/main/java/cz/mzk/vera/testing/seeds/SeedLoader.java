@@ -14,6 +14,9 @@ import static cz.mzk.vera.db.tables.Tables.RUN_ITEMS;
 import static cz.mzk.vera.db.tables.Tables.RUN_LOG;
 import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
 import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
+import static cz.mzk.vera.db.tables.Tables.HOOKS;
+import static cz.mzk.vera.db.tables.Tables.HOOK_DELIVERIES;
+import static cz.mzk.vera.db.tables.Tables.HOOK_ATTEMPTS;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
@@ -236,6 +239,100 @@ public class SeedLoader {
         records.catalogMirror(transaction, seed);
         records.load(transaction, collections);
         tasks(transaction, seed, collections);
+        hooks(transaction, collections);
+    }
+
+    // HOOK-model; seeded subscriptions and delivery history follow the contract seed.
+    private void hooks(DSLContext target, JsonNode collections) {
+        int position = 0;
+        for (JsonNode row : collections.path("hooks")) {
+            JsonNode preference = row.path("recipientPreference");
+            List<String> eventCodes = new ArrayList<>();
+            JsonNode events = row.path("events");
+            if (events.isArray()) {
+                events.forEach(event -> eventCodes.add(event.asString()));
+            } else {
+                String event = string(row, "event");
+                if ("request.decided".equals(event)) {
+                    eventCodes.add("request.approved");
+                    eventCodes.add("request.declined");
+                } else if ("task.failed".equals(event)) {
+                    eventCodes.add("run.failed");
+                } else if ("list.created".equals(event) && "H-07".equals(string(row, "id"))) {
+                    eventCodes.add("list.created");
+                    eventCodes.add("list.started");
+                    eventCodes.add("list.marked_done");
+                } else {
+                    eventCodes.add(event);
+                }
+            }
+            String filter = string(row, "filter");
+            if ("decision is Approved or Denied".equals(filter)) {
+                filter = "";
+            }
+            target.insertInto(HOOKS)
+                    .set(HOOKS.ID, string(row, "id"))
+                    .set(HOOKS.NAME, string(row, "name"))
+                    .set(HOOKS.EVENTS, JSONB.valueOf(json.valueToTree(eventCodes).toString()))
+                    .set(HOOKS.FILTER, filter)
+                    .set(HOOKS.CHANNEL_ID, string(row, "channelId"))
+                    .set(HOOKS.RECIPIENT, string(row, "recipient"))
+                    .set(HOOKS.MESSAGE, string(row, "message"))
+                    .set(HOOKS.BATCH, nullableJson(row, "batch"))
+                    .set(HOOKS.RETRY, JSONB.valueOf(row.path("retry").toString()))
+                    .set(HOOKS.RECIPIENT_PREFERENCE, preference.isMissingNode() || preference.isNull()
+                            ? null : JSONB.valueOf(preference.toString()))
+                    .set(HOOKS.INCLUDE_PRIVATE, row.path("includePrivate").asBoolean(false))
+                    .set(HOOKS.STATE, string(row, "state"))
+                    .set(HOOKS.CREATED_BY, string(row, "createdBy"))
+                    .set(HOOKS.CREATED_AT, instant(row, "createdAt"))
+                    .set(HOOKS.PAUSE, nullableJson(row, "pause"))
+                    .set(HOOKS.POSITION, position++)
+                    .execute();
+        }
+        position = 0;
+        for (JsonNode row : collections.path("hookDeliveries")) {
+            List<String> events = new ArrayList<>();
+            if (row.path("events").isArray()) {
+                row.path("events").forEach(event -> events.add(event.asString()));
+            } else {
+                String event = string(row, "event");
+                if ("request.decided".equals(event)) {
+                    events.add("request.approved");
+                    events.add("request.declined");
+                } else {
+                    events.add(event);
+                }
+            }
+            target.insertInto(HOOK_DELIVERIES)
+                    .set(HOOK_DELIVERIES.ID, string(row, "id"))
+                    .set(HOOK_DELIVERIES.HOOK_ID, string(row, "hookId"))
+                    .set(HOOK_DELIVERIES.RECIPIENT, string(row, "recipient"))
+                    .set(HOOK_DELIVERIES.SUBJECTS, JSONB.valueOf(row.path("subjects").toString()))
+                    .set(HOOK_DELIVERIES.EVENTS, JSONB.valueOf(json.valueToTree(events).toString()))
+                    .set(HOOK_DELIVERIES.EVENT_IDS, JSONB.valueOf("[]"))
+                    .set(HOOK_DELIVERIES.PUBLIC_TEXT, string(row, "publicText"))
+                    .set(HOOK_DELIVERIES.STATE, string(row, "state"))
+                    .set(HOOK_DELIVERIES.FIRST_AT, instant(row, "firstAt"))
+                    .set(HOOK_DELIVERIES.LAST_AT, instant(row, "lastAt"))
+                    .set(HOOK_DELIVERIES.SEND_AT, instant(row, "sendAt"))
+                    .set(HOOK_DELIVERIES.ATTEMPTS, row.path("attempts").asInt())
+                    .set(HOOK_DELIVERIES.LAST_ERROR, nullableString(row, "lastError"))
+                    .set(HOOK_DELIVERIES.POSITION, position++)
+                    .execute();
+        }
+        position = 0;
+        for (JsonNode row : collections.path("hookAttempts")) {
+            target.insertInto(HOOK_ATTEMPTS)
+                    .set(HOOK_ATTEMPTS.ID, string(row, "id"))
+                    .set(HOOK_ATTEMPTS.DELIVERY_ID, string(row, "deliveryId"))
+                    .set(HOOK_ATTEMPTS.AT, instant(row, "at"))
+                    .set(HOOK_ATTEMPTS.RESULT, string(row, "result"))
+                    .set(HOOK_ATTEMPTS.DETAIL, string(row, "detail"))
+                    .set(HOOK_ATTEMPTS.DURATION_MS, row.path("durationMs").asInt())
+                    .set(HOOK_ATTEMPTS.POSITION, position++)
+                    .execute();
+        }
     }
 
     // ENT-run; PLG-run-items.

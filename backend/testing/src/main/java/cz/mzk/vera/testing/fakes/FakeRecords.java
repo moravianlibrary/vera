@@ -37,6 +37,7 @@ public class FakeRecords {
     private volatile Map<String, Integer> failedCatalogPages = Map.of();
     private volatile Map<String, String> deliveryFaults = Map.of();
     private volatile List<String> rejectedRecipients = List.of();
+    private volatile List<String> unreachableHosts = List.of();
     private volatile Map<String, String> slackHandles = Map.of();
     private volatile String slackWorkspace = "mzk";
     private volatile String linkBase = "";
@@ -93,6 +94,7 @@ public class FakeRecords {
         }
         deliveryFaults = Map.copyOf(unavailable);
         rejectedRecipients = strings(channelFault.path("rejectedRecipients"));
+        unreachableHosts = strings(channelFault.path("unreachableHosts"));
         Map<String, String> handles = new HashMap<>();
         fakes.path("slackHandles").properties().forEach(entry -> handles.put(entry.getKey(), entry.getValue().asString()));
         slackHandles = Map.copyOf(handles);
@@ -205,11 +207,18 @@ public class FakeRecords {
     private Map<String, List<String>> delivery(String operation, Map<String, List<String>> input) {
         String instanceId = first(input, "instanceId");
         String recipient = first(input, "recipient");
-        if ("deliverySend".equals(operation) && "unavailable".equals(deliveryFaults.get(instanceId))) {
-            return response("fault", "unavailable");
+        if ("unavailable".equals(deliveryFaults.get(instanceId))) {
+            return deliveryFailure("Delivery channel unavailable.");
         }
-        if ("deliverySend".equals(operation) && rejectedRecipients.contains(recipient)) {
+        if (rejectedRecipients.contains(recipient)) {
             return response("fault", "recipient_rejected");
+        }
+        {
+            for (String host : unreachableHosts) {
+                if (recipient.contains(host)) {
+                    return deliveryFailure("connect ETIMEDOUT " + host + ":443");
+                }
+            }
         }
         String channel = first(input, "channel");
         JsonNode payload = json.readTree("deliveryTest".equals(operation)
@@ -455,6 +464,13 @@ public class FakeRecords {
     private Map<String, List<String>> response(String key, String value) {
         Map<String, List<String>> result = new LinkedHashMap<>();
         add(result, key, value);
+        return result;
+    }
+
+    private Map<String, List<String>> deliveryFailure(String detail) {
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        result.put("fault", List.of("unavailable"));
+        result.put("detail", List.of(detail));
         return result;
     }
 

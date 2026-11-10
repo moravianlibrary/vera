@@ -125,19 +125,22 @@ public class PluginCalls {
             if (answer == null) {
                 LOGGER.error("Plugin fault instance={} kind={} operation={} returned a null answer",
                         instanceId, kindName, operation);
-                return new PluginOutcome.Unavailable<>();
+                return new PluginOutcome.Unavailable<>("Plugin returned no answer.");
             }
             result = "answered";
             return new PluginOutcome.Answered<>(answer);
         } catch (PluginRefused refused) {
             result = "refused";
             return new PluginOutcome.Refused<>(refused.code(), refused.message());
-        } catch (PluginUnavailable | TimeoutException exception) {
+        } catch (PluginUnavailable unavailable) {
+            result = "unavailable";
+            return new PluginOutcome.Unavailable<>(unavailable.getMessage());
+        } catch (TimeoutException exception) {
             return unavailable(instanceId, kindName, operation);
         } catch (Throwable fault) {
             LOGGER.error("Plugin fault instance={} kind={} operation={}",
                     instanceId, kindName, operation, fault);
-            return new PluginOutcome.Unavailable<>();
+            return new PluginOutcome.Unavailable<>(fault.getMessage());
         } finally {
             observation.lowCardinalityKeyValue("outcome", result).stop();
         }
@@ -174,7 +177,7 @@ public class PluginCalls {
 
     private <A> PluginOutcome<A> unavailable(String instance, String kind, String operation) {
         LOGGER.warn("Plugin unavailable instance={} kind={} operation={}", instance, kind, operation);
-        return new PluginOutcome.Unavailable<>();
+        return new PluginOutcome.Unavailable<>("Plugin unavailable.");
     }
 
     private record Context(String instanceId, Map<String, String> configuration,

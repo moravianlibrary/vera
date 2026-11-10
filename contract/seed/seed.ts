@@ -26,6 +26,7 @@ import {
   watchlistSchema,
 } from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
+import { proposalItemSchema } from "@vera/domain/plugin-api/input";
 import type { StoredPluginImplementation } from "@vera/domain/plugin-store";
 import {
   declarationsSchema,
@@ -34,7 +35,6 @@ import {
   pluginTriggerSchema,
 } from "@vera/domain/plugins";
 import { propertyDefinitionSchema } from "@vera/domain/properties";
-import { proposalItemSchema } from "@vera/domain/plugin-api/input";
 import type { StoredRequestCustody } from "@vera/domain/request-custody";
 import { cadenceSchema, overlapSchema } from "@vera/domain/schedules";
 import { z } from "zod";
@@ -443,6 +443,7 @@ const seedShape = {
       z.strictObject({
         unavailableInstances: z.array(id).optional(),
         rejectedRecipients: z.array(z.string()).optional(),
+        unreachableHosts: z.array(z.string()).optional(),
       }),
     )
     .optional(),

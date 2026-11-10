@@ -17755,7 +17755,8 @@
   "faults": {
     "deliveryChannel": {
       "unavailableInstances": [],
-      "rejectedRecipients": []
+      "rejectedRecipients": [],
+      "unreachableHosts": ["ops.internal"]
     }
   }
 }

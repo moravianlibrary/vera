@@ -12219,6 +12219,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "unreachableHosts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false

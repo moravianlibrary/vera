@@ -19,6 +19,7 @@ import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.jobs.Jobs;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,16 +45,19 @@ public class EventRecorder {
     private final DSLContext dsl;
     private final Clock clock;
     private final JsonMapper json;
+    private final Jobs jobs;
     private final SchemaRegistry schemas = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
     private final Map<String, Schema> historySchemas;
     private final Schema configurationSchema;
 
     public EventRecorder(
             DSLContext dsl,
+            Jobs jobs,
             Clock clock,
             JsonMapper json,
             @Value("${VERA_CONTRACT_DIR}") String contractDir) throws IOException {
         this.dsl = dsl;
+        this.jobs = jobs;
         this.clock = clock;
         this.json = json;
 
@@ -131,6 +135,7 @@ public class EventRecorder {
                     .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
                     .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                     .execute();
+            jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
         }
         if (code.audit()) {
             if (!code.history() && !configurationSchema.validate(input.data()).isEmpty()) {
@@ -177,8 +182,9 @@ public class EventRecorder {
         ObjectNode actor = json.createObjectNode().put("kind", "system");
         actor.putNull("id");
         actor.putNull("name");
+        String eventId = "E-" + UUID.randomUUID();
         dsl.insertInto(HOOK_EVENTS)
-                .set(HOOK_EVENTS.ID, "E-" + UUID.randomUUID())
+                .set(HOOK_EVENTS.ID, eventId)
                 .set(HOOK_EVENTS.CODE, code.code())
                 .set(HOOK_EVENTS.SUBJECT_KIND, input.subjectKind())
                 .set(HOOK_EVENTS.SUBJECT_ID, input.subjectId())
@@ -190,6 +196,7 @@ public class EventRecorder {
                 .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
                 .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                 .execute();
+        jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
     }
 
     public void fireAct(EventInput input) {
@@ -211,8 +218,9 @@ public class EventRecorder {
             actor.putNull("id");
             actor.putNull("name");
         }
+        String eventId = "E-" + UUID.randomUUID();
         dsl.insertInto(HOOK_EVENTS)
-                .set(HOOK_EVENTS.ID, "E-" + UUID.randomUUID())
+                .set(HOOK_EVENTS.ID, eventId)
                 .set(HOOK_EVENTS.CODE, input.code().code())
                 .set(HOOK_EVENTS.SUBJECT_KIND, input.subjectKind())
                 .set(HOOK_EVENTS.SUBJECT_ID, input.subjectId())
@@ -224,6 +232,7 @@ public class EventRecorder {
                 .set(HOOK_EVENTS.REASON_PUBLIC, input.reason() == null ? null : input.reason().publicReason())
                 .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                 .execute();
+        jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
     }
 
     private JsonNode hookChanges(JsonNode data) {
