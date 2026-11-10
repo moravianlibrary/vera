@@ -146,6 +146,7 @@ class ApiBoundaryTests {
                 + "\"listStart\",\"lists\","
                 + "\"localAccount\","
                 + "\"loginCallback\",\"loginEntries\",\"loginForm\",\"loginStart\",\"logout\","
+                + "\"messageChannels\",\"messageHandOff\",\"messageSend\","
                 + "\"mixArchive\",\"mixCreate\",\"mixDelete\",\"mixDetail\",\"mixPrimary\","
                 + "\"mixSetSave\",\"mixSnapshot\",\"mixes\","
                 + "\"projectApprove\",\"projectCreate\",\"projectDecision\",\"projectDelete\","

@@ -59,6 +59,12 @@ class IdentityFakesTests {
         assertThat(account.emailVerified()).isTrue();
         assertThat(account.claims()).containsExactly("group mzk-curators");
 
+        PluginOutcome<CompleteAnswer> slackAccount = calls.call("pi22", Identity.class, "complete",
+                (identity, context) -> identity.complete(context,
+                        new CompleteInput.Callback(Map.of("code", "pdvorak"))));
+        assertThat(answer(slackAccount).claims())
+                .containsExactly("group mzk-staff", "slack_id pdvorak");
+
         PluginOutcome<CompleteAnswer> unknown = calls.call("pi22", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
                         new CompleteInput.Callback(Map.of("code", "unknown"))));

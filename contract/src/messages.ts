@@ -75,8 +75,9 @@ export type MessageHandOff = z.infer<typeof messageHandOffSchema>;
 
 // Refusals: message.not_sending, message.unreachable, message.refused.
 export const sendMessageBodySchema = z.object({
-  channelId: z.string(),
-  text: z.string().trim().min(1).max(4000),
+  // Both optional so a missing one answers its own refusal code, not the contract's.
+  channelId: z.string().optional(),
+  text: z.string().max(4000).optional(),
 });
 
 export const sendMessageResponseSchema = z.object({ reachedIds: z.array(z.string()) });

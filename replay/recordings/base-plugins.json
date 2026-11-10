@@ -1471,6 +1471,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -3046,7 +3051,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -7269,6 +7275,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -8844,7 +8855,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -11028,6 +11040,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -12603,7 +12620,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -15246,6 +15264,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -16821,7 +16844,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -19070,6 +19094,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -20645,7 +20674,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -22843,6 +22873,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -24418,7 +24453,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -26573,6 +26609,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -28148,7 +28189,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -34127,6 +34169,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -35697,7 +35744,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -38303,6 +38351,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -39878,7 +39931,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,
@@ -42112,6 +42166,11 @@
                         "key": "workspace",
                         "isSecret": false,
                         "isRequired": true
+                      },
+                      {
+                        "key": "handle",
+                        "isSecret": false,
+                        "isRequired": true
                       }
                     ]
                   }
@@ -43687,7 +43746,8 @@
                 "version": "1.0.0",
                 "isEnabled": true,
                 "configuration": {
-                  "workspace": "mzk"
+                  "workspace": "mzk",
+                  "handle": "claim slack_id"
                 },
                 "secretsSet": [],
                 "linkedCategoryId": null,

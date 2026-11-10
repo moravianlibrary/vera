@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
@@ -36,16 +37,19 @@ import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 @Component
 public class SeedLoader {
     private final DSLContext dsl;
     private final RecordsSeedLoader records;
+    private final JsonMapper json;
 
-    public SeedLoader(DSLContext dsl, RecordsSeedLoader records) {
+    public SeedLoader(DSLContext dsl, RecordsSeedLoader records, JsonMapper json) {
         this.dsl = dsl;
         this.records = records;
+        this.json = json;
     }
 
     public void load(JsonNode seed) {
@@ -119,10 +123,17 @@ public class SeedLoader {
             }
             int identityPosition = 0;
             for (JsonNode identity : access.path("identities")) {
+                Map<String, List<String>> claims = new LinkedHashMap<>();
+                String slackHandle = seed.path("fakes").path("slackHandles").path(userId).asString(null);
+                if (slackHandle != null && !slackHandle.isBlank()) {
+                    // The seed has no claims of its own, so supply the fake Slack claim on each identity.
+                    claims.put("slack_id", List.of(slackHandle));
+                }
                 transaction.insertInto(USER_IDENTITIES)
                         .set(USER_IDENTITIES.USER_ID, userId)
                         .set(USER_IDENTITIES.INSTANCE_ID, string(identity, "instanceId"))
                         .set(USER_IDENTITIES.EXTERNAL_ID, string(identity, "externalId"))
+                        .set(USER_IDENTITIES.CLAIMS, JSONB.valueOf(json.valueToTree(claims).toString()))
                         .set(USER_IDENTITIES.LAST_LOGIN_AT, instant(identity, "lastLoginAt"))
                         .set(USER_IDENTITIES.POSITION, identityPosition++)
                         .execute();

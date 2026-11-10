@@ -1,3 +1,4 @@
 vera:
+  public-url: http://localhost
   jobs:
     poll: false

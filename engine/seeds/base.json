@@ -12674,6 +12674,11 @@
                 "key": "workspace",
                 "isSecret": false,
                 "isRequired": true
+              },
+              {
+                "key": "handle",
+                "isSecret": false,
+                "isRequired": true
               }
             ]
           }
@@ -13774,7 +13779,8 @@
         "name": "MZK Slack bot",
         "implementationId": "pt39",
         "configuration": {
-          "workspace": "mzk"
+          "workspace": "mzk",
+          "handle": "claim slack_id"
         },
         "triggers": ["OnDemand"],
         "settings": {
@@ -17612,7 +17618,7 @@
           "name": "Petr Dvořák",
           "email": "petr.dvorak@mzk.cz",
           "emailVerified": true,
-          "claims": ["group mzk-staff"]
+          "claims": ["group mzk-staff", "slack_id pdvorak"]
         },
         {
           "externalId": "ehorakova",

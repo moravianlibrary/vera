@@ -1719,14 +1719,18 @@ export function createHandlers(profile: MockUserProfile) {
           message: "Say what to send and whom it is about",
         });
       }
-      if (!body.success) {
-        const textMissing = body.error.issues.every((issue) => issue.path[0] === "text");
+      if (!body.success || !body.data.channelId) {
         return problemResponse({
           status: 422,
-          code: textMissing ? "message.text_missing" : "message.recipient_missing",
-          message: textMissing
-            ? "Write the message first"
-            : "Say what to send and whom it is about",
+          code: "message.recipient_missing",
+          message: "Say what to send and whom it is about",
+        });
+      }
+      if (!body.data.text?.trim()) {
+        return problemResponse({
+          status: 422,
+          code: "message.text_missing",
+          message: "Write the message first",
         });
       }
       return outcomeResponse(
@@ -1734,7 +1738,7 @@ export function createHandlers(profile: MockUserProfile) {
           currentSession(),
           { kind: subject.data, id },
           body.data.channelId,
-          body.data.text,
+          body.data.text ?? "",
         ),
       );
     }),

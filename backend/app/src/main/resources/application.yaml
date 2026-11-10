@@ -19,3 +19,5 @@ management:
         include: health
 server:
   port: ${VERA_PORT:8081}
+vera:
+  public-url: ${VERA_PUBLIC_URL}

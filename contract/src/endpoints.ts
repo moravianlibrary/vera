@@ -1112,8 +1112,8 @@ export const endpoints = {
     path: apiRoutes.messageHandOff,
     summary: "Prepare a message hand-off.",
     query: z.object({
-      [messageSubjectParams.kind]: messageSubjectKindSchema,
-      [messageSubjectParams.id]: z.string(),
+      [messageSubjectParams.kind]: messageSubjectKindSchema.optional(),
+      [messageSubjectParams.id]: z.string().optional(),
     }),
     response: messageHandOffSchema,
     codes: ["message.subject_missing", "message.subject_not_found"],
@@ -1124,8 +1124,8 @@ export const endpoints = {
     path: apiRoutes.messageSend,
     summary: "Sends a message.",
     query: z.object({
-      [messageSubjectParams.kind]: messageSubjectKindSchema,
-      [messageSubjectParams.id]: z.string(),
+      [messageSubjectParams.kind]: messageSubjectKindSchema.optional(),
+      [messageSubjectParams.id]: z.string().optional(),
     }),
     body: sendMessageBodySchema,
     response: sendMessageResponseSchema,

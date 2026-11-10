@@ -20,10 +20,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.jooq.DSLContext;
@@ -77,7 +79,7 @@ public class LoginCommands {
                     .where(USER_IDENTITIES.INSTANCE_ID.eq(instance.id()))
                     .and(USER_IDENTITIES.EXTERNAL_ID.eq(answer.externalId())));
             if (!hasIdentity) {
-                insertIdentity(userId, instance.id(), answer.externalId(), now);
+                insertIdentity(userId, instance.id(), answer.externalId(), now, answer.claims());
             }
         } else {
             userId = createLinkedPerson(instance, answer, now, true);
@@ -109,6 +111,7 @@ public class LoginCommands {
         }
         dsl.update(USER_IDENTITIES)
                 .set(USER_IDENTITIES.LAST_LOGIN_AT, now.atOffset(ZoneOffset.UTC))
+                .set(USER_IDENTITIES.CLAIMS, claims(answer.claims()))
                 .where(USER_IDENTITIES.USER_ID.eq(userId))
                 .and(USER_IDENTITIES.INSTANCE_ID.eq(instance.id()))
                 .and(USER_IDENTITIES.EXTERNAL_ID.eq(answer.externalId()))
@@ -130,7 +133,7 @@ public class LoginCommands {
                 .set(USERS.EMAIL, answer.email())
                 .set(USERS.POSITION, userPosition)
                 .execute();
-        insertIdentity(userId, instance.id(), answer.externalId(), now);
+        insertIdentity(userId, instance.id(), answer.externalId(), now, answer.claims());
         if (instance.settings().defaultRoleId() != null) {
             insertMapped(userId, instance.settings().defaultRoleId(), instance.id(), "default role");
         }
@@ -173,7 +176,8 @@ public class LoginCommands {
         return Duration.between(flow.createdAt().toInstant(), clock.instant()).compareTo(FLOW_LIFETIME) > 0;
     }
 
-    private void insertIdentity(String userId, String instanceId, String externalId, Instant now) {
+    private void insertIdentity(String userId, String instanceId, String externalId, Instant now,
+            List<String> claims) {
         int position = dsl.select(DSL.coalesce(DSL.max(USER_IDENTITIES.POSITION), -1).add(1))
                 .from(USER_IDENTITIES)
                 .where(USER_IDENTITIES.USER_ID.eq(userId))
@@ -183,8 +187,20 @@ public class LoginCommands {
                 .set(USER_IDENTITIES.INSTANCE_ID, instanceId)
                 .set(USER_IDENTITIES.EXTERNAL_ID, externalId)
                 .set(USER_IDENTITIES.LAST_LOGIN_AT, now.atOffset(ZoneOffset.UTC))
+                .set(USER_IDENTITIES.CLAIMS, claims(claims))
                 .set(USER_IDENTITIES.POSITION, position)
                 .execute();
+    }
+
+    private JSONB claims(List<String> claims) {
+        Map<String, List<String>> byName = new LinkedHashMap<>();
+        for (String claim : claims) {
+            int separator = claim.indexOf(' ');
+            String name = separator < 0 ? claim : claim.substring(0, separator);
+            String value = separator < 0 ? "" : claim.substring(separator + 1);
+            byName.computeIfAbsent(name, ignored -> new ArrayList<>()).add(value);
+        }
+        return JSONB.valueOf(json.valueToTree(byName).toString());
     }
 
     private void insertMapped(String userId, String roleId, String instanceId, String claim) {

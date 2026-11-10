@@ -4250,7 +4250,7 @@
           {
             "name": "subject",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "$ref": "#/components/schemas/MessageSubjectKind"
             }
@@ -4258,7 +4258,7 @@
           {
             "name": "id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -4301,7 +4301,7 @@
           {
             "name": "subject",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "$ref": "#/components/schemas/MessageSubjectKind"
             }
@@ -4309,7 +4309,7 @@
           {
             "name": "id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -9286,7 +9286,7 @@
       "MessageHandOff": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageHandOff","type":"object","properties":{"about":{"type":"object","properties":{"label":{"type":"string"},"path":{"type":"string"}},"required":["label","path"],"additionalProperties":false},"context":{"type":"string"},"recipients":{"type":"array","items":{"$ref":"#/components/schemas/MessageRecipient"}},"handOffs":{"type":"array","items":{"$ref":"#/components/schemas/ChannelHandOff"}}},"required":["about","context","recipients","handOffs"],"additionalProperties":false},
       "MessageRecipient": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageRecipient","type":"object","properties":{"userId":{"type":"string"},"name":{"type":"string"}},"required":["userId","name"],"additionalProperties":false},
       "MessageSubjectKind": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageSubjectKind","type":"string","enum":["proposal","overrule","forbiddenAskers","project","listedItem"]},
-      "SendMessageBody": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageBody","type":"object","properties":{"channelId":{"type":"string"},"text":{"type":"string","minLength":1,"maxLength":4000}},"required":["channelId","text"],"additionalProperties":false},
+      "SendMessageBody": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageBody","type":"object","properties":{"channelId":{"type":"string"},"text":{"type":"string","maxLength":4000}},"additionalProperties":false},
       "SendMessageResponse": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageResponse","type":"object","properties":{"reachedIds":{"type":"array","items":{"type":"string"}}},"required":["reachedIds"],"additionalProperties":false},
       "MixDraft": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MixDraft","type":"object","properties":{"name":{"type":"string","minLength":1},"fromMixId":{"type":["string","null"]},"fromRevision":{"anyOf":[{"type":"integer","exclusiveMinimum":0,"maximum":9007199254740991},{"type":"null"}]}},"required":["name","fromMixId","fromRevision"],"additionalProperties":false},
       "MixRecord": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MixRecord","type":"object","properties":{"id":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"isPrimary":{"type":"boolean"},"archivedAt":{"anyOf":[{"type":"string","format":"date-time","pattern":"^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"},{"type":"null"}]},"shares":{"type":"object","propertyNames":{"type":"string"},"additionalProperties":{"type":"number","minimum":0,"maximum":100}},"revision":{"type":"integer","exclusiveMinimum":0,"maximum":9007199254740991},"revisions":{"type":"array","items":{"$ref":"#/components/schemas/MixRevision"}},"everUsed":{"type":"boolean"},"usageCount":{"type":"integer","minimum":0,"maximum":9007199254740991},"followers":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string"},"isArchived":{"type":"boolean"}},"required":["id","name","isArchived"],"additionalProperties":false}}},"required":["id","name","isPrimary","archivedAt","shares","revision","revisions","everUsed","usageCount","followers"],"additionalProperties":false},
@@ -9585,7 +9585,7 @@
       "MessageChannelInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageChannelInput","type":"object","properties":{"id":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"},"result":{"type":"string","enum":["redirect","sent"]}},"required":["id","name","description","result"]},
       "MessageHandOffInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageHandOffInput","type":"object","properties":{"about":{"type":"object","properties":{"label":{"type":"string"},"path":{"type":"string"}},"required":["label","path"]},"context":{"type":"string"},"recipients":{"type":"array","items":{"$ref":"#/components/schemas/MessageRecipientInput"}},"handOffs":{"type":"array","items":{"$ref":"#/components/schemas/ChannelHandOffInput"}}},"required":["about","context","recipients","handOffs"]},
       "MessageRecipientInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MessageRecipientInput","type":"object","properties":{"userId":{"type":"string"},"name":{"type":"string"}},"required":["userId","name"]},
-      "SendMessageBodyInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageBodyInput","type":"object","properties":{"channelId":{"type":"string"},"text":{"type":"string","minLength":1,"maxLength":4000}},"required":["channelId","text"]},
+      "SendMessageBodyInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageBodyInput","type":"object","properties":{"channelId":{"type":"string"},"text":{"type":"string","maxLength":4000}}},
       "SendMessageResponseInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/SendMessageResponseInput","type":"object","properties":{"reachedIds":{"type":"array","items":{"type":"string"}}},"required":["reachedIds"]},
       "MixDraftInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MixDraftInput","type":"object","properties":{"name":{"type":"string","minLength":1},"fromMixId":{"type":["string","null"]},"fromRevision":{"anyOf":[{"type":"integer","exclusiveMinimum":0,"maximum":9007199254740991},{"type":"null"}]}},"required":["name","fromMixId","fromRevision"]},
       "MixRecordInput": {"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"#/components/schemas/MixRecordInput","type":"object","properties":{"id":{"type":"string","minLength":1},"name":{"type":"string","minLength":1},"isPrimary":{"type":"boolean"},"archivedAt":{"anyOf":[{"type":"string","format":"date-time","pattern":"^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"},{"type":"null"}]},"shares":{"type":"object","propertyNames":{"type":"string"},"additionalProperties":{"type":"number","minimum":0,"maximum":100}},"revision":{"type":"integer","exclusiveMinimum":0,"maximum":9007199254740991},"revisions":{"type":"array","items":{"$ref":"#/components/schemas/MixRevisionInput"}},"everUsed":{"type":"boolean"},"usageCount":{"type":"integer","minimum":0,"maximum":9007199254740991},"followers":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string"},"isArchived":{"type":"boolean"}},"required":["id","name","isArchived"]}}},"required":["id","name","isPrimary","archivedAt","shares","revision","revisions","everUsed","usageCount","followers"]},
