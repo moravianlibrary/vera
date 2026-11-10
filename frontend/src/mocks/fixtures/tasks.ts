@@ -31,7 +31,9 @@ export interface StoredRun {
   readonly startedBy: string | null;
   readonly startedAt: Date;
   readonly itemCount: number;
-  // While it runs: it finishes once every item is done.
+  // A seeded run's progress at the seed's moment; new runs begin at zero.
+  readonly doneCount?: number;
+  // The measured pace for a seeded run still going; new runs have no pace.
   readonly itemsPerMinute: number | null;
   readonly ending: RunEnding | null;
   readonly errors: readonly StoredRunError[];
@@ -225,6 +227,7 @@ export const runs: readonly StoredRun[] = [
     startedBy: null,
     startedAt: june(25, 10, 38),
     itemCount: 1204,
+    doneCount: 88,
     itemsPerMinute: 44,
     errors: [],
     changes: [{ label: "2 registry states", path: "/documents" }],
@@ -239,6 +242,7 @@ export const runs: readonly StoredRun[] = [
     startedBy: "u8",
     startedAt: june(25, 10, 37),
     itemCount: 12,
+    doneCount: 7,
     itemsPerMinute: 2.4,
     errors: [
       {

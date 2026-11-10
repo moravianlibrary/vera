@@ -20198,8 +20198,8 @@
           "status": 201,
           "body": {
             "template": {
-              "description": "A recurring description.",
               "namePattern": "Weekly maps — {period}",
+              "description": "A recurring description.",
               "every": "month",
               "funding": {
                 "kind": "any"
@@ -22864,8 +22864,8 @@
               },
               {
                 "template": {
-                  "description": "A recurring description.",
                   "namePattern": "Weekly maps — {period}",
+                  "description": "A recurring description.",
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -25560,8 +25560,8 @@
               },
               {
                 "template": {
-                  "description": "A recurring description.",
                   "namePattern": "Weekly maps — {period}",
+                  "description": "A recurring description.",
                   "every": "month",
                   "funding": {
                     "kind": "any"

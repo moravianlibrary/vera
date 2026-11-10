@@ -6,7 +6,9 @@
 import { parseRunSearchParams, toRunSearchParams } from "@vera/contract/tasks";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { deleteCustody } from "@/api/access";
 import { ApiError } from "@/api/http";
+import { disablePluginInstance, runPluginInstance } from "@/api/plugins";
 import { listPluginInstances } from "@/api/reference";
 import {
   cancelRun,
@@ -18,8 +20,9 @@ import {
   saveRetention,
 } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
-import { historicalRuns } from "@/mocks/fixtures/tasks";
+import { historicalRuns, runs as seededRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
+import { publicRunOf } from "@/mocks/tasks";
 
 const server = setupServer();
 
@@ -96,7 +99,15 @@ describe("listRuns", () => {
     expect(index.retention).toEqual({ days: 90, failedDays: 365 });
   });
 
-  it("works out how far a running run has got at the server's moment", async () => {
+  it("keeps seeded progress fixed at the seed's moment", async () => {
+    const seeded = seededRuns.find((run) => run.id === "T-9915");
+    if (seeded === undefined) throw new Error("Missing seeded running run T-9915");
+    expect(publicRunOf(seeded, new Date(2026, 5, 25, 10, 40))).toEqual(
+      publicRunOf(seeded, new Date(2026, 5, 26, 10, 40)),
+    );
+  });
+
+  it("keeps a seeded running run at its stored progress", async () => {
     signInAs("admin");
     const { running, asOf } = await listRuns({});
     const recheck = running.find((run) => run.id === "T-9915");
@@ -260,6 +271,9 @@ describe("acts on a run", () => {
     expect(again).toMatchObject({
       id: "T-9917",
       state: "Running",
+      itemCount: 0,
+      doneCount: 0,
+      secondsLeft: null,
       rerunOf: "T-9897",
       startedBy: "u3",
       trigger: { kind: "manual", from: { label: "Tasks" } },
@@ -307,5 +321,45 @@ describe("saveRetention", () => {
 
     expect(idsOf((await listRuns({})).finished)).not.toContain("T-9850");
     expect(idsOf((await listRuns({})).finished)).toContain("T-9897");
+  });
+});
+
+describe("runs that start as real ones (PLG-run-items, L8)", () => {
+  it("starts a run by hand over its set, with nothing done and no time left", async () => {
+    signInAs("admin");
+    const run = await runPluginInstance("pi9");
+
+    expect(run).toMatchObject({ state: "Running", doneCount: 0, secondsLeft: null });
+    expect(run.itemCount).toBeGreaterThan(0);
+  });
+
+  it("starts a catalog adapter's run at 0, its set being what the first call answers", async () => {
+    signInAs("admin");
+
+    expect(await runPluginInstance("pi1")).toMatchObject({ itemCount: 0, doneCount: 0 });
+  });
+
+  it("places the open proposals again in a run after a custody is deleted", async () => {
+    signInAs("admin");
+    await deleteCustody("pc1");
+    const { running } = await listRuns({});
+
+    expect(running[0]).toMatchObject({
+      what: "Placing open proposals again",
+      source: { kind: "core", name: "VERA" },
+      trigger: { kind: "manual", from: { label: "Users & Groups" } },
+      doneCount: 0,
+    });
+  });
+
+  it("places the open proposals again in a run after a Custody instance is disabled", async () => {
+    signInAs("admin");
+    await disablePluginInstance("pi25");
+    const { running } = await listRuns({});
+
+    expect(running[0]).toMatchObject({
+      what: "Placing open proposals again",
+      trigger: { kind: "manual", from: { label: "Plugins", path: "/plugins?i=pi25" } },
+    });
   });
 });

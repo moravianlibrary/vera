@@ -11329,6 +11329,9 @@
               "itemCount": {
                 "type": "number"
               },
+              "doneCount": {
+                "type": "number"
+              },
               "itemsPerMinute": {
                 "type": ["number", "null"]
               },

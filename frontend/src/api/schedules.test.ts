@@ -181,7 +181,9 @@ describe("changing a schedule", () => {
 
     expect(run).toMatchObject({
       state: "Running",
-      itemCount: 1204,
+      itemCount: 41,
+      doneCount: 0,
+      secondsLeft: null,
       trigger: { kind: "manual", from: { label: "Schedules", path: "/schedules?s=s3" } },
     });
     expect((await listRuns({})).running.map(({ id }) => id)).toContain(run.id);

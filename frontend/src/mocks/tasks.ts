@@ -18,17 +18,21 @@ import type {
   RunTrigger,
 } from "@vera/contract/tasks";
 import { runIndexSchema } from "@vera/contract/tasks";
+import { openProposalPlacements } from "@vera/contract/queries/requests";
 import { countValues } from "@vera/domain/arrangement";
+import { isAttemptOver } from "@vera/domain/documents";
 import type { Session } from "@vera/domain/entities";
 import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
 import { nextOccurrenceOf, repeatCadenceOf } from "@vera/domain/schedules";
 import type { RunState } from "@vera/domain/tasks";
 import { canCancelRun, canRunAgain } from "@vera/domain/tasks";
 import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@vera/domain/value-range";
-import { database } from "@/mocks/database";
+import { database, mockStore } from "@/mocks/database";
+import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
 import type { StoredRun } from "@/mocks/fixtures/tasks";
 import type { Outcome } from "@/mocks/mutations";
-import { findInstanceSummary } from "@/mocks/plugin-instances";
+import { findInstanceSummary, implementationOf, kindOf } from "@/mocks/plugin-instances";
+import { mockRequestPlugins } from "@/mocks/requests";
 import { mockNow } from "@/mocks/today";
 
 const minuteMilliseconds = 60_000;
@@ -49,9 +53,8 @@ interface Progress {
   readonly finishedAt: Date | null;
 }
 
-// A run still going has done as many items as its pace allows by now, and has finished once that
-// is all of them.
-function progressOf(run: StoredRun, now: Date): Progress {
+// The server leaves a running row alone until its job advances it (PLG-run-items).
+function progressOf(run: StoredRun): Progress {
   if (run.ending !== null) {
     const isDoneWithErrors = run.ending.state === "Done" && run.errors.length > 0;
     return {
@@ -61,18 +64,7 @@ function progressOf(run: StoredRun, now: Date): Progress {
     };
   }
 
-  const pace = run.itemsPerMinute ?? 1;
-  const minutes = Math.max(0, (now.getTime() - run.startedAt.getTime()) / minuteMilliseconds);
-  const doneCount = Math.min(run.itemCount, Math.floor(minutes * pace + 1e-9));
-  if (doneCount < run.itemCount) {
-    return { state: "Running", doneCount, finishedAt: null };
-  }
-
-  return {
-    state: run.errors.length > 0 ? "DoneWithErrors" : "Done",
-    doneCount,
-    finishedAt: new Date(run.startedAt.getTime() + (run.itemCount / pace) * minuteMilliseconds),
-  };
+  return { state: "Running", doneCount: run.doneCount ?? 0, finishedAt: null };
 }
 
 // A failed, cancelled or skipped run names no changes; a cancelled one's count says how far it got.
@@ -86,10 +78,11 @@ function errorsSoFar(run: StoredRun, progress: Progress) {
     : run.errors;
 }
 
-export function publicRunOf(run: StoredRun, now: Date): Run {
-  const progress = progressOf(run, now);
+// The server reports a run's stored progress and has no estimate before work starts (PLG-run-items).
+export function publicRunOf(run: StoredRun, _now: Date): Run {
+  const progress = progressOf(run);
   const isRunning = progress.state === "Running";
-  const pace = run.itemsPerMinute ?? 1;
+  const pace = run.itemsPerMinute;
   const instance = findInstanceSummary(run.instanceId);
   return {
     id: run.id,
@@ -106,9 +99,10 @@ export function publicRunOf(run: StoredRun, now: Date): Run {
     itemCount: run.itemCount,
     doneCount: progress.doneCount,
     errorCount: errorsSoFar(run, progress).length,
-    secondsLeft: isRunning
-      ? Math.ceil(((run.itemCount - progress.doneCount) / pace) * 60 - 1e-9)
-      : null,
+    secondsLeft:
+      isRunning && pace !== null
+        ? Math.ceil(((run.itemCount - progress.doneCount) / pace) * 60 - 1e-9)
+        : null,
     changes: isRunning ? null : hasFinishedItsWork(progress.state) ? [...run.changes] : [],
     failure: run.failure,
     note: run.note,
@@ -282,7 +276,7 @@ export function findRunDetail(session: Session, runId: string): RunDetail | null
     return null;
   }
 
-  const errors = errorsSoFar(stored, progressOf(stored, now)).map((error) =>
+  const errors = errorsSoFar(stored, progressOf(stored)).map((error) =>
     itemOf(error.iterationId, error.message),
   );
   const okCount = Math.max(0, Math.min(listedItemCount, run.doneCount - errors.length));
@@ -358,7 +352,7 @@ function logOf(stored: StoredRun, run: Run, now: Date) {
   }
 
   const ended = new Date(endAt);
-  for (const error of errorsSoFar(stored, progressOf(stored, now))) {
+  for (const error of errorsSoFar(stored, progressOf(stored))) {
     lines.push(line(atItem(error.atItem), `${error.iterationId} ${error.message}`, true));
   }
 
@@ -422,6 +416,7 @@ export function cancelRun(session: Session, runId: string): Outcome<Run> {
   return { value: publicRunOf(cancelled, now) };
 }
 
+// The server makes a new run over the set as it stands now (PLG-run-items).
 export function runAgain(session: Session, runId: string): Outcome<Run> {
   const now = mockNow();
   const run = findVisibleRun(session, runId, now);
@@ -449,7 +444,7 @@ export function runAgain(session: Session, runId: string): Outcome<Run> {
     instanceId: stored.instanceId,
     trigger: { kind: "manual", from: { label: "Tasks", path: `/tasks?run=${run.id}` } },
     startedBy: session.user.id,
-    itemCount: stored.itemCount,
+    itemCount: itemCountForInstance(stored.instanceId),
     rerunOf: run.id,
   });
   return { value: publicRunOf(started, now) };
@@ -458,26 +453,26 @@ export function runAgain(session: Session, runId: string): Outcome<Run> {
 interface RunStart {
   readonly what: string;
   readonly instanceId: string | null;
+  readonly coreName?: string | null;
   readonly trigger: RunTrigger;
   readonly startedBy: string;
   readonly itemCount: number;
   readonly rerunOf: string | null;
 }
 
-// A run started by hand takes about two minutes in the mock, whatever its size, and changes
-// nothing it can name.
+// The server stores a run before its job works the set (PLG-run-items).
 export function startRun(start: RunStart): StoredRun {
   const highest = Math.max(
     ...database.runs.map((run) => Number.parseInt(run.id.replace(/\D/g, ""), 10) || 0),
   );
-  const itemCount = Math.max(1, start.itemCount);
   const run: StoredRun = {
     ...start,
     id: `T-${highest + 1}`,
-    coreName: null,
+    coreName: start.coreName ?? null,
     startedAt: mockNow(),
-    itemCount,
-    itemsPerMinute: itemCount / 2,
+    itemCount: start.itemCount,
+    doneCount: 0,
+    itemsPerMinute: null,
     ending: null,
     errors: [],
     changes: [] satisfies Place[],
@@ -487,6 +482,73 @@ export function startRun(start: RunStart): StoredRun {
   };
   database.runs.unshift(run);
   return run;
+}
+
+// Documents still in play: an open request, or an iteration not yet published (PLG-run-items).
+function documentsStillInPlay(): Set<string> {
+  return new Set([
+    ...database.requests
+      .filter((request) => request.decision === "Pending")
+      .map((request) => request.documentId),
+    ...database.iterations
+      .filter((iteration) => !isAttemptOver(iteration))
+      .map((iteration) => iteration.documentId),
+  ]);
+}
+
+// Documents still in play lacking one of the properties the instance's version supplies.
+function lackingPropertiesCount(instance: StoredPluginInstance): number {
+  const keys =
+    implementationOf(instance)
+      ?.versions.find((version) => version.version === instance.version)
+      ?.declares.properties.map(({ key }) => key) ?? [];
+  const inPlay = documentsStillInPlay();
+  return database.documents.filter(
+    (document) =>
+      inPlay.has(document.id) &&
+      keys.some(
+        (key) =>
+          !document.properties.some(
+            (property) => property.key === key && property.sources.length > 0,
+          ),
+      ),
+  ).length;
+}
+
+// The size of the set a run of the instance covers, fixed when it starts (PLG-run-items). A
+// catalog adapter's or a harvester's set is what its first call answers, so 0 until then.
+export function itemCountForInstance(instanceId: string | null): number {
+  const instance = database.pluginInstances.find((candidate) => candidate.id === instanceId);
+  if (instance === undefined) {
+    return 0;
+  }
+
+  switch (kindOf(instance)) {
+    case "Registry":
+    case "Validation":
+    case "Restriction":
+      return documentsStillInPlay().size;
+    case "PropertySource":
+      return lackingPropertiesCount(instance);
+    case "PublicationDetector":
+      return database.iterations.filter((iteration) => iteration.progress === "Digitized").length;
+    default:
+      return 0;
+  }
+}
+
+// Deleting a custody or changing a Custody instance starts a run that places the open proposals
+// again (L8); it places nothing at once, as the server's job does the work.
+export function startPlacingRun(session: Session, from: Place): StoredRun {
+  return startRun({
+    what: "Placing open proposals again",
+    instanceId: null,
+    coreName: "VERA",
+    trigger: { kind: "manual", from },
+    startedBy: session.user.id,
+    itemCount: openProposalPlacements(mockStore(), mockRequestPlugins).length,
+    rerunOf: null,
+  });
 }
 
 export function saveRetention(session: Session, retention: Retention): Outcome<Retention> {

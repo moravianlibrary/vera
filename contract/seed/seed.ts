@@ -268,6 +268,7 @@ const seedCollections = z.strictObject({
         startedBy: id.nullable(),
         startedAt: z.string(),
         itemCount: z.number(),
+        doneCount: z.number().optional(),
         itemsPerMinute: z.number().nullable(),
         errors: z.array(
           z.object({ iterationId: id, message: z.string(), atItem: z.number() }).strict(),

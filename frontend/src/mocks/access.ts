@@ -3,10 +3,9 @@
 // and what links them; with `access.manage`, changing them. It refuses whatever would leave
 // nobody able to manage access, a grant at a scope its permission does not take, and a name or
 // an identity already taken. Mapped roles are the providers' and are never written here. Deleting
-// a custody places every open proposal again, which the mock does at once: a proposal it alone
-// held lands in the fallback, and a rule still naming it names nothing.
+// a custody starts a run to place its open proposals again (L8).
 // TODO(rrandiak): log these as `access` events (status-log.md §3) once the log has subjects other
-// than documents; run the re-placing as a task on Tasks.
+// than documents.
 
 import type {
   AccessIndex,
@@ -48,6 +47,7 @@ import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
 import { allPropertyDefinitions } from "@/mocks/properties";
 import { mockRequestPlugins } from "@/mocks/requests";
 import { accessUserOf } from "@/mocks/session";
+import { startPlacingRun } from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 import { audienceReachOf } from "@/mocks/watchlists";
 
@@ -819,6 +819,7 @@ export function custodyImpact(session: Session, custodyId: string): Outcome<Cust
   };
 }
 
+// The server deletes the custody and queues a run over open proposals (ACCESS-custody-delete, L8).
 export function deleteCustody(session: Session, custodyId: string): Outcome<null> {
   const refusal = guard(session);
   if (refusal !== null) {
@@ -839,6 +840,10 @@ export function deleteCustody(session: Session, custodyId: string): Outcome<null
   database.requestCustodies = database.requestCustodies.filter(
     (custody) => custody.id !== custodyId,
   );
+  startPlacingRun(session, {
+    label: "Users & Groups",
+    path: `/access?c=${custodyId}&view=custodies&type=proposals`,
+  });
   return { value: null };
 }
 
