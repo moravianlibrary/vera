@@ -128,11 +128,12 @@ class ApiBoundaryTests {
         assertThat(session).isEqualTo(expectedSession);
         JsonNode endpoints = mapper.readTree(client.get().uri("/_engine/endpoints").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
-        String expectedEndpoints = "[\"account\",\"batchApprove\",\"batchRetry\",\"batches\","
+        String expectedEndpoints = "[\"accessIndex\",\"account\",\"batchApprove\",\"batchRetry\",\"batches\","
                 + "\"categories\",\"categoryCreate\",\"categoryCustody\",\"categoryDelete\","
                 + "\"categoryImpact\",\"categoryIndex\",\"categoryRefine\",\"categorySave\",\"confirmEmail\","
+                + "\"custodyCreate\",\"custodyDelete\",\"custodyImpact\",\"custodyMembers\",\"custodySave\","
                 + "\"digitizationListCreate\",\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
-                + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\","
+                + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"groups\","
                 + "\"hookCreate\",\"hookDelete\",\"hookDeliveryDiscard\","
                 + "\"hookDeliveryRetry\",\"hookPause\",\"hookPreview\",\"hookResume\","
                 + "\"hookRetry\",\"hookSave\",\"hookSendNow\",\"hookTest\",\"hooks\","
@@ -152,6 +153,7 @@ class ApiBoundaryTests {
                 + "\"messageChannels\",\"messageHandOff\",\"messageSend\","
                 + "\"mixArchive\",\"mixCreate\",\"mixDelete\",\"mixDetail\",\"mixPrimary\","
                 + "\"mixSetSave\",\"mixSnapshot\",\"mixes\","
+                + "\"notificationHooks\",\"notificationPreferenceGet\",\"notificationPreferencePatch\","
                 + "\"pluginInstanceCreate\",\"pluginInstanceDelete\",\"pluginInstanceDisable\","
                 + "\"pluginInstanceEnable\",\"pluginInstanceImpact\",\"pluginInstanceRun\","
                 + "\"pluginInstanceSave\",\"pluginInstanceUpgrade\",\"pluginInstanceUpgradeRead\","
@@ -166,12 +168,12 @@ class ApiBoundaryTests {
                 + "\"proposals\",\"pushDeviceRegister\",\"pushDevices\",\"requestApprove\",\"requestCustodies\","
                 + "\"requestDecline\",\"requestDetail\",\"requestPasswordReset\","
                 + "\"requestWithdraw\",\"requests\",\"resetPassword\",\"roleCreate\",\"roleDelete\","
-                + "\"roleSave\",\"runningTasks\",\"scheduleCreate\",\"scheduleDelete\",\"schedulePause\","
+                + "\"roleSave\",\"roles\",\"runningTasks\",\"scheduleCreate\",\"scheduleDelete\",\"schedulePause\","
                 + "\"scheduleResume\",\"scheduleRun\",\"scheduleSave\",\"schedules\","
                 + "\"sendVerificationAgain\",\"session\",\"settingsGet\","
                 + "\"settingsPatch\",\"signUp\",\"taskCancel\",\"taskDetail\",\"taskLog\",\"taskRerun\","
                 + "\"taskRetention\",\"tasks\",\"userGroups\",\"userRestore\",\"userRoles\","
-                + "\"userSuspend\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
+                + "\"userSuspend\",\"users\",\"validationAccept\",\"validationDeny\",\"validationDetail\","
                 + "\"validationRevoke\",\"validations\",\"watchlistChannels\",\"watchlistCreate\","
                 + "\"watchlistDelete\",\"watchlistReach\",\"watchlistSave\",\"watchlistSeen\","
                 + "\"watchlistViewer\",\"watchlists\"]";

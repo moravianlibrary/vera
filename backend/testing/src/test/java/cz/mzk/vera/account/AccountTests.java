@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
+import cz.mzk.vera.session.SessionFilter;
 import java.util.Map;
+import java.time.OffsetDateTime;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ class AccountTests {
     private AccountCommands commands;
     @Autowired
     private JsonMapper json;
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @BeforeEach
     void reset() {
@@ -169,6 +174,36 @@ class AccountTests {
         patch(cookie, "{\"appearance\":\"dark\"}").expectStatus().isOk();
         client.get().uri("/api/session/settings").header(HttpHeaders.COOKIE, session("u3"))
             .exchange().expectStatus().isOk().expectBody().jsonPath("$.appearance").isEqualTo("dark");
+    }
+
+    @Test
+    void publicNotificationTokenChangesPreference() {
+        insertHook("h-pref");
+        String token = "valid-notification-token";
+        jdbc.update("INSERT INTO notification_tokens(token_hash,user_id,hook_id,created_at,expires_at) VALUES (?,?,?,?,?)",
+                SessionFilter.hashOf(token), "u3", "h-pref", OffsetDateTime.parse("2026-01-01T00:00:00Z"), OffsetDateTime.parse("2099-01-01T00:00:00Z"));
+        client.patch().uri("/api/notification-preferences/{token}", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"notifications\":{\"doNotSend\":true,\"hooks\":{\"h-pref\":false}}}")
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.notifications.doNotSend").isEqualTo(true)
+                .jsonPath("$.notifications.hooks.h-pref").isEqualTo(false);
+        client.get().uri("/api/notification-preferences/{token}", token).exchange()
+                .expectStatus().isOk().expectBody().jsonPath("$.notifications.hooks.h-pref").isEqualTo(false);
+    }
+
+    @Test
+    void expiredNotificationTokenIsRefused() {
+        insertHook("h-expired");
+        String token = "expired-notification-token";
+        jdbc.update("INSERT INTO notification_tokens(token_hash,user_id,hook_id,created_at,expires_at) VALUES (?,?,?,?,?)",
+                SessionFilter.hashOf(token), "u3", "h-expired", OffsetDateTime.parse("2020-01-01T00:00:00Z"), OffsetDateTime.parse("2020-01-02T00:00:00Z"));
+        client.get().uri("/api/notification-preferences/{token}", token).exchange()
+                .expectStatus().isNotFound().expectBody().jsonPath("$.code").isEqualTo("notification.link_expired");
+    }
+
+    private void insertHook(String id) {
+        jdbc.update("INSERT INTO hooks(id,name,events,filter,channel_id,recipient,message,retry,recipient_preference,state,created_by,created_at,position) "
+                + "VALUES (?, ?, '[\"request.declined\"]'::jsonb, '', 'pi22', 'u3', '', '{}'::jsonb, '{\"label\":\"Requests\",\"defaultEnabled\":true}'::jsonb, 'active', 'u3', now(), 0)", id, id);
     }
 
     @Test
