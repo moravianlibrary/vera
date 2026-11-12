@@ -276,11 +276,22 @@ export type RegistryRecord = z.infer<typeof registryRecordSchema>;
 export const documentTypeSchema = z.enum(["Periodical", "Monograph", "Manuscript", "Map"]);
 export type DocumentType = z.infer<typeof documentTypeSchema>;
 
+export const documentCatalogStateSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("gone") }),
+  z.object({
+    kind: z.literal("replaced"),
+    catalogId: z.string(),
+    documentId: id.nullable(),
+  }),
+]);
+export type DocumentCatalogState = z.infer<typeof documentCatalogStateSchema>;
+
 // Identity is the catalog ID plus, for one part of a larger record, the unit
 // (document-identity.md).
 export const documentSchema = z.object({
   id,
   catalogId: z.string(),
+  catalogState: documentCatalogStateSchema.nullable().optional(),
   unit: z
     .object({
       type: z.enum(["volume-name", "volume-number", "barcode"]),

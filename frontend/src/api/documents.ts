@@ -16,8 +16,10 @@ import {
   documentSliceSize,
   toDocumentSearchParams,
 } from "@vera/contract/documents";
-import { apiRoutes, documentRoute } from "@vera/contract/routes";
-import { findJson, getJson } from "@/api/http";
+import type { RecheckResult } from "@vera/contract/iterations";
+import { recheckResultSchema } from "@vera/contract/iterations";
+import { apiRoutes, documentRelinkRoute, documentRoute } from "@vera/contract/routes";
+import { findJson, getJson, postJson } from "@/api/http";
 
 interface DocumentListOptions extends Partial<DocumentSlice> {
   readonly grouping?: DocumentGrouping | null;
@@ -57,4 +59,12 @@ export async function findDocument(
     perspective === "my" ? `${path}?${documentPerspectiveParam}=my` : path,
     documentDetailSchema,
   );
+}
+
+export async function relinkDocument(
+  documentId: string,
+  catalogId: string,
+): Promise<RecheckResult | null> {
+  // ACT-relink: send the catalog ID and validate the follow-up check result.
+  return postJson(documentRelinkRoute(documentId), { catalogId }, recheckResultSchema.nullable());
 }

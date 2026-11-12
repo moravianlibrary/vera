@@ -99,12 +99,57 @@ export function DocumentDetailPane({ detail, session }: DocumentDetailPaneProps)
   useTranslation("documents");
   return (
     <article className="@container max-w-5xl">
+      <CatalogStateNote document={detail.record.document} />
       {detail.audience === "staff" ? (
         <StaffRecord detail={detail} session={session} />
       ) : (
         <OwnRecord detail={detail} session={session} />
       )}
     </article>
+  );
+}
+
+function CatalogStateNote({ document }: { document: DocumentRecord["document"] }) {
+  // DOC-relink: surface catalog changes before the document's other facts.
+  const { t } = useTranslation("documents");
+  const state = document.catalogState;
+  if (state == null) return null;
+  const title = t(state.kind === "gone" ? "detail.catalogGone" : "detail.catalogReplaced");
+  const catalogId = state.kind === "gone" ? document.catalogId : state.catalogId;
+  const catalogUrl = `https://vufind.mzk.cz/Record/${encodeURIComponent(catalogId)}`;
+  return (
+    <StatusNote tone="amber" title={title} className="mb-4">
+      {state.kind === "gone" ? (
+        <a
+          href={catalogUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-4"
+        >
+          {catalogId}
+        </a>
+      ) : (
+        <>
+          <a
+            href={catalogUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-4"
+          >
+            {catalogId}
+          </a>
+          {state.documentId !== null && (
+            <>
+              {" "}
+              ·{" "}
+              <Link to={`/documents?id=${encodeURIComponent(state.documentId)}`}>
+                {t("detail.openReplacement")}
+              </Link>
+            </>
+          )}
+        </>
+      )}
+    </StatusNote>
   );
 }
 

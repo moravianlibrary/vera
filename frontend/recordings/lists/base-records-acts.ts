@@ -85,6 +85,40 @@ export default {
       ],
     },
     {
+      name: "relink-gone-document",
+      calls: [
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/documents/D35/relink",
+          requestBody: { catalogId: "not-in-catalog" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/documents/D35/relink",
+          requestBody: { catalogId: "MZK01-001502233" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/documents/D35/relink",
+          requestBody: { catalogId: "MZK01-001300094" },
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/documents/D35/relink",
+          requestBody: { catalogId: "MZK01-001502234" },
+          compare: "body",
+        },
+        { as: "admin", method: "GET", path: "/api/documents/D35", compare: "body" },
+      ],
+    },
+    {
       name: "accept-validation",
       calls: [
         {

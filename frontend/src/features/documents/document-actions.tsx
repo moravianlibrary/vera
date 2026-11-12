@@ -24,6 +24,7 @@ import { can, hasPermission } from "@vera/domain/permissions";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { relinkDocument } from "@/api/documents";
 import { addLink, cancelIteration, overruleRestriction, resumeIteration } from "@/api/iterations";
 import { withdrawAsk } from "@/api/requests";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -46,7 +47,15 @@ export const iterationInvalidations = [documentsQueryKey, watchlistsQueryKey];
 // A withdrawn ask leaves Requests' queue too.
 const withdrawalInvalidations = [documentsQueryKey, requestsQueryKey, watchlistsQueryKey];
 
-type OpenDialog = "withdraw" | "reclassify" | "publish" | "overrule" | "cancel" | "resume" | null;
+type OpenDialog =
+  | "withdraw"
+  | "reclassify"
+  | "publish"
+  | "overrule"
+  | "cancel"
+  | "resume"
+  | "relink"
+  | null;
 
 interface DocumentActionsProps {
   record: DocumentRecord;
@@ -62,6 +71,7 @@ export function DocumentActions({
   isOwn = false,
   className,
 }: DocumentActionsProps) {
+  // ACT-relink: the server checks the category grant again when the act runs.
   useTranslation("documents");
   const { data: categories = [] } = useCategoriesQuery();
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null);
@@ -91,6 +101,31 @@ export function DocumentActions({
       documentId={record.document.id}
     />
   );
+  const mayRelink =
+    record.document.catalogState !== null &&
+    (iteration === null
+      ? hasPermission(session, "iteration.recheck")
+      : can(session, "iteration.recheck", scopeOfIteration(categories, iteration.categoryId)));
+  if (mayRelink) {
+    actions.push({
+      id: "relink",
+      label: i18n.t("actions.relink", { ns: "documents" }),
+      onSelect: open("relink"),
+    });
+  }
+  const relinkDialog = (
+    <RelinkDialog
+      isOpen={openDialog === "relink"}
+      onClose={close}
+      title={title}
+      documentId={record.document.id}
+      replacingCatalogId={
+        record.document.catalogState?.kind === "replaced"
+          ? record.document.catalogState.catalogId
+          : ""
+      }
+    />
+  );
   if (iteration === null || isOwn) {
     return (
       <>
@@ -100,6 +135,7 @@ export function DocumentActions({
           className={className}
         />
         {withdrawDialog}
+        {relinkDialog}
       </>
     );
   }
@@ -166,6 +202,7 @@ export function DocumentActions({
         className={className}
       />
       {withdrawDialog}
+      {relinkDialog}
 
       <ReclassifyDialog
         key={`reclassify-${iteration.id}-${iteration.categoryId}-${iteration.priority}`}
@@ -239,6 +276,57 @@ function WithdrawDialog({
       cancelLabel={i18n.t("actions.keepIt", { ns: "documents" })}
       isDestructive
       onConfirm={() => withdraw.run(documentId)}
+    />
+  );
+}
+
+const relinkFormSchema = z.object({ catalogId: z.string().trim().min(1) });
+type RelinkForm = z.infer<typeof relinkFormSchema>;
+
+function RelinkDialog({
+  isOpen,
+  onClose,
+  title,
+  documentId,
+  replacingCatalogId,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  documentId: string;
+  replacingCatalogId: string;
+}) {
+  // ACT-relink: staff supply the catalog record that this document should follow.
+  const id = useId();
+  const mutation = useActionMutation({
+    // ACT-relink: permissions, catalog identity and the follow-up checks are enforced by the server.
+    call: ({ catalogId }: RelinkForm) => relinkDocument(documentId, catalogId),
+    invalidates: iterationInvalidations,
+    refusalTexts: {
+      "document.catalog_unread": i18n.t("actions.relinkUnread", { ns: "documents" }),
+      "document.same_catalog_record": i18n.t("actions.relinkSame", { ns: "documents" }),
+      "document.catalog_record_held": i18n.t("actions.relinkHeld", { ns: "documents" }),
+    },
+  });
+  const defaultValues: RelinkForm = { catalogId: replacingCatalogId };
+  return (
+    <FormDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={i18n.t("actions.relinkTitle", { ns: "documents", title })}
+      description={i18n.t("actions.relinkDescription", { ns: "documents" })}
+      schema={relinkFormSchema}
+      defaultValues={defaultValues}
+      submitLabel={i18n.t("actions.relink", { ns: "documents" })}
+      onSubmit={(values) => mutation.run(values)}
+      render={(form) => (
+        <>
+          <Field id={`${id}-catalog-id`} label={i18n.t("actions.catalogId", { ns: "documents" })}>
+            <Input id={`${id}-catalog-id`} {...form.register("catalogId")} />
+          </Field>
+          <FieldError message={form.formState.errors.catalogId?.message} />
+        </>
+      )}
     />
   );
 }

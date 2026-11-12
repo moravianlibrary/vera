@@ -516,6 +516,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -820,6 +823,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -6338,6 +6346,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -6576,6 +6589,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -8649,6 +8665,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -8953,6 +8972,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -14347,6 +14371,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -14585,6 +14614,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -16346,6 +16378,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -16650,6 +16685,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -26103,6 +26143,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -29271,6 +29316,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -30109,6 +30159,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -30782,6 +30837,267 @@
           "code": "batch.outside_custody",
           "requestBody": {},
           "as": "u8"
+        }
+      ]
+    },
+    {
+      "name": "relink-gone-document",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/documents/D35/relink",
+          "status": 422,
+          "code": "document.catalog_unread",
+          "requestBody": {
+            "catalogId": "not-in-catalog"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/documents/D35/relink",
+          "status": 422,
+          "code": "document.same_catalog_record",
+          "requestBody": {
+            "catalogId": "MZK01-001502233"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/documents/D35/relink",
+          "status": 409,
+          "code": "document.catalog_record_held",
+          "requestBody": {
+            "catalogId": "MZK01-001300094"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/documents/D35/relink",
+          "status": 200,
+          "body": {
+            "clearedKeys": [],
+            "review": "Needed",
+            "progress": "Enqueued"
+          },
+          "requestBody": {
+            "catalogId": "MZK01-001502234"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "GET",
+          "path": "/api/documents/D35",
+          "status": 200,
+          "body": {
+            "audience": "staff",
+            "record": {
+              "document": {
+                "id": "<D1>",
+                "catalogId": "MZK01-001502234",
+                "unit": {
+                  "type": "volume-number",
+                  "value": "roč. 12"
+                },
+                "title": "Našinec",
+                "type": "Periodical",
+                "shelfMark": "ST3-0149",
+                "pageSources": [],
+                "registryRecords": [],
+                "catalogState": null,
+                "properties": [
+                  {
+                    "key": "title",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Našinec",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  },
+                  {
+                    "key": "material_type",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "Periodical",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  },
+                  {
+                    "key": "shelf_mark",
+                    "sources": [
+                      {
+                        "source": {
+                          "kind": "plugin",
+                          "instanceId": "pi1",
+                          "instanceName": "MZK Aleph"
+                        },
+                        "tier": 50,
+                        "value": "ST3-0149",
+                        "observedAt": "<time>",
+                        "setBy": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "iterations": [
+                {
+                  "id": "IT19",
+                  "documentId": "<D1>",
+                  "attempt": 1,
+                  "requestId": "<R1>",
+                  "categoryId": "c23",
+                  "priority": "High",
+                  "projectId": null,
+                  "progress": "Enqueued",
+                  "listId": null,
+                  "formerListName": null,
+                  "restriction": null,
+                  "restrictionOverride": null,
+                  "cancellation": null,
+                  "defects": [
+                    {
+                      "key": "pi9:R01:record",
+                      "instanceId": "pi9",
+                      "ruleCode": "<R2>",
+                      "subject": "record",
+                      "publicText": "The catalogue record for this volume could not be found.",
+                      "internalText": "Aleph returned no record for MZK01-001502233 · roč. 12; the ISSN on the request belongs to a different title.",
+                      "firstSeenAt": "<time>"
+                    }
+                  ],
+                  "verdicts": [],
+                  "ingestFailure": null,
+                  "digitizedAt": null,
+                  "links": [],
+                  "scanDpi": null,
+                  "properties": []
+                }
+              ],
+              "requests": [
+                {
+                  "id": "<R1>",
+                  "documentId": "<D1>",
+                  "requesterId": "a2",
+                  "at": "<time>",
+                  "reason": null,
+                  "batchId": "<B1>",
+                  "projectId": null,
+                  "existingCopies": [],
+                  "checkedAt": "<time>",
+                  "decision": "Approved",
+                  "iteration": {
+                    "relation": "Originates",
+                    "id": "IT19"
+                  },
+                  "rescan": null
+                }
+              ]
+            },
+            "log": [
+              {
+                "subjectKind": "document",
+                "subjectId": "<D1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "u3"
+                },
+                "correlationId": "<U1>",
+                "code": "document.relinked",
+                "data": {
+                  "catalogId": {
+                    "from": "MZK01-001502233",
+                    "to": "MZK01-001502234"
+                  }
+                },
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "id": "<E1>"
+              },
+              {
+                "subjectKind": "iteration",
+                "subjectId": "IT19",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "u3"
+                },
+                "correlationId": "<U2>",
+                "code": "iteration.rechecked",
+                "data": {
+                  "by": "catalog_change",
+                  "found": 1,
+                  "gone": 0
+                },
+                "reason": {
+                  "public": null,
+                  "internal": "The record was read from the catalog again."
+                },
+                "id": "<E2>"
+              },
+              {
+                "id": "<E3>",
+                "subjectKind": "iteration",
+                "subjectId": "IT19",
+                "at": "<time>",
+                "actor": {
+                  "kind": "system"
+                },
+                "correlationId": "k17",
+                "reason": {
+                  "public": null,
+                  "internal": "Approved on arrival from Periodical gaps."
+                },
+                "code": "iteration.ingested",
+                "data": {}
+              },
+              {
+                "id": "<E4>",
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "a2"
+                },
+                "correlationId": "<B1>",
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "code": "request.created",
+                "data": {
+                  "batch": {
+                    "id": "<B1>",
+                    "name": "harvest-2026-06-23"
+                  },
+                  "source": null
+                }
+              }
+            ]
+          },
+          "as": "u3"
         }
       ]
     },
@@ -34134,6 +34450,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -34462,6 +34783,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -34818,6 +35144,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -35138,6 +35469,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",

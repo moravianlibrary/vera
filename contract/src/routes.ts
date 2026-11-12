@@ -94,6 +94,10 @@ export function documentRoute(documentId: string): string {
   return `${apiRoutes.documents}/${encodeURIComponent(documentId)}`;
 }
 
+export function documentRelinkRoute(documentId: string): string {
+  return `${documentRoute(documentId)}/relink`;
+}
+
 export function categoryRoute(categoryId: string): string {
   return `${apiRoutes.categories}/${encodeURIComponent(categoryId)}`;
 }

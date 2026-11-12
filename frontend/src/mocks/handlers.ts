@@ -18,6 +18,7 @@ import {
   refineDraftSchema,
 } from "@vera/contract/categories";
 import {
+  documentRelinkSchema,
   parseDocumentGrouping,
   parseDocumentSearchParams,
   parseDocumentSliceParams,
@@ -210,6 +211,7 @@ import {
   publishIteration,
   recheckIteration,
   reclassifyIteration,
+  relinkDocument,
   removeIterationLink,
   replaceIterationLink,
   resumeIteration,
@@ -1425,6 +1427,7 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     iterationAction("page-count", pageCountSchema, enterPageCount),
     iterationAction("recheck", recheckSchema, recheckIteration),
+    recordAction(`${apiRoutes.documents}/:id/relink`, documentRelinkSchema, relinkDocument),
     iterationAction("cancel", cancellationRequestSchema, cancelIteration),
     iterationAction("resume", resumeSchema, resumeIteration),
     iterationAction("overrule", overruleSchema, overruleRestriction),

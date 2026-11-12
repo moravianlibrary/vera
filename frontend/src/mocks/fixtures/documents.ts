@@ -6,7 +6,7 @@
 import type { Document } from "@vera/domain/entities";
 import { catalogPropertyValuesOf, documentPropertyValues } from "@/mocks/fixtures/properties";
 
-const catalogDocuments: readonly Omit<Document, "properties">[] = [
+const catalogDocuments: readonly Omit<Document, "properties" | "catalogState">[] = [
   {
     id: "D1",
     catalogId: "MZK01-001284756",
@@ -1625,10 +1625,20 @@ const catalogReadAt = (document: (typeof catalogDocuments)[number]) =>
   document.pageSources.find((source) => source.source === "catalog")?.observedAt ??
   "2026-03-01T09:00:00Z";
 
-export const documents: readonly Document[] = catalogDocuments.map((document) => ({
-  ...document,
-  properties: [
-    ...catalogPropertyValuesOf(document, catalogReadAt(document)),
-    ...(documentPropertyValues[document.id] ?? []),
-  ],
-}));
+// DOC-relink: seed one dropped record and one replacement that has no matching unit in VERA.
+export const documents: readonly Document[] = catalogDocuments.map((document) => {
+  const catalogState =
+    document.id === "D35"
+      ? { kind: "gone" as const }
+      : document.id === "D1"
+        ? { kind: "replaced" as const, catalogId: "MZK01-001502234", documentId: null }
+        : undefined;
+  return {
+    ...document,
+    ...(catalogState === undefined ? {} : { catalogState }),
+    properties: [
+      ...catalogPropertyValuesOf(document, catalogReadAt(document)),
+      ...(documentPropertyValues[document.id] ?? []),
+    ],
+  };
+});

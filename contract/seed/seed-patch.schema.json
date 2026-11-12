@@ -2432,6 +2432,51 @@
               "catalogId": {
                 "type": "string"
               },
+              "catalogState": {
+                "anyOf": [
+                  {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "gone"
+                          }
+                        },
+                        "required": ["kind"]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "replaced"
+                          },
+                          "catalogId": {
+                            "type": "string"
+                          },
+                          "documentId": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": ["kind", "catalogId", "documentId"]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "unit": {
                 "anyOf": [
                   {

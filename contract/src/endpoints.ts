@@ -53,6 +53,7 @@ import {
   documentGroupingParam,
   documentPageSchema,
   documentQueryParams,
+  documentRelinkSchema,
   documentSliceParams,
 } from "./documents";
 import {
@@ -305,6 +306,21 @@ export const endpoints = {
     query: z.object({ perspective: z.string().optional() }),
     response: documentDetailSchema,
     codes: [],
+  }),
+  documentRelink: spec({
+    method: "POST",
+    path: `${apiRoutes.documents}/:id/relink`,
+    summary: "Relinks a document to another catalog record.",
+    params: z.object({ id: z.string() }),
+    body: documentRelinkSchema,
+    response: recheckResultSchema.nullable(),
+    codes: [
+      "document.catalog_unread",
+      "document.same_catalog_record",
+      "document.catalog_record_held",
+      "iteration.outside_custody",
+    ],
+    engine: false,
   }),
   requests: spec({
     method: "GET",

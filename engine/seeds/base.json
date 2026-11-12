@@ -1720,6 +1720,11 @@
       {
         "id": "D1",
         "catalogId": "MZK01-001284756",
+        "catalogState": {
+          "kind": "replaced",
+          "catalogId": "MZK01-001502234",
+          "documentId": null
+        },
         "unit": {
           "type": "volume-name",
           "value": "1918–1925"
@@ -3210,6 +3215,9 @@
       {
         "id": "D35",
         "catalogId": "MZK01-001502233",
+        "catalogState": {
+          "kind": "gone"
+        },
         "unit": {
           "type": "volume-number",
           "value": "roč. 12"

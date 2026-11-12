@@ -41,10 +41,11 @@ import {
   pagesSubject,
   reviewStateOf,
 } from "@vera/domain/validations";
-import { repairedSubjectsOf } from "@/mocks/catalog";
+import { knownCatalogRecords, repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import { withCatalogReading } from "@/mocks/fixtures/properties";
+import { recordHookEvent } from "@/mocks/hooks";
 import { addLink, canonicalLinkOf, makePrimary, removeLink, replaceLink } from "@/mocks/links";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
@@ -331,6 +332,95 @@ export function recheckIteration(
       reason: { public: null, internal: "The record was read from the catalog again." },
     }),
   };
+}
+
+// ACT-relink: the catalog record changes before its checks run, while the document's history stays.
+export function relinkDocument(
+  session: Session,
+  documentId: string,
+  input: { catalogId: string },
+): Outcome<RecheckResult | null> {
+  const document = database.documents.find((candidate) => candidate.id === documentId);
+  if (document === undefined || audienceOf(session) !== "staff") {
+    return { refusal: { status: 404, message: "No such document" } };
+  }
+  const iteration = database.iterations
+    .filter((candidate) => candidate.documentId === documentId)
+    .toSorted((first, second) => second.attempt - first.attempt)[0];
+  const scope =
+    iteration === undefined
+      ? undefined
+      : scopeOfIteration(database.categories, iteration.categoryId);
+  if (!can(session, "iteration.recheck", scope)) {
+    return {
+      refusal: {
+        status: 403,
+        code: "iteration.outside_custody",
+        message: "This is outside what you may change",
+      },
+    };
+  }
+  const catalogRecord = knownCatalogRecords().find(
+    (candidate) => candidate.catalogId === input.catalogId,
+  );
+  if (
+    catalogRecord === undefined ||
+    (document.unit !== null && !catalogRecord.units?.includes(document.unit.value))
+  ) {
+    return {
+      refusal: {
+        status: 422,
+        code: "document.catalog_unread",
+        message: "The catalog does not read this record",
+      },
+    };
+  }
+  if (input.catalogId === document.catalogId) {
+    return {
+      refusal: {
+        status: 422,
+        code: "document.same_catalog_record",
+        message: "Choose a different catalog record",
+      },
+    };
+  }
+  if (findHeldDocument(input.catalogId, document.unit?.value ?? null, documentId)) {
+    return {
+      refusal: {
+        status: 409,
+        code: "document.catalog_record_held",
+        message: "Another document already holds this catalog record",
+      },
+    };
+  }
+  const at = new Date().toISOString();
+  const relinked = { ...document, catalogId: input.catalogId, catalogState: null };
+  replaceDocument(relinked);
+  writeLog({
+    subjectKind: "document",
+    subjectId: document.id,
+    at,
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    code: "document.relinked",
+    data: { catalogId: { from: document.catalogId, to: input.catalogId } },
+    reason: { public: null, internal: null },
+  });
+  recordHookEvent("document.relinked", document.id, "", `Document ${document.id} was relinked`);
+  if (iteration === undefined) {
+    replaceDocument({ ...relinked, properties: withCatalogReading(relinked, at) });
+    return { value: null };
+  }
+  return recheckIteration(session, iteration.id, {});
+}
+
+function findHeldDocument(catalogId: string, unit: string | null, exceptId: string): boolean {
+  return database.documents.some(
+    (candidate) =>
+      candidate.id !== exceptId &&
+      candidate.catalogId === catalogId &&
+      (candidate.unit?.value ?? null) === unit,
+  );
 }
 
 // The iteration a page count may be entered for: not once scanned, since then the scan counts

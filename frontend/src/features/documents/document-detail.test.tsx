@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { MemoryRouter } from "react-router";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -115,5 +115,64 @@ describe("document detail scoped links", () => {
     await renderD1(session);
     const name = await screen.findByText("NDK Periodika");
     expect(name.closest("a")).toBeNull();
+  });
+});
+
+describe("catalog state in the document drawer", () => {
+  it("shows the gone and replacement notices and opens the relink dialog for staff", async () => {
+    server.use(...createHandlers("admin"));
+    const gone = await findDocument("D35");
+    const replacedDetail = await findDocument("D1");
+    const replaced =
+      replacedDetail === null
+        ? null
+        : {
+            ...replacedDetail,
+            record: {
+              ...replacedDetail.record,
+              document: {
+                ...replacedDetail.record.document,
+                catalogState: {
+                  kind: "replaced" as const,
+                  catalogId: "MZK01-001502234",
+                  documentId: "D35",
+                },
+              },
+            },
+          };
+    if (gone === null || replaced === null) throw new Error("Expected seeded documents");
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { unmount } = render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <DocumentDetailPane detail={gone} session={resolveSession("admin")} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByText(/No longer in the catalog/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "MZK01-001502233" })).toHaveAttribute(
+      "href",
+      "https://vufind.mzk.cz/Record/MZK01-001502233",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Relink…" }));
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByLabelText("Catalog ID")).toHaveValue("");
+
+    unmount();
+    const replacementClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={replacementClient}>
+        <MemoryRouter>
+          <DocumentDetailPane detail={replaced} session={resolveSession("admin")} />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByText(/Replaced in the catalog/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open the document already in VERA" })).toHaveAttribute(
+      "href",
+      "/documents?id=D35",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Relink…" }));
+    expect(screen.getByLabelText("Catalog ID")).toHaveValue("MZK01-001502234");
   });
 });

@@ -516,6 +516,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -820,6 +823,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -6474,6 +6482,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -6778,6 +6789,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -11977,6 +11993,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -15823,6 +15844,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -17598,6 +17624,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -17902,6 +17931,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -23556,6 +23590,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -23860,6 +23897,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -29059,6 +29101,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -32339,6 +32386,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -34114,6 +34166,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -34418,6 +34473,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -40072,6 +40132,9 @@
                   "shelfMark": "ST3-0149",
                   "pageSources": [],
                   "registryRecords": [],
+                  "catalogState": {
+                    "kind": "gone"
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -40376,6 +40439,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -45575,6 +45643,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -49421,6 +49494,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -58537,6 +58615,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -58933,6 +59016,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -59186,6 +59274,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -60775,6 +60868,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -61171,6 +61269,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -61424,6 +61527,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -61665,6 +61773,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -61877,6 +61990,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -65607,6 +65725,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -65860,6 +65983,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -66101,6 +66229,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -68347,6 +68480,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -68600,6 +68738,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -68841,6 +68984,11 @@
                       "error": null
                     }
                   ],
+                  "catalogState": {
+                    "kind": "replaced",
+                    "catalogId": "MZK01-001502234",
+                    "documentId": null
+                  },
                   "properties": [
                     {
                       "key": "title",
@@ -69082,6 +69230,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",
@@ -69294,6 +69447,11 @@
                     "error": null
                   }
                 ],
+                "catalogState": {
+                  "kind": "replaced",
+                  "catalogId": "MZK01-001502234",
+                  "documentId": null
+                },
                 "properties": [
                   {
                     "key": "title",

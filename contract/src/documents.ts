@@ -328,4 +328,7 @@ export const documentDetailSchema = z.object({
 
 export type DocumentDetail = z.infer<typeof documentDetailSchema>;
 
+export const documentRelinkSchema = z.object({ catalogId: z.string().trim().min(1) });
+export type DocumentRelink = z.infer<typeof documentRelinkSchema>;
+
 export const documentPerspectiveParam = "perspective";
