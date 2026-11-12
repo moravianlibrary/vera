@@ -1,6 +1,6 @@
 # Java conventions
 
-These conventions describe the backend at step 6. Each item points to its source.
+These conventions describe the backend at step 7. Each item points to its source.
 
 - **Modules and packages:** `backend/settings.gradle.kts` includes `plugin-api`, `domain`, `app`
   and `testing`. `backend/app/src/main/java/cz/mzk/vera/login/` is a feature package; shared
@@ -41,7 +41,10 @@ These conventions describe the backend at step 6. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/requests/RequestSuggestions.java`).
 - **Reads across features:** a query may join another feature's tables read-only; writes go through
   the owning feature's commands. Dependencies point from `proposals` to `requests` to `documents`,
-  never back. `BatchQueries` lives in `documents` to keep that direction
+  never back. When a lower module must react to a higher one, it publishes an event for the higher
+  module to handle with `@TransactionalEventListener(BEFORE_COMMIT)` instead of depending on it.
+  `BatchQueries` lives in `documents` to keep that direction; `access.CustodyDeleted` is handled by
+  `tasks.CustodyDeletedListener`
   (`backend/app/src/main/java/cz/mzk/vera/documents/package-info.java`,
   `backend/app/src/main/java/cz/mzk/vera/requests/package-info.java`,
   `backend/app/src/main/java/cz/mzk/vera/proposals/package-info.java`,
@@ -106,6 +109,13 @@ These conventions describe the backend at step 6. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionCommands.java`,
   `backend/app/src/main/java/cz/mzk/vera/intentions/RepeatQueue.java`,
   `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionRepeatJob.java`).
+- **Matching through a page's own query:** test a record against a saved filter with that page's
+  own conditions narrowed to its id. Documents, requests and validations expose `matches` for
+  this; small pages may be read whole
+  (`backend/app/src/main/java/cz/mzk/vera/documents/DocumentQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/requests/RequestQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/validations/ValidationQueries.java`,
+  `backend/app/src/main/java/cz/mzk/vera/watchlists/WatchlistQueries.java`).
 - **Plugin calls on a read:** generation calls the List generator with no transaction open; an
   unavailable, timed-out or unfit answer returns 503 (`backend/app/src/main/java/cz/mzk/vera/lists/ListPlanningQueries.java`,
   `backend/app/src/main/java/cz/mzk/vera/pluginhost/PluginCalls.java`).
@@ -134,8 +144,10 @@ These conventions describe the backend at step 6. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/intentions/IntentionTemplatesController.java`,
   `backend/app/src/main/java/cz/mzk/vera/categories/CategoryReads.java`).
 - **Jobs:** `Jobs.enqueue` uses the caller's transaction. A kind is a typed `JobKind<T>`; its
-  plugin calls happen in `call` outside a transaction and its writes happen in `apply`. A stale
-  job writes nothing. The worker polls under `vera.jobs.poll` and reads the role once as
+  `call` runs outside a transaction and its `apply` inside. Chunked plugin runs queue their next
+  chunk from the `Clock`; reset queues no job, as `list.start`, `intention.repeat` and
+  `schedule.fire` show. Every recorded hookable event queues `hook.match` and `watchlist.match`.
+  A stale job writes nothing. The worker polls under `vera.jobs.poll` and reads the role once as
   `VeraRole`; tests run jobs through the controls
   (`backend/app/src/main/java/cz/mzk/vera/jobs/Jobs.java`,
   `backend/app/src/main/java/cz/mzk/vera/jobs/JobKind.java`,
@@ -143,6 +155,28 @@ These conventions describe the backend at step 6. Each item points to its source
   `backend/app/src/main/java/cz/mzk/vera/jobs/JobWorker.java`,
   `backend/app/src/main/java/cz/mzk/vera/jobs/VeraRole.java`,
   `backend/app/src/main/java/cz/mzk/vera/ingest/IngestJob.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/PluginRunJob.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/RunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/CatalogRunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/CheckRunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/HarvestRunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/PublicationDetectorRunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/tasks/PlacingRunKind.java`,
+  `backend/app/src/main/java/cz/mzk/vera/events/EventRecorder.java`,
+  `backend/testing/src/main/java/cz/mzk/vera/testing/control/ControlController.java`).
+- **Deployment settings:** values whose wrong default would be unsafe come from the environment
+  with no default. Empty signing keys and trusted certificates refuse the operation that needs
+  them; the test profile supplies them. Public links use `web.PublicUrl`; secrets are never logged
+  (`backend/app/src/main/java/cz/mzk/vera/pluginhost/PluginSignatures.java`,
+  `backend/app/src/main/java/cz/mzk/vera/watchlists/RealPushSender.java`,
+  `backend/app/src/main/java/cz/mzk/vera/watchlists/WatchlistManageLinks.java`,
+  `backend/app/src/main/java/cz/mzk/vera/web/PublicUrl.java`,
+  `backend/testing/src/main/resources/application-test.yaml`).
+- **Test delivery doubles:** under the test profile, the capturing push sender and fake delivery
+  channels write to the outbox lists at `/_engine/outbox`
+  (`backend/testing/src/main/java/cz/mzk/vera/testing/watchlists/CapturingPushSender.java`,
+  `backend/testing/src/main/java/cz/mzk/vera/testing/fakes/FakeRecords.java`,
+  `backend/app/src/main/java/cz/mzk/vera/events/Outbox.java`,
   `backend/testing/src/main/java/cz/mzk/vera/testing/control/ControlController.java`).
 - **The reference without an engine:** the mock's functions are held to the pure rules by the
   shared case files in `domain/cases/iterations/` and `domain/cases/validations/`
@@ -180,7 +214,8 @@ These conventions describe the backend at step 6. Each item points to its source
   (`backend/app/src/main/resources/db/changelog/db.changelog-master.yaml`,
   `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/RecordsSeedLoader.java`).
 - **Tests:** compare a recorded call list as whole bodies in one parameterized test. A refused act
-  writes nothing: no row and no event. The library day is `Europe/Prague`. HTTP tests use
+  writes nothing: no row and no event; refusal text matches the mock exactly. Do not supply a fake
+  value when an argument is missing. The library day is `Europe/Prague`. HTTP tests use
   `@SpringBootTest(webEnvironment = RANDOM_PORT)` and `@AutoConfigureRestTestClient`;
   `TestRestTemplate` is not registered by itself. Move the test clock between steps when testing a
   time window. Add `.limit(1)` before `fetchOne` when a query can match several rows. Test and boot
@@ -224,7 +259,8 @@ These conventions describe the backend at step 6. Each item points to its source
   `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/TemplateResetService.java`).
 - **Resources and time:** read packaged resources from the classpath; use configured
   `VERA_CONTRACT_DIR` and `VERA_SEEDS_DIR` for external `contract/` and `engine/seeds/` resources.
-  Inject `Clock`, never call `Instant.now()`, and format wire instants with milliseconds and `Z`
+  Inject `Clock` for time and scheduling; never call `Instant.now()` or `System.nanoTime()`, and
+  format wire instants with milliseconds and `Z`
   (`backend/build.gradle.kts`,
   `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/SeedReader.java`,
   `backend/app/src/main/java/cz/mzk/vera/clock/SystemClockConfiguration.java`,

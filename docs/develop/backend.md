@@ -453,34 +453,44 @@ Following the engine's steps, so each lands with its recordings already made:
    clock, sessions and endpoints, plus the session and login entries. The replay judges it
    through `GET /_engine/endpoints`.
 2. **Access:** (built 2026-11-05) sessions, the Identity plugins with their fakes, sign-up,
-   Users & Groups, judged by the recorded sign-in, access and access-act scenarios. The Users &
-   Groups index, role and custody impacts, and custody acts wait for the steps whose tables they
-   read (BK2.md, choice C). The 7-day removal of unverified sign-ups waits for jobs (B5; already
-   decided in B7). The real `OidcIdentity` and `LocalAccounts` plugins wait for step 5.
+   Users & Groups, judged by the recorded sign-in, access and access-act scenarios. Its index,
+   role and custody impacts, and custody acts are built in machinery. The 7-day removal of
+   unverified sign-ups is a job (B5, B7). The real `OidcIdentity` and `LocalAccounts` plugins wait
+   for step 5.
 3. **Asking and deciding:** (built 2026-11-07) judged by the recorded records, filters, proposal
-   and decision scenarios. Placing again and suggesting again after a change wait for runs with
-   the jobs (B5, L8). The Plugins acts, including `proposal-refusal-codes`, wait for their step.
-   The entry link `/ask` waits for the Input plugins of step 5. The custody acts, Users & Groups
-   index and impacts wait for the step serving projects, watchlists and properties. The catalog
+   and decision scenarios. Suggesting again after a change waits for runs with the jobs (B5).
+   The Plugins acts, including `proposal-refusal-codes`, are built in machinery.
+   The entry link `/ask` waits for the Input plugins of step 5. The catalog
    mirror's `sync` and stored catalog tiers wait for the real catalog adapters; the mirror's
    tables and their filling from the fakes came early, decided with the user on 2026-11-07.
    **Ingest and review:** (built 2026-11-07) judged by the recorded record acts. Jobs (B5) are
-   built. Step 4 leaves the registry check schedule and runs for Tasks to the machinery step;
+   built; the registry check schedule and runs for Tasks are built in machinery;
    the Link and Publication detector kinds (the link acts read links from instance
    configuration) and the real plugins to step 5.
    **Lists and projects:** (built 2026-11-09), judged by the recorded list, project and property
    scenarios; properties were served here. Step 5 leaves generation, drafts, shapes and generators
    to planning; intention and mix acts to planning (intentions and mixes are stored from the seed,
-   and project acts write a project's own intention); custody acts, the Users & Groups index and
-   impacts to the step with watchlists and machinery; start-day moves to schedules that may later
-   run the `list.start` job queued by list acts; and the real plugins to their step.
+   and project acts write a project's own intention); placing proposals again after a custody
+   change, the Schedules page and start-day moves are built in machinery; and the real plugins
+   wait for their step.
    **Planning** (built 2026-11-09), judged by the recorded category, mix, intention and list
-   generation scenarios. Beyond those recordings, planning records configuration codes for its
-   acts. Repeats make their occurrences through an `intention.repeat` job; the List generator draws
-   the whole draft through the plugin API, with fakes for the seed's two generators. Planning leaves
-   volume testing to production data (E6), placing proposals again after a custody change to L8,
-   and the Schedules page to machinery. **Machinery** follows, with the remaining area of engine
-   step 7. Steps 4 to 7 are built here first; the engine does not serve them
+   generation scenarios. Beyond those recordings, planning records configuration codes for its acts.
+   Repeats make their occurrences through an `intention.repeat` job; the List generator draws the
+   whole draft through the plugin API, with fakes for the seed's two generators. Planning leaves
+   volume testing to production data (E6). **Machinery** (built 2026-11-12), judged by the recorded
+   plugin, task, schedule, hook, watchlist, message and Users & Groups scenarios. Beyond the
+   recordings, plugin versions upload as signed JARs checked against the deployment's trusted
+   certificates; registry checks have schedules and runs for Tasks; start-day moves queue
+   `list.start` jobs; `plugin.run` jobs do real work in chunks, each kind's items as PLG-run-items
+   says; `schedule.fire` jobs run schedules; every hookable code fires with its full payload, and
+   event deliveries and their backoff are jobs; watchlist entries are matched and sent as jobs, mail
+   is batched per person in fifteen minutes, manage links are signed, and browser push is real Web
+   Push (L35); deleting a custody or changing a Custody instance places its open proposals again in
+   a `custody.place` run (L8); Plugins, Hooks and Schedules acts record their configuration codes
+   (L7). Machinery leaves the real plugins (SMTP, chat, OIDC and the rest) to step 5; the
+   collector's audit table and dashboards to deployment; the frontend's Schedules rows for repeats
+   (L26); names in each language (L75); showing a version's signer (L77); and the two catalogue
+   codes no act produces (L78). Steps 4 to 7 are built here first; the engine does not serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK
