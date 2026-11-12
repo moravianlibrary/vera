@@ -24,6 +24,22 @@ answered with the records to choose from. The person picks one or more, and each
 is its own ask by its catalog ID, checked as any other: its unit, whether VERA holds it, whether
 it is theirs.
 
+#### DOC-relink
+
+When the catalog replaces a document's record with another, by a merge or a new record, the
+document follows it: its catalog ID becomes the new one, with its unit kept, and it keeps its
+requests, iterations and history. The record is then read again and its record-change triggers
+run, as *Recheck* does; `document.relinked` names both records.
+- A catalog adapter's `changes` or `sync` names each replacement
+  ([PLG-api-record-change](../integrations/plugin-api.md#plg-api-record-change)), and VERA relinks
+  at once.
+- A record dropped with no replacement shows on the document as *No longer in the catalog*, with
+  the catalog link; staff relink it by hand
+  ([ACT-relink](../access/acts.md#iterations)).
+- When the new record, with the unit, is already another document in VERA, or lacks the unit,
+  nothing is relinked: the document shows *Replaced in the catalog* naming the other record or
+  document, and staff resolve it. Documents are never merged.
+
 #### DOC-identifiers
 
 An item can be proposed by any of these identifiers. Each type is an instance of an

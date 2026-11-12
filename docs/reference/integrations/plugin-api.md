@@ -70,8 +70,8 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Catalog adapter | `read` | a catalog id | the record: fields, units, issuance type, the reading's date | `not_found` |
 | | `readLink` *(optional)* | a record link or id as pasted | the catalog id | `not_this_catalog`, `malformed` |
 | | `search` *(optional)* | a text query | hits: catalog id, title, units | — |
-| | `changes` *(optional)* | its cursor | catalog ids changed since, and the next cursor | — |
-| | `sync` *(optional)* | its cursor | a page of records to keep and ids to drop, the next cursor, and whether more follow | — |
+| | `changes` *(optional)* | its cursor | catalog ids changed since, ids replaced by another (old, new), and the next cursor | — |
+| | `sync` *(optional)* | its cursor | a page of records to keep, ids to drop and ids replaced by another (old, new), the next cursor, and whether more follow | — |
 | Property source | `values` | the record and its iteration | values for the properties it declares, each with its tier | — |
 | Registry | `lookup` | the record's identifiers | the raw state and its link, per record found | — |
 | Validation | `check` | the record and its properties | defects: rule, field, detail | — |
@@ -125,8 +125,9 @@ A catalog's changes reach VERA on the instance's **schedules**, which an adminis
 ([ENT-schedule](../model/entities.md#ent-schedule)): each scheduled run calls `sync` when the
 version declares it, else `changes`. Every changed id that names a document VERA holds runs
 that document's *on record change* triggers (the checks, the property sources), as *Recheck*
-does. A catalog adapter that declares neither has no record-change runs; its records are read
-again only on *Recheck* and at ingest.
+does. A replaced id relinks its document ([DOC-relink](../model/documents.md#doc-relink)); a
+dropped one marks it *No longer in the catalog*. A catalog adapter that declares neither has no
+record-change runs; its records are read again only on *Recheck* and at ingest.
 
 #### PLG-api-mirror
 

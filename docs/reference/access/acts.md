@@ -68,14 +68,15 @@ and an act on it is refused (409).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)); `request.created` per request, one cause for the submission |
-| `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | an item with no existing copy is approved at once (`request.approved` after its `request.created`); one with a copy, or not yet checked, stays Pending for review |
+| `ACT-propose` | *Propose…*, or *Add…* for a holder of `request.decide` | `request.create` | at most the role's items per submission (422) and within its daily limit (429) ([ROLE-limits](roles.md#role-limits)); a project only if the person is on it and it is not Rejected (422) | one request per item, and one batch per submission, a single item included ([ENT-batch](../model/entities.md#ent-batch)); `request.created` per request, one cause for the submission; each new proposal's checks queued ([LC-REQ-checks-job](../lifecycles/request.md#lc-req-checks-job)) |
+| `ACT-propose-approved` | *Add…* with *approve now* | `request.create` and `request.decide` | as above | each new item held while it is checked (`request.held`, why `checking`), then approved once its checks find no existing copy (`request.approved`); one with a copy stays Pending for review ([LC-REQ-approve-now](../lifecycles/request.md#lc-req-approve-now)) |
 | `ACT-withdraw` | *Withdraw…*, on Documents and My Documents | `request.withdraw_own` | the person's own ask on the document is still Pending (409); there is at most one ([LC-REQ-check](../lifecycles/request.md#lc-req-check)) | that ask Withdrawn; others' asks stand; `request.withdrawn` |
 
 #### ACT-ways-in
 
 *Propose…* and *Add…* hold one list of items, filled by any of these ways and mixed freely. Each
-item is checked as it lands, so the list says what submitting will do.
+item is checked as it lands, so the list says what submitting will do, with a preview of its
+copy and restriction checks ([LC-REQ-preview](../lifecycles/request.md#lc-req-preview)).
 
 | Way in | What it does | Needs |
 |---|---|---|
@@ -146,6 +147,7 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 |---|---|---|---|---|
 | `ACT-reclassify` | *Reclassify — category, priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over |
 | `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again, its title, material type and shelf mark recorded with the recheck's time ([DOC-property-predefined](../model/documents.md#doc-property-predefined)), and the checks rerun; defects no longer found are gone; log *Rechecked* |
+| `ACT-relink` | *Relink…*, on the document's drawer | `iteration.recheck`, at the current iteration's category, or any for a document with no iteration | a catalog id the catalog adapter reads (422); not the document's own (422); not another document's in VERA (409) | the document linked to that record ([DOC-relink](../model/documents.md#doc-relink)), then a recheck; `document.relinked` |
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
 | `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
 | `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |

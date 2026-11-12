@@ -489,8 +489,9 @@ Following the engine's steps, so each lands with its recordings already made:
    a `custody.place` run (L8); Plugins, Hooks and Schedules acts record their configuration codes
    (L7). Machinery leaves the real plugins (SMTP, chat, OIDC and the rest) to step 5; the
    collector's audit table and dashboards to deployment; the frontend's Schedules rows for repeats
-   (L26); names in each language (L75); showing a version's signer (L77); and the two catalogue
-   codes no act produces (L78). Steps 4 to 7 are built here first; the engine does not serve them
+   (L26); names in each language (L75); showing a version's signer (L77); and relinking, the checks
+   after the submit and their preview (L78). Steps 4 to 7 are built here first; the engine does not
+   serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK

@@ -5,9 +5,8 @@ From an ask to a decision. The acts are in [acts](../access/acts.md#proposing).
 ```mermaid
 stateDiagram-v2
   [*] --> Pending: proposed
-  [*] --> Approved: proposed with approve now, no copy found
   [*] --> Duplicate: asked while work is already moving
-  Pending --> Approved: approved, or its project approved
+  Pending --> Approved: approved, its project approved, or approve now once checked with no copy
   Pending --> Denied: declined, or its project rejected
   Pending --> Withdrawn: withdrawn by the asker
   Approved --> [*]
@@ -43,14 +42,33 @@ One decision covers every open ask of a document. Approving creates one iteratio
 
 #### LC-REQ-approve-now
 
-A person who may also decide can propose with *approve now*. An item with no existing copy is
-approved at once. One with a copy, or whose check has not answered, stays Pending and is decided
-like any other proposal: approving it over a copy is a rescan.
+A person who may also decide can propose with *approve now*. Its checks run after the submit as
+any other's ([LC-REQ-checks-job](#lc-req-checks-job)); until they answer, the item is held as
+*checking*, and it is approved as soon as they answer with no existing copy. One with a copy stays
+Pending and is decided like any other proposal: approving it over a copy is a rescan.
 
 #### LC-REQ-checks-first
 
 A proposal cannot be approved before its restriction and copy checks have answered once. It can
 be declined at any time.
+
+#### LC-REQ-checks-job
+
+A new proposal's restriction and copy checks run after it is submitted, as a job, never during
+the submit; until they answer, it is *being checked*. A plugin that fails or does not answer is
+asked again later, and the proposal stays being checked meanwhile. Submitting never waits for a
+registry.
+
+#### LC-REQ-preview
+
+Each item in *Propose…* and *Add…* previews the checks as it lands
+([ACT-ways-in](../access/acts.md#act-ways-in)):
+- an existing copy, with its link, for everyone, so a reader can read it instead of asking;
+- the restriction findings (forbidden or not, until when, why) for staff only.
+
+The preview asks the registry and restriction plugins with a short timeout; one that does not
+answer in time says the item is checked after submitting. The preview only advises: the checks
+after the submit decide.
 
 #### LC-REQ-final
 

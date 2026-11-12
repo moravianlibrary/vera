@@ -15,21 +15,27 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-### L78: Events no act produces
-
-Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
-[events](reference/model/events.md).
-
-Two codes of the catalogue have no act or job behind them, in the mock or the backend:
-`document.relinked` (no act links a document to another catalog record) and `request.held` with
-`why: checking` (only `copy_exists` holds a request). The backend fires every other hookable code
-(built 2026-11-12). Needs: a decision whether VERA relinks a record and holds a request while it
-is being checked, and by which act; or the two leave the catalogue. → decision, then frontend and
-backend.
+None.
 
 ## Not built yet
 
-None.
+### L78: Relinking, checks after the submit, and their preview
+
+Rules: [DOC-relink](reference/model/documents.md#doc-relink),
+[PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change),
+[LC-REQ-checks-job](reference/lifecycles/request.md#lc-req-checks-job),
+[LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now),
+[LC-REQ-preview](reference/lifecycles/request.md#lc-req-preview).
+
+Decided on 2026-11-12. Two codes of the catalogue had no act behind them: `document.relinked` and
+`request.held` with `why: checking`. A catalog adapter's `changes` and `sync` now name replaced
+records and VERA relinks the document, a dropped record shows *No longer in the catalog* and
+staff relink it by hand, and a replacement that is already another document is shown, never
+merged. A proposal's checks run as a job after the submit, *approve now* holds the item as
+checking and approves it once the checks find no copy, and *Propose…* previews each item's copy
+(for everyone) and restriction findings (staff only) live, with a short timeout. The mock marks
+every ask checked at submit and previews neither; the backend reads the copies it already holds.
+→ frontend (contract and mock), then backend.
 
 ## For the engine
 
@@ -72,8 +78,9 @@ The client part is done: the contract, editor and mock use hookable catalogue co
 mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
 The backend fires every hookable code from the act or job that causes it, each with a test (built
-2026-11-12), except the two in [L78](#l78-events-no-act-produces). Left: the typed condition
-builder, then the act matrix naming each act's event. → backend, then docs.
+2026-11-12); the two without an act come with
+[L78](#l78-relinking-checks-after-the-submit-and-their-preview). Left: the typed condition builder,
+then the act matrix naming each act's event. → backend, then docs.
 
 ### L67: Recheck reads the catalog
 
