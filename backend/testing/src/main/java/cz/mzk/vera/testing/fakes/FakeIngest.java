@@ -27,6 +27,9 @@ public class FakeIngest {
         Map<String, JsonNode> nextRegistryDocuments = new LinkedHashMap<>();
         for (JsonNode document : seed.path("collections").path("documents")) {
             nextDocuments.put(document.path("catalogId").asString(), document.deepCopy());
+            nextRegistryDocuments.put(heldKey(document.path("catalogId").asString(),
+                    document.path("unit").isNull() ? null : document.path("unit").path("value").asString(null)),
+                    document.deepCopy());
             nextRegistryDocuments.putIfAbsent(document.path("catalogId").asString(), document.deepCopy());
         }
         documents = Map.copyOf(nextDocuments);
@@ -110,13 +113,11 @@ public class FakeIngest {
             if (custom != null && custom.has("registryRecords")) {
                 return registry(null, custom, instanceId, identifiers, true, null);
             }
-            JsonNode held = registryDocuments.get(catalogId);
-            boolean recordIsHeld = held != null && (unit == null || unit.isEmpty()
-                    || sameUnit(held.path("unit"), unit));
-            JsonNode seeded = recordIsHeld ? null
-                    : registryAnswers.get(catalogId + "|" + (unit == null ? "" : unit));
-            return registry(seeded == null ? held : null, custom, instanceId, identifiers,
-                    held == null, seeded);
+            // A named unit must be the held document's own; with none, any document of the record.
+            JsonNode held = unit == null || unit.isEmpty() ? registryDocuments.get(catalogId)
+                    : registryDocuments.get(heldKey(catalogId, unit));
+            JsonNode seeded = registryAnswers.get(heldKey(catalogId, unit));
+            return registry(held, custom, instanceId, identifiers, held == null, seeded);
         }
         if ("PropertySource".equals(kind)) {
             return properties(iteration, custom, instanceId);
@@ -239,10 +240,9 @@ public class FakeIngest {
         return name.equalsIgnoreCase(registry);
     }
 
-    private boolean sameUnit(JsonNode seededUnit, String requestedUnit) {
-        String value = seededUnit == null || seededUnit.isNull()
-                ? null : seededUnit.path("value").asString(null);
-        return java.util.Objects.equals(value, requestedUnit == null || requestedUnit.isEmpty() ? null : requestedUnit);
+    // A held document and a seeded registry answer are keyed by the record and its unit, if any.
+    private static String heldKey(String catalogId, String unit) {
+        return catalogId + "|" + (unit == null ? "" : unit);
     }
 
     private List<String> strings(JsonNode values) {

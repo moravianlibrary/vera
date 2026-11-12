@@ -18,6 +18,9 @@ subprojects {
             useJUnitPlatform()
             environment("VERA_CONTRACT_DIR", rootDir.resolve("../contract").absolutePath)
             environment("VERA_SEEDS_DIR", rootDir.resolve("../engine/seeds").absolutePath)
+            // Each test class starts its own database, so no context is ever reused by another
+            // class; caching Spring's default 32 of them only fills the heap.
+            systemProperty("spring.test.context.cache.maxSize", "2")
         }
         tasks.withType<JavaExec>().configureEach {
             if (name == "bootRun") {

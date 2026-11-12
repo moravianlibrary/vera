@@ -136,7 +136,7 @@ class ProposalSubmitTests {
     }
 
     @Test
-    void readerCheckStoresRegistryEvidenceAndDerivesItsCopy() throws Exception {
+    void readerCheckOfARecordNoRegistryHoldsStoresNoCopy() throws Exception {
         JsonNode submitted = assertRecordedSubmit("a-reader-then-admin-and-reader-pages", "u5", 0);
         String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
                 .where(REQUESTS.BATCH_ID.eq(submitted.path("batch").path("id").asString()))
@@ -147,23 +147,11 @@ class ProposalSubmitTests {
         JsonNode detail = mapper.readTree(client.get().uri("/api/documents/" + documentId + "?perspective=my")
                 .header("Cookie", session("u5")).exchange().expectStatus().isOk().expectBody(String.class)
                 .returnResult().getResponseBody());
-        JsonNode records = detail.path("record").path("document").path("registryRecords");
-        assertThat(records.size()).isEqualTo(1);
-        JsonNode registry = records.get(0);
-        assertThat(registry.path("registry").asString()).isEqualTo("Kramerius");
-        assertThat(registry.path("state").asString()).isEqualTo("Published");
-        assertThat(registry.path("rawState").asString()).isEqualTo("published");
-        assertThat(registry.path("linkKind").asString()).isEqualTo("content");
-        assertThat(registry.path("url").asString()).isEqualTo("https://kramerius.mzk.cz/view/uuid:demo8");
-        assertThat(registry.path("checkedAt").isString()).isTrue();
-        assertThat(registry.path("observedAt")).isEqualTo(registry.path("checkedAt"));
-        assertThat(registry.path("error").isNull()).isTrue();
-        var copy = dsl.selectFrom(REQUEST_EXISTING_COPIES)
-                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId)).fetchOne();
-        assertThat(copy).isNotNull();
-        assertThat(copy.getSource()).isEqualTo("Kramerius");
-        assertThat(copy.getState()).isEqualTo("Published");
-        assertThat(copy.getLink()).isEqualTo(registry.path("url").asString());
+        assertThat(detail.path("record").path("document").path("registryRecords").size()).isZero();
+        assertThat(dsl.select(REQUESTS.CHECKED_AT).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.CHECKED_AT)).isNotNull();
+        assertThat(dsl.fetchExists(dsl.selectFrom(REQUEST_EXISTING_COPIES)
+                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId)))).isFalse();
     }
 
     @Test
