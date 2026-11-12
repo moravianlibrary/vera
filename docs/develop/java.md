@@ -259,8 +259,11 @@ These conventions describe the backend at step 7. Each item points to its source
   `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/TemplateResetService.java`).
 - **Resources and time:** read packaged resources from the classpath; use configured
   `VERA_CONTRACT_DIR` and `VERA_SEEDS_DIR` for external `contract/` and `engine/seeds/` resources.
-  Inject `Clock` for time and scheduling; never call `Instant.now()` or `System.nanoTime()`, and
-  format wire instants with milliseconds and `Z`
+  Inject `Clock` for time and scheduling; never call `Instant.now()` or `System.nanoTime()` for
+  them. Only a limit on elapsed real time, such as a plugin call's timeout or the preview's deadline,
+  reads `System.nanoTime()`, since the test clock stands still
+  (`backend/app/src/main/java/cz/mzk/vera/proposals/ProposalPluginRuns.java`). Format wire instants
+  with milliseconds and `Z`
   (`backend/build.gradle.kts`,
   `backend/testing/src/main/java/cz/mzk/vera/testing/seeds/SeedReader.java`,
   `backend/app/src/main/java/cz/mzk/vera/clock/SystemClockConfiguration.java`,

@@ -19,24 +19,7 @@ None.
 
 ## Not built yet
 
-### L78: Relinking, checks after the submit, and their preview
-
-Rules: [DOC-relink](reference/model/documents.md#doc-relink),
-[PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change),
-[LC-REQ-checks-job](reference/lifecycles/request.md#lc-req-checks-job),
-[LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now),
-[LC-REQ-preview](reference/lifecycles/request.md#lc-req-preview).
-
-Decided on 2026-11-12. Two codes of the catalogue had no act behind them: `document.relinked` and
-`request.held` with `why: checking`. A catalog adapter's `changes` and `sync` now name replaced
-records and VERA relinks the document, a dropped record shows *No longer in the catalog* and
-staff relink it by hand, and a replacement that is already another document is shown, never
-merged. A proposal's checks run as a job after the submit, *approve now* holds the item as
-checking and approves it once the checks find no copy, and *Propose…* previews each item's copy
-(for everyone) and restriction findings (staff only) live, with a short timeout. Not yet built:
-the mock and the engine check after the submit and preview (built 2026-11-12); the backend still
-checks at the submit, from the copies it already holds, and previews nothing. → backend; relinking
-→ frontend, then backend.
+None.
 
 ## For the engine
 
@@ -79,9 +62,8 @@ The client part is done: the contract, editor and mock use hookable catalogue co
 mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
 The backend fires every hookable code from the act or job that causes it, each with a test (built
-2026-11-12); the two without an act come with
-[L78](#l78-relinking-checks-after-the-submit-and-their-preview). Left: the typed condition builder,
-then the act matrix naming each act's event. → backend, then docs.
+2026-11-12), the last two with [L78](#built-2026-11-12). Left: the typed condition builder, then the
+act matrix naming each act's event. → backend, then docs.
 
 ### L67: Recheck reads the catalog
 
@@ -189,6 +171,14 @@ Plugins drawer. → frontend, then backend.
 
 ### Built, 2026-11-12
 
+- **L78:** a proposal's restriction and copy checks run as a job after the submit, approve now
+  holds the item as checking and approves it once no copy is found, and Propose previews each
+  item's copies (for everyone) and restriction findings (staff only) live with a short timeout. A
+  catalog adapter's `changes` and `sync` name replaced records (plugin API 1.1) and the catalog run
+  relinks the document, or marks it when the replacement is another document or lacks its unit; a
+  dropped record marks it gone, and staff relink by hand. The mock and the engine do the same,
+  without ingest ([LC-REQ-checks-job](reference/lifecycles/request.md#lc-req-checks-job),
+  [DOC-relink](reference/model/documents.md#doc-relink)).
 - **L8:** deleting a custody or changing a Custody instance places its open proposals again in a
   `custody.place` run on Tasks, in the mock and the backend alike
   ([ACCESS-custody-delete](reference/access/custody.md#access-custody-delete)).

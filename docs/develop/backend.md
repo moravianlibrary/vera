@@ -489,8 +489,9 @@ Following the engine's steps, so each lands with its recordings already made:
    a `custody.place` run (L8); Plugins, Hooks and Schedules acts record their configuration codes
    (L7). Machinery leaves the real plugins (SMTP, chat, OIDC and the rest) to step 5; the
    collector's audit table and dashboards to deployment; the frontend's Schedules rows for repeats
-   (L26); names in each language (L75); showing a version's signer (L77); and relinking, the checks
-   after the submit and their preview (L78). Steps 4 to 7 are built here first; the engine does not
+   (L26); names in each language (L75); and showing a version's signer (L77). After it, on
+   2026-11-12, a proposal's checks moved after the submit with a preview in Propose, and a document
+   follows a replaced catalog record (L78). Steps 4 to 7 are built here first; the engine does not
    serve them
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend.
