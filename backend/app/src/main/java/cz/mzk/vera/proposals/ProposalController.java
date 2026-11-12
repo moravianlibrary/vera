@@ -93,8 +93,7 @@ final class ProposalController {
         if (refusal != null) {
             return refusal;
         }
-        return ResponseEntity.ok(body.getOrDefault("items", List.of()).stream()
-                .map(item -> check.checkItem(item, caller.userId())).toList());
+        return ResponseEntity.ok(check.lookupItems(body.getOrDefault("items", List.of()), caller.userId()));
     }
 
     @GetMapping("/catalog-search")

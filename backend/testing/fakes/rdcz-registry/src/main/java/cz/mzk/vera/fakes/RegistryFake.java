@@ -13,7 +13,8 @@ public final class RegistryFake implements Registry {
     @Override
     public LookupAnswer lookup(PluginContext context, LookupInput input) {
         Map<String, List<String>> answer = IngestWire.call(context, "Registry", "lookup",
-                input.record().id(), input.record().catalogId(), input.identifiers());
+                input.record().id(), input.record().catalogId(),
+                input.record().unit() == null ? null : input.record().unit().value(), input.identifiers());
         IngestWire.check(answer);
         List<LookupAnswer.RegistryRecord> records = new ArrayList<>();
         List<String> rawStates = IngestWire.aligned(answer, "recordRawState", "recordLink");

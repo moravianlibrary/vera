@@ -1,6 +1,7 @@
 package cz.mzk.vera.fakes;
 
 import cz.mzk.vera.plugin.PluginContext;
+import cz.mzk.vera.plugin.PluginUnavailable;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -17,15 +18,24 @@ final class IngestWire {
 
     static Map<String, List<String>> call(PluginContext context, String kind, String operation,
             String documentId, String catalogId, List<String> identifiers) {
+        return call(context, kind, operation, documentId, catalogId, null, identifiers);
+    }
+
+    static Map<String, List<String>> call(PluginContext context, String kind, String operation,
+            String documentId, String catalogId, String unit, List<String> identifiers) {
         Map<String, List<String>> fields = Wire.fields();
         Wire.put(fields, "kind", kind);
         Wire.put(fields, "documentId", documentId);
         Wire.put(fields, "catalogId", catalogId);
+        Wire.put(fields, "unit", unit);
         identifiers.forEach(identifier -> Wire.put(fields, "identifier", identifier));
         return Wire.send(context, operation, fields);
     }
 
     static void check(Map<String, List<String>> answer) {
+        if (Wire.first(answer, "interrupted") != null) {
+            throw new PluginUnavailable("Fake plugin timed out.");
+        }
         if (Wire.first(answer, "malformed") != null) {
             throw new IllegalStateException("Fake world returned a malformed plugin answer.");
         }

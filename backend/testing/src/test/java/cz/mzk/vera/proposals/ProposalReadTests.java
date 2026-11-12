@@ -169,6 +169,65 @@ class ProposalReadTests {
     }
 
     @Test
+    void lookupPreviewShowsLiveCopiesToReadersAndRestrictionsOnlyToStaff() {
+        Map<String, Object> body = Map.of("items", List.of(item("catalogId", "MZK01-001277001", "1939")));
+        String readerAnswer = client.post().uri("/api/proposals/lookup").header("Cookie", session("u5"))
+                .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody();
+        assertThat(readerAnswer).contains("demo-new-volume");
+        assertThat(readerAnswer).doesNotContain("restrictions");
+        client.post().uri("/api/proposals/lookup").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$[0].preview.copies[0].source").isEqualTo("Kramerius")
+                .jsonPath("$[0].preview.restrictions").isArray();
+    }
+
+    @Test
+    void lookupPreviewKeepsStoredRegistryAndVeraCopiesInOrder() {
+        client.post().uri("/api/proposals/lookup").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("items", List.of(item("catalogId", "MZK01-001277001", "1936–1938"))))
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$[0].preview.copies.length()").isEqualTo(2)
+                .jsonPath("$[0].preview.copies[0].source").isEqualTo("Kramerius")
+                .jsonPath("$[0].preview.copies[0].state").isEqualTo("Published")
+                .jsonPath("$[0].preview.copies[0].link")
+                .isEqualTo("https://kramerius.mzk.cz/view/uuid:demo8")
+                .jsonPath("$[0].preview.copies[1].source").isEqualTo("VERA")
+                .jsonPath("$[0].preview.copies[1].state").isEqualTo("Published")
+                .jsonPath("$[0].preview.copies[1].link")
+                .isEqualTo("https://kramerius.mzk.cz/view/uuid:demo8");
+    }
+
+    @Test
+    void lookupPreviewUsesNullCopiesWhenRegistryTimesOut() {
+        reset.reset("l78b-registry-timeout", true);
+        Map<String, Object> body = Map.of("items", List.of(item("catalogId", "MZK01-001277001", "1939")));
+        client.post().uri("/api/proposals/lookup").header("Cookie", session("u5"))
+                .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$[0].preview.copies").isEqualTo(null);
+    }
+
+    @Test
+    void lookupPreviewBatchSharesOneDeadlineAcrossItems() {
+        reset.reset("l78b-registry-timeout", true);
+        List<Map<String, Object>> items = List.of(
+                item("catalogId", "MZK01-001277001", "1936–1938"),
+                item("catalogId", "MZK01-001277001", "1939"),
+                item("catalogId", "MZK01-001277001", "1940"),
+                item("catalogId", "MZK01-001277001", "1936–1938"),
+                item("catalogId", "MZK01-001277001", "1939"),
+                item("catalogId", "MZK01-001277001", "1940"));
+        long started = System.nanoTime();
+        String answer = client.post().uri("/api/proposals/lookup").header("Cookie", session("u5"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("items", items)).exchange()
+                .expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody();
+        long elapsedMillis = java.time.Duration.ofNanos(System.nanoTime() - started).toMillis();
+        assertThat(answer.split("\"copies\":null", -1)).hasSize(items.size() + 1);
+        assertThat(elapsedMillis).isLessThan(700);
+    }
+
+    @Test
     void publicLookupUsesTheCurrentIterationStatusForU4() {
         client.post().uri("/api/proposals/lookup").header("Cookie", session("u4"))
                 .contentType(MediaType.APPLICATION_JSON)

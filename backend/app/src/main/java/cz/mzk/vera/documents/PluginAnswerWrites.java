@@ -5,6 +5,8 @@ import static cz.mzk.vera.db.tables.Tables.DOCUMENT_REGISTRY_RECORDS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_DEFECTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_PROPERTY_SOURCES;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
+import static org.jooq.impl.DSL.coalesce;
+import static org.jooq.impl.DSL.max;
 
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
@@ -47,7 +49,8 @@ public class PluginAnswerWrites {
                 .fetchOne(DOCUMENT_REGISTRY_RECORDS.STATE);
         tx.deleteFrom(DOCUMENT_REGISTRY_RECORDS).where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(documentId))
                 .and(DOCUMENT_REGISTRY_RECORDS.REGISTRY.eq(registry)).execute();
-        int position = tx.selectCount().from(DOCUMENT_REGISTRY_RECORDS)
+        int position = tx.select(coalesce(max(DOCUMENT_REGISTRY_RECORDS.POSITION), -1).add(1))
+                .from(DOCUMENT_REGISTRY_RECORDS)
                 .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class);
         String newState = null;
         OffsetDateTime now = now();
@@ -61,6 +64,8 @@ public class PluginAnswerWrites {
                     .set(DOCUMENT_REGISTRY_RECORDS.REGISTRY, registry)
                     .set(DOCUMENT_REGISTRY_RECORDS.STATE, state)
                     .set(DOCUMENT_REGISTRY_RECORDS.RAW_STATE, record.rawState())
+                    .set(DOCUMENT_REGISTRY_RECORDS.LINK_KIND, record.link() == null ? null
+                            : List.of("Digitized", "Published").contains(state) ? "content" : "record")
                     .set(DOCUMENT_REGISTRY_RECORDS.URL, record.link())
                     .set(DOCUMENT_REGISTRY_RECORDS.OBSERVED_AT, now)
                     .set(DOCUMENT_REGISTRY_RECORDS.CHECKED_AT, now).execute();

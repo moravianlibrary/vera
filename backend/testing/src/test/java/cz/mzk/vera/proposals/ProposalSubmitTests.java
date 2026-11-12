@@ -8,8 +8,11 @@ import static cz.mzk.vera.db.tables.Tables.EVENTS;
 import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATION_STATES;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
+import static cz.mzk.vera.db.tables.Tables.JOBS;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_PLACEMENTS;
+import static cz.mzk.vera.db.tables.Tables.REQUEST_EXISTING_COPIES;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
+import static cz.mzk.vera.db.tables.Tables.REQUEST_SUGGESTIONS;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_STATES;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
@@ -82,7 +85,9 @@ class ProposalSubmitTests {
                 .fetch(REQUESTS.ID);
         assertThat(ids).hasSize(2);
         assertThat(dsl.select(REQUESTS.CHECKED_AT).from(REQUESTS).where(REQUESTS.ID.in(ids))
-                .fetch(REQUESTS.CHECKED_AT)).allMatch(value -> value != null);
+                .fetch(REQUESTS.CHECKED_AT)).containsOnlyNulls();
+        assertThat(dsl.fetchCount(JOBS, JOBS.KIND.eq("proposal.check").and(JOBS.STATE.eq("due"))))
+                .isEqualTo(2);
         var createdEvents = dsl.selectFrom(EVENTS).where(EVENTS.SUBJECT_ID.in(ids))
                 .and(EVENTS.CODE.eq("request.created")).fetch();
         assertThat(createdEvents).hasSize(2);
@@ -118,6 +123,59 @@ class ProposalSubmitTests {
                 .isEqualTo(mapper.readTree("\"title\""));
         assertThat(detail.path("record").path("document").path("properties").get(1).path("key"))
                 .isEqualTo(mapper.readTree("\"material_type\""));
+    }
+
+    @Test
+    void readerSubmitJobsDoNotFail() throws Exception {
+        assertRecordedSubmit("a-reader-then-admin-and-reader-pages", "u5", 0);
+        JsonNode report = runJobs();
+        assertThat(report.path("failed").asInt()).as("failed jobs in the control response").isZero();
+        var failures = dsl.select(JOBS.KIND, JOBS.ERROR).from(JOBS)
+                .where(JOBS.STATE.eq("failed")).fetch();
+        assertThat(failures).as("failed jobs (kind and error)").isEmpty();
+    }
+
+    @Test
+    void readerCheckStoresRegistryEvidenceAndDerivesItsCopy() throws Exception {
+        JsonNode submitted = assertRecordedSubmit("a-reader-then-admin-and-reader-pages", "u5", 0);
+        String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.BATCH_ID.eq(submitted.path("batch").path("id").asString()))
+                .and(REQUESTS.DOCUMENT_ID.ne("D8")).fetchOne(REQUESTS.ID);
+        String documentId = dsl.select(REQUESTS.DOCUMENT_ID).from(REQUESTS)
+                .where(REQUESTS.ID.eq(requestId)).fetchOne(REQUESTS.DOCUMENT_ID);
+        assertThat(runJobs().path("failed").asInt()).isZero();
+        JsonNode detail = mapper.readTree(client.get().uri("/api/documents/" + documentId + "?perspective=my")
+                .header("Cookie", session("u5")).exchange().expectStatus().isOk().expectBody(String.class)
+                .returnResult().getResponseBody());
+        JsonNode records = detail.path("record").path("document").path("registryRecords");
+        assertThat(records.size()).isEqualTo(1);
+        JsonNode registry = records.get(0);
+        assertThat(registry.path("registry").asString()).isEqualTo("Kramerius");
+        assertThat(registry.path("state").asString()).isEqualTo("Published");
+        assertThat(registry.path("rawState").asString()).isEqualTo("published");
+        assertThat(registry.path("linkKind").asString()).isEqualTo("content");
+        assertThat(registry.path("url").asString()).isEqualTo("https://kramerius.mzk.cz/view/uuid:demo8");
+        assertThat(registry.path("checkedAt").isString()).isTrue();
+        assertThat(registry.path("observedAt")).isEqualTo(registry.path("checkedAt"));
+        assertThat(registry.path("error").isNull()).isTrue();
+        var copy = dsl.selectFrom(REQUEST_EXISTING_COPIES)
+                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId)).fetchOne();
+        assertThat(copy).isNotNull();
+        assertThat(copy.getSource()).isEqualTo("Kramerius");
+        assertThat(copy.getState()).isEqualTo("Published");
+        assertThat(copy.getLink()).isEqualTo(registry.path("url").asString());
+    }
+
+    @Test
+    void recordedReaderAndProjectSubmissionsGetClassifierSuggestionsAfterChecks() throws Exception {
+        JsonNode reader = assertRecordedSubmit("a-reader-then-admin-and-reader-pages", "u5", 0);
+        runJobs();
+        assertClassifierSuggestion(reader.path("batch").path("id").asString());
+
+        reset.reset("base", true);
+        JsonNode project = assertRecordedSubmit("c-project-user-project-custody", "u9", 0);
+        runJobs();
+        assertClassifierSuggestion(project.path("batch").path("id").asString());
     }
 
     @Test
@@ -159,18 +217,23 @@ class ProposalSubmitTests {
     }
 
     @Test
-    void approveNowCreatesIterationAndBothEvents() {
-        Map<String, Object> draft = draft(List.of(item("catalogId", "MZK01-001277001", "1940")));
+    void approveNowHoldsUntilCheckThenCreatesItsIteration() {
+        Map<String, Object> draft = draft(List.of(item("catalogId", "MZK03-000778120", null)));
         draft.put("approval", Map.of("categoryId", "c21", "priority", "Normal"));
         JsonNode report = post(draft, "u3", 201);
         assertThat(report.path("proposed").asInt()).isEqualTo(1);
-        assertThat(report.path("approved").asInt()).isEqualTo(1);
+        assertThat(report.path("approved").asInt()).isZero();
         String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
                 .where(REQUESTS.BATCH_ID.eq(report.path("batch").path("id").asString()))
                 .fetchOne(REQUESTS.ID);
         assertThat(dsl.select(REQUESTS.DECISION).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.DECISION)).isEqualTo("Pending");
+        assertThat(dsl.select(EVENTS.CODE).from(EVENTS).where(EVENTS.SUBJECT_ID.eq(requestId))
+                .fetch(EVENTS.CODE)).containsExactly("request.created", "request.held");
+        runJobs();
+        assertThat(dsl.select(REQUESTS.DECISION).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
                 .fetchOne(REQUESTS.DECISION)).isEqualTo("Approved");
-        assertThat(dsl.fetchCount(EVENTS, EVENTS.SUBJECT_ID.eq(requestId))).isEqualTo(2);
+        assertThat(dsl.fetchCount(EVENTS, EVENTS.SUBJECT_ID.eq(requestId))).isEqualTo(3);
         String iterationId = dsl.select(REQUESTS.ITERATION_ID).from(REQUESTS)
                 .where(REQUESTS.ID.eq(requestId)).fetchOne(REQUESTS.ITERATION_ID);
         assertThat(dsl.fetchCount(ITERATION_STATES,
@@ -182,8 +245,67 @@ class ProposalSubmitTests {
     }
 
     @Test
-    void approveNowWithAnExistingCopyEmitsRequestHeldOverHttp() {
-        Map<String, Object> draft = draft(List.of(item("catalogId", "MZK01-001277001", "1936–1938")));
+    void submittedProposalIsUncheckedUntilItsJobStoresTheRegistryCopy() {
+        JsonNode report = post(draft(List.of(item("catalogId", "MZK01-001277001", "1939"))), "u5", 201);
+        String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.BATCH_ID.eq(report.path("batch").path("id").asString()))
+                .fetchOne(REQUESTS.ID);
+        assertThat(dsl.select(REQUESTS.CHECKED_AT).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.CHECKED_AT)).isNull();
+        assertThat(dsl.fetchCount(REQUEST_EXISTING_COPIES,
+                REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId))).isZero();
+        runJobs();
+        assertThat(dsl.select(REQUESTS.CHECKED_AT).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.CHECKED_AT)).isNotNull();
+        assertThat(dsl.select(REQUEST_EXISTING_COPIES.SOURCE).from(REQUEST_EXISTING_COPIES)
+                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId))
+                .fetch(REQUEST_EXISTING_COPIES.SOURCE)).contains("Kramerius");
+        assertThat(dsl.select(REQUEST_EXISTING_COPIES.LINK).from(REQUEST_EXISTING_COPIES)
+                .where(REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId))
+                .fetch(REQUEST_EXISTING_COPIES.LINK))
+                .contains("https://kramerius.mzk.cz/view/uuid:demo-new-volume");
+    }
+
+    @Test
+    void decisionsRefuseApprovalUntilProposalChecksRun() {
+        Map<String, Object> submitted = draft(List.of(item("catalogId", "MZK01-001277001", "1940")));
+        JsonNode report = post(submitted, "u5", 201);
+        String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.BATCH_ID.eq(report.path("batch").path("id").asString()))
+                .fetchOne(REQUESTS.ID);
+        String documentId = dsl.select(REQUESTS.DOCUMENT_ID).from(REQUESTS)
+                .where(REQUESTS.ID.eq(requestId)).fetchOne(REQUESTS.DOCUMENT_ID);
+        Map<String, Object> approval = new LinkedHashMap<>();
+        approval.put("categoryId", "c21");
+        approval.put("priority", "Normal");
+        approval.put("rescanNote", null);
+        client.post().uri("/api/requests/" + documentId + "/approve").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(approval)
+                .exchange().expectStatus().isEqualTo(409).expectBody()
+                .jsonPath("$.code").isEqualTo("proposal.checks_pending");
+    }
+
+    @Test
+    void failedRegistryCheckLeavesTheAskUncheckedAndSchedulesARetry() {
+        reset.reset("l78b-registry-failure", true);
+        JsonNode report = post(draft(List.of(item("catalogId", "MZK01-001277001", "1939"))), "u5", 201);
+        String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
+                .where(REQUESTS.BATCH_ID.eq(report.path("batch").path("id").asString()))
+                .fetchOne(REQUESTS.ID);
+        runJobs();
+        assertThat(dsl.select(REQUESTS.CHECKED_AT).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.CHECKED_AT)).isNull();
+        var retry = dsl.selectFrom(JOBS).where(JOBS.KIND.eq("proposal.check").and(JOBS.STATE.eq("due")))
+                .fetchOne();
+        assertThat(retry).isNotNull();
+        assertThat(retry.getDueAt().toInstant()).isAfter(dsl.select(REQUESTS.AT).from(REQUESTS)
+                .where(REQUESTS.ID.eq(requestId)).fetchOne(REQUESTS.AT).toInstant());
+    }
+
+    @Test
+    void approveNowWithAnExistingCopyStaysPendingAfterItsCheck() {
+        Map<String, Object> draft = draft(List.of(item("catalogId", "MZK01-001277001", "1939")));
         draft.put("approval", Map.of("categoryId", "c21", "priority", "Normal"));
         JsonNode report = post(draft, "u3", 201);
         String requestId = dsl.select(REQUESTS.ID).from(REQUESTS)
@@ -192,6 +314,12 @@ class ProposalSubmitTests {
         assertThat(dsl.select(HOOK_EVENTS.CODE).from(HOOK_EVENTS)
                 .where(HOOK_EVENTS.SUBJECT_ID.eq(requestId)).fetch(HOOK_EVENTS.CODE))
                 .contains("request.created", "request.held");
+        runJobs();
+        assertThat(dsl.select(REQUESTS.DECISION).from(REQUESTS).where(REQUESTS.ID.eq(requestId))
+                .fetchOne(REQUESTS.DECISION)).isEqualTo("Pending");
+        assertThat(dsl.fetchCount(cz.mzk.vera.db.tables.Tables.REQUEST_EXISTING_COPIES,
+                cz.mzk.vera.db.tables.Tables.REQUEST_EXISTING_COPIES.REQUEST_ID.eq(requestId)))
+                .isGreaterThan(0);
         assertThat(dsl.select(HOOK_EVENTS.CORRELATION_ID).from(HOOK_EVENTS)
                 .where(HOOK_EVENTS.SUBJECT_ID.eq(requestId)).fetch(HOOK_EVENTS.CORRELATION_ID).stream()
                 .distinct()).hasSize(1);
@@ -286,6 +414,30 @@ class ProposalSubmitTests {
         } catch (Exception exception) {
             throw new IllegalStateException(exception);
         }
+    }
+
+    private JsonNode runJobs() {
+        String body = client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody();
+        try {
+            return mapper.readTree(body);
+        } catch (Exception exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    private void assertClassifierSuggestion(String batchId) {
+        var suggestions = dsl.select(REQUEST_SUGGESTIONS.CATEGORY_ID, REQUEST_SUGGESTIONS.CLASSIFIER_ID)
+                .from(REQUEST_SUGGESTIONS.join(REQUESTS)
+                        .on(REQUESTS.ID.eq(REQUEST_SUGGESTIONS.REQUEST_ID)))
+                .where(REQUESTS.BATCH_ID.eq(batchId))
+                .and(REQUEST_SUGGESTIONS.CATEGORY_ID.eq("c21"))
+                .and(REQUEST_SUGGESTIONS.CLASSIFIER_ID.eq("pi30"))
+                .fetch();
+        assertThat(suggestions).isNotEmpty().allSatisfy(suggestion -> {
+            assertThat(suggestion.get(REQUEST_SUGGESTIONS.CATEGORY_ID)).isEqualTo("c21");
+            assertThat(suggestion.get(REQUEST_SUGGESTIONS.CLASSIFIER_ID)).isEqualTo("pi30");
+        });
     }
 
     private JsonNode assertRecordedSubmit(String scenarioName, String userId, int callIndex) throws Exception {

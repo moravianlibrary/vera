@@ -69,6 +69,11 @@ public class PluginCalls {
 
     public <K, A> PluginOutcome<A> call(DSLContext source, String instanceId, Class<K> kind,
             String operation, BiFunction<K, PluginContext, A> body) {
+        return call(source, instanceId, kind, operation, timeout, body);
+    }
+
+    public <K, A> PluginOutcome<A> call(DSLContext source, String instanceId, Class<K> kind,
+            String operation, Duration callTimeout, BiFunction<K, PluginContext, A> body) {
         String kindName = kind.getSimpleName();
         Observation observation = Observation.createNotStarted("vera.plugin.call", observations)
                 .lowCardinalityKeyValue("kind", kindName)
@@ -121,7 +126,7 @@ public class PluginCalls {
                     instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock,
                     localPasswords.forInstance(instanceId));
             K implementation = kind.cast(plugin.implementation());
-            A answer = invoke(plugin, implementation, context, body);
+            A answer = invoke(plugin, implementation, context, callTimeout, body);
             if (answer == null) {
                 LOGGER.error("Plugin fault instance={} kind={} operation={} returned a null answer",
                         instanceId, kindName, operation);
@@ -147,7 +152,7 @@ public class PluginCalls {
     }
 
     private <K, A> A invoke(PluginLoader.LoadedPlugin plugin, K implementation,
-            PluginContext context, BiFunction<K, PluginContext, A> body)
+            PluginContext context, Duration callTimeout, BiFunction<K, PluginContext, A> body)
             throws InterruptedException, TimeoutException, PluginUnavailable {
         var executor = Executors.newVirtualThreadPerTaskExecutor();
         try {
@@ -156,7 +161,7 @@ public class PluginCalls {
                 return body.apply(implementation, context);
             });
             try {
-                return future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+                return future.get(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
             } catch (TimeoutException timedOut) {
                 future.cancel(true);
                 throw timedOut;

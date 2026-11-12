@@ -16,3 +16,5 @@ vera:
     trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:classpath:test-plugin-cert.pem}
   jobs:
     poll: false
+  proposals:
+    preview-timeout: 200ms

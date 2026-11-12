@@ -103,8 +103,8 @@ class IngestTests {
     @Test
     void approveNowWithoutAnIngestEntryHasNoFindingsAndBecomesReady() throws Exception {
         submitNew("base");
-        String iterationId = iterationFor("MZK03-000778120");
         runJobs();
+        String iterationId = iterationFor("MZK03-000778120");
         assertThat(dsl.select(ITERATIONS.PROGRESS).from(ITERATIONS).where(ITERATIONS.ID.eq(iterationId))
                 .fetchOne(ITERATIONS.PROGRESS)).isEqualTo("Ready");
         assertThat(dsl.fetchCount(ITERATION_DEFECTS, ITERATION_DEFECTS.ITERATION_ID.eq(iterationId))).isZero();
@@ -113,8 +113,8 @@ class IngestTests {
     @Test
     void approveNowUsesTheCatalogsIngestEntry() throws Exception {
         submitNew("bk4h-ingest-answer");
-        String iterationId = iterationFor("MZK03-000778120");
         runJobs();
+        String iterationId = iterationFor("MZK03-000778120");
         assertThat(dsl.fetchExists(dsl.selectOne().from(ITERATION_DEFECTS)
                 .where(ITERATION_DEFECTS.ITERATION_ID.eq(iterationId))
                 .and(ITERATION_DEFECTS.KEY.eq("pi9:R88:title")))).isTrue();

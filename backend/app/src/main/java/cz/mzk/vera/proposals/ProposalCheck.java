@@ -38,16 +38,51 @@ public class ProposalCheck {
     private final DocumentRecords documentRecords;
     private final DocumentStates documentStates;
     private final JsonMapper mapper;
+    private final ProposalPluginRuns pluginRuns;
     public ProposalCheck(DSLContext dsl, HeldAccessQueries access, DocumentRecords documentRecords,
-            DocumentStates documentStates, JsonMapper mapper) {
+            DocumentStates documentStates, JsonMapper mapper, ProposalPluginRuns pluginRuns) {
         this.dsl = dsl;
         this.access = access;
         this.documentRecords = documentRecords;
         this.documentStates = documentStates;
         this.mapper = mapper;
+        this.pluginRuns = pluginRuns;
     }
 
     public Map<String, Object> checkItem(Map<String, Object> item, String userId) {
+        return checkItem(item, userId, true);
+    }
+
+    public Map<String, Object> checkItem(Map<String, Object> item, String userId, boolean includePreview) {
+        return checkItem(item, userId, includePreview, null);
+    }
+
+    public List<Map<String, Object>> lookupItems(List<Map<String, Object>> items, String userId) {
+        long deadline = pluginRuns.previewDeadline();
+        List<Map<String, Object>> results = new ArrayList<>();
+        List<ProposalPluginRuns.PreviewRequest> previews = new ArrayList<>();
+        List<Integer> resultIndexes = new ArrayList<>();
+        for (Map<String, Object> item : items) {
+            String[] type = {null};
+            Map<String, Object> result = checkItem(item, userId, false, type);
+            results.add(result);
+            String kind = (String) result.get("kind");
+            if ("new".equals(kind) || "inVera".equals(kind)) {
+                previews.add(new ProposalPluginRuns.PreviewRequest((String) result.get("catalogId"),
+                        (String) result.get("unit"), (String) result.get("title"), type[0],
+                        (String) result.get("documentId")));
+                resultIndexes.add(results.size() - 1);
+            }
+        }
+        List<Map<String, Object>> answers = pluginRuns.previewBatch(previews, isStaff(userId), deadline);
+        for (int index = 0; index < answers.size(); index++) {
+            results.get(resultIndexes.get(index)).put("preview", answers.get(index));
+        }
+        return results;
+    }
+
+    private Map<String, Object> checkItem(Map<String, Object> item, String userId, boolean includePreview,
+            String[] previewType) {
         String type = (String) item.get("type");
         String value = (String) item.get("value");
         String kind = switch (type) {
@@ -96,6 +131,9 @@ public class ProposalCheck {
                     "catalogId", row.get("catalogId"), "title", row.get("title"))).toList());
         }
         Map<String, Object> record = unique.getFirst();
+        if (previewType != null) {
+            previewType[0] = (String) record.get("type");
+        }
         String catalogId = (String) record.get("catalogId");
         String requestedUnit = item.get("unit") == null ? null : (String) item.get("unit");
         String unit = requestedUnit;
@@ -137,8 +175,13 @@ public class ProposalCheck {
                 .and(unit == null ? DOCUMENTS.UNIT_VALUE.isNull() : DOCUMENTS.UNIT_VALUE.eq(unit))
                 .fetch();
         if (docs.isEmpty()) {
-            return fields("kind", "new", "catalogId", catalogId, "unit", unit, "title", displayTitle,
-                    "isAskedBefore", false);
+            Map<String, Object> result = fields("kind", "new", "catalogId", catalogId, "unit", unit,
+                    "title", displayTitle, "isAskedBefore", false);
+            if (includePreview) {
+                result.put("preview", pluginRuns.preview(catalogId, unit, displayTitle,
+                        (String) record.get("type"), isStaff(userId), null));
+            }
+            return result;
         }
         String documentId = docs.getFirst().get(DOCUMENTS.ID);
         Map<String, Object> heldRecord = documentRecords.recordsOf(List.of(documentId)).get(documentId);
@@ -153,8 +196,13 @@ public class ProposalCheck {
                     "documentId", documentId);
         }
         if (!live) {
-            return fields("kind", "new", "catalogId", catalogId, "unit", unit, "title", displayTitle,
-                    "isAskedBefore", !domainRecord.requests().isEmpty());
+            Map<String, Object> result = fields("kind", "new", "catalogId", catalogId, "unit", unit,
+                    "title", displayTitle, "isAskedBefore", !domainRecord.requests().isEmpty());
+            if (includePreview) {
+                result.put("preview", pluginRuns.preview(catalogId, unit, displayTitle,
+                        (String) record.get("type"), isStaff(userId), documentId));
+            }
+            return result;
         }
         String status;
         HeldAccess held = access.heldBy(userId);
@@ -167,8 +215,17 @@ public class ProposalCheck {
         } else {
             status = Status.publicIterationStatusOf(current).name();
         }
-        return fields("kind", "inVera", "catalogId", catalogId, "unit", unit, "title", displayTitle,
-                "documentId", documentId, "status", status);
+        Map<String, Object> result = fields("kind", "inVera", "catalogId", catalogId, "unit", unit,
+                "title", displayTitle, "documentId", documentId, "status", status);
+        if (includePreview) {
+            result.put("preview", pluginRuns.preview(catalogId, unit, displayTitle,
+                    (String) record.get("type"), isStaff(userId), documentId));
+        }
+        return result;
+    }
+
+    private boolean isStaff(String userId) {
+        return Permissions.hasPermission(access.heldBy(userId).grants(), DocumentCodes.ITERATION_READ);
     }
 
     private boolean isLive(DocumentRecord record) {

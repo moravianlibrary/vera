@@ -25,7 +25,6 @@ import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.documents.ProjectQueries;
 import cz.mzk.vera.requests.RequestDecisions;
 import cz.mzk.vera.requests.RequestPlacements;
-import cz.mzk.vera.requests.RequestSuggestions;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import java.time.Clock;
@@ -55,17 +54,18 @@ public class ProposalSubmit {
     private final ProjectQueries projects;
     private final RequestDecisions decisions;
     private final RequestPlacements placements;
-    private final RequestSuggestions suggestions;
     private final DocumentStates states;
     private final BatchQueries batches;
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
+    private final ProposalCheckQueue checkQueue;
 
     public ProposalSubmit(DSLContext dsl, ProposalCheck check, ProposalSettings settings,
             HeldAccessQueries access, ProjectQueries projects, RequestDecisions decisions,
-            RequestPlacements placements, RequestSuggestions suggestions, DocumentStates states,
-            BatchQueries batches, EventRecorder events, Clock clock, JsonMapper json) {
+            RequestPlacements placements, DocumentStates states,
+            BatchQueries batches, EventRecorder events, Clock clock, JsonMapper json,
+            ProposalCheckQueue checkQueue) {
         this.dsl = dsl;
         this.check = check;
         this.settings = settings;
@@ -73,12 +73,12 @@ public class ProposalSubmit {
         this.projects = projects;
         this.decisions = decisions;
         this.placements = placements;
-        this.suggestions = suggestions;
         this.states = states;
         this.batches = batches;
         this.events = events;
         this.clock = clock;
         this.json = json;
+        this.checkQueue = checkQueue;
     }
 
     @Transactional
@@ -116,7 +116,7 @@ public class ProposalSubmit {
                     ProposalCodes.PROJECT_NOT_PROPOSABLE);
         }
         List<CheckedItem> checked = items.stream()
-                .map(item -> new CheckedItem(item, check.checkItem(item, userId)))
+                .map(item -> new CheckedItem(item, check.checkItem(item, userId, false)))
                 .toList();
         List<CheckedItem> accepted = checked.stream()
                 .filter(value -> accepted(value.check())).toList();
@@ -164,7 +164,7 @@ public class ProposalSubmit {
             if (documentId == null) {
                 continue;
             }
-            List<Copy> copies = existingCopies(documentId, now);
+            List<Copy> copies = List.of();
             String requestId = "R-" + UUID.randomUUID();
             String reason = (String) value.item().get("reason");
             if (reason == null) {
@@ -191,26 +191,18 @@ public class ProposalSubmit {
                 }
             } else {
                 proposed++;
-                if (approval != null && copies.isEmpty()) {
-                    iterationId = "IT-" + UUID.randomUUID();
-                    int attempt = dsl.selectCount().from(ITERATIONS)
-                            .where(ITERATIONS.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class) + 1;
-                    decisions.insertIteration(dsl, documentId, iterationId, attempt, requestId,
-                            (String) approval.get("categoryId"), (String) approval.get("priority"), projectId);
-                    decision = "Approved";
-                    relation = "Originates";
-                    afterApproval = null;
-                    approved++;
-                } else {
-                    var project = projectState(projectId);
-                    afterApproval = "Approved".equals(project);
-                }
+                var project = projectState(projectId);
+                afterApproval = "Approved".equals(project);
             }
             dsl.insertInto(REQUESTS).set(REQUESTS.ID, requestId).set(REQUESTS.DOCUMENT_ID, documentId)
                     .set(REQUESTS.REQUESTER_ID, userId).set(REQUESTS.AT, at).set(REQUESTS.REASON, reason)
                     .set(REQUESTS.BATCH_ID, batchId).set(REQUESTS.PROJECT_ID, projectId)
-                    .set(REQUESTS.CHECKED_AT, at).set(REQUESTS.DECISION, decision)
+                    .set(REQUESTS.CHECKED_AT, (OffsetDateTime) null).set(REQUESTS.DECISION, decision)
                     .set(REQUESTS.IS_AFTER_PROJECT_APPROVAL, afterApproval)
+                    .set(REQUESTS.APPROVAL_AFTER_CHECK_CATEGORY_ID,
+                            isNew && approval != null ? (String) approval.get("categoryId") : null)
+                    .set(REQUESTS.APPROVAL_AFTER_CHECK_PRIORITY,
+                            isNew && approval != null ? (String) approval.get("priority") : null)
                     .set(REQUESTS.ITERATION_RELATION, relation).set(REQUESTS.ITERATION_ID, iterationId)
                     .set(REQUESTS.TRACKS_ITERATION_ID, tracks).execute();
             int position = 0;
@@ -224,7 +216,6 @@ public class ProposalSubmit {
                         .set(REQUEST_EXISTING_COPIES.FOUND_AFTER_APPROVAL, false).execute();
             }
             placements.place(dsl, requestId);
-            suggestions.suggest(dsl, requestId);
             touched.add(documentId);
             Map<String, Object> eventData = new LinkedHashMap<>();
             eventData.put("batch", Map.of("id", batchId, "name", batchName));
@@ -233,20 +224,11 @@ public class ProposalSubmit {
             events.record(new EventInput(EventCode.REQUEST_CREATED, "request", requestId, null,
                     new EventInput.User(userId), correlation, now, json.valueToTree(eventData),
                     new EventInput.Reason(reason, null)));
-            if (approval != null && !copies.isEmpty()) {
+            checkQueue.queue(dsl, requestId);
+            if (isNew && approval != null) {
                 events.record(new EventInput(EventCode.REQUEST_HELD, "request", requestId, null,
                         new EventInput.User(userId), correlation, now,
-                        json.valueToTree(Map.of("why", "copy_exists")), new EventInput.Reason(null, null)));
-            }
-            if ("Approved".equals(decision)) {
-                Map<String, Object> approvalData = new LinkedHashMap<>();
-                approvalData.put("iterationId", iterationId);
-                approvalData.put("isRescan", false);
-                approvalData.put("batchSize", null);
-                approvalData.put("suggestion", null);
-                events.record(new EventInput(EventCode.REQUEST_APPROVED, "request", requestId, null,
-                        new EventInput.User(userId), correlation, now, json.valueToTree(approvalData),
-                        new EventInput.Reason(null, null)));
+                        json.valueToTree(Map.of("why", "checking")), new EventInput.Reason(null, null)));
             }
         }
         touched.stream().distinct().forEach(id -> states.recompute(dsl, id));
@@ -263,7 +245,7 @@ public class ProposalSubmit {
 
     private boolean acceptedCheck(Map<String, Object> item, String userId) {
         // contract/src/queries/proposals.ts: submittableProposalItemCount.
-        return accepted(check.checkItem(item, userId));
+        return accepted(check.checkItem(item, userId, false));
     }
 
     private boolean accepted(Map<String, Object> value) {
@@ -368,7 +350,7 @@ public class ProposalSubmit {
         return value.matches("(roč\\.|sv\\.|vol\\.)\\s*\\d+.*") ? "volume-number" : "volume-name";
     }
 
-    private List<Copy> existingCopies(String documentId, Instant now) {
+    public List<Copy> existingCopies(String documentId, Instant now) {
         // contract/src/queries/proposals.ts: existingCopiesFor.
         List<Copy> copies = new ArrayList<>();
         dsl.selectFrom(DOCUMENT_REGISTRY_RECORDS)
@@ -392,7 +374,7 @@ public class ProposalSubmit {
     }
 
     private record CheckedItem(Map<String, Object> item, Map<String, Object> check) {}
-    private record Copy(String source, String state, String link, String iterationId) {}
+    public record Copy(String source, String state, String link, String iterationId) {}
     public record Outcome(int status, String detail, String code, Map<String, Object> body) {
         static Outcome refused(int status, String detail, String code) {
             return new Outcome(status, detail, code, null);

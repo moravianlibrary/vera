@@ -1,0 +1,13 @@
+{
+  "name": "l78b-registry-timeout",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK01-001277001": {
+        "faults": {
+          "registry": "timeout"
+        }
+      }
+    }
+  }
+}

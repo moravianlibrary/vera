@@ -14,18 +14,23 @@ import tools.jackson.databind.JsonNode;
 @Profile("test")
 public class FakeIngest {
     private volatile Map<String, JsonNode> documents = Map.of();
+    private volatile Map<String, JsonNode> registryDocuments = Map.of();
     private volatile Map<String, JsonNode> iterations = Map.of();
     private volatile Map<String, JsonNode> ingest = Map.of();
     private volatile Map<String, List<String>> repairs = Map.of();
     private volatile Map<String, String> registryImplementations = Map.of();
+    private volatile Map<String, JsonNode> registryAnswers = Map.of();
     private volatile Map<String, Long> instanceTimeouts = Map.of();
 
     public synchronized void reset(JsonNode seed) {
         Map<String, JsonNode> nextDocuments = new LinkedHashMap<>();
+        Map<String, JsonNode> nextRegistryDocuments = new LinkedHashMap<>();
         for (JsonNode document : seed.path("collections").path("documents")) {
             nextDocuments.put(document.path("catalogId").asString(), document.deepCopy());
+            nextRegistryDocuments.putIfAbsent(document.path("catalogId").asString(), document.deepCopy());
         }
         documents = Map.copyOf(nextDocuments);
+        registryDocuments = Map.copyOf(nextRegistryDocuments);
 
         Map<String, String> nextRegistryImplementations = new LinkedHashMap<>();
         for (JsonNode implementation : seed.path("collections").path("pluginImplementations")) {
@@ -42,6 +47,10 @@ public class FakeIngest {
             }
         }
         registryImplementations = Map.copyOf(nextRegistries);
+        Map<String, JsonNode> nextRegistryAnswers = new LinkedHashMap<>();
+        seed.path("fakes").path("registryAnswers").properties().forEach(entry ->
+                nextRegistryAnswers.put(entry.getKey(), entry.getValue().deepCopy()));
+        registryAnswers = Map.copyOf(nextRegistryAnswers);
 
         Map<String, Long> nextTimeouts = new LinkedHashMap<>();
         for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
@@ -78,7 +87,7 @@ public class FakeIngest {
     }
 
     public Map<String, List<String>> answer(String kind, String catalogId, String instanceId,
-            List<String> identifiers) {
+            List<String> identifiers, String unit) {
         JsonNode document = documents.get(catalogId);
         JsonNode iteration = document == null ? null : iterations.get(document.path("id").asString());
         JsonNode custom = ingest.get(catalogId);
@@ -98,7 +107,16 @@ public class FakeIngest {
             return response("malformed", "true");
         }
         if ("Registry".equals(kind)) {
-            return registry(document, custom, instanceId, identifiers, document == null);
+            if (custom != null && custom.has("registryRecords")) {
+                return registry(null, custom, instanceId, identifiers, true, null);
+            }
+            JsonNode held = registryDocuments.get(catalogId);
+            boolean recordIsHeld = held != null && (unit == null || unit.isEmpty()
+                    || sameUnit(held.path("unit"), unit));
+            JsonNode seeded = recordIsHeld ? null
+                    : registryAnswers.get(catalogId + "|" + (unit == null ? "" : unit));
+            return registry(seeded == null ? held : null, custom, instanceId, identifiers,
+                    held == null, seeded);
         }
         if ("PropertySource".equals(kind)) {
             return properties(iteration, custom, instanceId);
@@ -110,7 +128,7 @@ public class FakeIngest {
     }
 
     private Map<String, List<String>> registry(JsonNode document, JsonNode custom, String instanceId,
-            List<String> identifiers, boolean ingestRecord) {
+            List<String> identifiers, boolean ingestRecord, JsonNode seeded) {
         Map<String, List<String>> result = fields();
         JsonNode records = document == null ? custom == null ? null : custom.path("registryRecords")
                 : document.path("registryRecords");
@@ -126,6 +144,14 @@ public class FakeIngest {
                     String linkField = ingestRecord ? "link" : "url";
                     add(result, "recordRawState", record.path("rawState").asString(""));
                     add(result, "recordLink", nullable(record.path(linkField)));
+                }
+            }
+        }
+        if (seeded != null && seeded.isArray()) {
+            for (JsonNode record : seeded) {
+                if (registryMatches(instanceId, record.path("registry").asString(null))) {
+                    add(result, "recordRawState", record.path("state").asString());
+                    add(result, "recordLink", nullable(record.path("link")));
                 }
             }
         }
@@ -211,6 +237,12 @@ public class FakeIngest {
         String name = implementation.endsWith("Registry")
                 ? implementation.substring(0, implementation.length() - "Registry".length()) : implementation;
         return name.equalsIgnoreCase(registry);
+    }
+
+    private boolean sameUnit(JsonNode seededUnit, String requestedUnit) {
+        String value = seededUnit == null || seededUnit.isNull()
+                ? null : seededUnit.path("value").asString(null);
+        return java.util.Objects.equals(value, requestedUnit == null || requestedUnit.isEmpty() ? null : requestedUnit);
     }
 
     private List<String> strings(JsonNode values) {

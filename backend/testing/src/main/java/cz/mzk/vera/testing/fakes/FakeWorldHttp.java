@@ -57,7 +57,8 @@ public class FakeWorldHttp implements PluginHttp {
             };
             if (kind != null) {
                 Map<String, List<String>> answer = ingest.answer(kind, first(fields, "catalogId"),
-                        first(fields, "instanceId"), fields.getOrDefault("identifier", List.of()));
+                        first(fields, "instanceId"), fields.getOrDefault("identifier", List.of()),
+                        first(fields, "unit"));
                 String status = first(answer, "httpStatus");
                 if (status != null) {
                     return response(Integer.parseInt(status), Map.of());

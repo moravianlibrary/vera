@@ -10,6 +10,7 @@ import static cz.mzk.vera.domain.iterations.Iterations.progressAfterGates;
 
 import cz.mzk.vera.documents.DocumentStates;
 import cz.mzk.vera.documents.PluginAnswerWrites;
+import cz.mzk.vera.documents.RegistryLookupRun;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
@@ -27,8 +28,6 @@ import cz.mzk.vera.plugin.propertysource.ValuesInput;
 import cz.mzk.vera.plugin.records.Document;
 import cz.mzk.vera.plugin.records.Iteration;
 import cz.mzk.vera.plugin.registry.LookupAnswer;
-import cz.mzk.vera.plugin.registry.LookupInput;
-import cz.mzk.vera.plugin.registry.Registry;
 import cz.mzk.vera.plugin.restriction.RestrictionCheckAnswer;
 import cz.mzk.vera.plugin.validation.ValidationCheckAnswer;
 import cz.mzk.vera.pluginhost.PluginCalls;
@@ -59,10 +58,11 @@ public class IngestJob implements JobKind<IngestJob.Result> {
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
+    private final RegistryLookupRun registryLookups;
 
     public IngestJob(DSLContext dsl, PluginCalls calls, PluginInstances instances, DocumentStates states,
             PluginAnswerWrites answerWrites, IterationCheckRun checkRun, EventRecorder events,
-            Clock clock, JsonMapper json) {
+            Clock clock, JsonMapper json, RegistryLookupRun registryLookups) {
         this.dsl = dsl;
         this.calls = calls;
         this.instances = instances;
@@ -72,6 +72,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
         this.events = events;
         this.clock = clock;
         this.json = json;
+        this.registryLookups = registryLookups;
     }
 
     @Override
@@ -120,19 +121,16 @@ public class IngestJob implements JobKind<IngestJob.Result> {
                 .where(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(catalogId))
                 .and(CATALOG_MIRROR_KEYS.KIND.eq("identifier"))
                 .orderBy(CATALOG_MIRROR_KEYS.POSITION).fetch(CATALOG_MIRROR_KEYS.VALUE);
-        List<PluginInstances.Instance> registries = instances.enabled(dsl, "Registry");
         List<PluginInstances.Instance> propertySources = instances.enabled(dsl, "PropertySource");
         List<RegistryAnswer> registryAnswers = new ArrayList<>();
         List<PropertyAnswer> propertyAnswers = new ArrayList<>();
         List<DefectAnswer> defects = new ArrayList<>();
         List<RestrictionAnswer> restrictionAnswers = new ArrayList<>();
-        for (PluginInstances.Instance instance : registries) {
-            PluginOutcome<LookupAnswer> result = calls.call(instance.id(), Registry.class, "lookup",
-                    (plugin, context) -> plugin.lookup(context, new LookupInput(record, identifiers)));
-            if (!(result instanceof PluginOutcome.Answered<LookupAnswer> answer)) {
-                return Result.failed(id, documentId, row.get(ITERATIONS.ATTEMPT), outcome(instance.name(), result));
-            }
-            registryAnswers.add(new RegistryAnswer(instance, answer.answer()));
+        try {
+            registryLookups.run(record, identifiers, null).forEach(answer -> registryAnswers.add(
+                    new RegistryAnswer(answer.instance(), answer.registry(), answer.answer())));
+        } catch (RegistryLookupRun.RegistryLookupFailure failure) {
+            return Result.failed(id, documentId, row.get(ITERATIONS.ATTEMPT), failure.getMessage());
         }
         for (PluginInstances.Instance instance : propertySources) {
             PluginOutcome<ValuesAnswer> result = calls.call(instance.id(), PropertySource.class, "values",
@@ -223,7 +221,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
 
     private void applyRegistry(DSLContext tx, Result result) {
         for (RegistryAnswer answer : result.registryAnswers()) {
-            answerWrites.registry(tx, result.documentId(), answer.instance().name(), answer.answer());
+            answerWrites.registry(tx, result.documentId(), answer.registry(), answer.answer());
         }
     }
 
@@ -294,7 +292,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
             return new Result(id, documentId, attempt, null, List.of(), List.of(), List.of(), List.of(), error, false);
         }
     }
-    public record RegistryAnswer(PluginInstances.Instance instance, LookupAnswer answer) {}
+    public record RegistryAnswer(PluginInstances.Instance instance, String registry, LookupAnswer answer) {}
     public record PropertyAnswer(PluginInstances.Instance instance, ValuesAnswer answer) {}
     public record DefectAnswer(String instanceId, String rule, String field, String detail) {}
     public record RestrictionAnswer(PluginInstances.Instance instance, RestrictionCheckAnswer answer) {}

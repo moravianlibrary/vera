@@ -1,0 +1,13 @@
+{
+  "name": "l78b-registry-failure",
+  "extends": "base",
+  "fakes": {
+    "ingest": {
+      "MZK01-001277001": {
+        "faults": {
+          "registry": "unavailable"
+        }
+      }
+    }
+  }
+}
