@@ -31,7 +31,6 @@ we are reorganising who decides proposals."
    → Its proposals are placed again, and Plugins shows that its rule places nothing until
    another custody is picked
    ([ACCESS-custody-delete](../../reference/access/custody.md#access-custody-delete)).
-   **(engine: [L8](../../ledger.md#l8-placing-again-is-a-run))**
 8. He tries to delete the fallback.
    → Refused ([ACCESS-fallback](../../reference/access/custody.md#access-fallback)).
 

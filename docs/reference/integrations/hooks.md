@@ -185,7 +185,3 @@ internal reason are personal data.
 `schema` names the payload's version. A field is added within a version, never renamed or
 removed; a change that breaks receivers is a new version, and a hook keeps the version it was
 made with until somebody moves it.
-
-> **Open — [L49](../../ledger.md#l49-hook-payload).** The payload is settled
-> ([DEC-0018](../../decisions/DEC-0018-one-event-catalogue.md)), not built: the mock sends only a
-> sample text.

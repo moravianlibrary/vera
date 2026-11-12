@@ -70,12 +70,9 @@ ever unreachable. Its members are edited like any other's. With no members, only
 #### ACCESS-custody-live
 
 Custody is evaluated again whenever a proposal or its facts change, and over every open proposal
-when a Custody instance changes or a custody is deleted. A proposal can move between custodies,
-or in and out of the fallback, as facts arrive. Decided proposals are never placed again.
-
-> **Open — [L8](../../ledger.md#l8-placing-again-is-a-run).** Placing open proposals again, after
-> a Custody instance changes or a custody is deleted, is to be a run on Tasks. The mock places them
-> at once, and only on delete.
+when a Custody instance changes or a custody is deleted, in a run on Tasks. A proposal can move
+between custodies, or in and out of the fallback, as facts arrive. Decided proposals are never
+placed again.
 
 #### ACCESS-custody-delete
 

@@ -15,7 +15,17 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-None.
+### L78: Events no act produces
+
+Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
+[events](reference/model/events.md).
+
+Two codes of the catalogue have no act or job behind them, in the mock or the backend:
+`document.relinked` (no act links a document to another catalog record) and `request.held` with
+`why: checking` (only `copy_exists` holds a request). The backend fires every other hookable code
+(built 2026-11-12). Needs: a decision whether VERA relinks a record and holds a request while it
+is being checked, and by which act; or the two leave the catalogue. → decision, then frontend and
+backend.
 
 ## Not built yet
 
@@ -23,25 +33,14 @@ None.
 
 ## For the engine
 
-### L8: Placing again is a run
-
-Rules: [ACCESS-custody-live](reference/access/custody.md#access-custody-live),
-[ACCESS-custody-delete](reference/access/custody.md#access-custody-delete).
-
-Decided on 2026-10-15. Placing open proposals again, after a Custody instance changes or a custody is deleted, is a
-run on Tasks. The mock places them at once, and only on delete. Decided on 2026-11-10: backend
-step 7 builds it as a `custody.place` run started by a custody delete or a Custody instance
-change, and the mock changes first to start that run on both. → frontend, then backend.
-
 ### L26: Repeats
 
 Rules: [LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat).
 
 Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. The
 backend makes occurrences (built 2026-11-09: an `intention.repeat` job queued for each repeat's
-next period start); the mock makes none, and Schedules does not list repeats yet. Decided on
-2026-11-10: backend step 7 lists repeats on Schedules from their queued jobs. → backend
-(machinery step: the job on Schedules), then frontend.
+next period start) and lists them on Schedules from their queued jobs (built 2026-11-12); the
+mock makes none and lists none. → frontend.
 
 ### L7: Access and planning changes are not logged
 
@@ -61,8 +60,8 @@ Audit stream in ClickStack, not to the log, with the configuration codes of the
 [catalogue](reference/model/events.md#configuration); no History card on the admin pages. Needs:
 the engine's outbox and its job, the collector's audit table with no expiry, and the ready-made
 HyperDX dashboards. The mock records nothing. The rest come with the engine's steps for those
-pages; the collector's table and the dashboards with deployment. Decided on 2026-11-10: backend
-step 7 records the Plugins, Hooks and Schedules codes. → engine, then deployment.
+pages; the collector's table and the dashboards with deployment. Plugins, Hooks and Schedules
+record theirs in the backend (built 2026-11-12). → deployment.
 
 ### L33: Hook events
 
@@ -72,42 +71,9 @@ Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
 The client part is done: the contract, editor and mock use hookable catalogue codes, and the
 mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
-The engine fires every event from the act or job that causes it, with a typed condition builder.
-The act matrix then names each act's event. Decided on 2026-11-10: backend step 7 fires every
-hookable code, each with a test that its act or job fires it. → engine, then docs.
-
-### L49: Hook payload
-
-Rules: [HOOK-payload](reference/integrations/hooks.md#hook-payload) and the rules after it.
-
-Asked for by the user on 2026-10-15: every hook gets JSON with the subject, the documents, what
-changed from what, why, and who caused it. Drafted, not built: the mock previews a sample text
-only.
-
-A list event carries every member as a whole document (decided on 2026-10-15), so a delivery
-plugin can turn it into, say, a list of documents for staff to prepare.
-
-The field names and event type names were settled on 2026-10-30, together with
-[L23](#built-2026-11-03) ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): `type` is the
-code, `changes` a list, machine values in snake case, times in UTC, the staff actor named.
-Decided on 2026-11-10: backend step 7 builds the full payload with L33. → engine.
-
-### L35: Watchlist engine
-
-Rules: [WATCH-delivery](reference/integrations/watchlists.md#watch-delivery),
-[WATCH-mail-batch](reference/integrations/watchlists.md#watch-mail-batch).
-
-The frontend simulates membership, batching and outboxes in memory. The engine needs:
-- durable entry events;
-- access checks when it sends;
-- the per-person window;
-- signed-link verification;
-- real email and chat transports, faked locally.
-
-Decided on 2026-11-10: backend step 7 matches and sends as jobs, entries and windows stored as
-rows, links signed with HMAC under a key from the environment; browser push is real Web Push
-(VAPID keys from the environment), captured in `/_engine/outbox` under the test profile; email
-and chat stay on the fakes until the real plugins. → engine.
+The backend fires every hookable code from the act or job that causes it, each with a test (built
+2026-11-12), except the two in [L78](#l78-events-no-act-produces). Left: the typed condition
+builder, then the act matrix naming each act's event. → backend, then docs.
 
 ### L67: Recheck reads the catalog
 
@@ -200,7 +166,7 @@ repeats; the seeds in both languages; search and uniqueness by language; then th
 viewer's language and its editors gain *Add language*. → engine (contract and seed), then
 frontend.
 
-### L76: The signer of a plugin version
+### L77: The signer of a plugin version
 
 Rules: [PLG-upload](reference/integrations/plugins.md#plg-upload),
 B6 *Signed* in [backend.md](develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version).
@@ -212,6 +178,19 @@ the upload reading and on each installed version in the contract, the mock's fix
 Plugins drawer. → frontend, then backend.
 
 ## Done
+
+### Built, 2026-11-12
+
+- **L8:** deleting a custody or changing a Custody instance places its open proposals again in a
+  `custody.place` run on Tasks, in the mock and the backend alike
+  ([ACCESS-custody-delete](reference/access/custody.md#access-custody-delete)).
+- **L49:** every hook gets the full payload: the subject, the documents (a list event every member
+  as a whole document), what changed from what, why, and who caused it
+  ([HOOK-payload](reference/integrations/hooks.md#hook-payload)).
+- **L35:** the backend matches watchlist entries and sends them as jobs, entries and mail windows
+  stored as rows, access checked again at send, manage links signed with HMAC under a key from the
+  environment, browser push as real Web Push; email and chat go through the Delivery fakes until
+  the real plugins ([WATCH-delivery](reference/integrations/watchlists.md#watch-delivery)).
 
 ### Built, 2026-11-07
 

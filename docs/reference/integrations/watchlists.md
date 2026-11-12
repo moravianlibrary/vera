@@ -129,7 +129,3 @@ its kind is off for all. *Do not send notifications* still stops everything.
 A hook email links to *Manage email notifications*. Logged in, it opens Preferences on that
 hook. Without logging in, it opens a limited signed page that can only switch hook mail off, or
 set *Do not send notifications*. It never changes another logged-in account.
-
-> **Open — [L35](../../ledger.md#l35-watchlist-engine).** The frontend simulates membership,
-> batching and outboxes in memory. The engine needs durable entry events, access checks at send
-> time, a per-person window, signed-link verification and real transports.

@@ -39,4 +39,4 @@
 ## The engine needs
 
 A clock it can move and a fake mail outbox that the test can read
-([L35](../../ledger.md#l35-watchlist-engine)).
+([L35](../../ledger.md#built-2026-11-12)).
