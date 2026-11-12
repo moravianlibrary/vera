@@ -394,7 +394,9 @@ export function relinkDocument(
     };
   }
   const at = new Date().toISOString();
-  const relinked = { ...document, catalogId: input.catalogId, catalogState: null };
+  // DOC-relink: a relinked document has no catalog state left, so the read leaves the field out.
+  const { catalogState: _cleared, ...unflagged } = document;
+  const relinked = { ...unflagged, catalogId: input.catalogId };
   replaceDocument(relinked);
   writeLog({
     subjectKind: "document",

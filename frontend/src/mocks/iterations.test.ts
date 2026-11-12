@@ -35,10 +35,9 @@ describe("document relinking", () => {
     });
 
     expect(result).toHaveProperty("value");
-    expect(database.documents.find((document) => document.id === "D35")).toMatchObject({
-      catalogId: "MZK01-001502234",
-      catalogState: null,
-    });
+    const relinked = database.documents.find((document) => document.id === "D35");
+    expect(relinked).toMatchObject({ catalogId: "MZK01-001502234" });
+    expect(relinked).not.toHaveProperty("catalogState");
     expect(
       database.statusLog.findLast((entry) => entry.code === "document.relinked"),
     ).toMatchObject({
