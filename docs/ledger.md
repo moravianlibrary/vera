@@ -33,9 +33,10 @@ records and VERA relinks the document, a dropped record shows *No longer in the 
 staff relink it by hand, and a replacement that is already another document is shown, never
 merged. A proposal's checks run as a job after the submit, *approve now* holds the item as
 checking and approves it once the checks find no copy, and *Propose…* previews each item's copy
-(for everyone) and restriction findings (staff only) live, with a short timeout. The mock marks
-every ask checked at submit and previews neither; the backend reads the copies it already holds.
-→ frontend (contract and mock), then backend.
+(for everyone) and restriction findings (staff only) live, with a short timeout. Not yet built:
+the mock and the engine check after the submit and preview (built 2026-11-12); the backend still
+checks at the submit, from the copies it already holds, and previews nothing. → backend; relinking
+→ frontend, then backend.
 
 ## For the engine
 
