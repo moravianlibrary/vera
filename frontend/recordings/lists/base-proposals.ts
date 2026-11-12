@@ -699,6 +699,13 @@ export default {
         },
         {
           as: "admin",
+          method: "POST",
+          path: "/_engine/jobs/run",
+          requestBody: {},
+          compare: "body",
+        },
+        {
+          as: "admin",
           method: "GET",
           path: "/api/requests",
           compare: "body",
@@ -746,6 +753,13 @@ export default {
         },
         {
           as: "admin",
+          method: "POST",
+          path: "/_engine/jobs/run",
+          requestBody: {},
+          compare: "body",
+        },
+        {
+          as: "admin",
           method: "GET",
           path: "/api/documents/$NEW_DOCUMENT",
           compare: "body",
@@ -774,6 +788,13 @@ export default {
             approval: null,
             entrySourceId: null,
           },
+          compare: "body",
+        },
+        {
+          as: "digitization",
+          method: "POST",
+          path: "/_engine/jobs/run",
+          requestBody: {},
           compare: "body",
         },
         {

@@ -51,6 +51,128 @@ describe("proposal endpoints", () => {
     engine.close();
   });
 
+  it("queues and runs one copy check for each submitted proposal", async () => {
+    const engine = testEngine("base");
+    const response = await call(engine, "POST", "/api/proposals", {
+      as: "u4",
+      body: {
+        ...draft,
+        projectId: null,
+        items: [{ type: "catalogId", value: "MZK01-001277001", unit: "1939", reason: null }],
+      },
+    });
+    expect(response.status).toBe(201);
+    expect(
+      engine.db
+        .query<{ n: number }, []>(
+          "SELECT COUNT(*) AS n FROM jobs WHERE kind='proposal.check' AND state='due'",
+        )
+        .get()?.n,
+    ).toBe(1);
+    const ran = await call(engine, "POST", "/_engine/jobs/run");
+    expect(await ran.json()).toEqual({ ran: 1, failed: 0 });
+    const request = engine.db
+      .query<{ record: string; document_id: string }, []>(
+        "SELECT record,document_id FROM requests ORDER BY rowid DESC LIMIT 1",
+      )
+      .get();
+    const checked = JSON.parse(request?.record ?? "{}");
+    expect(checked.checkedAt).not.toBeNull();
+    expect(checked.existingCopies).toMatchObject([
+      {
+        source: "Kramerius",
+        state: "Published",
+        link: "https://kramerius.mzk.cz/view/uuid:demo-new-volume",
+      },
+    ]);
+    const document = engine.db
+      .query<{ record: string }, [string]>("SELECT record FROM documents WHERE id=?")
+      .get(request?.document_id ?? "");
+    expect(JSON.parse(document?.record ?? "{}").registryRecords).toMatchObject([
+      {
+        registry: "Kramerius",
+        state: "Published",
+        url: "https://kramerius.mzk.cz/view/uuid:demo-new-volume",
+      },
+    ]);
+    engine.close();
+  });
+
+  it("holds approve-now until checking, then approves only when no copy exists", async () => {
+    const engine = testEngine("base");
+    const response = await call(engine, "POST", "/api/proposals", {
+      as: "u3",
+      body: {
+        ...draft,
+        projectId: null,
+        items: [{ type: "catalogId", value: "MZK03-000778120", unit: null, reason: null }],
+        approval: { categoryId: "c21", priority: "Normal" },
+      },
+    });
+    expect(response.status).toBe(201);
+    const request = engine.db
+      .query<{ id: string; record: string }, []>(
+        "SELECT id,record FROM requests ORDER BY rowid DESC LIMIT 1",
+      )
+      .get();
+    expect(JSON.parse(request?.record ?? "{}").decision).toBe("Pending");
+    const held = engine.db
+      .query<{ code: string }, [string]>(
+        "SELECT code FROM events WHERE subject_id=? ORDER BY rowid",
+      )
+      .all(request?.id ?? "");
+    expect(held.map(({ code }) => code)).toEqual(["request.created", "request.held"]);
+    await call(engine, "POST", "/_engine/jobs/run");
+    const checked = engine.db
+      .query<{ record: string }, [string]>("SELECT record FROM requests WHERE id=?")
+      .get(request?.id ?? "");
+    const final = JSON.parse(checked?.record ?? "{}");
+    expect(final.decision).toBe("Approved");
+    expect(final.existingCopies).toEqual([]);
+    const iterations = engine.db
+      .query<{ record: string }, []>("SELECT record FROM iterations")
+      .all();
+    expect(iterations.some(({ record }) => JSON.parse(record).requestId === request?.id)).toBe(
+      true,
+    );
+    engine.close();
+  });
+
+  it("leaves approve-now Pending when the check finds one copy", async () => {
+    const engine = testEngine("base");
+    await call(engine, "POST", "/api/proposals", {
+      as: "u3",
+      body: {
+        ...draft,
+        projectId: null,
+        approval: { categoryId: "c21", priority: "Normal" },
+      },
+    });
+    const request = engine.db
+      .query<{ id: string; document_id: string }, []>(
+        "SELECT id,document_id FROM requests ORDER BY rowid DESC LIMIT 1",
+      )
+      .get();
+    const doc = engine.db
+      .query<{ record: string }, [string]>("SELECT record FROM documents WHERE id=?")
+      .get(request?.document_id ?? "");
+    const record = JSON.parse(doc?.record ?? "{}");
+    record.registryRecords = [
+      { registry: "Other", state: "Published", url: "https://example.org/copy" },
+    ];
+    engine.db
+      .query("UPDATE documents SET record=? WHERE id=?")
+      .run(JSON.stringify(record), request?.document_id ?? "");
+    await call(engine, "POST", "/_engine/jobs/run");
+    const checked = engine.db
+      .query<{ record: string }, [string]>("SELECT record FROM requests WHERE id=?")
+      .get(request?.id ?? "");
+    const final = JSON.parse(checked?.record ?? "{}");
+    expect(final.decision).toBe("Pending");
+    expect(final.existingCopies).toHaveLength(1);
+    engine.close();
+  });
+
   it("rolls every proposal table back when a write fails", async () => {
     const engine = testEngine("base");
     const before = Object.fromEntries(

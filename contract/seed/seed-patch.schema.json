@@ -3202,6 +3202,27 @@
                       }
                     ]
                   },
+                  "approvalAfterCheck": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["Low", "Normal", "High", "Urgent"]
+                          }
+                        },
+                        "required": ["categoryId", "priority"]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "decision": {
                     "type": "string",
                     "const": "Pending"
@@ -3329,6 +3350,27 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "approvalAfterCheck": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["Low", "Normal", "High", "Urgent"]
+                          }
+                        },
+                        "required": ["categoryId", "priority"]
                       },
                       {
                         "type": "null"
@@ -3512,6 +3554,27 @@
                       }
                     ]
                   },
+                  "approvalAfterCheck": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["Low", "Normal", "High", "Urgent"]
+                          }
+                        },
+                        "required": ["categoryId", "priority"]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "decision": {
                     "type": "string",
                     "const": "Denied"
@@ -3663,6 +3726,27 @@
                       }
                     ]
                   },
+                  "approvalAfterCheck": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["Low", "Normal", "High", "Urgent"]
+                          }
+                        },
+                        "required": ["categoryId", "priority"]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
                   "decision": {
                     "type": "string",
                     "const": "Withdrawn"
@@ -3792,6 +3876,27 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "approvalAfterCheck": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["Low", "Normal", "High", "Urgent"]
+                          }
+                        },
+                        "required": ["categoryId", "priority"]
                       },
                       {
                         "type": "null"
@@ -11855,6 +11960,50 @@
               "barcodes"
             ],
             "additionalProperties": false
+          }
+        },
+        "registryAnswers": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "registry": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "CheckFailed",
+                    "NotFound",
+                    "Unmapped",
+                    "Planned",
+                    "InProgress",
+                    "Digitized",
+                    "Published"
+                  ]
+                },
+                "link": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": ["registry", "state", "link"],
+              "additionalProperties": false
+            }
           }
         },
         "catalogBases": {

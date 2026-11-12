@@ -53,8 +53,12 @@ const record = (catalogId: string, fields: Partial<CatalogRecord> = {}): Catalog
   barcodes: {},
   ...fields,
 });
-const plugins = (records: CatalogRecord[]): ProposalPlugins => ({
+const plugins = (
+  records: CatalogRecord[],
+  answers: ProposalPlugins["registryLookup"] = () => [],
+): ProposalPlugins => ({
   catalogRecords: () => records,
+  registryLookup: answers,
   catalogPropertyValuesOf: () => [],
   waysIn: () => ({
     canDetectTypes: false,
@@ -92,6 +96,25 @@ const store = (overrides: Partial<RecordStore> = {}): RecordStore => ({
 });
 
 describe("shared proposal checks", () => {
+  test("previews registry copies for a new document at the supplied moment", () => {
+    const now = new Date("2026-07-02T12:00:00Z");
+    const check = checkItem(
+      store(),
+      plugins([record("NEW")], () => [
+        { registry: "Kramerius", state: "Published", link: "https://example.org/scan" },
+      ]),
+      session,
+      { type: "catalogId", value: "NEW", unit: null },
+      true,
+      now,
+    );
+    expect(check).toMatchObject({
+      kind: "new",
+      preview: {
+        copies: [{ source: "Kramerius", state: "Published", link: "https://example.org/scan" }],
+      },
+    });
+  });
   test("answers new, mine, inVera, whichUnit, whichRecord and notInCatalog", () => {
     const held = doc("D1", "MINE");
     const current = store({ documents: [held], requests: [request("R1", "D1", "u1")] });
@@ -153,7 +176,7 @@ describe("library day count and submission plan", () => {
     expect(getRateLimitStatus(s, session, new Date("2026-01-02T12:00:00Z")).perDay).toBe(99);
   });
 
-  test("plans one approved request and ordered events with one correlation ID", () => {
+  test("holds an approved request for its check and orders the events with one correlation ID", () => {
     const result = planSubmission(
       store(),
       plugins([record("NEW")]),
@@ -171,16 +194,24 @@ describe("library day count and submission plan", () => {
     );
     expect(result.writes).toMatchObject({
       documents: [{ catalogId: "NEW" }],
-      iterations: [{ id: "IT-1" }],
-      requests: [{ id: "R-1", decision: "Approved" }],
+      iterations: [],
+      requests: [
+        {
+          id: "R-1",
+          decision: "Pending",
+          checkedAt: null,
+          existingCopies: [],
+          approvalAfterCheck: { categoryId: "c1", priority: "Normal" },
+        },
+      ],
     });
     expect(result.writes.batch?.id).toBe("B-0001");
     expect(result.writes.events.map(({ code }) => code)).toEqual([
       "request.created",
-      "request.approved",
+      "request.held",
     ]);
     expect(new Set(result.writes.events.map(({ correlationId }) => correlationId)).size).toBe(1);
-    expect(result.report).toMatchObject({ proposed: 1, approved: 1 });
+    expect(result.report).toMatchObject({ proposed: 1, approved: 0 });
   });
 
   test("uses the first planned document for a second item with the same identity", () => {

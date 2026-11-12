@@ -435,6 +435,7 @@ const requestBase = {
   existingCopies: z.array(existingCopySchema),
   // Null until restriction and copy checks have run once.
   checkedAt: timestamp.nullable(),
+  approvalAfterCheck: z.object({ categoryId: id, priority: prioritySchema }).nullable().optional(),
 };
 
 // Proposal and addition are phases of a request, not other entities (concepts.md §Request).

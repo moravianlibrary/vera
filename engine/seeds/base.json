@@ -17536,6 +17536,15 @@
         "barcodes": {}
       }
     ],
+    "registryAnswers": {
+      "MZK01-001277001|1939": [
+        {
+          "registry": "Kramerius",
+          "state": "Published",
+          "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+        }
+      ]
+    },
     "catalogRepairs": {
       "MZK03-000445012": ["245$a"],
       "MZK05-000009901": ["300$a"]

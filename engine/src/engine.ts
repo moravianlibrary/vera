@@ -25,7 +25,7 @@ import type { Outbox } from "./outbox";
 import { createOutbox } from "./outbox";
 import { decisionEndpoints } from "./records/decisions";
 import { recordEndpoints } from "./records/endpoints";
-import { proposalEndpoints } from "./records/proposals";
+import { proposalEndpoints, registerProposalJobs } from "./records/proposals";
 import { loadSeed, readSeed, seedsDir } from "./seed";
 
 export interface EngineOptions {
@@ -118,6 +118,7 @@ export function createEngine(options: EngineOptions): Engine {
   };
 
   registerSignUpJobs(engine);
+  registerProposalJobs(engine);
 
   // A database built from other schema files is rebuilt from the seed it held: nothing in it is
   // kept, so it needs no migration.

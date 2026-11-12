@@ -157,7 +157,17 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -165,7 +175,22 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "Ready"
+              "status": "Ready",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -173,7 +198,11 @@
               "unit": "1902",
               "title": "Brněnský kalendář · 1902",
               "documentId": "<D2>",
-              "status": "AwaitingReview"
+              "status": "AwaitingReview",
+              "preview": {
+                "copies": [],
+                "restrictions": []
+              }
             },
             {
               "kind": "whichUnit",
@@ -456,7 +485,17 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -464,7 +503,22 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "Ready"
+              "status": "Ready",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -472,7 +526,11 @@
               "unit": "1902",
               "title": "Brněnský kalendář · 1902",
               "documentId": "<D2>",
-              "status": "AwaitingReview"
+              "status": "AwaitingReview",
+              "preview": {
+                "copies": [],
+                "restrictions": []
+              }
             },
             {
               "kind": "whichUnit",
@@ -755,7 +813,17 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -763,7 +831,22 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "Ready"
+              "status": "Ready",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ],
+                "restrictions": []
+              }
             },
             {
               "kind": "inVera",
@@ -771,7 +854,11 @@
               "unit": "1902",
               "title": "Brněnský kalendář · 1902",
               "documentId": "<D2>",
-              "status": "AwaitingReview"
+              "status": "AwaitingReview",
+              "preview": {
+                "copies": [],
+                "restrictions": []
+              }
             },
             {
               "kind": "whichUnit",
@@ -1054,7 +1141,16 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ]
+              }
             },
             {
               "kind": "inVera",
@@ -1062,7 +1158,21 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "WaitingToBeScheduled"
+              "status": "WaitingToBeScheduled",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ]
+              }
             },
             {
               "kind": "inVera",
@@ -1070,7 +1180,10 @@
               "unit": "1902",
               "title": "Brněnský kalendář · 1902",
               "documentId": "<D2>",
-              "status": "WaitingForReview"
+              "status": "WaitingForReview",
+              "preview": {
+                "copies": []
+              }
             },
             {
               "kind": "whichUnit",
@@ -1353,7 +1466,16 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ]
+              }
             },
             {
               "kind": "inVera",
@@ -1361,7 +1483,21 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "WaitingToBeScheduled"
+              "status": "WaitingToBeScheduled",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ]
+              }
             },
             {
               "kind": "mine",
@@ -1910,7 +2046,16 @@
               "catalogId": "MZK01-001277001",
               "unit": "1939",
               "title": "Slovácké noviny · 1939",
-              "isAskedBefore": true
+              "isAskedBefore": true,
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
+                  }
+                ]
+              }
             },
             {
               "kind": "inVera",
@@ -1918,7 +2063,21 @@
               "unit": "1936–1938",
               "title": "Slovácké noviny · 1936–1938",
               "documentId": "<D1>",
-              "status": "WaitingToBeScheduled"
+              "status": "WaitingToBeScheduled",
+              "preview": {
+                "copies": [
+                  {
+                    "source": "Kramerius",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  },
+                  {
+                    "source": "VERA",
+                    "state": "Published",
+                    "link": "https://kramerius.mzk.cz/view/uuid:demo8"
+                  }
+                ]
+              }
             },
             {
               "kind": "inVera",
@@ -1926,7 +2085,10 @@
               "unit": "1902",
               "title": "Brněnský kalendář · 1902",
               "documentId": "<D2>",
-              "status": "WaitingForReview"
+              "status": "WaitingForReview",
+              "preview": {
+                "copies": []
+              }
             },
             {
               "kind": "whichUnit",
@@ -2108,6 +2270,17 @@
                 "unit": "1902"
               }
             ]
+          }
+        },
+        {
+          "as": "u3",
+          "method": "POST",
+          "path": "/_engine/jobs/run",
+          "status": 200,
+          "requestBody": {},
+          "body": {
+            "ran": 2,
+            "failed": 0
           }
         },
         {
@@ -5938,9 +6111,20 @@
               "size": 1
             },
             "proposed": 1,
-            "approved": 1,
+            "approved": 0,
             "joined": 0,
             "skipped": []
+          }
+        },
+        {
+          "as": "u3",
+          "method": "POST",
+          "path": "/_engine/jobs/run",
+          "status": 200,
+          "requestBody": {},
+          "body": {
+            "ran": 1,
+            "failed": 0
           }
         },
         {
@@ -6010,9 +6194,9 @@
                   "progress": "Enqueued",
                   "listId": null,
                   "formerListName": null,
+                  "cancellation": null,
                   "restriction": null,
                   "restrictionOverride": null,
-                  "cancellation": null,
                   "defects": [],
                   "verdicts": [],
                   "ingestFailure": null,
@@ -6033,7 +6217,12 @@
                   "projectId": null,
                   "existingCopies": [],
                   "checkedAt": "<time>",
+                  "approvalAfterCheck": {
+                    "categoryId": "c21",
+                    "priority": "Normal"
+                  },
                   "decision": "Approved",
+                  "isAfterProjectApproval": false,
                   "iteration": {
                     "relation": "Originates",
                     "id": "<IT1>"
@@ -6075,6 +6264,25 @@
                   "userId": "u3"
                 },
                 "correlationId": "<U1>",
+                "code": "request.held",
+                "data": {
+                  "why": "checking"
+                },
+                "reason": {
+                  "public": null,
+                  "internal": null
+                },
+                "id": "<E2>"
+              },
+              {
+                "subjectKind": "request",
+                "subjectId": "<R1>",
+                "at": "<time>",
+                "actor": {
+                  "kind": "user",
+                  "userId": "u3"
+                },
+                "correlationId": "<U2>",
                 "code": "request.approved",
                 "data": {
                   "iterationId": "<IT1>",
@@ -6086,7 +6294,7 @@
                   "public": null,
                   "internal": null
                 },
-                "id": "<E2>"
+                "id": "<E3>"
               }
             ]
           }
@@ -6129,6 +6337,17 @@
             "approved": 0,
             "joined": 0,
             "skipped": []
+          }
+        },
+        {
+          "as": "u2",
+          "method": "POST",
+          "path": "/_engine/jobs/run",
+          "status": 200,
+          "requestBody": {},
+          "body": {
+            "ran": 1,
+            "failed": 0
           }
         },
         {

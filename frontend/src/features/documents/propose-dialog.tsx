@@ -897,6 +897,7 @@ function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowPro
   );
 }
 
+// LC-REQ-preview: show each item's check preview beside its proposed outcome.
 function ItemOutcome({
   item,
   onChange,
@@ -948,6 +949,7 @@ function ItemOutcome({
           {check.isAskedBefore && (
             <Muted>{i18n.t("proposal.askedBefore", { ns: "documents" })}</Muted>
           )}
+          <ProposalPreview preview={check.preview} />
         </>
       );
     case "inVera":
@@ -956,6 +958,7 @@ function ItemOutcome({
           <ToneBadge tone="blue">{i18n.t("proposal.inVera", { ns: "documents" })}</ToneBadge>
           <StatusBadge status={check.status} className="px-1.5 py-0 text-caption" />
           <Muted>· {i18n.t("proposal.askForThisToo", { ns: "documents" })}</Muted>
+          <ProposalPreview preview={check.preview} />
         </>
       );
     case "mine":
@@ -997,6 +1000,51 @@ function ItemOutcome({
         </>
       );
   }
+}
+
+// LC-REQ-preview: show the server's live copy and staff restriction preview below the item.
+function ProposalPreview({
+  preview,
+}: {
+  preview: Extract<ProposalCheck, { kind: "new" }>["preview"];
+}) {
+  return (
+    <span className="flex flex-col gap-1 text-xs">
+      {preview.copies === null ? (
+        <Muted>{i18n.t("proposal.checkedAfterSubmit", { ns: "documents" })}</Muted>
+      ) : (
+        preview.copies.map((copy) => (
+          <span key={`${copy.source}-${copy.link ?? copy.state}`}>
+            {i18n.t("proposal.alreadyAvailable", { ns: "documents" })} ·{" "}
+            {copy.link ? (
+              <a className="underline" href={copy.link} target="_blank" rel="noreferrer">
+                {copy.source}
+              </a>
+            ) : (
+              copy.source
+            )}
+          </span>
+        ))
+      )}
+      {preview.restrictions?.map(
+        (finding) =>
+          finding.forbidden && (
+            <Muted key={`${finding.until ?? ""}-${finding.why}`}>
+              {finding.until === null
+                ? i18n.t("proposal.forbiddenPreviewOpenEnded", {
+                    ns: "documents",
+                    why: finding.why,
+                  })
+                : i18n.t("proposal.forbiddenPreview", {
+                    ns: "documents",
+                    until: finding.until,
+                    why: finding.why,
+                  })}
+            </Muted>
+          ),
+      )}
+    </span>
+  );
 }
 
 // DOC-records: the records an identifier names, none picked; each picked becomes its own item.

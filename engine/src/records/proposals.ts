@@ -5,6 +5,7 @@ import {
   canSubmitRateLimited,
   checkItem,
   getRateLimitStatus,
+  planProposalCheck,
   planSubmission,
   proposableProjectsOf,
   proposalLimitOf,
@@ -24,6 +25,7 @@ import { requireCaller } from "../access/index";
 import type { Engine } from "../engine";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
+import type { Job } from "../jobs";
 import { engineProposalContext, engineProposalPlugins } from "./plugins";
 import { engineStore } from "./store";
 import { writePlan } from "./write";
@@ -160,7 +162,30 @@ export const proposalEndpoints = [
           .query("INSERT INTO documents (id,record) VALUES (?,?)")
           .run(record.id, JSON.stringify(record));
       writePlan(engine, writes, "insert");
+      for (const request of writes.requests)
+        if (request.checkedAt === null)
+          engine.jobs.enqueue("proposal.check", now, { requestId: request.id });
     })();
     return { status: 201, body: report };
   }),
 ];
+
+// LC-REQ-checks-job: one due job checks one proposal and persists its shared result.
+export function registerProposalJobs(engine: Engine): void {
+  engine.jobs.register("proposal.check", (job: Job) => {
+    const requestId = (job.payload as { requestId: string }).requestId;
+    const writes = planProposalCheck(
+      engineStore(engine),
+      engineProposalPlugins(engine),
+      requestId,
+      engine.clock.now(),
+      () => `IT-${crypto.randomUUID()}`,
+    );
+    if (writes === null) return;
+    for (const document of writes.documents)
+      engine.db
+        .query("UPDATE documents SET record = ? WHERE id = ?")
+        .run(JSON.stringify(document), document.id);
+    writePlan(engine, { ...writes, batch: null, documents: [] }, "replace");
+  });
+}

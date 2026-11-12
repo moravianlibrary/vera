@@ -21,6 +21,7 @@ import {
   intentionTemplateSchema,
   iterationSchema,
   projectSchema,
+  registryStateSchema,
   requestSchema,
   userSchema,
   watchlistSchema,
@@ -328,6 +329,10 @@ const fakesSchema = z.strictObject({
         .strict(),
     )
     .optional(),
+  // engineProposalPlugins reads registry results for records VERA does not hold.
+  registryAnswers: objectMap(
+    z.array(z.strictObject({ registry: id, state: registryStateSchema, link: z.url().nullable() })),
+  ).optional(),
   // engineProposalPlugins reads catalog record prefixes and OPAC links.
   catalogBases: objectMap(z.strictObject({ base: z.string(), opacUrl: z.url() })).optional(),
   // frontend/src/mocks/catalog.ts reads the mock catalog adapter's link name.

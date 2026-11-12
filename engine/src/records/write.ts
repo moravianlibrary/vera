@@ -31,6 +31,7 @@ export function writePlan(engine: Engine, writes: Writes, requests: "insert" | "
 function recordPlannedEvent(engine: Engine, event: EventEntryInput): void {
   switch (event.code) {
     case "request.created":
+    case "request.held":
     case "request.approved":
     case "request.declined":
     case "request.withdrawn":

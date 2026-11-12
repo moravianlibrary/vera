@@ -294,6 +294,7 @@ import {
   proposableProjectsOf,
   proposalLimitOf,
   proposalSettingsOf,
+  runProposalChecks,
   submitProposal,
   submittableProposalItemCount,
 } from "@/mocks/proposals";
@@ -1555,6 +1556,9 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
     }),
+
+    // LC-REQ-checks-job: the engine control runs the mock's queued proposal checks on demand.
+    http.post(route("/_engine/jobs/run"), () => HttpResponse.json(runProposalChecks())),
 
     http.get(route(apiRoutes.requestCustodies), () => {
       if (!canReadRequests(currentSession())) {

@@ -3,6 +3,7 @@
 // resolves too; the mock catalog reads those from the documents themselves. A record of several
 // volumes or issues lists them, and a barcode names one of them.
 
+import type { RegistryAnswer } from "@vera/contract/queries/proposals";
 import type { CatalogBase } from "@vera/contract/queries/ways-in";
 import type { CatalogRecord } from "@vera/domain/catalog";
 
@@ -133,6 +134,16 @@ export const catalogRecords: readonly CatalogRecord[] = [
     barcodes: {},
   },
 ];
+
+export const registryAnswers: Readonly<Record<string, readonly RegistryAnswer[]>> = {
+  "MZK01-001277001|1939": [
+    {
+      registry: "Kramerius",
+      state: "Published",
+      link: "https://kramerius.mzk.cz/view/uuid:demo-new-volume",
+    },
+  ],
+};
 
 // What has been repaired in the catalog since VERA last read each record: catalog ID to the
 // subjects (fields, or the record itself) a recheck no longer finds a defect on. Everything else

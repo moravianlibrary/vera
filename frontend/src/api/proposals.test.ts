@@ -19,6 +19,7 @@ import {
 import type { MockUserProfile } from "@/config/env";
 import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
+import { runProposalChecks } from "@/mocks/proposals";
 import { resolveSession } from "@/mocks/session";
 
 const server = setupServer();
@@ -291,7 +292,7 @@ describe("submitProposal", () => {
     expect(status).toBe(422);
   });
 
-  it("approves a curator's new item at once when no copy exists", async () => {
+  it("holds a curator's new item until its check approves it", async () => {
     signInAs("curator");
 
     const report = await submitProposal(
@@ -300,7 +301,10 @@ describe("submitProposal", () => {
       }),
     );
 
-    expect(report).toMatchObject({ proposed: 1, approved: 1, batch: { size: 1 } });
+    expect(report).toMatchObject({ proposed: 1, approved: 0, batch: { size: 1 } });
+    expect(database.requests.at(-1)?.checkedAt).toBeNull();
+    runProposalChecks();
+    expect(database.requests.at(-1)?.decision).toBe("Approved");
   });
 
   it("makes a batch of one item too (ENT-batch)", async () => {
@@ -327,7 +331,10 @@ describe("submitProposal", () => {
 
     expect(report).toMatchObject({ proposed: 1, approved: 0, joined: 0 });
     expect(ask).toMatchObject({ documentId: "D1", requesterId: "u8", decision: "Pending" });
-    expect(ask?.existingCopies.map((copy) => copy.source)).toContain("VERA");
+    expect(ask?.checkedAt).toBeNull();
+    expect(ask?.existingCopies).toEqual([]);
+    runProposalChecks();
+    expect(database.requests.at(-1)?.existingCopies.map((copy) => copy.source)).toContain("VERA");
   });
 });
 

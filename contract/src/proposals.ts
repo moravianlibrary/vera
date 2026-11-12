@@ -3,7 +3,7 @@
 // identifier, then VERA for the document, so each item says what submitting will do. One item
 // is a request; several are one batch.
 
-import { batchSchema, prioritySchema } from "@vera/domain/entities";
+import { batchSchema, existingCopySchema, prioritySchema } from "@vera/domain/entities";
 import { identifierTypeRuleSchema, identifierTypeSchema } from "@vera/domain/identifiers";
 import { z } from "zod";
 import { recordStatusSchema } from "./documents";
@@ -33,16 +33,30 @@ const found = {
   title: z.string(),
 };
 
+const proposalPreview = z.object({
+  copies: z.array(existingCopySchema.pick({ source: true, state: true, link: true })).nullable(),
+  restrictions: z
+    .array(z.object({ forbidden: z.boolean(), until: z.string().nullable(), why: z.string() }))
+    .nullable()
+    .optional(),
+});
+
 // What submitting an item will do, by the catalog's and VERA's answers.
 export const proposalCheckSchema = z.discriminatedUnion("kind", [
   // Proposes it. Asked before when VERA holds the document but nothing is moving.
-  z.object({ kind: z.literal("new"), ...found, isAskedBefore: z.boolean() }),
+  z.object({
+    kind: z.literal("new"),
+    ...found,
+    isAskedBefore: z.boolean(),
+    preview: proposalPreview,
+  }),
   // Asks for it too: joins the work under way, or the decision every asker waits on.
   z.object({
     kind: z.literal("inVera"),
     ...found,
     documentId: z.string(),
     status: recordStatusSchema,
+    preview: proposalPreview,
   }),
   // The caller already asks for it; skipped.
   z.object({ kind: z.literal("mine"), ...found, documentId: z.string() }),
@@ -84,7 +98,7 @@ export type ProposalDraft = z.infer<typeof proposalDraftSchema>;
 export const proposalReportSchema = z.object({
   batch: batchSchema.nullable(),
   proposed: z.number().int().nonnegative(),
-  // Of the proposed, those approved at once; the rest stay Pending (LC-REQ-approve-now).
+  // Approval follows the check; the submit reports zero approved (LC-REQ-approve-now).
   approved: z.number().int().nonnegative(),
   joined: z.number().int().nonnegative(),
   skipped: z.array(proposalItemSchema),

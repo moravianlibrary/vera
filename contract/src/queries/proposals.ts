@@ -27,6 +27,7 @@ import type {
   ExistingCopy,
   Iteration,
   Project,
+  RegistryRecord,
   Request,
   Session,
 } from "@vera/domain/entities";
@@ -48,11 +49,18 @@ import { audienceOf } from "./documents";
 // the ways in the enabled instances offer.
 export interface ProposalPlugins {
   catalogRecords(): readonly CatalogRecord[];
+  registryLookup(record: CatalogRecord, unit: string | null): readonly RegistryAnswer[];
   catalogPropertyValuesOf(
     read: Pick<Document, "title" | "type" | "shelfMark">,
     observedAt: string,
   ): import("@vera/domain/properties").PropertyValues[];
   waysIn(): Omit<ProposalSettings, "maxAtOnce">;
+}
+
+export interface RegistryAnswer {
+  registry: string;
+  state: RegistryRecord["state"];
+  link: string | null;
 }
 
 // The library's calendar day is Prague time (ROLE-library-day). Both proposal limits belong to roles.
@@ -140,11 +148,14 @@ type Resolution =
   | { units: readonly string[]; record: CatalogRecord }
   | { records: readonly CatalogRecord[] }
   | null;
+// LC-REQ-preview: look up the item and preview its copy and restriction checks when requested.
 export function checkItem(
   store: RecordStore,
   plugins: ProposalPlugins,
   session: Session,
   item: ProposalItem,
+  includePreview = true,
+  now = store.today,
 ): ProposalCheck {
   const resolution = resolve(store, plugins, item);
   if (resolution === null) return { kind: "notInCatalog" };
@@ -167,16 +178,105 @@ export function checkItem(
     title: resolution.unit === null ? record.title : `${record.title} · ${resolution.unit}`,
   };
   const document = findDocumentByIdentity(store, record.catalogId, resolution.unit);
-  if (document === null) return { kind: "new", ...found, isAskedBefore: false };
+  if (document === null)
+    return {
+      kind: "new",
+      ...found,
+      isAskedBefore: false,
+      preview: includePreview
+        ? previewForNew(
+            plugins,
+            record,
+            resolution.unit,
+            audienceOf(store, session) === "staff",
+            now,
+          )
+        : { copies: [] },
+    };
   const held = recordOf(store, document);
   if (isAskedBy(held, session.user.id)) return { kind: "mine", ...found, documentId: document.id };
-  if (!isLive(held)) return { kind: "new", ...found, isAskedBefore: held.requests.length > 0 };
+  if (!isLive(held))
+    return {
+      kind: "new",
+      ...found,
+      isAskedBefore: held.requests.length > 0,
+      preview: includePreview
+        ? previewFor(held, record, plugins, audienceOf(store, session) === "staff", now)
+        : { copies: [] },
+    };
   return {
     kind: "inVera",
     ...found,
     documentId: document.id,
     status: statusFor(store, session, held),
+    preview: includePreview
+      ? previewFor(held, record, plugins, audienceOf(store, session) === "staff", now)
+      : { copies: [] },
   };
+}
+// LC-REQ-preview: report the known copies and staff-only restriction finding for one held item.
+function previewFor(
+  record: DocumentRecord,
+  catalogRecord: CatalogRecord,
+  plugins: ProposalPlugins,
+  staff: boolean,
+  now: Date,
+) {
+  const document = withRegistryAnswers(
+    record.document,
+    plugins.registryLookup(catalogRecord, record.document.unit?.value ?? null),
+    now,
+  );
+  const copies = existingCopiesFor({ ...record, document }, now.toISOString()).map(
+    ({ source, state, link }) => ({ source, state, link }),
+  );
+  const restriction = currentIterationOf(record)?.restriction;
+  return {
+    copies,
+    ...(staff
+      ? {
+          restrictions:
+            restriction === null || restriction === undefined
+              ? []
+              : [
+                  {
+                    forbidden: true,
+                    until: null,
+                    why: restriction.internalText ?? restriction.publicText ?? restriction.rule,
+                  },
+                ],
+        }
+      : {}),
+  };
+}
+// LC-REQ-preview: show the registry's answer for a catalog item VERA does not hold.
+function previewForNew(
+  plugins: ProposalPlugins,
+  catalogRecord: CatalogRecord,
+  unit: string | null,
+  staff: boolean,
+  now: Date,
+) {
+  const document = withRegistryAnswers(
+    {
+      id: "preview",
+      catalogId: catalogRecord.catalogId,
+      unit: unit === null ? null : { type: unitTypeOf(unit), value: unit },
+      title: catalogRecord.title,
+      type: catalogRecord.type,
+      shelfMark: null,
+      pageSources: [],
+      registryRecords: [],
+      properties: [],
+    },
+    plugins.registryLookup(catalogRecord, unit),
+    now,
+  );
+  const copies = existingCopiesFor(
+    { document, iterations: [], requests: [] },
+    now.toISOString(),
+  ).map(({ source, state, link }) => ({ source, state, link }));
+  return { copies, ...(staff ? { restrictions: [] } : {}) };
 }
 export function submittableProposalItemCount(
   store: RecordStore,
@@ -187,7 +287,7 @@ export function submittableProposalItemCount(
   // The quota counts requests actually made, including joining an existing document.
   // Items that the submit report will skip do not consume it.
   return draft.items.filter((item) =>
-    ["new", "inVera"].includes(checkItem(store, plugins, session, item).kind),
+    ["new", "inVera"].includes(checkItem(store, plugins, session, item, false).kind),
   ).length;
 }
 // The catalog's answer: a record, and the unit when the record has several.
@@ -350,6 +450,7 @@ export interface SubmissionWrites {
 }
 // ---------------------------------------------------------------- submit
 
+// LC-REQ-checks-job: submit creates unchecked asks; the worker runs their copy checks later.
 export function planSubmission(
   store: RecordStore,
   plugins: ProposalPlugins,
@@ -369,7 +470,7 @@ export function planSubmission(
   const project = working.projects.find((candidate) => candidate.id === draft.projectId);
   const submitted = draft.items.map((item) => ({
     item,
-    check: checkItem(working, plugins, session, item),
+    check: checkItem(working, plugins, session, item, false, now),
   }));
   const accepted = submitted.filter(({ check }) => check.kind === "new" || check.kind === "inVera");
   let batch: StoredBatch | null = null;
@@ -435,8 +536,11 @@ export function planSubmission(
       reason: item.reason ?? draft.reason,
       batchId: batch.id,
       projectId: project?.id ?? null,
-      existingCopies: existingCopiesFor(record, nowIso),
-      checkedAt: nowIso,
+      existingCopies: [],
+      checkedAt: null,
+      ...(check.kind === "new" && draft.approval !== null
+        ? { approvalAfterCheck: draft.approval }
+        : {}),
     };
     if (check.kind === "inVera") {
       const request = joiningRequestOf(record, base);
@@ -447,36 +551,11 @@ export function planSubmission(
       continue;
     }
     proposed++;
-    if (draft.approval !== null && base.existingCopies.length === 0) {
-      const iteration: Iteration = {
-        id: newId("IT"),
-        documentId: document.id,
-        attempt: record.iterations.length + 1,
-        requestId: base.id,
-        categoryId: draft.approval.categoryId,
-        priority: draft.approval.priority,
-        projectId: base.projectId,
-        progress: "Enqueued",
-        listId: null,
-        formerListName: null,
-        restriction: null,
-        restrictionOverride: null,
-        cancellation: null,
-        defects: [],
-        verdicts: [],
-        ingestFailure: null,
-        digitizedAt: null,
-        links: [],
-        scanDpi: null,
-        properties: [],
-      };
-      writes.iterations.push(iteration);
-      working = { ...working, iterations: [...working.iterations, iteration] };
+    if (draft.approval !== null) {
       const request: Request = {
         ...base,
-        decision: "Approved",
-        iteration: { relation: "Originates", id: iteration.id },
-        rescan: null,
+        decision: "Pending",
+        isAfterProjectApproval: project?.state === "Approved",
       };
       appendRequest(writes, request);
       working = { ...working, requests: [...working.requests, request] };
@@ -487,11 +566,10 @@ export function planSubmission(
         at: nowIso,
         actor: { kind: "user", userId: session.user.id },
         correlationId,
-        code: "request.approved",
-        data: { iterationId: iteration.id, isRescan: false, batchSize: null, suggestion: null },
+        code: "request.held",
+        data: { why: "checking" },
         reason: { public: null, internal: null },
       });
-      approved++;
       continue;
     }
     const request: Request = {
@@ -532,7 +610,7 @@ function joiningRequestOf(
   return { ...base, decision: "Duplicate", tracksIterationId: current.id };
 }
 // The copies the check observes: a registry that holds a scan, and VERA's own earlier one.
-function existingCopiesFor(record: DocumentRecord, now: string): ExistingCopy[] {
+export function existingCopiesFor(record: DocumentRecord, now: string): ExistingCopy[] {
   const registries = record.document.registryRecords
     .filter((entry) => entry.state === "Digitized" || entry.state === "Published")
     .map(
@@ -558,6 +636,123 @@ function existingCopiesFor(record: DocumentRecord, now: string): ExistingCopy[] 
       }),
     );
   return [...registries, ...earlier];
+}
+
+// DOC-existing-copy: store the registry's answer with the moment it was checked.
+function withRegistryAnswers(
+  document: Document,
+  answers: readonly RegistryAnswer[],
+  now: Date,
+): Document {
+  if (answers.length === 0) return document;
+  const observedAt = now.toISOString();
+  const byRegistry = new Map(document.registryRecords.map((entry) => [entry.registry, entry]));
+  for (const answer of answers)
+    byRegistry.set(answer.registry, {
+      registry: answer.registry,
+      state: answer.state,
+      rawState: null,
+      linkKind: answer.link === null ? null : "content",
+      url: answer.link,
+      observedAt,
+      checkedAt: observedAt,
+      error: null,
+    });
+  return { ...document, registryRecords: [...byRegistry.values()] };
+}
+
+// LC-REQ-checks-job: the mock and engine run the same queued check and optional approval plan.
+export function planProposalCheck(
+  store: RecordStore,
+  plugins: ProposalPlugins,
+  requestId: string,
+  now: Date,
+  newId: (prefix: "IT") => string,
+): {
+  documents: Document[];
+  iterations: Iteration[];
+  requests: Request[];
+  events: EventEntryInput[];
+} | null {
+  const request = store.requests.find(({ id }) => id === requestId);
+  if (
+    request === undefined ||
+    (request.decision !== "Pending" && request.decision !== "Duplicate") ||
+    request.checkedAt !== null
+  )
+    return null;
+  const document = store.documents.find(({ id }) => id === request.documentId);
+  if (document === undefined) return null;
+  const catalogRecord = knownCatalogRecords(store, plugins).find(
+    ({ catalogId }) => catalogId === document.catalogId,
+  );
+  const checkedDocument =
+    catalogRecord === undefined
+      ? document
+      : withRegistryAnswers(
+          document,
+          plugins.registryLookup(catalogRecord, document.unit?.value ?? null),
+          now,
+        );
+  const record = { ...recordOf(store, document), document: checkedDocument };
+  const nowIso = now.toISOString();
+  const copies = existingCopiesFor(record, nowIso);
+  const checked = { ...request, existingCopies: copies, checkedAt: nowIso };
+  const writes: {
+    documents: Document[];
+    iterations: Iteration[];
+    requests: Request[];
+    events: EventEntryInput[];
+  } = {
+    documents: [checkedDocument],
+    iterations: [],
+    requests: [checked],
+    events: [],
+  };
+  const approval = request.approvalAfterCheck;
+  if (approval !== undefined && approval !== null && copies.length === 0) {
+    const iterationId = newId("IT");
+    const iteration: Iteration = {
+      id: iterationId,
+      documentId: document.id,
+      attempt: record.iterations.length + 1,
+      requestId: request.id,
+      categoryId: approval.categoryId,
+      priority: approval.priority,
+      projectId: request.projectId,
+      progress: "Enqueued",
+      listId: null,
+      formerListName: null,
+      cancellation: null,
+      restriction: null,
+      restrictionOverride: null,
+      defects: [],
+      verdicts: [],
+      ingestFailure: null,
+      digitizedAt: null,
+      links: [],
+      scanDpi: null,
+      properties: [],
+    };
+    writes.iterations.push(iteration);
+    writes.requests[0] = {
+      ...checked,
+      decision: "Approved",
+      iteration: { relation: "Originates", id: iterationId },
+      rescan: null,
+    };
+    writes.events.push({
+      subjectKind: "request",
+      subjectId: request.id,
+      at: nowIso,
+      actor: { kind: "user", userId: request.requesterId },
+      correlationId: crypto.randomUUID(),
+      code: "request.approved",
+      data: { iterationId, isRescan: false, batchSize: null, suggestion: null },
+      reason: { public: null, internal: null },
+    });
+  }
+  return writes;
 }
 function createdEvent(
   request: Request,

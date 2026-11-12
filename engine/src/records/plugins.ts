@@ -1,4 +1,4 @@
-import type { ProposalPlugins } from "@vera/contract/queries/proposals";
+import type { ProposalPlugins, RegistryAnswer } from "@vera/contract/queries/proposals";
 import type { RequestPlugins } from "@vera/contract/queries/requests";
 import { baseIdOf } from "@vera/contract/queries/requests";
 import {
@@ -25,6 +25,7 @@ export function engineProposalPlugins(engine: Engine): ProposalPlugins {
 
 export function engineProposalContext(engine: Engine) {
   const records = fake<CatalogRecord[]>(engine, "catalogRecords", []);
+  const registryAnswers = fake<Record<string, RegistryAnswer[]>>(engine, "registryAnswers", {});
   const catalogReading = fake<import("@vera/contract/queries/ways-in").CatalogReadingFake>(
     engine,
     "catalogReading",
@@ -33,6 +34,7 @@ export function engineProposalContext(engine: Engine) {
   const { implementations, instances, catalogs } = enginePluginTables(engine);
   const plugins: ProposalPlugins = {
     catalogRecords: () => records,
+    registryLookup: (record, unit) => registryAnswers[`${record.catalogId}|${unit ?? ""}`] ?? [],
     catalogPropertyValuesOf: (read, at) => catalogPropertyValuesOf(read, at, catalogReading),
     waysIn: () => waysInOf(instances, implementations, catalogs),
   };

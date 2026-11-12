@@ -85,6 +85,7 @@ export const database = {
   documents: [...records.documents],
   iterations: [...records.iterations],
   requests: [...records.requests],
+  pendingProposalChecks: [] as string[],
   volumeCatalogRecords: [] as CatalogRecord[],
   statusLog: [...records.statusLog] as StatusLogEntry[],
   watchlists: [...watchlists],
