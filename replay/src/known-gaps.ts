@@ -9,6 +9,7 @@ type KnownGap = {
 
 export const knownGaps: KnownGap[] = [
   // This list only shrinks: the engine gains what the mock answers, or DEC-0022 leaves the area to the backend.
+  // The one exception is what only the backend does by decision (ingest, L25), noted as such.
   {
     recording: "base-access.json",
     scenario: "users-and-groups-index-impacts-and-accounts",
@@ -26,6 +27,13 @@ export const knownGaps: KnownGap[] = [
     scenario: "local-account-and-user-access-acts",
     reason: "the engine's Users & Groups index lacks projects, shared watchlists and properties",
     calls: [{ method: "GET", path: "/api/access" }],
+  },
+  {
+    recording: "base-proposals.json",
+    scenario: "b-admin-approve-now",
+    reason:
+      "the backend runs ingest once approve now approves (L25), so the document is Ready and ingested; the mock and the engine run no ingest",
+    calls: [{ method: "GET", path: "/api/documents/$NEW_DOCUMENT" }],
   },
   {
     recording: "base-sign-in.json",
