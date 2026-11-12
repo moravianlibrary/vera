@@ -377,6 +377,7 @@ class RecordsSeedLoader {
             dsl.insertInto(DOCUMENTS)
                     .set(DOCUMENTS.ID, id)
                     .set(DOCUMENTS.CATALOG_ID, string(row, "catalogId"))
+                    .set(DOCUMENTS.CATALOG_STATE, nullableJson(row, "catalogState"))
                     .set(DOCUMENTS.UNIT_TYPE, unit.isMissingNode() || unit.isNull()
                             ? null : string(unit, "type"))
                     .set(DOCUMENTS.UNIT_VALUE, unit.isMissingNode() || unit.isNull()

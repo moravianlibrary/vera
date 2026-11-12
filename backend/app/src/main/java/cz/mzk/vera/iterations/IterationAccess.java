@@ -54,6 +54,11 @@ public class IterationAccess {
         return Result.found(new Actionable(iteration, categories));
     }
 
+    public boolean mayActAnywhere(Caller caller, String permission) {
+        return documents.audienceOf(caller.userId()) == Audience.STAFF
+                && heldAccess.scopesHeldBy(caller.userId()).hasPermission(permission);
+    }
+
     public record Actionable(IterationsRecord iteration, List<Category> categories) {}
 
     public record Result(Actionable value, ActResult refusal) {

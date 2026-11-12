@@ -2,6 +2,7 @@ package cz.mzk.vera.documents;
 
 import static cz.mzk.vera.db.tables.Tables.BATCHES;
 import static cz.mzk.vera.db.tables.Tables.CATEGORY_MEMBERS;
+import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.EVENTS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
@@ -77,6 +78,96 @@ class DocumentReadTests {
             .jsonPath("$.record.document.properties[3].key").isEqualTo("size")
             .jsonPath("$.record.requests.length()").isNotEmpty()
             .jsonPath("$.log.length()").isNotEmpty();
+    }
+
+    @Test
+    void catalogStateAppearsOnDocumentsRowsAndInTheDrawer() throws Exception {
+        String cookie = session("u3");
+        JsonNode page = mapper.readTree(client.get().uri("/api/documents?limit=100").header("Cookie", cookie)
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        JsonNode d1 = null;
+        for (JsonNode item : page.path("items")) {
+            if ("D1".equals(item.path("document").path("id").asString())) {
+                d1 = item.path("document").path("catalogState");
+            }
+        }
+        assertThat(d1).isNotNull();
+        assertThat(d1.path("kind").asString()).isEqualTo("replaced");
+        assertThat(d1.path("catalogId").asString()).isEqualTo("MZK01-001502234");
+        JsonNode drawerD1 = mapper.readTree(client.get().uri("/api/documents/D1").header("Cookie", cookie)
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        JsonNode drawerD35 = mapper.readTree(client.get().uri("/api/documents/D35").header("Cookie", cookie)
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(drawerD1.path("record").path("document").path("catalogState").path("kind").asString())
+                .isEqualTo("replaced");
+        assertThat(drawerD35.path("record").path("document").path("catalogState").path("kind").asString())
+                .isEqualTo("gone");
+    }
+
+    @Test
+    void relinkActWritesTheCatalogIdEventAndRechecksTheCurrentIteration() throws Exception {
+        String cookie = session("u3");
+        client.post().uri("/api/documents/D1/relink").header("Cookie", cookie)
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-001777777"))
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.progress").isNotEmpty();
+        assertThat(dsl.select(DOCUMENTS.CATALOG_ID).from(DOCUMENTS).where(DOCUMENTS.ID.eq("D1"))
+                .fetchOne(DOCUMENTS.CATALOG_ID)).isEqualTo("MZK01-001777777");
+        assertThat(dsl.select(DOCUMENTS.CATALOG_STATE).from(DOCUMENTS).where(DOCUMENTS.ID.eq("D1"))
+                .fetchOne(DOCUMENTS.CATALOG_STATE)).isNull();
+        assertThat(dsl.selectCount().from(EVENTS).where(EVENTS.SUBJECT_KIND.eq("document"))
+                .and(EVENTS.SUBJECT_ID.eq("D1")).and(EVENTS.CODE.eq("document.relinked"))
+                .fetchOne(0, int.class)).isEqualTo(1);
+        assertThat(dsl.selectCount().from(EVENTS).where(EVENTS.SUBJECT_KIND.eq("iteration"))
+                .and(EVENTS.SUBJECT_ID.eq("IT1")).and(EVENTS.CODE.eq("iteration.rechecked"))
+                .fetchOne(0, int.class)).isGreaterThan(0);
+    }
+
+    @Test
+    void relinkingTheGoneDocumentKeepsTheCatalogValidityDefect() {
+        client.post().uri("/api/documents/D35/relink").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-001502234"))
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.clearedKeys.length()").isEqualTo(0)
+                .jsonPath("$.progress").isEqualTo("Enqueued")
+                .jsonPath("$.review").isEqualTo("Needed");
+    }
+
+    @Test
+    void relinkRefusesARecordTheCatalogDoesNotRead() {
+        client.post().uri("/api/documents/D1/relink").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-000000000"))
+                .exchange().expectStatus().isEqualTo(422).expectBody()
+                .jsonPath("$.type").isEqualTo("https://vera.mzk.cz/problems/document.catalog_unread")
+                .jsonPath("$.detail").isEqualTo("The catalog does not read this record");
+    }
+
+    @Test
+    void relinkRefusesTheDocumentsOwnCatalogRecord() {
+        client.post().uri("/api/documents/D1/relink").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-001284756"))
+                .exchange().expectStatus().isEqualTo(422).expectBody()
+                .jsonPath("$.type").isEqualTo("https://vera.mzk.cz/problems/document.same_catalog_record")
+                .jsonPath("$.detail").isEqualTo("Choose a different catalog record");
+    }
+
+    @Test
+    void relinkRefusesARecordAnotherDocumentAlreadyHolds() {
+        dsl.update(DOCUMENTS).set(DOCUMENTS.CATALOG_ID, "MZK01-001777777")
+                .set(DOCUMENTS.UNIT_VALUE, "1918–1925").where(DOCUMENTS.ID.eq("D2")).execute();
+        client.post().uri("/api/documents/D1/relink").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-001777777"))
+                .exchange().expectStatus().isEqualTo(409).expectBody()
+                .jsonPath("$.type").isEqualTo("https://vera.mzk.cz/problems/document.catalog_record_held")
+                .jsonPath("$.detail").isEqualTo("Another document already holds this catalog record");
+    }
+
+    @Test
+    void relinkNeedsIterationRecheckPermission() {
+        grant("l78d-no-recheck", "iteration.read", "any");
+        client.post().uri("/api/documents/D1/relink").header("Cookie", session("u10"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("catalogId", "MZK01-001777777"))
+                .exchange().expectStatus().isForbidden().expectBody()
+                .jsonPath("$.detail").isEqualTo("This is outside what you may change");
     }
 
     @Test

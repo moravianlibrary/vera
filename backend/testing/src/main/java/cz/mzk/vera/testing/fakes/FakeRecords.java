@@ -24,6 +24,8 @@ public class FakeRecords {
     private final Outbox outbox;
     private final JsonMapper json;
     private volatile List<JsonNode> catalogRecords = List.of();
+    private volatile Map<String, String> catalogReplacements = Map.of();
+    private volatile List<String> catalogDrops = List.of();
     private volatile Map<String, String> catalogHosts = Map.of();
     private volatile JsonNode photo = MissingNode.getInstance();
     private volatile Map<String, List<String>> placements = Map.of();
@@ -51,6 +53,11 @@ public class FakeRecords {
     public synchronized void reset(JsonNode seed) {
         JsonNode fakes = seed.path("fakes");
         catalogRecords = copies(fakes.path("catalogRecords"));
+        Map<String, String> replacements = new HashMap<>();
+        fakes.path("catalogReplacements").properties().forEach(entry ->
+                replacements.put(entry.getKey(), entry.getValue().asString()));
+        catalogReplacements = Map.copyOf(replacements);
+        catalogDrops = strings(fakes.path("catalogDrops"));
         Map<String, String> hosts = new HashMap<>();
         fakes.path("catalogBases").properties().forEach(entry -> {
             String host = entry.getKey();
@@ -166,6 +173,14 @@ public class FakeRecords {
         int start = page * 2;
         int end = Math.min(start + 2, records.size());
         Map<String, List<String>> result = new LinkedHashMap<>();
+        catalogReplacements.forEach((oldId, newId) -> {
+            if (oldId.startsWith(base == null ? "" : base)) {
+                add(result, "replaced", oldId + "\u001f" + newId);
+            }
+        });
+        if ("sync".equals(operation)) {
+            catalogDrops.forEach(id -> add(result, "drop", id));
+        }
         for (int index = start; index < end; index++) {
             JsonNode record = records.get(index);
             add(result, "catalogId", record.path("catalogId").asString());

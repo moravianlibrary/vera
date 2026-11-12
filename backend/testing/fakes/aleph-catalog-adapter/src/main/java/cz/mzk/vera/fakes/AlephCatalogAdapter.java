@@ -2,6 +2,7 @@ package cz.mzk.vera.fakes;
 
 import cz.mzk.vera.plugin.PluginContext;
 import cz.mzk.vera.plugin.catalog.CatalogAdapter;
+import cz.mzk.vera.plugin.catalog.CatalogReplacement;
 import cz.mzk.vera.plugin.catalog.CatalogAdapterRefusal;
 import cz.mzk.vera.plugin.catalog.CatalogAdapterRefused;
 import cz.mzk.vera.plugin.catalog.MirroredCatalog;
@@ -44,7 +45,7 @@ public final class AlephCatalogAdapter implements CatalogAdapter, LinkReader, Se
                     split(Wire.all(answer, "identifiers").get(index)), null, record));
         }
         String nextCursor = Wire.first(answer, "nextCursor");
-        return new SyncAnswer(keep, Wire.all(answer, "drop"),
+        return new SyncAnswer(keep, Wire.all(answer, "drop"), replacements(answer),
                 nextCursor == null || nextCursor.isEmpty() ? null : nextCursor,
                 "true".equals(Wire.first(answer, "hasMore")));
     }
@@ -56,8 +57,15 @@ public final class AlephCatalogAdapter implements CatalogAdapter, LinkReader, Se
         Map<String, List<String>> answer = Wire.send(context, context.configuration().get("base_url"),
                 "changes", fields);
         String nextCursor = Wire.first(answer, "nextCursor");
-        return new ChangesAnswer(Wire.all(answer, "catalogId"),
+        return new ChangesAnswer(Wire.all(answer, "catalogId"), replacements(answer),
                 nextCursor == null || nextCursor.isEmpty() ? null : nextCursor);
+    }
+
+    private List<CatalogReplacement> replacements(Map<String, List<String>> answer) {
+        return Wire.all(answer, "replaced").stream().map(value -> {
+            String[] ids = value.split("\\u001f", 2);
+            return new CatalogReplacement(ids[0], ids[1]);
+        }).toList();
     }
 
     private List<String> split(String value) {

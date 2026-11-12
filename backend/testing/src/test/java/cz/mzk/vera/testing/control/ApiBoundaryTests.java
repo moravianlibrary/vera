@@ -133,7 +133,7 @@ class ApiBoundaryTests {
                 + "\"categoryImpact\",\"categoryIndex\",\"categoryRefine\",\"categorySave\",\"confirmEmail\","
                 + "\"custodyCreate\",\"custodyDelete\",\"custodyImpact\",\"custodyMembers\",\"custodySave\","
                 + "\"digitizationListCreate\",\"digitizationListPool\",\"digitizationLists\",\"documentDetail\","
-                + "\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"groups\","
+                + "\"documentRelink\",\"documents\",\"groupCreate\",\"groupMembers\",\"groupSave\",\"groups\","
                 + "\"hookCreate\",\"hookDelete\",\"hookDeliveryDiscard\","
                 + "\"hookDeliveryRetry\",\"hookPause\",\"hookPreview\",\"hookResume\","
                 + "\"hookRetry\",\"hookSave\",\"hookSendNow\",\"hookTest\",\"hooks\","

@@ -129,6 +129,9 @@ databaseChangeLog:
       file: 0410-proposal-checks.sql
       relativeToChangelogFile: true
   - include:
+      file: 0420-document-catalog-state.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0330-plugin-packages.sql
       relativeToChangelogFile: true
   - include:

@@ -187,7 +187,7 @@ public class PluginRunJob implements JobKind<PluginRunJob.Chunk> {
         tx.update(RUNS).set(RUNS.ITEM_COUNT, total).set(RUNS.DONE_COUNT, done)
                 .where(RUNS.ID.eq(chunk.runId())).execute();
         if (applied.more()) {
-            enqueueNext(tx, chunk.runId(), 0);
+            enqueueNext(tx, chunk.runId(), done);
             return;
         }
         List<Map<String, Object>> changes = applied.itemCountDelta() == 0 ? List.of()

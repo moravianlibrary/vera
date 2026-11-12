@@ -3,12 +3,17 @@ package cz.mzk.vera.tasks;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_KEYS;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
+import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_CURSORS;
+import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.RUN_TARGETS;
 
 import cz.mzk.vera.iterations.IterationReviewCommands;
 import cz.mzk.vera.plugin.catalog.ChangeFeed;
 import cz.mzk.vera.plugin.catalog.CatalogAdapter;
+import cz.mzk.vera.plugin.catalog.CatalogReplacement;
+import cz.mzk.vera.plugin.catalog.ReadAnswer;
+import cz.mzk.vera.plugin.catalog.ReadInput;
 import cz.mzk.vera.plugin.catalog.ChangesAnswer;
 import cz.mzk.vera.plugin.catalog.ChangesInput;
 import cz.mzk.vera.plugin.catalog.MirroredCatalog;
@@ -20,8 +25,12 @@ import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Component;
@@ -55,6 +64,18 @@ public class CatalogRunKind implements RunKind {
 
     @Override
     public Call call(Context context) {
+        String recheckOperation = recheckOperation(context.runId());
+        String recheckMarker = dsl.select(PLUGIN_CURSORS.CURSOR).from(PLUGIN_CURSORS)
+                .where(PLUGIN_CURSORS.INSTANCE_ID.eq(context.instanceId())
+                        .and(PLUGIN_CURSORS.OPERATION.eq(recheckOperation)))
+                .fetchOne(PLUGIN_CURSORS.CURSOR);
+        if (recheckMarker != null) {
+            Set<Integer> affected = markerPositions(recheckMarker);
+            List<TargetAnswer> answers = context.targets().stream().map(target -> new TargetAnswer(target,
+                    affected.contains(target.position())
+                            ? reviewCommands.callCatalogChanged(target.documentId()) : null, null, false)).toList();
+            return new Call(answers, List.of(), answers.size(), false, null, null);
+        }
         JsonNode version = json.readTree(context.versions().data()).get(0);
         JsonNode operations = version.path("declares").path("operations");
         String operation;
@@ -73,27 +94,65 @@ public class CatalogRunKind implements RunKind {
             PluginOutcome<SyncAnswer> outcome = calls.call(context.instanceId(), CatalogAdapter.class,
                     operation, (plugin, pluginContext) -> ((MirroredCatalog) plugin)
                             .sync(pluginContext, new SyncInput(cursor)));
-            return new Call(List.of(), List.of(), 0, false, null,
-                    RunKind.Page.sync(context.instanceId(), operation, outcome, null));
+            RunKind.Page page = RunKind.Page.sync(context.instanceId(), operation, outcome, null);
+            if (outcome instanceof PluginOutcome.Answered<SyncAnswer> answered) {
+                page = new RunKind.Page(page.instanceId(), page.operation(),
+                        new SyncPage(answered.answer(), readReplacementUnits(context.instanceId(),
+                                answered.answer().replaced())), page.failure(), page.agent());
+            }
+            return new Call(List.of(), List.of(), 0, false, null, page);
         }
         PluginOutcome<ChangesAnswer> outcome = calls.call(context.instanceId(), CatalogAdapter.class,
                 operation, (plugin, pluginContext) -> ((ChangeFeed) plugin)
                         .changes(pluginContext, new ChangesInput(cursor)));
-        return new Call(List.of(), List.of(), 0, false, null,
-                RunKind.Page.changes(context.instanceId(), operation, outcome, null));
+        RunKind.Page page = RunKind.Page.changes(context.instanceId(), operation, outcome, null);
+        if (outcome instanceof PluginOutcome.Answered<ChangesAnswer> answered) {
+            page = new RunKind.Page(page.instanceId(), page.operation(),
+                    new ChangesPage(answered.answer(), readReplacementUnits(context.instanceId(),
+                            answered.answer().replaced())), page.failure(), page.agent());
+        }
+        return new Call(List.of(), List.of(), 0, false, null, page);
     }
 
     @Override
     public Applied apply(DSLContext tx, Context context, Call call) {
+        if (call.page() == null) {
+            for (TargetAnswer answer : call.answers()) {
+                if (answer.answer() == null) {
+                    continue;
+                }
+                @SuppressWarnings("unchecked")
+                List<IterationReviewCommands.CatalogIterationCheck> checks =
+                        (List<IterationReviewCommands.CatalogIterationCheck>) answer.answer();
+                reviewCommands.applyCatalogChanged(answer.target().documentId(), checks);
+            }
+            int count = call.answers().size();
+            String operation = recheckOperation(context.runId());
+            int itemCount = tx.select(RUNS.ITEM_COUNT).from(RUNS).where(RUNS.ID.eq(context.runId()))
+                    .fetchOne(RUNS.ITEM_COUNT);
+            boolean finished = context.offset() + count >= itemCount;
+            boolean more = markerMore(tx, context.instanceId(), operation);
+            if (finished) {
+                tx.deleteFrom(PLUGIN_CURSORS).where(PLUGIN_CURSORS.INSTANCE_ID.eq(context.instanceId())
+                        .and(PLUGIN_CURSORS.OPERATION.eq(operation))).execute();
+            }
+            return new Applied((int) call.answers().stream().filter(answer -> answer.answer() != null).count(),
+                    0, count, more || !finished, true, false, List.of(), "/documents");
+        }
         RunKind.Page page = call.page();
         if (page.failure() != null) {
             return new Applied(0, 0, 0, false, true, false, List.of(page.failure()), "/documents");
         }
         OffsetDateTime now = clock.instant().atOffset(ZoneOffset.UTC);
         List<String> catalogIds = new ArrayList<>();
+        List<String> droppedIds = new ArrayList<>();
+        List<RunSets.Target> relinkedTargets = new ArrayList<>();
+        List<CatalogReplacement> replacements;
+        Map<String, List<String>> replacementUnits = new LinkedHashMap<>();
         String nextCursor;
         boolean more;
-        if (page.answer() instanceof SyncAnswer answer) {
+        if (page.answer() instanceof SyncPage result) {
+            SyncAnswer answer = result.answer();
             nextCursor = answer.nextCursor();
             more = answer.hasMore();
             for (SyncAnswer.Keep keep : answer.keep()) {
@@ -105,26 +164,92 @@ public class CatalogRunKind implements RunKind {
                         .and(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(catalogId))).execute();
                 tx.deleteFrom(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(page.instanceId())
                         .and(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))).execute();
-                catalogIds.add(catalogId);
+                droppedIds.add(catalogId);
             }
+            replacements = answer.replaced();
+            replacementUnits.putAll(result.units());
         } else {
-            ChangesAnswer answer = (ChangesAnswer) page.answer();
+            ChangesPage result = (ChangesPage) page.answer();
+            ChangesAnswer answer = result.answer();
             nextCursor = answer.nextCursor();
             more = nextCursor != null;
             catalogIds.addAll(answer.catalogIds());
+            replacements = answer.replaced();
+            replacementUnits.putAll(result.units());
         }
-        List<RunSets.Target> held = runSets.heldCatalogTargets(tx, catalogIds);
+        for (String droppedId : droppedIds) {
+            List<String> documents = tx.select(DOCUMENTS.ID).from(DOCUMENTS)
+                    .where(DOCUMENTS.CATALOG_ID.eq(droppedId)).fetch(DOCUMENTS.ID);
+            documents.forEach(reviewCommands::catalogGone);
+        }
+        for (CatalogReplacement replacement : replacements) {
+            List<String> documents = tx.select(DOCUMENTS.ID).from(DOCUMENTS)
+                    .where(DOCUMENTS.CATALOG_ID.eq(replacement.oldCatalogId())).fetch(DOCUMENTS.ID);
+            List<String> units = replacementUnits.getOrDefault(replacement.oldCatalogId(), List.of());
+            for (String documentId : documents) {
+                reviewCommands.catalogReplacement(documentId, replacement.newCatalogId(), units, context.runId());
+                if (replacement.newCatalogId().equals(tx.select(DOCUMENTS.CATALOG_ID).from(DOCUMENTS)
+                        .where(DOCUMENTS.ID.eq(documentId)).fetchOne(DOCUMENTS.CATALOG_ID))) {
+                    relinkedTargets.addAll(tx.select(DOCUMENTS.ID, ITERATIONS.ID).from(DOCUMENTS)
+                            .join(ITERATIONS).on(ITERATIONS.DOCUMENT_ID.eq(DOCUMENTS.ID))
+                            .where(DOCUMENTS.ID.eq(documentId)).and(ITERATIONS.PROGRESS.ne("Cancelled"))
+                            .orderBy(ITERATIONS.ATTEMPT.desc())
+                            .fetch(row -> new RunSets.Target(row.get(DOCUMENTS.ID), row.get(ITERATIONS.ID))));
+                }
+            }
+            catalogIds.add(replacement.newCatalogId());
+        }
+        List<RunSets.Target> held = new ArrayList<>(runSets.heldCatalogTargets(tx, catalogIds));
+        held.addAll(relinkedTargets);
         int position = tx.selectCount().from(RUN_TARGETS).where(RUN_TARGETS.RUN_ID.eq(context.runId()))
                 .fetchOne(0, int.class);
+        Set<String> staged = new HashSet<>(tx.select(RUN_TARGETS.DOCUMENT_ID, RUN_TARGETS.ITERATION_ID)
+                .from(RUN_TARGETS).where(RUN_TARGETS.RUN_ID.eq(context.runId()))
+                .fetch(row -> row.get(RUN_TARGETS.DOCUMENT_ID) + "/" + row.get(RUN_TARGETS.ITERATION_ID)));
+        List<Integer> affected = new ArrayList<>();
         for (RunSets.Target target : held) {
+            if (!staged.add(target.documentId() + "/" + target.iterationId())) {
+                continue;
+            }
             tx.insertInto(RUN_TARGETS).set(RUN_TARGETS.RUN_ID, context.runId())
-                    .set(RUN_TARGETS.POSITION, position++).set(RUN_TARGETS.DOCUMENT_ID, target.documentId())
+                    .set(RUN_TARGETS.POSITION, position).set(RUN_TARGETS.DOCUMENT_ID, target.documentId())
                     .set(RUN_TARGETS.ITERATION_ID, target.iterationId()).execute();
-            reviewCommands.catalogChanged(target.documentId());
+            affected.add(position++);
         }
         saveCursor(tx, page.instanceId(), page.operation(), nextCursor);
-        int count = held.size();
-        return new Applied(count, count, count, more, true, false, List.of(), "/documents");
+        boolean recheck = !affected.isEmpty();
+        if (recheck) {
+            saveCursor(tx, page.instanceId(), recheckOperation(context.runId()), markerOf(more, affected));
+        }
+        return new Applied(affected.size(), affected.size(), 0, more || recheck,
+                true, false, List.of(), "/documents");
+    }
+
+    private String recheckOperation(String runId) {
+        return "recheck:" + runId;
+    }
+
+    private Set<Integer> markerPositions(String marker) {
+        Set<Integer> positions = new HashSet<>();
+        if (marker != null && !marker.isEmpty()) {
+            for (String value : marker.substring(marker.indexOf('|') + 1).split(",")) {
+                positions.add(Integer.parseInt(value));
+            }
+        }
+        return positions;
+    }
+
+    private String markerOf(boolean more, List<Integer> positions) {
+        return more + "|" + positions.stream().sorted().map(String::valueOf)
+                .collect(java.util.stream.Collectors.joining(","));
+    }
+
+    private boolean markerMore(DSLContext tx, String instanceId, String operation) {
+        String marker = tx.select(PLUGIN_CURSORS.CURSOR).from(PLUGIN_CURSORS)
+                .where(PLUGIN_CURSORS.INSTANCE_ID.eq(instanceId)
+                        .and(PLUGIN_CURSORS.OPERATION.eq(operation)))
+                .fetchOne(PLUGIN_CURSORS.CURSOR);
+        return marker != null && marker.startsWith("true|");
     }
 
     private void saveCursor(DSLContext tx, String instanceId, String operation, String cursor) {
@@ -159,4 +284,23 @@ public class CatalogRunKind implements RunKind {
                     .set(CATALOG_MIRROR_KEYS.POSITION, keyPosition++).execute();
         }
     }
+
+    private Map<String, List<String>> readReplacementUnits(String instanceId,
+            List<CatalogReplacement> replacements) {
+        Map<String, List<String>> units = new LinkedHashMap<>();
+        for (CatalogReplacement replacement : replacements) {
+            PluginOutcome<ReadAnswer> read = calls.call(instanceId, CatalogAdapter.class, "read",
+                    (plugin, pluginContext) -> plugin.read(pluginContext,
+                            new ReadInput(replacement.newCatalogId())));
+            if (read instanceof PluginOutcome.Answered<ReadAnswer> record) {
+                units.put(replacement.oldCatalogId(), record.answer().units());
+            } else {
+                units.put(replacement.oldCatalogId(), null);
+            }
+        }
+        return units;
+    }
+
+    private record ChangesPage(ChangesAnswer answer, Map<String, List<String>> units) {}
+    private record SyncPage(SyncAnswer answer, Map<String, List<String>> units) {}
 }

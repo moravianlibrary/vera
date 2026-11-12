@@ -280,14 +280,15 @@ class TasksTests {
         fakeRecords.failCatalogPage("pi1", 1);
         String firstRun = startPluginRun("pi1", "Catalog sync");
         runOneJob();
+        runOneJob();
         assertThat(jdbc.queryForObject("SELECT cursor FROM plugin_cursors WHERE instance_id='pi1' "
                 + "AND operation='sync'", String.class)).isEqualTo("1");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1'", Integer.class))
                 .isGreaterThan(0);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
-                + "AND subject_id='IT8' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
         JsonNode failed = finishRun(firstRun);
         assertThat(failed.path("run").path("state").asString()).isEqualTo("Failed");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
+                + "AND subject_id='IT8' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
         assertThat(jdbc.queryForObject("SELECT cursor FROM plugin_cursors WHERE instance_id='pi1' "
                 + "AND operation='sync'", String.class)).isEqualTo("1");
 
@@ -309,6 +310,39 @@ class TasksTests {
                 + "AND operation='changes'", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
                 + "AND subject_id='IT8' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
+    }
+
+    @Test
+    void catalogRunRelinksReplacementsMarksConflictsAndDropsAndKeepsRequestsAndIterations() throws Exception {
+        reset.reset("l78d-catalog-replacements", true);
+        declareOperation("pi1", "sync");
+        int d1Requests = jdbc.queryForObject("SELECT count(*) FROM requests WHERE document_id='D1'", Integer.class);
+        int d1Iterations = jdbc.queryForObject("SELECT count(*) FROM iterations WHERE document_id='D1'", Integer.class);
+        JsonNode done = finishRun(startPluginRun("pi1", "Catalog replacement"));
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+
+        assertThat(jdbc.queryForObject("SELECT catalog_id FROM documents WHERE id='D1'", String.class))
+                .isEqualTo("MZK01-001777777");
+        assertThat(jdbc.queryForObject("SELECT catalog_state FROM documents WHERE id='D1'", String.class)).isNull();
+        assertThat(jdbc.queryForObject("SELECT catalog_state->>'kind' FROM documents WHERE id='D2'", String.class))
+                .isEqualTo("replaced");
+        assertThat(jdbc.queryForObject("SELECT catalog_state->>'documentId' FROM documents WHERE id='D7'",
+                String.class)).isEqualTo("D35");
+        assertThat(jdbc.queryForObject("SELECT catalog_state->>'kind' FROM documents WHERE id='D3'", String.class))
+                .isEqualTo("gone");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM requests WHERE document_id='D1'", Integer.class))
+                .isEqualTo(d1Requests);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM iterations WHERE document_id='D1'", Integer.class))
+                .isEqualTo(d1Iterations);
+        JsonNode actor = mapper.readTree(jdbc.queryForObject("SELECT actor::text FROM events WHERE subject_kind="
+                + "'document' AND subject_id='D1' AND code='document.relinked'", String.class));
+        assertThat(actor.path("kind").asString()).isEqualTo("system");
+        JsonNode cause = mapper.readTree(jdbc.queryForObject("SELECT cause::text FROM hook_events WHERE code="
+                + "'document.relinked' AND subject_id='D1'", String.class));
+        assertThat(cause.path("kind").asString()).isEqualTo("run");
+        assertThat(cause.path("run").path("id").asString()).isEqualTo(done.path("run").path("id").asString());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM events WHERE subject_kind='iteration' "
+                + "AND subject_id='IT1' AND code='iteration.rechecked'", Integer.class)).isGreaterThan(0);
     }
 
     @Test
@@ -451,7 +485,7 @@ class TasksTests {
 
     private JsonNode finishRun(String runId) throws Exception {
         JsonNode found = get("/api/tasks/" + runId, "u3");
-        for (int chunk = 0; chunk < 10 && "Running".equals(found.path("run").path("state").asString()); chunk++) {
+        for (int chunk = 0; chunk < 50 && "Running".equals(found.path("run").path("state").asString()); chunk++) {
             client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
                     .body("{\"advance\":{\"minutes\":1}}")
                     .exchange().expectStatus().isOk();

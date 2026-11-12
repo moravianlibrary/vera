@@ -2,7 +2,7 @@ package cz.mzk.vera.plugin;
 
 // PLG-contract; PLG-api-version.
 public final class ContractVersion {
-    public static final String CURRENT = "1.0";
+    public static final String CURRENT = "1.1";
 
     private ContractVersion() {}
 
@@ -12,7 +12,7 @@ public final class ContractVersion {
         }
         String[] parts = declared.split("\\.");
         try {
-            return Integer.parseInt(parts[0]) == 1 && Integer.parseInt(parts[1]) <= 0;
+            return Integer.parseInt(parts[0]) == 1 && Integer.parseInt(parts[1]) <= 1;
         } catch (NumberFormatException exception) {
             return false;
         }

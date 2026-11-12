@@ -20,6 +20,7 @@ import static org.jooq.impl.DSL.excluded;
 import cz.mzk.vera.domain.documents.Documents;
 import cz.mzk.vera.domain.entities.Cancellation;
 import cz.mzk.vera.domain.entities.CancellationCause;
+import cz.mzk.vera.domain.entities.CatalogState;
 import cz.mzk.vera.domain.entities.Decision;
 import cz.mzk.vera.domain.entities.Defect;
 import cz.mzk.vera.domain.entities.Document;
@@ -178,8 +179,10 @@ public class DocumentStates {
                 .where(DOCUMENT_REGISTRY_RECORDS.DOCUMENT_ID.eq(documentId))
                 .orderBy(DOCUMENT_REGISTRY_RECORDS.POSITION)
                 .fetch(row -> new RegistryRecord(row.getRegistry(), RegistryState.valueOf(row.getState())));
+        CatalogState catalogState = documentRow.getCatalogState() == null ? null
+                : mapper.readValue(documentRow.getCatalogState().data(), CatalogState.class);
         Document document = new Document(documentId, documentRow.getCatalogId(), documentRow.getUnitValue(),
-                pageSources, registryRecords);
+                pageSources, registryRecords, catalogState);
         List<Iteration> iterations = dsl.selectFrom(ITERATIONS)
                 .where(ITERATIONS.DOCUMENT_ID.eq(documentId))
                 .orderBy(ITERATIONS.ATTEMPT)

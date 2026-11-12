@@ -74,6 +74,15 @@ public class EventRecorder {
 
     // The caller's Spring transaction owns these writes; this recorder opens no transaction.
     public void record(EventInput input) {
+        record(input, null);
+    }
+
+    // EVENT-shape; EVENT-destinations: a catalog run is the cause of its relink event.
+    public void recordRun(EventInput input, String runId) {
+        record(input, runId);
+    }
+
+    private void record(EventInput input, String runId) {
         EventCode code = input.code();
         if (code.derived() || (!code.history() && !code.audit())) {
             throw new IllegalArgumentException("Event " + code.code() + " cannot be recorded");
@@ -105,9 +114,25 @@ public class EventRecorder {
         }
         if (code.hook()) {
             ObjectNode cause = json.createObjectNode();
-            cause.put("kind", "act");
-            cause.put("act", input.correlationId());
-            cause.putNull("run");
+            if (runId == null) {
+                cause.put("kind", "act");
+                cause.put("act", input.correlationId());
+                cause.putNull("run");
+            } else {
+                cause.put("kind", "run");
+                cause.putNull("act");
+                Record run = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME)
+                        .from(RUNS).leftJoin(PLUGIN_INSTANCES)
+                        .on(PLUGIN_INSTANCES.ID.eq(RUNS.INSTANCE_ID))
+                        .where(RUNS.ID.eq(runId)).fetchOne();
+                ObjectNode runCause = cause.putObject("run");
+                runCause.put("id", runId);
+                ObjectNode instance = runCause.putObject("instance");
+                instance.put("id", run == null || run.get(PLUGIN_INSTANCES.ID) == null
+                        ? "core" : run.get(PLUGIN_INSTANCES.ID));
+                instance.put("name", run == null || run.get(PLUGIN_INSTANCES.NAME) == null
+                        ? "Core" : run.get(PLUGIN_INSTANCES.NAME));
+            }
             ObjectNode actor = json.createObjectNode();
             if (input.actor() instanceof EventInput.System) {
                 actor.put("kind", "system");

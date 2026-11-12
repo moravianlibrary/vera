@@ -1,0 +1,12 @@
+{
+  "name": "l78d-catalog-replacements",
+  "extends": "base",
+  "fakes": {
+    "catalogReplacements": {
+      "MZK01-001198432": "MZK01-001502234",
+      "MZK01-001284756": "MZK01-001777777",
+      "MZK01-001300094": "MZK01-001502233"
+    },
+    "catalogDrops": ["MZK01-000998431"]
+  }
+}

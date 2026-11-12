@@ -17417,6 +17417,9 @@
     }
   },
   "fakes": {
+    "catalogReplacements": {
+      "MZK01-001198432": "MZK01-001502234"
+    },
     "catalogRecords": [
       {
         "catalogId": "MZK01-001277001",
@@ -17535,6 +17538,24 @@
         "barcodes": {}
       },
       {
+        "catalogId": "MZK01-001777777",
+        "title": "L78d replacement record",
+        "type": "Periodical",
+        "units": ["1918–1925", "roč. 12"],
+        "identifiers": [],
+        "shelfMarks": {},
+        "barcodes": {}
+      },
+      {
+        "catalogId": "MZK01-001502233",
+        "title": "Našinec",
+        "type": "Periodical",
+        "units": ["roč. 12"],
+        "identifiers": [],
+        "shelfMarks": {},
+        "barcodes": {}
+      },
+      {
         "catalogId": "NKC01-002345678",
         "title": "Zlatá Praha",
         "type": "Periodical",
@@ -17552,6 +17573,18 @@
           "link": "https://kramerius.mzk.cz/view/uuid:demo-new-volume"
         }
       ]
+    },
+    "ingest": {
+      "MZK01-001502234": {
+        "defects": [
+          {
+            "instanceId": "pi9",
+            "rule": "R01",
+            "field": "record",
+            "detail": "Aleph returned no record for MZK01-001502233 · roč. 12; the ISSN on the request belongs to a different title."
+          }
+        ]
+      }
     },
     "catalogRepairs": {
       "MZK03-000445012": ["245$a"],

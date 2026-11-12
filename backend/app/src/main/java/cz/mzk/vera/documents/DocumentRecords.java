@@ -53,6 +53,9 @@ public class DocumentRecords {
                 "pageSources", new ArrayList<>(), "registryRecords", new ArrayList<>(),
                 "properties", new ArrayList<>(), "iterations", new ArrayList<>(),
                 "requests", new ArrayList<>());
+            if (row.getCatalogState() != null) {
+                document.put("catalogState", json.read(row.getCatalogState().data()));
+            }
             documents.put(row.getId(), document);
         });
         dsl.selectFrom(DOCUMENT_PAGE_SOURCES).where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.in(documentIds))

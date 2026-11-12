@@ -27,6 +27,17 @@ final class IterationsController {
         this.reviewCommands = reviewCommands;
     }
 
+    @PostMapping("/api/documents/{id}/relink")
+    ResponseEntity<?> relink(HttpServletRequest request, @PathVariable String id,
+            @RequestBody IterationReviewCommands.Relink body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = guard.requireCaller(caller);
+        if (refusal != null) {
+            return refusal;
+        }
+        return ActResult.answer(reviewCommands.relink(caller, id, body.catalogId()));
+    }
+
     @PostMapping("/api/iterations/{id}/reclassify")
     ResponseEntity<?> reclassify(HttpServletRequest request, @PathVariable String id,
             @RequestBody IterationCommands.Reclassification body) {

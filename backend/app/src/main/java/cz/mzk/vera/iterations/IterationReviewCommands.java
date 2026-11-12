@@ -26,9 +26,17 @@ import cz.mzk.vera.domain.entities.RestrictionOverride;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.domain.iterations.Iterations;
 import cz.mzk.vera.domain.validations.Validations;
+import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
+import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
+import cz.mzk.vera.plugin.catalog.CatalogAdapter;
+import cz.mzk.vera.plugin.catalog.ReadAnswer;
+import cz.mzk.vera.plugin.catalog.ReadInput;
+import cz.mzk.vera.pluginhost.PluginCalls;
+import cz.mzk.vera.pluginhost.PluginInstances;
+import cz.mzk.vera.pluginhost.PluginOutcome;
 import cz.mzk.vera.session.Caller;
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -38,11 +46,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-// ACT-cancel; ACT-resume; ACT-overrule; ACT-page-count; ACT-recheck: one act, one transaction.
+// ACT-cancel; ACT-resume; ACT-overrule; ACT-page-count; ACT-recheck; ACT-relink: one act, one transaction.
 @Component
 public class IterationReviewCommands {
     private final DSLContext dsl;
@@ -52,10 +61,13 @@ public class IterationReviewCommands {
     private final EventRecorder events;
     private final Clock clock;
     private final JsonMapper json;
+    private final PluginCalls pluginCalls;
+    private final PluginInstances pluginInstances;
 
     public IterationReviewCommands(DSLContext dsl, IterationAccess access,
             DocumentStates states, IterationChecks checks,
-            EventRecorder events, Clock clock, JsonMapper json) {
+            EventRecorder events, Clock clock, JsonMapper json, PluginCalls pluginCalls,
+            PluginInstances pluginInstances) {
         this.dsl = dsl;
         this.access = access;
         this.states = states;
@@ -63,6 +75,127 @@ public class IterationReviewCommands {
         this.events = events;
         this.clock = clock;
         this.json = json;
+        this.pluginCalls = pluginCalls;
+        this.pluginInstances = pluginInstances;
+    }
+
+    // ACT-relink; DOC-relink: preserve the document and its linked history while changing catalog identity.
+    @Transactional
+    public ActResult relink(Caller caller, String documentId, String catalogId) {
+        DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
+        if (document == null) {
+            return ActResult.refused(404, "No such document", "not_found");
+        }
+        IterationsRecord latest = dsl.selectFrom(ITERATIONS).where(ITERATIONS.DOCUMENT_ID.eq(documentId))
+                .orderBy(ITERATIONS.ATTEMPT.desc()).limit(1).fetchOne();
+        if (latest == null) {
+            if (!access.mayActAnywhere(caller, IterationCodes.RECHECK)) {
+                return ActResult.refused(403, "This is outside what you may change",
+                        IterationCodes.OUTSIDE_CUSTODY);
+            }
+        } else {
+            IterationAccess.Result found = access.actionableIteration(caller, latest.getId(),
+                    IterationCodes.RECHECK);
+            if (found.refusal() != null) {
+                return found.refusal();
+            }
+        }
+        if (catalogId.equals(document.getCatalogId())) {
+            return ActResult.refused(422, "Choose a different catalog record", "document.same_catalog_record");
+        }
+        String other = dsl.select(DOCUMENTS.ID).from(DOCUMENTS)
+                .where(DOCUMENTS.CATALOG_ID.eq(catalogId))
+                .and(DOCUMENTS.UNIT_VALUE.eq(document.getUnitValue()))
+                .and(DOCUMENTS.ID.ne(documentId)).limit(1).fetchOne(DOCUMENTS.ID);
+        if (other != null) {
+            return ActResult.refused(409, "Another document already holds this catalog record",
+                    "document.catalog_record_held");
+        }
+        ReadAnswer readAnswer = null;
+        for (PluginInstances.Instance adapter : pluginInstances.enabled(dsl, "CatalogAdapter")) {
+            PluginOutcome<ReadAnswer> outcome = pluginCalls.call(adapter.id(), CatalogAdapter.class, "read",
+                    (plugin, context) -> plugin.read(context, new ReadInput(catalogId)));
+            if (outcome instanceof PluginOutcome.Answered<ReadAnswer> answer
+                    && (document.getUnitValue() == null || (answer.answer().units() != null
+                        && answer.answer().units().contains(document.getUnitValue())))) {
+                readAnswer = answer.answer();
+                break;
+            }
+        }
+        if (readAnswer == null) {
+            return ActResult.refused(422, "The catalog does not read this record", "document.catalog_unread");
+        }
+        dsl.update(DOCUMENTS).set(DOCUMENTS.CATALOG_ID, catalogId)
+                .set(DOCUMENTS.CATALOG_STATE, (JSONB) null)
+                .where(DOCUMENTS.ID.eq(documentId)).execute();
+        Map<String, Object> data = Map.of("catalogId", Map.of("from", document.getCatalogId(), "to", catalogId));
+        events.record(new EventInput(EventCode.DOCUMENT_RELINKED, "document", documentId, null,
+                new EventInput.User(caller.userId()), Correlation.newId(), clock.instant(),
+                json.valueToTree(data), null));
+        return latest == null ? ActResult.ok(null) : recheck(caller, latest.getId());
+    }
+
+    // DOC-relink; PLG-api-record-change: a run either moves the identity or leaves a state for staff.
+    @Transactional
+    public void catalogReplacement(String documentId, String catalogId, List<String> units, String runId) {
+        DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
+        if (document == null) {
+            return;
+        }
+        String other = dsl.select(DOCUMENTS.ID).from(DOCUMENTS)
+                .where(DOCUMENTS.CATALOG_ID.eq(catalogId))
+                .and(DOCUMENTS.UNIT_VALUE.eq(document.getUnitValue()))
+                .and(DOCUMENTS.ID.ne(documentId)).limit(1).fetchOne(DOCUMENTS.ID);
+        boolean unitMissing = document.getUnitValue() != null
+                && (units == null || !units.contains(document.getUnitValue()));
+        if (other != null || unitMissing) {
+            Map<String, Object> state = new LinkedHashMap<>();
+            state.put("kind", "replaced");
+            state.put("catalogId", catalogId);
+            state.put("documentId", other);
+            dsl.update(DOCUMENTS).set(DOCUMENTS.CATALOG_STATE, JSONB.valueOf(json.writeValueAsString(state)))
+                    .where(DOCUMENTS.ID.eq(documentId)).execute();
+            return;
+        }
+        dsl.update(DOCUMENTS).set(DOCUMENTS.CATALOG_ID, catalogId)
+                .set(DOCUMENTS.CATALOG_STATE, (JSONB) null)
+                .where(DOCUMENTS.ID.eq(documentId)).execute();
+        Map<String, Object> data = Map.of("catalogId", Map.of("from", document.getCatalogId(), "to", catalogId));
+        events.recordRun(new EventInput(EventCode.DOCUMENT_RELINKED, "document", documentId, null,
+                new EventInput.System(), Correlation.newId(), clock.instant(), json.valueToTree(data), null), runId);
+    }
+
+    // DOC-relink; PLG-api-record-change: a dropped catalog record remains on its document for staff to resolve.
+    @Transactional
+    public void catalogGone(String documentId) {
+        dsl.update(DOCUMENTS).set(DOCUMENTS.CATALOG_STATE, JSONB.valueOf("{\"kind\":\"gone\"}"))
+                .where(DOCUMENTS.ID.eq(documentId)).execute();
+    }
+
+    public List<CatalogIterationCheck> callCatalogChanged(String documentId) {
+        List<String> ids = dsl.select(ITERATIONS.ID).from(ITERATIONS)
+                .where(ITERATIONS.DOCUMENT_ID.eq(documentId))
+                .and(ITERATIONS.PROGRESS.ne("Cancelled"))
+                .orderBy(ITERATIONS.ATTEMPT.desc()).fetch(ITERATIONS.ID);
+        List<CatalogIterationCheck> results = new ArrayList<>();
+        for (String id : ids) {
+            DocumentIteration current = load(documentId, id);
+            results.add(new CatalogIterationCheck(id,
+                    checks.run(current.iteration(), current.document(), IterationChecks.Run.RECHECK)));
+        }
+        return results;
+    }
+
+    public void applyCatalogChanged(String documentId, List<CatalogIterationCheck> results) {
+        for (CatalogIterationCheck item : results) {
+            DocumentIteration current = load(documentId, item.iterationId());
+            refreshCatalogReading(documentId);
+            int gone = current.iteration().defects().size() - item.result().defects().size();
+            applyRecheck(new Caller("a3", null, null), current, item.result(), EventCode.ITERATION_RECHECKED,
+                    Map.of("by", "catalog_change", "found", item.result().defects().size(), "gone", gone),
+                    "The record was read from the catalog again.");
+            states.recompute(dsl, documentId);
+        }
     }
 
     // enterPageCount and fixableIteration: ACT-page-count refuses after a scan.
@@ -380,6 +513,8 @@ public class IterationReviewCommands {
     }
 
     public record PageCount(int pages) {}
+    public record Relink(String catalogId) {}
+    public record CatalogIterationCheck(String iterationId, IterationChecks.CheckResult result) {}
     public record Cancellation(String publicText, String internalText) {}
     public record Overrule(String note) {}
     private record DocumentIteration(Iteration iteration, Document document) {}

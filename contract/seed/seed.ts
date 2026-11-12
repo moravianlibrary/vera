@@ -335,6 +335,10 @@ const fakesSchema = z.strictObject({
   ).optional(),
   // engineProposalPlugins reads catalog record prefixes and OPAC links.
   catalogBases: objectMap(z.strictObject({ base: z.string(), opacUrl: z.url() })).optional(),
+  // Aleph's changes and sync answers name replaced catalog records.
+  catalogReplacements: objectMap(id).optional(),
+  // Aleph sync answers can drop catalog records.
+  catalogDrops: z.array(id).optional(),
   // frontend/src/mocks/catalog.ts reads the mock catalog adapter's link name.
   catalogAdapter: z.strictObject({ name: z.string() }).optional(),
   // frontend/src/mocks/catalog.ts reads repairs by catalog ID.
