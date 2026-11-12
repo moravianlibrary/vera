@@ -209,6 +209,14 @@ async function replay(
       const answer = await response.json();
       if (call.method === "POST" && call.path === "/api/proposals")
         submittedBatchId = (answer as { batch?: { id?: string } | null }).batch?.id;
+      // Each server counts its own due jobs (the backend's hook and watchlist matching too):
+      // only that none failed is compared.
+      if (call.method === "POST" && call.path === "/_engine/jobs/run") {
+        expect((answer as { failed?: number }).failed, `${label} failed jobs`).toBe(
+          (call.body as { failed?: number }).failed,
+        );
+        continue;
+      }
       const actual = recording.mask === "none" ? answer : mask(answer, recording.mask, ids);
       expect(normalizeInstants(actual), `${label} body`).toEqual(normalizeInstants(call.body));
     } else if (call.code !== undefined) {
