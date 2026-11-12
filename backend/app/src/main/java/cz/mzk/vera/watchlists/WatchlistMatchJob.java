@@ -88,7 +88,7 @@ public final class WatchlistMatchJob implements JobKind<WatchlistMatchJob.Match>
         List<String> userIds = tx.select(USERS.ID).from(USERS).where(USERS.SUSPENDED_AT.isNull())
                 .fetch(USERS.ID);
         for (String userId : userIds) {
-            for (Map<String, Object> summary : watchlists.list(userId, null, false, false)) {
+            for (Map<String, Object> summary : watchlists.openable(userId)) {
                 String view = (String) summary.get("view");
                 if (!List.of("documents", "my-documents", "requests", "validations", "lists",
                         "projects", "categories", "mixes", "intentions", "tasks")

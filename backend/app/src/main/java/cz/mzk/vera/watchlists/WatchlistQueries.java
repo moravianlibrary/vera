@@ -88,6 +88,39 @@ public class WatchlistQueries {
         if (manageSystem && !manager) {
             return null;
         }
+        List<WatchlistsRecord> visibleRows = visibleRows(userId, view, manageSystem, access, manager);
+        if (materializeViewers) {
+            materializeViewerRows(userId, visibleRows);
+        }
+        SummaryDetails details = summaryDetails(userId, visibleRows);
+        Map<String, Integer> documentCounts = documentCounts(userId, visibleRows);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (WatchlistsRecord row : visibleRows) {
+            result.add(summary(userId, row, read(row.getAudience().data()), manager, details,
+                    documentCounts));
+        }
+        result.sort((first, second) -> Integer.compare(
+                ((Number) first.get("viewerPosition")).intValue(),
+                ((Number) second.get("viewerPosition")).intValue()));
+        result.forEach(row -> row.remove("viewerPosition"));
+        return result;
+    }
+
+    // WATCH-new: the watchlists a person may open, with only their stored fields; matching needs no counts.
+    public List<Map<String, Object>> openable(String userId) {
+        HeldScopes access = held.scopesHeldBy(userId);
+        boolean manager = access.hasPermission("watchlist.manage_system");
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (WatchlistsRecord row : visibleRows(userId, null, false, access, manager)) {
+            Map<String, Object> watchlist = stored(row);
+            watchlist.put("filterVersion", row.getFilterVersion());
+            result.add(watchlist);
+        }
+        return result;
+    }
+
+    private List<WatchlistsRecord> visibleRows(String userId, String view, boolean manageSystem,
+            HeldScopes access, boolean manager) {
         Set<String> groupIds = new HashSet<>(access.groupIds());
         Set<String> roleIds = rolesByUser(List.of(dsl.selectFrom(USERS)
                 .where(USERS.ID.eq(userId)).fetchOne())).getOrDefault(userId, Set.of());
@@ -111,21 +144,7 @@ public class WatchlistQueries {
             }
             visibleRows.add(row);
         }
-        if (materializeViewers) {
-            materializeViewerRows(userId, visibleRows);
-        }
-        SummaryDetails details = summaryDetails(userId, visibleRows);
-        Map<String, Integer> documentCounts = documentCounts(userId, visibleRows);
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (WatchlistsRecord row : visibleRows) {
-            result.add(summary(userId, row, read(row.getAudience().data()), manager, details,
-                    documentCounts));
-        }
-        result.sort((first, second) -> Integer.compare(
-                ((Number) first.get("viewerPosition")).intValue(),
-                ((Number) second.get("viewerPosition")).intValue()));
-        result.forEach(row -> row.remove("viewerPosition"));
-        return result;
+        return visibleRows;
     }
 
     public synchronized void materializeViewersForVisibleWatchlists() {
