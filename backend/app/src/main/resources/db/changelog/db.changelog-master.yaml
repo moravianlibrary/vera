@@ -131,3 +131,9 @@ databaseChangeLog:
   - include:
       file: 0370-watchlists.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0380-watchlist-engine.sql
+      relativeToChangelogFile: true
+  - include:
+      file: 0381-watchlist-memberships.sql
+      relativeToChangelogFile: true

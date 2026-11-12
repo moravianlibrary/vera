@@ -53,7 +53,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 // PLAN-counting; PLAN-target; PLAN-mix-reading; PLAN-mix-within-scope; LC-INT-archive.
 @Repository
-class IntentionReads {
+public class IntentionReads {
     private final DSLContext dsl;
     private final CountingReads counting;
     private final HeldAccessQueries access;
@@ -73,7 +73,7 @@ class IntentionReads {
         return access.scopesHeldBy(userId).hasPermission("intention.read");
     }
 
-    Map<String, Object> overview(String userId) {
+    public Map<String, Object> overview(String userId) {
         CountingSnapshot data = counting.countingData();
         HeldScopes scopes = access.scopesHeldBy(userId);
         Map<String, ProjectInfo> projects = projects();

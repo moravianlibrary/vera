@@ -68,7 +68,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 // VIEW-lists; SCOPE-list; LC-LIST-state; LC-LIST-pool.
 @Repository
-class ListsQueries {
+public class ListsQueries {
     private final DSLContext dsl;
     private final HeldAccessQueries access;
     private final JsonMapper mapper;
@@ -109,7 +109,7 @@ class ListsQueries {
         return result;
     }
 
-    Map<String, Object> index(Map<String, String> parameters, String userId) {
+    public Map<String, Object> index(Map<String, String> parameters, String userId) {
         return index.index(parameters, userId);
     }
 

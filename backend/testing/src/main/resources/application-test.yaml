@@ -6,6 +6,12 @@ spring:
       allow-pool-suspension: true
 vera:
   public-url: http://localhost
+  watchlists:
+    link-key: test-watchlist-link-signing-key-32-bytes-long
+  push:
+    vapid-public-key: BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs
+    vapid-private-key: test-only-private-key
+    subject: mailto:test@example.test
   plugins:
     trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:classpath:test-plugin-cert.pem}
   jobs:

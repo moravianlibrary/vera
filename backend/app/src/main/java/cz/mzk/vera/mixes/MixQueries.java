@@ -19,7 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 // PLAN-mix; PLAN-mix-remove. SQL reads in catalogue order.
 @Repository
-class MixQueries {
+public class MixQueries {
     private final DSLContext dsl;
     private final HeldAccessQueries access;
     private final JsonMapper json;
@@ -30,26 +30,38 @@ class MixQueries {
         this.json = json;
     }
 
-    List<Map<String, Object>> list(Caller caller) {
+    public List<Map<String, Object>> list(Caller caller) {
+        return list(caller.userId());
+    }
+
+    public List<Map<String, Object>> list(String userId) {
         List<Map<String, Object>> result = new ArrayList<>();
-        if (!mayRead(caller)) {
+        if (!mayRead(userId)) {
             return result;
         }
         dsl.selectFrom(MIXES).orderBy(MIXES.POSITION).fetch()
-                .forEach(row -> result.add(record(row.getId(), caller)));
+                .forEach(row -> result.add(record(row.getId(), userId)));
         return result;
     }
 
     Map<String, Object> get(Caller caller, String id) {
         return mayRead(caller) && dsl.fetchExists(dsl.selectOne().from(MIXES).where(MIXES.ID.eq(id)))
-                ? record(id, caller) : null;
+                ? record(id, caller.userId()) : null;
     }
 
     boolean mayRead(Caller caller) {
-        return Permissions.hasPermission(access.heldBy(caller.userId()).grants(), "mix.read");
+        return mayRead(caller.userId());
+    }
+
+    private boolean mayRead(String userId) {
+        return Permissions.hasPermission(access.heldBy(userId).grants(), "mix.read");
     }
 
     Map<String, Object> record(String id, Caller caller) {
+        return record(id, caller.userId());
+    }
+
+    Map<String, Object> record(String id, String userId) {
         var mix = dsl.selectFrom(MIXES).where(MIXES.ID.eq(id)).fetchOne();
         List<Map<String, Object>> revisions = dsl.selectFrom(MIX_REVISIONS)
                 .where(MIX_REVISIONS.MIX_ID.eq(id)).orderBy(MIX_REVISIONS.POSITION).fetch(row -> {

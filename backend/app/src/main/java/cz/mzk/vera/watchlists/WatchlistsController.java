@@ -6,13 +6,18 @@ import static cz.mzk.vera.db.tables.Tables.GROUP_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.WATCHLISTS;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_VIEWERS;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
+import cz.mzk.vera.account.IdentityClaims;
+import cz.mzk.vera.account.WatchlistChannels;
+import cz.mzk.vera.jobs.Jobs;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.documents.PropertyDefinitions;
 import cz.mzk.vera.domain.status.Status.PublicStatus;
 import cz.mzk.vera.db.tables.tables.records.WatchlistsRecord;
+import cz.mzk.vera.db.tables.tables.records.WatchlistViewersRecord;
 import cz.mzk.vera.web.Problems;
 import cz.mzk.vera.web.Instants;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,15 +55,24 @@ final class WatchlistsController {
     private final ObjectMapper mapper;
     private final Clock clock;
     private final PropertyDefinitions propertyDefinitions;
+    private final Jobs jobs;
+    private final WatchlistChannels channels;
+    private final IdentityClaims claims;
+    private final WatchlistManageLinks links;
 
     WatchlistsController(DSLContext dsl, WatchlistQueries queries, HeldAccessQueries held,
-            ObjectMapper mapper, Clock clock, PropertyDefinitions propertyDefinitions) {
+            ObjectMapper mapper, Clock clock, PropertyDefinitions propertyDefinitions,
+            Jobs jobs, WatchlistChannels channels, IdentityClaims claims, WatchlistManageLinks links) {
         this.dsl = dsl;
         this.queries = queries;
         this.held = held;
         this.mapper = mapper;
         this.clock = clock;
         this.propertyDefinitions = propertyDefinitions;
+        this.jobs = jobs;
+        this.channels = channels;
+        this.claims = claims;
+        this.links = links;
     }
 
     @GetMapping
@@ -194,6 +208,9 @@ final class WatchlistsController {
         }
         JsonNode audience = change.has("audience") ? change.path("audience")
                 : mapper.valueToTree(existing.get("audience"));
+        JsonNode previousAudience = mapper.valueToTree(existing.get("audience"));
+        boolean filterChanged = change.has("filter")
+                && !filter.equals(mapper.valueToTree(existing.get("filter")));
         String oldKind = mapper.valueToTree(existing.get("audience")).path("kind").asString();
         String newKind = audience.path("kind").asString();
         if (!oldKind.equals(newKind)) {
@@ -214,6 +231,12 @@ final class WatchlistsController {
                 .set(WATCHLISTS.AUDIENCE, JSONB.valueOf(audience.toString()))
                 .set(WATCHLISTS.FILTER_VERSION, filterVersion)
                 .where(WATCHLISTS.ID.eq(watchlistId)).returning().fetchOne();
+        if (filterChanged) {
+            queueNotices(watchlistId, row.getName(), "filter_changed", null, null);
+        }
+        if (!audience.equals(previousAudience)) {
+            queueNotices(watchlistId, row.getName(), "audience_removed", previousAudience, audience);
+        }
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("name", row.getName());
         response.put("filter", toValue(filter));
@@ -301,6 +324,7 @@ final class WatchlistsController {
             }
             return managerRequired();
         }
+        queueNotices(watchlistId, (String) record.get("name"), "removed", null, null);
         dsl.deleteFrom(WATCHLISTS).where(WATCHLISTS.ID.eq(watchlistId)).execute();
         return ResponseEntity.noContent().build();
     }
@@ -314,6 +338,41 @@ final class WatchlistsController {
         result.put("id", id);
         result.put("audience", toValue(body.path("audience")));
         return result;
+    }
+
+    private void queueNotices(String watchlistId, String name, String reason,
+            JsonNode previousAudience, JsonNode nextAudience) {
+        for (WatchlistViewersRecord viewer : dsl.selectFrom(WATCHLIST_VIEWERS)
+                .where(WATCHLIST_VIEWERS.WATCHLIST_ID.eq(watchlistId)).fetch()) {
+            String userId = viewer.getUserId();
+            if (previousAudience != null && (!hasAudience(userId, previousAudience)
+                    || hasAudience(userId, nextAudience))) {
+                continue;
+            }
+            JsonNode subscriptions = mapper.readTree(viewer.getChannels().data());
+            for (Map<String, Object> channel : channels.forPerson(userId)) {
+                String channelId = (String) channel.get("id");
+                if (!Boolean.TRUE.equals(channel.get("canReach"))
+                        || !subscriptions.path(channelId).path("isOn").asBoolean()) {
+                    continue;
+                }
+                String recipient;
+                Map<?, ?> reach = (Map<?, ?>) channel.get("reach");
+                if ("email".equals(reach.get("by"))) {
+                    recipient = dsl.select(USERS.EMAIL).from(USERS).where(USERS.ID.eq(userId))
+                            .fetchOne(USERS.EMAIL);
+                } else {
+                    recipient = claims.value(userId, (String) reach.get("claim"));
+                }
+                if (recipient == null) {
+                    continue;
+                }
+                jobs.enqueue(dsl, "watchlist.notice", clock.instant(), Map.of(
+                        "userId", userId, "watchlistId", watchlistId, "channelId", channelId,
+                        "recipient", recipient, "name", name, "reason", reason,
+                        "manageUrl", "/api/watchlists/manage?token=" + links.issue(userId, watchlistId)));
+            }
+        }
     }
 
     private boolean validFilter(String view, JsonNode filter) {

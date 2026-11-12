@@ -136,6 +136,7 @@ public class EventRecorder {
                     .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                     .execute();
             jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
+            jobs.enqueue(dsl, "watchlist.match", at, Map.of("eventId", eventId));
         }
         if (code.audit()) {
             if (!code.history() && !configurationSchema.validate(input.data()).isEmpty()) {
@@ -197,6 +198,7 @@ public class EventRecorder {
                 .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                 .execute();
         jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
+        jobs.enqueue(dsl, "watchlist.match", at, Map.of("eventId", eventId));
     }
 
     public void fireAct(EventInput input) {
@@ -233,6 +235,7 @@ public class EventRecorder {
                 .set(HOOK_EVENTS.REASON_INTERNAL, input.reason() == null ? null : input.reason().internal())
                 .execute();
         jobs.enqueue(dsl, "hook.match", at, Map.of("eventId", eventId));
+        jobs.enqueue(dsl, "watchlist.match", at, Map.of("eventId", eventId));
     }
 
     private JsonNode hookChanges(JsonNode data) {

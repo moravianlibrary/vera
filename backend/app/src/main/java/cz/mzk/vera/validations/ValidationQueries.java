@@ -56,7 +56,7 @@ import org.springframework.stereotype.Repository;
 
 // VIEW-validations; STAT-validation; SCOPE-custody-category: filter and order stored review rows in SQL.
 @Repository
-class ValidationQueries {
+public class ValidationQueries {
     private final DSLContext dsl;
     private final HeldAccessQueries access;
     private final DocumentRecords records;
@@ -82,7 +82,7 @@ class ValidationQueries {
                 || held.hasPermission(ValidationCodes.REVOKE);
     }
 
-    Map<String, Object> page(Map<String, String> parameters, String callerId) {
+    public Map<String, Object> page(Map<String, String> parameters, String callerId) {
         HeldScopes held = access.scopesHeldBy(callerId);
         ValidationSearch search = ValidationSearch.parse(parameters, documents.validationPropertyKeys(held));
         Condition reach = reachCondition(held);
@@ -107,6 +107,15 @@ class ValidationQueries {
         result.put("facets", facets(search, reach, held));
         result.put("propertyFacets", propertyFacets(search, reach, held));
         return result;
+    }
+
+    public boolean matches(Map<String, String> parameters, String callerId, String iterationId) {
+        HeldScopes held = access.scopesHeldBy(callerId);
+        ValidationSearch search = ValidationSearch.parse(parameters, documents.validationPropertyKeys(held));
+        Condition reach = reachCondition(held);
+        Condition filters = filters(search, null, held);
+        return dsl.fetchExists(dsl.selectOne().from(base())
+                .where(ITERATIONS.ID.eq(iterationId).and(reach).and(filters)));
     }
 
     Map<String, Object> detail(String iterationId, String callerId) {

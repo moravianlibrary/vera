@@ -1,5 +1,7 @@
 vera:
   public-url: http://localhost
+  watchlists:
+    link-key: test-watchlist-link-signing-key-32-bytes-long
   plugins:
     trusted-certificates: ""
   jobs:

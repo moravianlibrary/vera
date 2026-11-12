@@ -4,23 +4,27 @@ import static cz.mzk.vera.db.tables.Tables.GROUP_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_BASELINES;
+import static cz.mzk.vera.db.tables.Tables.WATCHLIST_ENTRIES;
 import static cz.mzk.vera.db.tables.Tables.WATCHLISTS;
 import static cz.mzk.vera.db.tables.Tables.WATCHLIST_VIEWERS;
-import static cz.mzk.vera.db.tables.Tables.WATCHLIST_ENTRIES;
-import static cz.mzk.vera.db.tables.Tables.WATCHLIST_BASELINES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
-import cz.mzk.vera.session.HeldAccessQueries;
-import cz.mzk.vera.documents.DocumentQueries;
-import cz.mzk.vera.documents.Audience;
-import cz.mzk.vera.requests.RequestQueries;
-import cz.mzk.vera.tasks.TasksQueries;
 import cz.mzk.vera.categories.CategoryReads;
-import cz.mzk.vera.projects.ProjectReads;
-import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
-import cz.mzk.vera.db.tables.tables.records.WatchlistsRecord;
-import cz.mzk.vera.db.tables.tables.records.WatchlistViewersRecord;
 import cz.mzk.vera.db.tables.tables.records.UsersRecord;
+import cz.mzk.vera.db.tables.tables.records.WatchlistViewersRecord;
+import cz.mzk.vera.db.tables.tables.records.WatchlistsRecord;
+import cz.mzk.vera.documents.Audience;
+import cz.mzk.vera.documents.DocumentQueries;
+import cz.mzk.vera.intentions.IntentionReads;
+import cz.mzk.vera.lists.ListsQueries;
+import cz.mzk.vera.mixes.MixQueries;
+import cz.mzk.vera.projects.ProjectReads;
+import cz.mzk.vera.requests.RequestQueries;
+import cz.mzk.vera.session.HeldAccessQueries;
+import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
+import cz.mzk.vera.tasks.TasksQueries;
+import cz.mzk.vera.validations.ValidationQueries;
 import cz.mzk.vera.web.Instants;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -46,21 +50,31 @@ public class WatchlistQueries {
     private final ObjectMapper mapper;
     private final DocumentQueries documents;
     private final RequestQueries requests;
+    private final ValidationQueries validations;
+    private final ListsQueries lists;
     private final TasksQueries tasks;
     private final CategoryReads categories;
     private final ProjectReads projects;
+    private final MixQueries mixes;
+    private final IntentionReads intentions;
 
     public WatchlistQueries(DSLContext dsl, HeldAccessQueries held, ObjectMapper mapper,
-            DocumentQueries documents, RequestQueries requests, TasksQueries tasks,
-            CategoryReads categories, ProjectReads projects) {
+            DocumentQueries documents, RequestQueries requests, ValidationQueries validations,
+            ListsQueries lists, TasksQueries tasks,
+            CategoryReads categories, ProjectReads projects, MixQueries mixes,
+            IntentionReads intentions) {
         this.dsl = dsl;
         this.held = held;
         this.mapper = mapper;
         this.documents = documents;
         this.requests = requests;
+        this.validations = validations;
+        this.lists = lists;
         this.tasks = tasks;
         this.categories = categories;
         this.projects = projects;
+        this.mixes = mixes;
+        this.intentions = intentions;
     }
 
     public List<Map<String, Object>> list(String userId, String view, boolean manageSystem) {
@@ -500,6 +514,109 @@ public class WatchlistQueries {
         Map<String, String> parameters = new LinkedHashMap<>();
         filter.properties().forEach(entry -> parameters.put(entry.getKey(), entry.getValue().asString()));
         return parameters;
+    }
+
+    public boolean matchesRecord(String view, JsonNode filter, String userId, String recordId) {
+        return matchesRecord(view, filter, userId, recordId, recordId);
+    }
+
+    public boolean matchesRecord(String view, JsonNode filter, String userId, String recordId, String subjectId) {
+        Map<String, String> parameters = filterParameters(filter);
+        return switch (view) {
+            case "documents" -> documents.matches(parameters, userId, false, recordId);
+            case "my-documents" -> documents.matches(parameters, userId, true, recordId);
+            case "requests" -> requests.matches(parameters, userId, subjectId);
+            case "validations" -> validations.matches(parameters, userId, recordId);
+            // These smaller views keep using their page query to match the full result.
+            default -> {
+                Map<String, Object> page = page(view, parameters, userId);
+                yield ((List<?>) page.get("items")).stream()
+                        .anyMatch(item -> hasRecord(view, item, recordId));
+            }
+        };
+    }
+
+    private Map<String, Object> page(String view, Map<String, String> parameters, String userId) {
+        return switch (view) {
+            case "documents" -> documents.page(parameters, userId, false);
+            case "my-documents" -> documents.page(parameters, userId, true);
+            case "requests" -> requests.page(parameters, userId);
+            case "validations" -> validations.page(parameters, userId);
+            case "lists" -> lists.index(parameters, userId);
+            case "projects" -> Map.of("items", projects.overview(userId, parameters).get("rows"));
+            case "categories" -> Map.of("items", categoryNodes(categories.index(userId, parameters.get("mix"))));
+            case "mixes" -> Map.of("items", mixes.list(userId));
+            case "intentions" -> Map.of("items", intentions.overview(userId).get("rows"));
+            case "tasks" -> {
+                Map<String, Object> result = tasks.index(userId, parameters);
+                List<Object> items = new ArrayList<>((List<?>) result.get("running"));
+                items.addAll((List<?>) result.get("finished"));
+                yield Map.of("items", items);
+            }
+            default -> Map.of("items", List.of());
+        };
+    }
+
+    private List<Object> categoryNodes(Map<String, Object> index) {
+        List<Object> result = new ArrayList<>();
+        Object nodes = index.get("nodes");
+        if (nodes instanceof List<?> values) {
+            for (Object value : values) {
+                appendCategoryNode(value, result);
+            }
+        }
+        return result;
+    }
+
+    private void appendCategoryNode(Object value, List<Object> result) {
+        if (!(value instanceof Map<?, ?> node)) {
+            return;
+        }
+        result.add(value);
+        Object children = node.get("children");
+        if (children instanceof List<?> values) {
+            values.forEach(child -> appendCategoryNode(child, result));
+        }
+    }
+
+    private boolean hasRecord(String view, Object item, String recordId) {
+        if (!(item instanceof Map<?, ?> row)) {
+            return false;
+        }
+        if ("lists".equals(view)) {
+            Object listId = row.get("listId");
+            if (listId == null && row.get("list") instanceof Map<?, ?> list) {
+                listId = list.get("id");
+            }
+            return recordId.equals(listId);
+        }
+        if ("validations".equals(view)) {
+            Object iteration = row.get("iteration");
+            return iteration instanceof Map<?, ?> values && recordId.equals(values.get("id"));
+        }
+        if ("categories".equals(view)) {
+            return recordId.equals(row.get("categoryId")) || recordId.equals(row.get("id"));
+        }
+        if ("projects".equals(view)) {
+            Object project = row.get("project");
+            return project instanceof Map<?, ?> values && recordId.equals(values.get("id"));
+        }
+        if ("intentions".equals(view)) {
+            Object intention = row.get("intention");
+            return intention instanceof Map<?, ?> values && recordId.equals(values.get("id"));
+        }
+        if (List.of("mixes", "tasks").contains(view)) {
+            return recordId.equals(row.get("id")) || recordId.equals(row.get("runId"));
+        }
+        Object rowRecord = "requests".equals(view) ? row.get("record") : row.get("document");
+        if (!(rowRecord instanceof Map<?, ?> record)) {
+            return false;
+        }
+        Object document = record.get("document");
+        if (document instanceof Map<?, ?> nested) {
+            return recordId.equals(nested.get("id"));
+        }
+        return recordId.equals(record.get("id"));
     }
 
     private Map<String, Object> stored(WatchlistsRecord row) {

@@ -133,7 +133,7 @@ class ListActTests {
                 "targetPages", 1, "memberIds", List.of()), 201);
         assertThat(created.path("row").path("state").asString()).isEqualTo("InProgress");
         String id = created.path("row").path("list").path("id").asString();
-        assertThat(dsl.selectCount().from(JOBS).fetchOne(0, int.class)).isEqualTo(jobsBefore + 2);
+        assertThat(dsl.selectCount().from(JOBS).fetchOne(0, int.class)).isEqualTo(jobsBefore + 4);
         assertThat(dsl.fetchExists(dsl.selectOne().from(EVENTS)
                 .where(EVENTS.SUBJECT_ID.eq(id).and(EVENTS.CODE.eq("list.started"))))).isFalse();
         HookEventsRecord started = dsl.selectFrom(HOOK_EVENTS).where(HOOK_EVENTS.SUBJECT_ID.eq(id)

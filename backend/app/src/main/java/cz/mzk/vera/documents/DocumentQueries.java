@@ -83,6 +83,22 @@ public class DocumentQueries {
         return pageResult(audience, items, orderedIds, slice, arrangement, facets, propertyFacets);
     }
 
+    public boolean matches(Map<String, String> parameters, String callerId, boolean mine, String documentId) {
+        HeldScopes held = heldAccess.scopesHeldBy(callerId);
+        Audience audience = mine ? Audience.PUBLIC : audienceOf(held);
+        List<PropertyDefinitions.Definition> definitions = propertyDefinitions.filterable(dsl, audience);
+        DocumentSearch search = DocumentSearch.parse(parameters, definitions);
+        List<Category> categories = dsl.selectFrom(CATEGORIES)
+                .fetch(row -> new Category(row.getId(), row.getParentId()));
+        Condition documentReach = reach.condition(held, callerId, audience);
+        LocalDate today = LocalDate.now(clock);
+        Condition filters = filters(search, audience, callerId, categories, null, held, today);
+        return dsl.fetchExists(dsl.selectOne().from(DOCUMENTS
+                .leftJoin(DOCUMENT_STATES).on(DOCUMENT_STATES.DOCUMENT_ID.eq(DOCUMENTS.ID))
+                .leftJoin(ITERATIONS).on(ITERATIONS.ID.eq(DOCUMENT_STATES.CURRENT_ITERATION_ID)))
+                .where(DOCUMENTS.ID.eq(documentId).and(documentReach).and(filters)));
+    }
+
     public int count(Map<String, String> parameters, String callerId, boolean mine) {
         return counts(List.of(parameters), callerId, mine).getFirst();
     }

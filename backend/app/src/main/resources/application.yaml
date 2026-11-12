@@ -21,6 +21,12 @@ server:
   port: ${VERA_PORT:8081}
 vera:
   public-url: ${VERA_PUBLIC_URL}
+  watchlists:
+    link-key: ${VERA_WATCHLIST_LINK_KEY:}
+  push:
+    vapid-public-key: ${VERA_PUSH_VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${VERA_PUSH_VAPID_PRIVATE_KEY:}
+    subject: ${VERA_PUSH_SUBJECT:mailto:admin@example.org}
   plugins:
     # B6 Signed: the deployment's trusted signers, never a page in VERA.
     trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:}

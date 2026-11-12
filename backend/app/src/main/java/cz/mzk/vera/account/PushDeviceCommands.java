@@ -19,7 +19,7 @@ public class PushDeviceCommands {
     private final String publicKey;
 
     public PushDeviceCommands(DSLContext dsl, Clock clock,
-            @Value("${vera.push.public-key:BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs}")
+            @Value("${vera.push.vapid-public-key:BNbxGYNMhEIi9zrneh7mqV4oUanjLUK3m-mYZBc62frMKrEoMk88r3Lk596T0ck9xlT-aOe2kJPcZ4TlTjaUeCs}")
             String publicKey) {
         this.dsl = dsl;
         this.clock = clock;
