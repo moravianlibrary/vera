@@ -243,6 +243,9 @@ public final class WatchlistMatchJob implements JobKind<WatchlistMatchJob.Match>
                 || ("tasks".equals(view) && "run".equals(kind))) {
             return event.subjectId();
         }
+        if (List.of("projects", "categories", "mixes", "intentions", "tasks").contains(view)) {
+            return null;
+        }
         if ("lists".equals(view)) {
             return "list".equals(event.subjectKind()) ? event.subjectId() : null;
         }
