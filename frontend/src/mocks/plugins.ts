@@ -805,6 +805,7 @@ function readNextVersion(
   const next = {
     version,
     contractVersion: newest.contractVersion,
+    signer: "Moravská zemská knihovna v Brně",
     triggers: [...newest.triggers],
     declares: { ...newest.declares, ...change?.declares },
     configFields:
@@ -840,6 +841,7 @@ function readNewPackage(slug: string, namedVersion: string | undefined): Outcome
       version: {
         version: namedVersion ?? "0.1.0",
         contractVersion: known.contractVersion,
+        signer: "Moravská zemská knihovna v Brně",
         triggers: [...known.triggers],
         declares: { ...noDeclarations, ...known.declares },
         configFields: configFieldsOf(...known.fields),

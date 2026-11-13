@@ -78,8 +78,9 @@ public class PluginPackageCommands {
         if (fileName == null || !fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".jar")) {
             return ActResult.refused(422, "A plugin comes as a .jar package", "plugin.not_a_package");
         }
+        String signer;
         try {
-            signatures.verify(jar);
+            signer = signatures.verify(jar);
         } catch (SecurityException exception) {
             return ActResult.refused(422, exception.getMessage(), "plugin.package_missing");
         }
@@ -106,7 +107,7 @@ public class PluginPackageCommands {
             return ActResult.refused(409, "Version " + version + " is installed already", "plugin.version_installed");
         }
         JsonNode current = versions.isEmpty() ? null : versions.get(0);
-        JsonNode versionEntry = versionEntry(descriptor);
+        JsonNode versionEntry = versionEntry(descriptor, signer);
         Map<String, Object> difference = current == null ? null : difference(current, versionEntry);
         String id = RecordIds.next("up", dsl.selectFrom(org.jooq.impl.DSL.table("plugin_uploads"))
                 .fetch(r -> r.get("id", String.class)));
@@ -170,8 +171,9 @@ public class PluginPackageCommands {
                         .set(PLUGIN_IMPLEMENTATIONS.VERSIONS, JSONB.valueOf("[]"))
                         .execute();
             }
-            jdbc.update("INSERT INTO plugin_packages(implementation_id,version,sha256,jar) VALUES (?,?,?,?)",
-                    implementationId, answer.path("version").path("version").asString(), row.get("sha"), jar);
+            jdbc.update("INSERT INTO plugin_packages(implementation_id,version,sha256,jar,signer) VALUES (?,?,?,?,?)",
+                    implementationId, answer.path("version").path("version").asString(), row.get("sha"), jar,
+                    answer.path("version").path("signer").asString());
             Record implementation = dsl.selectFrom(PLUGIN_IMPLEMENTATIONS)
                     .where(PLUGIN_IMPLEMENTATIONS.ID.eq(implementationId)).fetchOne();
             JsonNode prior = json.readTree(implementation.get(PLUGIN_IMPLEMENTATIONS.VERSIONS).data());
@@ -338,10 +340,11 @@ public class PluginPackageCommands {
         return Permissions.hasPermission(access.heldBy(caller.userId()).grants(), "plugin.upload_code");
     }
 
-    private JsonNode versionEntry(JsonNode descriptor) {
+    private JsonNode versionEntry(JsonNode descriptor, String signer) {
         Map<String, Object> value = new LinkedHashMap<>();
         value.put("version", descriptor.path("version").asString());
         value.put("contractVersion", descriptor.path("contractVersion").asString());
+        value.put("signer", signer);
         value.put("triggers", json.treeToValue(descriptor.path("triggers"), Object.class));
         value.put("declares", json.treeToValue(descriptor.path("declares"), Object.class));
         value.put("configFields", json.treeToValue(descriptor.path("configFields"), Object.class));
@@ -372,6 +375,7 @@ public class PluginPackageCommands {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("version", version.path("version").asString());
         result.put("contractVersion", version.path("contractVersion").asString());
+        result.put("signer", version.path("signer").asString());
         result.put("installedAt", clock.instant().atOffset(ZoneOffset.UTC).toLocalDate().toString());
         result.put("installedBy", userId);
         result.put("triggers", json.treeToValue(version.path("triggers"), Object.class));

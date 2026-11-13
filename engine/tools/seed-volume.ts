@@ -476,6 +476,7 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
             {
               version: "1.0.0",
               contractVersion: "1.0",
+              signer: "Moravská zemská knihovna v Brně",
               installedAt: "2026-10-30",
               installedBy: "u3",
               triggers: ["OnIngest", "OnRecordChange", "OnSchedule", "OnDemand"],

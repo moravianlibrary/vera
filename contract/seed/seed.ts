@@ -53,6 +53,7 @@ const project = projectSchema;
 const storedPluginVersion = z.strictObject({
   version: z.string(),
   contractVersion: z.string(),
+  signer: z.string(),
   installedAt: z.string(),
   installedBy: id,
   triggers: z.array(pluginTriggerSchema),

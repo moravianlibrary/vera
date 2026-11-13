@@ -33,6 +33,7 @@ const count = z.number().int().nonnegative();
 export const pluginVersionSchema = z.object({
   version: z.string(),
   contractVersion: z.string(),
+  signer: z.string(),
   installedAt: day,
   installedBy: id,
   triggers: z.array(pluginTriggerSchema),

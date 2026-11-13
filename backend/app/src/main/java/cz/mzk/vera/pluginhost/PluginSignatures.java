@@ -2,18 +2,24 @@ package cz.mzk.vera.pluginhost;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSigner;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +33,7 @@ public class PluginSignatures {
         if (bundle == null || bundle.isBlank()) {
             return;
         }
-        try (java.io.InputStream stream = bundle.startsWith("classpath:")
+        try (InputStream stream = bundle.startsWith("classpath:")
                 ? PluginSignatures.class.getClassLoader().getResourceAsStream(bundle.substring(10))
                 : Files.newInputStream(Path.of(bundle))) {
             if (stream == null) {
@@ -36,15 +42,15 @@ public class PluginSignatures {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             Collection<? extends Certificate> certificates = factory.generateCertificates(stream);
             for (Certificate certificate : certificates) {
-                trusted.add(java.util.HexFormat.of().formatHex(certificate.getEncoded()));
+                trusted.add(HexFormat.of().formatHex(certificate.getEncoded()));
             }
         } catch (Exception exception) {
             throw new IllegalStateException("Could not read trusted plugin certificates.", exception);
         }
     }
 
-    public void verify(byte[] bytes) {
-        boolean payloadFound = false;
+    public String verify(byte[] bytes) {
+        X509Certificate signer = null;
         try (JarInputStream jar = new JarInputStream(new ByteArrayInputStream(bytes), true)) {
             JarEntry entry;
             while ((entry = jar.getNextJarEntry()) != null) {
@@ -52,23 +58,39 @@ public class PluginSignatures {
                 if (entry.isDirectory() || signatureMetadata(entry.getName())) {
                     continue;
                 }
-                payloadFound = true;
-                Certificate[] certificates = entry.getCertificates();
-                if (certificates == null || certificates.length == 0
-                        || !trusted.contains(java.util.HexFormat.of().formatHex(certificates[0].getEncoded()))) {
-                    throw new SecurityException("Every plugin package entry must be signed by a trusted certificate.");
+                CodeSigner[] signers = entry.getCodeSigners();
+                if (signers == null || signers.length != 1) {
+                    throw new SecurityException("Every plugin package entry must have one trusted signer.");
                 }
+                X509Certificate certificate = (X509Certificate) signers[0].getSignerCertPath()
+                        .getCertificates().getFirst();
+                if (!trusted.contains(HexFormat.of().formatHex(certificate.getEncoded()))
+                        || signer != null && !signer.equals(certificate)) {
+                    throw new SecurityException("Every plugin package entry must have the same trusted signer.");
+                }
+                signer = certificate;
             }
-        } catch (IOException | java.security.cert.CertificateEncodingException exception) {
+        } catch (IOException | CertificateEncodingException exception) {
             throw new SecurityException("Could not verify plugin package signature.", exception);
         }
-        if (!payloadFound) {
+        if (signer == null) {
             throw new SecurityException("Plugin package has no signed entries.");
         }
+        String subject = signer.getSubjectX500Principal().getName();
+        try {
+            for (Rdn name : new LdapName(subject).getRdns()) {
+                if (name.getType().equalsIgnoreCase("CN")) {
+                    return name.getValue().toString();
+                }
+            }
+        } catch (InvalidNameException exception) {
+            throw new SecurityException("Could not read plugin signer subject.", exception);
+        }
+        return subject;
     }
 
     private boolean signatureMetadata(String name) {
-        String upper = name.toUpperCase(java.util.Locale.ROOT);
+        String upper = name.toUpperCase(Locale.ROOT);
         return upper.equals("META-INF/MANIFEST.MF") || upper.startsWith("META-INF/")
                 && (upper.endsWith(".SF") || upper.endsWith(".RSA") || upper.endsWith(".DSA")
                         || upper.endsWith(".EC"));

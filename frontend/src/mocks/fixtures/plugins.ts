@@ -53,6 +53,7 @@ function versionOf(source: VersionSource): PluginVersion {
   return {
     version: source.version,
     contractVersion: "1.0",
+    signer: "Moravská zemská knihovna v Brně",
     installedAt: source.installedAt,
     installedBy: "u3",
     triggers: [...source.triggers],
@@ -87,7 +88,10 @@ function implementation(
     name,
     kind,
     description,
-    versions: versions.map(versionOf),
+    versions: versions.map((source) => ({
+      ...versionOf(source),
+      signer: id === "pt2" || id === "pt6" ? "VERA test plugin" : "Moravská zemská knihovna v Brně",
+    })),
   };
 }
 

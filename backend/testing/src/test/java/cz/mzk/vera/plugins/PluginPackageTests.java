@@ -23,6 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 // PLG-upload; PLG-upgrade; B6 Signed; PLG-api-capabilities.
 @org.springframework.boot.test.context.SpringBootTest(classes = VeraTestingApplication.class,
@@ -62,6 +63,8 @@ class PluginPackageTests {
                         "multipart/form-data; boundary=vera-upload-boundary"))
                 .body(multipart("catalog-validity-3.2.0.jar", packageBytes("catalog-validity-3.2.0.jar"), "pt6"))
                 .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        ((ObjectNode) expected.path("version"))
+                .put("signer", "VERA test plugin");
         assertThat(uploaded).isEqualTo(expected);
         client.post().uri("/api/plugin-implementations/uploads/up1/install").header("Cookie", adminCookie)
                 .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isOk()
@@ -81,6 +84,28 @@ class PluginPackageTests {
             auditCodes.add(mapper.readTree(record).path("code").asString());
         }
         assertThat(auditCodes).contains("plugin.uploaded", "plugin_instance.upgraded");
+    }
+
+    @Test
+    void signedUploadNamesItsCertificateAndTheInstalledVersionKeepsIt() throws Exception {
+        JsonNode uploaded = json(client.post().uri("/api/plugin-implementations/uploads")
+                .header("Cookie", adminCookie).contentType(MediaType.parseMediaType(
+                        "multipart/form-data; boundary=vera-upload-boundary"))
+                .body(multipart("catalog-validity-3.2.0.jar", packageBytes("catalog-validity-3.2.0.jar"), "pt6"))
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(uploaded.path("version").path("signer").asString()).isEqualTo("VERA test plugin");
+        client.post().uri("/api/plugin-implementations/uploads/up1/install").header("Cookie", adminCookie)
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isOk();
+        client.get().uri("/api/plugins").header("Cookie", adminCookie).exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$.implementations[?(@.id == 'pt6')].versions[0].signer")
+                .isEqualTo("VERA test plugin");
+    }
+
+    @Test
+    void seededVersionNamesItsSeedSigner() {
+        client.get().uri("/api/plugins").header("Cookie", adminCookie).exchange().expectStatus().isOk()
+                .expectBody().jsonPath("$.implementations[?(@.id == 'pt6')].versions[0].signer")
+                .isEqualTo("VERA test plugin");
     }
 
     @Test

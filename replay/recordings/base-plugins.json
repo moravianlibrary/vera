@@ -22,6 +22,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -68,6 +69,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -114,6 +116,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -161,6 +164,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -193,6 +197,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -245,6 +250,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -283,6 +289,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -315,6 +322,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -376,6 +384,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -407,6 +416,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -459,6 +469,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -490,6 +501,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -542,6 +554,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -573,6 +586,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -656,6 +670,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -689,6 +704,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -721,6 +737,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -753,6 +770,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -801,6 +819,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -833,6 +852,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -865,6 +885,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -919,6 +940,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -983,6 +1005,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -1027,6 +1050,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -1087,6 +1111,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -1145,6 +1170,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -1182,6 +1208,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -1218,6 +1245,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -1254,6 +1282,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -1295,6 +1324,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -1336,6 +1366,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -1372,6 +1403,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -1414,6 +1446,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -1450,6 +1483,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -1491,6 +1525,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -1532,6 +1567,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -1586,6 +1622,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -1632,6 +1669,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -1683,6 +1721,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -1733,6 +1772,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -5826,6 +5866,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -5872,6 +5913,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -5918,6 +5960,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -5965,6 +6008,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -5997,6 +6041,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -6049,6 +6094,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -6087,6 +6133,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6119,6 +6166,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6180,6 +6228,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6211,6 +6260,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6263,6 +6313,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6294,6 +6345,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -6346,6 +6398,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6377,6 +6430,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6460,6 +6514,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6493,6 +6548,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6525,6 +6581,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6557,6 +6614,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -6605,6 +6663,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6637,6 +6696,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6669,6 +6729,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6723,6 +6784,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6787,6 +6849,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -6831,6 +6894,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -6891,6 +6955,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -6949,6 +7014,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -6986,6 +7052,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -7022,6 +7089,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -7058,6 +7126,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -7099,6 +7168,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -7140,6 +7210,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -7176,6 +7247,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -7218,6 +7290,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -7254,6 +7327,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -7295,6 +7369,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -7336,6 +7411,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -7390,6 +7466,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -7436,6 +7513,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -7487,6 +7565,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -7537,6 +7616,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -9591,6 +9671,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -9637,6 +9718,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -9683,6 +9765,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -9730,6 +9813,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -9762,6 +9846,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -9814,6 +9899,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -9852,6 +9938,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -9884,6 +9971,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -9945,6 +10033,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -9976,6 +10065,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10028,6 +10118,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10059,6 +10150,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -10111,6 +10203,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10142,6 +10235,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10225,6 +10319,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10258,6 +10353,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10290,6 +10386,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10322,6 +10419,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -10370,6 +10468,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10402,6 +10501,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10434,6 +10534,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10488,6 +10589,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10552,6 +10654,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -10596,6 +10699,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10656,6 +10760,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -10714,6 +10819,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -10751,6 +10857,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -10787,6 +10894,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -10823,6 +10931,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -10864,6 +10973,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -10905,6 +11015,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -10941,6 +11052,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -10983,6 +11095,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -11019,6 +11132,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -11060,6 +11174,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -11101,6 +11216,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -11155,6 +11271,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -11201,6 +11318,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -11252,6 +11370,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -11302,6 +11421,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -13815,6 +13935,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -13861,6 +13982,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -13907,6 +14029,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -13954,6 +14077,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -13986,6 +14110,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -14038,6 +14163,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -14076,6 +14202,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14108,6 +14235,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14169,6 +14297,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14200,6 +14329,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14252,6 +14382,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14283,6 +14414,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -14335,6 +14467,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14366,6 +14499,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14449,6 +14583,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14482,6 +14617,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14514,6 +14650,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14546,6 +14683,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -14594,6 +14732,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14626,6 +14765,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14658,6 +14798,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14712,6 +14853,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14776,6 +14918,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -14820,6 +14963,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -14880,6 +15024,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -14938,6 +15083,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -14975,6 +15121,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -15011,6 +15158,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -15047,6 +15195,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -15088,6 +15237,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -15129,6 +15279,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -15165,6 +15316,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -15207,6 +15359,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -15243,6 +15396,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -15284,6 +15438,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -15325,6 +15480,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -15379,6 +15535,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -15425,6 +15582,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -15476,6 +15634,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -15526,6 +15685,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -17645,6 +17805,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -17691,6 +17852,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -17737,6 +17899,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -17784,6 +17947,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -17816,6 +17980,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -17868,6 +18033,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -17906,6 +18072,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -17938,6 +18105,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -17999,6 +18167,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18030,6 +18199,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18082,6 +18252,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18113,6 +18284,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -18165,6 +18337,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18196,6 +18369,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18279,6 +18453,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18312,6 +18487,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18344,6 +18520,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18376,6 +18553,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -18424,6 +18602,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18456,6 +18635,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18488,6 +18668,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18542,6 +18723,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18606,6 +18788,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -18650,6 +18833,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18710,6 +18894,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -18768,6 +18953,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -18805,6 +18991,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -18841,6 +19028,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -18877,6 +19065,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -18918,6 +19107,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -18959,6 +19149,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -18995,6 +19186,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -19037,6 +19229,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -19073,6 +19266,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -19114,6 +19308,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -19155,6 +19350,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -19209,6 +19405,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -19255,6 +19452,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -19306,6 +19504,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -19356,6 +19555,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -21424,6 +21624,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -21470,6 +21671,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -21516,6 +21718,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -21563,6 +21766,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -21595,6 +21799,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -21647,6 +21852,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -21685,6 +21891,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -21717,6 +21924,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -21778,6 +21986,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -21809,6 +22018,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -21861,6 +22071,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -21892,6 +22103,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -21944,6 +22156,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -21975,6 +22188,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -22058,6 +22272,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22091,6 +22306,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22123,6 +22339,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22155,6 +22372,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -22203,6 +22421,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22235,6 +22454,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22267,6 +22487,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -22321,6 +22542,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -22385,6 +22607,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22429,6 +22652,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -22489,6 +22713,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -22547,6 +22772,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -22584,6 +22810,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -22620,6 +22847,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -22656,6 +22884,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -22697,6 +22926,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -22738,6 +22968,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -22774,6 +23005,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -22816,6 +23048,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -22852,6 +23085,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -22893,6 +23127,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -22934,6 +23169,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -22988,6 +23224,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -23034,6 +23271,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -23085,6 +23323,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -23135,6 +23374,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25160,6 +25400,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25206,6 +25447,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25252,6 +25494,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -25299,6 +25542,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25331,6 +25575,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -25383,6 +25628,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -25421,6 +25667,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25453,6 +25700,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25514,6 +25762,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25545,6 +25794,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25597,6 +25847,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25628,6 +25879,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -25680,6 +25932,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25711,6 +25964,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -25794,6 +26048,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25827,6 +26082,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25859,6 +26115,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25891,6 +26148,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -25939,6 +26197,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -25971,6 +26230,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -26003,6 +26263,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -26057,6 +26318,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -26121,6 +26383,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -26165,6 +26428,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -26225,6 +26489,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -26283,6 +26548,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -26320,6 +26586,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -26356,6 +26623,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -26392,6 +26660,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -26433,6 +26702,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -26474,6 +26744,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -26510,6 +26781,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -26552,6 +26824,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -26588,6 +26861,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -26629,6 +26903,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -26670,6 +26945,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -26724,6 +27000,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -26770,6 +27047,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -26821,6 +27099,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -26871,6 +27150,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -32720,6 +33000,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -32766,6 +33047,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -32812,6 +33094,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -32859,6 +33142,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -32891,6 +33175,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -32943,6 +33228,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -32981,6 +33267,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33013,6 +33300,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33074,6 +33362,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33105,6 +33394,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33157,6 +33447,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33188,6 +33479,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -33240,6 +33532,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33271,6 +33564,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33354,6 +33648,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33387,6 +33682,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33419,6 +33715,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33451,6 +33748,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -33499,6 +33797,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33531,6 +33830,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33563,6 +33863,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33617,6 +33918,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33681,6 +33983,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -33725,6 +34028,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33785,6 +34089,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -33843,6 +34148,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -33880,6 +34186,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -33916,6 +34223,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -33952,6 +34260,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -33993,6 +34302,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -34034,6 +34344,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -34070,6 +34381,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -34112,6 +34424,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -34148,6 +34461,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -34189,6 +34503,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -34230,6 +34545,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -34284,6 +34600,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -34330,6 +34647,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -34381,6 +34699,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -34431,6 +34750,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -36646,6 +36966,7 @@
             "version": {
               "version": "3.2.0",
               "contractVersion": "1.0",
+              "signer": "Moravská zemská knihovna v Brně",
               "triggers": [
                 "OnIngest",
                 "OnRecordChange",
@@ -36736,6 +37057,7 @@
               {
                 "version": "3.2.0",
                 "contractVersion": "1.0",
+                "signer": "Moravská zemská knihovna v Brně",
                 "triggers": [
                   "OnIngest",
                   "OnRecordChange",
@@ -36784,6 +37106,7 @@
               {
                 "version": "3.1.0",
                 "contractVersion": "1.0",
+                "signer": "VERA test plugin",
                 "installedAt": "2026-01-15",
                 "installedBy": "u3",
                 "triggers": [
@@ -36854,6 +37177,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -36900,6 +37224,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -36946,6 +37271,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -36993,6 +37319,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37025,6 +37352,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -37077,6 +37405,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -37115,6 +37444,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37147,6 +37477,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37208,6 +37539,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37239,6 +37571,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37291,6 +37624,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37322,6 +37656,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -37374,6 +37709,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37405,6 +37741,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37488,6 +37825,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37521,6 +37859,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37553,6 +37892,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37585,6 +37925,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -37633,6 +37974,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37665,6 +38007,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37697,6 +38040,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37751,6 +38095,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37815,6 +38160,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -37859,6 +38205,7 @@
                   {
                     "version": "3.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "triggers": [
                       "OnIngest",
                       "OnRecordChange",
@@ -37907,6 +38254,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -37967,6 +38315,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -38025,6 +38374,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -38062,6 +38412,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -38098,6 +38449,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -38134,6 +38486,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -38175,6 +38528,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -38216,6 +38570,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -38252,6 +38607,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -38294,6 +38650,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -38330,6 +38687,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -38371,6 +38729,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -38412,6 +38771,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -38466,6 +38826,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -38512,6 +38873,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -38563,6 +38925,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -38613,6 +38976,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -40669,6 +41033,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -40715,6 +41080,7 @@
                   {
                     "version": "2.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -40761,6 +41127,7 @@
                   {
                     "version": "0.8.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-02-04",
                     "installedBy": "u3",
                     "triggers": [
@@ -40808,6 +41175,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -40840,6 +41208,7 @@
                   {
                     "version": "0.3.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -40892,6 +41261,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-29",
                     "installedBy": "u3",
                     "triggers": [
@@ -40930,6 +41300,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -40962,6 +41333,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41023,6 +41395,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41054,6 +41427,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41106,6 +41480,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41137,6 +41512,7 @@
                   {
                     "version": "1.0.4",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-04-11",
                     "installedBy": "u3",
                     "triggers": [
@@ -41189,6 +41565,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41220,6 +41597,7 @@
                   {
                     "version": "2.4.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41303,6 +41681,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41336,6 +41715,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41368,6 +41748,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41400,6 +41781,7 @@
                   {
                     "version": "0.9.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -41448,6 +41830,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41480,6 +41863,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41512,6 +41896,7 @@
                   {
                     "version": "1.8.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41566,6 +41951,7 @@
                   {
                     "version": "1.2.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41630,6 +42016,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -41674,6 +42061,7 @@
                   {
                     "version": "3.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "triggers": [
                       "OnIngest",
                       "OnRecordChange",
@@ -41722,6 +42110,7 @@
                   {
                     "version": "3.1.0",
                     "contractVersion": "1.0",
+                    "signer": "VERA test plugin",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41782,6 +42171,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-10",
                     "installedBy": "u3",
                     "triggers": [
@@ -41840,6 +42230,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-23",
                     "installedBy": "u3",
                     "triggers": [
@@ -41877,6 +42268,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -41913,6 +42305,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-07",
                     "installedBy": "u3",
                     "triggers": [
@@ -41949,6 +42342,7 @@
                   {
                     "version": "1.2.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -41990,6 +42384,7 @@
                   {
                     "version": "0.4.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-09-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -42031,6 +42426,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -42067,6 +42463,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-16",
                     "installedBy": "u3",
                     "triggers": [
@@ -42109,6 +42506,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -42145,6 +42543,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-10-30",
                     "installedBy": "u3",
                     "triggers": [
@@ -42186,6 +42585,7 @@
                   {
                     "version": "0.5.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-24",
                     "installedBy": "u3",
                     "triggers": [
@@ -42227,6 +42627,7 @@
                   {
                     "version": "0.6.2",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-05-02",
                     "installedBy": "u3",
                     "triggers": [
@@ -42281,6 +42682,7 @@
                   {
                     "version": "2.0.1",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [
@@ -42327,6 +42729,7 @@
                   {
                     "version": "1.0.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-03-01",
                     "installedBy": "u3",
                     "triggers": [
@@ -42378,6 +42781,7 @@
                   {
                     "version": "1.0.3",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-06-03",
                     "installedBy": "u3",
                     "triggers": [
@@ -42428,6 +42832,7 @@
                   {
                     "version": "1.1.0",
                     "contractVersion": "1.0",
+                    "signer": "Moravská zemská knihovna v Brně",
                     "installedAt": "2026-01-15",
                     "installedBy": "u3",
                     "triggers": [

@@ -162,10 +162,9 @@ Rules: [PLG-upload](reference/integrations/plugins.md#plg-upload),
 B6 *Signed* in [backend.md](develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version).
 
 Settled on 2026-10-30: upload refuses a package not signed by a certificate the deployment trusts,
-and the signer is shown beside the version. The backend checks the signature (step 7); the contract
-has no field for the signer, so neither the upload answer nor Plugins shows it. Needs: `signer` on
-the upload reading and on each installed version in the contract, the mock's fixtures, and the
-Plugins drawer. → frontend, then backend.
+and the signer is shown beside the version. The contract, mock, seeds and backend now carry the
+signer on the upload reading and each installed version, read from the signing certificate on
+upload. Only showing it in the Plugins drawer remains. → frontend.
 
 ## Done
 

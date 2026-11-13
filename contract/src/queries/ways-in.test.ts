@@ -49,6 +49,7 @@ function implementation(
       {
         version: "1",
         contractVersion: "1",
+        signer: "Moravská zemská knihovna v Brně",
         installedAt: "2026-01-01",
         installedBy: "u1",
         triggers: [],

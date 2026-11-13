@@ -10023,6 +10023,9 @@
                     "contractVersion": {
                       "type": "string"
                     },
+                    "signer": {
+                      "type": "string"
+                    },
                     "installedAt": {
                       "type": "string"
                     },
@@ -10248,6 +10251,7 @@
                   "required": [
                     "version",
                     "contractVersion",
+                    "signer",
                     "installedAt",
                     "installedBy",
                     "triggers",
@@ -10788,6 +10792,9 @@
                   "contractVersion": {
                     "type": "string"
                   },
+                  "signer": {
+                    "type": "string"
+                  },
                   "triggers": {
                     "type": "array",
                     "items": {
@@ -11002,7 +11009,14 @@
                     }
                   }
                 },
-                "required": ["version", "contractVersion", "triggers", "declares", "configFields"]
+                "required": [
+                  "version",
+                  "contractVersion",
+                  "signer",
+                  "triggers",
+                  "declares",
+                  "configFields"
+                ]
               },
               "implementationId": {
                 "anyOf": [

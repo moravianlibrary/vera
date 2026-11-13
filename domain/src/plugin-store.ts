@@ -5,6 +5,7 @@ import type { Declarations, InstancePolicy, PluginKind, PluginTrigger } from "./
 export interface StoredPluginVersion {
   readonly version: string;
   readonly contractVersion: string;
+  readonly signer: string;
   readonly installedAt: string;
   readonly installedBy: string;
   readonly triggers: PluginTrigger[];
