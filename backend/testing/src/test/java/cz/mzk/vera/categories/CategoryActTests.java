@@ -101,7 +101,7 @@ class CategoryActTests {
                 "SELECT count(*) FROM mix_revisions WHERE mix_id='d1'", Integer.class);
         int archivedRevision = jdbc.queryForObject("SELECT revision FROM mixes WHERE id='d2'", Integer.class);
         var response = client.post().uri("/api/categories/c32/refine").header("Cookie", cookie)
-                .contentType(MediaType.APPLICATION_JSON).body("{\"name\":\"Refined leaf\"}")
+                .contentType(MediaType.APPLICATION_JSON).body("{\"names\":{\"en\":\"Refined leaf\"}}")
                 .exchange().expectStatus().isOk().expectBody().returnResult();
         JsonNode child = mapper.readTree(response.getResponseBody());
         String childId = child.path("id").asString();
@@ -125,16 +125,16 @@ class CategoryActTests {
     @Test
     void everyActRequiresASession() {
         client.post().uri("/api/categories").contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"No session\",\"parentId\":\"c2\"}")
+                .body("{\"names\":{\"en\":\"No session\"},\"parentId\":\"c2\"}")
                 .exchange().expectStatus().isUnauthorized();
         client.put().uri("/api/categories/c23").contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"No session\",\"parentId\":\"c2\"}")
+                .body("{\"names\":{\"en\":\"No session\"},\"parentId\":\"c2\"}")
                 .exchange().expectStatus().isUnauthorized();
         client.delete().uri("/api/categories/c23").exchange().expectStatus().isUnauthorized();
         client.put().uri("/api/categories/c22/custody").contentType(MediaType.APPLICATION_JSON)
                 .body("{\"groupIds\":[],\"userIds\":[]}").exchange().expectStatus().isUnauthorized();
         client.post().uri("/api/categories/c32/refine").contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"No session\"}").exchange().expectStatus().isUnauthorized();
+                .body("{\"names\":{\"en\":\"No session\"}}").exchange().expectStatus().isUnauthorized();
     }
 
     @Test
@@ -143,15 +143,32 @@ class CategoryActTests {
         int categoryCount = jdbc.queryForObject("SELECT count(*) FROM categories", Integer.class);
         int auditCount = jdbc.queryForObject("SELECT count(*) FROM audit_outbox", Integer.class);
         client.post().uri("/api/categories").header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Outside\",\"parentId\":\"c4\"}")
+                .body("{\"names\":{\"en\":\"Outside\"},\"parentId\":\"c4\"}")
                 .exchange().expectStatus().isForbidden().expectBody()
                 .jsonPath("$.detail").isEqualTo("You may change the tree only inside your own custody");
         client.post().uri("/api/categories").header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Top level\",\"parentId\":null}")
+                .body("{\"names\":{\"en\":\"Top level\"},\"parentId\":null}")
                 .exchange().expectStatus().isForbidden().expectBody()
                 .jsonPath("$.detail").isEqualTo("Only an administrator changes the top level");
         assertThat(jdbc.queryForObject("SELECT count(*) FROM categories", Integer.class)).isEqualTo(categoryCount);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_outbox", Integer.class)).isEqualTo(auditCount);
+    }
+
+    @Test
+    void categoryNamesRoundTripAndConflictWithinOneLanguage() {
+        String cookie = session("u3");
+        Map<String, Object> request = Map.of("names", Map.of("cs", "Nová větev", "en", "New branch"),
+                "parentId", "c2");
+        client.post().uri("/api/categories").header("Cookie", cookie).header("Accept-Language", "cs")
+                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isCreated()
+                .expectBody().jsonPath("$.name").isEqualTo("Nová větev")
+                .jsonPath("$.names.en").isEqualTo("New branch");
+        client.post().uri("/api/categories").header("Cookie", cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("names", Map.of("cs", "Nová větev", "en", "Another branch"),
+                        "parentId", "c2"))
+                .exchange().expectStatus().isEqualTo(409).expectBody().jsonPath("$.code")
+                .isEqualTo("category.name_taken");
     }
 
     private void runScenario(String name) throws Exception {
@@ -170,7 +187,8 @@ class CategoryActTests {
             }
             Map<String, Object> before = storedState();
             RestTestClient.RequestBodySpec request = client.method(HttpMethod.valueOf(method))
-                    .uri(URI.create(path)).header("Cookie", cookies.computeIfAbsent(user, this::session));
+                    .uri(URI.create(path)).header("Cookie", cookies.computeIfAbsent(user, this::session))
+                    .header("Accept-Language", "en");
             if (call.has("requestBody")) {
                 request.contentType(MediaType.APPLICATION_JSON).body(call.path("requestBody").toString());
             }

@@ -13,6 +13,7 @@ import static org.jooq.impl.DSL.max;
 
 import cz.mzk.vera.access.ActResult;
 import cz.mzk.vera.domain.events.EventCode;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.domain.permissions.Permissions;
 import cz.mzk.vera.events.EventChanges;
 import cz.mzk.vera.events.EventRecorder;
@@ -59,9 +60,9 @@ class MixCommands {
         if (!may(caller, "mix.edit")) {
             return ActResult.refused(403, "You may not edit mixes", null);
         }
-        String name = body.path("name").asString();
-        if (dsl.fetchExists(dsl.selectOne().from(MIXES)
-                .where(lower(MIXES.NAME).eq(name.toLowerCase(Locale.ROOT))))) {
+        JsonNode names = body.path("names");
+        String name = legacyName(names);
+        if (taken(names, null)) {
             return ActResult.refused(409, "A mix already has that name", "mix.name_taken");
         }
         String sourceId = body.path("fromMixId").isNull() ? null : body.path("fromMixId").asString();
@@ -87,13 +88,14 @@ class MixCommands {
         OffsetDateTime at = now();
         int position = dsl.select(coalesce(max(MIXES.POSITION), -1).add(1))
                 .from(MIXES).fetchOne(0, int.class);
-        dsl.insertInto(MIXES).set(MIXES.ID, id).set(MIXES.NAME, name).set(MIXES.IS_PRIMARY, false)
+        dsl.insertInto(MIXES).set(MIXES.ID, id).set(MIXES.NAME, name)
+                .set(MIXES.NAMES, org.jooq.JSONB.valueOf(names.toString())).set(MIXES.IS_PRIMARY, false)
                 .set(MIXES.SHARES, JSONB.valueOf(shares.toString())).set(MIXES.REVISION, 1)
                 .set(MIXES.POSITION, position).execute();
         insertRevision(id, 1, shares, at, null, 0);
         events.recordAct(EventCode.MIX_CREATED, "mix", id, caller,
                 List.of(EventChanges.change("mix", null, Map.of("id", id, "name", name))));
-        return ActResult.ok(queries.record(id, caller));
+        return ActResult.created(queries.record(id, caller));
     }
 
     @Transactional
@@ -267,6 +269,21 @@ class MixCommands {
 
     private boolean may(Caller caller, String permission) {
         return Permissions.hasPermission(access.heldBy(caller.userId()).grants(), permission);
+    }
+
+    private boolean taken(JsonNode names, String exceptId) {
+        return dsl.selectFrom(MIXES).where(exceptId == null
+                ? org.jooq.impl.DSL.trueCondition() : MIXES.ID.ne(exceptId)).fetch().stream().anyMatch(row -> {
+                    JsonNode existing = json.readTree(row.getNames().data());
+                    return names.properties().stream().anyMatch(property -> existing.has(property.getKey())
+                            && property.getValue().asString().equalsIgnoreCase(
+                                    existing.path(property.getKey()).asString()));
+                });
+    }
+
+    private String legacyName(JsonNode names) {
+        JsonNode value = names.get("en");
+        return (value == null ? names.path("cs") : value).asString();
     }
 
     private OffsetDateTime now() {

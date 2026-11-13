@@ -68,7 +68,7 @@ class RoleGroupTests {
     void ACT_role_save_updates_a_role() {
         post("/api/access/roles", session("u3"), draft("New reader"));
         JsonNode saved = body(put("/api/access/roles/new-reader", session("u3"), draft("Renamed")));
-        assertThat(saved.path("name").asString()).isEqualTo("renamed");
+        assertThat(saved.path("name").asString()).isEqualTo("Renamed");
         assertAudit("role.renamed");
     }
 
@@ -124,11 +124,22 @@ class RoleGroupTests {
     @Test
     void role_names_and_ids_follow_engine_rules() {
         JsonNode role = body(post("/api/access/roles", session("u3"), draft("Maps Curator")));
-        assertThat(role.path("name").asString()).isEqualTo("maps-curator");
+        assertThat(role.path("name").asString()).isEqualTo("Maps Curator");
         assertThat(role.path("id").asString()).isEqualTo("maps-curator");
-        jdbc.update("UPDATE roles SET name='something else' WHERE id='curator'");
+        jdbc.update("UPDATE roles SET name='something else', names='{" +
+                "\"en\":\"something else\"}'::jsonb WHERE id='curator'");
         JsonNode collision = body(post("/api/access/roles", session("u3"), draft("Curator")));
         assertThat(collision.path("id").asString()).isEqualTo("curator-1");
+    }
+
+    @Test
+    void roleNamesRoundTripAndConflictWithinOneLanguage() {
+        Map<String, Object> draft = namesRoleDraft(Map.of("cs", "Čtenář navíc", "en", "Extra reader"));
+        JsonNode created = body(post("/api/access/roles", session("u3"), draft));
+        assertThat(created.path("name").asString()).isEqualTo("Čtenář navíc");
+        assertThat(created.path("names").path("en").asString()).isEqualTo("Extra reader");
+        Map<String, Object> conflict = namesRoleDraft(Map.of("cs", "Čtenář navíc", "en", "Different"));
+        assertProblem(post("/api/access/roles", session("u3"), conflict), 409, "access.name_taken");
     }
 
     @Test
@@ -231,7 +242,12 @@ class RoleGroupTests {
     }
 
     private Map<String, Object> roleDraft(String name, List<Map<String, Object>> grants, String description) {
-        return Map.of("name", name, "description", description, "grants", grants,
+        return Map.of("names", Map.of("en", name), "description", description, "grants", grants,
+                "proposalBatchLimit", 10, "proposalDailyLimit", 300);
+    }
+
+    private Map<String, Object> namesRoleDraft(Map<String, String> names) {
+        return Map.of("names", names, "description", "", "grants", List.of(grant("iteration.read", "custody")),
                 "proposalBatchLimit", 10, "proposalDailyLimit", 300);
     }
 

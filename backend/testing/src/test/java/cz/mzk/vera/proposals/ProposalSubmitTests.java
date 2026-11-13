@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.nio.file.Path;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -498,6 +499,7 @@ class ProposalSubmitTests {
         dsl.deleteFrom(USER_HAND_ROLES).where(USER_HAND_ROLES.USER_ID.eq(userId)).execute();
         dsl.deleteFrom(USER_MAPPED_ROLES).where(USER_MAPPED_ROLES.USER_ID.eq(userId)).execute();
         dsl.insertInto(ROLES).set(ROLES.ID, "submit-limit").set(ROLES.NAME, "submit-limit")
+                .set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"submit-limit\"}"))
                 .set(ROLES.DESCRIPTION, "Proposal test").set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.PROPOSAL_BATCH_LIMIT, batchLimit).set(ROLES.PROPOSAL_DAILY_LIMIT, dailyLimit)
                 .set(ROLES.POSITION, 100).execute();

@@ -39,6 +39,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
@@ -46,6 +47,7 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @Component
 // B8. Seeds the asking and deciding records before deriving their stored state.
@@ -53,11 +55,14 @@ class RecordsSeedLoader {
     private final DocumentStates states;
     private final RequestPlacements placements;
     private final RequestSuggestions suggestions;
+    private final JsonMapper json;
 
-    RecordsSeedLoader(DocumentStates states, RequestPlacements placements, RequestSuggestions suggestions) {
+    RecordsSeedLoader(DocumentStates states, RequestPlacements placements, RequestSuggestions suggestions,
+            JsonMapper json) {
         this.states = states;
         this.placements = placements;
         this.suggestions = suggestions;
+        this.json = json;
     }
 
     void load(DSLContext dsl, JsonNode collections) {
@@ -90,6 +95,7 @@ class RecordsSeedLoader {
             dsl.insertInto(MIXES)
                     .set(MIXES.ID, id)
                     .set(MIXES.NAME, string(row, "name"))
+                    .set(MIXES.NAMES, JSONB.valueOf(namesJson(row)))
                     .set(MIXES.IS_PRIMARY, row.path("isPrimary").asBoolean())
                     .set(MIXES.ARCHIVED_AT, nullableInstant(row, "archivedAt"))
                     .set(MIXES.SHARES, JSONB.valueOf(row.path("shares").toString()))
@@ -343,6 +349,7 @@ class RecordsSeedLoader {
             dsl.insertInto(REQUEST_CUSTODIES)
                     .set(REQUEST_CUSTODIES.ID, id)
                     .set(REQUEST_CUSTODIES.NAME, string(row, "name"))
+                    .set(REQUEST_CUSTODIES.NAMES, JSONB.valueOf(namesJson(row)))
                     .set(REQUEST_CUSTODIES.DESCRIPTION, string(row, "description"))
                     .set(REQUEST_CUSTODIES.IS_FALLBACK, row.path("isFallback").asBoolean())
                     .set(REQUEST_CUSTODIES.POSITION, position++)
@@ -606,6 +613,13 @@ class RecordsSeedLoader {
 
     private String string(JsonNode row, String field) {
         return row.path(field).asString();
+    }
+
+    private String namesJson(JsonNode row) {
+        JsonNode names = row.get("names");
+        return names == null || names.isNull()
+                ? json.valueToTree(Map.of("en", string(row, "name"))).toString()
+                : names.toString();
     }
 
     private String nullableString(JsonNode row, String field) {

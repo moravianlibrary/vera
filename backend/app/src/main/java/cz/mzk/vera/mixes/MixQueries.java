@@ -7,6 +7,8 @@ import static cz.mzk.vera.db.tables.Tables.MIXES;
 import static cz.mzk.vera.db.tables.Tables.MIX_REVISIONS;
 
 import cz.mzk.vera.domain.permissions.Permissions;
+import cz.mzk.vera.domain.Names;
+import cz.mzk.vera.web.RequestLanguage;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.Map;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
 
 // PLAN-mix; PLAN-mix-remove. SQL reads in catalogue order.
 @Repository
@@ -89,7 +92,11 @@ public class MixQueries {
                         .anyMatch(generated -> generated.path("mixId").asString().equals(id));
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", mix.getId());
-        result.put("name", mix.getName());
+        JsonNode names = json.readTree(mix.getNames().data());
+        Map<String, String> nameValues = new LinkedHashMap<>();
+        names.properties().forEach(property -> nameValues.put(property.getKey(), property.getValue().asString()));
+        result.put("name", Names.nameIn(nameValues, RequestLanguage.current()));
+        result.put("names", names);
         result.put("isPrimary", mix.getIsPrimary());
         result.put("archivedAt", mix.getArchivedAt() == null ? null : mix.getArchivedAt().toInstant().toString());
         result.put("shares", json.readTree(mix.getShares().data()));

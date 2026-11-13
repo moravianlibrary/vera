@@ -532,11 +532,12 @@ class WatchlistsTests {
     @Test
     void createsChangesViewsAndDeletesPersonalWatchlist() {
         String cookie = session("u3");
-        String body = "{\"name\":\"Personal test\",\"view\":\"documents\","
+        String body = "{\"names\":{\"cs\":\"Osobní test\",\"en\":\"Personal test\"},\"view\":\"documents\","
                 + "\"filter\":{\"q\":\"unique-watchlist-test\"},\"audience\":{\"kind\":\"personal\"}}";
-        client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
+        client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie).header("Accept-Language", "cs")
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isCreated()
-                .expectBody().jsonPath("$.name").isEqualTo("Personal test").jsonPath("$.id").exists();
+                .expectBody().jsonPath("$.name").isEqualTo("Osobní test").jsonPath("$.names.en")
+                .isEqualTo("Personal test").jsonPath("$.id").exists();
         client.patch().uri("/api/watchlists/W-u3-documents-1/viewer").header(HttpHeaders.COOKIE, cookie)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{\"position\":2,\"channels\":{\"pi18\":true}}")
@@ -553,7 +554,7 @@ class WatchlistsTests {
     @Test
     void newWatchlistTakesTheLastViewerPosition() {
         String cookie = session("u3");
-        String body = "{\"name\":\"Last position test\",\"view\":\"documents\","
+        String body = "{\"names\":{\"en\":\"Last position test\"},\"view\":\"documents\","
                 + "\"filter\":{\"q\":\"last-position-test\"},"
                 + "\"audience\":{\"kind\":\"personal\"}}";
         client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
@@ -583,7 +584,7 @@ class WatchlistsTests {
     @Test
     void recordedAdminActionsKeepTheViewerPositionsCreatedBySeen() {
         String cookie = session("u3");
-        String draft = "{\"name\":\"Recording watchlist\",\"view\":\"documents\","
+        String draft = "{\"names\":{\"en\":\"Recording watchlist\"},\"view\":\"documents\","
                 + "\"filter\":{\"q\":\"recording-watchlist-unique\"},"
                 + "\"audience\":{\"kind\":\"personal\"}}";
         client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
@@ -644,13 +645,13 @@ class WatchlistsTests {
         String cookie = session("u3");
         client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Bad\",\"view\":\"documents\",\"filter\":{"
+                .body("{\"names\":{\"en\":\"Bad\"},\"view\":\"documents\",\"filter\":{"
                         + "\"status\":\"Available\"},\"audience\":{\"kind\":\"personal\"}}")
                 .exchange().expectStatus().isEqualTo(422).expectBody()
                 .jsonPath("$.type").isEqualTo("https://vera.mzk.cz/problems/watchlist.invalid_filter");
         client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, session("u5"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Personal\",\"view\":\"documents\",\"filter\":{},"
+                .body("{\"names\":{\"en\":\"Personal\"},\"view\":\"documents\",\"filter\":{},"
                         + "\"audience\":{\"kind\":\"personal\"}}")
                 .exchange().expectStatus().isForbidden().expectBody()
                 .jsonPath("$.type").isEqualTo("https://vera.mzk.cz/problems/watchlist.manager_required");
@@ -659,10 +660,10 @@ class WatchlistsTests {
     @Test
     void checksAudienceReachDuplicateAndEveryWatchlistActRefusal() {
         String admin = session("u3");
-        String personal = "{\"name\":\"Recording watchlist\",\"view\":\"documents\","
+        String personal = "{\"names\":{\"en\":\"Recording watchlist\"},\"view\":\"documents\","
                 + "\"filter\":{\"q\":\"recording-watchlist-unique\"},"
                 + "\"audience\":{\"kind\":\"personal\"}}";
-        String system = "{\"name\":\"Recording shared watchlist\",\"view\":\"documents\","
+        String system = "{\"names\":{\"en\":\"Recording shared watchlist\"},\"view\":\"documents\","
                 + "\"filter\":{\"q\":\"recording-watchlist-unique\"},"
                 + "\"audience\":{\"kind\":\"everyone\"}}";
         String reachSystem = system.substring(0, system.length() - 1) + ",\"watchlistId\":null}";
@@ -672,7 +673,7 @@ class WatchlistsTests {
                 .contentType(MediaType.APPLICATION_JSON).body(reachSystem).exchange().expectStatus().isForbidden();
         client.post().uri("/api/watchlists/reach").header(HttpHeaders.COOKIE, admin)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Recording watchlist\",\"view\":\"documents\","
+                .body("{\"names\":{\"en\":\"Recording watchlist\"},\"view\":\"documents\","
                         + "\"filter\":{\"q\":\"recording-watchlist-unique\"},"
                         + "\"audience\":{\"kind\":\"personal\"},\"watchlistId\":null}")
                 .exchange().expectStatus().isOk().expectBody().json("{\"userCount\":0,"
@@ -719,7 +720,7 @@ class WatchlistsTests {
                 .exchange().expectStatus().isEqualTo(409).expectBody().jsonPath("$.type")
                 .isEqualTo("https://vera.mzk.cz/problems/watchlist.already_saved");
         client.patch().uri("/api/watchlists/W-shared-2").header(HttpHeaders.COOKIE, session("u8"))
-                .contentType(MediaType.APPLICATION_JSON).body("{\"name\":\"Changed\"}")
+                .contentType(MediaType.APPLICATION_JSON).body("{\"names\":{\"en\":\"Changed\"}}")
                 .exchange().expectStatus().isForbidden().expectBody().jsonPath("$.type")
                 .isEqualTo("https://vera.mzk.cz/problems/watchlist.manager_required");
         client.delete().uri("/api/watchlists/W-shared-2").header(HttpHeaders.COOKIE, session("u8"))
@@ -764,7 +765,7 @@ class WatchlistsTests {
     }
 
     private String createDocumentWatchlist(String cookie, String name, String query) {
-        String body = "{\"name\":\"" + name + "\",\"view\":\"documents\",\"filter\":{\"q\":\""
+        String body = "{\"names\":{\"en\":\"" + name + "\"},\"view\":\"documents\",\"filter\":{\"q\":\""
                 + query + "\"},\"audience\":{\"kind\":\"personal\"}}";
         JsonNode created = client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isCreated()
@@ -773,7 +774,7 @@ class WatchlistsTests {
     }
 
     private String createOtherViewWatchlist(String cookie, String name, String view) {
-        String body = "{\"name\":\"" + name + "\",\"view\":\"" + view
+        String body = "{\"names\":{\"en\":\"" + name + "\"},\"view\":\"" + view
                 + "\",\"filter\":{},\"audience\":{\"kind\":\"personal\"}}";
         JsonNode created = client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isCreated()

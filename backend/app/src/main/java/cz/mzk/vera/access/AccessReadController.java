@@ -73,7 +73,7 @@ final class AccessReadController {
     }
 
     @PostMapping("/api/access/custodies")
-    ResponseEntity<?> custodyCreate(HttpServletRequest request, @RequestBody AccessGroupCommands.Draft body) {
+    ResponseEntity<?> custodyCreate(HttpServletRequest request, @RequestBody AccessCustodyCommands.Draft body) {
         Caller caller = guard.callerOf(request);
         ResponseEntity<org.springframework.http.ProblemDetail> refusal = guard.requireManage(caller);
         return refusal == null ? ActResult.answer(custodyCommands.create(caller, body)) : refusal;
@@ -81,7 +81,7 @@ final class AccessReadController {
 
     @PutMapping("/api/access/custodies/{id}")
     ResponseEntity<?> custodySave(HttpServletRequest request, @PathVariable String id,
-            @RequestBody AccessGroupCommands.Draft body) {
+            @RequestBody AccessCustodyCommands.Draft body) {
         Caller caller = guard.callerOf(request);
         ResponseEntity<org.springframework.http.ProblemDetail> refusal = guard.requireManage(caller);
         return refusal == null ? ActResult.answer(custodyCommands.save(caller, id, body)) : refusal;

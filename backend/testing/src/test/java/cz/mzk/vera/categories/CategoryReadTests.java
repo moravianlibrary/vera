@@ -58,7 +58,9 @@ class CategoryReadTests {
                     continue;
                 }
                 String cookie = session(call.path("as").asString());
+                String language = "reads-czech-name".equals(scenario.path("name").asString()) ? "cs" : "en";
                 var response = client.get().uri(URI.create(path)).header("Cookie", cookie)
+                        .header("Accept-Language", language)
                         .exchange().expectBody(String.class).returnResult();
                 assertThat(response.getStatus().value())
                         .as(scenario.path("name").asString() + " " + path)

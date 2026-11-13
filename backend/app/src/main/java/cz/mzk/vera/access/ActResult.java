@@ -9,6 +9,10 @@ public record ActResult(int status, String detail, String code, Object body) {
         return new ActResult(200, null, null, body);
     }
 
+    public static ActResult created(Object body) {
+        return new ActResult(201, null, null, body);
+    }
+
     public static ActResult noContent() {
         return new ActResult(204, null, null, null);
     }

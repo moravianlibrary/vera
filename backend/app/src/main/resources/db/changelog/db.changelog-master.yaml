@@ -152,3 +152,6 @@ databaseChangeLog:
   - include:
       file: 0440-plugin-reset.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0470-names-in-each-language.sql
+      relativeToChangelogFile: true

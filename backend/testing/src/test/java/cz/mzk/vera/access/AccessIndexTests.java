@@ -44,14 +44,16 @@ class AccessIndexTests {
     void administratorReadsAccessIndexAndReferenceCollections() throws Exception {
         String cookie = session("u3");
         JsonNode expected = accessIndexFromRecording();
-        var response = client.get().uri("/api/access").header("Cookie", cookie).exchange()
+        var response = client.get().uri("/api/access").header("Cookie", cookie)
+                .header("Accept-Language", "en").exchange()
                 .expectStatus().isOk().expectBody(String.class).returnResult();
         assertMatches(expected, mapper.readTree(response.getResponseBody()), "access");
         client.get().uri("/api/users").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$[0].id").isEqualTo("u1");
         client.get().uri("/api/groups").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$[0].id").isEqualTo("g1");
-        client.get().uri("/api/roles").header("Cookie", cookie).exchange().expectStatus().isOk()
+        client.get().uri("/api/roles").header("Cookie", cookie).header("Accept-Language", "en")
+                .exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$[0].id").isEqualTo("reader");
     }
 
@@ -111,7 +113,18 @@ class AccessIndexTests {
         client.get().uri("/api/users").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$[0].id").isEqualTo("u1");
         client.get().uri("/api/groups").header("Cookie", cookie).exchange().expectStatus().isOk();
-        client.get().uri("/api/roles").header("Cookie", cookie).exchange().expectStatus().isOk();
+        client.get().uri("/api/roles").header("Cookie", cookie).header("Accept-Language", "en")
+                .exchange().expectStatus().isOk();
+    }
+
+    @Test
+    void accessNamesFollowTheRequestedLanguage() throws Exception {
+        JsonNode access = mapper.readTree(client.get().uri("/api/access").header("Cookie", session("u3"))
+                .header("Accept-Language", "cs").exchange().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody());
+        assertThat(access.path("roles").get(0).path("name").asString()).isEqualTo("Čtenář");
+        assertThat(access.path("roles").get(0).path("names").path("en").asString()).isEqualTo("reader");
+        assertThat(access.path("custodies").get(0).path("names").path("cs").asString()).isEqualTo("Výchozí");
     }
 
     private String session(String userId) {

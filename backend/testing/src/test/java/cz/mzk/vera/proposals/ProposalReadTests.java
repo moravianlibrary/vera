@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -399,6 +400,7 @@ class ProposalReadTests {
         dsl.insertInto(ROLES)
                 .set(ROLES.ID, id)
                 .set(ROLES.NAME, id)
+                .set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"" + id + "\"}"))
                 .set(ROLES.DESCRIPTION, "Test proposal limits")
                 .set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.PROPOSAL_BATCH_LIMIT, batchLimit)

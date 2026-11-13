@@ -10,18 +10,23 @@ import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.max;
 
 import cz.mzk.vera.domain.events.EventCode;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.events.EventChanges;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.RecordIds;
+import cz.mzk.vera.web.RequestLanguage;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.springframework.stereotype.Service;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 // ACCESS-custody-delete; L8: deletion starts a placing run after removing the custody.
 @Service
@@ -30,20 +35,21 @@ class AccessCustodyCommands {
     private final EventRecorder events;
     private final AccessQueries queries;
     private final ApplicationEventPublisher eventPublisher;
+    private final JsonMapper json;
 
     AccessCustodyCommands(DSLContext dsl, EventRecorder events, AccessQueries queries,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher, JsonMapper json) {
         this.dsl = dsl;
         this.events = events;
         this.queries = queries;
         this.eventPublisher = eventPublisher;
+        this.json = json;
     }
 
     @Transactional
-    ActResult create(Caller caller, AccessGroupCommands.Draft body) {
-        if (dsl.fetchExists(dsl.selectOne().from(REQUEST_CUSTODIES)
-                .where(REQUEST_CUSTODIES.NAME.eq(body.name())))) {
-            return ActResult.nameTaken(body.name());
+    ActResult create(Caller caller, Draft body) {
+        if (taken(body.names(), null)) {
+            return ActResult.nameTaken(legacyName(body.names()));
         }
         List<String> ids = dsl.select(REQUEST_CUSTODIES.ID).from(REQUEST_CUSTODIES)
                 .fetch(REQUEST_CUSTODIES.ID);
@@ -51,37 +57,41 @@ class AccessCustodyCommands {
         int position = dsl.select(coalesce(max(REQUEST_CUSTODIES.POSITION), -1).add(1))
                 .from(REQUEST_CUSTODIES).fetchOne(0, int.class);
         dsl.insertInto(REQUEST_CUSTODIES).set(REQUEST_CUSTODIES.ID, id)
-                .set(REQUEST_CUSTODIES.NAME, body.name())
+                .set(REQUEST_CUSTODIES.NAME, legacyName(body.names()))
+                .set(REQUEST_CUSTODIES.NAMES, JSONB.valueOf(json.valueToTree(body.names()).toString()))
                 .set(REQUEST_CUSTODIES.DESCRIPTION, body.description())
                 .set(REQUEST_CUSTODIES.IS_FALLBACK, false)
                 .set(REQUEST_CUSTODIES.POSITION, position).execute();
         events.recordAct(EventCode.CUSTODY_CREATED, "custody", id, caller, List.of(
-                EventChanges.change("name", null, body.name()),
+                EventChanges.change("name", null, legacyName(body.names())),
                 EventChanges.change("description", null, body.description())));
         return ActResult.ok(queries.custody(id));
     }
 
     @Transactional
-    ActResult save(Caller caller, String id, AccessGroupCommands.Draft body) {
+    ActResult save(Caller caller, String id, Draft body) {
         Map<String, Object> before = queries.custody(id);
         if (before == null) {
             return ActResult.unknown("custody");
         }
-        if (Boolean.TRUE.equals(before.get("isFallback")) && !before.get("name").equals(body.name())) {
+        String name = legacyName(body.names());
+        if (Boolean.TRUE.equals(before.get("isFallback"))
+                && !json.valueToTree(body.names()).equals(before.get("names"))) {
             return ActResult.refused(422, "The fallback keeps its name", "access.fallback");
         }
-        if (dsl.fetchExists(dsl.selectOne().from(REQUEST_CUSTODIES)
-                .where(REQUEST_CUSTODIES.NAME.eq(body.name())).and(REQUEST_CUSTODIES.ID.ne(id)))) {
-            return ActResult.nameTaken(body.name());
+        if (taken(body.names(), id)) {
+            return ActResult.nameTaken(name);
         }
         List<Map<String, Object>> changes = new ArrayList<>();
-        if (!before.get("name").equals(body.name())) {
-            changes.add(EventChanges.change("name", before.get("name"), body.name()));
+        if (!json.valueToTree(body.names()).equals(before.get("names"))) {
+            changes.add(EventChanges.change("name", before.get("name"),
+                    Names.nameIn(body.names(), RequestLanguage.current())));
         }
         if (!before.get("description").equals(body.description())) {
             changes.add(EventChanges.change("description", before.get("description"), body.description()));
         }
-        dsl.update(REQUEST_CUSTODIES).set(REQUEST_CUSTODIES.NAME, body.name())
+        dsl.update(REQUEST_CUSTODIES).set(REQUEST_CUSTODIES.NAME, name)
+                .set(REQUEST_CUSTODIES.NAMES, JSONB.valueOf(json.valueToTree(body.names()).toString()))
                 .set(REQUEST_CUSTODIES.DESCRIPTION, body.description())
                 .where(REQUEST_CUSTODIES.ID.eq(id)).execute();
         if (!changes.isEmpty()) {
@@ -147,4 +157,20 @@ class AccessCustodyCommands {
         eventPublisher.publishEvent(new CustodyDeleted(id, caller.userId()));
         return ActResult.noContent();
     }
+
+    private boolean taken(Map<String, String> names, String exceptId) {
+        return dsl.selectFrom(REQUEST_CUSTODIES)
+                .where(exceptId == null ? org.jooq.impl.DSL.trueCondition() : REQUEST_CUSTODIES.ID.ne(exceptId))
+                .fetch().stream().anyMatch(row -> {
+                    var existing = json.readTree(row.getNames().data());
+                    return names.entrySet().stream().anyMatch(entry -> existing.has(entry.getKey())
+                            && entry.getValue().equals(existing.path(entry.getKey()).asString()));
+                });
+    }
+
+    private String legacyName(Map<String, String> names) {
+        return names.getOrDefault("en", names.get("cs"));
+    }
+
+    record Draft(Map<String, String> names, String description) {}
 }

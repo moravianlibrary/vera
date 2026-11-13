@@ -44,10 +44,10 @@ class AccessCustodyTests {
     void createsChangesAndAddsCustodyMembersWithAuditRows() {
         String cookie = session("u3");
         client.post().uri("/api/access/custodies").header("Cookie", cookie)
-                .contentType(MediaType.APPLICATION_JSON).body(Map.of("name", "New desk", "description", "Review"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("names", Map.of("en", "New desk"), "description", "Review"))
                 .exchange().expectStatus().isOk().expectBody().jsonPath("$.id").isEqualTo("pc4");
         client.put().uri("/api/access/custodies/pc4").header("Cookie", cookie)
-                .contentType(MediaType.APPLICATION_JSON).body(Map.of("name", "New desk", "description", "Updated"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("names", Map.of("en", "New desk"), "description", "Updated"))
                 .exchange().expectStatus().isOk().expectBody().jsonPath("$.description").isEqualTo("Updated");
         client.put().uri("/api/access/custodies/pc4/members").header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -62,7 +62,7 @@ class AccessCustodyTests {
     void refusesFallbackRenameAndDeleteAndReportsUnknownImpact() {
         String cookie = session("u3");
         client.put().uri("/api/access/custodies/pc0").header("Cookie", cookie)
-                .contentType(MediaType.APPLICATION_JSON).body(Map.of("name", "Changed", "description", ""))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("names", Map.of("en", "Changed"), "description", ""))
                 .exchange().expectStatus().isEqualTo(422).expectBody().jsonPath("$.code").isEqualTo("access.fallback");
         client.delete().uri("/api/access/custodies/pc0").header("Cookie", cookie)
                 .exchange().expectStatus().isEqualTo(422).expectBody().jsonPath("$.code").isEqualTo("access.fallback");
@@ -94,8 +94,22 @@ class AccessCustodyTests {
     @Test
     void deniesCustodyChangesToPersonWithoutAccessManage() {
         client.post().uri("/api/access/custodies").header("Cookie", session("u5"))
-                .contentType(MediaType.APPLICATION_JSON).body(Map.of("name", "No", "description", ""))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of("names", Map.of("en", "No"), "description", ""))
                 .exchange().expectStatus().isForbidden();
+    }
+
+    @Test
+    void custodyNamesRoundTripAndConflictWithinOneLanguage() {
+        String cookie = session("u3");
+        client.post().uri("/api/access/custodies").header("Cookie", cookie)
+                .header("Accept-Language", "cs").contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("names", Map.of("cs", "Nová kontrola", "en", "New review"), "description", ""))
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Nová kontrola")
+                .jsonPath("$.names.en").isEqualTo("New review");
+        client.post().uri("/api/access/custodies").header("Cookie", cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("names", Map.of("cs", "Nová kontrola", "en", "Different"), "description", ""))
+                .exchange().expectStatus().isEqualTo(409);
     }
 
     private String session(String userId) {

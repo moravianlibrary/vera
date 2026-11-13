@@ -23,6 +23,7 @@ import cz.mzk.vera.mixes.MixRefinements;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.RecordIds;
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -67,18 +68,20 @@ class CategoryCommands {
         if (refusal != null) {
             return refusal;
         }
-        String name = body.path("name").asString().trim();
-        if (nameTaken(parentId, name, null)) {
+        JsonNode names = body.path("names");
+        String name = legacyName(names);
+        if (nameTaken(parentId, names, null)) {
             return ActResult.refused(409, "A category beside it already has that name", "category.name_taken");
         }
         String id = RecordIds.next("c", dsl.select(CATEGORIES.ID).from(CATEGORIES).fetch(CATEGORIES.ID));
         int position = dsl.select(coalesce(max(CATEGORIES.POSITION), -1).add(1))
                 .from(CATEGORIES).fetchOne(0, int.class);
         dsl.insertInto(CATEGORIES).set(CATEGORIES.ID, id).set(CATEGORIES.NAME, name)
+                .set(CATEGORIES.NAMES, org.jooq.JSONB.valueOf(names.toString()))
                 .set(CATEGORIES.PARENT_ID, parentId).set(CATEGORIES.POSITION, position).execute();
         events.recordAct(EventCode.CATEGORY_CREATED, "category", id, caller,
                 List.of(EventChanges.change("category", null, categoryValue(id, name, parentId))));
-        return ActResult.ok(category(id));
+        return ActResult.created(category(id));
     }
 
     // saveCategory: PLAN-move; a moved subtree starts without a share in the new sibling set.
@@ -102,13 +105,16 @@ class CategoryCommands {
                 return refusal;
             }
         }
-        String name = body.path("name").asString().trim();
-        if (nameTaken(parentId, name, id)) {
+        JsonNode names = body.path("names");
+        String name = legacyName(names);
+        if (nameTaken(parentId, names, id)) {
             return ActResult.refused(409, "A category beside it already has that name", "category.name_taken");
         }
         String oldName = category.getName();
         String oldParent = category.getParentId();
-        dsl.update(CATEGORIES).set(CATEGORIES.NAME, name).set(CATEGORIES.PARENT_ID, parentId)
+        dsl.update(CATEGORIES).set(CATEGORIES.NAME, name)
+                .set(CATEGORIES.NAMES, org.jooq.JSONB.valueOf(names.toString()))
+                .set(CATEGORIES.PARENT_ID, parentId)
                 .where(CATEGORIES.ID.eq(id)).execute();
         if (!oldName.equals(name)) {
             events.recordAct(EventCode.CATEGORY_RENAMED, "category", id, caller,
@@ -228,8 +234,9 @@ class CategoryCommands {
             return ActResult.refused(409, "Only a leaf is refined; this one has children already",
                     "category.has_children");
         }
-        String name = body.path("name").asString().trim();
-        if (nameTaken(id, name, null)) {
+        JsonNode names = body.path("names");
+        String name = legacyName(names);
+        if (nameTaken(id, names, null)) {
             return ActResult.refused(409, "A category beside it already has that name", "category.name_taken");
         }
         String childId = RecordIds.next("c", dsl.select(CATEGORIES.ID).from(CATEGORIES).fetch(CATEGORIES.ID));
@@ -237,6 +244,7 @@ class CategoryCommands {
                 .from(CATEGORIES).fetchOne(0, int.class);
         OffsetDateTime at = now();
         dsl.insertInto(CATEGORIES).set(CATEGORIES.ID, childId).set(CATEGORIES.NAME, name)
+                .set(CATEGORIES.NAMES, org.jooq.JSONB.valueOf(names.toString()))
                 .set(CATEGORIES.PARENT_ID, id).set(CATEGORIES.POSITION, position).execute();
         mixes.refine(id, childId, at);
         List<String> iterationIds = dsl.select(ITERATIONS.ID).from(ITERATIONS)
@@ -299,18 +307,39 @@ class CategoryCommands {
         return held.custodyCategoryIds().stream().anyMatch(grant -> Categories.isInSubtree(tree, categoryId, grant));
     }
 
-    private boolean nameTaken(String parentId, String name, String exceptId) {
-        var query = dsl.selectOne().from(CATEGORIES).where(CATEGORIES.NAME.equalIgnoreCase(name));
-        query = query.and(parentId == null ? CATEGORIES.PARENT_ID.isNull() : CATEGORIES.PARENT_ID.eq(parentId));
-        if (exceptId != null) {
-            query = query.and(CATEGORIES.ID.ne(exceptId));
+    private boolean nameTaken(String parentId, JsonNode names, String exceptId) {
+        return dsl.selectFrom(CATEGORIES)
+                .where(parentId == null ? CATEGORIES.PARENT_ID.isNull() : CATEGORIES.PARENT_ID.eq(parentId))
+                .and(exceptId == null ? org.jooq.impl.DSL.trueCondition() : CATEGORIES.ID.ne(exceptId))
+                .fetch().stream().anyMatch(row -> {
+                    JsonNode existing = json.readTree(row.getNames().data());
+                    return names.properties().stream().anyMatch(property -> existing.has(property.getKey())
+                            && property.getValue().asString().trim().equalsIgnoreCase(
+                                    existing.path(property.getKey()).asString()));
+                });
+    }
+
+    private String legacyName(JsonNode names) {
+        JsonNode value = names.get("en");
+        if (value == null) {
+            value = names.get("cs");
         }
-        return dsl.fetchExists(query);
+        return value.asString().trim();
     }
 
     private List<Category> categoryTree() {
         return dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION)
-                .fetch(row -> new Category(row.getId(), row.getName(), row.getParentId()));
+                .fetch(row -> new Category(row.getId(), nameIn(row.getNames().data()), row.getParentId()));
+    }
+
+    private String nameIn(String storedNames) {
+        JsonNode names = json.readTree(storedNames);
+        String language = RequestLanguage.current();
+        JsonNode chosen = names.get(language);
+        if (chosen == null) {
+            chosen = names.get("cs".equals(language) ? "en" : "cs");
+        }
+        return chosen.asString();
     }
 
     private String pathName(List<Category> tree, String id) {
@@ -327,8 +356,11 @@ class CategoryCommands {
     }
 
     private Map<String, Object> category(String id) {
-        return dsl.selectFrom(CATEGORIES).where(CATEGORIES.ID.eq(id)).fetchOne(row -> categoryValue(
-                row.getId(), row.getName(), row.getParentId()));
+        return dsl.selectFrom(CATEGORIES).where(CATEGORIES.ID.eq(id)).fetchOne(row -> {
+            Map<String, Object> result = categoryValue(row.getId(), nameIn(row.getNames().data()), row.getParentId());
+            result.put("names", json.readTree(row.getNames().data()));
+            return result;
+        });
     }
 
     private List<String> distinct(JsonNode array) {

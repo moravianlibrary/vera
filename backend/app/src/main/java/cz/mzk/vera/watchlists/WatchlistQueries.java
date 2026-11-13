@@ -26,6 +26,8 @@ import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
 import cz.mzk.vera.tasks.TasksQueries;
 import cz.mzk.vera.validations.ValidationQueries;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.RequestLanguage;
+import cz.mzk.vera.domain.Names;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -652,7 +654,11 @@ public class WatchlistQueries {
 
     private Map<String, Object> stored(WatchlistsRecord row) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("name", row.get(WATCHLISTS.NAME));
+        JsonNode names = read(row.get(WATCHLISTS.NAMES).data());
+        Map<String, String> nameValues = new LinkedHashMap<>();
+        names.properties().forEach(property -> nameValues.put(property.getKey(), property.getValue().asString()));
+        result.put("name", Names.nameIn(nameValues, RequestLanguage.current()));
+        result.put("names", names);
         result.put("filter", mapper.convertValue(read(row.get(WATCHLISTS.FILTER).data()), Object.class));
         result.put("view", row.get(WATCHLISTS.VIEW));
         result.put("createdAt", format(row.get(WATCHLISTS.CREATED_AT)));

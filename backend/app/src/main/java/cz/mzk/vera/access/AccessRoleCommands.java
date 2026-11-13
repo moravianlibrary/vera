@@ -9,6 +9,7 @@ import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.trueCondition;
 
 import cz.mzk.vera.domain.access.Access;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.domain.access.Grant;
 import cz.mzk.vera.domain.access.MappedRole;
 import cz.mzk.vera.domain.access.Role;
@@ -20,14 +21,18 @@ import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.RecordIds;
+import cz.mzk.vera.web.RequestLanguage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.jooq.JSONB;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 // ACT-role-save; ACT-role-delete; ACCESS-last-manager; PERM-once-per-role;
 // PERM-accepted-scopes; PERM-requires.
@@ -38,14 +43,16 @@ class AccessRoleCommands {
     private final AccessQueries queries;
     private final AccessManagerQueries managers;
     private final HeldAccessQueries heldAccess;
+    private final JsonMapper json;
 
     AccessRoleCommands(DSLContext dsl, EventRecorder events, AccessQueries queries,
-            AccessManagerQueries managers, HeldAccessQueries heldAccess) {
+            AccessManagerQueries managers, HeldAccessQueries heldAccess, JsonMapper json) {
         this.dsl = dsl;
         this.events = events;
         this.queries = queries;
         this.managers = managers;
         this.heldAccess = heldAccess;
+        this.json = json;
     }
 
     @Transactional
@@ -54,8 +61,8 @@ class AccessRoleCommands {
         if (invalid != null) {
             return invalid;
         }
-        String name = Access.roleNameOf(body.name());
-        if (taken(name, null)) {
+        String name = legacyName(body.names());
+        if (taken(body.names(), null)) {
             return ActResult.nameTaken(name);
         }
         List<String> ids = heldAccess.roles().stream().map(Role::id).toList();
@@ -65,6 +72,7 @@ class AccessRoleCommands {
         dsl.insertInto(ROLES)
                 .set(ROLES.ID, id)
                 .set(ROLES.NAME, name)
+                .set(ROLES.NAMES, JSONB.valueOf(json.valueToTree(body.names()).toString()))
                 .set(ROLES.DESCRIPTION, body.description())
                 .set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.PROPOSAL_BATCH_LIMIT, body.proposalBatchLimit())
@@ -91,8 +99,8 @@ class AccessRoleCommands {
         if (invalid != null) {
             return invalid;
         }
-        String name = Access.roleNameOf(body.name());
-        if (taken(name, id)) {
+        String name = legacyName(body.names());
+        if (taken(body.names(), id)) {
             return ActResult.nameTaken(name);
         }
         List<Role> roles = heldAccess.roles().stream().map(role -> role.id().equals(id)
@@ -103,7 +111,8 @@ class AccessRoleCommands {
             return ActResult.refused(409, "Nobody could manage access after this", "access.last_manager");
         }
         Map<String, Object> updated = new LinkedHashMap<>(old);
-        updated.put("name", name);
+        updated.put("name", nameIn(body.names()));
+        updated.put("names", json.valueToTree(body.names()));
         updated.put("description", body.description());
         updated.put("grants", body.grants());
         updated.put("proposalBatchLimit", body.proposalBatchLimit());
@@ -116,6 +125,7 @@ class AccessRoleCommands {
         }
         dsl.update(ROLES)
                 .set(ROLES.NAME, name)
+                .set(ROLES.NAMES, JSONB.valueOf(json.valueToTree(body.names()).toString()))
                 .set(ROLES.DESCRIPTION, body.description())
                 .set(ROLES.PROPOSAL_BATCH_LIMIT, body.proposalBatchLimit())
                 .set(ROLES.PROPOSAL_DAILY_LIMIT, body.proposalDailyLimit())
@@ -182,9 +192,22 @@ class AccessRoleCommands {
         return null;
     }
 
-    private boolean taken(String name, String except) {
-        return dsl.fetchExists(dsl.selectOne().from(ROLES).where(ROLES.NAME.eq(name))
-                .and(except == null ? trueCondition() : ROLES.ID.ne(except)));
+    private boolean taken(Map<String, String> names, String except) {
+        return dsl.selectFrom(ROLES).where(except == null ? trueCondition() : ROLES.ID.ne(except))
+                .fetch().stream().anyMatch(row -> {
+                    JsonNode existing = json.readTree(row.getNames().data());
+                    return names.entrySet().stream().anyMatch(entry -> existing.has(entry.getKey())
+                            && entry.getValue().equals(existing.path(entry.getKey()).asString()));
+                });
+    }
+
+    private String legacyName(Map<String, String> names) {
+        String source = names.getOrDefault("en", names.get("cs"));
+        return Access.roleNameOf(source);
+    }
+
+    private String nameIn(Map<String, String> names) {
+        return Names.nameIn(names, RequestLanguage.current());
     }
 
     private void insertGrants(String roleId, List<Grant> grants) {
@@ -199,6 +222,6 @@ class AccessRoleCommands {
         }
     }
 
-    record Draft(String name, String description, List<Grant> grants,
+    record Draft(Map<String, String> names, String description, List<Grant> grants,
             Integer proposalBatchLimit, Integer proposalDailyLimit) {}
 }

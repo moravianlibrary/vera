@@ -16,10 +16,12 @@ import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.documents.PropertyDefinitions;
 import cz.mzk.vera.domain.status.Status.PublicStatus;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.db.tables.tables.records.WatchlistsRecord;
 import cz.mzk.vera.db.tables.tables.records.WatchlistViewersRecord;
 import cz.mzk.vera.web.Problems;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.RequestLanguage;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -135,7 +137,8 @@ final class WatchlistsController {
         dsl.insertInto(WATCHLISTS)
                 .set(WATCHLISTS.ID, id)
                 .set(WATCHLISTS.OWNER_ID, caller.userId())
-                .set(WATCHLISTS.NAME, body.path("name").asString())
+                .set(WATCHLISTS.NAME, legacyName(body.path("names")))
+                .set(WATCHLISTS.NAMES, JSONB.valueOf(body.path("names").toString()))
                 .set(WATCHLISTS.VIEW, view)
                 .set(WATCHLISTS.FILTER, JSONB.valueOf(filter.toString()))
                 .set(WATCHLISTS.AUDIENCE, JSONB.valueOf(audience.toString()))
@@ -225,8 +228,10 @@ final class WatchlistsController {
         if (change.has("filter") && !filter.equals(mapper.valueToTree(existing.get("filter")))) {
             filterVersion++;
         }
-        WatchlistsRecord row = dsl.update(WATCHLISTS).set(WATCHLISTS.NAME, change.has("name") ? change.path("name").asString()
-                        : (String) existing.get("name"))
+        JsonNode names = change.has("names") ? change.path("names") : mapper.valueToTree(existing.get("names"));
+        WatchlistsRecord row = dsl.update(WATCHLISTS)
+                .set(WATCHLISTS.NAME, change.has("names") ? legacyName(names) : (String) existing.get("name"))
+                .set(WATCHLISTS.NAMES, JSONB.valueOf(names.toString()))
                 .set(WATCHLISTS.FILTER, JSONB.valueOf(filter.toString()))
                 .set(WATCHLISTS.AUDIENCE, JSONB.valueOf(audience.toString()))
                 .set(WATCHLISTS.FILTER_VERSION, filterVersion)
@@ -238,7 +243,8 @@ final class WatchlistsController {
             queueNotices(watchlistId, row.getName(), "audience_removed", previousAudience, audience);
         }
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put("name", row.getName());
+        response.put("name", localizedName(names));
+        response.put("names", names);
         response.put("filter", toValue(filter));
         response.put("view", row.getView());
         response.put("createdAt", Instants.format(row.getCreatedAt().toInstant()));
@@ -331,13 +337,26 @@ final class WatchlistsController {
 
     private Map<String, Object> watchlist(JsonNode body, String id) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("name", body.path("name").asString());
+        JsonNode names = body.path("names");
+        result.put("name", localizedName(names));
+        result.put("names", names);
         result.put("filter", toValue(body.path("filter")));
         result.put("view", body.path("view").asString());
         result.put("createdAt", Instants.format(clock.instant()));
         result.put("id", id);
         result.put("audience", toValue(body.path("audience")));
         return result;
+    }
+
+    private String legacyName(JsonNode names) {
+        JsonNode value = names.get("en");
+        return (value == null ? names.path("cs") : value).asString();
+    }
+
+    private String localizedName(JsonNode names) {
+        Map<String, String> values = new LinkedHashMap<>();
+        names.properties().forEach(property -> values.put(property.getKey(), property.getValue().asString()));
+        return Names.nameIn(values, RequestLanguage.current());
     }
 
     private void queueNotices(String watchlistId, String name, String reason,

@@ -11,15 +11,18 @@ import static org.jooq.impl.DSL.count;
 import cz.mzk.vera.documents.DocumentCodes;
 import cz.mzk.vera.documents.DocumentQueries;
 import cz.mzk.vera.domain.listing.Listing;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.listing.Facets;
 import cz.mzk.vera.listing.ListQuery;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import org.jooq.DSLContext;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -27,6 +30,8 @@ import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 // VIEW-requests; ACCESS-membership-not-capability: read a reachable Requests row and its custody list.
 @Repository
@@ -40,10 +45,11 @@ public class RequestQueries {
     private final RequestGrouping grouping;
     private final Clock clock;
     private final DocumentQueries documentQueries;
+    private final JsonMapper json;
 
     public RequestQueries(DSLContext dsl, HeldAccessQueries heldAccess, RequestReach reach,
             RequestRowReader reader, Facets facets, ListQuery listQuery, RequestGrouping grouping,
-            Clock clock, DocumentQueries documentQueries) {
+            Clock clock, DocumentQueries documentQueries, JsonMapper json) {
         this.dsl = dsl;
         this.heldAccess = heldAccess;
         this.reach = reach;
@@ -53,6 +59,7 @@ public class RequestQueries {
         this.grouping = grouping;
         this.clock = clock;
         this.documentQueries = documentQueries;
+        this.json = json;
     }
 
     public Map<String, Object> page(Map<String, String> parameters, String callerId) {
@@ -332,7 +339,12 @@ public class RequestQueries {
                 .fetch(row -> {
                     Map<String, Object> custody = new LinkedHashMap<>();
                     custody.put("id", row.getId());
-                    custody.put("name", row.getName());
+                    JsonNode names = json.readTree(row.getNames().data());
+                    Map<String, String> values = new LinkedHashMap<>();
+                    names.properties().forEach(property -> values.put(property.getKey(),
+                            property.getValue().asString()));
+                    custody.put("name", Names.nameIn(values, RequestLanguage.current()));
+                    custody.put("names", names);
                     custody.put("description", row.getDescription());
                     custody.put("isFallback", row.getIsFallback());
                     return custody;

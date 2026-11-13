@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -176,6 +177,7 @@ class ValidationReadTests {
 
     private void grant(String roleId, String permission, String scope) {
         dsl.insertInto(ROLES).set(ROLES.ID, roleId).set(ROLES.NAME, roleId)
+                .set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"" + roleId + "\"}"))
                 .set(ROLES.DESCRIPTION, "test role").set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.POSITION, 100).execute();
         dsl.insertInto(ROLE_GRANTS).set(ROLE_GRANTS.ROLE_ID, roleId).set(ROLE_GRANTS.POSITION, 0)

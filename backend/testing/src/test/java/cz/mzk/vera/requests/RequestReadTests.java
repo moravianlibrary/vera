@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -241,8 +242,10 @@ class RequestReadTests {
     @Test
     void doesNotStoreANonLeafClassifierAnswer() {
         dsl.insertInto(CATEGORIES).set(CATEGORIES.ID, "test-child-c21").set(CATEGORIES.NAME, "test child")
+                .set(CATEGORIES.NAMES, JSONB.valueOf("{\"en\":\"test child\"}"))
                 .set(CATEGORIES.PARENT_ID, "c21").set(CATEGORIES.POSITION, 1000).execute();
         dsl.insertInto(CATEGORIES).set(CATEGORIES.ID, "test-child-c22").set(CATEGORIES.NAME, "test child")
+                .set(CATEGORIES.NAMES, JSONB.valueOf("{\"en\":\"test child\"}"))
                 .set(CATEGORIES.PARENT_ID, "c22").set(CATEGORIES.POSITION, 1001).execute();
         suggestions.suggest(dsl, "R16");
         assertThat(dsl.selectCount().from(REQUEST_SUGGESTIONS)
@@ -386,6 +389,7 @@ class RequestReadTests {
 
     private void grant(String roleId, String permission, String scope) {
         dsl.insertInto(ROLES).set(ROLES.ID, roleId).set(ROLES.NAME, roleId)
+                .set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"" + roleId + "\"}"))
                 .set(ROLES.DESCRIPTION, "test role").set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.POSITION, 100).execute();
         dsl.insertInto(ROLE_GRANTS).set(ROLE_GRANTS.ROLE_ID, roleId).set(ROLE_GRANTS.POSITION, 0)

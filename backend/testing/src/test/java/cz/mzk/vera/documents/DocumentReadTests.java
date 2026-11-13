@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -444,6 +445,7 @@ class DocumentReadTests {
 
     private void grant(String userId, String roleId, String permission, String scope) {
         dsl.insertInto(ROLES).set(ROLES.ID, roleId).set(ROLES.NAME, roleId)
+            .set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"" + roleId + "\"}"))
             .set(ROLES.DESCRIPTION, "test role").set(ROLES.IS_SHIPPED, false).set(ROLES.POSITION, 100)
             .execute();
         dsl.insertInto(ROLE_GRANTS).set(ROLE_GRANTS.ROLE_ID, roleId).set(ROLE_GRANTS.POSITION, 0)

@@ -28,10 +28,12 @@ import static org.jooq.impl.DSL.countDistinct;
 import static org.jooq.impl.DSL.notExists;
 
 import cz.mzk.vera.domain.access.Grant;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.domain.permissions.Permissions;
 import cz.mzk.vera.login.IdentityInstances;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.RequestLanguage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -76,10 +78,10 @@ public class AccessQueries {
     }
 
     public List<Map<String, Object>> roleNames() {
-        return dsl.select(ROLES.ID, ROLES.NAME).from(ROLES).orderBy(ROLES.POSITION).fetch(row -> {
+        return dsl.select(ROLES.ID, ROLES.NAME, ROLES.NAMES).from(ROLES).orderBy(ROLES.POSITION).fetch(row -> {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("id", row.get(ROLES.ID));
-            result.put("name", row.get(ROLES.NAME));
+            putNames(result, row.get(ROLES.NAMES).data());
             return result;
         });
     }
@@ -102,7 +104,7 @@ public class AccessQueries {
                 String id = row.getId();
                 Map<String, Object> custody = new LinkedHashMap<>();
                 custody.put("id", id);
-                custody.put("name", row.getName());
+                putNames(custody, row.getNames().data());
                 custody.put("description", row.getDescription());
                 custody.put("isFallback", row.getIsFallback());
                 custody.put("memberIds", dsl.select(REQUEST_CUSTODY_MEMBERS.USER_ID)
@@ -144,7 +146,7 @@ public class AccessQueries {
         result.put("categories", dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION).fetch(row -> {
             Map<String, Object> category = new LinkedHashMap<>();
             category.put("id", row.getId());
-            category.put("name", row.getName());
+            putNames(category, row.getNames().data());
             category.put("parentId", row.getParentId());
             return category;
         }));
@@ -211,7 +213,7 @@ public class AccessQueries {
                         ? reached : outOfView).add(userId);
             }
             Map<String, Object> result = new LinkedHashMap<>();
-            result.put("name", watchlist.getName());
+            putNames(result, watchlist.getNames().data());
             result.put("filter", json.readTree(watchlist.getFilter().data()));
             result.put("view", watchlist.getView());
             result.put("createdAt", Instants.format(watchlist.getCreatedAt().toInstant()));
@@ -343,7 +345,7 @@ public class AccessQueries {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", role.getId());
-        result.put("name", role.getName());
+        putNames(result, role.getNames().data());
         result.put("description", role.getDescription());
         result.put("isShipped", role.getIsShipped());
         result.put("grants", dsl.selectFrom(ROLE_GRANTS).where(ROLE_GRANTS.ROLE_ID.eq(roleId))
@@ -367,7 +369,7 @@ public class AccessQueries {
         return roles.map(row -> {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("id", row.getId());
-            result.put("name", row.getName());
+            putNames(result, row.getNames().data());
             result.put("description", row.getDescription());
             result.put("isShipped", row.getIsShipped());
             result.put("grants", grantsByRole.getOrDefault(row.getId(), List.of()));
@@ -403,7 +405,7 @@ public class AccessQueries {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", custody.getId());
-        result.put("name", custody.getName());
+        putNames(result, custody.getNames().data());
         result.put("description", custody.getDescription());
         result.put("isFallback", custody.getIsFallback());
         result.put("memberIds", dsl.select(REQUEST_CUSTODY_MEMBERS.USER_ID)
@@ -468,6 +470,19 @@ public class AccessQueries {
                             json.readTree(settings).path("custodyId").asString(null));
                 }).stream().filter(rule -> custodyId.equals(rule.getValue()))
                 .map(Map.Entry::getKey).toList();
+    }
+
+    private void putNames(Map<String, Object> result, String storedNames) {
+        JsonNode names = json.readTree(storedNames);
+        Map<String, String> values = new LinkedHashMap<>();
+        if (names.hasNonNull("cs")) {
+            values.put("cs", names.path("cs").asString());
+        }
+        if (names.hasNonNull("en")) {
+            values.put("en", names.path("en").asString());
+        }
+        result.put("name", Names.nameIn(values, RequestLanguage.current()));
+        result.put("names", names);
     }
 
     public List<Map<String, Object>> groups() {

@@ -41,7 +41,7 @@ final class CategoriesController {
         if (caller == null) {
             return Problems.response(401, "Nobody is signed in.");
         }
-        return invalidName(body) ? invalidNameResponse() : ActResult.answer(commands.create(caller, body));
+        return invalidName(body) ? invalidNameResponse(body) : ActResult.answer(commands.create(caller, body));
     }
 
     @PutMapping("/{categoryId}")
@@ -52,7 +52,7 @@ final class CategoriesController {
             return Problems.response(401, "Nobody is signed in.");
         }
         if (invalidName(body)) {
-            return invalidNameResponse();
+            return invalidNameResponse(body);
         }
         return ActResult.answer(commands.save(caller, categoryId, body));
     }
@@ -79,7 +79,7 @@ final class CategoriesController {
             return Problems.response(401, "Nobody is signed in.");
         }
         if (invalidName(body)) {
-            return invalidNameResponse();
+            return invalidNameResponse(body);
         }
         return ActResult.answer(commands.refine(caller, id, body));
     }
@@ -114,12 +114,24 @@ final class CategoriesController {
     }
 
     private boolean invalidName(JsonNode body) {
-        return body.path("name").asString("").trim().isEmpty();
+        JsonNode names = body.path("names");
+        return !names.isObject() || names.properties().stream().noneMatch(property ->
+                !property.getValue().asString("").trim().isEmpty());
     }
 
-    private ResponseEntity<?> invalidNameResponse() {
+    private ResponseEntity<?> invalidNameResponse(JsonNode body) {
         String detail = "Too small: expected string to have >=1 characters";
+        JsonNode names = body.path("names");
+        String pointer = "/names";
+        if (names.isObject()) {
+            String language = names.properties().stream().filter(property ->
+                    property.getValue().asString("").trim().isEmpty())
+                    .map(property -> property.getKey()).findFirst().orElse(null);
+            if (language != null) {
+                pointer += "/" + language;
+            }
+        }
         return Problems.response(422, detail, "invalid", List.of(Map.of(
-                "pointer", "/name", "code", "too_small", "detail", detail)));
+                "pointer", pointer, "code", "too_small", "detail", detail)));
     }
 }

@@ -62,8 +62,8 @@ class MixActTests {
         client.get().uri("/api/mixes").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$[0].id").isEqualTo("d1");
         client.post().uri("/api/mixes").header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Session mix\",\"fromMixId\":\"d2\",\"fromRevision\":2}")
-                .exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Session mix")
+                .body("{\"names\":{\"en\":\"Session mix\"},\"fromMixId\":\"d2\",\"fromRevision\":2}")
+                .exchange().expectStatus().isCreated().expectBody().jsonPath("$.name").isEqualTo("Session mix")
                 .jsonPath("$.revision").isEqualTo(1);
         client.put().uri("/api/mixes/d1/sets").header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +81,7 @@ class MixActTests {
     @Test
     void refusesUnauthenticatedAndInvalidActsWithoutWriting() {
         client.post().uri("/api/mixes").contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"No session\",\"fromMixId\":null,\"fromRevision\":null}")
+                .body("{\"names\":{\"en\":\"No session\"},\"fromMixId\":null,\"fromRevision\":null}")
                 .exchange().expectStatus().isUnauthorized();
         client.put().uri("/api/mixes/d1/sets").contentType(MediaType.APPLICATION_JSON)
                 .body("{\"parentId\":null,\"shares\":{\"c1\":25,\"c2\":65,\"c3\":10,\"c4\":0},\"revision\":4}")
@@ -101,6 +101,22 @@ class MixActTests {
         client.get().uri("/api/mixes/d1").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.revision").isEqualTo(4)
                 .jsonPath("$.revisions.length()").isEqualTo(1);
+    }
+
+    @Test
+    void mixNamesRoundTripAndConflictWithinOneLanguage() {
+        Map<String, Object> names = Map.of("cs", "Nový mix", "en", "New mix");
+        client.post().uri("/api/mixes").header("Cookie", cookie).header("Accept-Language", "cs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("names", names, "fromMixId", "d2", "fromRevision", 2))
+                .exchange().expectStatus().isCreated().expectBody().jsonPath("$.name").isEqualTo("Nový mix")
+                .jsonPath("$.names.en").isEqualTo("New mix");
+        client.post().uri("/api/mixes").header("Cookie", cookie)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("names", Map.of("cs", "Nový mix", "en", "Another mix"),
+                        "fromMixId", "d2", "fromRevision", 2))
+                .exchange().expectStatus().isEqualTo(409).expectBody().jsonPath("$.code")
+                .isEqualTo("mix.name_taken");
     }
 
     @Test
@@ -152,7 +168,7 @@ class MixActTests {
             String sessionCookie = cookies.computeIfAbsent(userId, this::session);
             Map<String, Object> before = storedState();
             RestTestClient.RequestBodySpec request = client.method(HttpMethod.valueOf(method))
-                    .uri(URI.create(path)).header("Cookie", sessionCookie);
+                    .uri(URI.create(path)).header("Cookie", sessionCookie).header("Accept-Language", "en");
             if (call.has("requestBody")) {
                 request.contentType(MediaType.APPLICATION_JSON).body(call.path("requestBody").toString());
             }

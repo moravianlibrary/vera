@@ -22,6 +22,8 @@ import cz.mzk.vera.db.tables.tables.records.IntentionsRecord;
 import cz.mzk.vera.domain.categories.Categories.CustodyGroup;
 import cz.mzk.vera.domain.categories.Categories.CustodyHolders;
 import cz.mzk.vera.domain.entities.Category;
+import cz.mzk.vera.domain.Names;
+import cz.mzk.vera.web.RequestLanguage;
 import cz.mzk.vera.domain.entities.Distribution;
 import cz.mzk.vera.domain.entities.Intention;
 import cz.mzk.vera.domain.intentions.Intentions;
@@ -38,6 +40,8 @@ import java.util.Map;
 import java.util.Objects;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 // PLAN-tree; PLAN-counting; PLAN-house-mix; ACCESS-category-custody.
 @Repository
@@ -45,18 +49,20 @@ public class CategoryReads {
     private final DSLContext dsl;
     private final CountingReads counting;
     private final HeldAccessQueries access;
+    private final JsonMapper json;
 
-    public CategoryReads(DSLContext dsl, CountingReads counting, HeldAccessQueries access) {
+    public CategoryReads(DSLContext dsl, CountingReads counting, HeldAccessQueries access, JsonMapper json) {
         this.dsl = dsl;
         this.counting = counting;
         this.access = access;
+        this.json = json;
     }
 
     public List<Map<String, Object>> categories() {
         return dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION).fetch(row -> {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("id", row.getId());
-            result.put("name", row.getName());
+            putNames(result, row.getNames().data());
             result.put("parentId", row.getParentId());
             return result;
         });
@@ -64,6 +70,14 @@ public class CategoryReads {
 
     public boolean canRead(String userId) {
         return access.scopesHeldBy(userId).hasPermission("category.read");
+    }
+
+    private void putNames(Map<String, Object> result, String storedNames) {
+        JsonNode names = json.readTree(storedNames);
+        Map<String, String> values = new LinkedHashMap<>();
+        names.properties().forEach(property -> values.put(property.getKey(), property.getValue().asString()));
+        result.put("name", Names.nameIn(values, RequestLanguage.current()));
+        result.put("names", names);
     }
 
     public Map<String, Object> index(String userId, String requestedMixId) {
@@ -378,7 +392,14 @@ public class CategoryReads {
 
     private List<Category> categoriesOf(CountingSnapshot data) {
         return dsl.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION).fetch(row ->
-                new Category(row.getId(), row.getName(), row.getParentId()));
+                new Category(row.getId(), nameIn(row.getNames().data()), row.getParentId()));
+    }
+
+    private String nameIn(String storedNames) {
+        JsonNode names = json.readTree(storedNames);
+        Map<String, String> values = new LinkedHashMap<>();
+        names.properties().forEach(property -> values.put(property.getKey(), property.getValue().asString()));
+        return Names.nameIn(values, RequestLanguage.current());
     }
 
     private StoredMix selectedMix(CountingSnapshot data, String mixId) {

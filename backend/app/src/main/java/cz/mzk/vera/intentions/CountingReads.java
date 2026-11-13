@@ -18,6 +18,8 @@ import cz.mzk.vera.domain.properties.Properties.Source;
 import cz.mzk.vera.domain.entities.Cancellation;
 import cz.mzk.vera.domain.entities.CancellationCause;
 import cz.mzk.vera.domain.entities.Category;
+import cz.mzk.vera.domain.Names;
+import cz.mzk.vera.web.RequestLanguage;
 import cz.mzk.vera.domain.entities.DigitizationList;
 import cz.mzk.vera.domain.entities.Distribution;
 import cz.mzk.vera.domain.entities.Intention;
@@ -70,11 +72,11 @@ public class CountingReads {
                                 readShares(row.getShares()), row.getAt().toInstant().toString(),
                                 row.getLabel())));
         List<StoredMix> mixes = database.selectFrom(MIXES).orderBy(MIXES.POSITION)
-                .fetch(row -> new StoredMix(row.getId(), row.getName(), readShares(row.getShares()),
+                .fetch(row -> new StoredMix(row.getId(), nameIn(row.getNames()), readShares(row.getShares()),
                         row.getRevision(), instant(row.getArchivedAt()),
                         revisions.getOrDefault(row.getId(), List.of())));
         List<Category> categories = database.selectFrom(CATEGORIES).orderBy(CATEGORIES.POSITION)
-                .fetch(row -> new Category(row.getId(), row.getName(), row.getParentId()));
+                .fetch(row -> new Category(row.getId(), nameIn(row.getNames()), row.getParentId()));
         List<DigitizationList> lists = database.selectFrom(DIGITIZATION_LISTS)
                 .orderBy(DIGITIZATION_LISTS.POSITION)
                 .fetch(row -> new DigitizationList(row.getId(), row.getName(),
@@ -167,6 +169,11 @@ public class CountingReads {
         } catch (JacksonException exception) {
             throw new IllegalStateException(exception);
         }
+    }
+
+    private String nameIn(JSONB names) {
+        return Names.nameIn(mapper.readValue(names.data(), new TypeReference<Map<String, String>>() {}),
+                RequestLanguage.current());
     }
 
     private Map<String, Double> readShares(JSONB json) {

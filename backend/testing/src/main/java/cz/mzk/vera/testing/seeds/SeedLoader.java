@@ -92,6 +92,7 @@ public class SeedLoader {
             transaction.insertInto(ROLES)
                     .set(ROLES.ID, roleId)
                     .set(ROLES.NAME, string(role, "name"))
+                    .set(ROLES.NAMES, JSONB.valueOf(namesJson(role)))
                     .set(ROLES.DESCRIPTION, string(role, "description"))
                     .set(ROLES.IS_SHIPPED, role.path("isShipped").asBoolean())
                     .set(ROLES.PROPOSAL_BATCH_LIMIT, nullableInteger(role, "proposalBatchLimit"))
@@ -155,6 +156,7 @@ public class SeedLoader {
             transaction.insertInto(CATEGORIES)
                     .set(CATEGORIES.ID, string(category, "id"))
                     .set(CATEGORIES.NAME, string(category, "name"))
+                    .set(CATEGORIES.NAMES, JSONB.valueOf(namesJson(category)))
                     .set(CATEGORIES.PARENT_ID, nullableString(category, "parentId"))
                     .set(CATEGORIES.POSITION, position++)
                     .execute();
@@ -351,6 +353,7 @@ public class SeedLoader {
                     .set(WATCHLISTS.ID, string(row, "id"))
                     .set(WATCHLISTS.OWNER_ID, string(row, "ownerId"))
                     .set(WATCHLISTS.NAME, string(row, "name"))
+                    .set(WATCHLISTS.NAMES, JSONB.valueOf(namesJson(row)))
                     .set(WATCHLISTS.VIEW, string(row, "view"))
                     .set(WATCHLISTS.FILTER, JSONB.valueOf(row.path("filter").toString()))
                     .set(WATCHLISTS.AUDIENCE, JSONB.valueOf(row.path("audience").toString()))
@@ -561,6 +564,13 @@ public class SeedLoader {
 
     private String string(JsonNode object, String field) {
         return object.path(field).asString();
+    }
+
+    private String namesJson(JsonNode object) {
+        JsonNode names = object.get("names");
+        return names == null || names.isNull()
+                ? json.valueToTree(Map.of("en", string(object, "name"))).toString()
+                : names.toString();
     }
 
     private String nullableString(JsonNode object, String field) {
