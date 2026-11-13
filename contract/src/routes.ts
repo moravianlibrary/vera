@@ -50,6 +50,7 @@ export const apiRoutes = {
   // Roles by name, for choosing who a watchlist is shared with.
   roles: "/roles",
   proposalSettings: "/proposals/settings",
+  proposalEntry: "/proposals/entry",
   proposalLookup: "/proposals/lookup",
   // ACT-ways-in: searching the catalogs that can be searched, reading a record link in one that
   // cannot, reading a photo, and reading the barcode on a photo where the browser cannot.

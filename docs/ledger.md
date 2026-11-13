@@ -74,18 +74,8 @@ Rules: [ACT-entry-link](reference/access/acts.md#act-entry-link),
 [ACCESS-login-return](reference/access/people.md#access-login-return).
 
 Decided on 2026-10-29 ([DEC-0015](decisions/DEC-0015-public-requests-by-entry-link.md)). VERA
-takes over Tlačítko digitalizovat. Needs:
-- `/ask` in the frontend, opening *Propose…* over the reader's start page with the item landed;
-- the `EntryLink` Input implementation (configuration: name, allowed return origins);
-- the batch's `source`, shown on the batch and filterable on Requests;
-- the return to the page after login, which waits on the login page ([L4](#built-2026-10-29));
-- Google and Seznam as Identity instances in the engine's fakes
-  ([plugin-catalog.md](develop/plugin-catalog.md)).
-
-The portal does not matter (2026-10-31): each is an instance, its return origins in its
-configuration, and its `entry` reads what it sends
-([PLG-api-entry](reference/integrations/plugin-api.md#plg-api-entry)). Old requests from the mini
-app are moved by hand, not imported. → backend (with the mock), then frontend.
+takes over Tlačítko digitalizovat. The real `EntryLink` plugin against the portal remains in step 5
+of [the order of work](develop/backend.md#order-of-work).
 
 ### L72: Observability
 
@@ -150,6 +140,12 @@ upload. Only showing it in the Plugins drawer remains. → frontend.
 ## Done
 
 ### Built, 2026-11-13
+
+- **L70:** `/ask` asks an enabled EntryLink instance to read its portal parameters before Propose
+  opens; its item lands, an allowed return origin is kept, and anything it cannot read falls back
+  to VERA's parameters. Source remains on the batch and filterable on Requests
+  ([ACT-entry-link](reference/access/acts.md#act-entry-link)). The real `EntryLink` and
+  `OidcIdentity` plugins against real portals/providers remain for step 5.
 
 - **L67:** a recheck reads the title, material type and shelf mark from their catalog adapter,
   names each earlier value and reruns the enabled Property sources with `OnRecordChange`;

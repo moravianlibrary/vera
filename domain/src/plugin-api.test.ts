@@ -76,7 +76,7 @@ const examples: [string, unknown, unknown][] = [
   [
     "entry",
     { parameters: {}, page: "https://portal.example/" },
-    { item: null, origin: "https://portal.example/" },
+    { item: null, unit: null, reason: null, origin: "https://portal.example/" },
   ],
   ["recognise", { value: "123" }, { recognised: true, normalForm: "123" }],
   ["harvest", { cursor: null }, { items: [], nextCursor: null }],

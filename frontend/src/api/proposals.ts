@@ -15,6 +15,8 @@ import type {
 import {
   barcodeReadingSchema,
   catalogHitSchema,
+  entryAnswerSchema,
+  entryAskOf,
   photoReadingSchema,
   proposalCheckSchema,
   proposalReportSchema,
@@ -57,6 +59,19 @@ export async function readBarcode(photo: File): Promise<BarcodeReading> {
 
 export async function getProposalSettings(): Promise<ProposalSettings> {
   return getJson(apiRoutes.proposalSettings, proposalSettingsSchema);
+}
+
+export async function readProposalEntry(parameters: URLSearchParams, page: string | null) {
+  const ask = entryAskOf(parameters);
+  return postJson(
+    apiRoutes.proposalEntry,
+    {
+      sourceId: ask.sourceId,
+      parameters: Object.fromEntries(parameters.entries()),
+      page,
+    },
+    entryAnswerSchema,
+  );
 }
 
 // One answer per item, in order.

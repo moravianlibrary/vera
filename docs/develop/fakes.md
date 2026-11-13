@@ -313,8 +313,10 @@ to `{seen:"",read:[],best:"",near:""}` (`engine/src/records/plugins.ts:26–45`)
 request parameters and configured origin according to `plugin-api.md#plg-api-entry`; mock caller is
 the `/ask` handler in `frontend/src/mocks/handlers.ts`. Refusals: `unreadable`, and for `entry`,
 `origin_not_allowed`; mock barcode/photo can return their refusal outcomes. No general engine Input
-operation suite is implemented. The sample photo and the logic that interprets image bytes are
-distinct; no image-processing behavior is established by the seed.
+operation suite is implemented. The `pi43` EntryLink mock treats `sysno` as the catalog record ID,
+as Tlačítko digitalizovat names that parameter; it answers the origin of the browser page, which
+the server keeps only when `allowed_origins` contains it. The sample photo and the logic that
+interprets image bytes are distinct; no image-processing behavior is established by the seed.
 
 ## Identifier
 

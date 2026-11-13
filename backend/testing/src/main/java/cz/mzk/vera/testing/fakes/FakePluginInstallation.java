@@ -19,6 +19,7 @@ public class FakePluginInstallation {
             installed.install(read("fakes/local-accounts.jar"));
             installed.install(read("fakes/aleph-catalog-adapter.jar"));
             installed.install(read("fakes/barcode-reader.jar"));
+            installed.install(read("fakes/entry-link.jar"));
             installed.install(read("fakes/cover-recognition.jar"));
             installed.install(read("fakes/jq-custody.jar"));
             installed.install(read("fakes/place-of-publication.jar"));

@@ -28,4 +28,5 @@ include("plugin-api", "domain", "app", "testing", "testing:fakes:oidc-identity",
     "testing:fakes:harvester-periodical-gaps", "testing:fakes:harvester-kramerius",
     "testing:fakes:publication-detector", "testing:fakes:smtp-mailer", "testing:fakes:mailgun-mailer",
     "testing:fakes:slack-notifier", "testing:fakes:http-webhook", "testing:fakes:sftp-drop",
-    "testing:fakes:mailto-message", "testing:fakes:slack-message", "testing:fakes:slack-bot-message")
+    "testing:fakes:mailto-message", "testing:fakes:slack-message", "testing:fakes:slack-bot-message",
+    "testing:fakes:entry-link")

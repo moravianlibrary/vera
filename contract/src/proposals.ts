@@ -175,3 +175,38 @@ export const proposalSettingsSchema = z.object({
 });
 
 export type ProposalSettings = z.infer<typeof proposalSettingsSchema>;
+
+export const entryAskSchema = z.object({
+  record: z.string().nullable(),
+  identifier: z.object({ value: z.string(), type: z.string() }).nullable(),
+  unit: z.string().nullable(),
+  reason: z.string().nullable(),
+  sourceId: z.string().nullable(),
+  returnTo: z.string().nullable(),
+});
+
+export type EntryAsk = z.infer<typeof entryAskSchema>;
+export const entryAnswerSchema = z.object({ ask: entryAskSchema, returnTo: z.url().nullable() });
+export const entryRequestSchema = z.object({
+  sourceId: z.string(),
+  parameters: z.record(z.string(), z.string()),
+  page: z.url().nullable(),
+});
+
+export function entryAskOf(parameters: URLSearchParams): EntryAsk {
+  const text = (name: string) => parameters.get(name)?.trim() || null;
+  const record = text("record");
+  const identifierValue = text("identifier");
+  const type = text("type");
+  return {
+    record,
+    identifier:
+      record === null && identifierValue !== null && type !== null
+        ? { value: identifierValue, type }
+        : null,
+    unit: text("unit"),
+    reason: text("reason")?.slice(0, 500) ?? null,
+    sourceId: text("source"),
+    returnTo: text("return"),
+  };
+}

@@ -327,6 +327,81 @@
               "photoBytes": 0
             }
           }
+        },
+        {
+          "method": "POST",
+          "path": "/api/proposals/entry",
+          "status": 200,
+          "requestBody": {
+            "sourceId": "pi43",
+            "parameters": {
+              "source": "pi43",
+              "sysno": "MZK01-001622010"
+            },
+            "page": "https://www.mzk.cz/digitalize"
+          },
+          "body": {
+            "ask": {
+              "record": "MZK01-001622010",
+              "identifier": null,
+              "unit": null,
+              "reason": null,
+              "sourceId": "pi43",
+              "returnTo": null
+            },
+            "returnTo": "https://www.mzk.cz"
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/proposals/entry",
+          "status": 200,
+          "requestBody": {
+            "sourceId": "pi43",
+            "parameters": {
+              "source": "pi43",
+              "sysno": "MZK01-001622010"
+            },
+            "page": "https://foreign.example/digitalize"
+          },
+          "body": {
+            "ask": {
+              "record": "MZK01-001622010",
+              "identifier": null,
+              "unit": null,
+              "reason": null,
+              "sourceId": "pi43",
+              "returnTo": null
+            },
+            "returnTo": null
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/proposals/entry",
+          "status": 200,
+          "requestBody": {
+            "sourceId": "unknown",
+            "parameters": {
+              "source": "unknown",
+              "record": "NKC01-0001"
+            },
+            "page": "https://www.mzk.cz/digitalize"
+          },
+          "body": {
+            "ask": {
+              "record": "NKC01-0001",
+              "identifier": null,
+              "unit": null,
+              "reason": null,
+              "sourceId": "unknown",
+              "returnTo": null
+            },
+            "returnTo": null
+          },
+          "as": "u3"
         }
       ]
     },

@@ -1,0 +1,8 @@
+{
+  "implementation": "cz.mzk.vera.entry-link",
+  "version": "1.0.0",
+  "contractVersion": "1.0",
+  "triggers": ["OnDemand"],
+  "declares": { "properties": [], "identifierTypes": [], "rawStates": [], "rules": [], "agent": null, "generatorClass": null, "channelInterface": null, "operations": ["entry"], "loginEntry": null },
+  "configFields": [{ "key": "allowed_origins", "isSecret": false, "isRequired": true }]
+}

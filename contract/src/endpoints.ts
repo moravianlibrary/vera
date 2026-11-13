@@ -170,6 +170,8 @@ import {
 import {
   barcodeReadingSchema,
   catalogHitSchema,
+  entryAnswerSchema,
+  entryRequestSchema,
   photoReadingSchema,
   proposalCheckSchema,
   proposalDraftSchema,
@@ -717,6 +719,15 @@ export const endpoints = {
     summary: "Read proposal settings.",
     response: proposalSettingsSchema,
     codes: [],
+  }),
+  proposalEntry: spec({
+    method: "POST",
+    path: apiRoutes.proposalEntry,
+    summary: "Read an outside entry link through its EntryLink instance.",
+    body: entryRequestSchema,
+    response: entryAnswerSchema,
+    codes: ["forbidden"],
+    engine: false,
   }),
   proposalRateLimit: spec({
     method: "GET",

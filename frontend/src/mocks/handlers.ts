@@ -79,6 +79,7 @@ import {
   propertyEntrySchema,
 } from "@vera/contract/properties";
 import {
+  entryAskOf,
   proposalDraftSchema,
   proposalLookupSchema,
   recordLinkSchema,
@@ -1439,6 +1440,38 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.proposalSettings), () =>
       HttpResponse.json(proposalSettingsOf(mockStore(), mockProposalPlugins, currentSession())),
     ),
+
+    http.post(route(apiRoutes.proposalEntry), async ({ request }) => {
+      if (!hasPermission(currentSession(), "request.create")) {
+        return problemResponse({ status: 403, message: "You may not propose" });
+      }
+      const body = (await request.json()) as {
+        sourceId?: string;
+        parameters?: Record<string, string>;
+        page?: string | null;
+      };
+      const parameters = new URLSearchParams(body.parameters ?? {});
+      let ask = entryAskOf(parameters);
+      let returnTo: string | null = null;
+      const instance = database.pluginInstances.find(
+        (candidate) =>
+          candidate.id === body.sourceId && candidate.isEnabled && !candidate.isDeleted,
+      );
+      if (instance?.id === "pi43") {
+        const sysno = parameters.get("sysno")?.trim();
+        if (sysno) ask = { ...ask, record: sysno, identifier: null };
+        if (body.page) {
+          try {
+            const origin = new URL(body.page).origin;
+            const origins = String(instance.configuration.allowed_origins ?? "").split(/\s+/);
+            if (origins.includes(origin)) returnTo = origin;
+          } catch {
+            /* Invalid pages have no return origin. */
+          }
+        }
+      }
+      return HttpResponse.json({ ask, returnTo });
+    }),
 
     // ACT-ways-in: each is the proposer's, like the lookup.
     http.get(route(apiRoutes.proposalCatalogSearch), ({ request }) => {

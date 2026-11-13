@@ -39,7 +39,7 @@ val fakeNames = listOf(
     "language-check", "copyright-rule", "priority-first", "shelf-advisor",
     "harvester-periodical-gaps", "harvester-kramerius", "publication-detector", "smtp-mailer",
     "mailgun-mailer", "slack-notifier", "http-webhook", "sftp-drop", "mailto-message",
-    "slack-message", "slack-bot-message",
+    "slack-message", "slack-bot-message", "entry-link",
 )
 
 val pluginPackages = layout.buildDirectory.dir("plugin-packages")

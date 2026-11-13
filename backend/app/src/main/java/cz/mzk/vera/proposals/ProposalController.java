@@ -8,6 +8,9 @@ import cz.mzk.vera.plugin.catalog.ReadLinkAnswer;
 import cz.mzk.vera.plugin.catalog.ReadLinkInput;
 import cz.mzk.vera.plugin.input.BarcodeReader;
 import cz.mzk.vera.plugin.input.Input;
+import cz.mzk.vera.plugin.input.EntryLinkInput;
+import cz.mzk.vera.plugin.input.EntryLinkInput.EntryAnswer;
+import cz.mzk.vera.plugin.input.EntryLinkInput.EntryInput;
 import cz.mzk.vera.plugin.input.PhotoReader;
 import cz.mzk.vera.plugin.input.ReadBarcodeAnswer;
 import cz.mzk.vera.plugin.input.ReadBarcodeInput;
@@ -94,6 +97,61 @@ final class ProposalController {
             return refusal;
         }
         return ResponseEntity.ok(check.lookupItems(body.getOrDefault("items", List.of()), caller.userId()));
+    }
+
+    @PostMapping("/entry")
+    ResponseEntity<?> entry(HttpServletRequest request, @RequestBody Map<String, Object> body) {
+        Caller caller = guard.callerOf(request);
+        ResponseEntity<ProblemDetail> refusal = proposingRefusal(caller);
+        if (refusal != null) return refusal;
+        String sourceId = String.valueOf(body.getOrDefault("sourceId", ""));
+        Map<String, String> parameters = new LinkedHashMap<>();
+        if (body.get("parameters") instanceof Map<?, ?> values) {
+            values.forEach((key, value) -> parameters.put(String.valueOf(key), String.valueOf(value)));
+        }
+        String page = body.get("page") instanceof String value ? value : null;
+        Map<String, Object> ask = entryAsk(parameters);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("ask", ask);
+        result.put("returnTo", null);
+        if (waysIn.isEnabledEntryLink(sourceId)) {
+            PluginOutcome<EntryAnswer> outcome = plugins.call(sourceId, Input.class, "entry",
+                    (reader, context) -> ((EntryLinkInput) reader).entry(context, new EntryInput(parameters, page)));
+            if (outcome instanceof PluginOutcome.Answered<EntryAnswer> answered) {
+                EntryAnswer answer = answered.answer();
+                if (answer.item() != null) {
+                    Map<String, Object> landed = new LinkedHashMap<>(ask);
+                    landed.put("record", answer.item() instanceof EntryLinkInput.CatalogId id ? id.catalogId() : null);
+                    landed.put("identifier", answer.item() instanceof EntryLinkInput.Identifier id
+                            ? Map.of("type", id.type(), "value", id.value()) : null);
+                    landed.put("unit", answer.unit());
+                    landed.put("reason", answer.reason());
+                    result.put("ask", landed);
+                }
+                result.put("returnTo", waysIn.allowedReturn(sourceId, answer.origin()));
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    private Map<String, Object> entryAsk(Map<String, String> parameters) {
+        Map<String, Object> ask = new LinkedHashMap<>();
+        String record = nonblank(parameters.get("record"));
+        String identifier = nonblank(parameters.get("identifier"));
+        String type = nonblank(parameters.get("type"));
+        ask.put("record", record);
+        ask.put("identifier", record == null && identifier != null && type != null
+                ? Map.of("value", identifier, "type", type) : null);
+        ask.put("unit", nonblank(parameters.get("unit")));
+        String reason = nonblank(parameters.get("reason"));
+        ask.put("reason", reason == null ? null : reason.substring(0, Math.min(500, reason.length())));
+        ask.put("sourceId", nonblank(parameters.get("source")));
+        ask.put("returnTo", nonblank(parameters.get("return")));
+        return ask;
+    }
+
+    private String nonblank(String value) {
+        return value == null || value.trim().isEmpty() ? null : value.trim();
     }
 
     @GetMapping("/catalog-search")

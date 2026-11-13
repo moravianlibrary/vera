@@ -64,7 +64,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | | `complete` | the provider's callback, or the form's username and password | the external id, email and whether the provider verified it, name, and claims as strings | `wrong_credentials`, `suspended`, `not_allowed` |
 | Input | `readBarcode` *(optional)* | a photo | the code read, or none | `unreadable` |
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
-| | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page | the item read from it, and the origin to return to ([PLG-api-entry](#plg-api-entry)) | `origin_not_allowed`, `unreadable` |
+| | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page, which may be null | `{ item: catalogId | identifier | null, unit, reason, origin }`, each nullable; null `item` means VERA reads its own parameters | `origin_not_allowed`, `unreadable` |
 | Identifier | `recognise` | a value | whether it is this type, and its normal form | `checksum` |
 | Harvester | `harvest` | its cursor ([PLG-api-cursor](#plg-api-cursor)) | new catalog IDs or typed identifiers to propose, and the next cursor | — |
 | Catalog adapter | `read` | a catalog id | the record: fields, units, issuance type, the reading's date | `not_found` |
@@ -102,8 +102,9 @@ link or id is taken apart first.
 
 An outside portal's link reaches VERA at `/ask` ([ACT-entry-link](../access/acts.md#act-entry-link)).
 When the link names a `source`, that `EntryLink` instance reads it first: `entry` takes the link's
-parameters and the portal's page it came from, and answers the item to land (a catalog id, or an
-identifier with its type; a unit; a reason) and the return origin. So each portal links the way
+parameters and the portal's page it came from, and answers the item to land (a catalog id or an
+identifier with its type), unit, reason and return origin. Each field may be null; null `item`
+means VERA reads its own parameters. So each portal links the way
 it can: with VERA's own parameters, or with its own (a record id under another name, its page
 address), which its instance takes apart. VERA then checks the item as any other and never
 redirects to an origin outside the instance's configured list. Without a `source`, or when the
@@ -156,3 +157,5 @@ The contract's minor versions only add: a new optional operation, a new refusal 
 field in an answer. A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
 1.2 does not know and is refused on a VERA running 1.2
 ([PLG-contract](plugins.md#plg-contract)).
+
+The entry answer shape changed while no plugin implements `entry`; no contract version moved.

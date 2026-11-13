@@ -457,11 +457,11 @@ Following the engine's steps, so each lands with its recordings already made:
    Users & Groups, judged by the recorded sign-in, access and access-act scenarios. Its index,
    role and custody impacts, and custody acts are built in machinery. The 7-day removal of
    unverified sign-ups is a job (B5, B7). The real `OidcIdentity` and `LocalAccounts` plugins wait
-   for step 5.
+   for step 5. The real `EntryLink` plugin against the portal also waits for step 5.
 3. **Asking and deciding:** (built 2026-11-07) judged by the recorded records, filters, proposal
    and decision scenarios. Suggesting again after a change waits for runs with the jobs (B5).
    The Plugins acts, including `proposal-refusal-codes`, are built in machinery.
-   The entry link `/ask` waits for the Input plugins of step 5. The catalog
+   The entry link `/ask` is built; its real plugin waits for step 5. The catalog
    mirror's `sync` and stored catalog tiers wait for the real catalog adapters; the mirror's
    tables and their filling from the fakes came early, decided with the user on 2026-11-07.
    **Ingest and review:** (built 2026-11-07) judged by the recorded record acts. Jobs (B5) are

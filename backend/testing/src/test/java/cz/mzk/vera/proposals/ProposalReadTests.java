@@ -8,6 +8,7 @@ import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
@@ -315,11 +316,60 @@ class ProposalReadTests {
     }
 
     @Test
+    void entryLinkFakeReadsSysnoAndAllowsItsConfiguredOrigin() {
+        Map<String, Object> parameters = Map.of("source", "pi43", "sysno", "MZK01-001622010");
+        client.post().uri("/api/proposals/entry").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "pi43", "parameters", parameters, "page", "https://www.mzk.cz/portal"))
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.ask.record").isEqualTo("MZK01-001622010")
+                .jsonPath("$.returnTo").isEqualTo("https://www.mzk.cz");
+    }
+
+    @Test
+    void entryLinkDropsForeignReturnOrigin() {
+        client.post().uri("/api/proposals/entry").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "pi43", "parameters", Map.of("source", "pi43", "sysno", "MZK01-1"),
+                        "page", "https://elsewhere.example/path"))
+                .exchange().expectStatus().isOk().expectBody()
+                .jsonPath("$.ask.record").isEqualTo("MZK01-1").jsonPath("$.returnTo").isEmpty();
+    }
+
+    @Test
+    void unknownOrDisabledEntryLinkFallsBackToVeraParameters() {
+        client.post().uri("/api/proposals/entry").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "unknown", "parameters", Map.of("record", "MZK01-1"), "page", "https://www.mzk.cz"))
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.ask.record").isEqualTo("MZK01-1")
+                .jsonPath("$.returnTo").isEmpty();
+        dsl.update(PLUGIN_INSTANCES).set(PLUGIN_INSTANCES.IS_ENABLED, false)
+                .where(PLUGIN_INSTANCES.ID.eq("pi43")).execute();
+        client.post().uri("/api/proposals/entry").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "pi43", "parameters", Map.of("record", "MZK01-2"), "page", "https://www.mzk.cz"))
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.ask.record").isEqualTo("MZK01-2")
+                .jsonPath("$.returnTo").isEmpty();
+    }
+
+    @Test
+    void entryRequiresRequestCreate() {
+        clearRoles("u3");
+        client.post().uri("/api/proposals/entry").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "pi43", "parameters", Map.of(), "page", "https://www.mzk.cz"))
+                .exchange().expectStatus().isForbidden();
+    }
+
+    @Test
     void allSevenProposalReadAndWayInRoutesRequireASession() {
         client.get().uri("/api/proposals/settings").exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/proposals/rate-limit").exchange().expectStatus().isUnauthorized();
         client.post().uri("/api/proposals/lookup").contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("items", List.of(item("catalogId", "MZK01-001277001", null))))
+                .exchange().expectStatus().isUnauthorized();
+        client.post().uri("/api/proposals/entry").contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("sourceId", "pi43", "parameters", Map.of(), "page", "https://www.mzk.cz"))
                 .exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/proposals/catalog-search?q=test").exchange()
                 .expectStatus().isUnauthorized();

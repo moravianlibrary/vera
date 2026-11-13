@@ -385,7 +385,9 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
     action: proposeActOf(session),
   });
   const entrySource = (settings?.entrySources ?? []).find((entry) => entry.id === ask?.sourceId);
-  const returnTo = allowedReturn(ask?.returnTo ?? null, entrySource?.allowedOrigins ?? []);
+  const returnTo = ask?.sourceId
+    ? ask.returnTo
+    : allowedReturn(ask?.returnTo ?? null, entrySource?.allowedOrigins ?? []);
   const backToSource =
     entrySource !== undefined && returnTo !== null
       ? {

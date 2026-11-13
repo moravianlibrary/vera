@@ -14,21 +14,17 @@ export const readPhotoAnswerSchema = z.object({
 });
 export const entryInputSchema = z.object({
   parameters: z.record(z.string(), z.string()),
-  page: z.string().url(),
+  page: z.string().url().nullable(),
 });
 export const proposalItemSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("catalogId"), catalogId: z.string() }),
   z.object({ kind: z.literal("identifier"), type: z.string(), value: z.string() }),
 ]);
 export const entryAnswerSchema = z.object({
-  item: z
-    .union([
-      proposalItemSchema,
-      z.object({ kind: z.literal("unit"), value: z.string() }),
-      z.object({ kind: z.literal("reason"), value: z.string() }),
-    ])
-    .nullable(),
-  origin: z.string().url(),
+  item: proposalItemSchema.nullable(),
+  unit: z.string().nullable(),
+  reason: z.string().nullable(),
+  origin: z.string().nullable(),
 });
 declare const inputPluginKind: unique symbol;
 export interface Input {

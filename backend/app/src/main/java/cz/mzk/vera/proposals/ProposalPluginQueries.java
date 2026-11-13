@@ -3,6 +3,8 @@ package cz.mzk.vera.proposals;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 
+import java.net.URI;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,29 @@ public class ProposalPluginQueries {
         return instances().stream().anyMatch(row -> enabled(row) && instanceId.equals(row.get("id"))
                 && kindOf(row, byId).equals(ProposalCodes.CATALOG_ADAPTER)
                 && configuration(row).containsKey("catalog_base"));
+    }
+
+    public boolean isEnabledEntryLink(String instanceId) {
+        List<Map<String, Object>> implementations = implementations();
+        Map<String, Map<String, Object>> byId = new LinkedHashMap<>();
+        implementations.forEach(row -> byId.put((String) row.get("id"), row));
+        return instances().stream().anyMatch(row -> enabled(row) && instanceId.equals(row.get("id"))
+                && kindOf(row, byId).equals(ProposalCodes.INPUT) && declares(row, byId, "entry"));
+    }
+
+    public String allowedReturn(String instanceId, String origin) {
+        if (origin == null) return null;
+        String allowed = instances().stream().filter(row -> enabled(row) && instanceId.equals(row.get("id")))
+                .map(row -> configuration(row).getOrDefault("allowed_origins", "")).findFirst().orElse("");
+        try {
+            URI uri = URI.create(origin);
+            String normalized = uri.getScheme() + "://" + uri.getAuthority();
+            return ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()))
+                    && uri.getRawUserInfo() == null
+                    && Arrays.asList(allowed.split("\\s+")).contains(normalized) ? normalized : null;
+        } catch (IllegalArgumentException invalid) {
+            return null;
+        }
     }
 
     public String catalogName(String instanceId) {
