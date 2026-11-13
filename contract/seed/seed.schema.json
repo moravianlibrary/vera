@@ -10516,8 +10516,47 @@
               "event": {
                 "type": "string"
               },
-              "filter": {
-                "type": "string"
+              "conditions": {
+                "type": "object",
+                "properties": {
+                  "requests": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "documents": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "lists": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "tasks": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false
               },
               "channelId": {
                 "type": "string",
@@ -10626,7 +10665,7 @@
               "id",
               "name",
               "event",
-              "filter",
+              "conditions",
               "channelId",
               "recipient",
               "message",

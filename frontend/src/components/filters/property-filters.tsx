@@ -89,7 +89,11 @@ export function propertyListFieldsOf(
       label: propertyNameOf(definition),
       options: [
         ...options,
-        { value: noValueOption, label: noValueLabel, count: facet?.noValue ?? null },
+        {
+          value: noValueOption,
+          label: i18n.t(noValueLabel, { ns: "common" }),
+          count: facet?.noValue ?? null,
+        },
       ],
       selected,
       onChange: (values: string[]) =>

@@ -4,7 +4,7 @@
 // empty. Any other field becomes a chip once a value is picked; clicking the chip reopens its
 // values, and × strikes the whole field off. A range is added from the same picker, as a chip
 // that reads "any" until it is given one (range-filter.tsx).
-// Labels may be server text; a missing translation key is returned unchanged.
+// Option labels arrive ready to display; field labels remain translation keys.
 
 import { ChevronDown, Plus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 
 export interface FilterOption {
   value: string;
+  // Already translated when it is a vocabulary label; data stays as given.
   label: string;
   // Rows that would match, counted over the other filters; null when not counted.
   count: number | null;
@@ -43,7 +44,7 @@ interface QuickFilterProps {
 export function QuickFilter({ field }: QuickFilterProps) {
   const { t } = useTranslation("common");
   const isActive = field.selected.length > 0;
-  const summary = isActive ? selectedLabelsOf(field, (key) => t(key)) : t("filter.any");
+  const summary = isActive ? selectedLabelsOf(field) : t("filter.any");
 
   return (
     <DropdownMenu>
@@ -86,8 +87,7 @@ export function FilterChip({ field }: FilterChipProps) {
       <DropdownMenu>
         <DropdownMenuTrigger className="inline-flex h-full max-w-72 items-center gap-1 rounded-l-md pr-1 pl-2 outline-none hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50">
           <span className="truncate">
-            {t(field.label)}{" "}
-            <b className="font-semibold">{selectedLabelsOf(field, (key) => t(key))}</b>
+            {t(field.label)} <b className="font-semibold">{selectedLabelsOf(field)}</b>
           </span>
           <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
         </DropdownMenuTrigger>
@@ -203,9 +203,9 @@ export function byOrderOf(order: readonly string[]) {
 
 // ---------------------------------------------------------------- labels
 
-function selectedLabelsOf(field: FilterField, t: (key: string) => string): string {
+function selectedLabelsOf(field: FilterField): string {
   const labelOf = (value: string) =>
-    t(field.options.find((option) => option.value === value)?.label ?? value);
+    field.options.find((option) => option.value === value)?.label ?? value;
   return field.selected.map(labelOf).join(", ");
 }
 
@@ -215,7 +215,6 @@ interface FilterOptionItemsProps {
 
 // Several values can be picked in one go, so a pick keeps the menu open.
 function FilterOptionItems({ field }: FilterOptionItemsProps) {
-  const { t } = useTranslation("common");
   const toggle = (value: string, isChecked: boolean) => {
     const rest = field.selected.filter((selected) => selected !== value);
     field.onChange(isChecked ? [...rest, value] : rest);
@@ -231,7 +230,7 @@ function FilterOptionItems({ field }: FilterOptionItemsProps) {
           onSelect={(event) => event.preventDefault()}
           className="text-xs"
         >
-          <span className="min-w-0 flex-1 truncate">{t(option.label)}</span>
+          <span className="min-w-0 flex-1 truncate">{option.label}</span>
           {option.count !== null && (
             <span className="ml-3 text-muted-foreground tabular-nums">{option.count}</span>
           )}

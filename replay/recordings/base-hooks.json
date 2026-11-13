@@ -3,6 +3,99 @@
   "moment": "2026-06-25T08:40:00.000Z",
   "scenarios": [
     {
+      "name": "typed-subject-conditions",
+      "calls": [
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 200,
+          "body": {
+            "name": "Recording hook",
+            "events": [
+              "iteration.published"
+            ],
+            "conditions": {
+              "documents": {
+                "category": "c2"
+              }
+            },
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            },
+            "id": "<H1>",
+            "state": "active",
+            "createdBy": "u3",
+            "createdAt": "<time>",
+            "pause": null
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "iteration.published"
+            ],
+            "conditions": {
+              "documents": {
+                "category": "c2"
+              }
+            },
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/hooks",
+          "status": 422,
+          "body": {
+            "type": "https://vera.mzk.cz/problems/hook.condition_kind",
+            "title": "Not accepted",
+            "status": 422,
+            "detail": "Pick an event for this page before adding its condition",
+            "code": "hook.condition_kind",
+            "errors": [
+              {
+                "pointer": "/conditions/lists",
+                "code": "hook.condition_kind",
+                "detail": "Pick an event for this page before adding its condition"
+              }
+            ]
+          },
+          "requestBody": {
+            "name": "Recording hook",
+            "events": [
+              "request.created"
+            ],
+            "conditions": {
+              "lists": {
+                "state": "Planned"
+              }
+            },
+            "channelId": "pi18",
+            "recipient": "#digitalizace",
+            "message": "{task} failed: {error}",
+            "batch": null,
+            "retry": {
+              "attempts": 3,
+              "backoff": "fixed"
+            }
+          },
+          "as": "u3"
+        }
+      ]
+    },
+    {
       "name": "reads",
       "calls": [
         {
@@ -19,7 +112,11 @@
                 "events": [
                   "iteration.published"
                 ],
-                "filter": "category under Periodicals",
+                "conditions": {
+                  "documents": {
+                    "category": "c2"
+                  }
+                },
                 "channelId": "pi20",
                 "recipient": "https://kramerius.mzk.cz/api/notify",
                 "message": "",
@@ -40,7 +137,7 @@
                   "request.approved",
                   "request.declined"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi17",
                 "recipient": "the requester",
                 "message": "Your request for {title} was {decision}. {public_text}",
@@ -68,7 +165,7 @@
                 "events": [
                   "iteration.ingest_failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi20",
                 "recipient": "https://ops.internal/hooks/vera",
                 "message": "",
@@ -88,7 +185,7 @@
                 "events": [
                   "run.failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "#digitalizace",
                 "message": ":warning: {task} failed — {error} {link}",
@@ -110,7 +207,7 @@
                   "list.started",
                   "list.marked_done"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "Digitization Office › Lists",
                 "message": "New list {list} — {pages} pp, starts {starts}. {link}",
@@ -134,7 +231,7 @@
                 "events": [
                   "list.created"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi21",
                 "recipient": "/incoming",
                 "message": "",
@@ -357,7 +454,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -383,7 +480,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -404,7 +501,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -424,7 +521,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -446,7 +543,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -465,7 +562,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -487,7 +584,7 @@
             "events": [
               "iteration.ingest_failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "https://ops.internal/hooks/vera",
             "message": "",
@@ -520,7 +617,7 @@
             "events": [
               "iteration.ingest_failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "https://ops.internal/hooks/vera",
             "message": "",
@@ -574,7 +671,7 @@
                   "request.approved",
                   "request.declined"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi17",
                 "recipient": "the requester",
                 "message": "Your request for {title} was {decision}. {public_text}",
@@ -602,7 +699,7 @@
                 "events": [
                   "iteration.ingest_failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi20",
                 "recipient": "https://ops.internal/hooks/vera",
                 "message": "",
@@ -622,7 +719,7 @@
                 "events": [
                   "run.failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "#digitalizace",
                 "message": ":warning: {task} failed — {error} {link}",
@@ -644,7 +741,7 @@
                   "list.started",
                   "list.marked_done"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "Digitization Office › Lists",
                 "message": "New list {list} — {pages} pp, starts {starts}. {link}",
@@ -668,7 +765,7 @@
                 "events": [
                   "list.created"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi21",
                 "recipient": "/incoming",
                 "message": "",
@@ -691,7 +788,7 @@
                 "events": [
                   "run.failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "#digitalizace",
                 "message": "{task} failed: {error}",
@@ -860,7 +957,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi4",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -882,7 +979,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "not-an-https-url",
             "message": "{task} failed: {error}",
@@ -904,7 +1001,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -924,13 +1021,17 @@
           "method": "POST",
           "path": "/api/hooks",
           "status": 422,
-          "code": "hook.filter_unsupported",
+          "code": "hook.condition_invalid",
           "requestBody": {
             "name": "Recording hook",
             "events": [
               "run.failed"
             ],
-            "filter": "an unsupported condition",
+            "conditions": {
+              "tasks": {
+                "state": "invalid"
+              }
+            },
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -952,7 +1053,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi4",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -974,7 +1075,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "not-an-https-url",
             "message": "{task} failed: {error}",
@@ -996,7 +1097,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1016,13 +1117,17 @@
           "method": "PUT",
           "path": "/api/hooks/H-01",
           "status": 422,
-          "code": "hook.filter_unsupported",
+          "code": "hook.condition_invalid",
           "requestBody": {
             "name": "Recording hook",
             "events": [
               "run.failed"
             ],
-            "filter": "an unsupported condition",
+            "conditions": {
+              "tasks": {
+                "state": "invalid"
+              }
+            },
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1044,7 +1149,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi4",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1066,7 +1171,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "not-an-https-url",
             "message": "{task} failed: {error}",
@@ -1088,7 +1193,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1108,13 +1213,17 @@
           "method": "POST",
           "path": "/api/hooks/preview",
           "status": 422,
-          "code": "hook.filter_unsupported",
+          "code": "hook.condition_invalid",
           "requestBody": {
             "name": "Recording hook",
             "events": [
               "run.failed"
             ],
-            "filter": "an unsupported condition",
+            "conditions": {
+              "tasks": {
+                "state": "invalid"
+              }
+            },
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1136,7 +1245,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi4",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1158,7 +1267,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi20",
             "recipient": "not-an-https-url",
             "message": "{task} failed: {error}",
@@ -1180,7 +1289,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1200,13 +1309,17 @@
           "method": "POST",
           "path": "/api/hooks/test",
           "status": 422,
-          "code": "hook.filter_unsupported",
+          "code": "hook.condition_invalid",
           "requestBody": {
             "name": "Recording hook",
             "events": [
               "run.failed"
             ],
-            "filter": "an unsupported condition",
+            "conditions": {
+              "tasks": {
+                "state": "invalid"
+              }
+            },
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1260,7 +1373,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1282,7 +1395,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1304,7 +1417,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1326,7 +1439,7 @@
             "events": [
               "run.failed"
             ],
-            "filter": "",
+            "conditions": {},
             "channelId": "pi18",
             "recipient": "#digitalizace",
             "message": "{task} failed: {error}",
@@ -1730,7 +1843,11 @@
                 "events": [
                   "iteration.published"
                 ],
-                "filter": "category under Periodicals",
+                "conditions": {
+                  "documents": {
+                    "category": "c2"
+                  }
+                },
                 "channelId": "pi20",
                 "recipient": "https://kramerius.mzk.cz/api/notify",
                 "message": "",
@@ -1751,7 +1868,7 @@
                   "request.approved",
                   "request.declined"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi17",
                 "recipient": "the requester",
                 "message": "Your request for {title} was {decision}. {public_text}",
@@ -1779,7 +1896,7 @@
                 "events": [
                   "iteration.ingest_failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi20",
                 "recipient": "https://ops.internal/hooks/vera",
                 "message": "",
@@ -1799,7 +1916,7 @@
                 "events": [
                   "run.failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "#digitalizace",
                 "message": ":warning: {task} failed — {error} {link}",
@@ -1821,7 +1938,7 @@
                   "list.started",
                   "list.marked_done"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "Digitization Office › Lists",
                 "message": "New list {list} — {pages} pp, starts {starts}. {link}",
@@ -1845,7 +1962,7 @@
                 "events": [
                   "list.created"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi21",
                 "recipient": "/incoming",
                 "message": "",
@@ -2047,7 +2164,11 @@
                 "events": [
                   "iteration.published"
                 ],
-                "filter": "category under Periodicals",
+                "conditions": {
+                  "documents": {
+                    "category": "c2"
+                  }
+                },
                 "channelId": "pi20",
                 "recipient": "https://kramerius.mzk.cz/api/notify",
                 "message": "",
@@ -2068,7 +2189,7 @@
                   "request.approved",
                   "request.declined"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi17",
                 "recipient": "the requester",
                 "message": "Your request for {title} was {decision}. {public_text}",
@@ -2096,7 +2217,7 @@
                 "events": [
                   "iteration.ingest_failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi20",
                 "recipient": "https://ops.internal/hooks/vera",
                 "message": "",
@@ -2116,7 +2237,7 @@
                 "events": [
                   "run.failed"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "#digitalizace",
                 "message": ":warning: {task} failed — {error} {link}",
@@ -2138,7 +2259,7 @@
                   "list.started",
                   "list.marked_done"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi18",
                 "recipient": "Digitization Office › Lists",
                 "message": "New list {list} — {pages} pp, starts {starts}. {link}",
@@ -2162,7 +2283,7 @@
                 "events": [
                   "list.created"
                 ],
-                "filter": "",
+                "conditions": {},
                 "channelId": "pi21",
                 "recipient": "/incoming",
                 "message": "",

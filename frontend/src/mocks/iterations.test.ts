@@ -26,7 +26,7 @@ describe("document relinking", () => {
       ...hook,
       id: "H-relink-test",
       events: ["document.relinked"],
-      filter: "",
+      conditions: {},
       batch: null,
     });
 

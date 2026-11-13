@@ -13,7 +13,7 @@ describe("hook event collection", () => {
       ...template,
       id: hookId,
       events: ["request.held", "iteration.ingested"],
-      filter: "",
+      conditions: {},
       batch: null,
     });
 
@@ -31,6 +31,35 @@ describe("hook event collection", () => {
     );
   });
 
+  it("matches a Documents category subtree using the subject, without caller access", () => {
+    const template = database.hooks[0];
+    const inside = database.iterations.find((iteration) => iteration.categoryId === "c21");
+    const outside = database.iterations.find((iteration) => iteration.categoryId === "c11");
+    if (!template || !inside || !outside) throw new Error("Missing category fixtures");
+    const hook = {
+      ...template,
+      id: "condition-test",
+      events: ["iteration.published" as const],
+      conditions: { documents: { category: "c2" } },
+      batch: null,
+    };
+    database.hooks.push(hook);
+    try {
+      recordHookEvent("iteration.published", inside.id, "", "Inside");
+      recordHookEvent("iteration.published", outside.id, "", "Outside");
+      expect(
+        database.hookDeliveries
+          .filter((delivery) => delivery.hookId === hook.id)
+          .map((delivery) => delivery.subjects),
+      ).toEqual([[inside.id]]);
+    } finally {
+      database.hooks = database.hooks.filter((candidate) => candidate.id !== hook.id);
+      database.hookDeliveries = database.hookDeliveries.filter(
+        (delivery) => delivery.hookId !== hook.id,
+      );
+    }
+  });
+
   it("groups a requester's subscribed events and caps the wait", () => {
     const before = database.hookDeliveries.length;
     const first = new Date("2026-06-25T11:00:00Z");
@@ -39,7 +68,6 @@ describe("hook event collection", () => {
       "R-new-1",
       "reader@example.org",
       "The request was approved",
-      {},
       first,
     );
     recordHookEvent(
@@ -47,7 +75,6 @@ describe("hook event collection", () => {
       "R-new-2",
       "reader@example.org",
       "The request was denied",
-      {},
       new Date("2026-06-25T11:50:00Z"),
     );
     recordHookEvent(
@@ -55,7 +82,6 @@ describe("hook event collection", () => {
       "R-new-3",
       "reader@example.org",
       "The request was withdrawn",
-      {},
       new Date("2026-06-25T11:51:00Z"),
     );
 

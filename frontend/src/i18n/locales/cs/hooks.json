@@ -123,7 +123,6 @@
   "hookEditor.group.Lists": "Seznamy",
   "hookEditor.group.Tasks": "Úlohy",
   "hookEditor.pickEvent": "Vyberte alespoň jednu událost",
-  "hookEditor.filterHint": "Nechte prázdné pro každou událost. Podporováno: category under Periodicals.",
   "hookEditor.disabled": "vypnuto",
   "hookEditor.channelsInPlugins": "Doručovací kanály se nastavují v Pluginech.",
   "hookEditor.hookEmail": "E-mail z hooku",

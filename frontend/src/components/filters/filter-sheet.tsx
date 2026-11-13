@@ -101,7 +101,7 @@ function FieldSection({ field, isOpenAtFirst }: { field: FilterField; isOpenAtFi
     field.onChange(isChecked ? [...rest, value] : rest);
   };
   const summary = field.selected
-    .map((value) => t(field.options.find((option) => option.value === value)?.label ?? value))
+    .map((value) => field.options.find((option) => option.value === value)?.label ?? value)
     .join(", ");
 
   return (
@@ -130,7 +130,7 @@ function FieldSection({ field, isOpenAtFirst }: { field: FilterField; isOpenAtFi
                 checked={field.selected.includes(option.value)}
                 onCheckedChange={(state) => toggle(option.value, state === true)}
               />
-              <span className="min-w-0 flex-1 truncate">{t(option.label)}</span>
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
               {option.count !== null && (
                 <span className="text-xs text-muted-foreground tabular-nums">{option.count}</span>
               )}

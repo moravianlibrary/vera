@@ -93,9 +93,13 @@ export function shownHooksOf(index: HookIndex, query: HooksQuery): Hook[] {
         (!query.states?.length ||
           query.states.some((state) => hookStateOf(index, hook).includes(state))) &&
         (!needle ||
-          [hook.name, ...hook.events, hook.filter, hook.recipient, channel?.name ?? ""].some(
-            (value) => value.toLowerCase().includes(needle),
-          ))
+          [
+            hook.name,
+            ...hook.events,
+            JSON.stringify(hook.conditions),
+            hook.recipient,
+            channel?.name ?? "",
+          ].some((value) => value.toLowerCase().includes(needle)))
       );
     })
     .sort(

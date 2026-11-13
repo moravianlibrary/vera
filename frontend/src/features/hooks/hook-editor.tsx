@@ -2,11 +2,13 @@
 // The draft stays in the form while the preview and send-test steps are open.
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { DocumentQuery } from "@vera/contract/documents";
 import type {
   Hook,
   HookChannel,
   HookDraft,
   HookPreview,
+  HookSubjectKind,
   HookTestResult,
 } from "@vera/contract/hooks";
 import {
@@ -14,13 +16,18 @@ import {
   hookEventSchema,
   hookGroupOfEvent,
   hookGroups,
+  subjectKindOfEvent,
 } from "@vera/contract/hooks";
+import type { ListQuery } from "@vera/contract/lists";
+import type { RequestQuery } from "@vera/contract/requests";
+import type { RunQuery } from "@vera/contract/tasks";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { previewHook, sendHookTest } from "@/api/hooks";
 import { Field } from "@/components/classification-fields";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
+import { FilterBar } from "@/components/filters/filter-bar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -42,13 +49,24 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { documentsView } from "@/features/documents/documents-view";
+import { listsView } from "@/features/lists/lists-view";
+import { requestsView } from "@/features/requests/requests-view";
+import { tasksView } from "@/features/tasks/tasks-view";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
+
+const conditionViews = {
+  requests: { definition: requestsView, labelKey: "hookEditor.group.Requests" },
+  documents: { definition: documentsView, labelKey: "hookEditor.group.Documents" },
+  lists: { definition: listsView, labelKey: "hookEditor.group.Lists" },
+  tasks: { definition: tasksView, labelKey: "hookEditor.group.Tasks" },
+} as const satisfies Record<HookSubjectKind, { definition: unknown; labelKey: string }>;
 
 const emptyHookDraft: HookDraft = {
   name: "",
   events: ["iteration.published"],
-  filter: "",
+  conditions: {},
   channelId: "",
   recipient: "",
   message: "",
@@ -97,6 +115,9 @@ export function HookEditor({
   const test = useActionMutation({ call: sendHookTest, invalidates: [] });
   const channelId = form.watch("channelId");
   const channel = channels.find((item) => item.id === channelId);
+  const events = form.watch("events");
+  const conditions = form.watch("conditions");
+  const subjectKinds = [...new Set(events.map(subjectKindOfEvent))];
   const batch = form.watch("batch");
   const recipientPreference = form.watch("recipientPreference");
 
@@ -153,8 +174,11 @@ export function HookEditor({
     setRefusal(result.refusal);
     if (result.refusal.code === "hook.recipient")
       form.setError("recipient", { message: result.refusal.message });
-    if (result.refusal.code === "hook.filter_unsupported")
-      form.setError("filter", { message: result.refusal.message });
+    if (
+      result.refusal.code === "hook.condition_kind" ||
+      result.refusal.code === "hook.condition_invalid"
+    )
+      form.setError("conditions", { message: result.refusal.message });
     if (result.refusal.code === "hook.channel_unavailable")
       form.setError("channelId", { message: result.refusal.message });
   });
@@ -275,13 +299,22 @@ export function HookEditor({
                             <DropdownMenuCheckboxItem
                               key={event}
                               checked={field.value.includes(event)}
-                              onCheckedChange={(checked) =>
-                                field.onChange(
-                                  checked
-                                    ? [...field.value, event]
-                                    : field.value.filter((value) => value !== event),
-                                )
-                              }
+                              onCheckedChange={(checked) => {
+                                const next = checked
+                                  ? [...field.value, event]
+                                  : field.value.filter((value) => value !== event);
+                                field.onChange(next);
+                                const kinds = new Set(next.map(subjectKindOfEvent));
+                                form.setValue(
+                                  "conditions",
+                                  Object.fromEntries(
+                                    Object.entries(form.getValues("conditions")).filter(([kind]) =>
+                                      kinds.has(kind as HookSubjectKind),
+                                    ),
+                                  ),
+                                  { shouldDirty: true },
+                                );
+                              }}
                               onSelect={(e) => e.preventDefault()}
                               className="font-mono text-xs"
                             >
@@ -302,17 +335,33 @@ export function HookEditor({
               }
             />
           </Field>
-          <Field id="hook-filter" label={t("hookEditor.onlyWhen")}>
-            <Input
-              id="hook-filter"
-              {...form.register("filter")}
-              aria-invalid={!!form.formState.errors.filter}
-            />
-          </Field>
-          <p className="-mt-2 text-xs leading-relaxed text-muted-foreground">
-            {t("hookEditor.filterHint")}
-          </p>
-          <FieldError text={form.formState.errors.filter?.message} />
+          <fieldset className="grid gap-3">
+            <legend className="text-sm font-medium">{t("hookEditor.onlyWhen")}</legend>
+            {subjectKinds.map((kind) => {
+              const { definition, labelKey } = conditionViews[kind];
+              const onChange = (filter: Record<string, string>) =>
+                form.setValue(
+                  "conditions",
+                  { ...conditions, [kind]: filter },
+                  { shouldDirty: true },
+                );
+              const props = { filter: conditions[kind] ?? {}, onChange };
+              return (
+                <fieldset key={kind} className="grid gap-2 rounded-lg border p-3">
+                  <legend className="px-1 text-sm font-medium">{t(labelKey)}</legend>
+                  <ConditionFilter {...props} definition={definition} />
+                  <FieldError
+                    text={
+                      typeof form.formState.errors.conditions?.[kind]?.message === "string"
+                        ? String(form.formState.errors.conditions?.[kind]?.message)
+                        : undefined
+                    }
+                  />
+                </fieldset>
+              );
+            })}
+            <FieldError text={form.formState.errors.conditions?.message} />
+          </fieldset>
           <Field id="hook-channel" label={t("hookEditor.sendThrough")}>
             <Controller
               control={form.control}
@@ -524,4 +573,32 @@ function FieldError({ text }: { text?: string }) {
       {text}
     </p>
   ) : null;
+}
+
+// HOOK-condition: use the page's fields and URL form without page facets.
+type ConditionQuery = DocumentQuery & RequestQuery & ListQuery & RunQuery;
+
+function ConditionFilter({
+  definition,
+  filter,
+  onChange,
+}: {
+  definition: (typeof conditionViews)[HookSubjectKind]["definition"];
+  filter: Record<string, string>;
+  onChange: (filter: Record<string, string>) => void;
+}) {
+  const { t } = useTranslation("common");
+  // Each definition parses and serializes its own query at this shared boundary.
+  const query = definition.parseSearchParams(new URLSearchParams(filter)) as ConditionQuery;
+  return (
+    <FilterBar<ConditionQuery>
+      fields={definition.fields}
+      query={query}
+      facets={undefined}
+      offersEveryValue
+      onQueryChange={(query) => onChange(Object.fromEntries(definition.toSearchParams(query)))}
+      searchLabel={t("picker.search")}
+      searchPlaceholder={t("picker.search")}
+    />
+  );
 }

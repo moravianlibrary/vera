@@ -373,7 +373,10 @@ function itemCountOf(session: Session, watchlist: Watchlist): number {
   return counters[watchlist.view](session, new URLSearchParams(watchlist.filter));
 }
 
-function matchingIdsOf(session: Session, watchlist: Watchlist): string[] {
+export function matchingIdsOf(
+  session: Session,
+  watchlist: Pick<Watchlist, "view" | "filter">,
+): string[] {
   const filter = new URLSearchParams(watchlist.filter);
   const all = { cursor: null, limit: Number.MAX_SAFE_INTEGER };
   switch (watchlist.view) {

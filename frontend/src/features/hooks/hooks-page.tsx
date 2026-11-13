@@ -88,8 +88,10 @@ export function hookColumns(index: HookIndex | undefined): ColumnDefinition<Hook
       cell: (hook) => (
         <>
           <span className="font-mono text-xs">{hook.events.join(" · ")}</span>
-          {hook.filter && (
-            <span className="block text-xs text-muted-foreground">{hook.filter}</span>
+          {Object.keys(hook.conditions).length > 0 && (
+            <span className="block text-xs text-muted-foreground">
+              {JSON.stringify(hook.conditions)}
+            </span>
           )}
         </>
       ),
@@ -626,7 +628,13 @@ function HookDetail({
               label: t("hooksPage.firesOn"),
               value: <span className="font-mono text-xs">{hook.events.join(" · ")}</span>,
             },
-            { label: t("hookDetail.onlyWhen"), value: hook.filter || t("hookDetail.everyEvent") },
+            {
+              label: t("hookDetail.onlyWhen"),
+              value:
+                Object.keys(hook.conditions).length > 0
+                  ? JSON.stringify(hook.conditions)
+                  : t("hookDetail.everyEvent"),
+            },
             { label: t("hookDetail.sendsTo"), value: hook.recipient },
             {
               label: t("hookDetail.through"),

@@ -43,7 +43,7 @@ function watchHookEvent(event: "list.started" | "list.marked_done"): string {
   const template = database.hooks[0];
   if (template === undefined) throw new Error("Missing hook fixture");
   const id = `test-${event}`;
-  database.hooks.push({ ...template, id, events: [event], filter: "", batch: null });
+  database.hooks.push({ ...template, id, events: [event], conditions: {}, batch: null });
   return id;
 }
 

@@ -1,8 +1,14 @@
 // Hooks' HTTP contract: subscriptions, channel-backed delivery and public previews
 // (STATUS "Hooks"; plugins.md §4.12; permissions.md §3).
 
+import { watchlistSchema } from "@vera/domain/entities";
 import { hookEventCodes } from "@vera/domain/events";
 import { z } from "zod";
+
+import { parseDocumentSearchParams, toDocumentSearchParams } from "./documents";
+import { parseListSearchParams, toListSearchParams } from "./lists";
+import { parseRequestSearchParams, toRequestSearchParams } from "./requests";
+import { parseRunSearchParams, toRunSearchParams } from "./tasks";
 
 const id = z.string().min(1);
 
@@ -109,6 +115,31 @@ export function hookGroupOfEvent(event: HookEvent): (typeof hookGroups)[number] 
   return "Documents";
 }
 
+// HOOK-condition: the page listing the event's subject owns its condition.
+export function subjectKindOfEvent(event: HookEvent): HookSubjectKind {
+  if (event.startsWith("request.")) return "requests";
+  if (event.startsWith("list.")) return "lists";
+  if (event.startsWith("run.")) return "tasks";
+  return "documents";
+}
+
+const conditionParsers = {
+  requests: (params: URLSearchParams) => toRequestSearchParams(parseRequestSearchParams(params)),
+  documents: (params: URLSearchParams) => toDocumentSearchParams(parseDocumentSearchParams(params)),
+  lists: (params: URLSearchParams) => toListSearchParams(parseListSearchParams(params)),
+  tasks: (params: URLSearchParams) => toRunSearchParams(parseRunSearchParams(params)),
+};
+
+export type HookSubjectKind = keyof typeof conditionParsers;
+
+const conditionSchema = watchlistSchema.shape.filter;
+export const hookConditionsSchema = z.strictObject({
+  requests: conditionSchema.optional(),
+  documents: conditionSchema.optional(),
+  lists: conditionSchema.optional(),
+  tasks: conditionSchema.optional(),
+});
+
 export const hookInterfaceSchema = z.enum(["Email", "Chat", "Webhook", "File"]);
 
 export const hookChannelSchema = z.object({
@@ -136,28 +167,63 @@ export const hookBatchSchema = z
     path: ["maxMinutes"],
   });
 
-export const hookDraftSchema = z.object({
-  name: z.string().trim().min(1),
-  events: z
-    .array(hookEventSchema)
-    .min(1)
-    .refine((events) => new Set(events).size === events.length, {
-      message: "Pick each event once",
-    }),
-  filter: z.string().trim(),
-  channelId: id,
-  recipient: z.string().trim().min(1),
-  message: z.string().trim(),
-  batch: hookBatchSchema.nullable(),
-  retry: hookRetrySchema,
-  recipientPreference: z
-    .object({
-      label: z.string().trim().min(1),
-      defaultEnabled: z.boolean(),
-    })
-    .nullable()
-    .optional(),
-});
+export const hookDraftSchema = z
+  .object({
+    name: z.string().trim().min(1),
+    events: z
+      .array(hookEventSchema)
+      .min(1)
+      .refine((events) => new Set(events).size === events.length, {
+        message: "Pick each event once",
+      }),
+    conditions: hookConditionsSchema,
+    channelId: id,
+    recipient: z.string().trim().min(1),
+    message: z.string().trim(),
+    batch: hookBatchSchema.nullable(),
+    retry: hookRetrySchema,
+    recipientPreference: z
+      .object({
+        label: z.string().trim().min(1),
+        defaultEnabled: z.boolean(),
+      })
+      .nullable()
+      .optional(),
+  })
+  .superRefine((draft, ctx) => {
+    const kinds = new Set(draft.events.map(subjectKindOfEvent));
+    for (const [kind, filter] of Object.entries(draft.conditions)) {
+      if (filter === undefined) continue;
+      const subjectKind = kind as HookSubjectKind;
+      if (!kinds.has(subjectKind)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["conditions", kind],
+          message: "Pick an event for this page before adding its condition",
+          params: { code: "hook.condition_kind" },
+        });
+        continue;
+      }
+      // Page parsers tolerate stale links. Conditions must not silently lose a value.
+      const parse = conditionParsers[subjectKind];
+      const canonical = parse(new URLSearchParams(filter));
+      const normalize = (value: string) =>
+        [...new Set(value.split(",").map((part) => part.trim()))].sort().join(",");
+      if (
+        Object.entries(filter).some(([key, value]) => {
+          const parsed = canonical.get(key);
+          return parsed === null || normalize(parsed) !== normalize(value);
+        })
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["conditions", kind],
+          message: "Use valid filter values for this page",
+          params: { code: "hook.condition_invalid" },
+        });
+      }
+    }
+  });
 
 export type HookDraft = z.infer<typeof hookDraftSchema>;
 
@@ -192,7 +258,7 @@ export const hookAttemptSchema = z.object({
 
 export type HookAttempt = z.infer<typeof hookAttemptSchema>;
 
-export const hookSchema = hookDraftSchema.extend({
+export const hookSchema = hookDraftSchema.safeExtend({
   id,
   state: z.enum(["active", "paused"]),
   createdBy: id,

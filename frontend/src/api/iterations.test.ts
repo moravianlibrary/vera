@@ -209,7 +209,7 @@ describe("setting where it is available", () => {
         id,
         name: `Link act test ${index}`,
         events: [event],
-        filter: "",
+        conditions: {},
       };
     });
     const logStart = database.statusLog.length;

@@ -684,6 +684,7 @@ export interface FilterBarProps<Query> {
   definition: ViewDefinition<Query>;
   query: Query;
   facets: Facets | undefined;          // counts per value, from the first slice
+  offersEveryValue?: boolean;         // hook editors offer all values without facets; pages keep the default
   onQueryChange: (query: Query) => void;
   searchPlaceholder: string;
   // Toggles that are not fields, e.g. Documents' "Mine".

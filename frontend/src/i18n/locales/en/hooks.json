@@ -113,7 +113,6 @@
   "hookEditor.group.Lists": "Lists",
   "hookEditor.group.Tasks": "Tasks",
   "hookEditor.pickEvent": "Pick at least one event",
-  "hookEditor.filterHint": "Leave empty for every event. Supported: category under Periodicals.",
   "hookEditor.disabled": "disabled",
   "hookEditor.channelsInPlugins": "Delivery channels are configured in Plugins.",
   "hookEditor.hookEmail": "Hook email",

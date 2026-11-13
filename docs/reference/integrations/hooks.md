@@ -46,8 +46,8 @@ kind, in that page's URL form, edited with its filter chips, as a watchlist is
 ([UI-filters](../ui/pages.md#ui-filters)). An event is taken when its subject matches the condition for its
 kind; a kind with no condition takes every event of the kinds the hook chose.
 
-> **Open — [L33](../../ledger.md#l33-hook-events).** Conditions are still free text, and the mock
-> and the backend accept only two phrases.
+> **Open — [L33](../../ledger.md#l33-hook-events).** The mock and the editor hold the typed condition;
+> the backend follows (L33b).
 
 #### HOOK-recipient
 

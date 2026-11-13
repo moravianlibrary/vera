@@ -53,7 +53,7 @@ const refusalOf = async (request: Promise<unknown>) => {
 const draft: HookDraft = {
   name: "A new hook",
   events: ["run.failed"],
-  filter: "",
+  conditions: {},
   channelId: "pi18",
   recipient: "#digitalizace",
   message: "{task} failed: {error}",

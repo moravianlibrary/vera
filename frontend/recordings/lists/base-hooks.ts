@@ -16,7 +16,7 @@ const read = (as: (typeof profiles)[number]) => ({
 const draft = {
   name: "Recording hook",
   events: ["run.failed"],
-  filter: "",
+  conditions: {},
   channelId: "pi18",
   recipient: "#digitalizace",
   message: "{task} failed: {error}",
@@ -30,7 +30,7 @@ const refusalDrafts = [
     ...draft,
     recipientPreference: { label: "Recording hook", defaultEnabled: true },
   },
-  { ...draft, filter: "an unsupported condition" },
+  { ...draft, conditions: { tasks: { state: "invalid" } } },
 ];
 const hookDraftPaths = [
   ["POST", "/api/hooks"],
@@ -43,6 +43,33 @@ export default {
   moment: "2026-06-25T08:40:00.000Z",
   mask: "decisions",
   scenarios: [
+    {
+      name: "typed-subject-conditions",
+      calls: [
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/hooks",
+          requestBody: {
+            ...draft,
+            events: ["iteration.published"],
+            conditions: { documents: { category: "c2" } },
+          },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/hooks",
+          requestBody: {
+            ...draft,
+            events: ["request.created"],
+            conditions: { lists: { state: "Planned" } },
+          },
+          compare: "body",
+        },
+      ],
+    },
     { name: "reads", calls: profiles.map(read) },
     {
       name: "admin-hook-lifecycle-and-delivery-actions",

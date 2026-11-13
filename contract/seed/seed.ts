@@ -1,6 +1,6 @@
 // The complete on-disk seed format, shared by the engine and the backend loader.
 
-import { hookRetrySchema } from "@vera/contract/hooks";
+import { hookConditionsSchema, hookRetrySchema } from "@vera/contract/hooks";
 import { intentionRowSchema } from "@vera/contract/intentions";
 import { mixTreeSchema } from "@vera/contract/mixes";
 import { uploadReadingSchema } from "@vera/contract/plugins";
@@ -179,7 +179,7 @@ const seedCollections = z.strictObject({
         id,
         name: z.string(),
         event: z.string(),
-        filter: z.string(),
+        conditions: hookConditionsSchema,
         channelId: id,
         recipient: z.string(),
         message: z.string(),

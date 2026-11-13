@@ -41,7 +41,14 @@ export function problemResponse({ status, message, code }: Refusal, errors?: Fie
 // beside it.
 export function invalidResponse(error: z.ZodError) {
   return problemResponse(
-    { status: 422, message: error.issues[0]?.message ?? "Not accepted" },
+    {
+      status: 422,
+      message: error.issues[0]?.message ?? "Not accepted",
+      ...(error.issues[0]?.code === "custom" &&
+      ["hook.condition_kind", "hook.condition_invalid"].includes(error.issues[0].params?.code)
+        ? { code: error.issues[0].params?.code }
+        : {}),
+    },
     error.issues.map((issue) => ({
       pointer:
         issue.path.length === 0

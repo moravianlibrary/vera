@@ -1,5 +1,11 @@
 import { describe, expect, it } from "bun:test";
-import { hookDraftSchema, hookEventSchema, hookGroupOfEvent, hookGroups } from "./hooks";
+import {
+  hookDraftSchema,
+  hookEventSchema,
+  hookGroupOfEvent,
+  hookGroups,
+  subjectKindOfEvent,
+} from "./hooks";
 
 const rows = [
   ["Requests", ["request.created", "request.approved", "request.declined", "request.held"]],
@@ -64,10 +70,57 @@ describe("hook event contract", () => {
     expect([...hookGroups]).toEqual(rows.map(([group]) => group));
   });
 
+  it("maps every hookable event to its subject page", () => {
+    for (const [group, codes] of rows) {
+      const kind =
+        group === "Requests"
+          ? "requests"
+          : group === "Lists"
+            ? "lists"
+            : group === "Tasks"
+              ? "tasks"
+              : "documents";
+      for (const code of codes) expect(subjectKindOfEvent(code)).toBe(kind);
+    }
+  });
+
+  it("refuses conditions for unpicked kinds and malformed page filters", () => {
+    const draft = {
+      name: "hook",
+      events: ["iteration.published"],
+      conditions: {},
+      channelId: "channel",
+      recipient: "someone",
+      message: "",
+      batch: null,
+      retry: { attempts: 1, backoff: "fixed" },
+    };
+    expect(
+      hookDraftSchema.safeParse({ ...draft, conditions: { documents: { category: "c2" } } })
+        .success,
+    ).toBe(true);
+    expect(
+      hookDraftSchema.safeParse({ ...draft, conditions: { documents: undefined } }).success,
+    ).toBe(true);
+    for (const [conditions, code] of [
+      [{ lists: {} }, "hook.condition_kind"],
+      [{ documents: { progress: "unknown" } }, "hook.condition_invalid"],
+      [{ documents: { pages: "bad" } }, "hook.condition_invalid"],
+      [{ documents: { unknown: "value" } }, "hook.condition_invalid"],
+    ] as const) {
+      const result = hookDraftSchema.safeParse({ ...draft, conditions });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const issue = result.error.issues[0];
+        expect(issue?.code === "custom" ? issue.params?.code : null).toBe(code);
+      }
+    }
+  });
+
   it("requires at least one distinct subscription event", () => {
     const draft = {
       name: "hook",
-      filter: "",
+      conditions: {},
       channelId: "channel",
       recipient: "someone",
       message: "",

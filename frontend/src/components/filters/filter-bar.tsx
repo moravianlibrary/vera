@@ -51,6 +51,8 @@ interface FilterBarProps<Query extends FilterableQuery> {
   query: Query;
   // From the list's first slice; undefined until it answers.
   facets: Facets | undefined;
+  // Condition editors offer values even before any record matches.
+  offersEveryValue?: boolean;
   onQueryChange: (query: Query) => void;
   // Already translated by the caller.
   searchLabel: string;
@@ -67,6 +69,7 @@ export function FilterBar<Query extends FilterableQuery>({
   fields,
   query,
   facets,
+  offersEveryValue = false,
   onQueryChange,
   searchLabel,
   searchPlaceholder,
@@ -92,7 +95,9 @@ export function FilterBar<Query extends FilterableQuery>({
   // Whoever builds system watchlists is offered every value, matched or not
   // (WATCH-personal-system).
   const { data: session } = useSessionQuery();
-  const offersEvery = session !== undefined && hasPermission(session, "watchlist.manage_system");
+  const offersEvery =
+    offersEveryValue ||
+    (session !== undefined && hasPermission(session, "watchlist.manage_system"));
   const everyReference = useReferenceValues(offersEvery ? referenceKinds : []);
 
   const filterFieldOf = ({ key, label, field }: ListFieldDefinition<Query>): FilterField => {
@@ -121,7 +126,7 @@ export function FilterBar<Query extends FilterableQuery>({
       options: optionsOf(
         counts,
         selected,
-        (value) => field.labels[value] ?? value,
+        (value) => (field.labels[value] === undefined ? value : t(field.labels[value])),
         offersEvery ? field.values : [],
       ).toSorted(byOrderOf(field.values)),
       selected,

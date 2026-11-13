@@ -12,17 +12,19 @@ import type {
   HookPreview,
   HookTestResult,
 } from "@vera/contract/hooks";
-import { hookEventSchema } from "@vera/contract/hooks";
+import { hookDraftSchema, hookEventSchema, subjectKindOfEvent } from "@vera/contract/hooks";
 import type { Session } from "@vera/domain/entities";
 import { retryAtOf, sendAtOf } from "@vera/domain/hooks";
 import { primaryLinkOf } from "@vera/domain/iterations";
-import { hasPermission } from "@vera/domain/permissions";
+import { hasPermission, permissionKeys } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { issueNotificationToken } from "@/mocks/notification-tokens";
 import { implementationOf, kindOf, liveInstances } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
 import { userSettingsOf } from "@/mocks/user-settings";
+
+import { matchingIdsOf } from "@/mocks/watchlists";
 
 const retentionDays = 30;
 const forbidden: Refusal = { status: 403, message: "You may not configure hooks" };
@@ -73,14 +75,13 @@ function channelRefusal(draft: HookDraft): Refusal | null {
     };
   }
 
-  // TODO(rrandiak): define a typed condition builder for hook subscriptions.
-  // The accepted demo supplies only these two phrases; an arbitrary phrase
-  // cannot be executed safely or predictably by the mock server.
-  if (draft.filter !== "" && draft.filter !== "category under Periodicals") {
+  const parsed = hookDraftSchema.safeParse(draft);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
     return {
       status: 422,
-      code: "hook.filter_unsupported",
-      message: "This event condition is not supported yet",
+      code: issue?.code === "custom" ? issue.params?.code : "invalid",
+      message: issue?.message ?? "Use valid hook conditions",
     };
   }
 
@@ -515,21 +516,25 @@ export function sendTest(session: Session, draft: HookDraft): Outcome<HookTestRe
 
 // Other mock resources call this when they record a public event. A paused hook
 // ignores it; batching merges only the same hook and (if configured) recipient.
-export interface HookEventContext {
-  readonly categoryPath?: readonly string[];
-  readonly decision?: "Approved" | "Denied" | "Other";
-}
-
-function matchesFilter(hook: Hook, context: HookEventContext): boolean {
-  if (hook.filter === "") {
-    return true;
-  }
-
-  if (hook.filter === "category under Periodicals") {
-    return context.categoryPath?.includes("Periodicals") ?? false;
-  }
-
-  return false;
+function matchesCondition(hook: Hook, event: HookEvent, subject: string): boolean {
+  const kind = subjectKindOfEvent(event);
+  const filter = hook.conditions[kind];
+  if (filter === undefined || Object.keys(filter).length === 0) return true;
+  const documentId =
+    kind === "documents" || kind === "requests"
+      ? (database.iterations.find((iteration) => iteration.id === subject)?.documentId ??
+        database.requests.find((request) => request.id === subject)?.documentId ??
+        subject)
+      : subject;
+  // HOOK-condition: hooks see every record, independently of the act's caller.
+  const session: Session = {
+    user: database.users[0],
+    roleIds: [],
+    groupIds: [],
+    custodyCategoryIds: [],
+    grants: permissionKeys.map((permission) => ({ permission, scope: "any" })),
+  };
+  return matchingIdsOf(session, { view: kind, filter }).includes(documentId);
 }
 
 export function recordHookEvent(
@@ -537,7 +542,6 @@ export function recordHookEvent(
   subject: string,
   recipient: string,
   publicText: string,
-  context: HookEventContext = {},
   at = mockNow(),
 ): void {
   if (!hookEventSchema.safeParse(event).success) {
@@ -548,7 +552,7 @@ export function recordHookEvent(
     (candidate) =>
       candidate.events.includes(event) &&
       candidate.state === "active" &&
-      matchesFilter(candidate, context),
+      matchesCondition(candidate, event, subject),
   )) {
     const batch = hook.batch;
     const target = recipient || hook.recipient;

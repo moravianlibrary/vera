@@ -2,7 +2,6 @@
 // and choose a primary from the set; a Publication detector only adds as its agent, never twice
 // the same address.
 
-import { categoryPathOf } from "@vera/domain/categories";
 import type { Actor, Iteration, PublicationLink } from "@vera/domain/entities";
 import { database } from "@/mocks/database";
 import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
@@ -79,11 +78,7 @@ function announce(
       : hook === "iteration.link_added"
         ? `${iteration.id} has a new link at ${link}`
         : `${iteration.id}: its links changed`;
-  recordHookEvent(hook, iteration.id, "", publicText, {
-    categoryPath: categoryPathOf(database.categories, iteration.categoryId).map(
-      (category) => category.name,
-    ),
-  });
+  recordHookEvent(hook, iteration.id, "", publicText);
 }
 
 function storedLink(
