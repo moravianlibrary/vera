@@ -150,7 +150,7 @@ class PropertyEntryTests {
     void titlePermissionReachesTheHandEntryRuleAsInPropertyApprovalRecording() throws Exception {
         String cookie = session("u3");
         Map<String, Object> role = new java.util.LinkedHashMap<>();
-        role.put("name", "Catalog title editor");
+        role.put("names", Map.of("en", "Catalog title editor"));
         role.put("description", "May edit catalog-sourced properties.");
         role.put("grants", List.of(Map.of("permission", "access.read", "scope", "any"),
                         Map.of("permission", "access.manage", "scope", "any"),

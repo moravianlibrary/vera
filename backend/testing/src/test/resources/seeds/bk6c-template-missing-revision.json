@@ -6,6 +6,7 @@
       {
         "id": "t1",
         "description": "",
+        "namePatterns": { "cs": "Měsíční výstup — {period}", "en": "Monthly output — {period}" },
         "namePattern": "Monthly output — {period}",
         "every": "month",
         "funding": {

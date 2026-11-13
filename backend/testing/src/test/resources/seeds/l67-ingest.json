@@ -6,6 +6,7 @@
       {
         "id": "pi6",
         "name": "Periodicals model",
+        "names": { "cs": "Model periodik", "en": "Periodicals model" },
         "implementationId": "pt4",
         "configuration": {
           "model": "periodical-v3",
@@ -26,6 +27,7 @@
       {
         "id": "pi7",
         "name": "Monographs model",
+        "names": { "cs": "Model monografií", "en": "Monographs model" },
         "implementationId": "pt4",
         "configuration": {
           "model": "monograph-v1",

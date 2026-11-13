@@ -29,9 +29,9 @@ class SeedExtensionTests {
                   "collections": {
                     "users": [],
                     "roles": [
-                      {"id":"reader","name":"Reader","description":"reader","isShipped":true,
+                      {"id":"reader","name":"Reader","names":{"cs":"Čtenář","en":"Reader"},"description":"reader","isShipped":true,
                        "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1},
-                      {"id":"admin","name":"Admin","description":"admin","isShipped":true,
+                      {"id":"admin","name":"Admin","names":{"cs":"Správce","en":"Admin"},"description":"admin","isShipped":true,
                        "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
                     ],
                     "groups": [
@@ -57,7 +57,7 @@ class SeedExtensionTests {
                       {"id":"g2","name":"Other","description":"other","memberIds":[],"categoryIds":[]}
                     ],
                     "roles": [
-                      {"id":"admin","name":"Changed Admin","description":"admin","isShipped":true,
+                      {"id":"admin","name":"Changed Admin","names":{"cs":"Změněný správce","en":"Changed Admin"},"description":"admin","isShipped":true,
                        "grants":[],"proposalBatchLimit":1,"proposalDailyLimit":1}
                     ]
                   }

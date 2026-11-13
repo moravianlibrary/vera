@@ -135,11 +135,12 @@ class RoleGroupTests {
     @Test
     void roleNamesRoundTripAndConflictWithinOneLanguage() {
         Map<String, Object> draft = namesRoleDraft(Map.of("cs", "Čtenář navíc", "en", "Extra reader"));
-        JsonNode created = body(post("/api/access/roles", session("u3"), draft));
+        JsonNode created = body(request(HttpMethod.POST, "/api/access/roles", session("u3"), draft, "cs"));
         assertThat(created.path("name").asString()).isEqualTo("Čtenář navíc");
         assertThat(created.path("names").path("en").asString()).isEqualTo("Extra reader");
         Map<String, Object> conflict = namesRoleDraft(Map.of("cs", "Čtenář navíc", "en", "Different"));
-        assertProblem(post("/api/access/roles", session("u3"), conflict), 409, "access.name_taken");
+        assertProblem(request(HttpMethod.POST, "/api/access/roles", session("u3"), conflict, "cs"),
+                409, "access.name_taken");
     }
 
     @Test
@@ -282,6 +283,13 @@ class RoleGroupTests {
         if (!cookie.isEmpty()) request.header("Cookie", cookie);
         if (body == null) return request.exchange().expectBody(String.class).returnResult();
         return request.contentType(MediaType.APPLICATION_JSON).body(body).exchange()
+                .expectBody(String.class).returnResult();
+    }
+
+    private EntityExchangeResult<String> request(HttpMethod method, String uri, String cookie, Object body,
+            String language) {
+        return client.method(method).uri(uri).header("Cookie", cookie).header("Accept-Language", language)
+                .contentType(MediaType.APPLICATION_JSON).body(body).exchange()
                 .expectBody(String.class).returnResult();
     }
 
