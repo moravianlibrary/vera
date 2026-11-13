@@ -34,16 +34,20 @@ at once on *Start now…*, which also sends `list.started_early`. `list.marked_d
 ([LC-LIST-state](../lifecycles/list.md#lc-list-state)), so nothing would otherwise mark the
 moment the scanning operation should begin.
 
-> **Open — [L33](../../ledger.md#l33-hook-events).** The mock fires only
-> `iteration.published` and list events; the engine has to fire every event from the act or job
-> that causes it, and the [acts](../access/acts.md) need a column naming them.
+> **Open — [L33](../../ledger.md#l33-hook-events).** The backend fires every event from the act or
+> job that causes it; the [acts](../access/acts.md) still need a column naming them.
 
 #### HOOK-condition
 
-A condition narrows which events a hook takes (*category under Periodicals*).
+A condition narrows which events a hook takes (*category under Periodicals*). It is the filter of
+the page that lists the event's subject: Requests for request events, Documents for iteration and
+record events, Lists for list events, Tasks for run events. A hook holds at most one per subject
+kind, in that page's URL form, edited with its filter chips, as a watchlist is
+([UI-filters](../ui/pages.md#ui-filters)). An event is taken when its subject matches the condition for its
+kind; a kind with no condition takes every event of the kinds the hook chose.
 
-> **Open — [L33](../../ledger.md#l33-hook-events).** Conditions are free text, and the mock
-> accepts only two phrases. They need a typed condition builder.
+> **Open — [L33](../../ledger.md#l33-hook-events).** Conditions are still free text, and the mock
+> and the backend accept only two phrases.
 
 #### HOOK-recipient
 

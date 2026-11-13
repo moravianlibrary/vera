@@ -26,5 +26,5 @@ notice, a hook's `link`. Every link shows on the record and goes in a hook's `li
 **Rules.** [LC-ITER-published](../reference/lifecycles/iteration.md#lc-iter-published),
 [LC-ITER-links](../reference/lifecycles/iteration.md#lc-iter-links),
 [ACT-publish](../reference/access/acts.md#iterations),
-[HOOK-subject-data](../reference/integrations/hooks.md#hook-subject-data). Not built
-([L69](../ledger.md#l69-several-publication-links)).
+[HOOK-subject-data](../reference/integrations/hooks.md#hook-subject-data). Built
+([L69](../ledger.md#confirmed-as-built-2026-11-13)).

@@ -116,7 +116,8 @@ The rule cases (`domain/cases/*.json`: input, expected output, the rule ID) are 
 tests, read by JUnit. The frontend's TypeScript rules must pass the same cases, so a rule changed
 in Java breaks the frontend's tests until TypeScript follows. The TypeScript engine is dropped
 once the backend serves all it serves, and the Java backend with its seeding takes its place;
-until then the cases hold both. Java code cites rule IDs as the engine does, and `make docs-check`
+until then the cases hold both. The Java seeding is also how a development or demo instance is
+set up (decided on 2026-11-13), not only the tests. Java code cites rule IDs as the engine does, and `make docs-check`
 reads `backend/` for cited IDs too.
 
 ### B4. PostgreSQL, with migrations
@@ -253,8 +254,8 @@ hash.
   flow with PKCE, ID token checks. One instance per provider (Keycloak, Google, Seznam), each
   configured on Plugins.
 - `LocalAccounts` checks passwords kept by VERA in `login` with Argon2id through its context; its
-  mail goes through the Delivery channel named by `mail_channel`. Removal of unverified sign-ups
-  waits for the B5 job.
+  mail goes through the Delivery channel named by `mail_channel`. Unverified sign-ups are
+  removed by a job (`SignUpExpiryJob`).
 - B1's “no Spring Security” stands: Java libraries are used inside VERA's own design (Nimbus
   for OIDC, `spring-security-crypto` for Argon2id, a servlet filter for the session cookie).
 - Writing acts are protected by `SameSite=Lax` and by refusing a body that is not

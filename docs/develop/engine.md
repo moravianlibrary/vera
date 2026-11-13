@@ -140,8 +140,7 @@ Steps 4 to 8 are not built in the engine
 backend's, judged by the mock's recordings:
 
 4. **Ingest and review:** the ingest job, validation and restriction fakes, Documents
-   Validations, the iteration acts (including resume, overrule and withdraw, which are not built
-   yet).
+   Validations, the iteration acts (resume, overrule and withdraw among them).
 5. **Lists and projects:** the pool, lists, Done, projects and their decisions.
    [from-ask-to-scan](../user-journeys/cross-role/from-ask-to-scan.md) passes here.
 6. **Planning:** categories, mixes, intentions, counting, generation, repeats.

@@ -83,5 +83,3 @@ address is held once.
 - **A Publication detector** only adds. It never removes or replaces a link a person set, and
   finding an address already held changes nothing.
 
-> **Open — [L69](../../ledger.md#l69-several-publication-links).** The frontend and mock hold the
-> set; the engine builds it with the iteration acts (step 4).

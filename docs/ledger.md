@@ -63,7 +63,10 @@ mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
 The backend fires every hookable code from the act or job that causes it, each with a test (built
 2026-11-12), the last two with [L78](#built-2026-11-12). Left: the typed condition builder, then the
-act matrix naming each act's event. → backend, then docs.
+act matrix naming each act's event. Decided on 2026-11-13: a condition is the filter of the page
+that lists the event's subject (Requests, Documents, Lists, Tasks), held per subject kind in the
+page URL's form and edited with that page's filter chips, as watchlists are; the free text goes.
+→ backend, then docs.
 
 ### L67: Recheck reads the catalog
 
@@ -75,18 +78,11 @@ shelf mark. The mock records the values the document already holds, with the rec
 place of the catalog adapter's earlier reading; the engine reads them from the adapter. Also
 decided on 2026-10-16: a changed value replaces the document's own field, as the catalog is the
 authority ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)), and the *Rechecked*
-entry names the earlier value. → engine.
-
-### L69: Several publication links
-
-Rules: [LC-ITER-links](reference/lifecycles/iteration.md#lc-iter-links),
-[the iteration acts](reference/access/acts.md#iterations),
-[HOOK-subject-data](reference/integrations/hooks.md#hook-subject-data).
-
-Decided on 2026-10-29 ([DEC-0014](decisions/DEC-0014-several-publication-links.md)). The
-frontend and mock hold the link set; the engine builds it with the iteration acts (step 4). The
-record shows every link, primary first; a list or table shows the primary one with a count of the
-others.
+entry names the earlier value. The backend's recheck does not read the adapter yet either: it
+only renews the reading's time, of instance `pi1` alone, and runs no property source. A recheck
+runs the document's *on record change* triggers, the property sources among them
+([PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change)), and the
+act's entry says `by: act`, not `catalog_change` (mock and backend). → backend.
 
 ### L70: Entry links
 
@@ -106,7 +102,7 @@ takes over Tlačítko digitalizovat. Needs:
 The portal does not matter (2026-10-31): each is an instance, its return origins in its
 configuration, and its `entry` reads what it sends
 ([PLG-api-entry](reference/integrations/plugin-api.md#plg-api-entry)). Old requests from the mini
-app are moved by hand, not imported. → engine, then frontend.
+app are moved by hand, not imported. → backend (with the mock), then frontend.
 
 ### L72: Observability
 
@@ -142,7 +138,9 @@ declarations carry `operations`, and ways in and search follow them, an instance
 switching search off. Type detection follows it in the mock (2026-10-31), with *Which type?* for
 a line several Identifier instances recognise. Not built: no instance has a cursor or a mirror,
 so the drawer's mirror line and *Reset* wait for the backend (7 of
-[what comes first](develop/backend.md#what-comes-first) is done).
+[what comes first](develop/backend.md#what-comes-first) is done). The backend keeps cursors and
+mirrors; the contract has neither the mirror's freshness nor *Reset*. Decided on 2026-11-13:
+*Reset* needs `plugin.configure`. → backend (with the contract and mock), then frontend.
 
 ### L75: Names in each language
 
@@ -153,7 +151,9 @@ Every record holds one `name` string, and the shipped watchlists, properties, in
 are named in English. Needs: `names` by language in the contract and the domain for watchlists,
 properties and enum values, plugin instances, roles, custodies, categories, mixes, schedules and
 repeats; the seeds in both languages; search and uniqueness by language; then the client shows the
-viewer's language and its editors gain *Add language*. → engine (contract and seed), then
+viewer's language and its editors gain *Add language*. Decided on 2026-11-13: each record keeps
+`name`, which the server gives in the viewer's language (or the other one), and adds `names` by
+language, which editors read and writes send. → backend (contract, mock and seed), then
 frontend.
 
 ### L77: The signer of a plugin version
@@ -168,6 +168,12 @@ the upload reading and on each installed version in the contract, the mock's fix
 Plugins drawer. → frontend, then backend.
 
 ## Done
+
+### Confirmed as built, 2026-11-13
+
+- **L69:** the backend holds the link set with the iteration acts (step 4 of
+  [the order of work](develop/backend.md#order-of-work)), primary first, as the frontend and the
+  mock do ([LC-ITER-links](reference/lifecycles/iteration.md#lc-iter-links)).
 
 ### Built, 2026-11-12
 
