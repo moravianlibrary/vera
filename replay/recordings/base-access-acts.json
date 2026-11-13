@@ -353,6 +353,10 @@
                   }
                 ],
                 "name": "reader",
+                "names": {
+                  "cs": "Čtenář",
+                  "en": "reader"
+                },
                 "isShipped": true
               },
               {
@@ -379,6 +383,10 @@
                   }
                 ],
                 "name": "staff",
+                "names": {
+                  "cs": "Zaměstnanec",
+                  "en": "staff"
+                },
                 "isShipped": true
               },
               {
@@ -429,6 +437,10 @@
                   }
                 ],
                 "name": "project-user",
+                "names": {
+                  "cs": "Projektový pracovník",
+                  "en": "project-user"
+                },
                 "isShipped": true
               },
               {
@@ -547,6 +559,10 @@
                   }
                 ],
                 "name": "curator",
+                "names": {
+                  "cs": "Kurátor",
+                  "en": "curator"
+                },
                 "isShipped": true
               },
               {
@@ -705,6 +721,10 @@
                   }
                 ],
                 "name": "dig-curator",
+                "names": {
+                  "cs": "Digitalizační kurátor",
+                  "en": "dig-curator"
+                },
                 "isShipped": true
               },
               {
@@ -931,6 +951,10 @@
                   }
                 ],
                 "name": "admin",
+                "names": {
+                  "cs": "Správce",
+                  "en": "admin"
+                },
                 "isShipped": true
               }
             ],
@@ -971,6 +995,10 @@
               {
                 "id": "pc0",
                 "name": "Fallback",
+                "names": {
+                  "cs": "Výchozí",
+                  "en": "Fallback"
+                },
                 "description": "What no Custody rule placed.",
                 "isFallback": true,
                 "memberIds": [
@@ -983,6 +1011,10 @@
               {
                 "id": "pc1",
                 "name": "Periodicals",
+                "names": {
+                  "cs": "Periodika",
+                  "en": "Periodicals"
+                },
                 "description": "Serials and newspapers, by material type.",
                 "isFallback": false,
                 "memberIds": [
@@ -999,6 +1031,10 @@
               {
                 "id": "pc2",
                 "name": "19th-century prints",
+                "names": {
+                  "cs": "Tisky 19. století",
+                  "en": "19th-century prints"
+                },
                 "description": "Anything published 1800–1899, from field 260.",
                 "isFallback": false,
                 "memberIds": [
@@ -1013,6 +1049,10 @@
               {
                 "id": "pc3",
                 "name": "Moravica",
+                "names": {
+                  "cs": "Moravica",
+                  "en": "Moravica"
+                },
                 "description": "Proposals into the Moravica project.",
                 "isFallback": false,
                 "memberIds": [
@@ -1969,7 +2009,11 @@
           "status": 200,
           "body": {
             "id": "maps-curator",
-            "name": "maps-curator",
+            "name": "Maps Curator",
+            "names": {
+              "cs": "Kurátor map",
+              "en": "Maps Curator"
+            },
             "description": "Maps only.",
             "isShipped": false,
             "grants": [],
@@ -1977,7 +2021,10 @@
             "proposalDailyLimit": 300
           },
           "requestBody": {
-            "name": "Maps Curator",
+            "names": {
+              "cs": "Kurátor map",
+              "en": "Maps Curator"
+            },
             "description": "Maps only.",
             "grants": [],
             "proposalBatchLimit": 10,
@@ -1991,7 +2038,11 @@
           "status": 200,
           "body": {
             "id": "maps-curator",
-            "name": "maps-curator",
+            "name": "Maps Curator",
+            "names": {
+              "cs": "Kurátor map",
+              "en": "Maps Curator"
+            },
             "description": "Updated.",
             "isShipped": false,
             "grants": [],
@@ -1999,7 +2050,10 @@
             "proposalDailyLimit": 300
           },
           "requestBody": {
-            "name": "Maps Curator",
+            "names": {
+              "cs": "Kurátor map",
+              "en": "Maps Curator"
+            },
             "description": "Updated.",
             "grants": [],
             "proposalBatchLimit": 10,
@@ -2013,7 +2067,10 @@
           "status": 422,
           "code": "role.requires",
           "requestBody": {
-            "name": "Maps Specialist",
+            "names": {
+              "cs": "Specialista map",
+              "en": "Maps Specialist"
+            },
             "description": "",
             "grants": [
               {
@@ -2036,7 +2093,10 @@
           "status": 409,
           "code": "access.name_taken",
           "requestBody": {
-            "name": "Reader",
+            "names": {
+              "cs": "Čtenář",
+              "en": "Reader"
+            },
             "description": "",
             "grants": [],
             "proposalBatchLimit": 10,
@@ -2050,7 +2110,10 @@
           "status": 422,
           "code": "role.requires",
           "requestBody": {
-            "name": "Curator",
+            "names": {
+              "cs": "Kurátor",
+              "en": "Curator"
+            },
             "description": "",
             "grants": [
               {
@@ -2079,7 +2142,10 @@
           "status": 409,
           "code": "access.name_taken",
           "requestBody": {
-            "name": "Reader",
+            "names": {
+              "cs": "Čtenář",
+              "en": "Reader"
+            },
             "description": "",
             "grants": [],
             "proposalBatchLimit": 10,
@@ -2093,7 +2159,10 @@
           "status": 409,
           "code": "access.last_manager",
           "requestBody": {
-            "name": "Administrators",
+            "names": {
+              "cs": "Správci",
+              "en": "Administrators"
+            },
             "description": "",
             "grants": [],
             "proposalBatchLimit": 10,
@@ -2456,6 +2525,10 @@
                   }
                 ],
                 "name": "reader",
+                "names": {
+                  "cs": "Čtenář",
+                  "en": "reader"
+                },
                 "isShipped": true
               },
               {
@@ -2482,6 +2555,10 @@
                   }
                 ],
                 "name": "staff",
+                "names": {
+                  "cs": "Zaměstnanec",
+                  "en": "staff"
+                },
                 "isShipped": true
               },
               {
@@ -2532,6 +2609,10 @@
                   }
                 ],
                 "name": "project-user",
+                "names": {
+                  "cs": "Projektový pracovník",
+                  "en": "project-user"
+                },
                 "isShipped": true
               },
               {
@@ -2650,6 +2731,10 @@
                   }
                 ],
                 "name": "curator",
+                "names": {
+                  "cs": "Kurátor",
+                  "en": "curator"
+                },
                 "isShipped": true
               },
               {
@@ -2808,6 +2893,10 @@
                   }
                 ],
                 "name": "dig-curator",
+                "names": {
+                  "cs": "Digitalizační kurátor",
+                  "en": "dig-curator"
+                },
                 "isShipped": true
               },
               {
@@ -3034,6 +3123,10 @@
                   }
                 ],
                 "name": "admin",
+                "names": {
+                  "cs": "Správce",
+                  "en": "admin"
+                },
                 "isShipped": true
               }
             ],
@@ -3074,6 +3167,10 @@
               {
                 "id": "pc0",
                 "name": "Fallback",
+                "names": {
+                  "cs": "Výchozí",
+                  "en": "Fallback"
+                },
                 "description": "What no Custody rule placed.",
                 "isFallback": true,
                 "memberIds": [
@@ -3086,6 +3183,10 @@
               {
                 "id": "pc1",
                 "name": "Periodicals",
+                "names": {
+                  "cs": "Periodika",
+                  "en": "Periodicals"
+                },
                 "description": "Serials and newspapers, by material type.",
                 "isFallback": false,
                 "memberIds": [
@@ -3102,6 +3203,10 @@
               {
                 "id": "pc2",
                 "name": "19th-century prints",
+                "names": {
+                  "cs": "Tisky 19. století",
+                  "en": "19th-century prints"
+                },
                 "description": "Anything published 1800–1899, from field 260.",
                 "isFallback": false,
                 "memberIds": [
@@ -3116,6 +3221,10 @@
               {
                 "id": "pc3",
                 "name": "Moravica",
+                "names": {
+                  "cs": "Moravica",
+                  "en": "Moravica"
+                },
                 "description": "Proposals into the Moravica project.",
                 "isFallback": false,
                 "memberIds": [
@@ -4528,6 +4637,10 @@
                   }
                 ],
                 "name": "reader",
+                "names": {
+                  "cs": "Čtenář",
+                  "en": "reader"
+                },
                 "isShipped": true
               },
               {
@@ -4554,6 +4667,10 @@
                   }
                 ],
                 "name": "staff",
+                "names": {
+                  "cs": "Zaměstnanec",
+                  "en": "staff"
+                },
                 "isShipped": true
               },
               {
@@ -4604,6 +4721,10 @@
                   }
                 ],
                 "name": "project-user",
+                "names": {
+                  "cs": "Projektový pracovník",
+                  "en": "project-user"
+                },
                 "isShipped": true
               },
               {
@@ -4722,6 +4843,10 @@
                   }
                 ],
                 "name": "curator",
+                "names": {
+                  "cs": "Kurátor",
+                  "en": "curator"
+                },
                 "isShipped": true
               },
               {
@@ -4880,6 +5005,10 @@
                   }
                 ],
                 "name": "dig-curator",
+                "names": {
+                  "cs": "Digitalizační kurátor",
+                  "en": "dig-curator"
+                },
                 "isShipped": true
               },
               {
@@ -5106,6 +5235,10 @@
                   }
                 ],
                 "name": "admin",
+                "names": {
+                  "cs": "Správce",
+                  "en": "admin"
+                },
                 "isShipped": true
               }
             ],
@@ -5146,6 +5279,10 @@
               {
                 "id": "pc0",
                 "name": "Fallback",
+                "names": {
+                  "cs": "Výchozí",
+                  "en": "Fallback"
+                },
                 "description": "What no Custody rule placed.",
                 "isFallback": true,
                 "memberIds": [
@@ -5158,6 +5295,10 @@
               {
                 "id": "pc1",
                 "name": "Periodicals",
+                "names": {
+                  "cs": "Periodika",
+                  "en": "Periodicals"
+                },
                 "description": "Serials and newspapers, by material type.",
                 "isFallback": false,
                 "memberIds": [
@@ -5174,6 +5315,10 @@
               {
                 "id": "pc2",
                 "name": "19th-century prints",
+                "names": {
+                  "cs": "Tisky 19. století",
+                  "en": "19th-century prints"
+                },
                 "description": "Anything published 1800–1899, from field 260.",
                 "isFallback": false,
                 "memberIds": [
@@ -5188,6 +5333,10 @@
               {
                 "id": "pc3",
                 "name": "Moravica",
+                "names": {
+                  "cs": "Moravica",
+                  "en": "Moravica"
+                },
                 "description": "Proposals into the Moravica project.",
                 "isFallback": false,
                 "memberIds": [

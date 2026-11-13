@@ -9,6 +9,7 @@ import {
   identityLinkSchema,
   localAccountSchema,
   recordDraftSchema,
+  requestCustodyDraftSchema,
   roleDraftSchema,
   userGroupsSchema,
 } from "@vera/contract/access";
@@ -130,6 +131,7 @@ import {
 import { servedBatches } from "@vera/domain/batches";
 import type { Session } from "@vera/domain/entities";
 import { watchlistViewSchema } from "@vera/domain/entities";
+import { nameIn } from "@vera/domain/names";
 import { canOpenMyDocuments, hasPermission } from "@vera/domain/permissions";
 import { propertyDraftSchema } from "@vera/domain/properties";
 import type { JsonBodyType } from "msw";
@@ -373,6 +375,14 @@ const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
 export function createHandlers(profile: MockUserProfile) {
   const currentSession = (): Session => resolveSession(profile);
+  const languageOf = (request: Request): "cs" | "en" => {
+    const accepted = request.headers.get("Accept-Language")?.split(",") ?? [];
+    for (const language of accepted) {
+      const primary = language.trim().split("-")[0];
+      if (primary === "cs" || primary === "en") return primary;
+    }
+    return "cs";
+  };
   const signedOutKey = `vera.mock.signed-out.${profile}`;
 
   // An act on one record: its body parsed by the action's own schema, the outcome as a status.
@@ -414,6 +424,7 @@ export function createHandlers(profile: MockUserProfile) {
     path: string,
     schema: z.ZodType<Body>,
     act: (session: Session, id: string, body: Body) => Outcome<Value>,
+    localize?: (value: Value, request: Request) => Value,
   ) =>
     http[method](route(path), async ({ params, request }) => {
       const body = schema.safeParse(await request.json());
@@ -421,7 +432,12 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(body.error);
       }
 
-      return outcomeResponse(act(currentSession(), String(params.id ?? ""), body.data));
+      const outcome = act(currentSession(), String(params.id ?? ""), body.data);
+      return outcomeResponse(
+        "value" in outcome && localize !== undefined
+          ? { value: localize(outcome.value, request) }
+          : outcome,
+      );
     });
 
   const accessDelete = (path: string, act: (session: Session, id: string) => Outcome<null>) =>
@@ -851,17 +867,36 @@ export function createHandlers(profile: MockUserProfile) {
     http.post(route(`${apiRoutes.pluginUploads}/:id/install`), ({ params }) =>
       outcomeResponse(installUpload(currentSession(), String(params.id))),
     ),
-    http.get(route(apiRoutes.access), () => {
+    http.get(route(apiRoutes.access), ({ request }) => {
       if (!canReadAccess(currentSession())) {
         return problemResponse({ status: 403, message: "You may not read users and groups" });
       }
 
-      return HttpResponse.json(accessIndex());
+      const language = languageOf(request);
+      const index = accessIndex();
+      return HttpResponse.json({
+        ...index,
+        roles: index.roles.map((role) => ({ ...role, name: nameIn(role.names, language) })),
+        custodies: index.custodies.map((custody) => ({
+          ...custody,
+          name: nameIn(custody.names, language),
+        })),
+      });
     }),
-    accessWrite("post", apiRoutes.accessRoles, roleDraftSchema, (session, _id, draft) =>
-      createRole(session, draft),
+    accessWrite(
+      "post",
+      apiRoutes.accessRoles,
+      roleDraftSchema,
+      (session, _id, draft) => createRole(session, draft),
+      (role, request) => ({ ...role, name: nameIn(role.names, languageOf(request)) }),
     ),
-    accessWrite("put", `${apiRoutes.accessRoles}/:id`, roleDraftSchema, saveAccessRole),
+    accessWrite(
+      "put",
+      `${apiRoutes.accessRoles}/:id`,
+      roleDraftSchema,
+      saveAccessRole,
+      (role, request) => ({ ...role, name: nameIn(role.names, languageOf(request)) }),
+    ),
     http.get(route(`${apiRoutes.accessRoles}/:id/impact`), ({ params }) =>
       outcomeResponse(roleImpact(currentSession(), String(params.id))),
     ),
@@ -913,10 +948,20 @@ export function createHandlers(profile: MockUserProfile) {
       groupMembersSchema,
       setGroupMembers,
     ),
-    accessWrite("post", apiRoutes.accessCustodies, recordDraftSchema, (session, _id, draft) =>
-      createCustody(session, draft),
+    accessWrite(
+      "post",
+      apiRoutes.accessCustodies,
+      requestCustodyDraftSchema,
+      (session, _id, draft) => createCustody(session, draft),
+      (custody, request) => ({ ...custody, name: nameIn(custody.names, languageOf(request)) }),
     ),
-    accessWrite("put", `${apiRoutes.accessCustodies}/:id`, recordDraftSchema, saveCustody),
+    accessWrite(
+      "put",
+      `${apiRoutes.accessCustodies}/:id`,
+      requestCustodyDraftSchema,
+      saveCustody,
+      (custody, request) => ({ ...custody, name: nameIn(custody.names, languageOf(request)) }),
+    ),
     accessWrite(
       "put",
       `${apiRoutes.accessCustodies}/:id/members`,
@@ -1600,12 +1645,18 @@ export function createHandlers(profile: MockUserProfile) {
     // LC-REQ-checks-job: the engine control runs the mock's queued proposal checks on demand.
     http.post(route("/_engine/jobs/run"), () => HttpResponse.json(runProposalChecks())),
 
-    http.get(route(apiRoutes.requestCustodies), () => {
+    http.get(route(apiRoutes.requestCustodies), ({ request }) => {
       if (!canReadRequests(currentSession())) {
         return mayNotReadRequests();
       }
 
-      return HttpResponse.json(database.requestCustodies.map(publicCustodyOf));
+      const language = languageOf(request);
+      return HttpResponse.json(
+        database.requestCustodies.map((custody) => ({
+          ...publicCustodyOf(custody),
+          name: nameIn(custody.names, language),
+        })),
+      );
     }),
 
     http.get(route(apiRoutes.requests), ({ request }) => {
@@ -1891,8 +1942,14 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(watchlistReachOf(reach.data));
     }),
 
-    http.get(route(apiRoutes.roles), () =>
-      HttpResponse.json(database.roles.map(({ id, name }) => ({ id, name }))),
+    http.get(route(apiRoutes.roles), ({ request }) =>
+      HttpResponse.json(
+        database.roles.map((role) => ({
+          id: role.id,
+          names: role.names,
+          name: nameIn(role.names, languageOf(request)),
+        })),
+      ),
     ),
 
     http.patch(route(`${apiRoutes.watchlists}/:watchlistId`), async ({ params, request }) => {

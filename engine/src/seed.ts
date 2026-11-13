@@ -103,12 +103,13 @@ export function loadSeed(db: Database, seed: Seed): void {
   }
 
   const insertRole = db.query(
-    "INSERT INTO roles (id, name, description, is_shipped, grants, proposal_batch_limit, proposal_daily_limit) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO roles (id, name, names, description, is_shipped, grants, proposal_batch_limit, proposal_daily_limit) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
   );
   for (const role of roles) {
     insertRole.run(
       role.id,
       role.name,
+      JSON.stringify(role.names),
       role.description,
       role.isShipped ? 1 : 0,
       JSON.stringify(role.grants),
@@ -166,7 +167,7 @@ export function loadSeed(db: Database, seed: Seed): void {
   }
 
   const insertCustody = db.query(
-    "INSERT INTO request_custodies (id, name, description, is_fallback) VALUES (?, ?, ?, ?)",
+    "INSERT INTO request_custodies (id, name, names, description, is_fallback) VALUES (?, ?, ?, ?, ?)",
   );
   const insertCustodyMember = db.query(
     "INSERT INTO request_custody_members (custody_id, user_id) VALUES (?, ?)",
@@ -175,7 +176,13 @@ export function loadSeed(db: Database, seed: Seed): void {
     "INSERT INTO request_custody_groups (custody_id, group_id) VALUES (?, ?)",
   );
   for (const custody of seed.collections.requestCustodies ?? []) {
-    insertCustody.run(custody.id, custody.name, custody.description, custody.isFallback ? 1 : 0);
+    insertCustody.run(
+      custody.id,
+      custody.name,
+      JSON.stringify(custody.names),
+      custody.description,
+      custody.isFallback ? 1 : 0,
+    );
     for (const userId of custody.memberIds) insertCustodyMember.run(custody.id, userId);
     for (const groupId of custody.groupIds) insertCustodyGroup.run(custody.id, groupId);
   }

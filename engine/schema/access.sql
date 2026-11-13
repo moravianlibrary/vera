@@ -3,6 +3,7 @@
 CREATE TABLE request_custodies (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  names TEXT NOT NULL,
   description TEXT NOT NULL,
   is_fallback INTEGER NOT NULL CHECK (is_fallback IN (0, 1))
 );

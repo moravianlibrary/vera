@@ -20,6 +20,7 @@ import {
 import { categorySchema, watchlistSchema } from "@vera/domain/entities";
 import { grantSchema } from "@vera/domain/permissions";
 import { z } from "zod";
+import { namesSchema } from "./user-settings";
 
 export const accessProposalSchema = z.object({
   id: z.string(),
@@ -62,7 +63,7 @@ export type AccessIndex = z.infer<typeof accessIndexSchema>;
 const nameField = z.string().trim().min(1, "Give it a name");
 
 export const roleDraftSchema = z.object({
-  name: nameField,
+  names: namesSchema,
   description: z.string().trim(),
   grants: z.array(grantSchema),
   proposalBatchLimit: z.number().int().nonnegative().nullable(),
@@ -77,6 +78,13 @@ export const recordDraftSchema = z.object({
 });
 
 export type RecordDraft = z.infer<typeof recordDraftSchema>;
+
+export const requestCustodyDraftSchema = z.object({
+  names: namesSchema,
+  description: z.string().trim(),
+});
+
+export type CustodyDraft = z.infer<typeof requestCustodyDraftSchema>;
 
 export const handRolesSchema = z.object({ roleIds: z.array(z.string()) });
 

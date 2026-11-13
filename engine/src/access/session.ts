@@ -18,6 +18,7 @@ interface UserRow {
 interface RoleRow {
   id: string;
   name: string;
+  names: string;
   description: string;
   is_shipped: number;
   grants: string;
@@ -32,6 +33,7 @@ export function rolesOf(db: Database): Role[] {
     .map((row) => ({
       id: row.id,
       name: row.name,
+      names: JSON.parse(row.names),
       description: row.description,
       isShipped: row.is_shipped === 1,
       grants: JSON.parse(row.grants),

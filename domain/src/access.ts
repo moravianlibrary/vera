@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import { requestCustodySchema, userSchema } from "./entities";
+import { namesSchema } from "./names";
 import type { Grant, GrantScope, Permission } from "./permissions";
 import { catalogOrderOf, grantSchema } from "./permissions";
 
@@ -18,6 +19,7 @@ const timestamp = z.iso.datetime();
 export const roleSchema = z.object({
   id,
   name: z.string().min(1),
+  names: namesSchema,
   description: z.string(),
   // Came with VERA; editable all the same (decided 2026-09-26).
   isShipped: z.boolean(),

@@ -106,6 +106,8 @@ async function sendCall(
     body = JSON.stringify(call.requestBody);
   }
 
+  headers.set("Accept-Language", call.acceptLanguage ?? "en");
+
   return fetch(`${baseUrl}${call.path}`, { method: call.method, headers, body });
 }
 

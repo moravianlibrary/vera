@@ -128,6 +128,9 @@ viewer's language and its editors gain *Add language*. Decided on 2026-11-13: ea
 `name`, which the server gives in the viewer's language (or the other one), and adds `names` by
 language, which editors read and writes send. → backend (contract, mock and seed), then
 frontend.
+Built (2026-11-13, L75r): roles and request custodies now hold names in Czech and English; their
+reads resolve the request language, their edits send both names, and installation and base seeds
+include both. Categories and groups remain for their own sessions.
 
 ### L77: The signer of a plugin version
 

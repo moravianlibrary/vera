@@ -16676,24 +16676,40 @@
             {
               "id": "pc0",
               "name": "Fallback",
+              "names": {
+                "cs": "Výchozí",
+                "en": "Fallback"
+              },
               "description": "What no Custody rule placed.",
               "isFallback": true
             },
             {
               "id": "pc1",
               "name": "Periodicals",
+              "names": {
+                "cs": "Periodika",
+                "en": "Periodicals"
+              },
               "description": "Serials and newspapers, by material type.",
               "isFallback": false
             },
             {
               "id": "pc2",
               "name": "19th-century prints",
+              "names": {
+                "cs": "Tisky 19. století",
+                "en": "19th-century prints"
+              },
               "description": "Anything published 1800–1899, from field 260.",
               "isFallback": false
             },
             {
               "id": "pc3",
               "name": "Moravica",
+              "names": {
+                "cs": "Moravica",
+                "en": "Moravica"
+              },
               "description": "Proposals into the Moravica project.",
               "isFallback": false
             }
@@ -33218,24 +33234,40 @@
             {
               "id": "pc0",
               "name": "Fallback",
+              "names": {
+                "cs": "Výchozí",
+                "en": "Fallback"
+              },
               "description": "What no Custody rule placed.",
               "isFallback": true
             },
             {
               "id": "pc1",
               "name": "Periodicals",
+              "names": {
+                "cs": "Periodika",
+                "en": "Periodicals"
+              },
               "description": "Serials and newspapers, by material type.",
               "isFallback": false
             },
             {
               "id": "pc2",
               "name": "19th-century prints",
+              "names": {
+                "cs": "Tisky 19. století",
+                "en": "19th-century prints"
+              },
               "description": "Anything published 1800–1899, from field 260.",
               "isFallback": false
             },
             {
               "id": "pc3",
               "name": "Moravica",
+              "names": {
+                "cs": "Moravica",
+                "en": "Moravica"
+              },
               "description": "Proposals into the Moravica project.",
               "isFallback": false
             }
@@ -50326,24 +50358,40 @@
             {
               "id": "pc0",
               "name": "Fallback",
+              "names": {
+                "cs": "Výchozí",
+                "en": "Fallback"
+              },
               "description": "What no Custody rule placed.",
               "isFallback": true
             },
             {
               "id": "pc1",
               "name": "Periodicals",
+              "names": {
+                "cs": "Periodika",
+                "en": "Periodicals"
+              },
               "description": "Serials and newspapers, by material type.",
               "isFallback": false
             },
             {
               "id": "pc2",
               "name": "19th-century prints",
+              "names": {
+                "cs": "Tisky 19. století",
+                "en": "19th-century prints"
+              },
               "description": "Anything published 1800–1899, from field 260.",
               "isFallback": false
             },
             {
               "id": "pc3",
               "name": "Moravica",
+              "names": {
+                "cs": "Moravica",
+                "en": "Moravica"
+              },
               "description": "Proposals into the Moravica project.",
               "isFallback": false
             }

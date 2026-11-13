@@ -6,6 +6,7 @@
 
 import { z } from "zod";
 import { eventEntrySchema } from "./events";
+import { namesSchema } from "./names";
 import { grantSchema } from "./permissions";
 import { propertyConditionSchema, propertyValuesSchema } from "./properties";
 
@@ -61,6 +62,7 @@ export type Session = z.infer<typeof sessionSchema>;
 export const requestCustodySchema = z.object({
   id,
   name: z.string(),
+  names: namesSchema,
   description: z.string(),
   isFallback: z.boolean(),
 });

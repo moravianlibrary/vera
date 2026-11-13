@@ -11,7 +11,7 @@ export async function call(
   engine: Engine,
   method: string,
   path: string,
-  options: { as?: string; body?: unknown; form?: FormData } = {},
+  options: { as?: string; body?: unknown; form?: FormData; acceptLanguage?: "cs" | "en" } = {},
 ): Promise<Response> {
   const headers = new Headers();
   if (options.as !== undefined) {
@@ -30,6 +30,7 @@ export async function call(
   if (options.body !== undefined) {
     headers.set("Content-Type", "application/json");
   }
+  if (options.acceptLanguage !== undefined) headers.set("Accept-Language", options.acceptLanguage);
   return engine.fetch(
     new Request(`http://engine.test${path}`, {
       method,

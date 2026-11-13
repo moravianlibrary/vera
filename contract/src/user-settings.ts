@@ -4,7 +4,11 @@
 
 import { categoryTreeValues } from "@vera/domain/categories";
 import { watchlistViewSchema } from "@vera/domain/entities";
+import { nameIn, namesSchema } from "@vera/domain/names";
 import { z } from "zod";
+
+export type { Names } from "@vera/domain/names";
+export { nameIn, namesSchema };
 
 // The boards whose sections a person opens and closes (G-COMP-5).
 export const sectionBoards = ["projects", "intentions"] as const;
@@ -15,22 +19,6 @@ export type SectionBoard = (typeof sectionBoards)[number];
 export const languages = ["cs", "en"] as const;
 
 export type Language = (typeof languages)[number];
-
-export const namesSchema = z
-  .object({
-    cs: z.string().trim().min(1).optional(),
-    en: z.string().trim().min(1).optional(),
-  })
-  .refine(
-    (names) => names.cs !== undefined || names.en !== undefined,
-    "Give it a name in at least one language",
-  );
-
-export type Names = z.infer<typeof namesSchema>;
-
-export function nameIn(names: Names, language: Language): string {
-  return names[language] ?? names[language === "cs" ? "en" : "cs"]!;
-}
 
 export const userSettingsSchema = z.object({
   // Per view, the watchlist last opened there, null for "All". A view never opened is absent.

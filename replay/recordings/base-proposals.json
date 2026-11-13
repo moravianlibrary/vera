@@ -332,14 +332,6 @@
           "method": "POST",
           "path": "/api/proposals/entry",
           "status": 200,
-          "requestBody": {
-            "sourceId": "pi43",
-            "parameters": {
-              "source": "pi43",
-              "sysno": "MZK01-001622010"
-            },
-            "page": "https://www.mzk.cz/digitalize"
-          },
           "body": {
             "ask": {
               "record": "MZK01-001622010",
@@ -351,20 +343,20 @@
             },
             "returnTo": "https://www.mzk.cz"
           },
-          "as": "u3"
-        },
-        {
-          "method": "POST",
-          "path": "/api/proposals/entry",
-          "status": 200,
           "requestBody": {
             "sourceId": "pi43",
             "parameters": {
               "source": "pi43",
               "sysno": "MZK01-001622010"
             },
-            "page": "https://foreign.example/digitalize"
+            "page": "https://www.mzk.cz/digitalize"
           },
+          "as": "u3"
+        },
+        {
+          "method": "POST",
+          "path": "/api/proposals/entry",
+          "status": 200,
           "body": {
             "ask": {
               "record": "MZK01-001622010",
@@ -376,20 +368,20 @@
             },
             "returnTo": null
           },
+          "requestBody": {
+            "sourceId": "pi43",
+            "parameters": {
+              "source": "pi43",
+              "sysno": "MZK01-001622010"
+            },
+            "page": "https://foreign.example/digitalize"
+          },
           "as": "u3"
         },
         {
           "method": "POST",
           "path": "/api/proposals/entry",
           "status": 200,
-          "requestBody": {
-            "sourceId": "unknown",
-            "parameters": {
-              "source": "unknown",
-              "record": "NKC01-0001"
-            },
-            "page": "https://www.mzk.cz/digitalize"
-          },
           "body": {
             "ask": {
               "record": "NKC01-0001",
@@ -400,6 +392,14 @@
               "returnTo": null
             },
             "returnTo": null
+          },
+          "requestBody": {
+            "sourceId": "unknown",
+            "parameters": {
+              "source": "unknown",
+              "record": "NKC01-0001"
+            },
+            "page": "https://www.mzk.cz/digitalize"
           },
           "as": "u3"
         }
@@ -8458,7 +8458,10 @@
           "path": "/api/access/roles/reader",
           "status": 200,
           "requestBody": {
-            "name": "Reader",
+            "names": {
+              "cs": "Čtenář",
+              "en": "Reader"
+            },
             "description": "Proposes and follows their own requests. Holds only self-scoped grants.",
             "grants": [
               {
@@ -8504,7 +8507,11 @@
                 "scope": null
               }
             ],
-            "name": "reader",
+            "name": "Reader",
+            "names": {
+              "cs": "Čtenář",
+              "en": "Reader"
+            },
             "isShipped": true
           }
         },

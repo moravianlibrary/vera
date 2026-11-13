@@ -19,6 +19,7 @@ import {
 import { servedBatches } from "@vera/domain/batches";
 import { canOpenMyDocuments } from "@vera/domain/permissions";
 import { requireCaller } from "../access/index";
+import { localizedName } from "../access/names";
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { engineRequestPlugins } from "./plugins";
@@ -97,13 +98,16 @@ export const recordEndpoints = [
     );
     return detail === null ? problem(404, "Request not found") : { body: detail };
   }),
-  implement(endpoints.requestCustodies, ({ engine, caller }) => {
+  implement(endpoints.requestCustodies, ({ engine, caller, request }) => {
     const auth = requireCaller(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const { session } = auth;
     if (!canReadRequests(session)) return mayNotReadRequests();
     return {
-      body: engineStore(engine).requestCustodies.map(publicCustodyOf),
+      body: engineStore(engine).requestCustodies.map((custody) => ({
+        ...publicCustodyOf(custody),
+        name: localizedName(custody.names, request),
+      })),
     };
   }),
   implement(endpoints.batches, ({ engine, caller }) => {

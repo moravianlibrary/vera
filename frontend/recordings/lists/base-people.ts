@@ -20,13 +20,14 @@ const user = {
   roleIds: ["reader"],
 };
 const role = {
-  name: "Recording Role",
+  names: { cs: "Záznamová role", en: "Recording Role" },
   description: "",
   grants: [],
   proposalBatchLimit: 10,
   proposalDailyLimit: 300,
 };
 const record = { name: "Recording record", description: "" };
+const custody = { names: { cs: "Záznamová úschova", en: "Recording custody" }, description: "" };
 export default {
   seed: "base",
   moment: "2026-06-25T08:40:00.000Z",
@@ -157,14 +158,14 @@ export default {
           as: "admin",
           method: "POST",
           path: "/api/access/custodies",
-          requestBody: record,
+          requestBody: custody,
           compare: "body",
         },
         {
           as: "admin",
           method: "PUT",
           path: "/api/access/custodies/pc2",
-          requestBody: { ...record, name: "Maps" },
+          requestBody: { ...custody, names: { cs: "Mapy", en: "Maps" } },
           compare: "body",
         },
         {
@@ -370,7 +371,7 @@ export default {
           as: "admin",
           method: "POST",
           path: "/api/access/custodies",
-          requestBody: { name: "Periodicals", description: "duplicate" },
+          requestBody: { names: { cs: "Periodika", en: "Periodicals" }, description: "duplicate" },
           compare: "code",
         },
         {
@@ -384,21 +385,21 @@ export default {
           as: "reader",
           method: "POST",
           path: "/api/access/custodies",
-          requestBody: record,
+          requestBody: custody,
           compare: "code",
         },
         {
           as: "admin",
           method: "PUT",
           path: "/api/access/custodies/pc2",
-          requestBody: { name: "Periodicals", description: "duplicate" },
+          requestBody: { names: { cs: "Periodika", en: "Periodicals" }, description: "duplicate" },
           compare: "code",
         },
         {
           as: "admin",
           method: "PUT",
           path: "/api/access/custodies/pc0",
-          requestBody: { name: "Renamed fallback", description: "" },
+          requestBody: { names: { cs: "Přejmenováno", en: "Renamed fallback" }, description: "" },
           compare: "code",
         },
         {
@@ -412,7 +413,7 @@ export default {
           as: "reader",
           method: "PUT",
           path: "/api/access/custodies/pc2",
-          requestBody: record,
+          requestBody: custody,
           compare: "code",
         },
         {

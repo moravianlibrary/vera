@@ -4,6 +4,18 @@ export default {
   mask: "none",
   scenarios: [
     {
+      name: "request-custodies-in-czech",
+      calls: [
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/request-custodies",
+          acceptLanguage: "cs",
+          compare: "body",
+        },
+      ],
+    },
+    {
       name: "users-and-groups-index-impacts-and-accounts",
       calls: [
         {

@@ -6,7 +6,7 @@
 import type { AccessGroup, Identity, MappedRole, Role } from "@vera/domain/access";
 
 // The six shipped roles (ROLE-shipped): bundles, not a ladder, each named by its id.
-const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
+const shippedRoles: readonly Omit<Role, "name" | "names" | "isShipped">[] = [
   {
     id: "reader",
     proposalBatchLimit: 10,
@@ -511,6 +511,18 @@ const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
 export const roles: readonly Role[] = shippedRoles.map((role) => ({
   ...role,
   name: role.id,
+  names: {
+    cs:
+      {
+        reader: "Čtenář",
+        staff: "Zaměstnanec",
+        "project-user": "Projektový pracovník",
+        curator: "Kurátor",
+        "dig-curator": "Digitalizační kurátor",
+        admin: "Správce",
+      }[role.id] ?? role.id,
+    en: role.id,
+  },
   isShipped: true,
 }));
 

@@ -8,6 +8,7 @@ import { problem } from "../http/problem";
 import { engineRequestPlugins } from "../records/plugins";
 import { engineStore } from "../records/store";
 import { custodiesOf, engineCustodyRules, groupsOf, requireCaller, requireManage } from "./index";
+import { localizedName, preferredName } from "./names";
 
 const nextId = (ids: string[], prefix: string) =>
   `${prefix}${
@@ -22,19 +23,33 @@ const nextId = (ids: string[], prefix: string) =>
 const nameTaken = (name: string) =>
   problem(409, `There is already one called ${name}`, { code: "access.name_taken" });
 export const custodyEndpoints = [
-  implement(endpoints.custodyCreate, ({ engine, caller, body }) => {
+  implement(endpoints.custodyCreate, ({ engine, caller, body, request }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const records = custodiesOf(engine);
-    if (records.some((c) => c.name === body.name)) return nameTaken(body.name);
+    if (
+      records.some((c) =>
+        Object.values(body.names).some(
+          (name) =>
+            name !== undefined &&
+            Object.values(c.names).some(
+              (candidate) => candidate?.toLocaleLowerCase() === name.toLocaleLowerCase(),
+            ),
+        ),
+      )
+    )
+      return nameTaken(preferredName(body.names));
+    const name = preferredName(body.names);
     const id = nextId(
       records.map((c) => c.id),
       "pc",
     );
     engine.db.transaction(() => {
       engine.db
-        .query("INSERT INTO request_custodies (id,name,description,is_fallback) VALUES (?,?,?,0)")
-        .run(id, body.name, body.description);
+        .query(
+          "INSERT INTO request_custodies (id,name,names,description,is_fallback) VALUES (?,?,?,?,0)",
+        )
+        .run(id, name, JSON.stringify(body.names), body.description);
       recordEvent(engine, {
         code: "custody.created",
         subjectKind: "custody",
@@ -42,37 +57,52 @@ export const custodyEndpoints = [
         actor: actorOf(caller),
         correlationId: newCorrelationId(),
         data: configurationOf([
-          { field: "name", from: null, to: body.name },
+          { field: "name", from: null, to: name },
+          { field: "names", from: null, to: body.names },
           { field: "description", from: null, to: body.description },
         ]),
       });
     })();
     const created = custodiesOf(engine).find((custody) => custody.id === id);
     if (!created) return problem(500, "The custody was not stored");
-    return { body: created };
+    return { body: { ...created, name: localizedName(created.names, request) } };
   }),
-  implement(endpoints.custodySave, ({ engine, caller, params, body }) => {
+  implement(endpoints.custodySave, ({ engine, caller, params, body, request }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const records = custodiesOf(engine);
     const old = records.find((c) => c.id === params.id);
     if (!old) return problem(404, "No such custody");
-    if (old.isFallback && body.name !== old.name)
+    if (old.isFallback && JSON.stringify(body.names) !== JSON.stringify(old.names))
       return problem(422, "The fallback keeps its name", { code: "access.fallback" });
-    if (records.some((c) => c.id !== params.id && c.name === body.name))
-      return nameTaken(body.name);
+    if (
+      records.some(
+        (c) =>
+          c.id !== params.id &&
+          Object.values(body.names).some(
+            (name) =>
+              name !== undefined &&
+              Object.values(c.names).some(
+                (candidate) => candidate?.toLocaleLowerCase() === name.toLocaleLowerCase(),
+              ),
+          ),
+      )
+    )
+      return nameTaken(preferredName(body.names));
+    const name = preferredName(body.names);
     engine.db.transaction(() => {
       engine.db
-        .query("UPDATE request_custodies SET name=?,description=? WHERE id=?")
-        .run(body.name, body.description, params.id);
-      const changes = ["name", "description"].flatMap((field) =>
-        old[field as "name" | "description"] === body[field as "name" | "description"]
+        .query("UPDATE request_custodies SET name=?,names=?,description=? WHERE id=?")
+        .run(name, JSON.stringify(body.names), body.description, params.id);
+      const changes = ["name", "names", "description"].flatMap((field) =>
+        JSON.stringify(old[field as "name" | "names" | "description"]) ===
+        JSON.stringify(field === "name" ? name : field === "names" ? body.names : body.description)
           ? []
           : [
               {
                 field,
-                from: old[field as "name" | "description"],
-                to: body[field as "name" | "description"],
+                from: old[field as "name" | "names" | "description"],
+                to: field === "name" ? name : field === "names" ? body.names : body.description,
               },
             ],
       );
@@ -88,9 +118,9 @@ export const custodyEndpoints = [
     })();
     const saved = custodiesOf(engine).find((custody) => custody.id === params.id);
     if (!saved) return problem(500, "The custody was not stored");
-    return { body: saved };
+    return { body: { ...saved, name: localizedName(saved.names, request) } };
   }),
-  implement(endpoints.custodyMembers, ({ engine, caller, params, body }) => {
+  implement(endpoints.custodyMembers, ({ engine, caller, params, body, request }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const old = custodiesOf(engine).find((c) => c.id === params.id);
@@ -137,7 +167,9 @@ export const custodyEndpoints = [
           ]),
         });
     })();
-    return { body: { ...old, memberIds: users, groupIds } };
+    return {
+      body: { ...old, name: localizedName(old.names, request), memberIds: users, groupIds },
+    };
   }),
   implement(endpoints.custodyDelete, ({ engine, caller, params }) => {
     const auth = requireManage(engine, caller?.userId ?? null);

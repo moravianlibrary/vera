@@ -33,12 +33,16 @@ import { ApiError } from "@/api/http";
 import { getPluginIndex } from "@/api/plugins";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
+import { i18n } from "@/i18n";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
 
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
-afterEach(() => server.resetHandlers());
+afterEach(async () => {
+  server.resetHandlers();
+  await i18n.changeLanguage("en");
+});
 afterAll(() => server.close());
 
 function signInAs(profile: MockUserProfile): void {
@@ -64,6 +68,13 @@ describe("getAccessIndex", () => {
     signInAs("curator");
 
     expect(await refusalOf(getAccessIndex())).toMatchObject({ status: 403 });
+  });
+
+  it("answers role names in the request language", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+
+    expect((await getAccessIndex()).roles.find(({ id }) => id === "reader")?.name).toBe("Čtenář");
   });
 
   it("says how each role is held: by hand, or mapped by an Identity instance from a claim", async () => {
@@ -117,7 +128,7 @@ describe("roles", () => {
     expect(
       await refusalOf(
         createRole({
-          name: "maps",
+          names: { en: "maps", cs: "mapy" },
           description: "",
           grants: [],
           proposalBatchLimit: 10,
@@ -133,7 +144,7 @@ describe("roles", () => {
     expect(
       await refusalOf(
         createRole({
-          name: "maps-curator",
+          names: { en: "maps-curator", cs: "kurátor map" },
           description: "",
           proposalBatchLimit: 10,
           proposalDailyLimit: 300,
@@ -144,7 +155,7 @@ describe("roles", () => {
     expect(
       await refusalOf(
         createRole({
-          name: "maps-curator",
+          names: { en: "maps-curator", cs: "kurátor map" },
           description: "",
           proposalBatchLimit: 10,
           proposalDailyLimit: 300,
@@ -160,7 +171,7 @@ describe("roles", () => {
     expect(
       await refusalOf(
         createRole({
-          name: "maps-curator",
+          names: { en: "maps-curator", cs: "kurátor map" },
           description: "",
           proposalBatchLimit: 10,
           proposalDailyLimit: 300,
@@ -176,14 +187,19 @@ describe("roles", () => {
   it("names a new role the way shipped ones are named, once", async () => {
     signInAs("admin");
     const role = await createRole({
-      name: "Maps Curator",
+      names: { en: "Maps Curator", cs: "Kurátor map" },
       description: "Maps only.",
       proposalBatchLimit: 10,
       proposalDailyLimit: 300,
       grants: [{ permission: "iteration.read", scope: "custody" }],
     });
 
-    expect(role).toMatchObject({ id: "maps-curator", name: "maps-curator", isShipped: false });
+    expect(role).toMatchObject({
+      id: "maps-curator",
+      name: "Maps Curator",
+      names: { en: "Maps Curator", cs: "Kurátor map" },
+      isShipped: false,
+    });
     const unlimited = await saveRole({
       roleId: role.id,
       draft: { ...role, proposalBatchLimit: null, proposalDailyLimit: null },
@@ -192,7 +208,7 @@ describe("roles", () => {
     expect(
       await refusalOf(
         createRole({
-          name: "maps curator",
+          names: { en: "maps curator copy", cs: "kurátor map" },
           description: "",
           grants: [],
           proposalBatchLimit: 10,
@@ -450,7 +466,12 @@ describe("groups and custodies", () => {
     signInAs("admin");
 
     expect(
-      await refusalOf(saveCustody({ custodyId: "pc0", draft: { name: "Other", description: "" } })),
+      await refusalOf(
+        saveCustody({
+          custodyId: "pc0",
+          draft: { names: { en: "Other", cs: "Jiná" }, description: "" },
+        }),
+      ),
     ).toMatchObject({ status: 422, code: "access.fallback" });
     expect(await refusalOf(deleteCustody("pc0"))).toMatchObject({ status: 422 });
   });
@@ -467,9 +488,16 @@ describe("groups and custodies", () => {
 
   it("holds nothing in a new custody until a rule names it", async () => {
     signInAs("admin");
-    const custody = await createCustody({ name: "Maps", description: "Cartographic material." });
+    const custody = await createCustody({
+      names: { en: "Maps", cs: "Mapy" },
+      description: "Cartographic material.",
+    });
 
     expect(custody).toMatchObject({ openCount: 0, placedByIds: [], isFallback: false });
+    expect(custody).toMatchObject({ name: "Maps", names: { en: "Maps", cs: "Mapy" } });
+    expect(
+      await refusalOf(createCustody({ names: { en: "Cartography", cs: "Mapy" }, description: "" })),
+    ).toMatchObject({ status: 409, code: "access.name_taken" });
   });
 
   it("keeps a renamed custody's rule placing into it (ACCESS-custody-rename)", async () => {
@@ -479,7 +507,10 @@ describe("groups and custodies", () => {
     const before = await countOf();
     await saveCustody({
       custodyId: "pc2",
-      draft: { name: "Prints 1800–1899", description: "Anything published 1800–1899." },
+      draft: {
+        names: { en: "Prints 1800–1899", cs: "Tisky 1800–1899" },
+        description: "Anything published 1800–1899.",
+      },
     });
 
     expect(await countOf()).toMatchObject({

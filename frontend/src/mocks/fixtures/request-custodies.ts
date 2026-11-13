@@ -12,6 +12,7 @@ export const requestCustodies: readonly StoredRequestCustody[] = [
   {
     id: "pc0",
     name: "Fallback",
+    names: { cs: "Výchozí", en: "Fallback" },
     description: "What no Custody rule placed.",
     isFallback: true,
     memberIds: ["u3"],
@@ -20,6 +21,7 @@ export const requestCustodies: readonly StoredRequestCustody[] = [
   {
     id: "pc1",
     name: "Periodicals",
+    names: { cs: "Periodika", en: "Periodicals" },
     description: "Serials and newspapers, by material type.",
     isFallback: false,
     memberIds: ["u8"],
@@ -28,6 +30,7 @@ export const requestCustodies: readonly StoredRequestCustody[] = [
   {
     id: "pc2",
     name: "19th-century prints",
+    names: { cs: "Tisky 19. století", en: "19th-century prints" },
     description: "Anything published 1800–1899, from field 260.",
     isFallback: false,
     memberIds: ["u1"],
@@ -36,6 +39,7 @@ export const requestCustodies: readonly StoredRequestCustody[] = [
   {
     id: "pc3",
     name: "Moravica",
+    names: { cs: "Moravica", en: "Moravica" },
     description: "Proposals into the Moravica project.",
     isFallback: false,
     memberIds: ["u2"],

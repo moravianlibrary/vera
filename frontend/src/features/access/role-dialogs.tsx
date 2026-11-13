@@ -17,6 +17,7 @@ import {
   roleChangeReachOf,
   roleNameOf,
 } from "@vera/domain/access";
+import { namesAfterEdit } from "@vera/domain/names";
 import type { CatalogScope, Grant, Permission } from "@vera/domain/permissions";
 import {
   byCatalogOrder,
@@ -79,8 +80,15 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
   const role = source.kind === "new" ? null : source.role;
   const isCopy = source.kind === "copy";
   const isNew = source.kind !== "edit";
+  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const stored: RoleDraft = {
-    name: role === null ? "" : isCopy ? `${role.name}-copy` : role.name,
+    names:
+      role === null
+        ? { [language]: "" }
+        : {
+            ...role.names,
+            ...(isCopy ? { [language]: `${role.names[language] ?? role.name}-copy` } : {}),
+          },
     description: role?.description ?? "",
     grants: role?.grants ?? [],
     proposalBatchLimit: role === null ? 10 : role.proposalBatchLimit,
@@ -94,7 +102,7 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
   });
 
   const invalidReasonOf = ([draft]: readonly RoleDraft[]): string | null => {
-    if (draft === undefined || draft.name.trim() === "") {
+    if (draft === undefined || (draft.names[language] ?? "").trim() === "") {
       return t("role.validation.nameRequired");
     }
     if (
@@ -122,8 +130,13 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       });
     }
 
-    const name = roleNameOf(draft.name);
-    if (index.roles.some((other) => other.name === name && (isNew || other.id !== role?.id))) {
+    const name = roleNameOf(draft.names[language] ?? "");
+    if (
+      index.roles.some(
+        (other) =>
+          roleNameOf(other.names[language] ?? "") === name && (isNew || other.id !== role?.id),
+      )
+    ) {
       return t("role.validation.nameTaken", { name });
     }
 
@@ -199,6 +212,7 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
           <RoleFields
             id={id}
             draft={draft}
+            language={language}
             properties={index.properties}
             onChange={(next) => onChange([next])}
           />
@@ -249,11 +263,13 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
 function RoleFields({
   id,
   draft,
+  language,
   properties,
   onChange,
 }: {
   id: string;
   draft: RoleDraft;
+  language: "cs" | "en";
   // Each brings its own permission, under Properties (PERM-property-edit).
   properties: AccessIndex["properties"];
   onChange: (next: RoleDraft) => void;
@@ -290,8 +306,13 @@ function RoleFields({
           <Input
             id={`${id}-name`}
             placeholder={t("role.nameExample")}
-            value={draft.name}
-            onChange={(event) => onChange({ ...draft, name: event.target.value })}
+            value={draft.names[language] ?? ""}
+            onChange={(event) =>
+              onChange({
+                ...draft,
+                names: namesAfterEdit(draft.names, language, event.target.value),
+              })
+            }
           />
         </div>
         <div className="grid gap-1.5">

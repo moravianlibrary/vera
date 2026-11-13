@@ -21,6 +21,7 @@ import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { engineRequestPlugins } from "../records/plugins";
 import { engineStore } from "../records/store";
+import { localizedName } from "./names";
 
 export function accessUser(engine: Engine, id: string): AccessUser | null {
   const user = engine.db
@@ -107,13 +108,15 @@ export function custodiesOf(engine: Engine): CustodyRecord[] {
 
 export function rawCustodiesOf(engine: Engine): CustodyRecord[] {
   return engine.db
-    .query<{ id: string; name: string; description: string; is_fallback: number }, []>(
-      "SELECT * FROM request_custodies ORDER BY is_fallback DESC, rowid",
-    )
+    .query<
+      { id: string; name: string; names: string; description: string; is_fallback: number },
+      []
+    >("SELECT * FROM request_custodies ORDER BY is_fallback DESC, rowid")
     .all()
     .map((c) => ({
       id: c.id,
       name: c.name,
+      names: JSON.parse(c.names),
       description: c.description,
       isFallback: c.is_fallback === 1,
       memberIds: engine.db
@@ -198,58 +201,67 @@ export function requireManage(engine: Engine, userId: string | null) {
     : { ok: false as const, response: problem(403, "You may not change users, groups or roles") };
 }
 
-export const accessIndexEndpoint = implement(endpoints.accessIndex, ({ engine, caller }) => {
-  const auth = requireCaller(engine, caller?.userId ?? null);
-  if (!auth.ok) return auth.response;
-  if (!hasPermission(auth.session, "access.read"))
-    return problem(403, "You may not read users, groups or roles");
-  const users = engine.db
-    .query<{ id: string }, []>("SELECT id FROM users ORDER BY rowid")
-    .all()
-    .flatMap((x) => {
-      const u = accessUser(engine, x.id);
-      return u ? [u] : [];
-    });
-  const roles: Role[] = rolesOf(engine.db);
-  const groupRecords = groupsOf(engine);
-  const custodies = custodiesOf(engine);
-  const identityInstances = identityInstancesOf(engine);
-  const categoryMemberships = engine.db
-    .query<{ id: string }, []>(
-      "SELECT c.id FROM categories c WHERE EXISTS (SELECT 1 FROM category_members cm WHERE cm.category_id=c.id) ORDER BY c.rowid",
-    )
-    .all()
-    .map((c) => ({
-      categoryId: c.id,
-      userIds: engine.db
-        .query<{ user_id: string }, [string]>(
-          "SELECT user_id FROM category_members WHERE category_id=? ORDER BY rowid",
-        )
-        .all(c.id)
-        .map((x) => x.user_id),
+export const accessIndexEndpoint = implement(
+  endpoints.accessIndex,
+  ({ engine, caller, request }) => {
+    const auth = requireCaller(engine, caller?.userId ?? null);
+    if (!auth.ok) return auth.response;
+    if (!hasPermission(auth.session, "access.read"))
+      return problem(403, "You may not read users, groups or roles");
+    const users = engine.db
+      .query<{ id: string }, []>("SELECT id FROM users ORDER BY rowid")
+      .all()
+      .flatMap((x) => {
+        const u = accessUser(engine, x.id);
+        return u ? [u] : [];
+      });
+    const roles: Role[] = rolesOf(engine.db).map((role) => ({
+      ...role,
+      name: localizedName(role.names, request),
     }));
-  const categories = engine.db
-    .query<{ id: string; name: string; parent_id: string | null }, []>(
-      "SELECT * FROM categories ORDER BY rowid",
-    )
-    .all()
-    .map((c) => ({ id: c.id, name: c.name, parentId: c.parent_id }));
-  const result = {
-    asOf: engine.clock.now().toISOString(),
-    users,
-    roles,
-    groups: groupRecords,
-    custodies,
-    identityInstances,
-    categoryMemberships,
-    categories,
-    proposals: accessProposalsOf(engineStore(engine), engineRequestPlugins(engine)),
-    // Step 4 owns project membership.
-    projects: [],
-    // Step 7 owns shared watchlists.
-    sharedWatchlists: [],
-    // Step 6 owns property definitions.
-    properties: [],
-  };
-  return { body: accessIndexSchema.parse(result) };
-});
+    const groupRecords = groupsOf(engine);
+    const custodies = custodiesOf(engine).map((custody) => ({
+      ...custody,
+      name: localizedName(custody.names, request),
+    }));
+    const identityInstances = identityInstancesOf(engine);
+    const categoryMemberships = engine.db
+      .query<{ id: string }, []>(
+        "SELECT c.id FROM categories c WHERE EXISTS (SELECT 1 FROM category_members cm WHERE cm.category_id=c.id) ORDER BY c.rowid",
+      )
+      .all()
+      .map((c) => ({
+        categoryId: c.id,
+        userIds: engine.db
+          .query<{ user_id: string }, [string]>(
+            "SELECT user_id FROM category_members WHERE category_id=? ORDER BY rowid",
+          )
+          .all(c.id)
+          .map((x) => x.user_id),
+      }));
+    const categories = engine.db
+      .query<{ id: string; name: string; parent_id: string | null }, []>(
+        "SELECT * FROM categories ORDER BY rowid",
+      )
+      .all()
+      .map((c) => ({ id: c.id, name: c.name, parentId: c.parent_id }));
+    const result = {
+      asOf: engine.clock.now().toISOString(),
+      users,
+      roles,
+      groups: groupRecords,
+      custodies,
+      identityInstances,
+      categoryMemberships,
+      categories,
+      proposals: accessProposalsOf(engineStore(engine), engineRequestPlugins(engine)),
+      // Step 4 owns project membership.
+      projects: [],
+      // Step 7 owns shared watchlists.
+      sharedWatchlists: [],
+      // Step 6 owns property definitions.
+      properties: [],
+    };
+    return { body: accessIndexSchema.parse(result) };
+  },
+);

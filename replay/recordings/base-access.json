@@ -3,6 +3,60 @@
   "moment": "2026-06-25T08:40:00.000Z",
   "scenarios": [
     {
+      "name": "request-custodies-in-czech",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/request-custodies",
+          "status": 200,
+          "acceptLanguage": "cs",
+          "body": [
+            {
+              "id": "pc0",
+              "name": "Výchozí",
+              "names": {
+                "cs": "Výchozí",
+                "en": "Fallback"
+              },
+              "description": "What no Custody rule placed.",
+              "isFallback": true
+            },
+            {
+              "id": "pc1",
+              "name": "Periodika",
+              "names": {
+                "cs": "Periodika",
+                "en": "Periodicals"
+              },
+              "description": "Serials and newspapers, by material type.",
+              "isFallback": false
+            },
+            {
+              "id": "pc2",
+              "name": "Tisky 19. století",
+              "names": {
+                "cs": "Tisky 19. století",
+                "en": "19th-century prints"
+              },
+              "description": "Anything published 1800–1899, from field 260.",
+              "isFallback": false
+            },
+            {
+              "id": "pc3",
+              "name": "Moravica",
+              "names": {
+                "cs": "Moravica",
+                "en": "Moravica"
+              },
+              "description": "Proposals into the Moravica project.",
+              "isFallback": false
+            }
+          ],
+          "as": "u3"
+        }
+      ]
+    },
+    {
       "name": "users-and-groups-index-impacts-and-accounts",
       "calls": [
         {
@@ -353,6 +407,10 @@
                   }
                 ],
                 "name": "reader",
+                "names": {
+                  "cs": "Čtenář",
+                  "en": "reader"
+                },
                 "isShipped": true
               },
               {
@@ -379,6 +437,10 @@
                   }
                 ],
                 "name": "staff",
+                "names": {
+                  "cs": "Zaměstnanec",
+                  "en": "staff"
+                },
                 "isShipped": true
               },
               {
@@ -429,6 +491,10 @@
                   }
                 ],
                 "name": "project-user",
+                "names": {
+                  "cs": "Projektový pracovník",
+                  "en": "project-user"
+                },
                 "isShipped": true
               },
               {
@@ -547,6 +613,10 @@
                   }
                 ],
                 "name": "curator",
+                "names": {
+                  "cs": "Kurátor",
+                  "en": "curator"
+                },
                 "isShipped": true
               },
               {
@@ -705,6 +775,10 @@
                   }
                 ],
                 "name": "dig-curator",
+                "names": {
+                  "cs": "Digitalizační kurátor",
+                  "en": "dig-curator"
+                },
                 "isShipped": true
               },
               {
@@ -931,6 +1005,10 @@
                   }
                 ],
                 "name": "admin",
+                "names": {
+                  "cs": "Správce",
+                  "en": "admin"
+                },
                 "isShipped": true
               }
             ],
@@ -971,6 +1049,10 @@
               {
                 "id": "pc0",
                 "name": "Fallback",
+                "names": {
+                  "cs": "Výchozí",
+                  "en": "Fallback"
+                },
                 "description": "What no Custody rule placed.",
                 "isFallback": true,
                 "memberIds": [
@@ -983,6 +1065,10 @@
               {
                 "id": "pc1",
                 "name": "Periodicals",
+                "names": {
+                  "cs": "Periodika",
+                  "en": "Periodicals"
+                },
                 "description": "Serials and newspapers, by material type.",
                 "isFallback": false,
                 "memberIds": [
@@ -999,6 +1085,10 @@
               {
                 "id": "pc2",
                 "name": "19th-century prints",
+                "names": {
+                  "cs": "Tisky 19. století",
+                  "en": "19th-century prints"
+                },
                 "description": "Anything published 1800–1899, from field 260.",
                 "isFallback": false,
                 "memberIds": [
@@ -1013,6 +1103,10 @@
               {
                 "id": "pc3",
                 "name": "Moravica",
+                "names": {
+                  "cs": "Moravica",
+                  "en": "Moravica"
+                },
                 "description": "Proposals into the Moravica project.",
                 "isFallback": false,
                 "memberIds": [

@@ -2,6 +2,7 @@
 
 import type {
   AccessIndex,
+  CustodyDraft,
   CustodyImpact,
   CustodyMembers,
   GroupMembers,
@@ -130,11 +131,17 @@ export const setGroupMembers = putOn<GroupMembers, AccessGroup>(
 
 // ---------------------------------------------------------------- request custodies
 
-export async function createCustody(draft: RecordDraft): Promise<CustodyRecord> {
+export async function createCustody(draft: CustodyDraft): Promise<CustodyRecord> {
   return postJson(apiRoutes.accessCustodies, draft, custodyRecordSchema);
 }
 
-export async function saveCustody({ custodyId, draft }: { custodyId: string; draft: RecordDraft }) {
+export async function saveCustody({
+  custodyId,
+  draft,
+}: {
+  custodyId: string;
+  draft: CustodyDraft;
+}) {
   return putJson(accessRecordRoute("custodies", custodyId), draft, custodyRecordSchema);
 }
 

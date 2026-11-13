@@ -5,6 +5,7 @@ const callSchema = z.object({
   method: z.string(),
   path: z.string(),
   requestBody: z.unknown().optional(),
+  acceptLanguage: z.enum(["cs", "en"]).optional(),
   form: z
     .record(
       z.string(),

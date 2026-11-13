@@ -16,6 +16,7 @@ CREATE TABLE users (
 CREATE TABLE roles (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  names TEXT NOT NULL,
   description TEXT NOT NULL,
   is_shipped INTEGER NOT NULL CHECK (is_shipped IN (0, 1)),
   -- A JSON array of { permission, scope }.

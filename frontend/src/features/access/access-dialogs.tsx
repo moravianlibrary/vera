@@ -7,8 +7,13 @@
 // role; a custody's name, its groups and people with what each could do with its proposals, and
 // its delete, as the server counts it. Each says where it is done and what follows.
 
-import type { AccessIndex, LocalAccount, RecordDraft } from "@vera/contract/access";
-import { identityLinkSchema, localAccountSchema, recordDraftSchema } from "@vera/contract/access";
+import type { AccessIndex, CustodyDraft, LocalAccount, RecordDraft } from "@vera/contract/access";
+import {
+  identityLinkSchema,
+  localAccountSchema,
+  recordDraftSchema,
+  requestCustodyDraftSchema,
+} from "@vera/contract/access";
 import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@vera/domain/access";
 import { heldRoleIdsOf, requestReachOf } from "@vera/domain/access";
 import { useId } from "react";
@@ -687,14 +692,15 @@ export function CustodyEditorDialog({
   onSaved: (notice: AccessNotice, custodyId: string) => void;
 }) {
   const id = useId();
+  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const save = useActionMutation({
-    call: (draft: RecordDraft) =>
+    call: (draft: CustodyDraft) =>
       custody === null ? createCustody(draft) : saveCustody({ custodyId: custody.id, draft }),
     invalidates: accessInvalidations,
     refusalTexts,
   });
   return (
-    <FormDialog<RecordDraft>
+    <FormDialog<CustodyDraft>
       isOpen={isOpen}
       onClose={onClose}
       title={
@@ -703,11 +709,16 @@ export function CustodyEditorDialog({
           : t("dialog.editCustody", { name: custody.name })
       }
       description={t("dialog.custodyDescription")}
-      schema={recordDraftSchema}
-      defaultValues={{ name: custody?.name ?? "", description: custody?.description ?? "" }}
+      schema={requestCustodyDraftSchema}
+      defaultValues={{
+        names: custody?.names ?? { [language]: "" },
+        description: custody?.description ?? "",
+      }}
       submitLabel={custody === null ? t("dialog.createCustody") : t("dialog.save")}
       fieldOf={(refusal) =>
-        refusal.code === "access.name_taken" || refusal.code === "access.fallback" ? "name" : null
+        refusal.code === "access.name_taken" || refusal.code === "access.fallback"
+          ? `names.${language}`
+          : null
       }
       onSubmit={async (draft) => {
         const result = await save.run(draft);
@@ -732,10 +743,10 @@ export function CustodyEditorDialog({
               id={`${id}-name`}
               placeholder={t("dialog.custodyNameExample")}
               disabled={custody?.isFallback === true}
-              {...form.register("name")}
+              {...form.register(`names.${language}`)}
             />
           </Field>
-          <FieldError message={form.formState.errors.name?.message} />
+          <FieldError message={form.formState.errors.names?.[language]?.message} />
           <Field id={`${id}-description`} label={t("dialog.custodyCoverage")}>
             <Input id={`${id}-description`} {...form.register("description")} />
           </Field>

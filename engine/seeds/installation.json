@@ -28,6 +28,7 @@
           }
         ],
         "name": "reader",
+        "names": { "cs": "Čtenář", "en": "reader" },
         "isShipped": true
       },
       {
@@ -54,6 +55,7 @@
           }
         ],
         "name": "staff",
+        "names": { "cs": "Zaměstnanec", "en": "staff" },
         "isShipped": true
       },
       {
@@ -104,6 +106,7 @@
           }
         ],
         "name": "project-user",
+        "names": { "cs": "Projektový pracovník", "en": "project-user" },
         "isShipped": true
       },
       {
@@ -222,6 +225,7 @@
           }
         ],
         "name": "curator",
+        "names": { "cs": "Kurátor", "en": "curator" },
         "isShipped": true
       },
       {
@@ -372,6 +376,7 @@
           }
         ],
         "name": "dig-curator",
+        "names": { "cs": "Digitalizační kurátor", "en": "dig-curator" },
         "isShipped": true
       },
       {
@@ -590,6 +595,7 @@
           }
         ],
         "name": "admin",
+        "names": { "cs": "Správce", "en": "admin" },
         "isShipped": true
       }
     ],
@@ -601,6 +607,7 @@
       {
         "id": "pc0",
         "name": "Fallback",
+        "names": { "cs": "Výchozí", "en": "Fallback" },
         "description": "What no Custody rule placed.",
         "isFallback": true,
         "memberIds": [],

@@ -71,9 +71,18 @@ export function engineStore(engine: Engine): RecordStore {
       "SELECT record FROM property_definitions ORDER BY rowid",
     ),
     requestCustodies: rawCustodiesOf(engine).map(
-      ({ id, name, description, isFallback, memberIds, groupIds }): StoredRequestCustody => ({
+      ({
         id,
         name,
+        names,
+        description,
+        isFallback,
+        memberIds,
+        groupIds,
+      }): StoredRequestCustody => ({
+        id,
+        name,
+        names,
         description,
         isFallback,
         memberIds,

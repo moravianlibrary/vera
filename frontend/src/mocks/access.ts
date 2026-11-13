@@ -9,6 +9,7 @@
 
 import type {
   AccessIndex,
+  CustodyDraft,
   CustodyImpact,
   CustodyMembers,
   GroupMembers,
@@ -168,6 +169,25 @@ function nameTaken(name: string): Refusal {
   return { status: 409, code: "access.name_taken", message: `There is already one called ${name}` };
 }
 
+function namesTaken(
+  names: { cs?: string; en?: string },
+  other: readonly { names: { cs?: string; en?: string } }[],
+) {
+  return Object.values(names).some(
+    (name) =>
+      name !== undefined &&
+      other.some((record) =>
+        Object.values(record.names).some(
+          (candidate) => candidate?.toLocaleLowerCase() === name.toLocaleLowerCase(),
+        ),
+      ),
+  );
+}
+
+function storedName(names: { cs?: string; en?: string }): string {
+  return names.en ?? names.cs ?? "";
+}
+
 const unknownRecord = (what: string): Refusal => ({ status: 404, message: `No such ${what}` });
 
 function nextIdOf(prefix: string, ids: readonly string[]): string {
@@ -186,8 +206,8 @@ export function createRole(session: Session, draft: RoleDraft): Outcome<Role> {
     return { refusal };
   }
 
-  const name = roleNameOf(draft.name);
-  if (database.roles.some((role) => role.name === name)) {
+  const name = roleNameOf(storedName(draft.names));
+  if (namesTaken(draft.names, database.roles)) {
     return { refusal: nameTaken(name) };
   }
 
@@ -199,6 +219,7 @@ export function createRole(session: Session, draft: RoleDraft): Outcome<Role> {
         )
       : name,
     name,
+    names: draft.names,
     description: draft.description,
     isShipped: false,
     grants: draft.grants,
@@ -220,14 +241,20 @@ export function saveRole(session: Session, roleId: string, draft: RoleDraft): Ou
     return { refusal: unknownRecord("role") };
   }
 
-  const name = roleNameOf(draft.name);
-  if (database.roles.some((role) => role.id !== roleId && role.name === name)) {
+  const name = roleNameOf(storedName(draft.names));
+  if (
+    namesTaken(
+      draft.names,
+      database.roles.filter((role) => role.id !== roleId),
+    )
+  ) {
     return { refusal: nameTaken(name) };
   }
 
   const role: Role = {
     ...stored,
     name,
+    names: draft.names,
     description: draft.description,
     grants: draft.grants,
     proposalBatchLimit: draft.proposalBatchLimit,
@@ -710,14 +737,14 @@ export function setGroupMembers(
 
 // ---------------------------------------------------------------- request custodies
 
-export function createCustody(session: Session, draft: RecordDraft): Outcome<CustodyRecord> {
+export function createCustody(session: Session, draft: CustodyDraft): Outcome<CustodyRecord> {
   const refusal = guard(session);
   if (refusal !== null) {
     return { refusal };
   }
 
-  if (database.requestCustodies.some((custody) => custody.name === draft.name)) {
-    return { refusal: nameTaken(draft.name) };
+  if (namesTaken(draft.names, database.requestCustodies)) {
+    return { refusal: nameTaken(storedName(draft.names)) };
   }
 
   const custody: StoredRequestCustody = {
@@ -726,6 +753,7 @@ export function createCustody(session: Session, draft: RecordDraft): Outcome<Cus
       database.requestCustodies.map(({ id }) => id),
     ),
     ...draft,
+    name: storedName(draft.names),
     isFallback: false,
     memberIds: [],
     groupIds: [],
@@ -738,7 +766,7 @@ export function createCustody(session: Session, draft: RecordDraft): Outcome<Cus
 export function saveCustody(
   session: Session,
   custodyId: string,
-  draft: RecordDraft,
+  draft: CustodyDraft,
 ): Outcome<CustodyRecord> {
   const refusal = guard(session);
   if (refusal !== null) {
@@ -750,21 +778,22 @@ export function saveCustody(
     return { refusal: unknownRecord("custody") };
   }
 
-  if (stored.isFallback && draft.name !== stored.name) {
+  if (stored.isFallback && JSON.stringify(draft.names) !== JSON.stringify(stored.names)) {
     return {
       refusal: { status: 422, code: "access.fallback", message: "The fallback keeps its name" },
     };
   }
 
   if (
-    database.requestCustodies.some(
-      (custody) => custody.id !== custodyId && custody.name === draft.name,
+    namesTaken(
+      draft.names,
+      database.requestCustodies.filter((custody) => custody.id !== custodyId),
     )
   ) {
-    return { refusal: nameTaken(draft.name) };
+    return { refusal: nameTaken(storedName(draft.names)) };
   }
 
-  const custody = { ...stored, ...draft };
+  const custody = { ...stored, ...draft, name: storedName(draft.names) };
   replaceCustody(custody);
   return { value: custodyRecordOf(custody) };
 }

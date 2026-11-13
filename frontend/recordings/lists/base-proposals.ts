@@ -95,6 +95,39 @@ export default {
           },
           compare: "body",
         },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/proposals/entry",
+          requestBody: {
+            sourceId: "pi43",
+            parameters: { source: "pi43", sysno: "MZK01-001622010" },
+            page: "https://www.mzk.cz/digitalize",
+          },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/proposals/entry",
+          requestBody: {
+            sourceId: "pi43",
+            parameters: { source: "pi43", sysno: "MZK01-001622010" },
+            page: "https://foreign.example/digitalize",
+          },
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/proposals/entry",
+          requestBody: {
+            sourceId: "unknown",
+            parameters: { source: "unknown", record: "NKC01-0001" },
+            page: "https://www.mzk.cz/digitalize",
+          },
+          compare: "body",
+        },
       ],
     },
     {
@@ -872,7 +905,7 @@ export default {
           method: "PUT",
           path: "/api/access/roles/reader",
           requestBody: {
-            name: "Reader",
+            names: { cs: "Čtenář", en: "Reader" },
             description: "Proposes and follows their own requests. Holds only self-scoped grants.",
             grants: [
               { permission: "request.create", scope: null },

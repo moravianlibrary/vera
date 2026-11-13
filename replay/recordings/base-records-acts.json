@@ -38835,7 +38835,11 @@
           "status": 200,
           "body": {
             "id": "catalog-title-editor",
-            "name": "catalog-title-editor",
+            "name": "Catalog title editor",
+            "names": {
+              "cs": "Editor katalogových názvů",
+              "en": "Catalog title editor"
+            },
             "description": "May edit catalog-sourced properties.",
             "isShipped": false,
             "grants": [
@@ -38860,7 +38864,10 @@
             "proposalDailyLimit": null
           },
           "requestBody": {
-            "name": "Catalog title editor",
+            "names": {
+              "cs": "Editor katalogových názvů",
+              "en": "Catalog title editor"
+            },
             "description": "May edit catalog-sourced properties.",
             "grants": [
               {

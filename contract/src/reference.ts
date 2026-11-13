@@ -3,6 +3,7 @@
 // receiving them denormalized.
 
 import { z } from "zod";
+import { namesSchema } from "./user-settings";
 
 // A group: everyone in it is a project member, or holds custody, while they are in it.
 export const groupSchema = z.object({
@@ -14,6 +15,6 @@ export const groupSchema = z.object({
 export type Group = z.infer<typeof groupSchema>;
 
 // A role by name: who a watchlist is shared with names roles.
-export const roleNameSchema = z.object({ id: z.string(), name: z.string() });
+export const roleNameSchema = z.object({ id: z.string(), name: z.string(), names: namesSchema });
 
 export type RoleName = z.infer<typeof roleNameSchema>;

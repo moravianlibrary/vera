@@ -27,6 +27,7 @@ import {
   watchlistSchema,
 } from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
+import { namesSchema } from "@vera/domain/names";
 import { proposalItemSchema } from "@vera/domain/plugin-api/input";
 import type { StoredPluginImplementation } from "@vera/domain/plugin-store";
 import {
@@ -103,6 +104,7 @@ const storedPluginInstance = z.strictObject({
 const storedRequestCustody = z.strictObject({
   id,
   name: z.string(),
+  names: namesSchema,
   description: z.string(),
   isFallback: z.boolean(),
   memberIds: z.array(id),

@@ -19,7 +19,7 @@ export default {
           method: "POST",
           path: "/api/access/roles",
           requestBody: {
-            name: "Maps Curator",
+            names: { cs: "Kurátor map", en: "Maps Curator" },
             description: "Maps only.",
             grants: [],
             proposalBatchLimit: 10,
@@ -32,7 +32,7 @@ export default {
           method: "PUT",
           path: "/api/access/roles/maps-curator",
           requestBody: {
-            name: "Maps Curator",
+            names: { cs: "Kurátor map", en: "Maps Curator" },
             description: "Updated.",
             grants: [],
             proposalBatchLimit: 10,
@@ -45,7 +45,7 @@ export default {
           method: "POST",
           path: "/api/access/roles",
           requestBody: {
-            name: "Maps Specialist",
+            names: { cs: "Specialista map", en: "Maps Specialist" },
             description: "",
             grants: [
               { permission: "iteration.publish", scope: "custody" },
@@ -61,7 +61,7 @@ export default {
           method: "PUT",
           path: "/api/access/roles/curator",
           requestBody: {
-            name: "Reader",
+            names: { cs: "Čtenář", en: "Reader" },
             description: "",
             grants: [],
             proposalBatchLimit: 10,
@@ -74,7 +74,7 @@ export default {
           method: "PUT",
           path: "/api/access/roles/curator",
           requestBody: {
-            name: "Curator",
+            names: { cs: "Kurátor", en: "Curator" },
             description: "",
             grants: [
               { permission: "iteration.publish", scope: "custody" },
@@ -91,7 +91,7 @@ export default {
           method: "POST",
           path: "/api/access/roles",
           requestBody: {
-            name: "Reader",
+            names: { cs: "Čtenář", en: "Reader" },
             description: "",
             grants: [],
             proposalBatchLimit: 10,
@@ -104,7 +104,7 @@ export default {
           method: "PUT",
           path: "/api/access/roles/admin",
           requestBody: {
-            name: "Administrators",
+            names: { cs: "Správci", en: "Administrators" },
             description: "",
             grants: [],
             proposalBatchLimit: 10,

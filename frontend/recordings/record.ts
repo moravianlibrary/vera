@@ -11,6 +11,7 @@ type Call = {
   method: string;
   path: string;
   requestBody?: unknown;
+  acceptLanguage?: "cs" | "en";
   form?: Record<string, string | { photoBytes: number; fileName?: string }>;
   compare: "body" | "code";
 };
@@ -96,6 +97,7 @@ async function send(call: Call, path: string): Promise<Response> {
   if (call.as !== undefined) server.use(...createHandlers(call.as));
   else server.use(...createHandlers("reader"));
   const headers = new Headers();
+  headers.set("Accept-Language", call.acceptLanguage ?? "en");
   let body: BodyInit | undefined;
   if (call.form !== undefined) {
     const form = new FormData();
@@ -144,6 +146,7 @@ async function record(list: List, name: string) {
         status: response.status,
       };
       if (asFirst && input.requestBody !== undefined) output.requestBody = input.requestBody;
+      if (input.acceptLanguage !== undefined) output.acceptLanguage = input.acceptLanguage;
       if (response.status !== 204 && response.body !== null) {
         const contentType = response.headers
           .get("Content-Type")
@@ -161,6 +164,7 @@ async function record(list: List, name: string) {
       }
       if (!asFirst) {
         if (input.requestBody !== undefined) output.requestBody = input.requestBody;
+        if (input.acceptLanguage !== undefined) output.acceptLanguage = input.acceptLanguage;
         if (user !== undefined) output.as = user;
         if (input.form !== undefined) output.form = input.form;
       }

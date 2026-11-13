@@ -700,7 +700,7 @@ export default {
           method: "POST",
           path: "/api/access/roles",
           requestBody: {
-            name: "Catalog title editor",
+            names: { cs: "Editor katalogových názvů", en: "Catalog title editor" },
             description: "May edit catalog-sourced properties.",
             grants: [
               { permission: "access.read", scope: "any" },

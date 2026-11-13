@@ -26,6 +26,7 @@ export function custodyRecordOf(
   custody: {
     id: string;
     name: string;
+    names: { cs?: string; en?: string };
     description: string;
     isFallback: boolean;
     memberIds: readonly string[];

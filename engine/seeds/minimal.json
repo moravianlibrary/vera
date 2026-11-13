@@ -12,6 +12,7 @@
       {
         "id": "reader",
         "name": "Reader",
+        "names": { "cs": "Čtenář", "en": "Reader" },
         "description": "Asks for documents.",
         "isShipped": true,
         "grants": [
@@ -24,6 +25,7 @@
       {
         "id": "curator",
         "name": "Curator",
+        "names": { "cs": "Kurátor", "en": "Curator" },
         "description": "Decides requests in custody.",
         "isShipped": true,
         "grants": [

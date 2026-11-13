@@ -5,7 +5,7 @@ import { call, sessionCookieOf, testEngine } from "../../test/engine";
 
 const api = (path: string) => `/api${path}`;
 const roleDraft = {
-  name: "New reader",
+  names: { cs: "Nový čtenář", en: "New reader" },
   description: "",
   grants: [{ permission: "iteration.read", scope: "custody" }],
   proposalBatchLimit: 10,
@@ -157,7 +157,23 @@ describe("access acts", () => {
     });
     expect(created.status).toBe(200);
     const role = (await json(created)) as { id: string; name: string; isShipped: boolean };
-    expect(role).toMatchObject({ id: "new-reader", name: "new-reader", isShipped: false });
+    expect(role).toMatchObject({
+      id: "new-reader",
+      name: "Nový čtenář",
+      names: roleDraft.names,
+      isShipped: false,
+    });
+    const index = await call(engine, "GET", api(apiRoutes.access), {
+      as: "u3",
+      acceptLanguage: "cs",
+    });
+    expect((await json(index)).roles).toContainEqual(
+      expect.objectContaining({
+        id: "reader",
+        name: "Čtenář",
+        names: { cs: "Čtenář", en: "reader" },
+      }),
+    );
     engine.close();
   });
 
@@ -179,7 +195,7 @@ describe("access acts", () => {
           as: "u3",
           body: {
             ...roleDraft,
-            name: "invalid",
+            names: { cs: "Neplatný", en: "invalid" },
             grants: [{ permission: "iteration.publish", scope: "custody" }],
           },
         })
@@ -197,9 +213,9 @@ describe("access acts", () => {
     const role = (await json(created)) as { id: string };
     const saved = await call(engine, "PUT", api(accessRecordRoute("roles", role.id)), {
       as: "u3",
-      body: { ...roleDraft, name: "Renamed" },
+      body: { ...roleDraft, names: { ...roleDraft.names, en: "Renamed" } },
     });
-    expect((await json(saved)).name).toBe("renamed");
+    expect((await json(saved)).name).toBe("Nový čtenář");
     engine.close();
   });
 
@@ -229,7 +245,7 @@ describe("access acts", () => {
     const engine = testEngine("base");
     const deleteDraft = {
       ...roleDraft,
-      name: "Admin replacement",
+      names: { cs: "Náhrada správce", en: "Admin replacement" },
       grants: [
         { permission: "access.read", scope: "any" },
         { permission: "access.manage", scope: "any" },
@@ -251,7 +267,7 @@ describe("access acts", () => {
     const response = await call(engine, "PUT", api(accessRecordRoute("roles", "admin")), {
       as: "u3",
       body: {
-        name: "Admin",
+        names: { cs: "Správce", en: "Admin" },
         description: "",
         grants: [{ permission: "access.read", scope: "any" }],
         proposalBatchLimit: null,
@@ -583,13 +599,26 @@ describe("access acts", () => {
     const engine = testEngine("base");
     const custodyResponse = await call(engine, "POST", api(apiRoutes.accessCustodies), {
       as: "u3",
-      body: { name: "Maps", description: "" },
+      body: { names: { cs: "Mapy", en: "Maps" }, description: "" },
     });
     expect(await json(custodyResponse)).toMatchObject({
+      name: "Mapy",
+      names: { cs: "Mapy", en: "Maps" },
       isFallback: false,
       openCount: 0,
       placedByIds: [],
     });
+    const czech = await call(engine, "GET", api(apiRoutes.requestCustodies), {
+      as: "u3",
+      acceptLanguage: "cs",
+    });
+    expect(await json(czech)).toContainEqual(
+      expect.objectContaining({
+        id: "pc0",
+        name: "Výchozí",
+        names: { cs: "Výchozí", en: "Fallback" },
+      }),
+    );
     engine.close();
   });
 
@@ -597,14 +626,14 @@ describe("access acts", () => {
     const engine = testEngine("base");
     const created = await call(engine, "POST", api(apiRoutes.accessCustodies), {
       as: "u3",
-      body: { name: "Maps", description: "" },
+      body: { names: { cs: "Mapy", en: "Maps" }, description: "" },
     });
     const custody = (await json(created)) as { id: string };
     expect(
       (
         await call(engine, "PUT", api(accessRecordRoute("custodies", custody.id)), {
           as: "u3",
-          body: { name: "Map custody", description: "" },
+          body: { names: { cs: "Mapová úschova", en: "Map custody" }, description: "" },
         })
       ).status,
     ).toBe(200);
@@ -620,7 +649,7 @@ describe("access acts", () => {
     const groupId = ((await json(group)) as { id: string }).id;
     const created = await call(engine, "POST", api(apiRoutes.accessCustodies), {
       as: "u3",
-      body: { name: "Maps custody", description: "" },
+      body: { names: { cs: "Mapová úschova", en: "Maps custody" }, description: "" },
     });
     const custodyId = ((await json(created)) as { id: string }).id;
     expect(
@@ -638,7 +667,7 @@ describe("access acts", () => {
     const engine = testEngine("base");
     const created = await call(engine, "POST", api(apiRoutes.accessCustodies), {
       as: "u3",
-      body: { name: "Maps custody", description: "" },
+      body: { names: { cs: "Mapová úschova", en: "Maps custody" }, description: "" },
     });
     const custodyId = ((await json(created)) as { id: string }).id;
     expect(
@@ -658,7 +687,7 @@ describe("access acts", () => {
       (
         await call(engine, "PUT", api(accessRecordRoute("custodies", "pc0")), {
           as: "u3",
-          body: { name: "Changed", description: "" },
+          body: { names: { cs: "Změněno", en: "Changed" }, description: "" },
         })
       ).status,
     ).toBe(422);
@@ -678,7 +707,7 @@ describe("access acts", () => {
     const engine = testEngine("base");
     const created = await call(engine, "POST", api(apiRoutes.accessCustodies), {
       as: "u3",
-      body: { name: "Maps custody", description: "" },
+      body: { names: { cs: "Mapová úschova", en: "Maps custody" }, description: "" },
     });
     const custodyId = ((await json(created)) as { id: string }).id;
     expect(

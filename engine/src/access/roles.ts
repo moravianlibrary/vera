@@ -8,6 +8,7 @@ import { actorOf, configurationOf, newCorrelationId, recordEvent } from "../even
 import { implement } from "../http/endpoint";
 import { problem } from "../http/problem";
 import { accessUser, requireCaller, requireManage } from "./index";
+import { localizedName, preferredName } from "./names";
 
 function managerExists(engine: Engine, roles = rolesOf(engine.db)) {
   const users = engine.db
@@ -50,9 +51,17 @@ function uniqueId(prefix: string, ids: string[]) {
   );
   return `${prefix}${n + 1}`;
 }
-function taken(engine: Engine, name: string, except?: string) {
-  return (
-    engine.db.query("SELECT 1 FROM roles WHERE name=? AND id<>? ").get(name, except ?? "") !== null
+function taken(engine: Engine, names: { cs?: string; en?: string }, except?: string) {
+  return rolesOf(engine.db).some(
+    (role) =>
+      role.id !== except &&
+      Object.values(names).some(
+        (name) =>
+          name !== undefined &&
+          Object.values(role.names).some(
+            (candidate) => candidate?.toLocaleLowerCase() === name.toLocaleLowerCase(),
+          ),
+      ),
   );
 }
 function role(engine: Engine, id: string) {
@@ -60,13 +69,13 @@ function role(engine: Engine, id: string) {
 }
 
 export const roleEndpoints = [
-  implement(endpoints.roleCreate, ({ engine, caller, body }) => {
+  implement(endpoints.roleCreate, ({ engine, caller, body, request }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const invalid = refusalForGrants(body.grants as never[]);
     if (invalid) return invalid;
-    const name = roleNameOf(body.name);
-    if (taken(engine, name))
+    const name = roleNameOf(preferredName(body.names));
+    if (taken(engine, body.names))
       return problem(409, `There is already one called ${name}`, { code: "access.name_taken" });
     const roles = rolesOf(engine.db);
     const id = roles.some((r) => r.id === name)
@@ -78,6 +87,7 @@ export const roleEndpoints = [
     const value = {
       id,
       name,
+      names: body.names,
       description: body.description,
       isShipped: false,
       grants: body.grants,
@@ -87,11 +97,12 @@ export const roleEndpoints = [
     engine.db.transaction(() => {
       engine.db
         .query(
-          "INSERT INTO roles (id,name,description,is_shipped,grants,proposal_batch_limit,proposal_daily_limit) VALUES (?,?,?,?,?,?,?)",
+          "INSERT INTO roles (id,name,names,description,is_shipped,grants,proposal_batch_limit,proposal_daily_limit) VALUES (?,?,?,?,?,?,?,?)",
         )
         .run(
           id,
           name,
+          JSON.stringify(value.names),
           value.description,
           0,
           JSON.stringify(value.grants),
@@ -113,21 +124,22 @@ export const roleEndpoints = [
         ]),
       });
     })();
-    return { body: value };
+    return { body: { ...value, name: localizedName(value.names, request) } };
   }),
-  implement(endpoints.roleSave, ({ engine, caller, params, body }) => {
+  implement(endpoints.roleSave, ({ engine, caller, params, body, request }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
     if (!auth.ok) return auth.response;
     const old = role(engine, params.id);
     if (!old) return problem(404, "No such role");
     const invalid = refusalForGrants(body.grants as never[]);
     if (invalid) return invalid;
-    const name = roleNameOf(body.name);
-    if (taken(engine, name, params.id))
+    const name = roleNameOf(preferredName(body.names));
+    if (taken(engine, body.names, params.id))
       return problem(409, `There is already one called ${name}`, { code: "access.name_taken" });
     const updated = {
       ...old,
       name,
+      names: body.names,
       description: body.description,
       grants: body.grants,
       proposalBatchLimit: body.proposalBatchLimit,
@@ -138,6 +150,7 @@ export const roleEndpoints = [
       return problem(409, "Nobody could manage access after this", { code: "access.last_manager" });
     const changes = [
       "name",
+      "names",
       "description",
       "grants",
       "proposalBatchLimit",
@@ -152,10 +165,11 @@ export const roleEndpoints = [
     engine.db.transaction(() => {
       engine.db
         .query(
-          "UPDATE roles SET name=?,description=?,grants=?,proposal_batch_limit=?,proposal_daily_limit=? WHERE id=?",
+          "UPDATE roles SET name=?,names=?,description=?,grants=?,proposal_batch_limit=?,proposal_daily_limit=? WHERE id=?",
         )
         .run(
           name,
+          JSON.stringify(updated.names),
           updated.description,
           JSON.stringify(updated.grants),
           updated.proposalBatchLimit,
@@ -164,7 +178,9 @@ export const roleEndpoints = [
         );
       if (changes.length)
         recordEvent(engine, {
-          code: changes.every(({ field }) => field === "name" || field === "description")
+          code: changes.every(
+            ({ field }) => field === "name" || field === "names" || field === "description",
+          )
             ? "role.renamed"
             : "role.permissions_changed",
           subjectKind: "role",
@@ -174,7 +190,7 @@ export const roleEndpoints = [
           data: configurationOf(changes),
         });
     })();
-    return { body: updated };
+    return { body: { ...updated, name: localizedName(updated.names, request) } };
   }),
   implement(endpoints.roleDelete, ({ engine, caller, params }) => {
     const auth = requireManage(engine, caller?.userId ?? null);
