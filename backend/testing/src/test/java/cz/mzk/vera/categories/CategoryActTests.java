@@ -160,7 +160,7 @@ class CategoryActTests {
         Map<String, Object> request = Map.of("names", Map.of("cs", "Nová větev", "en", "New branch"),
                 "parentId", "c2");
         client.post().uri("/api/categories").header("Cookie", cookie).header("Accept-Language", "cs")
-                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isCreated()
+                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.name").isEqualTo("Nová větev")
                 .jsonPath("$.names.en").isEqualTo("New branch");
         client.post().uri("/api/categories").header("Cookie", cookie)

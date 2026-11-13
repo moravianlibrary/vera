@@ -5821,7 +5821,7 @@
         "summary": "Creates a category.",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -6174,7 +6174,7 @@
         "summary": "Creates a mix record.",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "Success",
             "content": {
               "application/json": {

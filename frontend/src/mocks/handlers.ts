@@ -831,9 +831,7 @@ export function createHandlers(profile: MockUserProfile) {
       const outcome = createSchedule(currentSession(), draft.data);
       return "refusal" in outcome
         ? problemResponse(outcome.refusal)
-        : HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)), {
-            status: 201,
-          });
+        : HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)));
     }),
     http.put(route(`${apiRoutes.schedules}/:scheduleId`), async ({ params, request }) => {
       const draft = scheduleDraftSchema.safeParse(await request.json());

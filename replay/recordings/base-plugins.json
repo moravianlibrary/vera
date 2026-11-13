@@ -1875,6 +1875,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -2011,6 +2015,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -2080,6 +2088,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -2129,6 +2141,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -2229,6 +2245,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -2428,6 +2448,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -2529,6 +2553,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -5786,6 +5814,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -5922,6 +5954,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -5991,6 +6027,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -6040,6 +6080,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -6140,6 +6184,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -6339,6 +6387,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -6440,6 +6492,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -11122,6 +11178,10 @@
               {
                 "id": "s5",
                 "name": "ISSN harvest — weekly",
+                "names": {
+                  "cs": "Sklizeň ISSN — týdně",
+                  "en": "ISSN harvest — weekly"
+                },
                 "cadence": {
                   "every": "week",
                   "weekday": 1,
@@ -13133,6 +13193,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -13269,6 +13333,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -13338,6 +13406,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -13387,6 +13459,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -13487,6 +13563,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -13686,6 +13766,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -13787,6 +13871,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -17202,6 +17290,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -17338,6 +17430,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -17407,6 +17503,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -17456,6 +17556,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -17556,6 +17660,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -17755,6 +17863,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -17856,6 +17968,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -21911,6 +22027,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -22047,6 +22167,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -22116,6 +22240,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -22165,6 +22293,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -22265,6 +22397,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -22464,6 +22600,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -22565,6 +22705,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -26051,6 +26195,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -26187,6 +26335,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -26256,6 +26408,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -26305,6 +26461,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -26405,6 +26565,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -26604,6 +26768,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -26705,6 +26873,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -28162,6 +28334,10 @@
               {
                 "id": "s3",
                 "name": "RDCZ — registry refresh",
+                "names": {
+                  "cs": "RDCZ — aktualizace registru",
+                  "en": "RDCZ — registry refresh"
+                },
                 "cadence": {
                   "every": "hours",
                   "interval": 6
@@ -30122,6 +30298,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -30258,6 +30438,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -30327,6 +30511,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -30376,6 +30564,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -30476,6 +30668,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -30675,6 +30871,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -30776,6 +30976,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -32198,6 +32402,10 @@
               {
                 "id": "s3",
                 "name": "RDCZ — registry refresh",
+                "names": {
+                  "cs": "RDCZ — aktualizace registru",
+                  "en": "RDCZ — registry refresh"
+                },
                 "cadence": {
                   "every": "hours",
                   "interval": 6
@@ -34150,6 +34358,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -34286,6 +34498,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -34355,6 +34571,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -34404,6 +34624,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -34504,6 +34728,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -34703,6 +34931,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -34804,6 +35036,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -42368,6 +42604,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -42504,6 +42744,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -42573,6 +42817,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -42622,6 +42870,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -42722,6 +42974,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -42916,6 +43172,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -43017,6 +43277,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -47004,6 +47268,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -47140,6 +47408,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -47209,6 +47481,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -47258,6 +47534,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -47358,6 +47638,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -47557,6 +47841,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -47658,6 +47946,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"
@@ -49121,6 +49413,10 @@
               {
                 "id": "s4",
                 "name": "Catalog validity — nightly sweep",
+                "names": {
+                  "cs": "Kontrola platnosti katalogu — noční běh",
+                  "en": "Catalog validity — nightly sweep"
+                },
                 "cadence": {
                   "every": "day",
                   "at": "02:00"
@@ -51112,6 +51408,10 @@
                   {
                     "id": "s1",
                     "name": "MZK Aleph — catalog resync",
+                    "names": {
+                      "cs": "MZK Aleph — synchronizace katalogu",
+                      "en": "MZK Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -51248,6 +51548,10 @@
                   {
                     "id": "s6",
                     "name": "NKP Aleph — catalog resync",
+                    "names": {
+                      "cs": "NKP Aleph — synchronizace katalogu",
+                      "en": "NKP Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -51317,6 +51621,10 @@
                   {
                     "id": "s7",
                     "name": "VKOL Aleph — catalog resync",
+                    "names": {
+                      "cs": "VKOL Aleph — synchronizace katalogu",
+                      "en": "VKOL Aleph — catalog resync"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 15
@@ -51366,6 +51674,10 @@
                   {
                     "id": "s2",
                     "name": "Kramerius — registry refresh",
+                    "names": {
+                      "cs": "Kramerius — aktualizace registru",
+                      "en": "Kramerius — registry refresh"
+                    },
                     "cadence": {
                       "every": "minutes",
                       "interval": 30
@@ -51466,6 +51778,10 @@
                   {
                     "id": "s3",
                     "name": "RDCZ — registry refresh",
+                    "names": {
+                      "cs": "RDCZ — aktualizace registru",
+                      "en": "RDCZ — registry refresh"
+                    },
                     "cadence": {
                       "every": "hours",
                       "interval": 6
@@ -51665,6 +51981,10 @@
                   {
                     "id": "s5",
                     "name": "ISSN harvest — weekly",
+                    "names": {
+                      "cs": "Sklizeň ISSN — týdně",
+                      "en": "ISSN harvest — weekly"
+                    },
                     "cadence": {
                       "every": "week",
                       "weekday": 1,
@@ -51766,6 +52086,10 @@
                   {
                     "id": "s4",
                     "name": "Catalog validity — nightly sweep",
+                    "names": {
+                      "cs": "Kontrola platnosti katalogu — noční běh",
+                      "en": "Catalog validity — nightly sweep"
+                    },
                     "cadence": {
                       "every": "day",
                       "at": "02:00"

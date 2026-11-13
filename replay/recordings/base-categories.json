@@ -1937,7 +1937,7 @@
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 201,
+          "status": 200,
           "body": {
             "id": "c33",
             "name": "Recording child",
@@ -2816,7 +2816,7 @@
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 201,
+          "status": 200,
           "body": {
             "id": "c33",
             "name": "Disposable category",
@@ -3309,7 +3309,7 @@
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 201,
+          "status": 200,
           "body": {
             "id": "c33",
             "name": "Scoped leaf",

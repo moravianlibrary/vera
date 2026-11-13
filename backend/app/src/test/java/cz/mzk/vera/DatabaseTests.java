@@ -21,6 +21,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -110,9 +111,9 @@ class DatabaseTests {
 
         dsl.insertInto(USERS).set(USERS.ID, "event-admin").set(USERS.NAME, "Ada")
                 .set(USERS.KIND, "person").set(USERS.POSITION, 20).execute();
-        dsl.insertInto(ROLES).set(ROLES.ID, "event-admin-role").set(ROLES.NAME, "Administrator")
+        dsl.insertInto(ROLES).set(ROLES.ID, "event-admin-role").set(ROLES.NAME, "Administrator").set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"Administrator\"}"))
                 .set(ROLES.DESCRIPTION, "Staff").set(ROLES.IS_SHIPPED, false).set(ROLES.POSITION, 20).execute();
-        dsl.insertInto(ROLES).set(ROLES.ID, "reader").set(ROLES.NAME, "Reader")
+        dsl.insertInto(ROLES).set(ROLES.ID, "reader").set(ROLES.NAME, "Reader").set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"Reader\"}"))
                 .set(ROLES.DESCRIPTION, "Read only").set(ROLES.IS_SHIPPED, false).set(ROLES.POSITION, 21).execute();
         dsl.insertInto(USERS).set(USERS.ID, "event-reader").set(USERS.NAME, "Rory")
                 .set(USERS.KIND, "person").set(USERS.POSITION, 21).execute();
@@ -156,7 +157,7 @@ class DatabaseTests {
     void generatedTablesReadAndWritePeopleAndOrderedGrants() {
         dsl.insertInto(USERS).set(USERS.ID, "u1").set(USERS.NAME, "Ada")
                 .set(USERS.KIND, "person").set(USERS.POSITION, 0).execute();
-        dsl.insertInto(ROLES).set(ROLES.ID, "r1").set(ROLES.NAME, "Reader")
+        dsl.insertInto(ROLES).set(ROLES.ID, "r1").set(ROLES.NAME, "Reader").set(ROLES.NAMES, JSONB.valueOf("{\"en\":\"Reader\"}"))
                 .set(ROLES.DESCRIPTION, "Can read").set(ROLES.IS_SHIPPED, false)
                 .set(ROLES.POSITION, 0).execute();
         dsl.insertInto(ROLE_GRANTS).set(ROLE_GRANTS.ROLE_ID, "r1").set(ROLE_GRANTS.POSITION, 1)

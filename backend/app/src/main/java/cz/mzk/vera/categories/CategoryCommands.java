@@ -81,7 +81,7 @@ class CategoryCommands {
                 .set(CATEGORIES.PARENT_ID, parentId).set(CATEGORIES.POSITION, position).execute();
         events.recordAct(EventCode.CATEGORY_CREATED, "category", id, caller,
                 List.of(EventChanges.change("category", null, categoryValue(id, name, parentId))));
-        return ActResult.created(category(id));
+        return ActResult.ok(category(id));
     }
 
     // saveCategory: PLAN-move; a moved subtree starts without a share in the new sibling set.

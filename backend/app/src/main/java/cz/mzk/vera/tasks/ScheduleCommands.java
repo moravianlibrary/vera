@@ -204,7 +204,8 @@ public class ScheduleCommands {
         Map<String, Object> trigger = new LinkedHashMap<>();
         trigger.put("kind", "manual");
         trigger.put("from", from);
-        String runId = runs.start(row.get(SCHEDULES.NAME), row.get(SCHEDULES.INSTANCE_ID), null,
+        String runId = runs.start(RunLabels.ofSchedule(row.get(SCHEDULES.NAMES), json),
+                row.get(SCHEDULES.INSTANCE_ID), null,
                 trigger, caller.userId(), null);
         Record run = dsl.selectFrom(RUNS).where(RUNS.ID.eq(runId)).fetchOne();
         return ActResult.ok(taskQueries.run(run, clock.instant()));

@@ -83,7 +83,8 @@ public class ScheduleFireJob implements JobKind<Void> {
             trigger.put("kind", "schedule");
             trigger.put("scheduleId", id);
             trigger.put("cadence", cadence);
-            runs.start(schedule.get(SCHEDULES.NAME), schedule.get(SCHEDULES.INSTANCE_ID), null,
+            runs.start(RunLabels.ofSchedule(schedule.get(SCHEDULES.NAMES), json),
+                    schedule.get(SCHEDULES.INSTANCE_ID), null,
                     trigger, null, null);
         }
         queue.queueAt(tx, id, nextAt);
@@ -94,7 +95,7 @@ public class ScheduleFireJob implements JobKind<Void> {
                 .mapToInt(value -> Integer.parseInt(value.substring(2))).max().orElse(0);
         String id = "T-" + (highest + 1);
         String scheduleId = schedule.get(SCHEDULES.ID);
-        String name = schedule.get(SCHEDULES.NAME);
+        String name = RunLabels.ofSchedule(schedule.get(SCHEDULES.NAMES), json);
         Map<String, Object> trigger = new LinkedHashMap<>();
         trigger.put("kind", "schedule");
         trigger.put("scheduleId", scheduleId);

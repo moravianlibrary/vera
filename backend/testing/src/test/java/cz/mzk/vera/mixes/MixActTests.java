@@ -63,7 +63,7 @@ class MixActTests {
                 .expectBody().jsonPath("$[0].id").isEqualTo("d1");
         client.post().uri("/api/mixes").header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
                 .body("{\"names\":{\"en\":\"Session mix\"},\"fromMixId\":\"d2\",\"fromRevision\":2}")
-                .exchange().expectStatus().isCreated().expectBody().jsonPath("$.name").isEqualTo("Session mix")
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Session mix")
                 .jsonPath("$.revision").isEqualTo(1);
         client.put().uri("/api/mixes/d1/sets").header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +109,7 @@ class MixActTests {
         client.post().uri("/api/mixes").header("Cookie", cookie).header("Accept-Language", "cs")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("names", names, "fromMixId", "d2", "fromRevision", 2))
-                .exchange().expectStatus().isCreated().expectBody().jsonPath("$.name").isEqualTo("Nový mix")
+                .exchange().expectStatus().isOk().expectBody().jsonPath("$.name").isEqualTo("Nový mix")
                 .jsonPath("$.names.en").isEqualTo("New mix");
         client.post().uri("/api/mixes").header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_JSON)

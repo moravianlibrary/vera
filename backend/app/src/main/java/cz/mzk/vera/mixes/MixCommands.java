@@ -95,7 +95,7 @@ class MixCommands {
         insertRevision(id, 1, shares, at, null, 0);
         events.recordAct(EventCode.MIX_CREATED, "mix", id, caller,
                 List.of(EventChanges.change("mix", null, Map.of("id", id, "name", name))));
-        return ActResult.created(queries.record(id, caller));
+        return ActResult.ok(queries.record(id, caller));
     }
 
     @Transactional
