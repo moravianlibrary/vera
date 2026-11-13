@@ -134,6 +134,7 @@ function detailOf(
       .map((schedule) => ({
         id: schedule.id,
         name: nameIn(schedule.names, "en"),
+        names: schedule.names,
         cadence: schedule.cadence,
         isPaused: schedule.pause !== null,
       })),

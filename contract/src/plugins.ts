@@ -114,7 +114,13 @@ export const pluginInstanceDetailSchema = z.object({
   createdBy: id,
   createdAt: day,
   schedules: z.array(
-    z.object({ id, name: z.string(), cadence: cadenceSchema, isPaused: z.boolean() }),
+    z.object({
+      id,
+      name: z.string(),
+      names: namesSchema,
+      cadence: cadenceSchema,
+      isPaused: z.boolean(),
+    }),
   ),
   // Hooks tied to this Delivery channel, including paused subscriptions.
   hooks: z.array(z.object({ id, name: z.string(), state: z.enum(["active", "paused"]) })),

@@ -132,7 +132,7 @@ class IntentionActTests {
                         + "\"scopeCategoryId\":null,\"countsFrom\":\"2026-06-25\",\"endsOn\":null,"
                         + "\"targetPages\":null,\"mix\":{\"kind\":\"none\"}}";
         String repeat =
-                "{\"description\":\"\",\"namePattern\":\"Period {period}\",\"every\":\"month\","
+                "{\"description\":\"\",\"namePatterns\":{\"cs\":\"Období {period}\",\"en\":\"Period {period}\"},\"every\":\"month\","
                     + "\"funding\":{\"kind\":\"any\"},\"scopeCategoryId\":null,"
                     + "\"mix\":{\"kind\":\"none\"},\"targetPages\":null,\"isArchivingPrevious\":false}";
         client.post()
@@ -202,7 +202,8 @@ class IntentionActTests {
             RestTestClient.RequestBodySpec request =
                     client.method(HttpMethod.valueOf(method))
                             .uri(URI.create(path))
-                            .header("Cookie", session(call.path("as").asString()));
+                            .header("Cookie", session(call.path("as").asString()))
+                            .header("Accept-Language", "en");
             if (call.has("requestBody")) {
                 request.contentType(MediaType.APPLICATION_JSON)
                         .body(call.path("requestBody").toString());

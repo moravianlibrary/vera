@@ -154,7 +154,8 @@ class RecordsSeedLoader {
             dsl.insertInto(INTENTION_TEMPLATES)
                     .set(INTENTION_TEMPLATES.ID, string(row, "id"))
                     .set(INTENTION_TEMPLATES.DESCRIPTION, string(row, "description"))
-                    .set(INTENTION_TEMPLATES.NAME_PATTERN, string(row, "namePattern"))
+                    .set(INTENTION_TEMPLATES.NAME_PATTERN, seedName(row, "namePatterns", "namePattern"))
+                    .set(INTENTION_TEMPLATES.NAME_PATTERNS, JSONB.valueOf(seedNames(row, "namePatterns", "namePattern")))
                     .set(INTENTION_TEMPLATES.EVERY, string(row, "every"))
                     .set(INTENTION_TEMPLATES.FUNDING_KIND, string(funding, "kind"))
                     .set(INTENTION_TEMPLATES.FUNDING_PROJECT_ID, nullableString(funding, "projectId"))
@@ -620,6 +621,18 @@ class RecordsSeedLoader {
         return names == null || names.isNull()
                 ? json.valueToTree(Map.of("en", string(row, "name"))).toString()
                 : names.toString();
+    }
+
+    private String seedName(JsonNode row, String field, String legacy) {
+        JsonNode names = row.path(field);
+        if (names.path("en").isString()) return names.path("en").asString();
+        if (names.path("cs").isString()) return names.path("cs").asString();
+        return string(row, legacy);
+    }
+
+    private String seedNames(JsonNode row, String field, String legacy) {
+        JsonNode names = row.path(field);
+        return names.isObject() ? names.toString() : json.valueToTree(Map.of("en", string(row, legacy))).toString();
     }
 
     private String nullableString(JsonNode row, String field) {

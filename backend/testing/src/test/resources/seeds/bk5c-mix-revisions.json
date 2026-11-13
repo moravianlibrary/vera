@@ -6,6 +6,7 @@
       {
         "id": "d1",
         "name": "House mix",
+        "names": { "cs": "Domácí mix", "en": "House mix" },
         "isPrimary": true,
         "archivedAt": null,
         "shares": { "c1": 35, "c2": 45, "c3": 15, "c4": 5 },

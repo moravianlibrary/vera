@@ -75,6 +75,7 @@ class IntentionReadTests {
         JsonNode mix = mapper.readTree(client.get()
                 .uri("/api/intentions/i10/mix")
                 .header("Cookie", cookie)
+                .header("Accept-Language", "en")
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -94,6 +95,7 @@ class IntentionReadTests {
         JsonNode index = mapper.readTree(client.get()
                 .uri("/api/intentions/overview")
                 .header("Cookie", cookie)
+                .header("Accept-Language", "en")
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -236,7 +238,8 @@ class IntentionReadTests {
         String cookie = session(call.path("as").asString());
         var request = client.method(org.springframework.http.HttpMethod.valueOf(method))
                           .uri(URI.create(path))
-                          .header("Cookie", cookie);
+                          .header("Cookie", cookie)
+                          .header("Accept-Language", "en");
         if ("POST".equals(method)) {
             request.contentType(MediaType.APPLICATION_JSON).body(call.path("requestBody").toString());
         }

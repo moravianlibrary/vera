@@ -59,7 +59,7 @@ class SchedulesTests {
         JsonNode recording = mapper.readTree(Path.of("../../replay/recordings/base-schedules.json").toFile());
         JsonNode expected = recording.path("scenarios").get(0).path("calls").get(0).path("body");
         JsonNode actual = mapper.readTree(client.get().uri(URI.create("/api/schedules?range=day"))
-                .header("Cookie", session("u3")).exchange().expectStatus().isOk()
+                .header("Cookie", session("u3")).header("Accept-Language", "en").exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody());
         assertThat(actual).isEqualTo(expected);
         assertThat(actual.path("schedules").get(7).path("source").path("kind").asString())
@@ -67,16 +67,31 @@ class SchedulesTests {
     }
 
     @Test
+    void readsCzechScheduleNamesAndKeepsTheWrittenNames() throws Exception {
+        JsonNode actual = mapper.readTree(client.get().uri(URI.create("/api/schedules?range=day"))
+                .header("Cookie", session("u3")).header("Accept-Language", "cs").exchange()
+                .expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(actual.path("schedules").get(0).path("name").asString())
+                .isEqualTo("MZK Aleph — synchronizace katalogu");
+        assertThat(actual.path("schedules").get(0).path("names").path("en").asString())
+                .isEqualTo("MZK Aleph — catalog resync");
+        assertThat(actual.path("schedules").get(7).path("name").asString())
+                .isEqualTo("Měsíční výstup — next period");
+    }
+
+    @Test
     void createsSavesDeletesPausesResumesAndRunsNowWithAuditCodes() throws Exception {
-        String created = post("/api/schedules", "{\"instanceId\":\"pi4\",\"name\":\"Daily Kramerius\","
+        String created = post("/api/schedules", "{\"instanceId\":\"pi4\",\"names\":{\"cs\":\"Denní Kramerius\",\"en\":\"Daily Kramerius\"},"
                 + "\"cadence\":{\"every\":\"day\",\"at\":\"03:15\"},\"overlap\":\"skip\"}");
         JsonNode row = mapper.readTree(created);
         String id = row.path("id").asString();
+        assertThat(row.path("names").path("cs").asString()).isEqualTo("Denní Kramerius");
+        assertThat(row.path("names").path("en").asString()).isEqualTo("Daily Kramerius");
         assertThat(row.path("nextAt").asString()).isNotBlank();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM jobs WHERE kind='schedule.fire'", Integer.class))
                 .isEqualTo(1);
 
-        String changed = put("/api/schedules/" + id, "{\"name\":\"Daily refreshed\","
+        String changed = put("/api/schedules/" + id, "{\"names\":{\"cs\":\"Denně upraveno\",\"en\":\"Daily refreshed\"},"
                 + "\"cadence\":{\"every\":\"day\",\"at\":\"04:15\"},\"overlap\":\"wait\"}");
         assertThat(mapper.readTree(changed).path("name").asString()).isEqualTo("Daily refreshed");
         String paused = post("/api/schedules/" + id + "/pause", "{\"reason\":\"Maintenance\"}");
@@ -102,7 +117,7 @@ class SchedulesTests {
 
     @Test
     void refusesInvalidCadencesAndUnSchedulablePlugins() {
-        String prefix = "{\"instanceId\":\"%s\",\"name\":\"Attempt\",\"cadence\":%s,"
+        String prefix = "{\"instanceId\":\"%s\",\"names\":{\"cs\":\"Pokus\",\"en\":\"Attempt\"},\"cadence\":%s,"
                 + "\"overlap\":\"skip\"}";
         client.post().uri("/api/schedules").header("Cookie", session("u3"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,13 +136,13 @@ class SchedulesTests {
                 .isEqualTo("schedule.not_schedulable");
         client.put().uri("/api/schedules/s2").header("Cookie", session("u3"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Attempt\",\"cadence\":{\"every\":\"minutes\",\"interval\":1},"
+                .body("{\"names\":{\"cs\":\"Pokus\",\"en\":\"Attempt\"},\"cadence\":{\"every\":\"minutes\",\"interval\":1},"
                         + "\"overlap\":\"skip\"}")
                 .exchange().expectStatus().isEqualTo(422).expectBody().jsonPath("$.code")
                 .isEqualTo("schedule.too_often");
         client.put().uri("/api/schedules/s2").header("Cookie", session("u3"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"name\":\"Attempt\",\"cadence\":{\"every\":\"quarter\",\"at\":\"00:00\"},"
+                .body("{\"names\":{\"cs\":\"Pokus\",\"en\":\"Attempt\"},\"cadence\":{\"every\":\"quarter\",\"at\":\"00:00\"},"
                         + "\"overlap\":\"skip\"}")
                 .exchange().expectStatus().isEqualTo(422).expectBody().jsonPath("$.code")
                 .isEqualTo("schedule.quarterly_not_allowed");
@@ -144,7 +159,7 @@ class SchedulesTests {
     void refusesUnknownSchedulesAndPeopleWithoutTheNeededPermission() {
         client.post().uri("/api/schedules").header("Cookie", session("u3"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"instanceId\":\"missing\",\"name\":\"Attempt\","
+                .body("{\"instanceId\":\"missing\",\"names\":{\"cs\":\"Pokus\",\"en\":\"Attempt\"},"
                         + "\"cadence\":{\"every\":\"day\",\"at\":\"03:00\"},\"overlap\":\"skip\"}")
                 .exchange().expectStatus().isEqualTo(422).expectBody().jsonPath("$.code")
                 .isEqualTo("schedule.not_schedulable");
@@ -155,7 +170,7 @@ class SchedulesTests {
                 .exchange().expectStatus().isNotFound();
         client.post().uri("/api/schedules").header("Cookie", session("u8"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body("{\"instanceId\":\"pi4\",\"name\":\"Attempt\","
+                .body("{\"instanceId\":\"pi4\",\"names\":{\"cs\":\"Pokus\",\"en\":\"Attempt\"},"
                         + "\"cadence\":{\"every\":\"day\",\"at\":\"03:00\"},\"overlap\":\"skip\"}")
                 .exchange().expectStatus().isForbidden();
         client.post().uri("/api/schedules/s1/run").header("Cookie", session("u8"))
@@ -224,7 +239,7 @@ class SchedulesTests {
         jdbc.update("DELETE FROM schedules");
         jdbc.update("UPDATE runs SET state='Done',finished_at='2026-06-25T08:41:00Z' WHERE id='T-9916'");
         moveClock("2026-10-24T04:15:00Z");
-        String row = post("/api/schedules", "{\"instanceId\":\"pi4\",\"name\":\"DST test\","
+        String row = post("/api/schedules", "{\"instanceId\":\"pi4\",\"names\":{\"cs\":\"Letní čas\",\"en\":\"DST test\"},"
                 + "\"cadence\":{\"every\":\"day\",\"at\":\"06:15\"},\"overlap\":\"wait\"}");
         String id = mapper.readTree(row).path("id").asString();
         moveClock("2026-10-25T05:15:00Z");
@@ -233,13 +248,13 @@ class SchedulesTests {
     }
 
     private String post(String path, String body) {
-        return client.post().uri(path).header("Cookie", session("u3"))
+        return client.post().uri(path).header("Cookie", session("u3")).header("Accept-Language", "en")
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody();
     }
 
     private String put(String path, String body) {
-        return client.put().uri(path).header("Cookie", session("u3"))
+        return client.put().uri(path).header("Cookie", session("u3")).header("Accept-Language", "en")
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isOk()
                 .expectBody(String.class).returnResult().getResponseBody();
     }

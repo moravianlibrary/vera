@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.ObjectMapper;
 
 // LC-INT-repeat; LC-INT-archive. Jobs execute only through the engine control route.
 @SpringBootTest(classes = VeraTestingApplication.class,
@@ -61,7 +62,7 @@ class IntentionRepeatJobTests {
 
         assertThat(jdbc.queryForMap("SELECT name, description, counts_from, ends_on, distribution_id, "
                         + "template_id FROM intentions WHERE template_id='t1' AND counts_from='2026-07-01'"))
-                .containsEntry("name", "Monthly output — July 2026")
+                .containsEntry("name", "Měsíční výstup — July 2026")
                 .containsEntry("description", "What the scanning room should deliver this month.")
                 .containsEntry("counts_from", java.sql.Date.valueOf("2026-07-01"))
                 .containsEntry("ends_on", java.sql.Date.valueOf("2026-07-31"))
@@ -90,6 +91,20 @@ class IntentionRepeatJobTests {
     }
 
     @Test
+    void repeatWriteKeepsBothNamePatterns() throws Exception {
+        var response = client.post().uri("/api/intention-templates")
+                .header("Cookie", session("u3")).header("Accept-Language", "cs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(templateBody("Monthly output — {period}", "month", true))
+                .exchange().expectStatus().isCreated().expectBody(String.class).returnResult().getResponseBody();
+        var template = new ObjectMapper().readTree(response).path("template");
+        assertThat(template.path("namePatterns").path("cs").asString())
+                .isEqualTo("Měsíční výstup — {period}");
+        assertThat(template.path("namePatterns").path("en").asString())
+                .isEqualTo("Monthly output — {period}");
+    }
+
+    @Test
     void monthlyJobIsNotDueBeforeMidnightInPrague() {
         moveClock("2026-06-30T23:59:00+02:00");
         runJobs();
@@ -108,7 +123,7 @@ class IntentionRepeatJobTests {
 
         assertThat(jdbc.queryForObject(
                 "SELECT name FROM intentions WHERE template_id='t1' AND counts_from='2026-09-01'",
-                String.class)).isEqualTo("Monthly output — September 2026");
+                String.class)).isEqualTo("Měsíční výstup — September 2026");
         assertThat(jdbc.queryForObject(
                 "SELECT count(*) FROM intentions WHERE template_id='t1' AND counts_from IN "
                         + "('2026-07-01', '2026-08-01')", Integer.class)).isZero();
@@ -129,13 +144,13 @@ class IntentionRepeatJobTests {
 
         assertThat(jdbc.queryForObject(
                 "SELECT name FROM intentions WHERE template_id='t2'", String.class))
-                .isEqualTo("Weekly — Week 27, 2026");
+                .isEqualTo("Týdně — Week 27, 2026");
         assertThat(jdbc.queryForObject(
                 "SELECT counts_from || '/' || ends_on FROM intentions WHERE template_id='t2'", String.class))
                 .isEqualTo("2026-06-29/2026-07-05");
         assertThat(jdbc.queryForObject(
                 "SELECT name FROM intentions WHERE template_id='t3'", String.class))
-                .isEqualTo("Quarterly — Q3 2026");
+                .isEqualTo("Čtvrtletně — Q3 2026");
         assertThat(jdbc.queryForObject(
                 "SELECT counts_from || '/' || ends_on FROM intentions WHERE template_id='t3'", String.class))
                 .isEqualTo("2026-07-01/2026-09-30");
@@ -211,7 +226,9 @@ class IntentionRepeatJobTests {
     private Map<String, Object> templateBody(String pattern, String every, boolean archives) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("description", "What the scanning room should deliver this month.");
-        body.put("namePattern", pattern);
+        body.put("namePatterns", Map.of("cs", pattern.replace("Weekly", "Týdně").replace("Quarterly", "Čtvrtletně")
+                        .replace("Monthly output", "Měsíční výstup"),
+                "en", pattern));
         body.put("every", every);
         body.put("funding", Map.of("kind", "any"));
         body.put("scopeCategoryId", null);

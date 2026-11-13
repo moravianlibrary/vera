@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.jooq.DSLContext;
+import org.jooq.Condition;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
@@ -112,7 +113,8 @@ public class PluginCommands {
         OffsetDateTime now = now();
         dsl.insertInto(PLUGIN_INSTANCES)
                 .set(PLUGIN_INSTANCES.ID, id)
-                .set(PLUGIN_INSTANCES.NAME, body.path("name").asString().trim())
+                .set(PLUGIN_INSTANCES.NAME, body.path("names").path("en").asString(body.path("names").path("cs").asString()).trim())
+                .set(PLUGIN_INSTANCES.NAMES, JSONB.valueOf(body.path("names").toString()))
                 .set(PLUGIN_INSTANCES.IMPLEMENTATION_ID, implementationId)
                 .set(PLUGIN_INSTANCES.VERSION, version.path("version").asString())
                 .set(PLUGIN_INSTANCES.CONFIGURATION, JSONB.valueOf(json.writeValueAsString(configuration.value())))
@@ -168,10 +170,12 @@ public class PluginCommands {
         String oldCategory = instance.get(PLUGIN_INSTANCES.LINKED_CATEGORY_ID);
         String newCategory = nullableString(body.path("linkedCategoryId"));
         String oldName = instance.get(PLUGIN_INSTANCES.NAME);
-        String newName = body.path("name").asString().trim();
+        String newName = body.path("names").path("en").asString(body.path("names").path("cs").asString()).trim();
+        String oldNames = instance.get(PLUGIN_INSTANCES.NAMES).data();
+        String newNames = body.path("names").toString();
         List<Map<String, Object>> changes = new ArrayList<>();
-        if (!oldName.equals(newName)) {
-            changes.add(EventChanges.change("name", oldName, newName));
+        if (!oldNames.equals(newNames)) {
+            changes.add(EventChanges.change("names", oldNames, newNames));
         }
         Map<String, Object> oldPublic = sanitizedConfiguration(oldConfiguration, version);
         Map<String, Object> newPublic = sanitizedConfiguration(configuration.value(), version);
@@ -195,6 +199,7 @@ public class PluginCommands {
         }
         dsl.update(PLUGIN_INSTANCES)
                 .set(PLUGIN_INSTANCES.NAME, newName)
+                .set(PLUGIN_INSTANCES.NAMES, JSONB.valueOf(newNames))
                 .set(PLUGIN_INSTANCES.CONFIGURATION,
                         JSONB.valueOf(json.writeValueAsString(configuration.value())))
                 .set(PLUGIN_INSTANCES.SETTINGS, nullableJson(newSettings))
@@ -325,11 +330,19 @@ public class PluginCommands {
     }
 
     private ActResult draftRefusal(Record implementation, JsonNode body, Record existing, JsonNode version) {
-        String name = body.path("name").asString().trim();
+        JsonNode names = body.path("names");
         SelectConditionStep<Record1<Integer>> query = dsl.selectOne().from(PLUGIN_INSTANCES)
                 .where(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(implementation.get(PLUGIN_IMPLEMENTATIONS.ID)))
-                .and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
-                .and(PLUGIN_INSTANCES.NAME.equalIgnoreCase(name));
+                .and(PLUGIN_INSTANCES.IS_DELETED.isFalse());
+        List<String> localizedNames = new ArrayList<>();
+        names.properties().forEach(entry -> localizedNames.add(entry.getValue().asString().trim()));
+        Condition collision = org.jooq.impl.DSL.falseCondition();
+        for (Map.Entry<String, JsonNode> entry : names.properties()) {
+            collision = collision.or(org.jooq.impl.DSL.field("lower({0} ->> {1})", String.class,
+                            PLUGIN_INSTANCES.NAMES, entry.getKey())
+                    .eq(entry.getValue().asString().trim().toLowerCase(java.util.Locale.ROOT)));
+        }
+        query = query.and(collision);
         if (existing != null) {
             query = query.and(PLUGIN_INSTANCES.ID.ne(existing.get(PLUGIN_INSTANCES.ID)));
         }
@@ -441,7 +454,7 @@ public class PluginCommands {
     private List<Map<String, Object>> creationChanges(JsonNode body, JsonNode configuration,
             JsonNode version, JsonNode policy) {
         List<Map<String, Object>> changes = new ArrayList<>();
-        changes.add(EventChanges.change("name", null, body.path("name").asString().trim()));
+        changes.add(EventChanges.change("names", null, values(body.path("names"))));
         changes.add(EventChanges.change("implementationId", null, body.path("implementationId").asString()));
         changes.add(EventChanges.change("version", null, version.path("version").asString()));
         changes.add(EventChanges.change("configuration", null, sanitizedConfiguration(configuration, version)));

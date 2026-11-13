@@ -224,7 +224,8 @@ public class SeedLoader {
             }
             transaction.insertInto(PLUGIN_INSTANCES)
                     .set(PLUGIN_INSTANCES.ID, string(instance, "id"))
-                    .set(PLUGIN_INSTANCES.NAME, string(instance, "name"))
+                    .set(PLUGIN_INSTANCES.NAME, seedName(instance, "names", "name"))
+                    .set(PLUGIN_INSTANCES.NAMES, JSONB.valueOf(seedNames(instance, "names", "name")))
                     .set(PLUGIN_INSTANCES.IMPLEMENTATION_ID, string(instance, "implementationId"))
                     .set(PLUGIN_INSTANCES.CONFIGURATION, JSONB.valueOf(configuration.toString()))
                     .set(PLUGIN_INSTANCES.SETTINGS, nullableJson(instance, "settings"))
@@ -444,7 +445,8 @@ public class SeedLoader {
             target.insertInto(SCHEDULES)
                     .set(SCHEDULES.ID, string(schedule, "id"))
                     .set(SCHEDULES.INSTANCE_ID, string(schedule, "instanceId"))
-                    .set(SCHEDULES.NAME, string(schedule, "name"))
+                    .set(SCHEDULES.NAME, seedName(schedule, "names", "name"))
+                    .set(SCHEDULES.NAMES, JSONB.valueOf(seedNames(schedule, "names", "name")))
                     .set(SCHEDULES.CADENCE, JSONB.valueOf(schedule.path("cadence").toString()))
                     .set(SCHEDULES.OVERLAP, string(schedule, "overlap"))
                     .set(SCHEDULES.PAUSED_BY, nullableString(pause, "pausedBy"))
@@ -571,6 +573,18 @@ public class SeedLoader {
         return names == null || names.isNull()
                 ? json.valueToTree(Map.of("en", string(object, "name"))).toString()
                 : names.toString();
+    }
+
+    private String seedName(JsonNode object, String field, String legacy) {
+        JsonNode names = object.path(field);
+        if (names.path("en").isString()) return names.path("en").asString();
+        if (names.path("cs").isString()) return names.path("cs").asString();
+        return string(object, legacy);
+    }
+
+    private String seedNames(JsonNode object, String field, String legacy) {
+        JsonNode names = object.path(field);
+        return names.isObject() ? names.toString() : json.valueToTree(Map.of("en", string(object, legacy))).toString();
     }
 
     private String nullableString(JsonNode object, String field) {

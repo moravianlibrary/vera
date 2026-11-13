@@ -26,6 +26,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 // PLG-model; PLG-secrets; PLG-triggers; PLG-run-items; PLG-disable; PLG-delete; ACCESS-last-identity; L8.
 @org.springframework.boot.test.context.SpringBootTest(classes = VeraTestingApplication.class,
@@ -59,13 +60,20 @@ class PluginTests {
     @Test
     void readsPluginIndexAndInstanceSummariesForAdministratorAndReader() throws Exception {
         JsonNode recording = mapper.readTree(Path.of("../../replay/recordings/base-plugins.json").toFile());
-        JsonNode reads = recording.path("scenarios").get(0).path("calls");
+        JsonNode reads = recording.path("scenarios").get(1).path("calls");
         JsonNode pluginIndex = body(client.get().uri("/api/plugins").header("Cookie", adminCookie)
+                .header("Accept-Language", "en")
                 .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
-        assertThat(pluginIndex).isEqualTo(reads.get(0).path("body"));
+        assertRecordedPluginRead(pluginIndex, reads.get(0).path("body"));
         JsonNode instances = body(client.get().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .header("Accept-Language", "en")
                 .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
-        assertThat(instances).isEqualTo(reads.get(1).path("body"));
+        assertRecordedPluginRead(instances, reads.get(1).path("body"));
+        JsonNode czech = body(client.get().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .header("Accept-Language", "cs").exchange().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody());
+        assertThat(czech.get(0).path("name").asString()).isEqualTo("MZK Aleph");
+        assertThat(czech.get(0).path("names").path("en").asString()).isEqualTo("MZK Aleph");
         client.get().uri("/api/plugins").header("Cookie", readerCookie).exchange().expectStatus().isForbidden();
         client.get().uri("/api/plugin-instances").header("Cookie", readerCookie).exchange()
                 .expectStatus().isOk();
@@ -80,7 +88,7 @@ class PluginTests {
             if (call.has("code")) {
                 assertThat(actual.path("code").asString()).isEqualTo(call.path("code").asString());
             } else {
-                assertThat(actual).isEqualTo(call.path("body"));
+                assertRecordedPluginRead(actual, call.path("body"));
             }
         }
         assertAuditCodes(List.of("plugin_instance.reset"));
@@ -125,6 +133,35 @@ class PluginTests {
         assertThat(send(call("create-plugin-instance", 3), adminCookie).path("code").asString())
                 .isEqualTo("invalid");
         assertAuditCodes(List.of("plugin_instance.created"));
+    }
+
+    @Test
+    void pluginNamesRoundTripInCzechAndAreUniquePerLanguage() throws Exception {
+        ObjectNode request = (ObjectNode) call("create-plugin-instance", 0).path("requestBody").deepCopy();
+        request.set("names", mapper.readTree("{\"cs\":\"Zkušební Aleph\",\"en\":\"Test Aleph\"}"));
+        ((ObjectNode) request.path("configuration")).put("base_url", "round-trip.example");
+        JsonNode created = body(client.post().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .header("Accept-Language", "cs").contentType(MediaType.APPLICATION_JSON).body(request)
+                .exchange().expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
+        assertThat(created.path("name").asString()).isEqualTo("Zkušební Aleph");
+        assertThat(created.path("names").path("en").asString()).isEqualTo("Test Aleph");
+
+        request.set("names", mapper.readTree("{\"cs\":\"Zkušební Aleph\",\"en\":\"Another English\"}"));
+        ((ObjectNode) request.path("configuration")).put("base_url", "same-czech.example");
+        client.post().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isEqualTo(409)
+                .expectBody().jsonPath("$.code").isEqualTo("plugin.name_taken");
+
+        request.set("names", mapper.readTree("{\"cs\":\"Other Czech\",\"en\":\"Test Aleph\"}"));
+        ((ObjectNode) request.path("configuration")).put("base_url", "same-english.example");
+        client.post().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isEqualTo(409)
+                .expectBody().jsonPath("$.code").isEqualTo("plugin.name_taken");
+
+        request.set("names", mapper.readTree("{\"cs\":\"Other Czech\",\"en\":\"Another English\"}"));
+        ((ObjectNode) request.path("configuration")).put("base_url", "different-names.example");
+        client.post().uri("/api/plugin-instances").header("Cookie", adminCookie)
+                .contentType(MediaType.APPLICATION_JSON).body(request).exchange().expectStatus().isOk();
     }
 
     @Test
@@ -181,7 +218,7 @@ class PluginTests {
             if (call.has("code")) {
                 assertThat(actual.path("code").asString()).isEqualTo(call.path("code").asString());
             } else {
-                assertThat(actual).isEqualTo(call.path("body"));
+                assertRecordedPluginRead(actual, call.path("body"));
             }
         }
         JsonNode impact = body(client.get().uri("/api/plugin-instances/pi20/impact").header("Cookie", adminCookie)
@@ -195,7 +232,7 @@ class PluginTests {
     void savesCustodyAndStartsAPlacingRun() {
         int before = placementRunCount();
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("name", "Moravica project");
+        body.put("names", Map.of("cs", "Projekt Moravica", "en", "Moravica project"));
         body.put("configuration", Map.of("expr", ".request.project == \"Moravica\""));
         body.put("linkedCategoryId", null);
         body.put("settings", Map.of("kind", "Custody", "custodyId", "pc3"));
@@ -258,18 +295,22 @@ class PluginTests {
         int status = recorded.path("status").asInt();
         String response;
         if ("GET".equals(method)) {
-            response = client.get().uri(path).header("Cookie", cookie).exchange().expectStatus()
+            response = client.get().uri(path).header("Cookie", cookie)
+                    .header("Accept-Language", recorded.path("acceptLanguage").asString("en")).exchange().expectStatus()
                     .isEqualTo(status).expectBody(String.class).returnResult().getResponseBody();
         } else if ("DELETE".equals(method)) {
-            response = client.delete().uri(path).header("Cookie", cookie).exchange().expectStatus()
+            response = client.delete().uri(path).header("Cookie", cookie)
+                    .header("Accept-Language", recorded.path("acceptLanguage").asString("en")).exchange().expectStatus()
                     .isEqualTo(status).expectBody(String.class).returnResult().getResponseBody();
         } else if ("POST".equals(method)) {
-            response = client.post().uri(path).header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
+            response = client.post().uri(path).header("Cookie", cookie)
+                    .header("Accept-Language", recorded.path("acceptLanguage").asString("en")).contentType(MediaType.APPLICATION_JSON)
                     .body(recorded.has("requestBody") ? recorded.path("requestBody") : Map.of())
                     .exchange().expectStatus().isEqualTo(status).expectBody(String.class)
                     .returnResult().getResponseBody();
         } else {
-            response = client.put().uri(path).header("Cookie", cookie).contentType(MediaType.APPLICATION_JSON)
+            response = client.put().uri(path).header("Cookie", cookie)
+                    .header("Accept-Language", recorded.path("acceptLanguage").asString("en")).contentType(MediaType.APPLICATION_JSON)
                     .body(recorded.path("requestBody")).exchange().expectStatus().isEqualTo(status)
                     .expectBody(String.class).returnResult().getResponseBody();
         }
@@ -301,5 +342,19 @@ class PluginTests {
 
     private JsonNode body(String value) {
         return mapper.readTree(value);
+    }
+
+    private void assertRecordedPluginRead(JsonNode actual, JsonNode expected) {
+        JsonNode normalized = actual.deepCopy();
+        if (normalized.has("instances")) normalized.path("instances").forEach(this::removeNestedScheduleNames);
+        removeNestedScheduleNames(normalized);
+        assertThat(normalized).isEqualTo(expected);
+    }
+
+    private void removeNestedScheduleNames(JsonNode instance) {
+        instance.path("schedules").forEach(schedule -> {
+            assertThat(schedule.path("names").path("en").asString()).isEqualTo(schedule.path("name").asString());
+            ((ObjectNode) schedule).remove("names");
+        });
     }
 }

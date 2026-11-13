@@ -155,3 +155,6 @@ databaseChangeLog:
   - include:
       file: 0470-names-in-each-language.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0480-plugin-schedules-repeats-names.sql
+      relativeToChangelogFile: true

@@ -132,6 +132,14 @@ class ValidationReadTests {
     }
 
     @Test
+    void validationSearchFindsAPluginByItsCzechName() throws Exception {
+        dsl.execute("UPDATE plugin_instances SET names=?::jsonb WHERE id='pi10'",
+                "{\"cs\":\"Kontrola jazyka\",\"en\":\"Language check\"}");
+        assertThat(get("/api/validations?q=Kontrola%20jazyka", session("u3")).path("items").size())
+                .isPositive();
+    }
+
+    @Test
     void detailRequiresReachAndAnswersTheMockNotWaitingRefusal() throws Exception {
         JsonNode detail = get("/api/validations/IT11", session("u8"));
         assertThat(detail.path("row").path("iteration").path("id").asString()).isEqualTo("IT11");

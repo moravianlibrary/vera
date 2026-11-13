@@ -22,6 +22,7 @@ import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
 
 // LC-INT-repeat; LC-INT-archive; B5. The queued date makes obsolete repeats harmless.
 @Component
@@ -85,7 +86,10 @@ class IntentionRepeatJob implements JobKind<Void> {
             if (template.getIsArchivingPrevious()) {
                 archiveLatest(dsl, id);
             }
-            String name = template.getNamePattern().replace("{period}", bounds.name());
+            JsonNode patterns = json.readTree(template.getNamePatterns().data());
+            String name = patterns.path("cs").isString() ? patterns.path("cs").asString()
+                    : patterns.path("en").asString(template.getNamePattern());
+            name = name.replace("{period}", bounds.name());
             String occurrenceId = writer.createPlanned(
                     dsl,
                     name,

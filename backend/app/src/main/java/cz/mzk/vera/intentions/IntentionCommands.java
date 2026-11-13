@@ -330,7 +330,8 @@ class IntentionCommands {
         dsl.insertInto(INTENTION_TEMPLATES)
                 .set(INTENTION_TEMPLATES.ID, id)
                 .set(INTENTION_TEMPLATES.DESCRIPTION, draft.path("description").asString())
-                .set(INTENTION_TEMPLATES.NAME_PATTERN, draft.path("namePattern").asString())
+                .set(INTENTION_TEMPLATES.NAME_PATTERN, draft.path("namePatterns").path("en").asString(draft.path("namePatterns").path("cs").asString()))
+                .set(INTENTION_TEMPLATES.NAME_PATTERNS, JSONB.valueOf(draft.path("namePatterns").toString()))
                 .set(INTENTION_TEMPLATES.EVERY, draft.path("every").asString())
                 .set(INTENTION_TEMPLATES.FUNDING_KIND, funding.path("kind").asString())
                 .set(
@@ -357,6 +358,14 @@ class IntentionCommands {
         HeldScopes scopes = access.scopesHeldBy(caller.userId());
         if (!scopes.hasPermission("intention.repeat")) {
             return ActResult.refused(403, "You may not set repeats", null);
+        }
+        JsonNode namePatterns = draft.path("namePatterns");
+        boolean hasPeriod = namePatterns.path("cs").isString()
+                && namePatterns.path("cs").asString().contains("{period}")
+                || namePatterns.path("en").isString()
+                        && namePatterns.path("en").asString().contains("{period}");
+        if (!hasPeriod) {
+            return ActResult.refused(422, "Put {period} in at least one name", "invalid");
         }
         JsonNode mix = draft.path("mix");
         if ("use".equals(mix.path("kind").asString())) {
@@ -424,6 +433,7 @@ class IntentionCommands {
         template.put("id", row.getId());
         template.put("description", row.getDescription());
         template.put("namePattern", row.getNamePattern());
+        template.put("namePatterns", json.readTree(row.getNamePatterns().data()));
         template.put("every", row.getEvery());
         Map<String, Object> funding = new LinkedHashMap<>();
         funding.put("kind", row.getFundingKind());

@@ -13,9 +13,11 @@ import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
 import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 
 import cz.mzk.vera.domain.permissions.Permissions;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.tasks.TasksQueries;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -80,7 +82,7 @@ public class PluginQueries {
     }
 
     public List<Map<String, Object>> instances() {
-        List<Map<String, Object>> result = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME,
+        List<Map<String, Object>> result = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.NAMES,
                         PLUGIN_IMPLEMENTATIONS.NAME,
                         PLUGIN_IMPLEMENTATIONS.KIND, PLUGIN_INSTANCES.IS_ENABLED)
                 .from(PLUGIN_INSTANCES).join(PLUGIN_IMPLEMENTATIONS)
@@ -171,7 +173,7 @@ public class PluginQueries {
     }
 
     public Map<String, Object> instanceSummary(String id) {
-        Record row = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_IMPLEMENTATIONS.NAME,
+        Record row = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.NAMES, PLUGIN_IMPLEMENTATIONS.NAME,
                         PLUGIN_IMPLEMENTATIONS.KIND, PLUGIN_INSTANCES.IS_ENABLED)
                 .from(PLUGIN_INSTANCES).join(PLUGIN_IMPLEMENTATIONS)
                 .on(PLUGIN_IMPLEMENTATIONS.ID.eq(PLUGIN_INSTANCES.IMPLEMENTATION_ID))
@@ -240,14 +242,16 @@ public class PluginQueries {
                 .where(SCHEDULES.INSTANCE_ID.eq(row.get(PLUGIN_INSTANCES.ID))).fetch(schedule -> {
                     Map<String, Object> value = new LinkedHashMap<>();
                     value.put("id", schedule.get(SCHEDULES.ID));
-                    value.put("name", schedule.get(SCHEDULES.NAME));
+                    value.put("name", localized(schedule.get(SCHEDULES.NAMES)));
+                    value.put("names", node(schedule.get(SCHEDULES.NAMES)));
                     value.put("cadence", values(node(schedule.get(SCHEDULES.CADENCE))));
                     value.put("isPaused", schedule.get(SCHEDULES.PAUSED_BY) != null);
                     return value;
                 });
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", row.get(PLUGIN_INSTANCES.ID));
-        result.put("name", row.get(PLUGIN_INSTANCES.NAME));
+        result.put("names", node(row.get(PLUGIN_INSTANCES.NAMES)));
+        result.put("name", localized(row.get(PLUGIN_INSTANCES.NAMES)));
         result.put("implementationId", implementation.get(PLUGIN_IMPLEMENTATIONS.ID));
         result.put("kind", implementation.get(PLUGIN_IMPLEMENTATIONS.KIND));
         result.put("version", row.get(PLUGIN_INSTANCES.VERSION));
@@ -303,11 +307,19 @@ public class PluginQueries {
     private Map<String, Object> summary(Record row) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("id", row.get(PLUGIN_INSTANCES.ID));
-        result.put("name", row.get(PLUGIN_INSTANCES.NAME));
+        result.put("names", node(row.get(PLUGIN_INSTANCES.NAMES)));
+        result.put("name", localized(row.get(PLUGIN_INSTANCES.NAMES)));
         result.put("plugin", row.get(PLUGIN_IMPLEMENTATIONS.NAME));
         result.put("kind", row.get(PLUGIN_IMPLEMENTATIONS.KIND));
         result.put("isEnabled", row.get(PLUGIN_INSTANCES.IS_ENABLED));
         return result;
+    }
+
+    private String localized(JSONB value) {
+        JsonNode names = node(value);
+        Map<String, String> values = new LinkedHashMap<>();
+        if (names != null) names.properties().forEach(entry -> values.put(entry.getKey(), entry.getValue().asString()));
+        return Names.nameIn(values, RequestLanguage.current());
     }
 
     private Map<String, Object> recentRun(Map<String, Object> run) {

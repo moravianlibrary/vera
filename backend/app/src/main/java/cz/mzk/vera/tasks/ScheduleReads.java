@@ -9,8 +9,10 @@ import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
 import static cz.mzk.vera.db.tables.Tables.RUN_ERRORS;
 
 import cz.mzk.vera.domain.schedules.Schedules;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.web.Instants;
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -53,10 +55,10 @@ public class ScheduleReads {
     public Map<String, Object> row(String id) {
         Instant now = clock.instant();
         Instant end = now;
-        Record plugin = dsl.select(SCHEDULES.ID, SCHEDULES.NAME, SCHEDULES.CADENCE, SCHEDULES.OVERLAP,
+        Record plugin = dsl.select(SCHEDULES.ID, SCHEDULES.NAME, SCHEDULES.NAMES, SCHEDULES.CADENCE, SCHEDULES.OVERLAP,
                         SCHEDULES.PAUSED_BY, SCHEDULES.PAUSED_AT, SCHEDULES.PAUSE_REASON,
                         SCHEDULES.CREATED_BY, SCHEDULES.SINCE, PLUGIN_INSTANCES.ID,
-                        PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.IS_ENABLED,
+                        PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.NAMES, PLUGIN_INSTANCES.IS_ENABLED,
                         PLUGIN_IMPLEMENTATIONS.NAME, PLUGIN_IMPLEMENTATIONS.KIND)
                 .from(SCHEDULES).join(PLUGIN_INSTANCES).on(PLUGIN_INSTANCES.ID.eq(SCHEDULES.INSTANCE_ID))
                 .join(PLUGIN_IMPLEMENTATIONS)
@@ -70,10 +72,10 @@ public class ScheduleReads {
         Instant now = clock.instant();
         Instant end = now.plus(RANGE_DAYS.get(selected), ChronoUnit.DAYS);
         List<Map<String, Object>> rows = new ArrayList<>();
-        dsl.select(SCHEDULES.ID, SCHEDULES.NAME, SCHEDULES.CADENCE, SCHEDULES.OVERLAP,
+        dsl.select(SCHEDULES.ID, SCHEDULES.NAME, SCHEDULES.NAMES, SCHEDULES.CADENCE, SCHEDULES.OVERLAP,
                         SCHEDULES.PAUSED_BY, SCHEDULES.PAUSED_AT, SCHEDULES.PAUSE_REASON,
                         SCHEDULES.CREATED_BY, SCHEDULES.SINCE, PLUGIN_INSTANCES.ID,
-                        PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.IS_ENABLED,
+                        PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.NAMES, PLUGIN_INSTANCES.IS_ENABLED,
                         PLUGIN_IMPLEMENTATIONS.NAME, PLUGIN_IMPLEMENTATIONS.KIND)
                 .from(SCHEDULES).join(PLUGIN_INSTANCES).on(PLUGIN_INSTANCES.ID.eq(SCHEDULES.INSTANCE_ID))
                 .join(PLUGIN_IMPLEMENTATIONS)
@@ -93,7 +95,8 @@ public class ScheduleReads {
     private Map<String, Object> pluginRow(Record row, Instant now, Instant end) {
         Map<String, Object> instance = new LinkedHashMap<>();
         instance.put("id", row.get(PLUGIN_INSTANCES.ID));
-        instance.put("name", row.get(PLUGIN_INSTANCES.NAME));
+        instance.put("name", localized(row.get(PLUGIN_INSTANCES.NAMES)));
+        instance.put("names", node(row.get(PLUGIN_INSTANCES.NAMES)));
         instance.put("plugin", row.get(PLUGIN_IMPLEMENTATIONS.NAME));
         instance.put("kind", row.get(PLUGIN_IMPLEMENTATIONS.KIND));
         instance.put("isEnabled", row.get(PLUGIN_INSTANCES.IS_ENABLED));
@@ -107,17 +110,23 @@ public class ScheduleReads {
             pause.put("pausedAt", Instants.format(row.get(SCHEDULES.PAUSED_AT).toInstant()));
             pause.put("reason", row.get(SCHEDULES.PAUSE_REASON));
         }
-        return row(row.get(SCHEDULES.ID), row.get(SCHEDULES.NAME), source,
+        Map<String, Object> result = row(row.get(SCHEDULES.ID), localized(row.get(SCHEDULES.NAMES)), source,
                 map(row.get(SCHEDULES.CADENCE).data()), row.get(SCHEDULES.OVERLAP), pause,
                 row.get(SCHEDULES.CREATED_BY), row.get(SCHEDULES.SINCE).toString(),
                 row.get(SCHEDULES.PAUSED_BY) != null, now, end);
+        result.put("names", node(row.get(SCHEDULES.NAMES)));
+        return result;
     }
 
     private Map<String, Object> repeatRow(Record row, Instant now, Instant end) {
         Map<String, Object> source = new LinkedHashMap<>();
         source.put("kind", "repeat");
         source.put("templateId", row.get(INTENTION_TEMPLATES.ID));
-        String name = row.get(INTENTION_TEMPLATES.NAME_PATTERN).replace("{period}", "next period");
+        JsonNode patterns = node(row.get(INTENTION_TEMPLATES.NAME_PATTERNS));
+        String name = localized(patterns).replace("{period}", "next period");
+        Map<String, Object> names = new LinkedHashMap<>();
+        patterns.properties().forEach(entry -> names.put(entry.getKey(),
+                entry.getValue().asString().replace("{period}", "next period")));
         Map<String, Object> cadence = Schedules.repeatCadenceOf(row.get(INTENTION_TEMPLATES.EVERY));
         Instant computed = queue.next(cadence, now);
         Instant queued = row.get(INTENTION_TEMPLATES.NEXT_ON)
@@ -126,9 +135,11 @@ public class ScheduleReads {
             throw new IllegalStateException("Queued repeat differs from its cadence for "
                     + row.get(INTENTION_TEMPLATES.ID));
         }
-        return row(row.get(INTENTION_TEMPLATES.ID), name, source, cadence, "skip", null,
+        Map<String, Object> result = row(row.get(INTENTION_TEMPLATES.ID), name, source, cadence, "skip", null,
                 row.get(INTENTION_TEMPLATES.CREATED_BY), row.get(INTENTION_TEMPLATES.SINCE).toString(),
                 false, now, end);
+        result.put("names", names);
+        return result;
     }
 
     private Map<String, Object> row(String id, String name, Map<String, Object> source,
@@ -206,5 +217,15 @@ public class ScheduleReads {
         node.properties().forEach(entry -> result.put(
                 entry.getKey(), json.convertValue(entry.getValue(), Object.class)));
         return result;
+    }
+
+    private JsonNode node(org.jooq.JSONB value) { return value == null ? null : json.readTree(value.data()); }
+
+    private String localized(org.jooq.JSONB value) { return localized(node(value)); }
+
+    private String localized(JsonNode node) {
+        Map<String, String> values = new LinkedHashMap<>();
+        if (node != null) node.properties().forEach(entry -> values.put(entry.getKey(), entry.getValue().asString()));
+        return Names.nameIn(values, RequestLanguage.current());
     }
 }

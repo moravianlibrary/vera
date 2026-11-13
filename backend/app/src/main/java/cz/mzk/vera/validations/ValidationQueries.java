@@ -214,7 +214,11 @@ public class ValidationQueries {
                                 .and(DSL.lower(ITERATION_DEFECTS.SUBJECT).contains(needle)
                                         .or(DSL.lower(ITERATION_DEFECTS.INSTANCE_ID.concat(" ")
                                                 .concat(ITERATION_DEFECTS.RULE_CODE)).contains(needle))
-                                        .or(DSL.lower(PLUGIN_INSTANCES.NAME).contains(needle))))));
+                                        .or(DSL.lower(PLUGIN_INSTANCES.NAME).contains(needle))
+                                        .or(DSL.lower(DSL.field("{0} ->> 'cs'", String.class,
+                                                PLUGIN_INSTANCES.NAMES)).contains(needle))
+                                        .or(DSL.lower(DSL.field("{0} ->> 'en'", String.class,
+                                                PLUGIN_INSTANCES.NAMES)).contains(needle))))));
     }
 
     private List<SortField<?>> order(ValidationSearch search, Field<String> group) {

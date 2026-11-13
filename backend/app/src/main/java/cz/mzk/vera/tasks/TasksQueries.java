@@ -16,6 +16,8 @@ import static org.jooq.impl.DSL.trueCondition;
 import static cz.mzk.vera.domain.permissions.Permissions.hasPermission;
 
 import cz.mzk.vera.domain.schedules.Schedules;
+import cz.mzk.vera.domain.Names;
+import cz.mzk.vera.web.RequestLanguage;
 import cz.mzk.vera.domain.access.Grant;
 import cz.mzk.vera.domain.valuerange.DayRange;
 import cz.mzk.vera.domain.valuerange.Range;
@@ -167,14 +169,18 @@ public class TasksQueries {
             source.put("name", row.get(RUNS.CORE_NAME) == null ? "VERA" : row.get(RUNS.CORE_NAME));
             result.put("source", source);
         } else {
-            Record instance = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME,
+            Record instance = dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.NAMES,
                     PLUGIN_IMPLEMENTATIONS.NAME, PLUGIN_IMPLEMENTATIONS.KIND, PLUGIN_INSTANCES.IS_ENABLED)
                     .from(PLUGIN_INSTANCES).join(PLUGIN_IMPLEMENTATIONS)
                     .on(PLUGIN_IMPLEMENTATIONS.ID.eq(PLUGIN_INSTANCES.IMPLEMENTATION_ID))
                     .where(PLUGIN_INSTANCES.ID.eq(instanceId)).fetchOne();
             Map<String, Object> summary = new LinkedHashMap<>();
             summary.put("id", instance.get(PLUGIN_INSTANCES.ID));
-            summary.put("name", instance.get(PLUGIN_INSTANCES.NAME));
+            JsonNode localizedNames = read(instance.get(PLUGIN_INSTANCES.NAMES).data());
+            Map<String, String> nameMap = new LinkedHashMap<>();
+            localizedNames.properties().forEach(entry -> nameMap.put(entry.getKey(), entry.getValue().asString()));
+            summary.put("name", Names.nameIn(nameMap, RequestLanguage.current()));
+            summary.put("names", localizedNames);
             summary.put("plugin", instance.get(PLUGIN_IMPLEMENTATIONS.NAME));
             summary.put("kind", instance.get(PLUGIN_IMPLEMENTATIONS.KIND));
             summary.put("isEnabled", instance.get(PLUGIN_INSTANCES.IS_ENABLED));

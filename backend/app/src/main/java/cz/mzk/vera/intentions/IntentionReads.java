@@ -91,6 +91,7 @@ public class IntentionReads {
                 template.put("id", row.getId());
                 template.put("description", row.getDescription());
                 template.put("namePattern", row.getNamePattern());
+                template.put("namePatterns", mapper.readTree(row.getNamePatterns().data()));
                 template.put("every", row.getEvery());
                 template.put("funding", funding(row.getFundingKind(), row.getFundingProjectId()));
                 template.put("scopeCategoryId", row.getScopeCategoryId());

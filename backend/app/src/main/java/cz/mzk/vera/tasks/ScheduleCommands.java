@@ -82,12 +82,13 @@ public class ScheduleCommands {
         int position = dsl.select(SCHEDULES.POSITION).from(SCHEDULES).fetch(SCHEDULES.POSITION).stream()
                 .mapToInt(Integer::intValue).max().orElse(-1) + 1;
         Instant nextAt = queue.next(cadence, clock.instant());
-        String name = body.path("name").asString().trim();
+        String name = body.path("names").path("en").asString(body.path("names").path("cs").asString()).trim();
         String overlap = body.path("overlap").asString();
         dsl.insertInto(SCHEDULES)
                 .set(SCHEDULES.ID, id)
                 .set(SCHEDULES.INSTANCE_ID, instanceId)
                 .set(SCHEDULES.NAME, name)
+                .set(SCHEDULES.NAMES, JSONB.valueOf(body.path("names").toString()))
                 .set(SCHEDULES.CADENCE, JSONB.valueOf(json.writeValueAsString(cadence)))
                 .set(SCHEDULES.OVERLAP, overlap)
                 .set(SCHEDULES.CREATED_BY, caller.userId())
@@ -118,7 +119,9 @@ public class ScheduleCommands {
         Instant nextAt = old.get(SCHEDULES.PAUSED_BY) == null && cadenceChanged
                 ? queue.next(cadence, clock.instant()) : old.get(SCHEDULES.NEXT_AT) == null
                         ? null : old.get(SCHEDULES.NEXT_AT).toInstant();
-        dsl.update(SCHEDULES).set(SCHEDULES.NAME, body.path("name").asString().trim())
+        String name = body.path("names").path("en").asString(body.path("names").path("cs").asString()).trim();
+        dsl.update(SCHEDULES).set(SCHEDULES.NAME, name)
+                .set(SCHEDULES.NAMES, JSONB.valueOf(body.path("names").toString()))
                 .set(SCHEDULES.CADENCE, JSONB.valueOf(json.writeValueAsString(cadence)))
                 .set(SCHEDULES.OVERLAP, body.path("overlap").asString())
                 .set(SCHEDULES.NEXT_AT, nextAt == null ? null : nextAt.atOffset(ZoneOffset.UTC))

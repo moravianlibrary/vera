@@ -68,7 +68,7 @@
       }
     },
     "archivedIntentionCategories": {
-      "i10": [{ "id": "c1", "name": "Periodicals", "parentId": null }]
+      "i10": [{ "id": "c1", "name": "Periodicals", "names": { "cs": "Periodika", "en": "Periodicals" }, "parentId": null }]
     }
   }
 }
