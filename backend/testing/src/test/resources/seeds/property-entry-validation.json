@@ -13,6 +13,7 @@
           {
             "version": "3.1.0",
             "contractVersion": "1.0",
+            "signer": "Moravská zemská knihovna v Brně",
             "installedAt": "2026-01-15",
             "installedBy": "u3",
             "triggers": ["OnIngest", "OnRecordChange", "OnSchedule", "OnDemand"],
@@ -21,8 +22,14 @@
               "identifierTypes": [],
               "rawStates": [],
               "rules": [
-                { "code": "R03", "label": "title well-formed" },
-                { "code": "R07", "label": "publication year resolvable" },
+                {
+                  "code": "R03",
+                  "label": "title well-formed"
+                },
+                {
+                  "code": "R07",
+                  "label": "publication year resolvable"
+                },
                 {
                   "code": "R11",
                   "label": "extent matches what was delivered",
@@ -36,8 +43,16 @@
               "loginEntry": null
             },
             "configFields": [
-              { "key": "severity", "isSecret": false, "isRequired": true },
-              { "key": "rules", "isSecret": false, "isRequired": true }
+              {
+                "key": "severity",
+                "isSecret": false,
+                "isRequired": true
+              },
+              {
+                "key": "rules",
+                "isSecret": false,
+                "isRequired": true
+              }
             ]
           }
         ]
