@@ -1818,6 +1818,16 @@ export const endpoints = {
     codes: ["plugin.predefined"],
     engine: false,
   }),
+  pluginInstanceReset: spec({
+    method: "POST",
+    path: apiRoutes.pluginInstanceReset,
+    summary: "Clears an instance’s cursors and rebuilds its mirror on the next run.",
+    params: z.object({ id: z.string() }),
+    body: z.object({}),
+    response: pluginInstanceDetailSchema,
+    codes: ["forbidden", "not_found", "plugin.no_cursor"],
+    engine: false,
+  }),
   pluginInstanceImpact: spec({
     method: "GET",
     path: `${apiRoutes.pluginInstances}/:id/impact`,

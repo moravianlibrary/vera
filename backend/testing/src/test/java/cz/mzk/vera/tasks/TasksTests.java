@@ -301,6 +301,82 @@ class TasksTests {
     }
 
     @Test
+    void syncingDetailShowsTheStoredMirrorTimeAndCountAndOtherKindsHaveNoMirror() throws Exception {
+        declareOperation("pi1", "sync");
+        startPluginRun("pi1", "Catalog freshness");
+        runOneJob();
+        JsonNode index = get("/api/plugins", "u3");
+        JsonNode catalog = pluginDetail(index, "pi1");
+        assertThat(catalog.path("mirror").path("records").asInt()).isEqualTo(jdbc.queryForObject(
+                "SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1'", Integer.class));
+        assertThat(catalog.path("mirror").path("syncedAt").asString()).isEqualTo("2026-06-25T08:40:00.000Z");
+        assertThat(catalog.path("canReset").asBoolean()).isTrue();
+        assertThat(pluginDetail(index, "pi8").path("mirror").isNull()).isTrue();
+        assertThat(pluginDetail(index, "pi12").path("mirror").isNull()).isTrue();
+    }
+
+    @Test
+    void resetClearsTheHarvestCursorSoTheNextRunReadsItsFirstPage() throws Exception {
+        jdbc.update("INSERT INTO plugin_cursors(instance_id,operation,cursor) VALUES ('pi8','harvest','1')");
+        resetPlugin("pi8");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_cursors WHERE instance_id='pi8'",
+                Integer.class)).isZero();
+        advanceClock();
+        String runId = startPluginRun("pi8", "Harvest after reset");
+        JsonNode done = finishRun(runId);
+        assertThat(done.path("run").path("state").asString()).isIn("Done", "DoneWithErrors");
+        assertThat(done.path("run").path("itemCount").asInt()).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_outbox WHERE record->>'code'='plugin_instance.reset'",
+                Integer.class)).isEqualTo(1);
+    }
+
+    @Test
+    void resetRebuildKeepsOldRecordsSearchableUntilTheLastPageThenDropsThem() throws Exception {
+        declareOperation("pi1", "sync");
+        jdbc.update("INSERT INTO catalog_mirror(instance_id,catalog_id,title,type,record,fetched_at,position) "
+                + "VALUES ('pi1','MZK01-retired','Retired catalog record','Unknown','{}'::jsonb,"
+                + "'2026-06-24T08:40:00Z',999)");
+        resetPlugin("pi1");
+        assertThat(get("/api/proposals/catalog-search?q=Retired&catalog=pi1", "u3").toString())
+                .contains("MZK01-retired");
+        advanceClock();
+        String runId = startPluginRun("pi1", "Rebuild catalog");
+        runOneJob();
+        assertThat(get("/api/proposals/catalog-search?q=Retired&catalog=pi1", "u3").toString())
+                .contains("MZK01-retired");
+        assertThat(jdbc.queryForObject("SELECT rebuild_after IS NOT NULL FROM plugin_instances WHERE id='pi1'",
+                Boolean.class)).isTrue();
+        JsonNode done = finishRun(runId);
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(get("/api/proposals/catalog-search?q=Retired&catalog=pi1", "u3").toString())
+                .doesNotContain("MZK01-retired");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1' "
+                + "AND catalog_id='MZK01-retired'", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT rebuild_after IS NULL FROM plugin_instances WHERE id='pi1'",
+                Boolean.class)).isTrue();
+    }
+
+    private JsonNode pluginDetail(JsonNode index, String id) {
+        for (JsonNode instance : index.path("instances")) {
+            if (id.equals(instance.path("id").asString())) {
+                return instance;
+            }
+        }
+        throw new AssertionError("No plugin instance " + id);
+    }
+
+    private void resetPlugin(String instanceId) {
+        client.post().uri("/api/plugin-instances/" + instanceId + "/reset").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isOk();
+    }
+
+    private void advanceClock() {
+        client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                .body("{\"advance\":{\"minutes\":1}}")
+                .exchange().expectStatus().isOk();
+    }
+
+    @Test
     void catalogChangesOnlyRechecksHeldDocumentsAmongChanges() throws Exception {
         declareOperation("pi1", "changes");
         String runId = startPluginRun("pi1", "Catalog changes");

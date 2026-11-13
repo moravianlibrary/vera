@@ -148,6 +148,15 @@ function detailOf(
     })),
     runCount: runs.length,
     lastRunAt: lastRunAt ?? null,
+    mirror: versionOf(instance)?.declares.operations?.includes("sync")
+      ? { syncedAt: "2026-06-25T08:00:00.000Z", records: 0 }
+      : null,
+    canReset:
+      kindOf(instance) === "Harvester" ||
+      (versionOf(instance)?.declares.operations?.some(
+        (operation) => operation === "changes" || operation === "sync",
+      ) ??
+        false),
   };
 }
 
@@ -431,6 +440,28 @@ function lastWayInRefusal(instance: StoredPluginInstance): Refusal | null {
 }
 
 // The server re-places open proposals after a Custody instance changes (PLG-disable, L8).
+// ACT-plugin-reset: resetting keeps the old mirror available until the next complete sync.
+export function resetInstance(session: Session, instanceId: string): Outcome<PluginInstanceDetail> {
+  if (!hasPermission(session, "plugin.configure")) {
+    return { refusal: mayNotConfigure };
+  }
+  const instance = findLive(instanceId);
+  if (instance === undefined) {
+    return { refusal: noSuchInstance };
+  }
+  const detail = detailOf(instance, mockNow(), hasPermission(session, "hook.read"));
+  if (!detail.canReset) {
+    return {
+      refusal: {
+        status: 409,
+        message: "Its version declares no cursor operation",
+        code: "plugin.no_cursor",
+      },
+    };
+  }
+  return { value: detail };
+}
+
 export function setInstanceEnabled(
   session: Session,
   instanceId: string,

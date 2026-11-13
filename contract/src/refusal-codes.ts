@@ -107,6 +107,7 @@ export const refusalCodes = [
   "plugin.identifier_taken",
   "plugin.last_identity",
   "plugin.name_taken",
+  "plugin.no_cursor",
   "plugin.no_descriptor",
   "plugin.no_such_category",
   "plugin.no_such_custody",

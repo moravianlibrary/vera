@@ -130,6 +130,9 @@ export const pluginInstanceDetailSchema = z.object({
   runCount: count,
   // Its last run, or login, or send, even once the run has expired from Tasks.
   lastRunAt: timestamp.nullable(),
+  // PLG-api-mirror: only versions declaring sync keep a mirror.
+  mirror: z.object({ syncedAt: timestamp.nullable(), records: count }).nullable(),
+  canReset: z.boolean(),
 });
 
 export type PluginInstanceDetail = z.infer<typeof pluginInstanceDetailSchema>;

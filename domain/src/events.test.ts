@@ -27,8 +27,8 @@ describe("event catalogue and entries (EVENT-catalogue, EVENT-shape)", () => {
     const codes = Object.values(eventCatalogue);
     expect(codes.filter((flags) => flags.history)).toHaveLength(48);
     expect(codes.filter((flags) => flags.hook && !flags.history)).toHaveLength(3);
-    expect(codes.filter((flags) => flags.audit && !flags.history)).toHaveLength(57);
-    expect(codes).toHaveLength(108);
+    expect(codes.filter((flags) => flags.audit && !flags.history)).toHaveLength(58);
+    expect(codes).toHaveLength(109);
   });
 
   test("lists only list.started as derived and sends it only to hooks", () => {

@@ -1,10 +1,12 @@
 package cz.mzk.vera.plugins;
 
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_SYNC;
 import static cz.mzk.vera.db.tables.Tables.HOOKS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
-import static cz.mzk.vera.db.tables.Tables.REQUEST_PLACEMENTS;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
+import static cz.mzk.vera.db.tables.Tables.REQUEST_PLACEMENTS;
 import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
 import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
@@ -273,6 +275,28 @@ public class PluginQueries {
         result.put("recentRuns", recentRuns);
         result.put("runCount", kept.size());
         result.put("lastRunAt", lastRun == null ? null : Instants.format(lastRun.toInstant()));
+        result.put("mirror", strings(version.path("declares").path("operations")).contains("sync")
+                ? mirror(row.get(PLUGIN_INSTANCES.ID)) : null);
+        result.put("canReset", canReset(row));
+        return result;
+    }
+
+    public boolean canReset(Record instance) {
+        Record implementation = dsl.selectFrom(PLUGIN_IMPLEMENTATIONS)
+                .where(PLUGIN_IMPLEMENTATIONS.ID.eq(instance.get(PLUGIN_INSTANCES.IMPLEMENTATION_ID))).fetchOne();
+        JsonNode version = versionOf(implementation.get(PLUGIN_IMPLEMENTATIONS.VERSIONS),
+                instance.get(PLUGIN_INSTANCES.VERSION));
+        List<String> operations = strings(version.path("declares").path("operations"));
+        return "Harvester".equals(implementation.get(PLUGIN_IMPLEMENTATIONS.KIND))
+                || operations.contains("changes") || operations.contains("sync");
+    }
+
+    private Map<String, Object> mirror(String id) {
+        OffsetDateTime syncedAt = dsl.select(CATALOG_MIRROR_SYNC.SYNCED_AT).from(CATALOG_MIRROR_SYNC)
+                .where(CATALOG_MIRROR_SYNC.INSTANCE_ID.eq(id)).fetchOne(CATALOG_MIRROR_SYNC.SYNCED_AT);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("syncedAt", syncedAt == null ? null : Instants.format(syncedAt.toInstant()));
+        result.put("records", dsl.fetchCount(CATALOG_MIRROR, CATALOG_MIRROR.INSTANCE_ID.eq(id)));
         return result;
     }
 

@@ -714,6 +714,14 @@ public enum EventCode {
             true,
             false,
             false),
+    PLUGIN_INSTANCE_RESET(
+            "plugin_instance.reset",
+            "plugin_instance",
+            false,
+            false,
+            true,
+            false,
+            false),
     PLUGIN_INSTANCE_CONFIGURED(
             "plugin_instance.configured",
             "plugin_instance",

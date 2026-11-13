@@ -109,6 +109,7 @@
   "plugin.not_runnable": "Tento plugin běží jen tehdy, když ho někdo používá.",
   "plugin.disabled": "Je vypnutý.",
   "plugin.up_to_date": "Běží na nejnovější verzi, kterou VERA umí spustit.",
+  "plugin.no_cursor": "Tato verze nedeklaruje žádnou operaci s kurzorem.",
   "plugin.no_descriptor": "VERA v něm nenašla popis pluginu.",
   "plugin.not_a_package": "Plugin se nahrává jako balíček .jar.",
   "plugin.other_implementation": "Tento balíček patří jinému pluginu.",

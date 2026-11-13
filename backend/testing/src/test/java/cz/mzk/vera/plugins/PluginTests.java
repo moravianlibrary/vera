@@ -72,6 +72,36 @@ class PluginTests {
     }
 
     @Test
+    void resetMatchesItsRecordingAndRecordsOnlyTheSuccessfulAct() throws Exception {
+        for (int index = 0; index < 4; index++) {
+            JsonNode call = call("plugin-reset", index);
+            String userId = call.path("as").asString();
+            JsonNode actual = send(call, session(userId));
+            if (call.has("code")) {
+                assertThat(actual.path("code").asString()).isEqualTo(call.path("code").asString());
+            } else {
+                assertThat(actual).isEqualTo(call.path("body"));
+            }
+        }
+        assertAuditCodes(List.of("plugin_instance.reset"));
+    }
+
+    @Test
+    void resetRefusesAReaderOnlyPerson() throws Exception {
+        client.post().uri("/api/plugin-instances/pi8/reset").header("Cookie", session("u5"))
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isForbidden();
+        assertAuditCodes(List.of());
+    }
+
+    @Test
+    void resetRefusesAnInstanceWithNoCursorOperation() throws Exception {
+        client.post().uri("/api/plugin-instances/pi12/reset").header("Cookie", adminCookie)
+                .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isEqualTo(409)
+                .expectBody().jsonPath("$.code").isEqualTo("plugin.no_cursor");
+        assertAuditCodes(List.of());
+    }
+
+    @Test
     void runsAnEnabledSchedulableInstanceNow() {
         JsonNode run = body(client.post().uri("/api/plugin-instances/pi5/run").header("Cookie", adminCookie)
                 .contentType(MediaType.APPLICATION_JSON).body(Map.of()).exchange().expectStatus().isOk()

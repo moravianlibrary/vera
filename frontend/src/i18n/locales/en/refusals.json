@@ -109,6 +109,7 @@
   "plugin.not_runnable": "That plugin runs only while somebody uses it",
   "plugin.disabled": "It is disabled",
   "plugin.up_to_date": "It runs the newest version VERA can run",
+  "plugin.no_cursor": "Its version declares no cursor operation",
   "plugin.no_descriptor": "VERA found no plugin descriptor in it",
   "plugin.not_a_package": "A plugin comes as a .jar package",
   "plugin.other_implementation": "That package is of another plugin.",

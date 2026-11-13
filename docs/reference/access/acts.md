@@ -260,6 +260,7 @@ retrying it is the same right.
 | `ACT-instance-disable` | *Disable…*, *Enable* | `plugin.configure` | not the last enabled Identity (409 `plugin.last_identity`) | — |
 | `ACT-instance-delete` | *Delete…* | `plugin.configure` | as disable | kept for its runs' sake; its schedules removed |
 | `ACT-instance-run` | *Run now* | `plugin.run` | enabled, and runnable on demand (409) | a run |
+| `ACT-plugin-reset` | *Reset…* on the instance’s drawer | `plugin.configure` (decided 2026-11-13) | its version declares `harvest`, `changes` or `sync` (409 `plugin.no_cursor`) | its cursors cleared; its mirror rebuilt on the next run ([PLG-api-mirror](../integrations/plugin-api.md#plg-api-mirror)); configuration `plugin_instance.reset` |
 | `ACT-instance-upgrade` | *Move to v…* | `plugin.configure` | a newer installed version whose contract VERA runs (409) | the instance's version |
 | `ACT-plugin-upload` | *Upload plugin code…* | `plugin.upload_code` | a package with a descriptor, for this implementation, of a version not yet installed (422, 409) | a new implementation or version; no instance moves |
 

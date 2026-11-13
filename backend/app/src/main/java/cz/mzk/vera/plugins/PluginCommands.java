@@ -1,14 +1,15 @@
 package cz.mzk.vera.plugins;
 
 import static cz.mzk.vera.db.tables.Tables.CATEGORIES;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_CURSORS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.REQUEST_CUSTODIES;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
 import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
-import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
+import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.max;
 
@@ -240,6 +241,26 @@ public class PluginCommands {
         if ("Custody".equals(implementation.get(PLUGIN_IMPLEMENTATIONS.KIND))) {
             runs.startPlacing(caller.userId(), source("Plugins", "/plugins?i=" + id));
         }
+        return ActResult.ok(queries.detail(id, caller.userId()));
+    }
+
+    // ACT-plugin-reset; harvest is required for every Harvester, not an optional declaration.
+    @Transactional
+    public ActResult reset(Caller caller, String id) {
+        if (!mayConfigure(caller)) {
+            return ActResult.refused(403, "You may not configure plugins", "forbidden");
+        }
+        Record instance = live(id);
+        if (instance == null) {
+            return ActResult.unknown("plugin instance");
+        }
+        if (!queries.canReset(instance)) {
+            return ActResult.refused(409, "Its version declares no cursor operation", "plugin.no_cursor");
+        }
+        dsl.deleteFrom(PLUGIN_CURSORS).where(PLUGIN_CURSORS.INSTANCE_ID.eq(id)).execute();
+        dsl.update(PLUGIN_INSTANCES).set(PLUGIN_INSTANCES.REBUILD_AFTER, now())
+                .where(PLUGIN_INSTANCES.ID.eq(id)).execute();
+        events.recordAct(EventCode.PLUGIN_INSTANCE_RESET, "plugin_instance", id, caller, List.of());
         return ActResult.ok(queries.detail(id, caller.userId()));
     }
 

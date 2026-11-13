@@ -1562,7 +1562,9 @@
             ],
             "recentRuns": [],
             "runCount": 0,
-            "lastRunAt": "<time>"
+            "lastRunAt": "<time>",
+            "mirror": null,
+            "canReset": false
           },
           "requestBody": {},
           "as": "u3"
@@ -1637,7 +1639,9 @@
             ],
             "recentRuns": [],
             "runCount": 0,
-            "lastRunAt": "<time>"
+            "lastRunAt": "<time>",
+            "mirror": null,
+            "canReset": false
           },
           "requestBody": {},
           "as": "u3"
@@ -1683,7 +1687,9 @@
             ],
             "recentRuns": [],
             "runCount": 0,
-            "lastRunAt": "<time>"
+            "lastRunAt": "<time>",
+            "mirror": null,
+            "canReset": false
           },
           "requestBody": {},
           "as": "u3"
@@ -1736,7 +1742,9 @@
             ],
             "recentRuns": [],
             "runCount": 0,
-            "lastRunAt": "<time>"
+            "lastRunAt": "<time>",
+            "mirror": null,
+            "canReset": false
           },
           "requestBody": {},
           "as": "u3"

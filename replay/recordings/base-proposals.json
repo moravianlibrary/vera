@@ -8354,7 +8354,9 @@
             "hooks": [],
             "recentRuns": [],
             "runCount": 0,
-            "lastRunAt": "<time>"
+            "lastRunAt": "<time>",
+            "mirror": null,
+            "canReset": false
           }
         },
         {

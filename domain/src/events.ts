@@ -494,6 +494,13 @@ export const eventCatalogue = {
     audit: true,
     isPublic: false,
   },
+  "plugin_instance.reset": {
+    subject: "plugin_instance",
+    history: false,
+    hook: false,
+    audit: true,
+    isPublic: false,
+  },
   "plugin_instance.configured": {
     subject: "plugin_instance",
     history: false,

@@ -714,6 +714,14 @@
       "isPublic": false
     },
     {
+      "code": "plugin_instance.reset",
+      "subject": "plugin_instance",
+      "history": false,
+      "hook": false,
+      "audit": true,
+      "isPublic": false
+    },
+    {
       "code": "plugin_instance.configured",
       "subject": "plugin_instance",
       "history": false,

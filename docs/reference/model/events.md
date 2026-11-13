@@ -156,7 +156,7 @@ never its value.
 | `repeat` | `changed` |
 | `mix` | `created`, `revised` (revision), `labelled`, `made_primary`, `archived`, `deleted` |
 | `plugin` | `uploaded` (implementation, version) |
-| `plugin_instance` | `created`, `configured`, `disabled`, `enabled`, `upgraded`, `default_role_changed`, `deleted` |
+| `plugin_instance` | `created`, `configured`, `reset`, `disabled`, `enabled`, `upgraded`, `default_role_changed`, `deleted` |
 | `hook` | `created`, `changed`, `paused`, `resumed`, `deleted` |
 | `schedule` | `created`, `changed`, `paused`, `resumed`, `deleted` |
 | `property` | `defined`, `changed`, `deleted` |

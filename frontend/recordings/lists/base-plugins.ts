@@ -21,6 +21,39 @@ export default {
       ]),
     },
     {
+      name: "plugin-reset",
+      calls: [
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/plugin-instances/pi8/reset",
+          requestBody: {},
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/plugin-instances/pi12/reset",
+          requestBody: {},
+          compare: "code",
+        },
+        {
+          as: "staff",
+          method: "POST",
+          path: "/api/plugin-instances/pi8/reset",
+          requestBody: {},
+          compare: "code",
+        },
+        {
+          as: "admin",
+          method: "POST",
+          path: "/api/plugin-instances/missing/reset",
+          requestBody: {},
+          compare: "code",
+        },
+      ],
+    },
+    {
       name: "create-plugin-instance",
       calls: [
         {

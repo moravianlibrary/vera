@@ -136,11 +136,9 @@ Decided on 2026-10-30 and 2026-10-31 ([DEC-0019](decisions/DEC-0019-plugin-api-a
 Written down (2026-11-03): each kind's operations are zod types in `domain/src/plugin-api/`;
 declarations carry `operations`, and ways in and search follow them, an instance's setting
 switching search off. Type detection follows it in the mock (2026-10-31), with *Which type?* for
-a line several Identifier instances recognise. Not built: no instance has a cursor or a mirror,
-so the drawer's mirror line and *Reset* wait for the backend (7 of
-[what comes first](develop/backend.md#what-comes-first) is done). The backend keeps cursors and
-mirrors; the contract has neither the mirror's freshness nor *Reset*. Decided on 2026-11-13:
-*Reset* needs `plugin.configure`. → backend (with the contract and mock), then frontend.
+a line several Identifier instances recognise. The backend keeps cursors and mirrors. Built (2026-11-13): the contract and mock expose mirror
+freshness and reset capability; *Reset* needs `plugin.configure`, clears cursors, and a full sync
+begun after it rebuilds the mirror. The drawer's mirror line and *Reset* button remain. → frontend.
 
 ### L75: Names in each language
 

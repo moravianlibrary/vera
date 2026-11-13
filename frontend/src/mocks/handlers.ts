@@ -259,6 +259,7 @@ import {
   instanceUpgrade,
   pluginIndex,
   readUpload,
+  resetInstance,
   runInstanceNow,
   saveInstance,
   setInstanceEnabled,
@@ -810,6 +811,9 @@ export function createHandlers(profile: MockUserProfile) {
           setInstanceEnabled(currentSession(), String(params.id), action === "enable"),
         ),
       ),
+    ),
+    http.post(route(apiRoutes.pluginInstanceReset), ({ params }) =>
+      outcomeResponse(resetInstance(currentSession(), String(params.id))),
     ),
     http.get(route(`${apiRoutes.pluginInstances}/:id/impact`), ({ params }) =>
       outcomeResponse(instanceImpact(currentSession(), String(params.id))),

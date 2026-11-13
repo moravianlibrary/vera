@@ -70,6 +70,7 @@ export const apiRoutes = {
   pluginInstances: "/plugin-instances",
   // Plugins, the page: every implementation and instance with what it declares and runs.
   plugins: "/plugins",
+  pluginInstanceReset: "/plugin-instances/:id/reset",
   pluginImplementations: "/plugin-implementations",
   // A package read before it is installed.
   pluginUploads: "/plugin-implementations/uploads",

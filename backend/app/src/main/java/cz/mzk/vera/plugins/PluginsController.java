@@ -91,6 +91,13 @@ class PluginsController {
                 : ActResult.answer(commands.setEnabled(caller, id, false));
     }
 
+    @PostMapping("/plugin-instances/{id}/reset")
+    ResponseEntity<?> reset(HttpServletRequest request, @PathVariable String id) {
+        Caller caller = caller(request);
+        return caller == null ? Problems.response(401, "Nobody is signed in.")
+                : ActResult.answer(commands.reset(caller, id));
+    }
+
     @GetMapping("/plugin-instances/{id}/impact")
     ResponseEntity<?> impact(HttpServletRequest request, @PathVariable String id) {
         Caller caller = caller(request);

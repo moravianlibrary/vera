@@ -2,9 +2,11 @@ package cz.mzk.vera.tasks;
 
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_KEYS;
+import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR_SYNC;
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_CURSORS;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.RUN_TARGETS;
 
@@ -166,6 +168,13 @@ public class CatalogRunKind implements RunKind {
                         .and(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))).execute();
                 droppedIds.add(catalogId);
             }
+            tx.insertInto(CATALOG_MIRROR_SYNC).set(CATALOG_MIRROR_SYNC.INSTANCE_ID, page.instanceId())
+                    .set(CATALOG_MIRROR_SYNC.SYNCED_AT, now)
+                    .onConflict(CATALOG_MIRROR_SYNC.INSTANCE_ID).doUpdate()
+                    .set(CATALOG_MIRROR_SYNC.SYNCED_AT, now).execute();
+            if (!more) {
+                droppedIds.addAll(finishRebuild(tx, context));
+            }
             replacements = answer.replaced();
             replacementUnits.putAll(result.units());
         } else {
@@ -223,6 +232,28 @@ public class CatalogRunKind implements RunKind {
         }
         return new Applied(affected.size(), affected.size(), 0, more || recheck,
                 true, false, List.of(), "/documents");
+    }
+
+    // PLG-api-mirror: keep the old mirror until a run begun after Reset has read every page.
+    private List<String> finishRebuild(DSLContext tx, Context context) {
+        OffsetDateTime resetAt = tx.select(PLUGIN_INSTANCES.REBUILD_AFTER).from(PLUGIN_INSTANCES)
+                .where(PLUGIN_INSTANCES.ID.eq(context.instanceId())).forUpdate()
+                .fetchOne(PLUGIN_INSTANCES.REBUILD_AFTER);
+        OffsetDateTime startedAt = tx.select(RUNS.STARTED_AT).from(RUNS)
+                .where(RUNS.ID.eq(context.runId())).fetchOne(RUNS.STARTED_AT);
+        if (resetAt == null || !startedAt.isAfter(resetAt)) {
+            return List.of();
+        }
+        List<String> stale = tx.select(CATALOG_MIRROR.CATALOG_ID).from(CATALOG_MIRROR)
+                .where(CATALOG_MIRROR.INSTANCE_ID.eq(context.instanceId()))
+                .and(CATALOG_MIRROR.FETCHED_AT.lt(startedAt)).fetch(CATALOG_MIRROR.CATALOG_ID);
+        tx.deleteFrom(CATALOG_MIRROR_KEYS).where(CATALOG_MIRROR_KEYS.INSTANCE_ID.eq(context.instanceId()))
+                .and(CATALOG_MIRROR_KEYS.CATALOG_ID.in(stale)).execute();
+        tx.deleteFrom(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(context.instanceId()))
+                .and(CATALOG_MIRROR.CATALOG_ID.in(stale)).execute();
+        tx.update(PLUGIN_INSTANCES).setNull(PLUGIN_INSTANCES.REBUILD_AFTER)
+                .where(PLUGIN_INSTANCES.ID.eq(context.instanceId())).execute();
+        return stale;
     }
 
     private String recheckOperation(String runId) {
