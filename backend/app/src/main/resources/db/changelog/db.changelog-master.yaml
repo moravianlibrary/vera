@@ -123,6 +123,9 @@ databaseChangeLog:
       file: 0360-hooks.sql
       relativeToChangelogFile: true
   - include:
+      file: 0460-hook-conditions.sql
+      relativeToChangelogFile: true
+  - include:
       file: 0390-identity-claims.sql
       relativeToChangelogFile: true
   - include:

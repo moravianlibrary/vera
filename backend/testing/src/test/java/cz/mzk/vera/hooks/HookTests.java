@@ -128,7 +128,7 @@ class HookTests {
 
     @Test
     void recordedListEventMatchesAndSendsThroughTheChannelJob() throws Exception {
-        String hookId = createHook("Test list hook", null, "");
+        String hookId = createHook("Test list hook", null, Map.of());
         createList("Hook event list");
         runJobs();
         assertThat(jdbc.queryForObject("SELECT state FROM hook_deliveries WHERE hook_id=?", String.class, hookId))
@@ -140,7 +140,7 @@ class HookTests {
     @Test
     void twoListEventsWithinTheBatchWindowMakeOneDelivery() {
         String hookId = createHook("Batched list hook", Map.of("waitMinutes", 1,
-                "maxMinutes", 5, "by", "all"), "");
+                "maxMinutes", 5, "by", "all"), Map.of());
         createList("First batched list");
         createList("Second batched list");
         runJobs();
@@ -153,7 +153,7 @@ class HookTests {
     @Test
     void pausedHookAndDisabledChannelHoldDeliveriesUntilResumed() {
         String adminCookie = session("u3");
-        String hookId = createHook("Held list hook", null, "");
+        String hookId = createHook("Held list hook", null, Map.of());
         client.post().uri("/api/hooks/" + hookId + "/pause").header("Cookie", adminCookie)
                 .contentType(MediaType.APPLICATION_JSON).body(Map.of("reason", "test pause"))
                 .exchange().expectStatus().isOk();
@@ -182,12 +182,96 @@ class HookTests {
     }
 
     @Test
-    void conditionThatDoesNotMatchCreatesNoDelivery() {
-        String hookId = createHook("Filtered list hook", null, "category under Periodicals");
-        createList("Unrelated list");
+    void documentsConditionMatchesCategorySubtreeAndRejectsOutside() throws Exception {
+        String hookId = createHook("Filtered document hook", null,
+                Map.of("documents", Map.of("category", "c2")));
+        String insideIteration = jdbc.queryForObject("WITH RECURSIVE descendants(id) AS ("
+                + "SELECT 'c2' UNION ALL SELECT c.id FROM categories c JOIN descendants d ON c.parent_id=d.id) "
+                + "SELECT i.id FROM iterations i JOIN descendants d ON d.id=i.category_id "
+                + "ORDER BY i.id LIMIT 1", String.class);
+        String outsideIteration = jdbc.queryForObject("WITH RECURSIVE descendants(id) AS ("
+                + "SELECT 'c2' UNION ALL SELECT c.id FROM categories c JOIN descendants d ON c.parent_id=d.id) "
+                + "SELECT i.id FROM iterations i WHERE i.category_id NOT IN (SELECT id FROM descendants) "
+                + "ORDER BY i.id LIMIT 1", String.class);
+        record(EventCode.ITERATION_PUBLISHED, "iteration", insideIteration, "condition-inside");
+        runJobs();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_deliveries WHERE hook_id=?", Integer.class, hookId))
+                .isEqualTo(1);
+        jdbc.update("DELETE FROM hook_deliveries WHERE hook_id=?", hookId);
+        record(EventCode.ITERATION_PUBLISHED, "iteration", outsideIteration, "condition-outside");
         runJobs();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_deliveries WHERE hook_id=?", Integer.class, hookId))
                 .isZero();
+    }
+
+    @Test
+    void documentsConditionMatchesARecordEventOnTheDocument() throws Exception {
+        String hookId = createHook("Filtered record hook", null,
+                Map.of("documents", Map.of("category", "c2")));
+        jdbc.update("UPDATE hooks SET events='[\"document.relinked\"]'::jsonb WHERE id=?", hookId);
+        String insideDocument = jdbc.queryForObject("WITH RECURSIVE descendants(id) AS ("
+                + "SELECT 'c2' UNION ALL SELECT c.id FROM categories c JOIN descendants d ON c.parent_id=d.id) "
+                + "SELECT i.document_id FROM iterations i JOIN descendants d ON d.id=i.category_id "
+                + "ORDER BY i.id LIMIT 1", String.class);
+        record(EventCode.DOCUMENT_RELINKED, "document", insideDocument, "condition-record");
+        runJobs();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_deliveries WHERE hook_id=?", Integer.class, hookId))
+                .isEqualTo(1);
+    }
+
+    @Test
+    void requestConditionMatchesDeclinedRequests() throws Exception {
+        String hookId = createHook("Declined request hook", null,
+                Map.of("requests", Map.of("decision", "Denied")));
+        String requestId = jdbc.queryForObject("SELECT id FROM requests WHERE decision='Denied' ORDER BY id LIMIT 1",
+                String.class);
+        record(EventCode.REQUEST_DECLINED, "request", requestId, "condition-declined");
+        runJobs();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_deliveries WHERE hook_id=?", Integer.class, hookId))
+                .isEqualTo(1);
+    }
+
+    @Test
+    void emptyConditionsTakeEverySelectedEvent() throws Exception {
+        String hookId = createHook("Unfiltered hook", null, Map.of());
+        createList("Unfiltered list");
+        runJobs();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM hook_deliveries WHERE hook_id=?", Integer.class, hookId))
+                .isEqualTo(1);
+    }
+
+    @Test
+    void unknownConditionParameterIsRefused() {
+        Map<String, Object> invalid = draft(Map.of("tasks", Map.of("unknown", "value")));
+        client.post().uri("/api/hooks").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(invalid).exchange().expectStatus().isEqualTo(422)
+                .expectBody().jsonPath("$.code").isEqualTo("hook.condition_invalid");
+    }
+
+    @Test
+    void documentsConditionAcceptsAPropertyFilter() {
+        String property = jdbc.queryForObject("SELECT key FROM property_definitions ORDER BY key LIMIT 1",
+                String.class);
+        String hookId = createHook("Property document hook", null,
+                Map.of("documents", Map.of("p." + property + ".none", "1")));
+        assertThat(hookId).isNotBlank();
+    }
+
+    @Test
+    void conditionWithoutAnEventOfItsKindIsRefused() {
+        Map<String, Object> invalid = draft(Map.of("lists", Map.of("state", "Planned")));
+        invalid.put("events", List.of("request.created"));
+        client.post().uri("/api/hooks").header("Cookie", session("u3"))
+                .contentType(MediaType.APPLICATION_JSON).body(invalid).exchange().expectStatus().isEqualTo(422)
+                .expectBody().jsonPath("$.code").isEqualTo("hook.condition_kind");
+    }
+
+    private void record(EventCode code, String kind, String subjectId, String correlation) throws Exception {
+        String data = code == EventCode.REQUEST_DECLINED ? "{\"batchSize\":null}"
+                : code == EventCode.DOCUMENT_RELINKED ? "{\"catalogId\":{\"from\":\"old\",\"to\":\"new\"}}"
+                : "{\"link\":{\"id\":\"link-test\",\"url\":\"https://example.test/item\"}}";
+        events.record(new EventInput(code, kind, subjectId, null, new EventInput.System(), correlation,
+                clock.instant(), json.readTree(data), null));
     }
 
     @Test
@@ -202,7 +286,7 @@ class HookTests {
         Map<String, Object> draft = new LinkedHashMap<>();
         draft.put("name", "User-addressed hook");
         draft.put("events", List.of("request.declined"));
-        draft.put("filter", "");
+        draft.put("conditions", Map.of());
         draft.put("channelId", "pi17");
         draft.put("recipient", "ignored@example.test");
         draft.put("message", "");
@@ -301,19 +385,29 @@ class HookTests {
                 .body(Map.of()).exchange().expectStatus().isOk();
     }
 
-    private String createHook(String name, Map<String, Object> batch, String filter) {
-        Map<String, Object> draft = new LinkedHashMap<>();
+    private String createHook(String name, Map<String, Object> batch, Map<String, Object> conditions) {
+        Map<String, Object> draft = draft(conditions);
         draft.put("name", name);
-        draft.put("events", List.of("list.created"));
-        draft.put("filter", filter);
-        draft.put("channelId", "pi18");
-        draft.put("recipient", "#hook-tests");
-        draft.put("message", "");
+        String event = conditions.containsKey("documents") ? "iteration.published"
+                : conditions.containsKey("requests") ? "request.declined" : "list.created";
+        draft.put("events", List.of(event));
         draft.put("batch", batch);
-        draft.put("retry", Map.of("attempts", 1, "backoff", "fixed"));
         return client.post().uri("/api/hooks").header("Cookie", session("u3"))
                 .contentType(MediaType.APPLICATION_JSON).body(draft).exchange().expectStatus().isOk()
                 .expectBody(JsonNode.class).returnResult().getResponseBody().path("id").asString();
+    }
+
+    private Map<String, Object> draft(Map<String, Object> conditions) {
+        Map<String, Object> draft = new LinkedHashMap<>();
+        draft.put("name", "Test hook");
+        draft.put("events", List.of("run.failed"));
+        draft.put("conditions", conditions);
+        draft.put("channelId", "pi18");
+        draft.put("recipient", "#hook-tests");
+        draft.put("message", "");
+        draft.put("batch", null);
+        draft.put("retry", Map.of("attempts", 1, "backoff", "fixed"));
+        return draft;
     }
 
     private void createList(String name) {

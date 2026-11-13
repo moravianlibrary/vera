@@ -208,6 +208,7 @@ import {
   runDetailSchema,
   runIndexSchema,
   runningRunsSchema,
+  runQueryEnumParams,
   runQueryParams,
   runSchema,
 } from "./tasks";
@@ -279,6 +280,21 @@ function searchQueryOf(keys: readonly string[]) {
         }
       }
     });
+}
+
+function commaSeparatedEnumParam(schema: z.ZodType): z.ZodString {
+  const values = (schema as z.ZodEnum).options.filter(
+    (value): value is string => typeof value === "string",
+  );
+  const alternatives = values
+    .map((value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|");
+  return z.string().regex(new RegExp(`^(?:${alternatives})(?:,(?:${alternatives}))*$`));
+}
+
+function queryParamSchema(key: string, enumParams: Record<string, z.ZodType>) {
+  const schema = enumParams[key];
+  return (schema ? commaSeparatedEnumParam(schema) : z.string()).optional();
 }
 
 export const endpoints = {
@@ -1915,7 +1931,12 @@ export const endpoints = {
     path: apiRoutes.tasks,
     summary: "Search task runs.",
     query: z.object(
-      Object.fromEntries(Object.values(runQueryParams).map((key) => [key, z.string().optional()])),
+      Object.fromEntries(
+        Object.values(runQueryParams).map((key) => [
+          key,
+          queryParamSchema(key, runQueryEnumParams),
+        ]),
+      ),
     ),
     response: runIndexSchema,
     codes: [],

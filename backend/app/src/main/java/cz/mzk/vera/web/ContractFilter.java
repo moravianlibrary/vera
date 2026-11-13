@@ -67,6 +67,40 @@ public final class ContractFilter extends OncePerRequestFilter {
                 .anyMatch(operation -> operation.method().equals(method) && operation.path().equals(path));
     }
 
+    public boolean acceptsQueryMap(String method, String path, Map<String, String> query) {
+        Operation operation = operations.stream()
+                .filter(candidate -> candidate.method().equals(method) && candidate.path().equals(path))
+                .findFirst().orElse(null);
+        if (operation == null) return false;
+        for (Map.Entry<String, String> entry : query.entrySet()) {
+            JsonNode schema = querySchema(operation.node(), entry.getKey());
+            if (schema == null) return false;
+            Object value;
+            try {
+                value = parameterValue(entry.getValue(), schema);
+            } catch (NumberFormatException exception) {
+                value = entry.getValue();
+            }
+            if (!validate(schema, mapper.valueToTree(value)).isEmpty()) return false;
+        }
+        return true;
+    }
+
+    private JsonNode querySchema(JsonNode operation, String name) {
+        for (JsonNode parameter : operation.path("parameters")) {
+            if (!"query".equals(parameter.path("in").asString())) continue;
+            if (name.equals(parameter.path("name").asString())) return parameter.path("schema");
+        }
+        for (JsonNode parameter : operation.path("parameters")) {
+            if (!"query".equals(parameter.path("in").asString())) continue;
+            JsonNode patterns = parameter.path("schema").path("patternProperties");
+            for (Map.Entry<String, JsonNode> pattern : patterns.properties()) {
+                if (Pattern.compile(pattern.getKey()).matcher(name).find()) return pattern.getValue();
+            }
+        }
+        return null;
+    }
+
     public String operationId(String method, String path) {
         return operations.stream()
                 .filter(operation -> operation.method().equals(method) && operation.path().equals(path))

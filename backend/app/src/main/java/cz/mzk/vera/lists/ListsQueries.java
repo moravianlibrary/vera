@@ -113,6 +113,10 @@ public class ListsQueries {
         return index.index(parameters, userId);
     }
 
+    public boolean matchesForHook(Map<String, String> parameters, String listId) {
+        return index.matchesForHook(parameters, listId);
+    }
+
     Map<String, Object> pool(Map<String, String> parameters, String userId) {
         return pool.pool(parameters, userId);
     }

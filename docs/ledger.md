@@ -62,11 +62,10 @@ The client part is done: the contract, editor and mock use hookable catalogue co
 mock's lists fire `list.started` and `list.marked_done`
 ([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
 The backend fires every hookable code from the act or job that causes it, each with a test (built
-2026-11-12), the last two with [L78](#built-2026-11-12). Left: the typed condition builder, then the
-act matrix naming each act's event. Decided on 2026-11-13: a condition is the filter of the page
-that lists the event's subject (Requests, Documents, Lists, Tasks), held per subject kind in the
-page URL's form and edited with that page's filter chips, as watchlists are; the free text goes.
-→ backend, then docs.
+2026-11-12), the last two with [L78](#built-2026-11-12). The condition builder is built: a
+condition is the filter of the page that lists the event's subject (Requests, Documents, Lists,
+Tasks), held per subject kind in the page URL's form and edited with that page's filter chips, as
+watchlists are; free text is gone. Left: the act matrix naming each act's event. → docs.
 
 ### L70: Entry links
 

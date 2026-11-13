@@ -22,6 +22,7 @@ import cz.mzk.vera.session.Caller;
 import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.web.Instants;
 import cz.mzk.vera.web.Problems;
+import cz.mzk.vera.web.ContractFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.Duration;
@@ -61,9 +62,11 @@ class HooksController {
     private final HookDeliveryActions deliveryActions;
     private final PluginCalls pluginCalls;
     private final Jobs jobs;
+    private final ContractFilter contract;
 
     HooksController(DSLContext dsl, JsonMapper json, Clock clock, HeldAccessQueries access,
-            EventRecorder events, HookDeliveryActions deliveryActions, PluginCalls pluginCalls, Jobs jobs) {
+            EventRecorder events, HookDeliveryActions deliveryActions, PluginCalls pluginCalls, Jobs jobs,
+            ContractFilter contract) {
         this.dsl = dsl;
         this.json = json;
         this.clock = clock;
@@ -72,6 +75,7 @@ class HooksController {
         this.deliveryActions = deliveryActions;
         this.pluginCalls = pluginCalls;
         this.jobs = jobs;
+        this.contract = contract;
     }
 
     @GetMapping
@@ -112,7 +116,8 @@ class HooksController {
         Instant at = clock.instant();
         dsl.insertInto(HOOKS).set(HOOKS.ID, id).set(HOOKS.NAME, text(body, "name"))
                 .set(HOOKS.EVENTS, JSONB.valueOf(body.path("events").toString()))
-                .set(HOOKS.FILTER, text(body, "filter")).set(HOOKS.CHANNEL_ID, text(body, "channelId"))
+                .set(HOOKS.CONDITIONS, JSONB.valueOf(body.path("conditions").toString()))
+                .set(HOOKS.CHANNEL_ID, text(body, "channelId"))
                 .set(HOOKS.RECIPIENT, text(body, "recipient")).set(HOOKS.MESSAGE, text(body, "message"))
                 .set(HOOKS.BATCH, nullableJson(body, "batch"))
                 .set(HOOKS.RETRY, JSONB.valueOf(body.path("retry").toString()))
@@ -139,7 +144,8 @@ class HooksController {
         if (invalid != null) return invalid;
         dsl.update(HOOKS).set(HOOKS.NAME, text(body, "name"))
                 .set(HOOKS.EVENTS, JSONB.valueOf(body.path("events").toString()))
-                .set(HOOKS.FILTER, text(body, "filter")).set(HOOKS.CHANNEL_ID, text(body, "channelId"))
+                .set(HOOKS.CONDITIONS, JSONB.valueOf(body.path("conditions").toString()))
+                .set(HOOKS.CHANNEL_ID, text(body, "channelId"))
                 .set(HOOKS.RECIPIENT, text(body, "recipient")).set(HOOKS.MESSAGE, text(body, "message"))
                 .set(HOOKS.BATCH, nullableJson(body, "batch"))
                 .set(HOOKS.RETRY, JSONB.valueOf(body.path("retry").toString()))
@@ -350,13 +356,58 @@ class HooksController {
             return Problems.response(422, "User-controlled delivery needs an email channel",
                     "hook.recipient_preference", null);
         }
-        String filter = text(draft, "filter");
-        if (!filter.isEmpty() && !"category under Periodicals".equals(filter)
-                && !"decision is Approved or Denied".equals(filter)) {
-            return Problems.response(422, "This event condition is not supported yet",
-                    "hook.filter_unsupported", null);
+        JsonNode conditions = draft.path("conditions");
+        if (!conditions.isObject()) {
+            return conditionInvalid("/conditions");
+        }
+        List<String> kinds = List.of("requests", "documents", "lists", "tasks");
+        int knownKinds = 0;
+        for (String kind : kinds) {
+            if (conditions.has(kind)) knownKinds++;
+        }
+        if (conditions.size() != knownKinds) return conditionInvalid("/conditions");
+        for (String kind : kinds) {
+            JsonNode condition = conditions.get(kind);
+            if (condition == null) {
+                continue;
+            }
+            if (!condition.isObject() || !condition.properties().stream()
+                    .allMatch(entry -> entry.getValue().isString())) {
+                return conditionInvalid("/conditions/" + kind);
+            }
+            Map<String, String> query = new LinkedHashMap<>();
+            condition.properties().forEach(entry -> query.put(entry.getKey(), entry.getValue().asString()));
+            if (!contract.acceptsQueryMap("GET", conditionRoute(kind), query)) {
+                return conditionInvalid("/conditions/" + kind);
+            }
+            boolean hasEventKind = false;
+            for (JsonNode event : draft.path("events")) {
+                if (HookMatchJob.subjectKindOfEvent(event.asString()).equals(kind)) {
+                    hasEventKind = true;
+                }
+            }
+            if (!hasEventKind) {
+                return Problems.response(422, "Pick an event for this page before adding its condition",
+                        "hook.condition_kind", List.of(Map.of("pointer", "/conditions/" + kind,
+                                "code", "hook.condition_kind")));
+            }
         }
         return null;
+    }
+
+    private ResponseEntity<?> conditionInvalid(String pointer) {
+        return Problems.response(422, "Use valid filter values for this page", "hook.condition_invalid",
+                List.of(Map.of("pointer", pointer, "code", "hook.condition_invalid")));
+    }
+
+    private String conditionRoute(String kind) {
+        return switch (kind) {
+            case "requests" -> "/requests";
+            case "documents" -> "/documents";
+            case "lists" -> "/digitization-lists";
+            case "tasks" -> "/tasks";
+            default -> throw new IllegalArgumentException("Unknown condition kind " + kind);
+        };
     }
 
     private List<Map<String, Object>> channels() {
@@ -383,7 +434,7 @@ class HooksController {
         hook.put("id", row.get(HOOKS.ID));
         hook.put("name", row.get(HOOKS.NAME));
         hook.put("events", json.readTree(row.get(HOOKS.EVENTS).data()));
-        hook.put("filter", row.get(HOOKS.FILTER));
+        hook.put("conditions", json.readTree(row.get(HOOKS.CONDITIONS).data()));
         hook.put("channelId", row.get(HOOKS.CHANNEL_ID));
         hook.put("recipient", row.get(HOOKS.RECIPIENT));
         hook.put("message", row.get(HOOKS.MESSAGE));

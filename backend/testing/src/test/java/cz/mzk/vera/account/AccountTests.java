@@ -202,8 +202,8 @@ class AccountTests {
     }
 
     private void insertHook(String id) {
-        jdbc.update("INSERT INTO hooks(id,name,events,filter,channel_id,recipient,message,retry,recipient_preference,state,created_by,created_at,position) "
-                + "VALUES (?, ?, '[\"request.declined\"]'::jsonb, '', 'pi22', 'u3', '', '{}'::jsonb, '{\"label\":\"Requests\",\"defaultEnabled\":true}'::jsonb, 'active', 'u3', now(), 0)", id, id);
+        jdbc.update("INSERT INTO hooks(id,name,events,conditions,channel_id,recipient,message,retry,recipient_preference,state,created_by,created_at,position) "
+                + "VALUES (?, ?, '[\"request.declined\"]'::jsonb, '{}'::jsonb, 'pi22', 'u3', '', '{}'::jsonb, '{\"label\":\"Requests\",\"defaultEnabled\":true}'::jsonb, 'active', 'u3', now(), 0)", id, id);
     }
 
     @Test

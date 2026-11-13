@@ -98,6 +98,16 @@ public class RequestQueries {
                 .where(matching.and(askExists(REQUESTS.ID.eq(requestId)))));
     }
 
+    public boolean matchesForHook(Map<String, String> parameters, String requestId) {
+        HeldScopes held = new HeldScopes(null, List.of(), List.of(), List.of(), List.of());
+        RequestSearch search = RequestSearch.parse(parameters, documentQueries.requestPropertyKeys(held));
+        Condition filters = filters(search, null, held);
+        Table<?> rows = readerRows();
+        Field<String> rowId = rows.field("document_id", String.class);
+        return dsl.fetchExists(dsl.selectOne().from(rows.join(DOCUMENTS).on(DOCUMENTS.ID.eq(rowId)))
+                .where(filters.and(askExists(REQUESTS.ID.eq(requestId)))));
+    }
+
     private org.jooq.Select<Record1<String>> orderedQuery(Field<String> rowId, Field<String> rowDecision,
             Condition matching) {
         return orderedQuery(rowId, rowDecision, matching, null);

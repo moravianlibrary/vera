@@ -50,9 +50,14 @@ const runStateValueSchema = z.enum(runStates);
 
 const triggerKindSchema = z.enum(triggerKinds);
 
+export const runQueryEnumParams = {
+  state: runStateValueSchema,
+  trigger: triggerKindSchema,
+} as const;
+
 const runFieldSchemas = {
-  states: runStateValueSchema,
-  triggers: triggerKindSchema,
+  states: runQueryEnumParams.state,
+  triggers: runQueryEnumParams.trigger,
   instanceIds: id,
   startedBy: id,
 } as const satisfies Record<RunListField, z.ZodType<string>>;

@@ -7795,7 +7795,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^(?:Running|Done|DoneWithErrors|Failed|Cancelled|Skipped)(?:,(?:Running|Done|DoneWithErrors|Failed|Cancelled|Skipped))*$"
             }
           },
           {
@@ -7803,7 +7804,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^(?:schedule|approval|manual|repeat)(?:,(?:schedule|approval|manual|repeat))*$"
             }
           },
           {

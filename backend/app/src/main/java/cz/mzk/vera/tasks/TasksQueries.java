@@ -274,6 +274,12 @@ public class TasksQueries {
         return true;
     }
 
+    public boolean matchesForHook(Map<String, String> parameters, String runId) {
+        Instant now = clock.instant();
+        Record row = dsl.selectFrom(RUNS).where(RUNS.ID.eq(runId)).fetchOne();
+        return row != null && matches(row, parameters, now);
+    }
+
     private Map<String, Object> facets(List<Record> visible, Map<String, String> query, Instant now) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("states", facet(visible, query, now, "state"));

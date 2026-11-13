@@ -555,6 +555,18 @@ public class WatchlistQueries {
         };
     }
 
+    // HOOK-condition: evaluate page filters without applying a person's reach or access.
+    public boolean matchesRecordForHook(String view, JsonNode filter, String recordId) {
+        Map<String, String> parameters = filterParameters(filter);
+        return switch (view) {
+            case "documents" -> documents.matchesForHook(parameters, recordId);
+            case "requests" -> requests.matchesForHook(parameters, recordId);
+            case "lists" -> lists.matchesForHook(parameters, recordId);
+            case "tasks" -> tasks.matchesForHook(parameters, recordId);
+            default -> false;
+        };
+    }
+
     private Map<String, Object> page(String view, Map<String, String> parameters, String userId) {
         return switch (view) {
             case "documents" -> documents.page(parameters, userId, false);

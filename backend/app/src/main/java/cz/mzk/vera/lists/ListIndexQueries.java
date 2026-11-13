@@ -122,6 +122,19 @@ class ListIndexQueries {
                 "facets", ListQuerySupport.map("states", stateFacets, "attention", attentionFacets));
     }
 
+    boolean matchesForHook(Map<String, String> parameters, String listId) {
+        List<Category> categories = categories();
+        LocalDate today = LocalDate.now(clock);
+        Condition matching = searchCondition(parameters.get("q"))
+                .and(runsCondition(parameters.get("runs"), today))
+                .and(stateCondition(allowedValues(parameters.get("state"),
+                        List.of("Planned", "InProgress", "Done")), today))
+                .and(attentionCondition(allowedValues(parameters.get("attention"),
+                        List.of("Overdue", "Blocked", "ReviewNeeded", "LateCopy", "Empty")), today));
+        return dsl.fetchExists(dsl.selectOne().from(DIGITIZATION_LISTS)
+                .where(DIGITIZATION_LISTS.ID.eq(listId).and(matching)));
+    }
+
     private Condition reachCondition(HeldScopes held, List<Category> categories) {
         List<String> scopes = held.scopesOf("list.read");
         if (scopes.contains("any")) {

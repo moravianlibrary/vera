@@ -5,7 +5,6 @@ import static org.jooq.impl.DSL.max;
 import static cz.mzk.vera.db.tables.Tables.HOOK_DELIVERIES;
 import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
 import static cz.mzk.vera.db.tables.Tables.HOOKS;
-import static cz.mzk.vera.db.tables.Tables.CATEGORIES;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
@@ -13,6 +12,7 @@ import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import cz.mzk.vera.jobs.Job;
 import cz.mzk.vera.jobs.JobKind;
 import cz.mzk.vera.jobs.Jobs;
+import cz.mzk.vera.watchlists.WatchlistQueries;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -34,12 +34,15 @@ public class HookMatchJob implements JobKind<JsonNode> {
     private final JsonMapper json;
     private final Jobs jobs;
     private final Clock clock;
+    private final WatchlistQueries watchlists;
 
-    public HookMatchJob(DSLContext dsl, JsonMapper json, Jobs jobs, Clock clock) {
+    public HookMatchJob(DSLContext dsl, JsonMapper json, Jobs jobs, Clock clock,
+            WatchlistQueries watchlists) {
         this.dsl = dsl;
         this.json = json;
         this.jobs = jobs;
         this.clock = clock;
+        this.watchlists = watchlists;
     }
 
     @Override
@@ -70,7 +73,8 @@ public class HookMatchJob implements JobKind<JsonNode> {
                             takesEvent = true;
                         }
                     }
-                    if (!takesEvent || !conditionTakes(hook.getFilter(), event.getCode(), event.getSubjectId())) {
+                    if (!takesEvent || !conditionTakes(hook.getConditions(), event.getCode(),
+                            event.getSubjectKind(), event.getSubjectId())) {
                         return;
                     }
                     Instant at = event.getOccurredAt().toInstant();
@@ -172,21 +176,37 @@ public class HookMatchJob implements JobKind<JsonNode> {
         return result;
     }
 
-    private boolean conditionTakes(String filter, String code, String subjectId) {
-        if (filter.isEmpty()) {
+    private boolean conditionTakes(JSONB conditionsValue, String code, String storedKind, String subjectId) {
+        String kind = subjectKindOfEvent(code);
+        JsonNode conditions = json.readTree(conditionsValue.data());
+        JsonNode condition = conditions.get(kind);
+        if (condition == null || condition.isEmpty()) {
             return true;
         }
-        if ("category under Periodicals".equals(filter)) {
-            return dsl.fetchExists(dsl.selectOne().from(ITERATIONS)
-                    .join(CATEGORIES).on(CATEGORIES.ID.eq(ITERATIONS.CATEGORY_ID))
-                    .where(ITERATIONS.ID.eq(subjectId))
-                    .and(CATEGORIES.NAME.eq("Periodicals").or(CATEGORIES.PARENT_ID.in(
-                            dsl.select(CATEGORIES.ID).from(CATEGORIES).where(CATEGORIES.NAME.eq("Periodicals"))))));
+        // Record events name the document itself; iteration events name one of its iterations.
+        String recordId = subjectId;
+        if ("iteration".equals(storedKind)) {
+            recordId = dsl.select(ITERATIONS.DOCUMENT_ID).from(ITERATIONS)
+                    .where(ITERATIONS.ID.eq(subjectId)).fetchOne(ITERATIONS.DOCUMENT_ID);
         }
-        if ("decision is Approved or Denied".equals(filter)) {
-            return "request.approved".equals(code) || "request.declined".equals(code);
+        if (recordId == null || !List.of("request", "iteration", "document", "list", "run").contains(storedKind)) {
+            return false;
         }
-        return false;
+        return watchlists.matchesRecordForHook(kind, condition, recordId);
+    }
+
+    // HOOK-events; HOOK-condition: this is the subject-page mapping in contract/src/hooks.ts.
+    static String subjectKindOfEvent(String event) {
+        if (event.startsWith("request.")) {
+            return "requests";
+        }
+        if (event.startsWith("list.")) {
+            return "lists";
+        }
+        if (event.startsWith("run.")) {
+            return "tasks";
+        }
+        return "documents";
     }
 
     private record DeliveryDue(String id, Instant at) { }

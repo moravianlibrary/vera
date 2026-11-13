@@ -279,15 +279,11 @@ public class SeedLoader {
                     eventCodes.add(event);
                 }
             }
-            String filter = string(row, "filter");
-            if ("decision is Approved or Denied".equals(filter)) {
-                filter = "";
-            }
             target.insertInto(HOOKS)
                     .set(HOOKS.ID, string(row, "id"))
                     .set(HOOKS.NAME, string(row, "name"))
                     .set(HOOKS.EVENTS, JSONB.valueOf(json.valueToTree(eventCodes).toString()))
-                    .set(HOOKS.FILTER, filter)
+                    .set(HOOKS.CONDITIONS, JSONB.valueOf(row.path("conditions").toString()))
                     .set(HOOKS.CHANNEL_ID, string(row, "channelId"))
                     .set(HOOKS.RECIPIENT, string(row, "recipient"))
                     .set(HOOKS.MESSAGE, string(row, "message"))

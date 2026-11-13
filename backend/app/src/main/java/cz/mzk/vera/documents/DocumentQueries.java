@@ -99,6 +99,20 @@ public class DocumentQueries {
                 .where(DOCUMENTS.ID.eq(documentId).and(documentReach).and(filters)));
     }
 
+    public boolean matchesForHook(Map<String, String> parameters, String documentId) {
+        HeldScopes held = new HeldScopes(null, List.of(), List.of(), List.of(), List.of());
+        Audience audience = Audience.STAFF;
+        List<PropertyDefinitions.Definition> definitions = propertyDefinitions.filterable(dsl, audience);
+        DocumentSearch search = DocumentSearch.parse(parameters, definitions);
+        List<Category> categories = dsl.selectFrom(CATEGORIES)
+                .fetch(row -> new Category(row.getId(), row.getParentId()));
+        Condition filters = filters(search, audience, null, categories, null, held, LocalDate.now(clock));
+        return dsl.fetchExists(dsl.selectOne().from(DOCUMENTS
+                .leftJoin(DOCUMENT_STATES).on(DOCUMENT_STATES.DOCUMENT_ID.eq(DOCUMENTS.ID))
+                .leftJoin(ITERATIONS).on(ITERATIONS.ID.eq(DOCUMENT_STATES.CURRENT_ITERATION_ID)))
+                .where(DOCUMENTS.ID.eq(documentId).and(filters)));
+    }
+
     public int count(Map<String, String> parameters, String callerId, boolean mine) {
         return counts(List.of(parameters), callerId, mine).getFirst();
     }
