@@ -436,12 +436,22 @@ For the local step-1 backend:
   worker runs jobs, schedules, hook deliveries and watchlist sends; the API never waits on them.
 - **A Helm chart** in `deploy/helm/vera/`: the API, the worker, the frontend's static files
   behind the proxy, CloudNativePG for PostgreSQL, migrations as a pre-upgrade hook job.
-- **Telemetry**: the OpenTelemetry Java agent, logs as JSON through its Logback appender, the act,
-  job or run on each record ([OBS-streams](../reference/integrations/observability.md#obs-streams)).
-  The agent records more than VERA allows by default; it is configured so that no query string,
-  header, cookie or SQL parameter is recorded, and a span processor drops attributes outside an
-  allow-list ([OBS-who](../reference/integrations/observability.md#obs-who)). A test asserts what
-  a span may hold, as the engine's `telemetry/rules.test.ts` does.
+- **Telemetry**: with `VERA_OTEL_ENDPOINT` set, `make backend` and `backend-bg` attach the
+  Gradle-fetched OpenTelemetry Java agent 2.33.1. System properties set `service.name=vera-backend`,
+  `vera.role` from `VERA_ROLE`, disable HTTP request and response header capture, and enable JDBC
+  statement sanitization. Server spans use the agent's HTTP route template; query strings, headers,
+  cookies and SQL parameters are not exported. The `otel-extension` Gradle module registers an
+  exporter wrapper through `AutoConfigurationCustomizerProvider`; it keeps the engine's telemetry
+  attributes plus HTTP method, route and status, sanitized database system and statement, and
+  VERA's user, act, job and plugin attributes. User ids are attached only to non-reader acts.
+  `EventRecorder` sets `vera.act`; `JobRunner` creates `job <kind>` spans parented from the queued
+  W3C trace context; `PluginCalls` records each instance and outcome. `logstash-logback-encoder`
+  writes JSON lines to stdout, including level, logger, message, trace/span ids and known act/job
+  MDC fields; the agent's Logback appender exports logs over OTLP. The worker polls the audit outbox
+  every five seconds in ordered batches of 500 via OTLP/HTTP JSON and deletes accepted rows only.
+  Without an endpoint there are no agent spans or logs, and audit rows remain queued. Tests assert
+  the span allow-list, act identity, plugin attributes, trace propagation and audit delivery, as
+  the engine's `telemetry/rules.test.ts` does.
 - **Configuration** by environment variables, secrets from the cluster; plugin secrets in the
   database, encrypted with a key from the environment.
 

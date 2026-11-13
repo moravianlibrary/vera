@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import cz.mzk.vera.telemetry.Telemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
+import org.slf4j.MDC;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Service;
@@ -62,18 +66,37 @@ public class JobRunner {
     }
 
     private <T> void runOne(JobKind<T> kind, Job job) throws Exception {
-        T found = kind.call(job);
-        dsl.transaction(configuration -> {
-            kind.apply(DSL.using(configuration), job, found);
-            DSL.using(configuration).update(JOBS)
-                    .set(JOBS.STATE, "done")
-                    .set(JOBS.RAN_AT, clock.instant().atOffset(ZoneOffset.UTC))
-                    .set(JOBS.LEASE_UNTIL, (OffsetDateTime) null)
-                    .set(JOBS.CLAIMED_BY, (String) null)
-                    .set(JOBS.ERROR, (String) null)
-                    .where(JOBS.ID.eq(job.id()))
-                    .execute();
-        });
+        Span span = Telemetry.startJob(job.kind(), job.traceParent());
+        Scope scope = span.makeCurrent();
+        String previousJobKind = MDC.get("vera.job.kind");
+        MDC.put("vera.job.kind", job.kind());
+        try {
+            T found = kind.call(job);
+            dsl.transaction(configuration -> {
+                kind.apply(DSL.using(configuration), job, found);
+                DSL.using(configuration).update(JOBS)
+                        .set(JOBS.STATE, "done")
+                        .set(JOBS.RAN_AT, clock.instant().atOffset(ZoneOffset.UTC))
+                        .set(JOBS.LEASE_UNTIL, (OffsetDateTime) null)
+                        .set(JOBS.CLAIMED_BY, (String) null)
+                        .set(JOBS.ERROR, (String) null)
+                        .where(JOBS.ID.eq(job.id()))
+                        .execute();
+            });
+        } catch (Exception exception) {
+            Telemetry.finish(span, exception);
+            throw exception;
+        } catch (Error error) {
+            Telemetry.finish(span, error);
+            throw error;
+        } finally {
+            scope.close();
+            if (previousJobKind == null) {
+                MDC.remove("vera.job.kind");
+            } else {
+                MDC.put("vera.job.kind", previousJobKind);
+            }
+        }
     }
 
     private Job claim() {

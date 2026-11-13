@@ -33,6 +33,9 @@ import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
+import org.slf4j.MDC;
+import io.opentelemetry.api.trace.Span;
+import cz.mzk.vera.telemetry.Telemetry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
@@ -289,6 +292,9 @@ public class EventRecorder {
 
     public void recordAct(EventCode code, String subjectKind, String subjectId, Caller caller,
             List<Map<String, Object>> changes, Instant at) {
+        Span span = Span.current();
+        Telemetry.setAct(span, code.code(), caller.userId(), isReader(caller.userId()));
+        MDC.put("vera.act", code.code());
         record(new EventInput(code, subjectKind, subjectId, null, new EventInput.User(caller.userId()),
                 UUID.randomUUID().toString(), at, EventChanges.configurationOf(json, changes), null));
     }
@@ -309,7 +315,12 @@ public class EventRecorder {
         record.put("code", input.code().code());
         record.put("at", at);
         record.put("correlationId", input.correlationId());
-        record.putNull("traceId");
+        String traceId = Span.current().getSpanContext().getTraceId();
+        if (Span.current().getSpanContext().isValid()) {
+            record.put("traceId", traceId);
+        } else {
+            record.putNull("traceId");
+        }
 
         ObjectNode subject = record.putObject("subject");
         subject.put("kind", input.subjectKind());

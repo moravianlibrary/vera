@@ -43,15 +43,17 @@ Changes on Plugins, Hooks and Schedules are recorded nowhere (`TODO(rrandiak)` i
 `mocks/access.ts`). Users & Groups, first login, the mappings at login and sign-up record their
 configuration codes in the engine (built 2026-11-03), and the engine sends them to the
 collector. Categories, intentions, repeats and mixes record theirs in the backend (built
-2026-11-09); the mock records none.
+2026-11-09); the mock records none. The backend sends its ordered `audit_outbox` to the collector
+and deletes rows only after acceptance (built 2026-11-13).
 
 Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): they go to the
 Audit stream in ClickStack, not to the log, with the configuration codes of the
-[catalogue](reference/model/events.md#configuration); no History card on the admin pages. Needs:
-the engine's outbox and its job, the collector's audit table with no expiry, and the ready-made
-HyperDX dashboards. The mock records nothing. The rest come with the engine's steps for those
-pages; the collector's table and the dashboards with deployment. Plugins, Hooks and Schedules
-record theirs in the backend (built 2026-11-12). → deployment.
+[catalogue](reference/model/events.md#configuration); no History card on the admin pages. The
+backend's durable outbox and worker sender are built; the engine outbox and sender, collector's
+audit table with no expiry, and ready-made HyperDX dashboards remain. The mock records nothing.
+The rest come with the engine's steps for those pages; the collector's table and dashboards with
+deployment. Plugins, Hooks and Schedules record theirs in the backend (built 2026-11-12). →
+engine and deployment.
 
 ### L33: Hook events
 
@@ -91,13 +93,13 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   and Identity plugin calls; the fake plugins of later steps call `withPluginSpan`;
 - a local stack for development (collector, ClickHouse, HyperDX) in a compose file, and its
   production counterpart beside the deployment;
-- the Java application and its workers: the OpenTelemetry Java agent and structured logs, when
-  the backend is built;
+- the Java application and its workers: OpenTelemetry agent, structured logs, allow-listed spans
+  and the Audit sender (built 2026-11-13); client, local compose stack and deployment remain;
 - the Audit stream ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md),
   [OBS-audit](reference/integrations/observability.md#obs-audit)): see
   [L7](#l7-access-and-planning-changes-are-not-logged).
 
-→ frontend and engine, then deployment.
+→ frontend, engine and deployment.
 
 ### L73: Plugin API
 

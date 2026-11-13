@@ -24,6 +24,7 @@ import org.springframework.core.env.Profiles;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.MDC;
 
 // E14. Resolves and slides the vera_session cookie for each request.
 @Component
@@ -54,7 +55,12 @@ public final class SessionFilter extends OncePerRequestFilter {
                 response.setHeader("Set-Cookie", cookie(token, isTestProfile));
             }
         }
-        chain.doFilter(request, response);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.remove("vera.act");
+            MDC.remove("vera.job.kind");
+        }
     }
 
     private Caller callerOf(String token) {

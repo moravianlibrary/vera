@@ -5,6 +5,7 @@ import static cz.mzk.vera.db.tables.Tables.JOBS;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Map;
+import cz.mzk.vera.telemetry.Telemetry;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.stereotype.Component;
@@ -20,10 +21,11 @@ public final class Jobs {
     }
 
     public long enqueue(DSLContext dsl, String kind, Instant dueAt, Object payload) {
-        // B1 telemetry API is not on the app classpath yet, so trace_parent remains null.
+        String traceParent = Telemetry.traceParent();
         var row = dsl.insertInto(JOBS)
                 .set(JOBS.KIND, kind)
                 .set(JOBS.DUE_AT, dueAt.atOffset(ZoneOffset.UTC))
+                .set(JOBS.TRACE_PARENT, traceParent)
                 .set(JOBS.PAYLOAD, JSONB.valueOf(
                         json.writeValueAsString(payload == null ? Map.of() : payload)))
                 .returning(JOBS.ID)

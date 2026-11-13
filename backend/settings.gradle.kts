@@ -17,7 +17,7 @@ plugins {
 
 rootProject.name = "vera-backend"
 
-include("plugin-api", "domain", "app", "testing", "testing:fakes:oidc-identity", "testing:fakes:local-accounts",
+include("plugin-api", "domain", "app", "testing", "otel-extension", "testing:fakes:oidc-identity", "testing:fakes:local-accounts",
     "testing:fakes:aleph-catalog-adapter", "testing:fakes:barcode-reader",
     "testing:fakes:cover-recognition", "testing:fakes:jq-custody",
     "testing:fakes:place-of-publication", "testing:fakes:material-type",

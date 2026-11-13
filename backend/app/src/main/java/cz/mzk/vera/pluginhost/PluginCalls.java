@@ -27,6 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import cz.mzk.vera.telemetry.Telemetry;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -80,6 +85,8 @@ public class PluginCalls {
                 .lowCardinalityKeyValue("operation", operation)
                 .lowCardinalityKeyValue("instance", instanceId);
         String result = "unavailable";
+        Span span = Telemetry.startPlugin(GlobalOpenTelemetry.getTracer("vera-backend"), instanceId, kindName);
+        Scope spanScope = span.makeCurrent();
         observation.start();
         try {
             Record row = source.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.CONFIGURATION,
@@ -122,7 +129,7 @@ public class PluginCalls {
                 }
             }
 
-            PluginContext context = new Context(
+            PluginContext context = new CallContext(
                     instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock,
                     localPasswords.forInstance(instanceId));
             K implementation = kind.cast(plugin.implementation());
@@ -143,11 +150,14 @@ public class PluginCalls {
         } catch (TimeoutException exception) {
             return unavailable(instanceId, kindName, operation);
         } catch (Throwable fault) {
-            LOGGER.error("Plugin fault instance={} kind={} operation={}",
-                    instanceId, kindName, operation, fault);
+            // OBS-who: the class says what failed; its message may carry record contents.
+            LOGGER.error("Plugin fault instance={} kind={} operation={} fault={}",
+                    instanceId, kindName, operation, fault.getClass().getName());
             return new PluginOutcome.Unavailable<>(fault.getMessage());
         } finally {
             observation.lowCardinalityKeyValue("outcome", result).stop();
+            Telemetry.finishPlugin(span, result);
+            spanScope.close();
         }
     }
 
@@ -156,10 +166,10 @@ public class PluginCalls {
             throws InterruptedException, TimeoutException, PluginUnavailable {
         var executor = Executors.newVirtualThreadPerTaskExecutor();
         try {
-            var future = executor.submit(() -> {
+            var future = executor.submit(Context.current().wrap(() -> {
                 Thread.currentThread().setContextClassLoader(plugin.classLoader());
                 return body.apply(implementation, context);
-            });
+            }));
             try {
                 return future.get(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
             } catch (TimeoutException timedOut) {
@@ -185,7 +195,7 @@ public class PluginCalls {
         return new PluginOutcome.Unavailable<>("Plugin unavailable.");
     }
 
-    private record Context(String instanceId, Map<String, String> configuration,
+    private record CallContext(String instanceId, Map<String, String> configuration,
             Map<String, String> secrets, PluginHttp http, Clock clock,
             LocalPasswords localPasswords) implements PluginContext {
         @Override

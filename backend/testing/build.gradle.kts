@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.spring.boot)
 }
 
+val otelAgent = configurations.create("otelAgent")
+
 dependencies {
     implementation(platform(libs.spring.boot.dependencies))
     implementation(project(":app"))
@@ -29,6 +31,32 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.opentelemetry.sdk)
+    testImplementation(libs.opentelemetry.sdk.testing)
+    otelAgent(libs.opentelemetry.agent)
+}
+
+tasks.named<JavaExec>("bootRun") {
+    val endpoint = providers.environmentVariable("VERA_OTEL_ENDPOINT")
+    val extensionJar = project(":otel-extension").tasks.named<Jar>("jar")
+    dependsOn(extensionJar)
+    doFirst {
+        if (endpoint.isPresent && endpoint.get().isNotBlank()) {
+            val agent = otelAgent.singleFile
+            jvmArgs(
+                "-javaagent:${agent.absolutePath}",
+                "-Dotel.javaagent.extensions=${extensionJar.get().archiveFile.get().asFile.absolutePath}",
+                "-Dotel.service.name=vera-backend",
+                "-Dotel.resource.attributes=vera.role=${System.getenv("VERA_ROLE") ?: "all"}",
+                "-Dotel.instrumentation.http.server.capture-request-headers=",
+                "-Dotel.instrumentation.http.server.capture-response-headers=",
+                "-Dotel.instrumentation.jdbc.statement-sanitizer.enabled=true",
+                "-Dotel.instrumentation.common.db-statement-sanitizer.enabled=true",
+                "-Dotel.instrumentation.logback-appender.enabled=true",
+            )
+            environment("OTEL_EXPORTER_OTLP_ENDPOINT", endpoint.get())
+        }
+    }
 }
 
 

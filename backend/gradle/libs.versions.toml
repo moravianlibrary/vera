@@ -7,6 +7,9 @@ bcprov = "1.86"
 web-push = "5.1.2"
 httpcomponents = "4.4.16"
 jose4j = "0.7.9"
+otel-agent = "2.33.1"
+otel-api = "1.67.0"
+logstash-encoder = "8.1"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
@@ -39,5 +42,11 @@ bcprov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bcprov" }
 web-push = { module = "nl.martijndwars:web-push", version.ref = "web-push" }
 httpcore = { module = "org.apache.httpcomponents:httpcore", version.ref = "httpcomponents" }
 jose4j = { module = "org.bitbucket.b_c:jose4j", version.ref = "jose4j" }
+opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "otel-api" }
+opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "otel-api" }
+opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testing", version.ref = "otel-api" }
+opentelemetry-agent = { module = "io.opentelemetry.javaagent:opentelemetry-javaagent", version.ref = "otel-agent" }
+opentelemetry-sdk-extension-autoconfigure-spi = { module = "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi", version.ref = "otel-api" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-encoder" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
