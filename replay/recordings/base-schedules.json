@@ -22,6 +22,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -56,6 +60,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -85,6 +93,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -118,6 +130,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -201,6 +217,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -240,6 +260,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -276,6 +300,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -396,6 +424,10 @@
               "instance": {
                 "id": "pi5",
                 "name": "RDCZ production",
+                "names": {
+                  "cs": "Produkce RDCZ",
+                  "en": "RDCZ production"
+                },
                 "plugin": "RdczRegistry",
                 "kind": "Registry",
                 "isEnabled": true
@@ -445,6 +477,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -479,6 +515,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -508,6 +548,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -541,6 +585,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -624,6 +672,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -663,6 +715,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -699,6 +755,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -734,6 +794,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -803,6 +867,10 @@
               "instance": {
                 "id": "pi5",
                 "name": "RDCZ production",
+                "names": {
+                  "cs": "Produkce RDCZ",
+                  "en": "RDCZ production"
+                },
                 "plugin": "RdczRegistry",
                 "kind": "Registry",
                 "isEnabled": true
@@ -853,6 +921,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -887,6 +959,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -916,6 +992,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -949,6 +1029,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1032,6 +1116,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1071,6 +1159,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -1107,6 +1199,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -1142,6 +1238,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1330,6 +1430,10 @@
               "instance": {
                 "id": "pi5",
                 "name": "RDCZ production",
+                "names": {
+                  "cs": "Produkce RDCZ",
+                  "en": "RDCZ production"
+                },
                 "plugin": "RdczRegistry",
                 "kind": "Registry",
                 "isEnabled": true
@@ -1382,6 +1486,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1416,6 +1524,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1445,6 +1557,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1478,6 +1594,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1561,6 +1681,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1599,6 +1723,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -1635,6 +1763,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -1708,6 +1840,10 @@
               "instance": {
                 "id": "pi5",
                 "name": "RDCZ production",
+                "names": {
+                  "cs": "Produkce RDCZ",
+                  "en": "RDCZ production"
+                },
                 "plugin": "RdczRegistry",
                 "kind": "Registry",
                 "isEnabled": true
@@ -1754,6 +1890,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1788,6 +1928,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1817,6 +1961,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -1850,6 +1998,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1933,6 +2085,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -1972,6 +2128,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2008,6 +2168,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -2104,6 +2268,10 @@
               "instance": {
                 "id": "pi5",
                 "name": "RDCZ production",
+                "names": {
+                  "cs": "Produkce RDCZ",
+                  "en": "RDCZ production"
+                },
                 "plugin": "RdczRegistry",
                 "kind": "Registry",
                 "isEnabled": true
@@ -2149,6 +2317,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2184,6 +2356,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2220,6 +2396,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2257,6 +2437,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -2298,6 +2482,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2334,6 +2522,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2375,6 +2567,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2416,6 +2612,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2457,6 +2657,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -2498,6 +2702,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2539,6 +2747,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2574,6 +2786,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2615,6 +2831,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2656,6 +2876,10 @@
                   "instance": {
                     "id": "pi14",
                     "name": "Priority, then age",
+                    "names": {
+                      "cs": "Nejdřív priorita, pak stáří",
+                      "en": "Priority, then age"
+                    },
                     "plugin": "PriorityThenMix",
                     "kind": "ListGenerator",
                     "isEnabled": true
@@ -2696,6 +2920,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -2737,6 +2965,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true
@@ -2779,6 +3011,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -2820,6 +3056,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2861,6 +3101,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2896,6 +3140,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -2937,6 +3185,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -2978,6 +3230,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3019,6 +3275,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3060,6 +3320,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3101,6 +3365,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3142,6 +3410,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3183,6 +3455,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3224,6 +3500,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3265,6 +3545,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3306,6 +3590,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3342,6 +3630,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3383,6 +3675,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3424,6 +3720,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3459,6 +3759,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3500,6 +3804,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3536,6 +3844,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3577,6 +3889,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3618,6 +3934,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3659,6 +3979,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3700,6 +4024,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3741,6 +4069,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3782,6 +4114,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3823,6 +4159,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -3864,6 +4204,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3905,6 +4249,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -3946,6 +4294,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -3987,6 +4339,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4028,6 +4384,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4069,6 +4429,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4110,6 +4474,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4151,6 +4519,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4192,6 +4564,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4228,6 +4604,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4269,6 +4649,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4310,6 +4694,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4351,6 +4739,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4392,6 +4784,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4433,6 +4829,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4474,6 +4874,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4515,6 +4919,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4592,6 +5000,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4633,6 +5045,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4674,6 +5090,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4715,6 +5135,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4756,6 +5180,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4797,6 +5225,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4838,6 +5270,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -4879,6 +5315,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4920,6 +5360,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -4956,6 +5400,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -4997,6 +5445,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5038,6 +5490,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5079,6 +5535,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5120,6 +5580,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -5161,6 +5625,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5202,6 +5670,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5243,6 +5715,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5284,6 +5760,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -5325,6 +5805,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5366,6 +5850,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5407,6 +5895,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5443,6 +5935,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -5484,6 +5980,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5525,6 +6025,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5566,6 +6070,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5607,6 +6115,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -5648,6 +6160,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5689,6 +6205,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5730,6 +6250,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -5771,6 +6295,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -5807,6 +6335,10 @@
                   "instance": {
                     "id": "pi9",
                     "name": "Default ruleset",
+                    "names": {
+                      "cs": "Výchozí sada pravidel",
+                      "en": "Default ruleset"
+                    },
                     "plugin": "MarcComparator",
                     "kind": "Validation",
                     "isEnabled": true
@@ -5848,6 +6380,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -6068,6 +6604,10 @@
                   "instance": {
                     "id": "pi1",
                     "name": "MZK Aleph",
+                    "names": {
+                      "cs": "MZK Aleph",
+                      "en": "MZK Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -6102,6 +6642,10 @@
                   "instance": {
                     "id": "pi2",
                     "name": "NKP Aleph",
+                    "names": {
+                      "cs": "NKP Aleph",
+                      "en": "NKP Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -6131,6 +6675,10 @@
                   "instance": {
                     "id": "pi3",
                     "name": "VKOL Aleph",
+                    "names": {
+                      "cs": "VKOL Aleph",
+                      "en": "VKOL Aleph"
+                    },
                     "plugin": "AlephOaiCatalogAdapter",
                     "kind": "CatalogAdapter",
                     "isEnabled": true
@@ -6164,6 +6712,10 @@
                   "instance": {
                     "id": "pi4",
                     "name": "MZK Kramerius",
+                    "names": {
+                      "cs": "MZK Kramerius",
+                      "en": "MZK Kramerius"
+                    },
                     "plugin": "KrameriusRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -6247,6 +6799,10 @@
                   "instance": {
                     "id": "pi5",
                     "name": "RDCZ production",
+                    "names": {
+                      "cs": "Produkce RDCZ",
+                      "en": "RDCZ production"
+                    },
                     "plugin": "RdczRegistry",
                     "kind": "Registry",
                     "isEnabled": true
@@ -6286,6 +6842,10 @@
                   "instance": {
                     "id": "pi8",
                     "name": "Moravian periodicals",
+                    "names": {
+                      "cs": "Moravská periodika",
+                      "en": "Moravian periodicals"
+                    },
                     "plugin": "PeriodicalGaps",
                     "kind": "Harvester",
                     "isEnabled": true

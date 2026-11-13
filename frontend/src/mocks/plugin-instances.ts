@@ -30,6 +30,7 @@ export function summaryOf(instance: StoredPluginInstance): PluginInstance {
   return {
     id: instance.id,
     name: instance.name,
+    names: instance.names,
     plugin: implementationOf(instance)?.name ?? "",
     kind: kindOf(instance),
     isEnabled: instance.isEnabled,

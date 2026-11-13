@@ -39,6 +39,7 @@ export interface StoredPluginImplementation {
 export interface StoredPluginInstance {
   readonly id: string;
   readonly name: string;
+  readonly names: { cs?: string; en?: string };
   readonly implementationId: string;
   readonly version: string;
   readonly isEnabled: boolean;

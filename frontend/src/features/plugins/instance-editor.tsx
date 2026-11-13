@@ -253,7 +253,8 @@ export function InstanceEditorDialog({
   kindCount,
   onSaved,
 }: InstanceEditorDialogProps) {
-  const { t } = useTranslation("plugins");
+  const { t, i18n } = useTranslation("plugins");
+  const language = i18n.resolvedLanguage?.startsWith("cs") ? "cs" : "en";
   const id = useId();
   const { data: roles = [] } = useRolesQuery();
   const { data: categories = [] } = useCategoriesQuery();
@@ -311,7 +312,7 @@ export function InstanceEditorDialog({
         isCustody ? new Set(pickable.map((custody) => custody.id)) : null,
       )}
       defaultValues={{
-        name: instance?.name ?? "",
+        name: instance?.names[language] ?? instance?.names[language === "cs" ? "en" : "cs"] ?? "",
         configuration: Object.fromEntries(
           version.configFields.map((field) => [field.key, configured.get(field.key) ?? ""]),
         ),
@@ -344,7 +345,10 @@ export function InstanceEditorDialog({
           version.configFields.filter((field) => field.isSecret).map((field) => field.key),
         );
         const result = await save.run({
-          name: values.name,
+          names: {
+            ...(instance?.names ?? {}),
+            [language]: values.name,
+          },
           // A secret left blank is not sent, so it keeps its value.
           configuration: Object.fromEntries(
             Object.entries(values.configuration).filter(

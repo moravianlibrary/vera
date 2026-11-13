@@ -162,7 +162,14 @@ export function shownPluginsOf(index: PluginIndex, query: PluginQuery): ShownPlu
     return (
       implementation !== undefined &&
       (states.length === 0 || states.includes(stateOf(instance))) &&
-      matches(query.search, instance.name, implementation.name, configurationText(instance))
+      matches(
+        query.search,
+        instance.name,
+        instance.names.cs ?? "",
+        instance.names.en ?? "",
+        implementation.name,
+        configurationText(instance),
+      )
     );
   });
   return {

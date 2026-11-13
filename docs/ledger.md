@@ -138,6 +138,10 @@ Built (2026-11-13, L75c): categories and mixes hold names in Czech and English; 
 request language, searches match either language, and category and mix editors send both names.
 The base seed and mock fixtures include both.
 
+Built (2026-11-13, L75p): plugin instances of every kind, including predefined Identifier instances,
+hold names in Czech and English; Plugin reads resolve the request language and writes send both.
+The base seed and mock fixtures include both.
+
 ### L77: The signer of a plugin version
 
 Rules: [PLG-upload](reference/integrations/plugins.md#plg-upload),

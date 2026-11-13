@@ -14,6 +14,12 @@ export default {
   mask: "none",
   scenarios: [
     {
+      name: "czech-instance-name",
+      calls: [
+        { as: "admin", method: "GET", path: "/api/plugins", acceptLanguage: "cs", compare: "body" },
+      ],
+    },
+    {
       name: "reads",
       calls: profiles.flatMap((as) => [
         { as, method: "GET", path: "/api/plugins", compare: as === "admin" ? "body" : "code" },
@@ -62,7 +68,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "SVKOS Aleph",
+            names: { cs: "SVKOS Aleph", en: "SVKOS Aleph" },
             configuration: { base_url: "aleph.svkos.cz", protocol: "REST", timeout: "30s" },
             linkedCategoryId: null,
             settings: null,
@@ -76,7 +82,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "Elsewhere",
+            names: { cs: "Elsewhere", en: "Elsewhere" },
             configuration: { base_url: "x", protocol: "REST", timeout: "30s" },
             linkedCategoryId: null,
             settings: null,
@@ -100,7 +106,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi18",
           requestBody: {
-            name: "MZK Slack bot",
+            names: { cs: "MZK Slack bot", en: "MZK Slack bot" },
             configuration: { workspace: "mzk", bot: "vera-bot" },
             linkedCategoryId: null,
             settings: null,
@@ -120,7 +126,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi36",
           requestBody: {
-            name: "Catalog ID",
+            names: { cs: "ID katalogového záznamu", en: "Catalog ID" },
             configuration: {
               type: "catalogId",
               label_en: "Catalog ID",
@@ -147,7 +153,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "SVKOS Aleph",
+            names: { cs: "SVKOS Aleph", en: "SVKOS Aleph" },
             configuration: { base_url: "elsewhere", protocol: "REST", timeout: "30s" },
             linkedCategoryId: null,
             settings: null,
@@ -160,7 +166,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "SVKOS Aleph",
+            names: { cs: "SVKOS Aleph", en: "SVKOS Aleph" },
             configuration: { base_url: "elsewhere", protocol: "REST", timeout: "30s" },
             linkedCategoryId: null,
             settings: null,
@@ -173,7 +179,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "Incomplete Aleph",
+            names: { cs: "Neúplný Aleph", en: "Incomplete Aleph" },
             configuration: { base_url: "elsewhere" },
             linkedCategoryId: null,
             settings: null,
@@ -186,7 +192,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "Unknown Aleph setting",
+            names: { cs: "Neznámé nastavení Aleph", en: "Unknown Aleph setting" },
             configuration: { base_url: "elsewhere", protocol: "REST", timeout: "30s", other: "x" },
             linkedCategoryId: null,
             settings: null,
@@ -199,7 +205,7 @@ export default {
           path: "/api/plugin-instances",
           requestBody: {
             implementationId: "pt1",
-            name: "Unknown category Aleph",
+            names: { cs: "Aleph s neznámou kategorií", en: "Unknown category Aleph" },
             configuration: { base_url: "elsewhere", protocol: "REST", timeout: "30s" },
             linkedCategoryId: "c999",
             settings: null,
@@ -211,7 +217,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi35",
           requestBody: {
-            name: "Moravica project",
+            names: { cs: "Projekt Moravica", en: "Moravica project" },
             configuration: { expr: '.request.project == "Moravica"' },
             linkedCategoryId: null,
             settings: { kind: "Custody", custodyId: "pc0" },
@@ -223,7 +229,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi22",
           requestBody: {
-            name: "MZK Keycloak",
+            names: { cs: "MZK Keycloak", en: "MZK Keycloak" },
             configuration: { issuer: "sso.mzk.cz/realms/mzk", client: "vera" },
             linkedCategoryId: null,
             settings: null,
@@ -235,7 +241,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi22",
           requestBody: {
-            name: "MZK Keycloak",
+            names: { cs: "MZK Keycloak", en: "MZK Keycloak" },
             configuration: { issuer: "sso.mzk.cz/realms/mzk", client: "vera" },
             linkedCategoryId: null,
             settings: {
@@ -259,7 +265,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi22",
           requestBody: {
-            name: "MZK Keycloak",
+            names: { cs: "MZK Keycloak", en: "MZK Keycloak" },
             configuration: { issuer: "sso.mzk.cz/realms/mzk", client: "vera" },
             linkedCategoryId: null,
             settings: {
@@ -279,7 +285,7 @@ export default {
           method: "PUT",
           path: "/api/plugin-instances/pi5",
           requestBody: {
-            name: "RDCZ production",
+            names: { cs: "Produkce RDCZ", en: "RDCZ production" },
             configuration: { base_url: "registrdigitalizace.cz", link: "record" },
             linkedCategoryId: null,
             settings: null,

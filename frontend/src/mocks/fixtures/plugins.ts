@@ -617,6 +617,7 @@ function instance(source: InstanceSource): StoredPluginInstance {
   );
   return {
     ...source,
+    names: { cs: instanceCzechNames[source.name] ?? source.name, en: source.name },
     version: implementationOf?.versions[0]?.version ?? "1.0.0",
     isEnabled: true,
     linkedCategoryId: source.linkedCategoryId ?? null,
@@ -625,6 +626,36 @@ function instance(source: InstanceSource): StoredPluginInstance {
     isDeleted: false,
   };
 }
+
+const instanceCzechNames: Record<string, string> = {
+  "RDCZ production": "Produkce RDCZ",
+  "Periodicals model": "Model periodik",
+  "Monographs model": "Model monografií",
+  "Moravian periodicals": "Moravská periodika",
+  "MZK Kramerius sweep": "Sklizeň Krameria MZK",
+  "Default ruleset": "Výchozí sada pravidel",
+  "Language check": "Kontrola jazyka",
+  "Czech copyright": "Česká autorská práva",
+  Serials: "Periodika",
+  "Printed 1800–1899": "Tisky 1800–1899",
+  "Moravica project": "Projekt Moravica",
+  Camera: "Fotoaparát",
+  "OCR pilot": "Pilot OCR",
+  "Priority, then age": "Nejdřív priorita, pak stáří",
+  "Local accounts": "Místní účty",
+  Email: "E-mail",
+  "Mailgun — requesters": "Mailgun — žadatelé",
+  Webhooks: "Webhooky",
+  "Scan-ops SFTP": "Digitalizační operace SFTP",
+  "Regional press": "Regionální tisk",
+  "MZK Kramerius publications": "Publikace MZK Kramerius",
+  "Material type": "Typ dokumentu",
+  "Catalog ID": "ID katalogového záznamu",
+  NBN: "ČNB",
+  ISBN: "ISBN",
+  ISSN: "ISSN",
+  Barcode: "Čárový kód",
+};
 
 // DOC-identifiers: one predefined Pattern instance per type, with MZK's formats.
 const identifierSources: readonly Pick<InstanceSource, "id" | "name" | "configuration">[] = [

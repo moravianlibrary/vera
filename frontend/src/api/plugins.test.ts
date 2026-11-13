@@ -27,6 +27,7 @@ import { listPluginInstances } from "@/api/reference";
 import { listSchedules } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
+import { i18n } from "@/i18n";
 import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -159,11 +160,88 @@ describe("getPluginIndex", () => {
 describe("an instance", () => {
   const configuration = { base_url: "aleph.mzk.cz", protocol: "REST", timeout: "30s" };
 
+  it("resolves a Czech instance name and round-trips both names", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+    try {
+      expect(instanceOf(await getPluginIndex(), "pi36")).toMatchObject({
+        name: "ID katalogového záznamu",
+        names: { cs: "ID katalogového záznamu", en: "Catalog ID" },
+      });
+      const created = await createPluginInstance({
+        implementationId: "pt1",
+        names: { cs: "Katalog MZK", en: "MZK catalog" },
+        configuration,
+        linkedCategoryId: null,
+        settings: null,
+      });
+      expect(created).toMatchObject({
+        name: "Katalog MZK",
+        names: { cs: "Katalog MZK", en: "MZK catalog" },
+      });
+      const saved = await savePluginInstance(created.id, {
+        names: { cs: "Katalog MZK nový", en: "MZK catalog" },
+        configuration,
+        linkedCategoryId: null,
+        settings: null,
+      });
+      expect(saved.names).toEqual({ cs: "Katalog MZK nový", en: "MZK catalog" });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("enforces uniqueness separately within each language", async () => {
+    signInAs("admin");
+    const first = await createPluginInstance({
+      implementationId: "pt1",
+      names: { cs: "Místní Aleph", en: "Local Aleph" },
+      configuration,
+      linkedCategoryId: null,
+      settings: null,
+    });
+    try {
+      expect(
+        await refusalOf(
+          createPluginInstance({
+            implementationId: "pt1",
+            names: { cs: "Jiný Aleph", en: "Local Aleph" },
+            configuration,
+            linkedCategoryId: null,
+            settings: null,
+          }),
+        ),
+      ).toMatchObject({ status: 409, code: "plugin.name_taken" });
+      expect(
+        await refusalOf(
+          createPluginInstance({
+            implementationId: "pt1",
+            names: { cs: "Místní Aleph", en: "Another Aleph" },
+            configuration,
+            linkedCategoryId: null,
+            settings: null,
+          }),
+        ),
+      ).toMatchObject({ status: 409, code: "plugin.name_taken" });
+      const crossLanguage = await createPluginInstance({
+        implementationId: "pt1",
+        names: { cs: "Local Aleph", en: "Aleph elsewhere" },
+        configuration,
+        linkedCategoryId: null,
+        settings: null,
+      });
+      expect(crossLanguage.names.cs).toBe("Local Aleph");
+      await deletePluginInstance(crossLanguage.id);
+    } finally {
+      await deletePluginInstance(first.id);
+    }
+  });
+
   it("is made with every field its version requires", async () => {
     signInAs("admin");
     const draft = {
       implementationId: "pt1",
-      name: "SVKOS Aleph",
+      names: { en: "SVKOS Aleph", cs: "SVKOS Aleph" },
       configuration: { base_url: "aleph.svkos.cz" },
       linkedCategoryId: null,
       settings: null,
@@ -185,7 +263,13 @@ describe("an instance", () => {
     });
     expect((await listPluginInstances()).some((instance) => instance.id === made.id)).toBe(true);
     expect(
-      await refusalOf(createPluginInstance({ ...draft, name: "mzk aleph", configuration })),
+      await refusalOf(
+        createPluginInstance({
+          ...draft,
+          names: { en: "mzk aleph", cs: "mzk aleph" },
+          configuration,
+        }),
+      ),
     ).toMatchObject({ status: 409, code: "plugin.name_taken" });
   });
 
@@ -196,7 +280,7 @@ describe("an instance", () => {
       await refusalOf(
         createPluginInstance({
           implementationId: "pt1",
-          name: "Elsewhere",
+          names: { en: "Elsewhere", cs: "Elsewhere" },
           configuration,
           linkedCategoryId: null,
           settings: null,
@@ -208,7 +292,7 @@ describe("an instance", () => {
   it("binds a custody rule to one custody, never the fallback (ACCESS-custody-by-plugins)", async () => {
     signInAs("admin");
     const draft = (custodyId: string) => ({
-      name: "Moravica project",
+      names: { en: "Moravica project", cs: "Projekt Moravica" },
       configuration: { expr: '.request.project == "Moravica"' },
       linkedCategoryId: null,
       settings: { kind: "Custody" as const, custodyId },
@@ -231,7 +315,7 @@ describe("an instance", () => {
   it("keeps a secret that is not sent again", async () => {
     signInAs("admin");
     const saved = await savePluginInstance("pi18", {
-      name: "MZK Slack bot",
+      names: { en: "MZK Slack bot", cs: "MZK Slack bot" },
       configuration: { workspace: "mzk", bot: "vera-bot" },
       linkedCategoryId: null,
       settings: null,
@@ -245,7 +329,7 @@ describe("an instance", () => {
     signInAs("admin");
     const keycloak = instanceOf(await getPluginIndex(), "pi22");
     const draft = {
-      name: "MZK Keycloak",
+      names: keycloak?.names ?? { en: "MZK Keycloak", cs: "MZK Keycloak" },
       configuration: { issuer: "sso.mzk.cz/realms/mzk", client: "vera" },
       linkedCategoryId: null,
       settings: keycloak?.settings ?? null,
@@ -284,7 +368,7 @@ describe("an instance's policy (PLG-upgrade)", () => {
 
     expect(rdcz.policy).toEqual({ tiers: [], copyStates: ["Digitized"], agent: null });
     const draft = {
-      name: rdcz.name,
+      names: rdcz.names,
       configuration: rdcz.configuration,
       linkedCategoryId: null,
       settings: null,
@@ -313,7 +397,7 @@ describe("an instance's policy (PLG-upgrade)", () => {
     }
 
     const saved = await savePluginInstance("pi8", {
-      name: harvester.name,
+      names: harvester.names,
       configuration: harvester.configuration,
       linkedCategoryId: harvester.linkedCategoryId,
       settings: null,
@@ -374,7 +458,7 @@ describe("switching an instance off", () => {
 
 describe("identifier types (DOC-identifiers)", () => {
   const isbnDraft = (configuration: Record<string, string>) => ({
-    name: "ISBN",
+    names: { en: "ISBN", cs: "ISBN" },
     configuration: {
       type: "isbn",
       label_en: "ISBN",
@@ -422,7 +506,11 @@ describe("identifier types (DOC-identifiers)", () => {
     ).toMatchObject({ code: "plugin.identifier" });
     expect(
       await refusalOf(
-        createPluginInstance({ ...isbnDraft({}), name: "ISBN again", implementationId: "pt31" }),
+        createPluginInstance({
+          ...isbnDraft({}),
+          names: { en: "ISBN again", cs: "ISBN again" },
+          implementationId: "pt31",
+        }),
       ),
     ).toMatchObject({ status: 409, code: "plugin.identifier_taken" });
   });
@@ -536,7 +624,7 @@ describe("uploading a package", () => {
       await refusalOf(
         createPluginInstance({
           implementationId: registry.id,
-          name: "MZK Kramerius 7",
+          names: { en: "MZK Kramerius 7", cs: "MZK Kramerius 7" },
           configuration: { base_url: "k7.mzk.cz", link: "content" },
           linkedCategoryId: null,
           settings: null,

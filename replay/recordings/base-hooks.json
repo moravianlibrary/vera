@@ -1523,6 +1523,10 @@
           "body": {
             "id": "pi20",
             "name": "Webhooks",
+            "names": {
+              "cs": "Webhooky",
+              "en": "Webhooks"
+            },
             "implementationId": "pt17",
             "kind": "DeliveryChannel",
             "version": "2.0.1",
@@ -1600,6 +1604,10 @@
           "body": {
             "id": "pi20",
             "name": "Webhooks",
+            "names": {
+              "cs": "Webhooky",
+              "en": "Webhooks"
+            },
             "implementationId": "pt17",
             "kind": "DeliveryChannel",
             "version": "2.0.1",
@@ -1653,6 +1661,10 @@
           "body": {
             "id": "pi21",
             "name": "Scan-ops SFTP",
+            "names": {
+              "cs": "Digitalizační operace SFTP",
+              "en": "Scan-ops SFTP"
+            },
             "implementationId": "pt18",
             "kind": "DeliveryChannel",
             "version": "1.0.0",
@@ -1708,6 +1720,10 @@
           "body": {
             "id": "pi21",
             "name": "Scan-ops SFTP",
+            "names": {
+              "cs": "Digitalizační operace SFTP",
+              "en": "Scan-ops SFTP"
+            },
             "implementationId": "pt18",
             "kind": "DeliveryChannel",
             "version": "1.0.0",

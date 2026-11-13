@@ -18,6 +18,7 @@ import {
 import { cadenceSchema } from "@vera/domain/schedules";
 import { z } from "zod";
 import { runSchema } from "./tasks";
+import { namesSchema } from "./user-settings";
 
 const id = z.string().min(1);
 
@@ -92,6 +93,7 @@ export type InstanceSettings = z.infer<typeof instanceSettingsSchema>;
 export const pluginInstanceDetailSchema = z.object({
   id,
   name: z.string(),
+  names: namesSchema,
   implementationId: id,
   kind: pluginKindSchema,
   // The installed version it runs.
@@ -150,7 +152,7 @@ export type PluginIndex = z.infer<typeof pluginIndexSchema>;
 
 // Secrets left out keep their value; one sent empty is cleared.
 export const instanceDraftSchema = z.object({
-  name: z.string().trim().min(1, "An instance needs a name: its runs are listed under it."),
+  names: namesSchema,
   configuration: z.record(z.string(), z.string()),
   linkedCategoryId: id.nullable(),
   settings: instanceSettingsSchema.nullable(),

@@ -10397,6 +10397,17 @@
               "name": {
                 "type": "string"
               },
+              "names": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string"
+                  },
+                  "en": {
+                    "type": "string"
+                  }
+                }
+              },
               "implementationId": {
                 "type": "string",
                 "minLength": 1

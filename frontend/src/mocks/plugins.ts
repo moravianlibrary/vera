@@ -112,6 +112,7 @@ function detailOf(
   return {
     id: instance.id,
     name: instance.name,
+    names: instance.names,
     implementationId: instance.implementationId,
     kind: kindOf(instance),
     version: instance.version,
@@ -300,12 +301,20 @@ function draftRefusal(
   draft: InstanceDraft,
   existing: StoredPluginInstance | null,
 ): Refusal | null {
-  const name = draft.name.trim();
+  const names = draft.names;
   const isTaken = liveInstances().some(
     (instance) =>
       instance.id !== existing?.id &&
       instance.implementationId === implementation.id &&
-      instance.name.localeCompare(name, "cs", { sensitivity: "base" }) === 0,
+      (Object.keys(names) as (keyof typeof names)[]).some((language) => {
+        const name = names[language];
+        const existingName = instance.names[language];
+        return (
+          name !== undefined &&
+          existingName !== undefined &&
+          existingName.localeCompare(name, "cs", { sensitivity: "base" }) === 0
+        );
+      }),
   );
   if (isTaken) {
     return {
@@ -366,7 +375,8 @@ export function createInstance(
   );
   const instance: StoredPluginInstance = {
     id: `pi${highest + 1}`,
-    name: draft.name.trim(),
+    name: draft.names.en ?? draft.names.cs ?? "",
+    names: draft.names,
     implementationId: implementation.id,
     version: version.version,
     isEnabled: true,
@@ -415,7 +425,8 @@ export function saveInstance(
 
   const saved = replaceInstance({
     ...instance,
-    name: draft.name.trim(),
+    name: draft.names.en ?? draft.names.cs ?? "",
+    names: draft.names,
     configuration: configuration.value,
     linkedCategoryId: draft.linkedCategoryId,
     settings: draft.settings,

@@ -10835,6 +10835,10 @@
           "body": {
             "id": "pi13",
             "name": "OCR pilot",
+            "names": {
+              "cs": "Pilot OCR",
+              "en": "OCR pilot"
+            },
             "implementationId": "pt10",
             "kind": "Input",
             "version": "0.3.0",
@@ -10889,6 +10893,10 @@
           "body": {
             "id": "pi13",
             "name": "OCR pilot",
+            "names": {
+              "cs": "Pilot OCR",
+              "en": "OCR pilot"
+            },
             "implementationId": "pt10",
             "kind": "Input",
             "version": "0.3.0",

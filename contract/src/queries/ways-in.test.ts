@@ -12,6 +12,7 @@ function instance(
   return {
     id,
     name: id,
+    names: { cs: id, en: id },
     implementationId,
     version: "1",
     isEnabled: true,

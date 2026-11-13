@@ -87,6 +87,7 @@ const settings = z.discriminatedUnion("kind", [
 const storedPluginInstance = z.strictObject({
   id,
   name: z.string(),
+  names: z.object({ cs: z.string().optional(), en: z.string().optional() }).optional(),
   implementationId: id,
   version: z.string().optional(),
   isEnabled: z.boolean(),

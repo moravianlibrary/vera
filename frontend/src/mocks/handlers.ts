@@ -382,6 +382,22 @@ const languageOf = (request: Request): "cs" | "en" => {
   return "cs";
 };
 
+function pluginNamesInLanguage<T>(value: T, language: "cs" | "en"): T {
+  if (Array.isArray(value)) return value.map((item) => pluginNamesInLanguage(item, language)) as T;
+  if (value === null || typeof value !== "object") return value;
+  const record = value as Record<string, unknown>;
+  const localized =
+    "plugin" in record &&
+    typeof record.name === "string" &&
+    typeof record.names === "object" &&
+    record.names !== null
+      ? { ...record, name: nameIn(record.names as { cs?: string; en?: string }, language) }
+      : record;
+  return Object.fromEntries(
+    Object.entries(localized).map(([key, child]) => [key, pluginNamesInLanguage(child, language)]),
+  ) as T;
+}
+
 export function createHandlers(profile: MockUserProfile) {
   const currentSession = (): Session => resolveSession(profile);
   const watchlistInLanguage = <T extends { names: { cs?: string; en?: string }; name: string }>(
@@ -724,7 +740,14 @@ export function createHandlers(profile: MockUserProfile) {
       sendHookTest(session, draft),
     ),
 
-    http.get(route(apiRoutes.pluginInstances), () => HttpResponse.json(instanceSummaries())),
+    http.get(route(apiRoutes.pluginInstances), ({ request }) =>
+      HttpResponse.json(
+        instanceSummaries().map((instance) => ({
+          ...instance,
+          name: nameIn(instance.names, languageOf(request)),
+        })),
+      ),
+    ),
 
     // Tasks: the fixed paths before a run's own, which would read "running" as a run.
     http.get(route(apiRoutes.runningTasks), () => {
@@ -746,16 +769,20 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       const query = parseRunSearchParams(new URL(request.url).searchParams);
-      return HttpResponse.json(queryRuns(session, query));
+      return HttpResponse.json(
+        pluginNamesInLanguage(queryRuns(session, query), languageOf(request)),
+      );
     }),
-    http.get(route(`${apiRoutes.tasks}/:runId`), ({ params }) => {
+    http.get(route(`${apiRoutes.tasks}/:runId`), ({ params, request }) => {
       const session = currentSession();
       if (!canReadRuns(session)) {
         return mayNotReadTasks();
       }
 
       const detail = findRunDetail(session, String(params.runId));
-      return detail === null ? noSuchRun() : HttpResponse.json(detail);
+      return detail === null
+        ? noSuchRun()
+        : HttpResponse.json(pluginNamesInLanguage(detail, languageOf(request)));
     }),
     http.get(route(`${apiRoutes.tasks}/:runId/log`), ({ params }) => {
       const session = currentSession();
@@ -784,7 +811,7 @@ export function createHandlers(profile: MockUserProfile) {
       const range = timelineRangeSchema
         .catch("day")
         .parse(new URL(request.url).searchParams.get("range"));
-      return HttpResponse.json(querySchedules(range));
+      return HttpResponse.json(pluginNamesInLanguage(querySchedules(range), languageOf(request)));
     }),
     http.post(route(apiRoutes.schedules), async ({ request }) => {
       const draft = newScheduleSchema.safeParse(await request.json());
@@ -815,17 +842,37 @@ export function createHandlers(profile: MockUserProfile) {
     http.post(route(`${apiRoutes.schedules}/:scheduleId/run`), ({ params }) =>
       outcomeResponse(runScheduleNow(currentSession(), String(params.scheduleId))),
     ),
-    http.get(route(apiRoutes.plugins), () => {
+    http.get(route(apiRoutes.plugins), ({ request }) => {
       if (!canReadPlugins(currentSession())) {
         return problemResponse({ status: 403, message: "You may not read plugins" });
       }
 
-      return HttpResponse.json(pluginIndex(currentSession()));
+      const index = pluginIndex(currentSession());
+      return HttpResponse.json({
+        ...index,
+        instances: index.instances.map((instance) => ({
+          ...instance,
+          name: nameIn(instance.names, languageOf(request)),
+        })),
+      });
     }),
-    accessWrite("post", apiRoutes.pluginInstances, newInstanceSchema, (session, _id, draft) =>
-      createInstance(session, draft),
+    accessWrite(
+      "post",
+      apiRoutes.pluginInstances,
+      newInstanceSchema,
+      (session, _id, draft) => createInstance(session, draft),
+      (instance, request) => ({
+        ...instance,
+        name: nameIn(instance.names, languageOf(request)),
+      }),
     ),
-    accessWrite("put", `${apiRoutes.pluginInstances}/:id`, instanceDraftSchema, saveInstance),
+    accessWrite(
+      "put",
+      `${apiRoutes.pluginInstances}/:id`,
+      instanceDraftSchema,
+      saveInstance,
+      (instance, request) => ({ ...instance, name: nameIn(instance.names, languageOf(request)) }),
+    ),
     accessDelete(`${apiRoutes.pluginInstances}/:id`, deleteInstance),
     ...(["enable", "disable"] as const).map((action) =>
       http.post(route(`${apiRoutes.pluginInstances}/:id/${action}`), ({ params }) =>

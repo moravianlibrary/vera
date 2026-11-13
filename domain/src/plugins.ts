@@ -58,6 +58,7 @@ export function operationsMatchKind(kind: PluginKind, operations: readonly strin
 export const pluginInstanceSchema = z.object({
   id: z.string(),
   name: z.string(),
+  names: z.object({ cs: z.string().optional(), en: z.string().optional() }),
   // The implementation it runs: "AlephOaiCatalogAdapter".
   plugin: z.string(),
   kind: pluginKindSchema,
