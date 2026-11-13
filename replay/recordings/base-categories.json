@@ -13,56 +13,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -431,56 +475,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -736,56 +824,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -1154,56 +1286,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -1230,56 +1406,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -1306,56 +1526,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -1382,56 +1646,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -1511,19 +1819,137 @@
       ]
     },
     {
+      "name": "reads-czech-name",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/categories",
+          "status": 200,
+          "acceptLanguage": "cs",
+          "body": [
+            {
+              "id": "c1",
+              "name": "Monografie",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
+              "parentId": null
+            },
+            {
+              "id": "c11",
+              "name": "19. století",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
+              "parentId": "c1"
+            },
+            {
+              "id": "c12",
+              "name": "20. století",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
+              "parentId": "c1"
+            },
+            {
+              "id": "c2",
+              "name": "Periodika",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
+              "parentId": null
+            },
+            {
+              "id": "c21",
+              "name": "Regionální",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
+              "parentId": "c2"
+            },
+            {
+              "id": "c22",
+              "name": "Národní",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
+              "parentId": "c2"
+            },
+            {
+              "id": "c23",
+              "name": "Odborné",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
+              "parentId": "c2"
+            },
+            {
+              "id": "c3",
+              "name": "Rukopisy",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
+              "parentId": null
+            },
+            {
+              "id": "c31",
+              "name": "Středověké",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
+              "parentId": "c3"
+            },
+            {
+              "id": "c32",
+              "name": "Raně novověké",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
+              "parentId": "c3"
+            },
+            {
+              "id": "c4",
+              "name": "Mapy",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
+              "parentId": null
+            }
+          ],
+          "as": "u3"
+        }
+      ]
+    },
+    {
       "name": "create-category",
       "calls": [
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 200,
+          "status": 201,
           "body": {
             "id": "c33",
             "name": "Recording child",
+            "names": {
+              "en": "Recording child"
+            },
             "parentId": "c2"
           },
           "requestBody": {
-            "name": "Recording child",
+            "names": {
+              "en": "Recording child"
+            },
             "parentId": "c2"
           },
           "as": "u8"
@@ -1536,61 +1962,108 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             },
             {
               "id": "c33",
               "name": "Recording child",
+              "names": {
+                "en": "Recording child"
+              },
               "parentId": "c2"
             }
           ],
@@ -1884,10 +2357,15 @@
           "body": {
             "id": "c23",
             "name": "Specialist press",
+            "names": {
+              "en": "Specialist press"
+            },
             "parentId": "c1"
           },
           "requestBody": {
-            "name": "Specialist press",
+            "names": {
+              "en": "Specialist press"
+            },
             "parentId": "c1"
           },
           "as": "u3"
@@ -1900,56 +2378,99 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist press",
+              "names": {
+                "en": "Specialist press"
+              },
               "parentId": "c1"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -2295,14 +2816,19 @@
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 200,
+          "status": 201,
           "body": {
             "id": "c33",
             "name": "Disposable category",
+            "names": {
+              "en": "Disposable category"
+            },
             "parentId": null
           },
           "requestBody": {
-            "name": "Disposable category",
+            "names": {
+              "en": "Disposable category"
+            },
             "parentId": null
           },
           "as": "u3"
@@ -2321,56 +2847,100 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             }
           ],
@@ -2739,14 +3309,19 @@
         {
           "method": "POST",
           "path": "/api/categories",
-          "status": 200,
+          "status": 201,
           "body": {
             "id": "c33",
             "name": "Scoped leaf",
+            "names": {
+              "en": "Scoped leaf"
+            },
             "parentId": null
           },
           "requestBody": {
-            "name": "Scoped leaf",
+            "names": {
+              "en": "Scoped leaf"
+            },
             "parentId": null
           },
           "as": "u3"
@@ -3176,10 +3751,15 @@
           "body": {
             "id": "c33",
             "name": "Before 1800",
+            "names": {
+              "en": "Before 1800"
+            },
             "parentId": "c32"
           },
           "requestBody": {
-            "name": "Before 1800"
+            "names": {
+              "en": "Before 1800"
+            }
           },
           "as": "u3"
         },
@@ -3191,61 +3771,108 @@
             {
               "id": "c1",
               "name": "Monographs",
+              "names": {
+                "en": "Monographs",
+                "cs": "Monografie"
+              },
               "parentId": null
             },
             {
               "id": "c11",
               "name": "19th century",
+              "names": {
+                "en": "19th century",
+                "cs": "19. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c12",
               "name": "20th century",
+              "names": {
+                "en": "20th century",
+                "cs": "20. století"
+              },
               "parentId": "c1"
             },
             {
               "id": "c2",
               "name": "Periodicals",
+              "names": {
+                "en": "Periodicals",
+                "cs": "Periodika"
+              },
               "parentId": null
             },
             {
               "id": "c21",
               "name": "Regional",
+              "names": {
+                "en": "Regional",
+                "cs": "Regionální"
+              },
               "parentId": "c2"
             },
             {
               "id": "c22",
               "name": "National",
+              "names": {
+                "en": "National",
+                "cs": "Národní"
+              },
               "parentId": "c2"
             },
             {
               "id": "c23",
               "name": "Specialist",
+              "names": {
+                "en": "Specialist",
+                "cs": "Odborné"
+              },
               "parentId": "c2"
             },
             {
               "id": "c3",
               "name": "Manuscripts",
+              "names": {
+                "en": "Manuscripts",
+                "cs": "Rukopisy"
+              },
               "parentId": null
             },
             {
               "id": "c31",
               "name": "Medieval",
+              "names": {
+                "en": "Medieval",
+                "cs": "Středověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c32",
               "name": "Early modern",
+              "names": {
+                "en": "Early modern",
+                "cs": "Raně novověké"
+              },
               "parentId": "c3"
             },
             {
               "id": "c4",
               "name": "Maps",
+              "names": {
+                "en": "Maps",
+                "cs": "Mapy"
+              },
               "parentId": null
             },
             {
               "id": "c33",
               "name": "Before 1800",
+              "names": {
+                "en": "Before 1800"
+              },
               "parentId": "c32"
             }
           ],
@@ -3640,7 +4267,9 @@
             "code": "forbidden"
           },
           "requestBody": {
-            "name": "No permission",
+            "names": {
+              "en": "No permission"
+            },
             "parentId": "c2"
           },
           "as": "u5"
@@ -3657,7 +4286,9 @@
             "code": "category.not_found"
           },
           "requestBody": {
-            "name": "Missing parent",
+            "names": {
+              "en": "Missing parent"
+            },
             "parentId": "c404"
           },
           "as": "u3"
@@ -3674,7 +4305,9 @@
             "code": "category.holds_documents"
           },
           "requestBody": {
-            "name": "Brno",
+            "names": {
+              "en": "Brno"
+            },
             "parentId": "c21"
           },
           "as": "u3"
@@ -3691,7 +4324,9 @@
             "code": "category.name_taken"
           },
           "requestBody": {
-            "name": "Regional",
+            "names": {
+              "en": "Regional"
+            },
             "parentId": "c2"
           },
           "as": "u3"
@@ -3708,14 +4343,16 @@
             "code": "invalid",
             "errors": [
               {
-                "pointer": "/name",
+                "pointer": "/names/en",
                 "code": "too_small",
                 "detail": "Too small: expected string to have >=1 characters"
               }
             ]
           },
           "requestBody": {
-            "name": " ",
+            "names": {
+              "en": " "
+            },
             "parentId": "c2"
           },
           "as": "u3"
@@ -3732,7 +4369,9 @@
             "code": "forbidden"
           },
           "requestBody": {
-            "name": "No permission",
+            "names": {
+              "en": "No permission"
+            },
             "parentId": "c2"
           },
           "as": "u5"
@@ -3749,14 +4388,16 @@
             "code": "invalid",
             "errors": [
               {
-                "pointer": "/name",
+                "pointer": "/names/en",
                 "code": "too_small",
                 "detail": "Too small: expected string to have >=1 characters"
               }
             ]
           },
           "requestBody": {
-            "name": " ",
+            "names": {
+              "en": " "
+            },
             "parentId": "c2"
           },
           "as": "u3"
@@ -3773,7 +4414,9 @@
             "code": "category.under_itself"
           },
           "requestBody": {
-            "name": "Monographs",
+            "names": {
+              "en": "Monographs"
+            },
             "parentId": "c11"
           },
           "as": "u3"
@@ -3790,7 +4433,9 @@
             "code": "category.not_found"
           },
           "requestBody": {
-            "name": "Specialist",
+            "names": {
+              "en": "Specialist"
+            },
             "parentId": "c404"
           },
           "as": "u3"
@@ -3807,7 +4452,9 @@
             "code": "category.holds_documents"
           },
           "requestBody": {
-            "name": "Specialist",
+            "names": {
+              "en": "Specialist"
+            },
             "parentId": "c21"
           },
           "as": "u3"
@@ -3824,7 +4471,9 @@
             "code": "category.name_taken"
           },
           "requestBody": {
-            "name": "Regional",
+            "names": {
+              "en": "Regional"
+            },
             "parentId": "c2"
           },
           "as": "u3"
@@ -3948,7 +4597,9 @@
             "code": "category.has_children"
           },
           "requestBody": {
-            "name": "Refined child"
+            "names": {
+              "en": "Refined child"
+            }
           },
           "as": "u3"
         },
@@ -3964,7 +4615,9 @@
             "code": "forbidden"
           },
           "requestBody": {
-            "name": "No permission"
+            "names": {
+              "en": "No permission"
+            }
           },
           "as": "u5"
         },
@@ -3980,14 +4633,16 @@
             "code": "invalid",
             "errors": [
               {
-                "pointer": "/name",
+                "pointer": "/names/en",
                 "code": "too_small",
                 "detail": "Too small: expected string to have >=1 characters"
               }
             ]
           },
           "requestBody": {
-            "name": " "
+            "names": {
+              "en": " "
+            }
           },
           "as": "u3"
         },
@@ -3998,10 +4653,15 @@
           "body": {
             "id": "c33",
             "name": "Medieval",
+            "names": {
+              "en": "Medieval"
+            },
             "parentId": "c31"
           },
           "requestBody": {
-            "name": "Medieval"
+            "names": {
+              "en": "Medieval"
+            }
           },
           "as": "u3"
         }

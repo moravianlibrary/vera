@@ -25,12 +25,12 @@ import {
   categoryPathOf,
   custodyReachOf,
   isInSubtree,
-  isNameTaken,
   scopeOfCategory,
   unheldCategoriesOf,
 } from "@vera/domain/categories";
 import type { Category, Iteration, Session } from "@vera/domain/entities";
 import { isInPool, isScanned } from "@vera/domain/lists";
+import { nameIn } from "@vera/domain/names";
 import type { Permission } from "@vera/domain/permissions";
 import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
@@ -166,8 +166,19 @@ function placeRefusal(session: Session, parentId: string | null): Refusal | null
   return null;
 }
 
-function nameRefusal(parentId: string | null, name: string, exceptId: string | null) {
-  return isNameTaken(database.categories, parentId, name, exceptId)
+function nameRefusal(
+  parentId: string | null,
+  names: CategoryDraft["names"],
+  exceptId: string | null,
+) {
+  return Object.entries(names).some(([language, name]) =>
+    database.categories.some(
+      (category) =>
+        category.parentId === parentId &&
+        category.id !== exceptId &&
+        category.names[language as "cs" | "en"]?.toLocaleLowerCase() === name?.toLocaleLowerCase(),
+    ),
+  )
     ? ({
         status: 409,
         message: "A category beside it already has that name",
@@ -204,8 +215,11 @@ function dropShares(categoryId: string): void {
 
 // PLAN-new-category-share: a new or moved category gets no share and its set stays flagged.
 export function createCategory(session: Session, draft: CategoryDraft): Outcome<Category> {
-  const name = draft.name.trim();
-  const refusal = placeRefusal(session, draft.parentId) ?? nameRefusal(draft.parentId, name, null);
+  const names = Object.fromEntries(
+    Object.entries(draft.names).map(([language, name]) => [language, name?.trim()]),
+  ) as CategoryDraft["names"];
+  const name = nameIn(names, "en");
+  const refusal = placeRefusal(session, draft.parentId) ?? nameRefusal(draft.parentId, names, null);
   if (refusal !== null) {
     return { refusal };
   }
@@ -216,6 +230,7 @@ export function createCategory(session: Session, draft: CategoryDraft): Outcome<
       database.categories.map(({ id }) => id),
     ),
     name,
+    names,
     parentId: draft.parentId,
   };
   database.categories = [...database.categories, category];
@@ -253,15 +268,18 @@ export function saveCategory(
     };
   }
 
-  const name = draft.name.trim();
+  const names = Object.fromEntries(
+    Object.entries(draft.names).map(([language, name]) => [language, name?.trim()]),
+  ) as CategoryDraft["names"];
+  const name = nameIn(names, "en");
   const refusal =
     (isMoved ? placeRefusal(session, draft.parentId) : null) ??
-    nameRefusal(draft.parentId, name, categoryId);
+    nameRefusal(draft.parentId, names, categoryId);
   if (refusal !== null) {
     return { refusal };
   }
 
-  const saved: Category = { ...category, name, parentId: draft.parentId };
+  const saved: Category = { ...category, name, names, parentId: draft.parentId };
   database.categories = database.categories.map((candidate) =>
     candidate.id === categoryId ? saved : candidate,
   );
@@ -444,8 +462,11 @@ export function refineCategory(
     };
   }
 
-  const name = draft.name.trim();
-  const refusal = nameRefusal(categoryId, name, null);
+  const names = Object.fromEntries(
+    Object.entries(draft.names).map(([language, name]) => [language, name?.trim()]),
+  ) as RefineDraft["names"];
+  const name = nameIn(names, "en");
+  const refusal = nameRefusal(categoryId, names, null);
   if (refusal !== null) {
     return { refusal };
   }
@@ -456,6 +477,7 @@ export function refineCategory(
       database.categories.map(({ id }) => id),
     ),
     name,
+    names,
     parentId: categoryId,
   };
   database.categories = [...database.categories, child];

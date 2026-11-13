@@ -14,6 +14,7 @@ import type { ValueRange } from "@vera/domain/value-range";
 import { formatRange, parseCount, parseRange } from "@vera/domain/value-range";
 import { z } from "zod";
 import { mixTreeSchema } from "./mixes";
+import { namesSchema } from "./user-settings";
 
 export const categoryKinds = ["Branch", "Leaf"] as const;
 
@@ -156,10 +157,10 @@ export type CategoryIndex = z.infer<typeof categoryIndexSchema>;
 
 // ---------------------------------------------------------------- changes
 
-const nameSchema = z.string().trim().min(1);
+const nameSchema = namesSchema;
 
 // A new category, or an existing one renamed or moved; null is the top level.
-export const categoryDraftSchema = z.object({ name: nameSchema, parentId: z.string().nullable() });
+export const categoryDraftSchema = z.object({ names: nameSchema, parentId: z.string().nullable() });
 
 export type CategoryDraft = z.infer<typeof categoryDraftSchema>;
 
@@ -172,7 +173,7 @@ export const custodyDraftSchema = z.object({
 export type CustodyDraft = z.infer<typeof custodyDraftSchema>;
 
 // The child a refined leaf gains, which takes every document it held.
-export const refineDraftSchema = z.object({ name: nameSchema });
+export const refineDraftSchema = z.object({ names: nameSchema });
 
 export type RefineDraft = z.infer<typeof refineDraftSchema>;
 

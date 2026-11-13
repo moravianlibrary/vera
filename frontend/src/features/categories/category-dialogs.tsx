@@ -7,6 +7,7 @@
 import type { CategoryNode, CustodyGrant } from "@vera/contract/categories";
 import { categoryPathOf, isInSubtree, placesFor, scopeOfCategory } from "@vera/domain/categories";
 import type { Category, Session } from "@vera/domain/entities";
+import { namesAfterEdit } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { useId } from "react";
 import { z } from "zod";
@@ -288,7 +289,11 @@ export function CategoryFormDialog({
   const schema = categoryFormSchemaOf();
   const save = useActionMutation({
     call: (form: CategoryForm) => {
-      const draft = { name: form.name, parentId: parentIdOf(form.parentId) };
+      const language = i18n.language === "cs" ? "cs" : "en";
+      const draft = {
+        names: namesAfterEdit(category?.names ?? {}, language, form.name),
+        parentId: parentIdOf(form.parentId),
+      };
       return category === null ? createCategory(draft) : saveCategory(category.id, draft);
     },
     invalidates: categoryInvalidations,

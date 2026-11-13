@@ -240,11 +240,14 @@ export const accessIndexEndpoint = implement(
           .map((x) => x.user_id),
       }));
     const categories = engine.db
-      .query<{ id: string; name: string; parent_id: string | null }, []>(
+      .query<{ id: string; name: string; names: string; parent_id: string | null }, []>(
         "SELECT * FROM categories ORDER BY rowid",
       )
       .all()
-      .map((c) => ({ id: c.id, name: c.name, parentId: c.parent_id }));
+      .map((c) => {
+        const names = JSON.parse(c.names) as { cs?: string; en?: string };
+        return { id: c.id, name: localizedName(names, request), names, parentId: c.parent_id };
+      });
     const result = {
       asOf: engine.clock.now().toISOString(),
       users,

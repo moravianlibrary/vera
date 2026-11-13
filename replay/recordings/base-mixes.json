@@ -13,6 +13,10 @@
             {
               "id": "<U1>",
               "name": "House mix",
+              "names": {
+                "en": "House mix",
+                "cs": "Domácí mix"
+              },
               "isPrimary": true,
               "archivedAt": null,
               "shares": {
@@ -92,6 +96,10 @@
             {
               "id": "<U2>",
               "name": "Periodicals push",
+              "names": {
+                "en": "Periodicals push",
+                "cs": "Podpora periodik"
+              },
               "isPrimary": false,
               "archivedAt": null,
               "shares": {
@@ -170,6 +178,10 @@
             {
               "id": "<U1>",
               "name": "House mix",
+              "names": {
+                "en": "House mix",
+                "cs": "Domácí mix"
+              },
               "isPrimary": true,
               "archivedAt": null,
               "shares": {
@@ -249,6 +261,10 @@
             {
               "id": "<U2>",
               "name": "Periodicals push",
+              "names": {
+                "en": "Periodicals push",
+                "cs": "Podpora periodik"
+              },
               "isPrimary": false,
               "archivedAt": null,
               "shares": {
@@ -364,15 +380,176 @@
       ]
     },
     {
+      "name": "reads-czech-name",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/mixes",
+          "status": 200,
+          "acceptLanguage": "cs",
+          "body": [
+            {
+              "id": "<U1>",
+              "name": "Domácí mix",
+              "names": {
+                "en": "House mix",
+                "cs": "Domácí mix"
+              },
+              "isPrimary": true,
+              "archivedAt": null,
+              "shares": {
+                "c1": 35,
+                "c2": 45,
+                "c3": 15,
+                "c4": 5,
+                "c11": 40,
+                "c12": 60,
+                "c21": 30,
+                "c22": 50,
+                "c23": 20,
+                "c31": 60,
+                "c32": 40
+              },
+              "revision": 4,
+              "revisions": [
+                {
+                  "revision": 4,
+                  "shares": {
+                    "c1": 35,
+                    "c2": 45,
+                    "c3": 15,
+                    "c4": 5,
+                    "c11": 40,
+                    "c12": 60,
+                    "c21": 30,
+                    "c22": 50,
+                    "c23": 20,
+                    "c31": 60,
+                    "c32": 40
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 7,
+              "followers": [
+                {
+                  "id": "i4",
+                  "name": "Overall output",
+                  "isArchived": false
+                },
+                {
+                  "id": "i5",
+                  "name": "Moravica — closing year",
+                  "isArchived": false
+                },
+                {
+                  "id": "i6",
+                  "name": "Monthly output — June 2026",
+                  "isArchived": false
+                },
+                {
+                  "id": "i10",
+                  "name": "Monthly output — May 2026",
+                  "isArchived": true
+                },
+                {
+                  "id": "i7",
+                  "name": "June catch-up run",
+                  "isArchived": false
+                },
+                {
+                  "id": "i11",
+                  "name": "Unfunded work — 2027",
+                  "isArchived": false
+                },
+                {
+                  "id": "i9",
+                  "name": "Maps watch",
+                  "isArchived": true
+                }
+              ]
+            },
+            {
+              "id": "<U2>",
+              "name": "Podpora periodik",
+              "names": {
+                "en": "Periodicals push",
+                "cs": "Podpora periodik"
+              },
+              "isPrimary": false,
+              "archivedAt": null,
+              "shares": {
+                "c1": 20,
+                "c2": 70,
+                "c3": 10,
+                "c4": 0,
+                "c11": 50,
+                "c12": 50,
+                "c21": 55,
+                "c22": 35,
+                "c31": 50,
+                "c32": 50
+              },
+              "revision": 2,
+              "revisions": [
+                {
+                  "revision": 2,
+                  "shares": {
+                    "c1": 20,
+                    "c2": 70,
+                    "c3": 10,
+                    "c4": 0,
+                    "c11": 50,
+                    "c12": 50,
+                    "c21": 55,
+                    "c22": 35,
+                    "c31": 50,
+                    "c32": 50
+                  },
+                  "at": "<time>",
+                  "label": null
+                }
+              ],
+              "everUsed": true,
+              "usageCount": 3,
+              "followers": [
+                {
+                  "id": "i1",
+                  "name": "NDK Periodika — 2026 Q3",
+                  "isArchived": false
+                },
+                {
+                  "id": "i3",
+                  "name": "Regional catch-up",
+                  "isArchived": false
+                },
+                {
+                  "id": "i8",
+                  "name": "Periodicals push — watch",
+                  "isArchived": false
+                }
+              ]
+            }
+          ],
+          "as": "u3"
+        }
+      ]
+    },
+    {
       "name": "create-save-snapshot-primary-archive",
       "calls": [
         {
           "method": "POST",
           "path": "/api/mixes",
-          "status": 200,
+          "status": 201,
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -412,7 +589,9 @@
             "followers": []
           },
           "requestBody": {
-            "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "fromMixId": "d2",
             "fromRevision": 2
           },
@@ -425,6 +604,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -472,6 +654,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -546,6 +731,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -610,6 +798,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -689,6 +880,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {
@@ -753,6 +947,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": true,
             "archivedAt": null,
             "shares": {
@@ -819,6 +1016,10 @@
             {
               "id": "<U2>",
               "name": "House mix",
+              "names": {
+                "en": "House mix",
+                "cs": "Domácí mix"
+              },
               "isPrimary": false,
               "archivedAt": null,
               "shares": {
@@ -898,6 +1099,10 @@
             {
               "id": "<U3>",
               "name": "Periodicals push",
+              "names": {
+                "en": "Periodicals push",
+                "cs": "Podpora periodik"
+              },
               "isPrimary": false,
               "archivedAt": null,
               "shares": {
@@ -955,6 +1160,9 @@
             {
               "id": "<U1>",
               "name": "Recording mix",
+              "names": {
+                "en": "Recording mix"
+              },
               "isPrimary": true,
               "archivedAt": null,
               "shares": {
@@ -1020,6 +1228,10 @@
           "body": {
             "id": "<U2>",
             "name": "House mix",
+            "names": {
+              "en": "House mix",
+              "cs": "Domácí mix"
+            },
             "isPrimary": true,
             "archivedAt": null,
             "shares": {
@@ -1106,6 +1318,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": "<time>",
             "shares": {
@@ -1171,6 +1386,9 @@
           "body": {
             "id": "<U1>",
             "name": "Recording mix",
+            "names": {
+              "en": "Recording mix"
+            },
             "isPrimary": false,
             "archivedAt": "<time>",
             "shares": {
@@ -1236,10 +1454,13 @@
         {
           "method": "POST",
           "path": "/api/mixes",
-          "status": 200,
+          "status": 201,
           "body": {
             "id": "<U1>",
             "name": "Unused recording mix",
+            "names": {
+              "en": "Unused recording mix"
+            },
             "isPrimary": false,
             "archivedAt": null,
             "shares": {},
@@ -1257,7 +1478,9 @@
             "followers": []
           },
           "requestBody": {
-            "name": "Unused recording mix",
+            "names": {
+              "en": "Unused recording mix"
+            },
             "fromMixId": null,
             "fromRevision": null
           },
@@ -1278,6 +1501,10 @@
             {
               "id": "<U2>",
               "name": "House mix",
+              "names": {
+                "en": "House mix",
+                "cs": "Domácí mix"
+              },
               "isPrimary": true,
               "archivedAt": null,
               "shares": {
@@ -1357,6 +1584,10 @@
             {
               "id": "<U3>",
               "name": "Periodicals push",
+              "names": {
+                "en": "Periodicals push",
+                "cs": "Podpora periodik"
+              },
               "isPrimary": false,
               "archivedAt": null,
               "shares": {
@@ -1425,7 +1656,9 @@
           "status": 403,
           "code": "forbidden",
           "requestBody": {
-            "name": "Denied mix",
+            "names": {
+              "en": "Denied mix"
+            },
             "fromMixId": null,
             "fromRevision": null
           },
@@ -1437,7 +1670,9 @@
           "status": 409,
           "code": "mix.name_taken",
           "requestBody": {
-            "name": "House mix",
+            "names": {
+              "en": "House mix"
+            },
             "fromMixId": null,
             "fromRevision": null
           },
@@ -1449,7 +1684,9 @@
           "status": 422,
           "code": "mix.revision_not_found",
           "requestBody": {
-            "name": "Bad revision mix",
+            "names": {
+              "en": "Bad revision mix"
+            },
             "fromMixId": "d1",
             "fromRevision": 999
           },
@@ -1588,6 +1825,10 @@
           "body": {
             "id": "<U1>",
             "name": "Periodicals push",
+            "names": {
+              "en": "Periodicals push",
+              "cs": "Podpora periodik"
+            },
             "isPrimary": false,
             "archivedAt": "<time>",
             "shares": {

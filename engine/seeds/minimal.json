@@ -58,9 +58,9 @@
       }
     },
     "categories": [
-      { "id": "c1", "name": "Books", "parentId": null },
-      { "id": "c11", "name": "Old books", "parentId": "c1" },
-      { "id": "c2", "name": "Maps", "parentId": null }
+      { "id": "c1", "name": "Books", "names": { "en": "Books", "cs": "Knihy" }, "parentId": null },
+      { "id": "c11", "name": "Old books", "names": { "en": "Old books", "cs": "Staré knihy" }, "parentId": "c1" },
+      { "id": "c2", "name": "Maps", "names": { "en": "Maps", "cs": "Mapy" }, "parentId": null }
     ],
     "groups": [
       {

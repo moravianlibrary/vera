@@ -84,7 +84,8 @@ export function matchingMixes(
   const search = query.search?.toLocaleLowerCase();
   return mixes.filter(
     (mix) =>
-      (!search || mix.name.toLocaleLowerCase().includes(search)) &&
+      (!search ||
+        Object.values(mix.names).some((name) => name?.toLocaleLowerCase().includes(search))) &&
       (!query.states?.length ||
         query.states.includes(mix.archivedAt === null ? "Active" : "Archived")) &&
       (!query.primaries?.length || query.primaries.includes(mix.isPrimary ? "Primary" : "Other")) &&

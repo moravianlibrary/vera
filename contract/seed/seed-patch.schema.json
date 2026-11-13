@@ -291,6 +291,19 @@
               "name": {
                 "type": "string"
               },
+              "names": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
               "parentId": {
                 "anyOf": [
                   {
@@ -303,7 +316,7 @@
                 ]
               }
             },
-            "required": ["id", "name", "parentId"]
+            "required": ["id", "name", "names", "parentId"]
           }
         },
         "groups": {
@@ -1895,6 +1908,19 @@
                 "name": {
                   "type": "string"
                 },
+                "names": {
+                  "type": "object",
+                  "properties": {
+                    "cs": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
                 "parentId": {
                   "anyOf": [
                     {
@@ -1907,7 +1933,7 @@
                   ]
                 }
               },
-              "required": ["id", "name", "parentId"]
+              "required": ["id", "name", "names", "parentId"]
             }
           }
         },
@@ -1923,6 +1949,19 @@
               "name": {
                 "type": "string",
                 "minLength": 1
+              },
+              "names": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
               },
               "isPrimary": {
                 "type": "boolean"
@@ -1989,7 +2028,16 @@
                 }
               }
             },
-            "required": ["id", "name", "isPrimary", "archivedAt", "shares", "revision", "revisions"]
+            "required": [
+              "id",
+              "name",
+              "names",
+              "isPrimary",
+              "archivedAt",
+              "shares",
+              "revision",
+              "revisions"
+            ]
           }
         },
         "intentionTemplates": {

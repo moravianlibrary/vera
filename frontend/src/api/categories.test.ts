@@ -17,8 +17,10 @@ import {
   saveCategoryCustody,
 } from "@/api/categories";
 import { ApiError } from "@/api/http";
+import { listCategories } from "@/api/reference";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
+import { i18n } from "@/i18n";
 import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -143,22 +145,53 @@ const sharesOf = (distributionId: string) =>
   database.distributions.find((distribution) => distribution.id === distributionId)?.shares ?? {};
 
 describe("changing the tree", () => {
+  it("reads the Czech name and round-trips both names", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+    try {
+      const categories = await listCategories();
+      expect(categories.find(({ id }) => id === "c1")).toMatchObject({
+        name: "Monografie",
+        names: { en: "Monographs", cs: "Monografie" },
+      });
+      const created = await createCategory({
+        names: { en: "Test category", cs: "Zkušební kategorie" },
+        parentId: null,
+      });
+      expect(created).toMatchObject({
+        name: "Zkušební kategorie",
+        names: { en: "Test category", cs: "Zkušební kategorie" },
+      });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("keeps sibling uniqueness within each language", async () => {
+    signInAs("admin");
+    const translated = await createCategory({ names: { cs: "Regional" }, parentId: "c2" });
+    expect(translated.names).toEqual({ cs: "Regional" });
+    expect(await statusOf(createCategory({ names: { cs: "Regionální" }, parentId: "c2" }))).toBe(
+      409,
+    );
+  });
+
   it("lets a curator add a category inside their custody only, with no share anywhere", async () => {
     signInAs("curator");
 
-    const created = await createCategory({ name: " Moravian ", parentId: "c2" });
+    const created = await createCategory({ names: { en: " Moravian " }, parentId: "c2" });
 
-    expect(created).toMatchObject({ name: "Moravian", parentId: "c2" });
+    expect(created).toMatchObject({ names: { en: "Moravian" }, parentId: "c2" });
     expect(sharesOf("d1")[created.id]).toBeUndefined();
-    expect(await statusOf(createCategory({ name: "Atlases", parentId: "c1" }))).toBe(403);
-    expect(await statusOf(createCategory({ name: "Atlases", parentId: null }))).toBe(403);
+    expect(await statusOf(createCategory({ names: { en: "Atlases" }, parentId: "c1" }))).toBe(403);
+    expect(await statusOf(createCategory({ names: { en: "Atlases" }, parentId: null }))).toBe(403);
   });
 
   it("refuses a name a sibling has, and a child under a leaf that holds documents", async () => {
     signInAs("admin");
 
-    expect(await statusOf(createCategory({ name: "regional", parentId: "c2" }))).toBe(409);
-    expect(await statusOf(createCategory({ name: "Brno", parentId: "c21" }))).toBe(409);
+    expect(await statusOf(createCategory({ names: { en: "regional" }, parentId: "c2" }))).toBe(409);
+    expect(await statusOf(createCategory({ names: { en: "Brno" }, parentId: "c21" }))).toBe(409);
   });
 
   it("moves a category with its share left unallocated where it was", async () => {
@@ -174,7 +207,7 @@ describe("changing the tree", () => {
         : mix,
     );
 
-    await saveCategory("c23", { name: "Specialist press", parentId: "c1" });
+    await saveCategory("c23", { names: { en: "Specialist press" }, parentId: "c1" });
     const index = await getCategoryIndex();
 
     expect(sharesOf("d1").c23).toBeUndefined();
@@ -202,7 +235,9 @@ describe("changing the tree", () => {
       unallocated: 20,
     });
     expect(index.mix?.nodes.find((node) => node.categoryId === "c1")?.noShareIds).toContain("c23");
-    expect(await statusOf(saveCategory("c1", { name: "Monographs", parentId: "c11" }))).toBe(422);
+    expect(
+      await statusOf(saveCategory("c1", { names: { en: "Monographs" }, parentId: "c11" })),
+    ).toBe(422);
   });
 
   it("renames a category without writing a mix revision", async () => {
@@ -215,7 +250,10 @@ describe("changing the tree", () => {
       revisions: mix.revisions,
     }));
 
-    await saveCategory("c23", { name: "Specialist newspapers", parentId: category.parentId });
+    await saveCategory("c23", {
+      names: { en: "Specialist newspapers" },
+      parentId: category.parentId,
+    });
 
     expect(
       database.distributions.map(({ id, revision, revisions }) => ({ id, revision, revisions })),
@@ -238,7 +276,7 @@ describe("changing the tree", () => {
 
   it("deletes only an empty leaf, its custody going with it", async () => {
     signInAs("admin");
-    const empty = await createCategory({ name: "Posters", parentId: null });
+    const empty = await createCategory({ names: { en: "Posters" }, parentId: null });
     await saveCategoryCustody(empty.id, { groupIds: ["g3"], userIds: [] });
     const house = database.distributions.find((mix) => mix.id === "d1");
     const periodicals = database.distributions.find((mix) => mix.id === "d2");
@@ -300,9 +338,9 @@ describe("changing the tree", () => {
       ({ categoryId }) => categoryId === "c32",
     ).length;
 
-    expect(await statusOf(refineCategory("c32", { name: "Brno" }))).toBe(403); // not theirs
+    expect(await statusOf(refineCategory("c32", { names: { en: "Brno" } }))).toBe(403); // not theirs
     signInAs("admin");
-    const child = await refineCategory("c32", { name: "Before 1800" });
+    const child = await refineCategory("c32", { names: { en: "Before 1800" } });
 
     expect(child.parentId).toBe("c32");
     expect(database.iterations.filter(({ categoryId }) => categoryId === child.id)).toHaveLength(
@@ -310,6 +348,6 @@ describe("changing the tree", () => {
     );
     expect(sharesOf("d1")[child.id]).toBe(100);
     expect(sharesOf("d2")[child.id]).toBe(100);
-    expect(await statusOf(refineCategory("c3", { name: "Any" }))).toBe(409); // not a leaf
+    expect(await statusOf(refineCategory("c3", { names: { en: "Any" } }))).toBe(409); // not a leaf
   });
 });

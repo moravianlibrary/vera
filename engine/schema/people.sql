@@ -50,6 +50,7 @@ CREATE TABLE user_identities (
 CREATE TABLE categories (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  names TEXT NOT NULL,
   parent_id TEXT REFERENCES categories (id) DEFERRABLE INITIALLY DEFERRED
 );
 

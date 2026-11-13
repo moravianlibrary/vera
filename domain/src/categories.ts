@@ -56,7 +56,9 @@ export function searchedCategoriesOf(
 
   return new Set(
     categories
-      .filter((category) => category.name.toLocaleLowerCase().includes(term))
+      .filter((category) =>
+        Object.values(category.names).some((name) => name?.toLocaleLowerCase().includes(term)),
+      )
       .flatMap((category) => categoryLineageOf(categories, category.id)),
   );
 }

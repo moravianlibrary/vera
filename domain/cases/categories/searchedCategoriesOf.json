@@ -5,21 +5,25 @@
       {
         "id": "root",
         "name": "Books",
+        "names": { "en": "Books", "cs": "Knihy" },
         "parentId": null
       },
       {
         "id": "period",
         "name": "Periodicals",
+        "names": { "en": "Periodicals", "cs": "Periodika" },
         "parentId": "root"
       },
       {
         "id": "regional",
         "name": "Regional",
+        "names": { "en": "Regional", "cs": "Regionální" },
         "parentId": "period"
       },
       {
         "id": "maps",
         "name": "Maps",
+        "names": { "en": "Maps", "cs": "Mapy" },
         "parentId": "root"
       }
     ]
@@ -40,6 +44,14 @@
         "search": " "
       },
       "expected": null
+    },
+    {
+      "name": "search matches a Czech name",
+      "rule": "UI-names",
+      "input": {
+        "search": "regionální"
+      },
+      "expected": ["period", "regional", "root"]
     }
   ]
 }

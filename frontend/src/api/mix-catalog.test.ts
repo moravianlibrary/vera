@@ -19,7 +19,24 @@ import {
   snapshotMix,
 } from "@/api/mix-catalog";
 import { findIntentionMix } from "@/api/mixes";
+import { i18n } from "@/i18n";
 import { createHandlers } from "@/mocks/handlers";
+
+it("reads and writes mix names in both languages", async () => {
+  server.use(...createHandlers("admin"));
+  const created = await createMix({
+    names: { en: "Winter allocation", cs: "Zimní příděl" },
+    fromMixId: null,
+    fromRevision: null,
+  });
+  expect(created.names).toEqual({ en: "Winter allocation", cs: "Zimní příděl" });
+  await i18n.changeLanguage("cs");
+  try {
+    expect((await getMix(created.id)).name).toBe("Zimní příděl");
+  } finally {
+    await i18n.changeLanguage("en");
+  }
+});
 
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -38,7 +55,7 @@ async function statusOf(call: Promise<unknown>) {
 it("creates independent revisions, labels a snapshot, changes Primary, and preserves active followers at archive", async () => {
   server.use(...createHandlers("admin"));
   const copy = await createMix({
-    name: `Autumn allocation ${crypto.randomUUID()}`,
+    names: { en: `Autumn allocation ${crypto.randomUUID()}` },
     fromMixId: "d2",
     fromRevision: 2,
   });
@@ -115,7 +132,7 @@ it("creates independent revisions, labels a snapshot, changes Primary, and prese
 it("preserves an archived intention's results when its shared mix changes", async () => {
   server.use(...createHandlers("admin"));
   const mix = await createMix({
-    name: `Archive test ${crypto.randomUUID()}`,
+    names: { en: `Archive test ${crypto.randomUUID()}` },
     fromMixId: "d1",
     fromRevision: null,
   });
@@ -163,7 +180,7 @@ it("allows a repeat with no target and no mix", async () => {
 it("PLAN-mix-remove: deletes only a mix never used, even after intention deletion", async () => {
   server.use(...createHandlers("admin"));
   const unused = await createMix({
-    name: `Unused ${crypto.randomUUID()}`,
+    names: { en: `Unused ${crypto.randomUUID()}` },
     fromMixId: null,
     fromRevision: null,
   });
@@ -172,7 +189,7 @@ it("PLAN-mix-remove: deletes only a mix never used, even after intention deletio
   expect(await statusOf(getMix(unused.id))).toBe(404);
 
   const used = await createMix({
-    name: `Used ${crypto.randomUUID()}`,
+    names: { en: `Used ${crypto.randomUUID()}` },
     fromMixId: null,
     fromRevision: null,
   });

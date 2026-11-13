@@ -12,6 +12,7 @@ import {
   mixStates,
 } from "@vera/contract/mix-filters";
 import { categoryPathOf, searchedCategoriesOf } from "@vera/domain/categories";
+import { namesAfterEdit } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
@@ -179,7 +180,11 @@ export function MixesPage() {
   const createCurrent = async () => {
     const result = await act(() =>
       create.run({
-        name: name.trim(),
+        names: namesAfterEdit(
+          editor === "copy" ? (current?.names ?? {}) : {},
+          i18n.language === "cs" ? "cs" : "en",
+          name.trim(),
+        ),
         fromMixId: editor === "copy" ? (current?.id ?? null) : null,
         fromRevision: editor === "copy" ? revision : null,
       }),

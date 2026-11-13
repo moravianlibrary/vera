@@ -11,9 +11,24 @@ import {
 import { categoryFacets, matchingCategoryIds, visibleCategoryIds } from "./category-filters";
 
 const categories = [
-  { id: "c1", name: "Humanities", parentId: null },
-  { id: "c2", name: "Legal history", parentId: "c1" },
-  { id: "c3", name: "Philosophy", parentId: "c1" },
+  {
+    id: "c1",
+    name: "Humanities",
+    names: { en: "Humanities", cs: "Humanitní vědy" },
+    parentId: null,
+  },
+  {
+    id: "c2",
+    name: "Legal history",
+    names: { en: "Legal history", cs: "Právní dějiny" },
+    parentId: "c1",
+  },
+  {
+    id: "c3",
+    name: "Philosophy",
+    names: { en: "Philosophy", cs: "Filozofie" },
+    parentId: "c1",
+  },
 ] as const satisfies readonly Category[];
 
 const index = {
@@ -77,6 +92,10 @@ describe("category filters", () => {
       { value: "Direct", count: 1 },
       { value: "Inherited", count: 0 },
     ]);
+  });
+
+  it("searches Czech category names while the interface is in English", () => {
+    expect([...matchingCategoryIds(categories, index, { search: "právní" })]).toEqual(["c2"]);
   });
 
   it("does not infer mix attention without permission to read the mix", () => {

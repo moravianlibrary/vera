@@ -131,6 +131,7 @@ import {
 import { servedBatches } from "@vera/domain/batches";
 import type { Session } from "@vera/domain/entities";
 import { watchlistViewSchema } from "@vera/domain/entities";
+import type { Names } from "@vera/domain/names";
 import { nameIn } from "@vera/domain/names";
 import { canOpenMyDocuments, hasPermission } from "@vera/domain/permissions";
 import { propertyDraftSchema } from "@vera/domain/properties";
@@ -372,17 +373,17 @@ import {
 import { readBarcode, readPhoto, readRecordLink, searchCatalogs } from "@/mocks/ways-in";
 
 const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
+const languageOf = (request: Request): "cs" | "en" => {
+  const accepted = request.headers.get("Accept-Language")?.split(",") ?? [];
+  for (const language of accepted) {
+    const primary = language.trim().split("-")[0];
+    if (primary === "cs" || primary === "en") return primary;
+  }
+  return "cs";
+};
 
 export function createHandlers(profile: MockUserProfile) {
   const currentSession = (): Session => resolveSession(profile);
-  const languageOf = (request: Request): "cs" | "en" => {
-    const accepted = request.headers.get("Accept-Language")?.split(",") ?? [];
-    for (const language of accepted) {
-      const primary = language.trim().split("-")[0];
-      if (primary === "cs" || primary === "en") return primary;
-    }
-    return "cs";
-  };
   const watchlistInLanguage = <T extends { names: { cs?: string; en?: string }; name: string }>(
     watchlist: T,
     request: Request,
@@ -979,7 +980,14 @@ export function createHandlers(profile: MockUserProfile) {
       outcomeResponse(custodyImpact(currentSession(), String(params.id))),
     ),
     accessDelete(`${apiRoutes.accessCustodies}/:id`, deleteCustody),
-    http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
+    http.get(route(apiRoutes.categories), ({ request }) =>
+      HttpResponse.json(
+        database.categories.map((category) => ({
+          ...category,
+          name: nameIn(category.names, languageOf(request)),
+        })),
+      ),
+    ),
     http.get(route(apiRoutes.categoryIndex), ({ request }) => {
       const session = currentSession();
       if (!canReadCategories(session)) {
@@ -987,7 +995,18 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       const mixId = new URL(request.url).searchParams.get("mix") ?? undefined;
-      return HttpResponse.json(queryCategoryIndex(session, mixId));
+      const index = queryCategoryIndex(session, mixId);
+      const mix =
+        index.mix === null
+          ? null
+          : database.distributions.find((distribution) => distribution.id === index.mix?.mixId);
+      return HttpResponse.json({
+        ...index,
+        mix:
+          index.mix === null || mix == null
+            ? index.mix
+            : { ...index.mix, mixName: nameIn(mix.names, languageOf(request)) },
+      });
     }),
     http.post(route(apiRoutes.categories), async ({ request }) => {
       const draft = categoryDraftSchema.safeParse(await request.json());
@@ -995,7 +1014,8 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      return outcomeResponse(createCategory(currentSession(), draft.data));
+      const outcome = createCategory(currentSession(), draft.data);
+      return namedOutcomeResponse(outcome, request);
     }),
     http.put(route(`${apiRoutes.categories}/:categoryId`), async ({ params, request }) => {
       const draft = categoryDraftSchema.safeParse(await request.json());
@@ -1003,7 +1023,8 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      return outcomeResponse(saveCategory(currentSession(), String(params.categoryId), draft.data));
+      const outcome = saveCategory(currentSession(), String(params.categoryId), draft.data);
+      return namedOutcomeResponse(outcome, request);
     }),
     http.delete(route(`${apiRoutes.categories}/:categoryId`), ({ params }) => {
       const outcome = deleteCategory(currentSession(), String(params.categoryId));
@@ -1026,7 +1047,12 @@ export function createHandlers(profile: MockUserProfile) {
         saveCategoryCustody(currentSession(), String(params.categoryId), draft.data),
       );
     }),
-    recordAction(`${apiRoutes.categories}/:id/refine`, refineDraftSchema, refineCategory),
+    http.post(route(`${apiRoutes.categories}/:id/refine`), async ({ params, request }) => {
+      const draft = refineDraftSchema.safeParse(await request.json());
+      if (!draft.success) return invalidResponse(draft.error);
+      const outcome = refineCategory(currentSession(), String(params.id), draft.data);
+      return namedOutcomeResponse(outcome, request);
+    }),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
 
@@ -1038,33 +1064,47 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(queryIntentionIndex(session));
     }),
-    http.get(route(apiRoutes.mixes), () => outcomeResponse(listMixRecords(currentSession()))),
-    http.get(route(`${apiRoutes.mixes}/:mixId`), ({ params }) =>
-      outcomeResponse(getMixRecord(currentSession(), String(params.mixId))),
-    ),
+    http.get(route(apiRoutes.mixes), ({ request }) => {
+      const outcome = listMixRecords(currentSession());
+      return "value" in outcome
+        ? HttpResponse.json(
+            outcome.value.map((mix) => ({ ...mix, name: nameIn(mix.names, languageOf(request)) })),
+          )
+        : problemResponse(outcome.refusal);
+    }),
+    http.get(route(`${apiRoutes.mixes}/:mixId`), ({ params, request }) => {
+      const outcome = getMixRecord(currentSession(), String(params.mixId));
+      return namedOutcomeResponse(outcome, request);
+    }),
     http.post(route(apiRoutes.mixes), async ({ request }) => {
       const parsed = mixDraftSchema.safeParse(await request.json());
-      return parsed.success
-        ? outcomeResponse(createMixRecord(currentSession(), parsed.data))
-        : invalidResponse(parsed.error);
+      if (!parsed.success) return invalidResponse(parsed.error);
+      const outcome = createMixRecord(currentSession(), parsed.data);
+      return namedOutcomeResponse(outcome, request);
     }),
     http.put(route(`${apiRoutes.mixes}/:mixId/sets`), async ({ params, request }) => {
       const parsed = mixSetChangeSchema.safeParse(await request.json());
       return parsed.success
-        ? outcomeResponse(saveMixRecordSet(currentSession(), String(params.mixId), parsed.data))
+        ? namedOutcomeResponse(
+            saveMixRecordSet(currentSession(), String(params.mixId), parsed.data),
+            request,
+          )
         : invalidResponse(parsed.error);
     }),
     http.post(route(`${apiRoutes.mixes}/:mixId/snapshots`), async ({ params, request }) => {
       const parsed = mixSnapshotDraftSchema.safeParse(await request.json());
       return parsed.success
-        ? outcomeResponse(snapshotMixRecord(currentSession(), String(params.mixId), parsed.data))
+        ? namedOutcomeResponse(
+            snapshotMixRecord(currentSession(), String(params.mixId), parsed.data),
+            request,
+          )
         : invalidResponse(parsed.error);
     }),
-    http.post(route(`${apiRoutes.mixes}/:mixId/primary`), ({ params }) =>
-      outcomeResponse(makeMixPrimary(currentSession(), String(params.mixId))),
+    http.post(route(`${apiRoutes.mixes}/:mixId/primary`), ({ params, request }) =>
+      namedOutcomeResponse(makeMixPrimary(currentSession(), String(params.mixId)), request),
     ),
-    http.post(route(`${apiRoutes.mixes}/:mixId/archive`), ({ params }) =>
-      outcomeResponse(archiveMixRecord(currentSession(), String(params.mixId))),
+    http.post(route(`${apiRoutes.mixes}/:mixId/archive`), ({ params, request }) =>
+      namedOutcomeResponse(archiveMixRecord(currentSession(), String(params.mixId)), request),
     ),
     http.delete(route(`${apiRoutes.mixes}/:mixId`), ({ params }) =>
       outcomeResponse(deleteMixRecord(currentSession(), String(params.mixId))),
@@ -2181,6 +2221,17 @@ function outcomeResponse<Value extends JsonBodyType>(outcome: Outcome<Value>) {
   }
 
   return HttpResponse.json(outcome.value);
+}
+
+function namedOutcomeResponse<Value extends { name: string; names: Names }>(
+  outcome: Outcome<Value>,
+  request: Request,
+) {
+  if ("refusal" in outcome) return problemResponse(outcome.refusal);
+  return HttpResponse.json({
+    ...outcome.value,
+    name: nameIn(outcome.value.names, languageOf(request)),
+  });
 }
 
 function forbidden() {

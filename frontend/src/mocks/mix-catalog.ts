@@ -8,6 +8,7 @@ import type {
   MixSnapshotDraft,
 } from "@vera/contract/mix-catalog";
 import type { Distribution, Session } from "@vera/domain/entities";
+import { nameIn } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { database } from "@/mocks/database";
 import { isVisible, nextId, replaceIntention } from "@/mocks/intentions";
@@ -31,6 +32,7 @@ function recordOf(session: Session, mix: Distribution): MixRecord {
   return {
     id: mix.id,
     name: mix.name,
+    names: mix.names,
     isPrimary: mix.isPrimary,
     archivedAt: mix.archivedAt,
     shares: mix.shares,
@@ -56,8 +58,11 @@ export function getMixRecord(session: Session, mixId: string): Outcome<MixRecord
 export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixRecord> {
   if (!can(session, "mix.edit")) return { refusal: noEdit };
   if (
-    database.distributions.some(
-      (mix) => mix.name.toLocaleLowerCase() === draft.name.toLocaleLowerCase(),
+    database.distributions.some((mix) =>
+      Object.entries(draft.names).some(
+        ([language, name]) =>
+          mix.names[language as "cs" | "en"]?.toLocaleLowerCase() === name?.toLocaleLowerCase(),
+      ),
     )
   ) {
     return {
@@ -87,7 +92,8 @@ export function createMixRecord(session: Session, draft: MixDraft): Outcome<MixR
       ...database.distributions.map((candidate) => candidate.id),
       ...database.deletedMixIds,
     ]),
-    name: draft.name,
+    name: nameIn(draft.names, "en"),
+    names: draft.names,
     isPrimary: false,
     archivedAt: null,
     shares,

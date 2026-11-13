@@ -50,11 +50,16 @@ export function engineStore(engine: Engine): RecordStore {
       ),
   );
   const categories = engine.db
-    .query<{ id: string; name: string; parent_id: string | null }, []>(
+    .query<{ id: string; name: string; names: string; parent_id: string | null }, []>(
       "SELECT * FROM categories ORDER BY rowid",
     )
     .all()
-    .map((c) => ({ id: c.id, name: c.name, parentId: c.parent_id }));
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      names: JSON.parse(c.names),
+      parentId: c.parent_id,
+    }));
   return {
     today: pragueMidnightOf(engine.clock.now()),
     catalogPropertyKeys,

@@ -77,7 +77,7 @@ function store(): RecordStore {
       { id: "staff", name: "Staff", kind: "person", email: null },
     ],
     groups: [],
-    categories: [{ id: "c1", name: "Category", parentId: null }],
+    categories: [{ id: "c1", name: "Category", names: { en: "Category" }, parentId: null }],
     projects: [],
     batches: [],
     requestCustodies: [],

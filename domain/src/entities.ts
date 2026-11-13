@@ -73,6 +73,7 @@ export type RequestCustody = z.infer<typeof requestCustodySchema>;
 export const categorySchema = z.object({
   id,
   name: z.string(),
+  names: namesSchema,
   parentId: id.nullable(),
 });
 export type Category = z.infer<typeof categorySchema>;
@@ -117,6 +118,7 @@ export type MixRevision = z.infer<typeof mixRevisionSchema>;
 export const distributionSchema = z.object({
   id,
   name: z.string().min(1),
+  names: namesSchema,
   isPrimary: z.boolean(),
   archivedAt: timestamp.nullable(),
   // Percent by category ID; a category without an entry has no share.

@@ -2,6 +2,7 @@
 
 import { distributionSchema } from "@vera/domain/entities";
 import { z } from "zod";
+import { namesSchema } from "./user-settings";
 
 export const mixRecordSchema = distributionSchema.extend({
   everUsed: z.boolean(),
@@ -12,7 +13,7 @@ export const mixRecordSchema = distributionSchema.extend({
 export type MixRecord = z.infer<typeof mixRecordSchema>;
 
 export const mixDraftSchema = z.object({
-  name: z.string().trim().min(1),
+  names: namesSchema,
   fromMixId: z.string().nullable(),
   fromRevision: z.number().int().positive().nullable(),
 });

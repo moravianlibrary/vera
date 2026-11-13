@@ -133,7 +133,10 @@ reads resolve the request language, their edits send both names, and installatio
 include both.
 Built (2026-11-13, L75w): personal and system watchlists hold names in Czech and English; reads
 resolve the request language, writes send both names, and the base seed and mock fixtures include
-both. Categories and groups remain for their own sessions.
+both.
+Built (2026-11-13, L75c): categories and mixes hold names in Czech and English; reads resolve the
+request language, searches match either language, and category and mix editors send both names.
+The base seed and mock fixtures include both.
 
 ### L77: The signer of a plugin version
 

@@ -137,9 +137,16 @@ export function loadSeed(db: Database, seed: Seed): void {
     }
   }
 
-  const insertCategory = db.query("INSERT INTO categories (id, name, parent_id) VALUES (?, ?, ?)");
+  const insertCategory = db.query(
+    "INSERT INTO categories (id, name, names, parent_id) VALUES (?, ?, ?, ?)",
+  );
   for (const category of categories) {
-    insertCategory.run(category.id, category.name, category.parentId);
+    insertCategory.run(
+      category.id,
+      category.name,
+      JSON.stringify(category.names),
+      category.parentId,
+    );
   }
 
   const insertGroup = db.query("INSERT INTO groups (id, name, description) VALUES (?, ?, ?)");

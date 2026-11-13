@@ -11,6 +11,7 @@ const initialDistributions: readonly Distribution[] = [
   {
     id: "d1",
     name: "House mix",
+    names: { en: "House mix", cs: "Domácí mix" },
     isPrimary: true,
     archivedAt: null,
     shares: {
@@ -32,6 +33,7 @@ const initialDistributions: readonly Distribution[] = [
   {
     id: "d2",
     name: "Periodicals push",
+    names: { en: "Periodicals push", cs: "Podpora periodik" },
     isPrimary: false,
     archivedAt: null,
     // Maps deliberately excluded; Specialist has no share, so 10% of Periodicals is unallocated.

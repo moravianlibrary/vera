@@ -100,7 +100,9 @@ function createCategories(): Row[] {
     }
   }
   rows.push({ id: "vc32", name: "Požadavky čtenářů", parentId: "vc0" });
-  return rows.map((row) => categorySchema.parse(row));
+  return rows.map((row) =>
+    categorySchema.parse({ ...row, names: { en: row.name, cs: row.name } }),
+  );
 }
 
 function generate(base: Row, seedNumber = 1, scale = 1): Seed {

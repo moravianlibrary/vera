@@ -25812,6 +25812,10 @@
           "body": {
             "id": "<U1>",
             "name": "Periodicals push",
+            "names": {
+              "en": "Periodicals push",
+              "cs": "Podpora periodik"
+            },
             "isPrimary": false,
             "archivedAt": "<time>",
             "shares": {

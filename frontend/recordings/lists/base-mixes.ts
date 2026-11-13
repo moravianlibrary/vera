@@ -41,10 +41,16 @@ export default {
       ],
     },
     {
+      name: "reads-czech-name",
+      calls: [
+        { as: "admin", method: "GET", path: "/api/mixes", acceptLanguage: "cs", compare: "body" },
+      ],
+    },
+    {
       name: "create-save-snapshot-primary-archive",
       calls: [
         act("POST", "/api/mixes", "admin", "body", {
-          name: "Recording mix",
+          names: { en: "Recording mix" },
           fromMixId: "d2",
           fromRevision: 2,
         }),
@@ -72,7 +78,7 @@ export default {
       name: "delete-unused",
       calls: [
         act("POST", "/api/mixes", "admin", "body", {
-          name: "Unused recording mix",
+          names: { en: "Unused recording mix" },
           fromMixId: null,
           fromRevision: null,
         }),
@@ -84,17 +90,17 @@ export default {
       name: "mix-refusals",
       calls: [
         act("POST", "/api/mixes", "reader", "code", {
-          name: "Denied mix",
+          names: { en: "Denied mix" },
           fromMixId: null,
           fromRevision: null,
         }),
         act("POST", "/api/mixes", "admin", "code", {
-          name: "House mix",
+          names: { en: "House mix" },
           fromMixId: null,
           fromRevision: null,
         }),
         act("POST", "/api/mixes", "admin", "code", {
-          name: "Bad revision mix",
+          names: { en: "Bad revision mix" },
           fromMixId: "d1",
           fromRevision: 999,
         }),

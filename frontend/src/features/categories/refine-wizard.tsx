@@ -7,6 +7,7 @@
 import type { CategoryNode } from "@vera/contract/categories";
 import { isNameTaken } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
+import { namesAfterEdit } from "@vera/domain/names";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { refineCategory } from "@/api/categories";
@@ -52,7 +53,10 @@ export function RefineWizard({
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const { data: impact } = useCategoryImpactQuery(category.id, stepIndex === 1);
   const refine = useActionMutation({
-    call: (childName: string) => refineCategory(category.id, { name: childName }),
+    call: (childName: string) =>
+      refineCategory(category.id, {
+        names: namesAfterEdit({}, i18n.language === "cs" ? "cs" : "en", childName),
+      }),
     invalidates: categoryInvalidations,
     refusalTexts: {
       "category.name_taken": message("categoryDialog.nameTaken"),

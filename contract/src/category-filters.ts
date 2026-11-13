@@ -16,7 +16,7 @@ export function matchingCategoryIds(
   const matches = categories.filter((category) => {
     if (
       term &&
-      !category.name.toLocaleLowerCase().includes(term) &&
+      !Object.values(category.names).some((name) => name?.toLocaleLowerCase().includes(term)) &&
       !category.id.toLocaleLowerCase().includes(term)
     ) {
       return false;
