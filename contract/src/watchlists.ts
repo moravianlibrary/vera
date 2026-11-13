@@ -26,7 +26,7 @@ const audienceSchema = watchlistAudienceSchema.refine(
 );
 
 export const watchlistDraftSchema = watchlistSchema
-  .pick({ name: true, view: true, filter: true })
+  .pick({ names: true, view: true, filter: true })
   .extend({ audience: audienceSchema, copyOf: z.string().optional() });
 
 export type WatchlistDraft = z.infer<typeof watchlistDraftSchema>;
@@ -34,7 +34,7 @@ export type WatchlistDraft = z.infer<typeof watchlistDraftSchema>;
 // An audience change updates who a system watchlist reaches. Changing between personal and
 // system requires creating a separate copy.
 export const watchlistChangeSchema = watchlistDraftSchema
-  .pick({ name: true, audience: true, filter: true })
+  .pick({ names: true, audience: true, filter: true })
   .partial();
 
 export type WatchlistChange = z.infer<typeof watchlistChangeSchema>;

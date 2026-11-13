@@ -130,7 +130,10 @@ language, which editors read and writes send. → backend (contract, mock and se
 frontend.
 Built (2026-11-13, L75r): roles and request custodies now hold names in Czech and English; their
 reads resolve the request language, their edits send both names, and installation and base seeds
-include both. Categories and groups remain for their own sessions.
+include both.
+Built (2026-11-13, L75w): personal and system watchlists hold names in Czech and English; reads
+resolve the request language, writes send both names, and the base seed and mock fixtures include
+both. Categories and groups remain for their own sessions.
 
 ### L77: The signer of a plugin version
 

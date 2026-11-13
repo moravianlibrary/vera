@@ -4,6 +4,7 @@
 
 import type { SharedWatchlist } from "@vera/contract/access";
 import type { WatchlistAudience } from "@vera/domain/entities";
+import { namesAfterEdit } from "@vera/domain/names";
 import { useId } from "react";
 import { z } from "zod";
 import { deleteWatchlist, updateWatchlist } from "@/api/watchlists";
@@ -78,7 +79,10 @@ const nameSchema = z.object({ name: z.string().trim().min(1, t("watchlist.nameRe
 export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: WatchlistDialogProps) {
   const id = useId();
   const rename = useActionMutation({
-    call: (name: string) => updateWatchlist(watchlist.id, { name }),
+    call: (name: string) =>
+      updateWatchlist(watchlist.id, {
+        names: namesAfterEdit(watchlist.names, i18n.language.startsWith("cs") ? "cs" : "en", name),
+      }),
     invalidates,
     refusalTexts,
   });

@@ -9782,6 +9782,19 @@
                 "type": "string",
                 "minLength": 1
               },
+              "names": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
               "view": {
                 "type": "string",
                 "enum": [
@@ -9871,7 +9884,16 @@
                 "minLength": 1
               }
             },
-            "required": ["id", "name", "view", "audience", "filter", "createdAt", "ownerId"],
+            "required": [
+              "id",
+              "name",
+              "names",
+              "view",
+              "audience",
+              "filter",
+              "createdAt",
+              "ownerId"
+            ],
             "additionalProperties": false
           }
         },

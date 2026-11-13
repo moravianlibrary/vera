@@ -8,6 +8,7 @@ import type { WatchlistSummary } from "@vera/contract/watchlists";
 import { isSameWatchlistFilter } from "@vera/contract/watchlists";
 import type { Watchlist, WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
+import type { Names } from "@vera/domain/names";
 import { Building2, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
@@ -152,22 +153,22 @@ export function WatchlistTabs({
     }
   }, [activeId, isSuccess]);
 
-  const saveAsNew = async (name: string, audience: WatchlistAudience) => {
-    const created = await create.mutateAsync({ name, view, audience, filter });
+  const saveAsNew = async (names: Names, audience: WatchlistAudience) => {
+    const created = await create.mutateAsync({ names, view, audience, filter });
     onOpen(created);
   };
 
   const updateExisting = async (
     watchlist: WatchlistSummary,
-    name: string,
+    names: Names,
     audience: WatchlistAudience,
   ) => {
     const saved =
       watchlist.audience.kind === "personal" && audience.kind !== "personal"
-        ? await create.mutateAsync({ name, view, audience, filter })
+        ? await create.mutateAsync({ names, view, audience, filter })
         : await update.mutateAsync({
             watchlistId: watchlist.id,
-            change: { name, audience, filter },
+            change: { names, audience, filter },
           });
     onOpen(saved);
   };
@@ -284,26 +285,26 @@ function WatchlistTab({
           filter={watchlist.filter}
           watchlist={watchlist}
           canShare={canShare}
-          onSave={async (name, audience) => {
+          onSave={async (names, audience) => {
             const saved =
               watchlist.audience.kind === "personal" && audience.kind !== "personal"
                 ? await create.mutateAsync({
-                    name,
+                    names,
                     view: watchlist.view,
                     filter: watchlist.filter,
                     audience,
                   })
                 : await update.mutateAsync({
                     watchlistId: watchlist.id,
-                    change: { name, audience },
+                    change: { names, audience },
                   });
             onSaved(saved);
           }}
           onCopy={
             isShared(watchlist)
-              ? async (name) => {
+              ? async (names) => {
                   const saved = await create.mutateAsync({
-                    name,
+                    names,
                     view: watchlist.view,
                     filter: watchlist.filter,
                     audience: { kind: "personal" },
@@ -358,10 +359,10 @@ interface CurrentSearchPopoverProps {
   editable: WatchlistSummary[];
   preferredUpdateId: string | null;
   onOpen: () => void;
-  onSave: (name: string, audience: WatchlistAudience) => Promise<void>;
+  onSave: (names: Names, audience: WatchlistAudience) => Promise<void>;
   onUpdate: (
     watchlist: WatchlistSummary,
-    name: string,
+    names: Names,
     audience: WatchlistAudience,
   ) => Promise<void>;
 }
@@ -387,7 +388,7 @@ function CurrentSearchPopover({
       preferredUpdateId={preferredUpdateId}
       onOpen={onOpen}
       onSave={onSave}
-      onUpdate={(selected) => onUpdate(selected, selected.name, selected.audience)}
+      onUpdate={(selected) => onUpdate(selected, selected.names, selected.audience)}
       trigger={
         <button
           type="button"

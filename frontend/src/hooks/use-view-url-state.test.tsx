@@ -90,6 +90,7 @@ describe("useViewUrlState", () => {
     const watchlist = {
       id: "W2",
       name: "Urgent",
+      names: { en: "Urgent" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { priority: "Urgent" },

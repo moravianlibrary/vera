@@ -9,6 +9,7 @@ import type { WatchlistSummary, WatchlistViewerChange } from "@vera/contract/wat
 import { isChannelOn } from "@vera/contract/watchlists";
 import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared, watchlistViewSchema } from "@vera/domain/entities";
+import { namesAfterEdit } from "@vera/domain/names";
 import { hasPermission } from "@vera/domain/permissions";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -87,6 +88,7 @@ function WatchlistDirectory({
   mode: "system" | "preferences";
 }) {
   const { t } = useTranslation("preferences");
+  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const isSystem = mode === "system";
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
@@ -131,7 +133,7 @@ function WatchlistDirectory({
       isShared(watchlist)
         ? update.mutateAsync({ watchlistId: watchlist.id, change: { audience } })
         : create.mutateAsync({
-            name: watchlist.name,
+            names: watchlist.names,
             view: watchlist.view,
             filter: watchlist.filter,
             audience,
@@ -191,7 +193,9 @@ function WatchlistDirectory({
                 try {
                   await update.mutateAsync({
                     watchlistId: watchlist.id,
-                    change: { name: name.trim() },
+                    change: {
+                      names: namesAfterEdit(watchlist.names, language, name.trim()),
+                    },
                   });
                   setEditing(null);
                 } catch {
@@ -367,7 +371,7 @@ function WatchlistDirectory({
                 disabled={busy}
                 onClick={() => {
                   setEditing(watchlist.id);
-                  setName(watchlist.name);
+                  setName(watchlist.names[language] ?? "");
                 }}
               >
                 <Pencil />

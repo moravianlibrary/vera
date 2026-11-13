@@ -18,14 +18,14 @@ const subscription = {
   keys: { p256dh: "recording-key", auth: "recording-secret" },
 };
 const draft = {
-  name: "Recording watchlist",
+  names: { cs: "Záznamový seznam", en: "Recording watchlist" },
   view: "documents",
   audience: { kind: "personal" },
   filter: { q: "recording-watchlist-unique" },
 };
 const sharedDraft = {
   ...draft,
-  name: "Recording shared watchlist",
+  names: { cs: "Sdílený záznamový seznam", en: "Recording shared watchlist" },
   audience: { kind: "everyone" },
 };
 const invalidFilter = { ...draft, filter: { status: "Available" } };
@@ -67,7 +67,9 @@ export default {
           as: "admin",
           method: "PATCH",
           path: "/api/watchlists/W-u3-documents-1",
-          requestBody: { name: "Recording watchlist renamed" },
+          requestBody: {
+            names: { cs: "Přejmenovaný záznamový seznam", en: "Recording watchlist renamed" },
+          },
           compare: "body",
         },
         {
@@ -111,7 +113,7 @@ export default {
           as: "curator",
           method: "PATCH",
           path: "/api/watchlists/W-shared-2",
-          requestBody: { name: "Changed" },
+          requestBody: { names: { en: "Changed" } },
           compare: "code",
         },
         { as: "curator", method: "DELETE", path: "/api/watchlists/W-shared-2", compare: "code" },
@@ -182,7 +184,7 @@ export default {
           path: "/api/watchlists",
           requestBody: {
             ...draft,
-            name: "Duplicate personal filter",
+            names: { en: "Duplicate personal filter" },
             filter: { priority: "Urgent,High", copy: "None" },
           },
           compare: "code",
@@ -228,6 +230,18 @@ export default {
           path: "/api/watchlists/W-u3-documents-2",
           requestBody: { filter: { priority: "Urgent,High", copy: "None" } },
           compare: "code",
+        },
+      ],
+    },
+    {
+      name: "czech-watchlist-name",
+      calls: [
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/watchlists?view=documents",
+          acceptLanguage: "cs",
+          compare: "body",
         },
       ],
     },

@@ -186,7 +186,7 @@ describe("WatchlistTabs", () => {
   it("edits and deletes a saved tab in its popover", async () => {
     server.use(...createHandlers("admin"));
     const created = await createWatchlist({
-      name: "Overlay test",
+      names: { cs: "Test překryvu", en: "Overlay test" },
       view: "documents",
       filter: { q: "overlay-test" },
       audience: { kind: "personal" },
@@ -214,9 +214,12 @@ describe("WatchlistTabs", () => {
       });
       fireEvent.click(screen.getByRole("button", { name: "Save watchlist" }));
       await waitFor(async () =>
-        expect((await listWatchlists("documents")).find((row) => row.id === created.id)?.name).toBe(
-          "Edited in overlay",
-        ),
+        expect(
+          (await listWatchlists("documents")).find((row) => row.id === created.id),
+        ).toMatchObject({
+          name: "Edited in overlay",
+          names: { cs: "Test překryvu", en: "Edited in overlay" },
+        }),
       );
       fireEvent.click(await screen.findByRole("button", { name: "Edited in overlay options" }));
       fireEvent.click(screen.getByRole("button", { name: "Delete watchlist" }));

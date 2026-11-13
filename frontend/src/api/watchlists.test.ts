@@ -29,6 +29,7 @@ import {
 } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { matchingIntentions } from "@/features/intentions/intentions-board-view";
+import { i18n } from "@/i18n";
 import { database } from "@/mocks/database";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
@@ -65,6 +66,41 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("answers the Czech name for a Czech request", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+    try {
+      const watchlist = (await listWatchlists("documents")).find(
+        (item) => item.id === "W-shared-1",
+      );
+      expect(watchlist).toMatchObject({
+        name: "Čeká na rozhodnutí",
+        names: { cs: "Čeká na rozhodnutí", en: "Awaiting a decision" },
+      });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("round-trips both names on create and edit", async () => {
+    signInAs("admin");
+    const created = await createWatchlist({
+      names: { cs: "Zrušené", en: "Cancelled" },
+      view: "documents",
+      audience: { kind: "personal" },
+      filter: { cancelled: "Yes" },
+    });
+    try {
+      expect(created.names).toEqual({ cs: "Zrušené", en: "Cancelled" });
+      const saved = await updateWatchlist(created.id, {
+        names: { cs: "Stažené", en: "Withdrawn" },
+      });
+      expect(saved.names).toEqual({ cs: "Stažené", en: "Withdrawn" });
+    } finally {
+      await deleteWatchlist(created.id);
+    }
+  });
+
   it("keeps staff and requester watchlists in separate views and counts own records", async () => {
     signInAs("admin");
     const staff = await listWatchlists("documents");
@@ -92,7 +128,7 @@ describe("listWatchlists", () => {
   it("batches new entries and drops entries opened before mail is sent", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
-      name: "Mail entry test",
+      names: { en: "Mail entry test" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { q: "mail-entry-unique" },
@@ -138,7 +174,7 @@ describe("listWatchlists", () => {
   it("sends each channel instance its own, and nothing while it is off for all (WATCH-channel-off)", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
-      name: "Chat entry test",
+      names: { en: "Chat entry test" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { q: "chat-entry-unique" },
@@ -170,7 +206,7 @@ describe("listWatchlists", () => {
   it("pushes what entered to a browser allowed, batched in seconds (WATCH-push)", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
-      name: "Push entry test",
+      names: { en: "Push entry test" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { q: "push-entry-unique" },
@@ -224,7 +260,7 @@ describe("listWatchlists", () => {
   it("counts entries since opening without treating existing matches as new", async () => {
     signInAs("admin");
     const watchlist = await createWatchlist({
-      name: "Entry test",
+      names: { en: "Entry test" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { q: "entry-test-unique" },
@@ -310,7 +346,7 @@ describe("listWatchlists", () => {
       intentions: "1..",
     };
     const saved = await createWatchlist({
-      name: `Mix filter ${crypto.randomUUID()}`,
+      names: { en: `Mix filter ${crypto.randomUUID()}` },
       view: "mixes",
       audience: { kind: "personal" },
       filter,
@@ -424,7 +460,7 @@ describe("changing a shared watchlist", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "Wrong requester filter",
+          names: { en: "Wrong requester filter" },
           view: "my-documents",
           audience: { kind: "everyone" },
           filter: { decision: "Pending" },
@@ -434,7 +470,7 @@ describe("changing a shared watchlist", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "Wrong staff filter",
+          names: { en: "Wrong staff filter" },
           view: "documents",
           audience: { kind: "everyone" },
           filter: { status: "Available" },
@@ -443,7 +479,7 @@ describe("changing a shared watchlist", () => {
     ).toBe(422);
 
     const created = await createWatchlist({
-      name: "Available to requesters",
+      names: { en: "Available to requesters" },
       view: "my-documents",
       audience: { kind: "everyone" },
       filter: { status: "Available" },
@@ -467,7 +503,7 @@ describe("changing a shared watchlist", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "Staff view",
+          names: { en: "Staff view" },
           view: "documents",
           audience: { kind: "personal" },
           filter: { decision: "Pending" },
@@ -484,12 +520,12 @@ describe("changing a shared watchlist", () => {
       throw new Error("No shared watchlist in the fixtures");
     }
 
-    expect(await statusOf(updateWatchlist(shared.id, { name: "Mine now" }))).toBe(403);
+    expect(await statusOf(updateWatchlist(shared.id, { names: { en: "Mine now" } }))).toBe(403);
     expect(await statusOf(deleteWatchlist(shared.id))).toBe(403);
     expect(
       await statusOf(
         createWatchlist({
-          name: "Ours",
+          names: { en: "Ours" },
           view: "documents",
           audience: { kind: "everyone" },
           filter: {},
@@ -501,7 +537,7 @@ describe("changing a shared watchlist", () => {
   it("is allowed with it, and everyone sees the result", async () => {
     signInAs("admin");
     const created = await createWatchlist({
-      name: "Cancelled",
+      names: { en: "Cancelled" },
       view: "documents",
       audience: { kind: "everyone" },
       filter: { cancelled: "Yes" },
@@ -524,7 +560,7 @@ describe("saving a filter twice", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "Urgent again",
+          names: { en: "Urgent again" },
           view: "documents",
           audience: { kind: "personal" },
           filter: { copy: "None", priority: "High,Urgent" },
@@ -539,7 +575,7 @@ describe("saving a filter twice", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "My pending",
+          names: { en: "My pending" },
           view: "documents",
           audience: { kind: "personal" },
           filter: { decision: "Pending" },
@@ -555,7 +591,7 @@ describe("saving a filter twice", () => {
     );
     if (!source) throw new Error("Expected the Pending system watchlist");
     const draft = {
-      name: "My pending copy",
+      names: { en: "My pending copy" },
       view: source.view,
       filter: source.filter,
       audience: { kind: "personal" as const },
@@ -565,9 +601,9 @@ describe("saving a filter twice", () => {
     try {
       expect(copy.audience.kind).toBe("personal");
       expect(copy.id).not.toBe(source.id);
-      expect((await updateWatchlist(copy.id, { name: "My pending copy renamed" })).name).toBe(
-        "My pending copy renamed",
-      );
+      expect(
+        (await updateWatchlist(copy.id, { names: { en: "My pending copy renamed" } })).name,
+      ).toBe("My pending copy renamed");
       expect(await statusOf(createWatchlist(draft))).toBe(409);
       expect(await statusOf(createWatchlist({ ...draft, copyOf: "not-a-watchlist" }))).toBe(422);
       expect((await listWatchlists("documents")).some((row) => row.id === source.id)).toBe(true);
@@ -579,7 +615,7 @@ describe("saving a filter twice", () => {
   it("publishes a system copy while the caller keeps their personal watchlist", async () => {
     signInAs("admin");
     const published = await createWatchlist({
-      name: "Review needed for all",
+      names: { en: "Review needed for all" },
       view: "documents",
       audience: { kind: "everyone" },
       filter: { validation: "Needed" },
@@ -618,7 +654,7 @@ describe("publishing a personal watchlist", () => {
   it("keeps the personal copy when a system copy is published", async () => {
     signInAs("admin");
     const created = await createWatchlist({
-      name: "Cancelled",
+      names: { en: "Cancelled" },
       view: "documents",
       audience: { kind: "personal" },
       filter: { cancelled: "Yes" },
@@ -628,7 +664,7 @@ describe("publishing a personal watchlist", () => {
       409,
     );
     const shared = await createWatchlist({
-      name: created.name,
+      names: created.names,
       view: created.view,
       filter: created.filter,
       audience: { kind: "everyone" },
@@ -682,7 +718,7 @@ describe("an audience of some groups and roles", () => {
     expect(
       await statusOf(
         createWatchlist({
-          name: "Nobody's",
+          names: { en: "Nobody's" },
           view: "documents",
           audience: { kind: "some", groupIds: [], roleIds: [] },
           filter: { cancelled: "Yes" },

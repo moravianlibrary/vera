@@ -116,8 +116,38 @@ function personalLensesFor(
 function watchlistOf(lens: Lens) {
   return {
     name: lens.name,
+    names: { cs: czechNameOf(lens.name), en: lens.name },
     filter: { ...lens.filter },
     view: lens.view ?? "documents",
     createdAt: "2026-06-01T09:00:00Z",
   };
+}
+
+function czechNameOf(name: string): string {
+  const translations: Record<string, string> = {
+    Active: "Aktivní",
+    "Awaiting a decision": "Čeká na rozhodnutí",
+    "Could not be added": "Nelze přidat",
+    Current: "Aktuální",
+    "Denied in review": "Zamítnuto při kontrole",
+    Ended: "Ukončené",
+    "Failed in last 7 days": "Selhalo za posledních 7 dní",
+    Forbidden: "Zakázáno",
+    "Mix gaps": "Nedostatky v mixu",
+    "More than one asker": "Více než jeden žadatel",
+    Output: "Výstup",
+    "Page counts": "Počty stran",
+    Periodicals: "Periodika",
+    Proposed: "Navržené",
+    "Ready to read": "Dostupné ke čtení",
+    Rejected: "Zamítnuté",
+    Repeats: "Opakování",
+    "Review needed": "Vyžaduje kontrolu",
+    Running: "Běžící",
+    Targets: "Cíle",
+    "Urgent, no copy": "Urgentní, bez kopie",
+    "Waiting for review": "Čeká na kontrolu",
+    "Without custody": "Bez správce",
+  };
+  return translations[name] ?? name;
 }

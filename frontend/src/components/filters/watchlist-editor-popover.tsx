@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { WatchlistSummary } from "@vera/contract/watchlists";
 import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
+import type { Names } from "@vera/domain/names";
+import { namesAfterEdit } from "@vera/domain/names";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { i18n } from "@/i18n";
 
 type Filter = WatchlistSummary["filter"];
 
@@ -31,8 +34,8 @@ interface Props {
   watchlist: WatchlistSummary | null;
   canShare: boolean;
   trigger: ReactNode;
-  onSave: (name: string, audience: WatchlistAudience) => Promise<void>;
-  onCopy?: (name: string) => Promise<void>;
+  onSave: (names: Names, audience: WatchlistAudience) => Promise<void>;
+  onCopy?: (names: Names) => Promise<void>;
   onDelete?: () => Promise<void>;
   editable?: WatchlistSummary[];
   preferredUpdateId?: string | null;
@@ -55,10 +58,12 @@ export function WatchlistEditorPopover({
   onOpen,
 }: Props) {
   const { t } = useTranslation("common");
+  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const nameId = useId();
   const targetIdLabel = useId();
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState(watchlist?.name ?? "");
+  const [names, setNames] = useState<Names>(watchlist?.names ?? {});
+  const name = names[language] ?? "";
   const [audience, setAudience] = useState<WatchlistAudience>(
     watchlist?.audience ?? { kind: "personal" },
   );
@@ -101,7 +106,7 @@ export function WatchlistEditorPopover({
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
         if (nextOpen) {
-          setName(watchlist?.name ?? "");
+          setNames(watchlist?.names ?? {});
           setAudience(watchlist?.audience ?? { kind: "personal" });
           setTargetId(preferredUpdateId ?? "");
           setError(null);
@@ -120,7 +125,7 @@ export function WatchlistEditorPopover({
           onSubmit={(event) => {
             event.preventDefault();
             if (canEdit && name.trim() && !emptyAudience && !pending) {
-              void run(() => onSave(name.trim(), audience));
+              void run(() => onSave(namesAfterEdit(names, language, name.trim()), audience));
             }
           }}
         >
@@ -136,7 +141,9 @@ export function WatchlistEditorPopover({
             aria-label={watchlist === null ? t("watchlist.saveFilterAs") : t("watchlist.nameLabel")}
             value={name}
             maxLength={100}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) =>
+              setNames((current) => namesAfterEdit(current, language, event.target.value))
+            }
           />
           {canEdit && canShare && (
             <WatchlistAudiencePicker
@@ -193,7 +200,7 @@ export function WatchlistEditorPopover({
               size="sm"
               variant="secondary"
               disabled={!name.trim() || pending}
-              onClick={() => void run(() => onCopy(name.trim()))}
+              onClick={() => void run(() => onCopy(namesAfterEdit(names, language, name.trim())))}
             >
               {t("watchlist.savePersonalCopy")}
             </Button>

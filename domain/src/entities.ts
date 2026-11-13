@@ -533,6 +533,7 @@ export function isShared({ audience }: { audience: WatchlistAudience }): boolean
 export const watchlistSchema = z.object({
   id,
   name: z.string().min(1),
+  names: namesSchema,
   view: watchlistViewSchema,
   audience: watchlistAudienceSchema,
   filter: z.record(z.string(), z.string()),

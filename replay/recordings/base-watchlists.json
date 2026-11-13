@@ -12,6 +12,10 @@
           "body": [
             {
               "name": "Awaiting a decision",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
               "filter": {
                 "decision": "Pending"
               },
@@ -38,6 +42,10 @@
             },
             {
               "name": "Forbidden",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
               "filter": {
                 "forbidden": "Yes"
               },
@@ -64,6 +72,10 @@
             },
             {
               "name": "Urgent, no copy",
+              "names": {
+                "cs": "Urgentní, bez kopie",
+                "en": "Urgent, no copy"
+              },
               "filter": {
                 "priority": "Urgent,High",
                 "copy": "None"
@@ -91,6 +103,10 @@
             },
             {
               "name": "Review needed",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
               "filter": {
                 "validation": "Needed"
               },
@@ -117,6 +133,10 @@
             },
             {
               "name": "Could not be added",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
               "filter": {
                 "progress": "IngestFailed"
               },
@@ -194,6 +214,10 @@
           "body": [
             {
               "name": "Awaiting a decision",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
               "filter": {
                 "decision": "Pending"
               },
@@ -220,6 +244,10 @@
             },
             {
               "name": "Forbidden",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
               "filter": {
                 "forbidden": "Yes"
               },
@@ -246,6 +274,10 @@
             },
             {
               "name": "Urgent, no copy",
+              "names": {
+                "cs": "Urgentní, bez kopie",
+                "en": "Urgent, no copy"
+              },
               "filter": {
                 "priority": "Urgent,High",
                 "copy": "None"
@@ -273,6 +305,10 @@
             },
             {
               "name": "Review needed",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
               "filter": {
                 "validation": "Needed"
               },
@@ -299,6 +335,10 @@
             },
             {
               "name": "Could not be added",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
               "filter": {
                 "progress": "IngestFailed"
               },
@@ -376,6 +416,10 @@
           "body": [
             {
               "name": "Awaiting a decision",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
               "filter": {
                 "decision": "Pending"
               },
@@ -402,6 +446,10 @@
             },
             {
               "name": "Forbidden",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
               "filter": {
                 "forbidden": "Yes"
               },
@@ -428,6 +476,10 @@
             },
             {
               "name": "Urgent, no copy",
+              "names": {
+                "cs": "Urgentní, bez kopie",
+                "en": "Urgent, no copy"
+              },
               "filter": {
                 "priority": "Urgent,High",
                 "copy": "None"
@@ -455,6 +507,10 @@
             },
             {
               "name": "Review needed",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
               "filter": {
                 "validation": "Needed"
               },
@@ -481,6 +537,10 @@
             },
             {
               "name": "Could not be added",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
               "filter": {
                 "progress": "IngestFailed"
               },
@@ -766,7 +826,10 @@
             "duplicateCount": 0
           },
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -783,7 +846,10 @@
           "path": "/api/watchlists",
           "status": 201,
           "body": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "filter": {
               "q": "recording-watchlist-unique"
@@ -791,11 +857,15 @@
             "audience": {
               "kind": "personal"
             },
+            "name": "Recording watchlist",
             "id": "<U1>",
             "createdAt": "<time>"
           },
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -812,6 +882,10 @@
           "status": 200,
           "body": {
             "name": "Recording watchlist renamed",
+            "names": {
+              "cs": "Přejmenovaný záznamový seznam",
+              "en": "Recording watchlist renamed"
+            },
             "filter": {
               "priority": "Urgent,High",
               "copy": "None"
@@ -825,7 +899,10 @@
             "filterVersion": 1
           },
           "requestBody": {
-            "name": "Recording watchlist renamed"
+            "names": {
+              "cs": "Přejmenovaný záznamový seznam",
+              "en": "Recording watchlist renamed"
+            }
           },
           "as": "u3"
         },
@@ -881,6 +958,10 @@
           "body": [
             {
               "name": "Awaiting a decision",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
               "filter": {
                 "decision": "Pending"
               },
@@ -907,6 +988,10 @@
             },
             {
               "name": "Forbidden",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
               "filter": {
                 "forbidden": "Yes"
               },
@@ -933,6 +1018,10 @@
             },
             {
               "name": "Recording watchlist renamed",
+              "names": {
+                "cs": "Přejmenovaný záznamový seznam",
+                "en": "Recording watchlist renamed"
+              },
               "filter": {
                 "priority": "Urgent,High",
                 "copy": "None"
@@ -965,6 +1054,10 @@
             },
             {
               "name": "Review needed",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
               "filter": {
                 "validation": "Needed"
               },
@@ -991,6 +1084,10 @@
             },
             {
               "name": "Could not be added",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
               "filter": {
                 "progress": "IngestFailed"
               },
@@ -1016,7 +1113,10 @@
               }
             },
             {
-              "name": "Recording watchlist",
+              "names": {
+                "cs": "Záznamový seznam",
+                "en": "Recording watchlist"
+              },
               "view": "documents",
               "filter": {
                 "q": "recording-watchlist-unique"
@@ -1024,6 +1124,7 @@
               "audience": {
                 "kind": "personal"
               },
+              "name": "Recording watchlist",
               "id": "<U1>",
               "createdAt": "<time>",
               "itemCount": 0,
@@ -1077,7 +1178,10 @@
           "status": 403,
           "code": "watchlist.manager_required",
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1095,7 +1199,10 @@
           "status": 403,
           "code": "watchlist.manager_required",
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1112,7 +1219,9 @@
           "status": 403,
           "code": "watchlist.manager_required",
           "requestBody": {
-            "name": "Changed"
+            "names": {
+              "en": "Changed"
+            }
           },
           "as": "u8"
         },
@@ -1136,6 +1245,10 @@
           "body": [
             {
               "name": "Awaiting a decision",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
               "filter": {
                 "decision": "Pending"
               },
@@ -1162,6 +1275,10 @@
             },
             {
               "name": "Forbidden",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
               "filter": {
                 "forbidden": "Yes"
               },
@@ -1188,6 +1305,10 @@
             },
             {
               "name": "Review needed",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
               "filter": {
                 "validation": "Needed"
               },
@@ -1214,6 +1335,10 @@
             },
             {
               "name": "Could not be added",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
               "filter": {
                 "progress": "IngestFailed"
               },
@@ -1239,7 +1364,10 @@
               }
             },
             {
-              "name": "Recording watchlist",
+              "names": {
+                "cs": "Záznamový seznam",
+                "en": "Recording watchlist"
+              },
               "view": "documents",
               "filter": {
                 "q": "recording-watchlist-unique"
@@ -1247,6 +1375,7 @@
               "audience": {
                 "kind": "personal"
               },
+              "name": "Recording watchlist",
               "id": "<U1>",
               "createdAt": "<time>",
               "itemCount": 0,
@@ -1285,7 +1414,10 @@
           "status": 403,
           "code": "watchlist.manager_required",
           "requestBody": {
-            "name": "Recording shared watchlist",
+            "names": {
+              "cs": "Sdílený záznamový seznam",
+              "en": "Recording shared watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "everyone"
@@ -1303,7 +1435,10 @@
           "status": 422,
           "code": "watchlist.invalid_filter",
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1321,7 +1456,10 @@
           "status": 422,
           "code": "watchlist.invalid_filter",
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1354,7 +1492,10 @@
           "status": 403,
           "code": "watchlist.manager_required",
           "requestBody": {
-            "name": "Recording shared watchlist",
+            "names": {
+              "cs": "Sdílený záznamový seznam",
+              "en": "Recording shared watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "everyone"
@@ -1371,7 +1512,10 @@
           "status": 422,
           "code": "watchlist.source_unavailable",
           "requestBody": {
-            "name": "Recording watchlist",
+            "names": {
+              "cs": "Záznamový seznam",
+              "en": "Recording watchlist"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1389,7 +1533,9 @@
           "status": 409,
           "code": "watchlist.already_saved",
           "requestBody": {
-            "name": "Duplicate personal filter",
+            "names": {
+              "en": "Duplicate personal filter"
+            },
             "view": "documents",
             "audience": {
               "kind": "personal"
@@ -1467,6 +1613,171 @@
               "copy": "None"
             }
           },
+          "as": "u3"
+        }
+      ]
+    },
+    {
+      "name": "czech-watchlist-name",
+      "calls": [
+        {
+          "method": "GET",
+          "path": "/api/watchlists?view=documents",
+          "status": 200,
+          "acceptLanguage": "cs",
+          "body": [
+            {
+              "name": "Čeká na rozhodnutí",
+              "names": {
+                "cs": "Čeká na rozhodnutí",
+                "en": "Awaiting a decision"
+              },
+              "filter": {
+                "decision": "Pending"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-1",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 0,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 0,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Zakázáno",
+              "names": {
+                "cs": "Zakázáno",
+                "en": "Forbidden"
+              },
+              "filter": {
+                "forbidden": "Yes"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-shared-2",
+              "audience": {
+                "kind": "everyone"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 1,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Urgentní, bez kopie",
+              "names": {
+                "cs": "Urgentní, bez kopie",
+                "en": "Urgent, no copy"
+              },
+              "filter": {
+                "priority": "Urgent,High",
+                "copy": "None"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-1",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 10,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 2,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Vyžaduje kontrolu",
+              "names": {
+                "cs": "Vyžaduje kontrolu",
+                "en": "Review needed"
+              },
+              "filter": {
+                "validation": "Needed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-2",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 9,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 3,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            },
+            {
+              "name": "Nelze přidat",
+              "names": {
+                "cs": "Nelze přidat",
+                "en": "Could not be added"
+              },
+              "filter": {
+                "progress": "IngestFailed"
+              },
+              "view": "documents",
+              "createdAt": "<time>",
+              "id": "W-u3-documents-3",
+              "audience": {
+                "kind": "personal"
+              },
+              "itemCount": 2,
+              "newCount": 0,
+              "createdBy": "u3",
+              "subscriberCount": 0,
+              "filterVersion": 1,
+              "isEditable": true,
+              "viewer": {
+                "seenAt": null,
+                "position": 4,
+                "push": true,
+                "pushSince": null,
+                "channels": {},
+                "confirmedFilter": null
+              }
+            }
+          ],
           "as": "u3"
         }
       ]

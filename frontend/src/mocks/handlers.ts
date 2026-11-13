@@ -383,6 +383,10 @@ export function createHandlers(profile: MockUserProfile) {
     }
     return "cs";
   };
+  const watchlistInLanguage = <T extends { names: { cs?: string; en?: string }; name: string }>(
+    watchlist: T,
+    request: Request,
+  ) => ({ ...watchlist, name: nameIn(watchlist.names, languageOf(request)) });
   const signedOutKey = `vera.mock.signed-out.${profile}`;
 
   // An act on one record: its body parsed by the action's own schema, the outcome as a status.
@@ -881,6 +885,9 @@ export function createHandlers(profile: MockUserProfile) {
           ...custody,
           name: nameIn(custody.names, language),
         })),
+        sharedWatchlists: index.sharedWatchlists.map((watchlist) =>
+          watchlistInLanguage(watchlist, request),
+        ),
       });
     }),
     accessWrite(
@@ -1845,7 +1852,9 @@ export function createHandlers(profile: MockUserProfile) {
       if (mode === "manage-system" && !hasPermission(currentSession(), "watchlist.manage_system")) {
         return forbidden();
       }
-      const rows = visibleWatchlists(currentSession(), view.success ? view.data : null, mode);
+      const rows = visibleWatchlists(currentSession(), view.success ? view.data : null, mode).map(
+        (watchlist) => watchlistInLanguage(watchlist, request),
+      );
       flushWatchlistMail();
       flushWatchlistChat();
       return HttpResponse.json(rows);
@@ -1910,6 +1919,7 @@ export function createHandlers(profile: MockUserProfile) {
       const { copyOf: _copyOf, ...watchlistData } = draft.data;
       const watchlist = {
         ...watchlistData,
+        name: nameIn(watchlistData.names, "en"),
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
@@ -1918,7 +1928,7 @@ export function createHandlers(profile: MockUserProfile) {
         ownerId: session.user.id,
         copiedFrom: source?.id,
       });
-      return HttpResponse.json(watchlist, { status: 201 });
+      return HttpResponse.json(watchlistInLanguage(watchlist, request), { status: 201 });
     }),
 
     http.post(route(apiRoutes.watchlistReach), async ({ request }) => {
@@ -2002,6 +2012,7 @@ export function createHandlers(profile: MockUserProfile) {
       const changed = {
         ...watchlist,
         ...change.data,
+        name: nameIn(change.data.names ?? watchlist.names, "en"),
         filterVersion:
           change.data.filter === undefined ||
           isSameWatchlistFilter(watchlist.view, watchlist.filter, change.data.filter)
@@ -2035,7 +2046,7 @@ export function createHandlers(profile: MockUserProfile) {
           );
         }
       }
-      return HttpResponse.json(publicWatchlistOf(changed));
+      return HttpResponse.json(watchlistInLanguage(publicWatchlistOf(changed), request));
     }),
 
     http.patch(

@@ -10829,6 +10829,7 @@
     "watchlists": [
       {
         "name": "Awaiting a decision",
+        "names": { "cs": "Čeká na rozhodnutí", "en": "Awaiting a decision" },
         "filter": {
           "decision": "Pending"
         },
@@ -10842,6 +10843,7 @@
       },
       {
         "name": "Forbidden",
+        "names": { "cs": "Zakázáno", "en": "Forbidden" },
         "filter": {
           "forbidden": "Yes"
         },
@@ -10855,6 +10857,7 @@
       },
       {
         "name": "Awaiting a decision",
+        "names": { "cs": "Čeká na rozhodnutí", "en": "Awaiting a decision" },
         "filter": {
           "decision": "Pending"
         },
@@ -10868,6 +10871,7 @@
       },
       {
         "name": "Periodicals",
+        "names": { "cs": "Periodika", "en": "Periodicals" },
         "filter": {
           "decision": "Pending",
           "type": "Periodical"
@@ -10884,6 +10888,7 @@
       },
       {
         "name": "Review needed",
+        "names": { "cs": "Vyžaduje kontrolu", "en": "Review needed" },
         "filter": {
           "review": "Needed"
         },
@@ -10897,6 +10902,7 @@
       },
       {
         "name": "Page counts",
+        "names": { "cs": "Počty stran", "en": "Page counts" },
         "filter": {
           "review": "Needed",
           "defect": "pi9"
@@ -10913,6 +10919,7 @@
       },
       {
         "name": "Denied in review",
+        "names": { "cs": "Zamítnuto při kontrole", "en": "Denied in review" },
         "filter": {
           "review": "Denied"
         },
@@ -10926,6 +10933,7 @@
       },
       {
         "name": "Current",
+        "names": { "cs": "Aktuální", "en": "Current" },
         "filter": {
           "state": "Planned,InProgress"
         },
@@ -10939,6 +10947,7 @@
       },
       {
         "name": "Proposed",
+        "names": { "cs": "Navržené", "en": "Proposed" },
         "filter": {
           "state": "Proposed"
         },
@@ -10952,6 +10961,7 @@
       },
       {
         "name": "Active",
+        "names": { "cs": "Aktivní", "en": "Active" },
         "filter": {
           "state": "Approved",
           "period": "Active"
@@ -10966,6 +10976,7 @@
       },
       {
         "name": "Ended",
+        "names": { "cs": "Ukončené", "en": "Ended" },
         "filter": {
           "period": "Ended"
         },
@@ -10979,6 +10990,7 @@
       },
       {
         "name": "Rejected",
+        "names": { "cs": "Zamítnuté", "en": "Rejected" },
         "filter": {
           "state": "Rejected"
         },
@@ -10992,6 +11004,7 @@
       },
       {
         "name": "Repeats",
+        "names": { "cs": "Opakování", "en": "Repeats" },
         "filter": {
           "type": "Repeat"
         },
@@ -11005,6 +11018,7 @@
       },
       {
         "name": "Targets",
+        "names": { "cs": "Cíle", "en": "Targets" },
         "filter": {
           "type": "Target"
         },
@@ -11018,6 +11032,7 @@
       },
       {
         "name": "Output",
+        "names": { "cs": "Výstup", "en": "Output" },
         "filter": {
           "type": "Output"
         },
@@ -11031,6 +11046,7 @@
       },
       {
         "name": "Running",
+        "names": { "cs": "Běžící", "en": "Running" },
         "filter": {
           "state": "Running"
         },
@@ -11044,6 +11060,7 @@
       },
       {
         "name": "Failed in last 7 days",
+        "names": { "cs": "Selhalo za posledních 7 dní", "en": "Failed in last 7 days" },
         "filter": {
           "state": "Failed",
           "started": "last-7-days"
@@ -11058,6 +11075,7 @@
       },
       {
         "name": "Without custody",
+        "names": { "cs": "Bez správce", "en": "Without custody" },
         "filter": {
           "custody": "Unheld"
         },
@@ -11071,6 +11089,7 @@
       },
       {
         "name": "Mix gaps",
+        "names": { "cs": "Nedostatky v mixu", "en": "Mix gaps" },
         "filter": {
           "attention": "Unallocated,NoShare"
         },
@@ -11084,6 +11103,7 @@
       },
       {
         "name": "Waiting for review",
+        "names": { "cs": "Čeká na kontrolu", "en": "Waiting for review" },
         "filter": {
           "status": "WaitingForReview"
         },
@@ -11097,6 +11117,7 @@
       },
       {
         "name": "Urgent, no copy",
+        "names": { "cs": "Urgentní, bez kopie", "en": "Urgent, no copy" },
         "filter": {
           "priority": "Urgent,High",
           "copy": "None"
@@ -11111,6 +11132,7 @@
       },
       {
         "name": "Review needed",
+        "names": { "cs": "Vyžaduje kontrolu", "en": "Review needed" },
         "filter": {
           "validation": "Needed"
         },
@@ -11124,6 +11146,7 @@
       },
       {
         "name": "Could not be added",
+        "names": { "cs": "Nelze přidat", "en": "Could not be added" },
         "filter": {
           "progress": "IngestFailed"
         },
@@ -11137,6 +11160,7 @@
       },
       {
         "name": "Urgent, no copy",
+        "names": { "cs": "Urgentní, bez kopie", "en": "Urgent, no copy" },
         "filter": {
           "priority": "Urgent,High",
           "copy": "None"
@@ -11151,6 +11175,7 @@
       },
       {
         "name": "Review needed",
+        "names": { "cs": "Vyžaduje kontrolu", "en": "Review needed" },
         "filter": {
           "validation": "Needed"
         },
@@ -11164,6 +11189,7 @@
       },
       {
         "name": "Could not be added",
+        "names": { "cs": "Nelze přidat", "en": "Could not be added" },
         "filter": {
           "progress": "IngestFailed"
         },
@@ -11177,6 +11203,7 @@
       },
       {
         "name": "Urgent, no copy",
+        "names": { "cs": "Urgentní, bez kopie", "en": "Urgent, no copy" },
         "filter": {
           "priority": "Urgent,High",
           "copy": "None"
@@ -11191,6 +11218,7 @@
       },
       {
         "name": "Review needed",
+        "names": { "cs": "Vyžaduje kontrolu", "en": "Review needed" },
         "filter": {
           "validation": "Needed"
         },
@@ -11204,6 +11232,7 @@
       },
       {
         "name": "Could not be added",
+        "names": { "cs": "Nelze přidat", "en": "Could not be added" },
         "filter": {
           "progress": "IngestFailed"
         },
@@ -11217,6 +11246,7 @@
       },
       {
         "name": "Urgent, no copy",
+        "names": { "cs": "Urgentní, bez kopie", "en": "Urgent, no copy" },
         "filter": {
           "priority": "Urgent,High",
           "copy": "None"
@@ -11231,6 +11261,7 @@
       },
       {
         "name": "Review needed",
+        "names": { "cs": "Vyžaduje kontrolu", "en": "Review needed" },
         "filter": {
           "validation": "Needed"
         },
@@ -11244,6 +11275,7 @@
       },
       {
         "name": "Could not be added",
+        "names": { "cs": "Nelze přidat", "en": "Could not be added" },
         "filter": {
           "progress": "IngestFailed"
         },
@@ -11257,6 +11289,7 @@
       },
       {
         "name": "More than one asker",
+        "names": { "cs": "Více než jeden žadatel", "en": "More than one asker" },
         "filter": {
           "decision": "Pending",
           "askers": "Several"
@@ -11271,6 +11304,7 @@
       },
       {
         "name": "More than one asker",
+        "names": { "cs": "Více než jeden žadatel", "en": "More than one asker" },
         "filter": {
           "decision": "Pending",
           "askers": "Several"
@@ -11285,6 +11319,7 @@
       },
       {
         "name": "More than one asker",
+        "names": { "cs": "Více než jeden žadatel", "en": "More than one asker" },
         "filter": {
           "decision": "Pending",
           "askers": "Several"
@@ -11299,6 +11334,7 @@
       },
       {
         "name": "Ready to read",
+        "names": { "cs": "Dostupné ke čtení", "en": "Ready to read" },
         "filter": {
           "status": "Available"
         },
@@ -11312,6 +11348,7 @@
       },
       {
         "name": "Ready to read",
+        "names": { "cs": "Dostupné ke čtení", "en": "Ready to read" },
         "filter": {
           "status": "Available"
         },
@@ -11325,6 +11362,7 @@
       },
       {
         "name": "Ready to read",
+        "names": { "cs": "Dostupné ke čtení", "en": "Ready to read" },
         "filter": {
           "status": "Available"
         },
@@ -11338,6 +11376,7 @@
       },
       {
         "name": "Ready to read",
+        "names": { "cs": "Dostupné ke čtení", "en": "Ready to read" },
         "filter": {
           "status": "Available"
         },
@@ -11351,6 +11390,7 @@
       },
       {
         "name": "Ready to read",
+        "names": { "cs": "Dostupné ke čtení", "en": "Ready to read" },
         "filter": {
           "status": "Available"
         },
