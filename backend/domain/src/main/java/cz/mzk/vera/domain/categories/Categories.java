@@ -34,11 +34,19 @@ public final class Categories {
 
   // searchedCategoriesOf: STATUS-Categories; matching names retain their ancestors.
   public static Set<String> searchedCategoriesOf(List<Category> categories, String search) {
+    return searchedCategoriesOf(categories, Map.of(), search);
+  }
+
+  // UI-names: a search matches a category's name in any language, given by id.
+  public static Set<String> searchedCategoriesOf(
+      List<Category> categories, Map<String, Map<String, String>> namesById, String search) {
     String term = search.trim().toLowerCase(Locale.ROOT);
     if (term.isEmpty()) {
       return null;
     }
-    return categories.stream().filter(c -> c.name().toLowerCase(Locale.ROOT).contains(term))
+    return categories.stream().filter(c -> c.name().toLowerCase(Locale.ROOT).contains(term)
+            || namesById.getOrDefault(c.id(), Map.of()).values().stream()
+                .anyMatch(name -> name.toLowerCase(Locale.ROOT).contains(term)))
         .flatMap(c -> lineageOf(categories, c.id()).stream()).collect(Collectors.toSet());
   }
 

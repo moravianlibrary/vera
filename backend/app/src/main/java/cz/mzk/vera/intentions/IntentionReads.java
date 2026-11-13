@@ -12,6 +12,7 @@ import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.PROJECT_MEMBER_GROUPS;
 import static cz.mzk.vera.domain.mixes.Mixes.siblingSetOf;
 
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.domain.categories.Categories;
 import cz.mzk.vera.domain.entities.Category;
 import cz.mzk.vera.domain.entities.Distribution;
@@ -20,20 +21,21 @@ import cz.mzk.vera.domain.entities.IntentionFunding;
 import cz.mzk.vera.domain.entities.Iteration;
 import cz.mzk.vera.domain.entities.Progress;
 import cz.mzk.vera.domain.entities.PropertyCondition;
-import cz.mzk.vera.domain.intentions.Intentions;
 import cz.mzk.vera.domain.intentions.Intentions.CountingData;
 import cz.mzk.vera.domain.intentions.Intentions.IntentionCount;
 import cz.mzk.vera.domain.intentions.Intentions.MixReading;
 import cz.mzk.vera.domain.intentions.Intentions.TargetVerdict;
+import cz.mzk.vera.domain.intentions.Intentions;
 import cz.mzk.vera.domain.mixes.Mixes.SiblingSet;
 import cz.mzk.vera.intentions.CountingReads.CountingSnapshot;
 import cz.mzk.vera.intentions.CountingReads.StoredDistribution;
 import cz.mzk.vera.intentions.CountingReads.StoredIntention;
 import cz.mzk.vera.intentions.CountingReads.StoredMix;
-import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
+import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.web.Instants;
 import cz.mzk.vera.web.Problems;
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -90,7 +92,9 @@ public class IntentionReads {
                 Map<String, Object> template = new LinkedHashMap<>();
                 template.put("id", row.getId());
                 template.put("description", row.getDescription());
-                template.put("namePattern", row.getNamePattern());
+                // UI-names: the pattern in the request's language, as a name is.
+        template.put("namePattern", Names.nameIn(mapper.readValue(row.getNamePatterns().data(),
+                new TypeReference<Map<String, String>>() { }), RequestLanguage.current()));
                 template.put("namePatterns", mapper.readTree(row.getNamePatterns().data()));
                 template.put("every", row.getEvery());
                 template.put("funding", funding(row.getFundingKind(), row.getFundingProjectId()));

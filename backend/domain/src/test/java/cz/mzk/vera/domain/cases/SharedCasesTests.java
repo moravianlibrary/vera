@@ -136,7 +136,13 @@ class SharedCasesTests {
     adapters.put("leafCategoriesOf", input -> JSON.valueToTree(Categories.leavesOf(categories(input.path("categories")))));
     adapters.put("isInSubtree", input -> JSON.valueToTree(Categories.isInSubtree(categories(input.path("categories")), text(input, "categoryId"), text(input, "topId"))));
     adapters.put("searchedCategoriesOf", input -> {
-      var result = Categories.searchedCategoriesOf(categories(input.path("categories")), text(input, "search"));
+      Map<String, Map<String, String>> namesById = new LinkedHashMap<>();
+      input.path("categories").forEach(node -> {
+        Map<String, String> names = new LinkedHashMap<>();
+        node.path("names").properties().forEach(entry -> names.put(entry.getKey(), entry.getValue().asString()));
+        namesById.put(text(node, "id"), names);
+      });
+      var result = Categories.searchedCategoriesOf(categories(input.path("categories")), namesById, text(input, "search"));
       return result == null ? JSON.nullNode() : JSON.valueToTree(result.stream().sorted().toList());
     });
     adapters.put("isOutsideScope", input -> JSON.valueToTree(Categories.isOutsideScope(categories(input.path("categories")), nullableText(input.path("scopeCategoryId")), nullableText(input.path("categoryId")))));

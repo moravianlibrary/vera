@@ -9,23 +9,17 @@ import static cz.mzk.vera.db.tables.Tables.PROPERTY_DEFINITIONS;
 import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.max;
 
+
 import cz.mzk.vera.access.ActResult;
+import cz.mzk.vera.domain.Names;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.domain.intentions.Intentions;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.session.Caller;
-import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.HeldAccessQueries.HeldScopes;
+import cz.mzk.vera.session.HeldAccessQueries;
 import cz.mzk.vera.session.RecordIds;
-
-import org.jooq.DSLContext;
-import org.jooq.JSONB;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-
+import cz.mzk.vera.web.RequestLanguage;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -34,6 +28,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jooq.DSLContext;
+import org.jooq.JSONB;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 // ACT-intention-create; ACT-intention-save; ACT-intention-archive; ACT-intention-delete;
 // ACT-repeat-save.
@@ -432,7 +433,9 @@ class IntentionCommands {
         Map<String, Object> template = new LinkedHashMap<>();
         template.put("id", row.getId());
         template.put("description", row.getDescription());
-        template.put("namePattern", row.getNamePattern());
+        // UI-names: the pattern in the request's language, as a name is.
+        template.put("namePattern", Names.nameIn(json.readValue(row.getNamePatterns().data(),
+                new TypeReference<Map<String, String>>() { }), RequestLanguage.current()));
         template.put("namePatterns", json.readTree(row.getNamePatterns().data()));
         template.put("every", row.getEvery());
         Map<String, Object> funding = new LinkedHashMap<>();
