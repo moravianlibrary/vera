@@ -1,0 +1,291 @@
+{
+  "name": "l67-recheck",
+  "extends": "base",
+  "collections": {
+    "documents": [
+      {
+        "id": "D1",
+        "catalogId": "MZK01-001284756",
+        "catalogState": {
+          "kind": "replaced",
+          "catalogId": "MZK01-001502234",
+          "documentId": null
+        },
+        "unit": {
+          "type": "volume-name",
+          "value": "1918–1925"
+        },
+        "title": "Lidové noviny",
+        "type": "Periodical",
+        "shelfMark": "ST1-0032",
+        "pageSources": [
+          {
+            "source": "catalog",
+            "tier": 50,
+            "value": 2847,
+            "observedAt": "2026-03-11T09:00:00Z",
+            "setBy": null
+          },
+          {
+            "source": "predictor",
+            "tier": 20,
+            "value": 2600,
+            "observedAt": "2026-03-11T09:00:00Z",
+            "setBy": null
+          },
+          {
+            "source": "manual",
+            "tier": 100,
+            "value": 3333,
+            "observedAt": "2026-03-11T09:00:00Z",
+            "setBy": "u2"
+          }
+        ],
+        "registryRecords": [
+          {
+            "registry": "Kramerius",
+            "state": "Published",
+            "rawState": "published",
+            "linkKind": "content",
+            "url": "https://kramerius.mzk.cz/view/uuid:demo",
+            "observedAt": "2026-06-25T10:37:00Z",
+            "checkedAt": "2026-06-25T10:37:00Z",
+            "error": null
+          },
+          {
+            "registry": "RDCZ",
+            "state": "Digitized",
+            "rawState": "Digitized",
+            "linkKind": "record",
+            "url": "https://www.registrdigitalizace.cz/rdcz/detail/demo",
+            "observedAt": "2026-06-23T10:40:00Z",
+            "checkedAt": "2026-06-23T10:40:00Z",
+            "error": null
+          }
+        ],
+        "properties": [
+          {
+            "key": "title",
+            "sources": [
+              {
+                "source": {
+                  "kind": "plugin",
+                  "instanceId": "l67-adapter",
+                  "instanceName": "Recheck catalog"
+                },
+                "tier": 50,
+                "value": "Lidové noviny",
+                "observedAt": "2026-03-11T09:00:00Z",
+                "setBy": null
+              }
+            ]
+          },
+          {
+            "key": "material_type",
+            "sources": [
+              {
+                "source": {
+                  "kind": "plugin",
+                  "instanceId": "l67-adapter",
+                  "instanceName": "Recheck catalog"
+                },
+                "tier": 50,
+                "value": "Periodical",
+                "observedAt": "2026-03-11T09:00:00Z",
+                "setBy": null
+              }
+            ]
+          },
+          {
+            "key": "shelf_mark",
+            "sources": [
+              {
+                "source": {
+                  "kind": "plugin",
+                  "instanceId": "l67-adapter",
+                  "instanceName": "Recheck catalog"
+                },
+                "tier": 50,
+                "value": "ST1-0032",
+                "observedAt": "2026-03-11T09:00:00Z",
+                "setBy": null
+              }
+            ]
+          },
+          {
+            "key": "size",
+            "sources": [
+              {
+                "source": {
+                  "kind": "hand"
+                },
+                "tier": 100,
+                "value": "A2",
+                "observedAt": "2026-05-12T09:00:00Z",
+                "setBy": "u2"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "iterations": [
+      {
+        "id": "IT1",
+        "documentId": "D1",
+        "attempt": 1,
+        "requestId": "R1",
+        "categoryId": "c22",
+        "priority": "High",
+        "projectId": "p1",
+        "progress": "Digitized",
+        "listId": null,
+        "formerListName": null,
+        "restriction": null,
+        "restrictionOverride": null,
+        "cancellation": null,
+        "defects": [
+          {
+            "key": "pi9:R07:260$c",
+            "ruleCode": "R07",
+            "subject": "260$c",
+            "publicText": "Publication year is unclear on the record.",
+            "internalText": "MARC 260$c reads \"19uu\"; publication year cannot be resolved.",
+            "firstSeenAt": "2026-06-19T09:00:00Z",
+            "instanceId": "pi9"
+          }
+        ],
+        "verdicts": [],
+        "ingestFailure": null,
+        "digitizedAt": "2026-06-19T15:00:00Z",
+        "scanDpi": null,
+        "properties": [
+          {
+            "key": "machines",
+            "sources": [
+              {
+                "source": {
+                  "kind": "hand"
+                },
+                "tier": 100,
+                "value": [
+                  "zeutschel"
+                ],
+                "observedAt": "2026-06-01T09:00:00Z",
+                "setBy": "u2"
+              }
+            ]
+          },
+          {
+            "key": "page_count",
+            "sources": [
+              {
+                "source": {
+                  "kind": "plugin",
+                  "instanceId": "pi6",
+                  "instanceName": "Periodicals model"
+                },
+                "tier": 20,
+                "value": 111,
+                "observedAt": "2026-03-11T09:00:00Z",
+                "setBy": null
+              },
+              {
+                "source": {
+                  "kind": "plugin",
+                  "instanceId": "pi7",
+                  "instanceName": "Monographs model"
+                },
+                "tier": 20,
+                "value": 222,
+                "observedAt": "2026-03-11T09:00:00Z",
+                "setBy": null
+              }
+            ]
+          }
+        ],
+        "links": []
+      }
+    ],
+    "pluginInstances": [
+      {
+        "id": "l67-adapter",
+        "name": "Recheck catalog",
+        "implementationId": "pt1",
+        "configuration": {
+          "base_url": "aleph.mzk.cz",
+          "protocol": "REST",
+          "timeout": "30s"
+        },
+        "triggers": [
+          "OnDemand"
+        ],
+        "createdAt": "2026-01-15",
+        "lastRunAt": null,
+        "version": "2.4.1",
+        "isEnabled": true,
+        "linkedCategoryId": null,
+        "settings": null,
+        "createdBy": "u3",
+        "isDeleted": false
+      },
+      {
+        "id": "pi6",
+        "name": "Periodicals model",
+        "implementationId": "pt4",
+        "configuration": {
+          "model": "periodical-v3",
+          "min_confidence": "0.6"
+        },
+        "linkedCategoryId": "c2",
+        "triggers": [
+          "OnRecordChange"
+        ],
+        "createdBy": "u2",
+        "createdAt": "2026-03-03",
+        "lastRunAt": "2026-06-21T12:12:00.000Z",
+        "version": "0.9.2",
+        "isEnabled": true,
+        "settings": null,
+        "isDeleted": false
+      },
+      {
+        "id": "pi7",
+        "name": "Monographs model",
+        "implementationId": "pt4",
+        "configuration": {
+          "model": "monograph-v1",
+          "min_confidence": "0.75"
+        },
+        "linkedCategoryId": "c1",
+        "triggers": [
+          "OnIngest"
+        ],
+        "createdBy": "u2",
+        "createdAt": "2026-03-03",
+        "lastRunAt": "2026-06-19T07:05:00.000Z",
+        "version": "0.9.2",
+        "isEnabled": true,
+        "settings": null,
+        "isDeleted": false
+      }
+    ]
+  },
+  "fakes": {
+    "catalogRecords": [
+      {
+        "catalogId": "MZK01-001284756",
+        "title": "Rechecked title",
+        "type": "Periodical",
+        "units": [
+          "1918–1925"
+        ],
+        "identifiers": [],
+        "shelfMarks": {
+          "ST1-0032": "1918–1925"
+        },
+        "barcodes": {}
+      }
+    ]
+  }
+}

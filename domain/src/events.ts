@@ -694,6 +694,7 @@ export const historyDataSchemas = {
     by: z.enum(["act", "catalog_change"]),
     found: count,
     gone: count,
+    changed: z.array(z.object({ key: z.string(), previous: z.unknown(), value: z.unknown() })),
   }),
   "iteration.page_count_entered": z.object({ pages: count, previous: count.nullable() }),
   "iteration.verdict_accepted": z.object({ defects }),

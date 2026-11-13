@@ -8,11 +8,17 @@ import static cz.mzk.vera.db.tables.Tables.ITERATIONS;
 import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.max;
 
+import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
+import cz.mzk.vera.db.tables.tables.records.IterationPropertySourcesRecord;
+import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
+import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
-import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.plugin.propertysource.ValuesAnswer;
+import cz.mzk.vera.plugin.propertysource.ValuesInput;
+import cz.mzk.vera.plugin.records.Document;
+import cz.mzk.vera.plugin.records.Iteration;
 import cz.mzk.vera.plugin.registry.LookupAnswer;
 import cz.mzk.vera.plugin.restriction.RestrictionCheckAnswer;
 import cz.mzk.vera.plugin.validation.ValidationCheckAnswer;
@@ -22,8 +28,11 @@ import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Record3;
+import org.jooq.Result;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -83,29 +92,45 @@ public class PluginAnswerWrites {
         return answer.records().size();
     }
 
+    public ValuesInput propertyInput(DocumentsRecord document, IterationsRecord row) {
+        Document.Unit unit = document.getUnitType() == null ? null
+                : new Document.Unit(document.getUnitType(), document.getUnitValue());
+        Document record = new Document(document.getId(), document.getCatalogId(), unit,
+                document.getTitle(), document.getType(), document.getShelfMark());
+        Iteration iteration = new Iteration(row.getId(), row.getDocumentId(), row.getAttempt(), row.getRequestId(),
+                row.getCategoryId(), row.getPriority(), row.getProjectId(), row.getProgress(), row.getListId(),
+                row.getFormerListName());
+        return new ValuesInput(record, iteration);
+    }
+
     public int properties(DSLContext tx, String documentId, String iterationId, String instanceId,
             String instanceName, ValuesAnswer answer) {
-        tx.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.POSITION,
+        Result<Record3<String, Integer, JSONB>> earlier = tx.select(ITERATION_PROPERTY_SOURCES.KEY, ITERATION_PROPERTY_SOURCES.POSITION,
                 ITERATION_PROPERTY_SOURCES.SOURCE)
                 .from(ITERATION_PROPERTY_SOURCES).where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId))
-                .fetch().forEach(row -> {
-                    JsonNode source = json.readTree(row.get(ITERATION_PROPERTY_SOURCES.SOURCE).data());
-                    if ("plugin".equals(source.path("kind").asString())
-                            && instanceId.equals(source.path("instanceId").asString())) {
-                        tx.deleteFrom(ITERATION_PROPERTY_SOURCES)
-                                .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId))
-                                .and(ITERATION_PROPERTY_SOURCES.POSITION.eq(row.get(ITERATION_PROPERTY_SOURCES.POSITION)))
-                                .execute();
-                    }
-                });
+                .fetch();
+        boolean hadPages = earlier.stream().anyMatch(row -> "page_count".equals(row.value1())
+                && instanceId.equals(json.readTree(row.value3().data()).path("instanceId").asString()));
+        earlier.forEach(row -> {
+            JsonNode source = json.readTree(row.get(ITERATION_PROPERTY_SOURCES.SOURCE).data());
+            if ("plugin".equals(source.path("kind").asString())
+                    && instanceId.equals(source.path("instanceId").asString())) {
+                tx.deleteFrom(ITERATION_PROPERTY_SOURCES)
+                        .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId))
+                        .and(ITERATION_PROPERTY_SOURCES.POSITION.eq(row.get(ITERATION_PROPERTY_SOURCES.POSITION)))
+                        .execute();
+            }
+        });
         boolean pageCountAnswered = answer.values().stream().anyMatch(value -> "page_count".equals(value.key()));
-        if (pageCountAnswered) {
+        if (pageCountAnswered || hadPages) {
             tx.deleteFrom(DOCUMENT_PAGE_SOURCES).where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(documentId))
                     .and(DOCUMENT_PAGE_SOURCES.SOURCE.eq("catalog")).execute();
         }
-        int position = tx.selectCount().from(ITERATION_PROPERTY_SOURCES)
+        int position = tx.select(coalesce(max(ITERATION_PROPERTY_SOURCES.POSITION), -1).add(1))
+                .from(ITERATION_PROPERTY_SOURCES)
                 .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId)).fetchOne(0, int.class);
-        int pagePosition = tx.selectCount().from(DOCUMENT_PAGE_SOURCES)
+        int pagePosition = tx.select(coalesce(max(DOCUMENT_PAGE_SOURCES.POSITION), -1).add(1))
+                .from(DOCUMENT_PAGE_SOURCES)
                 .where(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class);
         OffsetDateTime now = now();
         for (ValuesAnswer.PropertyValue property : answer.values()) {
@@ -120,11 +145,23 @@ public class PluginAnswerWrites {
                     .set(ITERATION_PROPERTY_SOURCES.TIER, property.tier())
                     .set(ITERATION_PROPERTY_SOURCES.VALUE, JSONB.valueOf(json.writeValueAsString(property.value())))
                     .set(ITERATION_PROPERTY_SOURCES.OBSERVED_AT, now).execute();
-            if ("page_count".equals(property.key()) && property.value() instanceof Number pages) {
+        }
+        if (pageCountAnswered || hadPages) {
+            Optional<IterationPropertySourcesRecord> pages = tx.selectFrom(ITERATION_PROPERTY_SOURCES)
+                    .where(ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId))
+                    .and(ITERATION_PROPERTY_SOURCES.KEY.eq("page_count"))
+                    .orderBy(ITERATION_PROPERTY_SOURCES.TIER.desc(), ITERATION_PROPERTY_SOURCES.POSITION)
+                    .fetch().stream()
+                    .filter(row -> "plugin".equals(json.readTree(row.getSource().data()).path("kind").asString()))
+                    .filter(row -> json.readTree(row.getValue().data()).isNumber()).findFirst();
+            if (pages.isPresent()) {
+                IterationPropertySourcesRecord page = pages.get();
                 tx.insertInto(DOCUMENT_PAGE_SOURCES).set(DOCUMENT_PAGE_SOURCES.DOCUMENT_ID, documentId)
-                        .set(DOCUMENT_PAGE_SOURCES.POSITION, pagePosition++).set(DOCUMENT_PAGE_SOURCES.SOURCE, "catalog")
-                        .set(DOCUMENT_PAGE_SOURCES.TIER, property.tier()).set(DOCUMENT_PAGE_SOURCES.VALUE, pages.intValue())
-                        .set(DOCUMENT_PAGE_SOURCES.OBSERVED_AT, now).execute();
+                        .set(DOCUMENT_PAGE_SOURCES.POSITION, pagePosition)
+                        .set(DOCUMENT_PAGE_SOURCES.SOURCE, "catalog")
+                        .set(DOCUMENT_PAGE_SOURCES.TIER, page.getTier())
+                        .set(DOCUMENT_PAGE_SOURCES.VALUE, json.readTree(page.getValue().data()).asInt())
+                        .set(DOCUMENT_PAGE_SOURCES.OBSERVED_AT, page.getObservedAt()).execute();
             }
         }
         return answer.values().size();

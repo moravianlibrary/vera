@@ -31045,9 +31045,10 @@
                 "correlationId": "<U2>",
                 "code": "iteration.rechecked",
                 "data": {
-                  "by": "catalog_change",
+                  "by": "act",
                   "found": 1,
-                  "gone": 0
+                  "gone": 0,
+                  "changed": []
                 },
                 "reason": {
                   "public": null,
@@ -36704,9 +36705,10 @@
                 "correlationId": "<U1>",
                 "code": "iteration.rechecked",
                 "data": {
-                  "by": "catalog_change",
+                  "by": "act",
                   "found": 1,
-                  "gone": 1
+                  "gone": 1,
+                  "changed": []
                 },
                 "reason": {
                   "public": null,
@@ -37103,9 +37105,10 @@
                 "correlationId": "<U1>",
                 "code": "iteration.rechecked",
                 "data": {
-                  "by": "catalog_change",
+                  "by": "act",
                   "found": 1,
-                  "gone": 1
+                  "gone": 1,
+                  "changed": []
                 },
                 "reason": {
                   "public": null,

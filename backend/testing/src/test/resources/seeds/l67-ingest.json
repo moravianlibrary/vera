@@ -1,0 +1,48 @@
+{
+  "name": "l67-ingest",
+  "extends": "bk4h-ingest-answer",
+  "collections": {
+    "pluginInstances": [
+      {
+        "id": "pi6",
+        "name": "Periodicals model",
+        "implementationId": "pt4",
+        "configuration": {
+          "model": "periodical-v3",
+          "min_confidence": "0.6"
+        },
+        "linkedCategoryId": "c2",
+        "triggers": [
+          "OnRecordChange"
+        ],
+        "createdBy": "u2",
+        "createdAt": "2026-03-03",
+        "lastRunAt": "2026-06-21T12:12:00.000Z",
+        "version": "0.9.2",
+        "isEnabled": true,
+        "settings": null,
+        "isDeleted": false
+      },
+      {
+        "id": "pi7",
+        "name": "Monographs model",
+        "implementationId": "pt4",
+        "configuration": {
+          "model": "monograph-v1",
+          "min_confidence": "0.75"
+        },
+        "linkedCategoryId": "c1",
+        "triggers": [
+          "OnIngest"
+        ],
+        "createdBy": "u2",
+        "createdAt": "2026-03-03",
+        "lastRunAt": "2026-06-19T07:05:00.000Z",
+        "version": "0.9.2",
+        "isEnabled": true,
+        "settings": null,
+        "isDeleted": false
+      }
+    ]
+  }
+}

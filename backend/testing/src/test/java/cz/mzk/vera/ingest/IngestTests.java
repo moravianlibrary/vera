@@ -90,6 +90,18 @@ class IngestTests {
     }
 
     @Test
+    void ingestSkipsAPropertySourceWithoutOnIngest() throws Exception {
+        submitNew("l67-ingest");
+        runJobs();
+        String iterationId = iterationFor("MZK03-000778120");
+        assertThat(dsl.fetchCount(ITERATION_PROPERTY_SOURCES,
+                ITERATION_PROPERTY_SOURCES.ITERATION_ID.eq(iterationId)
+                        .and(ITERATION_PROPERTY_SOURCES.KEY.eq("page_count")))).isZero();
+        assertThat(dsl.select(ITERATIONS.PROGRESS).from(ITERATIONS).where(ITERATIONS.ID.eq(iterationId))
+                .fetchOne(ITERATIONS.PROGRESS)).isNotEqualTo("IngestFailed");
+    }
+
+    @Test
     void refusedApprovalQueuesNoIngestJob() {
         int before = dsl.fetchCount(JOBS, JOBS.KIND.eq("ingest"));
         Map<String, Object> approval = new java.util.LinkedHashMap<>();

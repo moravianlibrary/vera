@@ -328,7 +328,7 @@ export function recheckIteration(
   return {
     value: applyRecheck(session, iteration, repairedSubjects, {
       code: "iteration.rechecked",
-      data: { by: "catalog_change", found: iteration.defects.length - gone, gone },
+      data: { by: "act", found: iteration.defects.length - gone, gone, changed: [] },
       reason: { public: null, internal: "The record was read from the catalog again." },
     }),
   };

@@ -5023,9 +5023,23 @@
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 9007199254740991
+                          },
+                          "changed": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "key": {
+                                  "type": "string"
+                                },
+                                "previous": {},
+                                "value": {}
+                              },
+                              "required": ["key", "previous", "value"]
+                            }
                           }
                         },
-                        "required": ["by", "found", "gone"]
+                        "required": ["by", "found", "gone", "changed"]
                       },
                       {
                         "type": "null"

@@ -207,9 +207,6 @@ shelf mark from the catalog again and records that reading with its own time, in
 adapter's earlier one. A value the catalog now reads differently replaces the one VERA held,
 and the *Rechecked* log entry names the earlier value.
 
-> **Open — [L67](../../ledger.md#l67-recheck-reads-the-catalog).** The mock records the values
-> VERA already holds, so nothing changes; the backend is to read them from the catalog adapter.
-
 *Why:* counting and generating read the page count, and the pages filter and search on the
 others.
 

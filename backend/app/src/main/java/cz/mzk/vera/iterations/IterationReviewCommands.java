@@ -16,7 +16,11 @@ import static cz.mzk.vera.domain.iterations.Iterations.progressAfterGates;
 import static cz.mzk.vera.domain.validations.Validations.isFoundAfterScan;
 
 import cz.mzk.vera.access.ActResult;
+import cz.mzk.vera.db.tables.tables.records.DocumentPropertySourcesRecord;
+import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
+import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.documents.DocumentStates;
+import cz.mzk.vera.documents.PluginAnswerWrites;
 import cz.mzk.vera.domain.entities.Defect;
 import cz.mzk.vera.domain.entities.Document;
 import cz.mzk.vera.domain.entities.Iteration;
@@ -26,14 +30,15 @@ import cz.mzk.vera.domain.entities.RestrictionOverride;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.domain.iterations.Iterations;
 import cz.mzk.vera.domain.validations.Validations;
-import cz.mzk.vera.db.tables.tables.records.DocumentsRecord;
-import cz.mzk.vera.db.tables.tables.records.IterationsRecord;
 import cz.mzk.vera.events.Correlation;
 import cz.mzk.vera.events.EventInput;
 import cz.mzk.vera.events.EventRecorder;
 import cz.mzk.vera.plugin.catalog.CatalogAdapter;
 import cz.mzk.vera.plugin.catalog.ReadAnswer;
 import cz.mzk.vera.plugin.catalog.ReadInput;
+import cz.mzk.vera.plugin.propertysource.PropertySource;
+import cz.mzk.vera.plugin.propertysource.ValuesAnswer;
+import cz.mzk.vera.plugin.propertysource.ValuesInput;
 import cz.mzk.vera.pluginhost.PluginCalls;
 import cz.mzk.vera.pluginhost.PluginInstances;
 import cz.mzk.vera.pluginhost.PluginOutcome;
@@ -45,10 +50,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Result;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 // ACT-cancel; ACT-resume; ACT-overrule; ACT-page-count; ACT-recheck; ACT-relink: one act, one transaction.
@@ -63,11 +74,14 @@ public class IterationReviewCommands {
     private final JsonMapper json;
     private final PluginCalls pluginCalls;
     private final PluginInstances pluginInstances;
+    private final TransactionTemplate outsideTransaction;
+    private final PluginAnswerWrites answerWrites;
 
     public IterationReviewCommands(DSLContext dsl, IterationAccess access,
             DocumentStates states, IterationChecks checks,
             EventRecorder events, Clock clock, JsonMapper json, PluginCalls pluginCalls,
-            PluginInstances pluginInstances) {
+            PluginInstances pluginInstances, PlatformTransactionManager transactions,
+            PluginAnswerWrites answerWrites) {
         this.dsl = dsl;
         this.access = access;
         this.states = states;
@@ -77,6 +91,9 @@ public class IterationReviewCommands {
         this.json = json;
         this.pluginCalls = pluginCalls;
         this.pluginInstances = pluginInstances;
+        this.answerWrites = answerWrites;
+        this.outsideTransaction = new TransactionTemplate(transactions);
+        this.outsideTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_NOT_SUPPORTED);
     }
 
     // ACT-relink; DOC-relink: preserve the document and its linked history while changing catalog identity.
@@ -113,8 +130,9 @@ public class IterationReviewCommands {
         }
         ReadAnswer readAnswer = null;
         for (PluginInstances.Instance adapter : pluginInstances.enabled(dsl, "CatalogAdapter")) {
-            PluginOutcome<ReadAnswer> outcome = pluginCalls.call(adapter.id(), CatalogAdapter.class, "read",
-                    (plugin, context) -> plugin.read(context, new ReadInput(catalogId)));
+            PluginOutcome<ReadAnswer> outcome = outsideTransaction.execute(status -> pluginCalls.call(
+                    adapter.id(), CatalogAdapter.class, "read",
+                    (plugin, context) -> plugin.read(context, new ReadInput(catalogId))));
             if (outcome instanceof PluginOutcome.Answered<ReadAnswer> answer
                     && (document.getUnitValue() == null || (answer.answer().units() != null
                         && answer.answer().units().contains(document.getUnitValue())))) {
@@ -132,7 +150,13 @@ public class IterationReviewCommands {
         events.record(new EventInput(EventCode.DOCUMENT_RELINKED, "document", documentId, null,
                 new EventInput.User(caller.userId()), Correlation.newId(), clock.instant(),
                 json.valueToTree(data), null));
-        return latest == null ? ActResult.ok(null) : recheck(caller, latest.getId());
+        if (latest == null) {
+            refreshCatalogReading(documentId);
+            catalogChanges(document, caller);
+            states.recompute(dsl, documentId);
+            return ActResult.ok(null);
+        }
+        return recheck(caller, latest.getId());
     }
 
     // DOC-relink; PLG-api-record-change: a run either moves the identity or leaves a state for staff.
@@ -179,9 +203,7 @@ public class IterationReviewCommands {
                 .orderBy(ITERATIONS.ATTEMPT.desc()).fetch(ITERATIONS.ID);
         List<CatalogIterationCheck> results = new ArrayList<>();
         for (String id : ids) {
-            DocumentIteration current = load(documentId, id);
-            results.add(new CatalogIterationCheck(id,
-                    checks.run(current.iteration(), current.document(), IterationChecks.Run.RECHECK)));
+            results.add(new CatalogIterationCheck(id, readCatalog(documentId)));
         }
         return results;
     }
@@ -189,10 +211,15 @@ public class IterationReviewCommands {
     public void applyCatalogChanged(String documentId, List<CatalogIterationCheck> results) {
         for (CatalogIterationCheck item : results) {
             DocumentIteration current = load(documentId, item.iterationId());
-            refreshCatalogReading(documentId);
-            int gone = current.iteration().defects().size() - item.result().defects().size();
-            applyRecheck(new Caller("a3", null, null), current, item.result(), EventCode.ITERATION_RECHECKED,
-                    Map.of("by", "catalog_change", "found", item.result().defects().size(), "gone", gone),
+            DocumentsRecord before = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
+            applyCatalogReading(documentId, item.reading());
+            refreshPropertySources(current);
+            IterationChecks.CheckResult result = checks.run(current.iteration(), current.document(),
+                    IterationChecks.Run.RECHECK);
+            int gone = current.iteration().defects().size() - result.defects().size();
+            applyRecheck(new Caller("a3", null, null), current, result, EventCode.ITERATION_RECHECKED,
+                    Map.of("by", "catalog_change", "found", result.defects().size(), "gone", gone,
+                            "changed", catalogChanges(before, new Caller("a3", null, null))),
                     "The record was read from the catalog again.");
             states.recompute(dsl, documentId);
         }
@@ -246,12 +273,15 @@ public class IterationReviewCommands {
         }
         String documentId = found.value().iteration().getDocumentId();
         DocumentIteration current = load(documentId, id);
+        DocumentsRecord before = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
         refreshCatalogReading(documentId);
+        refreshPropertySources(current);
         IterationChecks.CheckResult result = checks.run(current.iteration(), current.document(),
                 IterationChecks.Run.RECHECK);
         int gone = current.iteration().defects().size() - result.defects().size();
         RecheckAnswer answer = applyRecheck(caller, current, result, EventCode.ITERATION_RECHECKED,
-                Map.of("by", "catalog_change", "found", result.defects().size(), "gone", gone),
+                Map.of("by", "act", "found", result.defects().size(), "gone", gone,
+                            "changed", catalogChanges(before, caller)),
                 "The record was read from the catalog again.");
         states.recompute(dsl, documentId);
         return ActResult.ok(answer.body());
@@ -265,12 +295,15 @@ public class IterationReviewCommands {
                 .orderBy(ITERATIONS.ATTEMPT.desc()).fetch(ITERATIONS.ID);
         for (String id : ids) {
             DocumentIteration current = load(documentId, id);
+            DocumentsRecord before = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
             refreshCatalogReading(documentId);
+            refreshPropertySources(current);
             IterationChecks.CheckResult result = checks.run(current.iteration(), current.document(),
                     IterationChecks.Run.RECHECK);
             int gone = current.iteration().defects().size() - result.defects().size();
             applyRecheck(new Caller("a3", null, null), current, result, EventCode.ITERATION_RECHECKED,
-                    Map.of("by", "catalog_change", "found", result.defects().size(), "gone", gone),
+                    Map.of("by", "catalog_change", "found", result.defects().size(), "gone", gone,
+                            "changed", catalogChanges(before, new Caller("a3", null, null))),
                     "The record was read from the catalog again.");
             states.recompute(dsl, documentId);
         }
@@ -432,26 +465,142 @@ public class IterationReviewCommands {
         return new DocumentIteration(iteration, record.document());
     }
 
+    // DOC-property-predefined: the stored reading identifies the adapter, never a fixed instance id.
+    private CatalogReading readCatalog(String documentId) {
+        DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
+        for (DocumentPropertySourcesRecord row : dsl.selectFrom(DOCUMENT_PROPERTY_SOURCES)
+                .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId))
+                .and(DOCUMENT_PROPERTY_SOURCES.KEY.in("title", "material_type", "shelf_mark"))
+                .orderBy(DOCUMENT_PROPERTY_SOURCES.KEY_POSITION, DOCUMENT_PROPERTY_SOURCES.POSITION).fetch()) {
+            JsonNode source = json.readTree(row.getSource().data());
+            String instanceId = source.path("instanceId").asString();
+            if (!"plugin".equals(source.path("kind").asString())
+                    || pluginInstances.enabled(dsl, "CatalogAdapter").stream()
+                            .noneMatch(instance -> instance.id().equals(instanceId))) {
+                continue;
+            }
+            String catalogId = document.getCatalogId();
+            PluginOutcome<ReadAnswer> outcome = outsideTransaction.execute(status -> pluginCalls.call(
+                    instanceId, CatalogAdapter.class, "read",
+                    (plugin, context) -> plugin.read(context, new ReadInput(catalogId))));
+            if (outcome instanceof PluginOutcome.Answered<ReadAnswer> answer) {
+                return new CatalogReading(source, row.getTier(), answer.answer());
+            }
+            // PLG-api-outcome: a failed read keeps the held reading; the checks still run.
+            return null;
+        }
+        return null;
+    }
+
     private void refreshCatalogReading(String documentId) {
+        applyCatalogReading(documentId, readCatalog(documentId));
+    }
+
+    private void applyCatalogReading(String documentId, CatalogReading reading) {
+        if (reading == null) {
+            return;
+        }
+        DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(documentId)).fetchOne();
+        ReadAnswer answer = reading.answer();
+        JsonNode fields = json.valueToTree(answer.fields());
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("title", fields.path("title").asString());
+        values.put("material_type", answer.issuanceType());
+        String shelfMark = null;
+        for (Map.Entry<String, JsonNode> entry : fields.path("shelfMarks").properties()) {
+            String unit = entry.getValue().isNull() ? null : entry.getValue().asString();
+            if (Objects.equals(unit, document.getUnitValue())) {
+                shelfMark = entry.getKey();
+                break;
+            }
+        }
+        values.put("shelf_mark", shelfMark);
         OffsetDateTime at = now();
-        dsl.select(DOCUMENT_PROPERTY_SOURCES.KEY, DOCUMENT_PROPERTY_SOURCES.POSITION,
-                DOCUMENT_PROPERTY_SOURCES.SOURCE)
-                .from(DOCUMENT_PROPERTY_SOURCES)
-                .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)
-                        .and(DOCUMENT_PROPERTY_SOURCES.KEY.in("title", "material_type", "shelf_mark")))
-                .fetch().forEach(row -> {
-                    var source = json.readTree(row.get(DOCUMENT_PROPERTY_SOURCES.SOURCE).data());
-                    if ("plugin".equals(source.path("kind").asString())
-                            && "pi1".equals(source.path("instanceId").asString())) {
-                        dsl.update(DOCUMENT_PROPERTY_SOURCES).set(DOCUMENT_PROPERTY_SOURCES.OBSERVED_AT, at)
-                                .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)
-                                        .and(DOCUMENT_PROPERTY_SOURCES.KEY.eq(
-                                                row.get(DOCUMENT_PROPERTY_SOURCES.KEY)))
-                                        .and(DOCUMENT_PROPERTY_SOURCES.POSITION.eq(
-                                                row.get(DOCUMENT_PROPERTY_SOURCES.POSITION))))
-                                .execute();
-                    }
-                });
+        int keyPosition = dsl.selectCount().from(DOCUMENT_PROPERTY_SOURCES)
+                .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class);
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
+            Result<DocumentPropertySourcesRecord> rows = dsl.selectFrom(DOCUMENT_PROPERTY_SOURCES)
+                    .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId))
+                    .and(DOCUMENT_PROPERTY_SOURCES.KEY.eq(entry.getKey())).fetch();
+            Integer position = null;
+            for (DocumentPropertySourcesRecord row : rows) {
+                JsonNode source = json.readTree(row.getSource().data());
+                if (reading.source().equals(source)) {
+                    position = row.getPosition();
+                    break;
+                }
+            }
+            if (position == null) {
+                position = rows.stream().mapToInt(row -> row.getPosition()).max().orElse(-1) + 1;
+            }
+            dsl.insertInto(DOCUMENT_PROPERTY_SOURCES)
+                    .set(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID, documentId)
+                    .set(DOCUMENT_PROPERTY_SOURCES.KEY, entry.getKey())
+                    .set(DOCUMENT_PROPERTY_SOURCES.KEY_POSITION,
+                            rows.isEmpty() ? keyPosition++ : rows.getFirst().getKeyPosition())
+                    .set(DOCUMENT_PROPERTY_SOURCES.POSITION, position)
+                    .set(DOCUMENT_PROPERTY_SOURCES.SOURCE, JSONB.valueOf(json.writeValueAsString(reading.source())))
+                    .set(DOCUMENT_PROPERTY_SOURCES.TIER, reading.tier())
+                    .set(DOCUMENT_PROPERTY_SOURCES.VALUE, JSONB.valueOf(json.writeValueAsString(entry.getValue())))
+                    .set(DOCUMENT_PROPERTY_SOURCES.OBSERVED_AT, at)
+                    .onDuplicateKeyUpdate()
+                    .set(DOCUMENT_PROPERTY_SOURCES.VALUE, JSONB.valueOf(json.writeValueAsString(entry.getValue())))
+                    .set(DOCUMENT_PROPERTY_SOURCES.OBSERVED_AT, at).execute();
+        }
+        dsl.update(DOCUMENTS)
+                .set(DOCUMENTS.TITLE, (String) values.get("title"))
+                .set(DOCUMENTS.TYPE, (String) values.get("material_type"))
+                .set(DOCUMENTS.SHELF_MARK, shelfMark)
+                .where(DOCUMENTS.ID.eq(documentId)).execute();
+    }
+
+    // PLG-api-record-change; PLG-triggers: each enabled source replaces only its own answer.
+    private void refreshPropertySources(DocumentIteration current) {
+        IterationsRecord row = dsl.selectFrom(ITERATIONS).where(ITERATIONS.ID.eq(current.iteration().id())).fetchOne();
+        DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(current.document().id())).fetchOne();
+        ValuesInput input = answerWrites.propertyInput(document, row);
+        for (PluginInstances.Instance instance : pluginInstances.enabled(dsl, "PropertySource", "OnRecordChange")) {
+            PluginOutcome<ValuesAnswer> outcome = outsideTransaction.execute(status -> pluginCalls.call(
+                    instance.id(), PropertySource.class, "values",
+                    (plugin, context) -> plugin.values(context, input)));
+            if (outcome instanceof PluginOutcome.Answered<ValuesAnswer> answer) {
+                answerWrites.properties(dsl, document.getId(), row.getId(), instance.id(), instance.name(),
+                        answer.answer());
+            }
+        }
+    }
+
+    // DOC-property-values: retain the earlier value in both the recheck and the property event.
+    private List<Map<String, Object>> catalogChanges(DocumentsRecord before, Caller caller) {
+        DocumentsRecord after = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(before.getId())).fetchOne();
+        Map<String, Object> previous = new LinkedHashMap<>();
+        previous.put("title", before.getTitle());
+        previous.put("material_type", before.getType());
+        previous.put("shelf_mark", before.getShelfMark());
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("title", after.getTitle());
+        values.put("material_type", after.getType());
+        values.put("shelf_mark", after.getShelfMark());
+        List<Map<String, Object>> changed = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
+            String key = entry.getKey();
+            Object prior = previous.get(key);
+            if (Objects.equals(prior, entry.getValue())) {
+                continue;
+            }
+            Map<String, Object> change = new LinkedHashMap<>();
+            change.put("key", key);
+            change.put("previous", prior);
+            change.put("value", entry.getValue());
+            changed.add(change);
+            Map<String, Object> value = new LinkedHashMap<>();
+            value.put("from", prior);
+            value.put("to", entry.getValue());
+            events.record(new EventInput(EventCode.of("document.property_changed"), "document", before.getId(),
+                    null, new EventInput.User(caller.userId()), Correlation.newId(), clock.instant(),
+                    json.valueToTree(Map.of("key", key, "value", value)), null));
+        }
+        return changed;
     }
 
     private Iteration withProgress(Iteration value, String progress) {
@@ -512,9 +661,10 @@ public class IterationReviewCommands {
                 new EventInput.Reason(publicReason, internalReason)));
     }
 
+    public record CatalogReading(JsonNode source, int tier, ReadAnswer answer) {}
     public record PageCount(int pages) {}
     public record Relink(String catalogId) {}
-    public record CatalogIterationCheck(String iterationId, IterationChecks.CheckResult result) {}
+    public record CatalogIterationCheck(String iterationId, CatalogReading reading) {}
     public record Cancellation(String publicText, String internalText) {}
     public record Overrule(String note) {}
     private record DocumentIteration(Iteration iteration, Document document) {}

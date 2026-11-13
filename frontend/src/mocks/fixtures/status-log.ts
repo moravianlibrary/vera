@@ -409,6 +409,7 @@ export const statusLog: readonly EventEntry[] = [
       by: "catalog_change",
       found: 1,
       gone: 0,
+      changed: [],
     },
   },
   {

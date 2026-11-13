@@ -68,22 +68,6 @@ that lists the event's subject (Requests, Documents, Lists, Tasks), held per sub
 page URL's form and edited with that page's filter chips, as watchlists are; the free text goes.
 → backend, then docs.
 
-### L67: Recheck reads the catalog
-
-Rules: [DOC-property-predefined](reference/model/documents.md#doc-property-predefined),
-[the iteration acts](reference/access/acts.md#iterations).
-
-Decided on 2026-10-16. A recheck records a fresh catalog reading of the title, material type and
-shelf mark. The mock records the values the document already holds, with the recheck's time, in
-place of the catalog adapter's earlier reading; the engine reads them from the adapter. Also
-decided on 2026-10-16: a changed value replaces the document's own field, as the catalog is the
-authority ([DEC-0006](decisions/DEC-0006-vera-does-not-fix-records.md)), and the *Rechecked*
-entry names the earlier value. The backend's recheck does not read the adapter yet either: it
-only renews the reading's time, of instance `pi1` alone, and runs no property source. A recheck
-runs the document's *on record change* triggers, the property sources among them
-([PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change)), and the
-act's entry says `by: act`, not `catalog_change` (mock and backend). → backend.
-
 ### L70: Entry links
 
 Rules: [ACT-entry-link](reference/access/acts.md#act-entry-link),
@@ -165,6 +149,14 @@ signer on the upload reading and each installed version, read from the signing c
 upload. Only showing it in the Plugins drawer remains. → frontend.
 
 ## Done
+
+### Built, 2026-11-13
+
+- **L67:** a recheck reads the title, material type and shelf mark from their catalog adapter,
+  names each earlier value and reruns the enabled Property sources with `OnRecordChange`;
+  ingest calls only those with `OnIngest`. The act records `by: act`
+  ([DOC-property-predefined](reference/model/documents.md#doc-property-predefined),
+  [PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change)).
 
 ### Confirmed as built, 2026-11-13
 

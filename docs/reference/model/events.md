@@ -72,7 +72,7 @@ destination that takes it.
 |---|---|---|---|---|---|
 | `iteration.ingested` | — | — | ✓ | ✓ | ✓ |
 | `iteration.ingest_failed` | attempt; error ([LOG-ingest-detail](log.md#log-ingest-detail)) | — | ✓ | ✓ | ✓ |
-| `iteration.rechecked` | by: `act` \| `catalog_change`; defects found, gone | — | ✓ | – | ✓ |
+| `iteration.rechecked` | by: `act` \| `catalog_change`; defects found, gone; changed: key, previous, value | — | ✓ | – | ✓ |
 | `iteration.page_count_entered` | pages; the count it replaced | — | ✓ | – | ✓ |
 | `iteration.verdict_accepted` | defects | — | ✓ | ✓ | ✓ |
 | `iteration.verdict_denied` | defects | — | ✓ | ✓ | ✓ |

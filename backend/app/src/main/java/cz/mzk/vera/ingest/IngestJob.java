@@ -121,7 +121,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
                 .where(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(catalogId))
                 .and(CATALOG_MIRROR_KEYS.KIND.eq("identifier"))
                 .orderBy(CATALOG_MIRROR_KEYS.POSITION).fetch(CATALOG_MIRROR_KEYS.VALUE);
-        List<PluginInstances.Instance> propertySources = instances.enabled(dsl, "PropertySource");
+        List<PluginInstances.Instance> propertySources = instances.enabled(dsl, "PropertySource", "OnIngest");
         List<RegistryAnswer> registryAnswers = new ArrayList<>();
         List<PropertyAnswer> propertyAnswers = new ArrayList<>();
         List<DefectAnswer> defects = new ArrayList<>();
