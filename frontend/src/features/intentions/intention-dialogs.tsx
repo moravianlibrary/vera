@@ -826,9 +826,15 @@ const templateFormSchemaOf = () =>
   });
 type TemplateForm = z.infer<ReturnType<typeof templateFormSchemaOf>>;
 
-const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
+const templateDraftOf = (
+  values: TemplateForm,
+  template: IntentionTemplateRow["template"] | null,
+): IntentionTemplateDraft => ({
   description: values.description.trim(),
-  namePattern: values.namePattern.trim(),
+  namePatterns: {
+    ...(template?.namePatterns ?? {}),
+    [i18n.language === "cs" ? "cs" : "en"]: values.namePattern.trim(),
+  },
   every: values.every,
   funding: fundingOf(values.funding),
   scopeCategoryId: values.scope === allCategories ? null : values.scope,
@@ -884,7 +890,10 @@ export function TemplateFormDialog({
       schema={schema}
       defaultValues={{
         description: template?.description ?? "",
-        namePattern: template?.namePattern ?? "",
+        namePattern:
+          template?.namePatterns[i18n.language === "cs" ? "cs" : "en"] ??
+          template?.namePatterns[i18n.language === "cs" ? "en" : "cs"] ??
+          "",
         every: template?.every ?? "month",
         funding: template === null ? fundingAny : fundingValueOf(template.funding),
         scope: template?.scopeCategoryId ?? allCategories,
@@ -904,7 +913,7 @@ export function TemplateFormDialog({
           ? message("intentionDialog.createRepeat")
           : message("intentionDialog.save")
       }
-      onSubmit={(values) => save.run(templateDraftOf(values))}
+      onSubmit={(values) => save.run(templateDraftOf(values, template))}
       render={(form) => {
         const values = form.watch();
         const touched = { shouldDirty: true } as const;

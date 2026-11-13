@@ -288,7 +288,7 @@ const seedCollections = z.strictObject({
       z.strictObject({
         id,
         instanceId: id,
-        name: z.string(),
+        names: namesSchema,
         cadence: cadenceSchema,
         overlap: overlapSchema,
         pause: z.object({ pausedBy: id, pausedAt: z.string(), reason: z.string() }).nullable(),

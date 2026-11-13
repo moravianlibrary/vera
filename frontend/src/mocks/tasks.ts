@@ -5,6 +5,7 @@
 // is for whoever started the run or `task.cancel`; running a failed or cancelled plugin run again
 // for whoever started it or `plugin.run`; how long runs are kept is `task.schedule`'s.
 
+import { openProposalPlacements } from "@vera/contract/queries/requests";
 import type {
   Place,
   Retention,
@@ -18,10 +19,10 @@ import type {
   RunTrigger,
 } from "@vera/contract/tasks";
 import { runIndexSchema } from "@vera/contract/tasks";
-import { openProposalPlacements } from "@vera/contract/queries/requests";
 import { countValues } from "@vera/domain/arrangement";
 import { isAttemptOver } from "@vera/domain/documents";
 import type { Session } from "@vera/domain/entities";
+import { nameIn } from "@vera/domain/names";
 import { hasAnyPermission, hasPermission } from "@vera/domain/permissions";
 import { nextOccurrenceOf, repeatCadenceOf } from "@vera/domain/schedules";
 import type { RunState } from "@vera/domain/tasks";
@@ -243,7 +244,7 @@ function nextScheduledRuns(now: Date): { at: string; name: string; path: string 
     ...database.schedules
       .filter((schedule) => schedule.pause === null)
       .map((schedule) => ({
-        name: schedule.name,
+        name: nameIn(schedule.names, "en"),
         at: nextOccurrenceOf(schedule.cadence, now),
         path: `/schedules?s=${encodeURIComponent(schedule.id)}`,
       })),

@@ -32,7 +32,7 @@ const draft = (name: string) => ({
 });
 const template = {
   description: "A recurring description.",
-  namePattern: "Weekly maps — {period}",
+  namePatterns: { en: "Weekly maps — {period}" },
   every: "month",
   funding: { kind: "any" },
   scopeCategoryId: null,
@@ -218,7 +218,7 @@ export default {
         act("POST", "/api/intention-templates", "digitization", "code", template),
         act("POST", "/api/intention-templates", "admin", "code", {
           ...template,
-          namePattern: "Maps",
+          namePatterns: { en: "Maps" },
         }),
         act("POST", "/api/intention-templates", "admin", "code", {
           ...template,

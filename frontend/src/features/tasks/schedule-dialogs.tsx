@@ -79,7 +79,7 @@ export function ScheduleEditorDialog({
   onSaved,
   onDelete,
 }: ScheduleEditorDialogProps) {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
   const id = useId();
   const { data: instances = [] } = usePluginInstancesQuery();
   const schedulable = instances.filter(
@@ -89,7 +89,14 @@ export function ScheduleEditorDialog({
   const instance = schedule?.source.kind === "plugin" ? schedule.source.instance : null;
   const save = useActionMutation({
     call: (form: ScheduleForm) => {
-      const draft = { name: form.name, cadence: cadenceOfForm(form), overlap: form.overlap };
+      const draft = {
+        names: {
+          ...(schedule?.names ?? {}),
+          [i18n.language === "cs" ? "cs" : "en"]: form.name,
+        },
+        cadence: cadenceOfForm(form),
+        overlap: form.overlap,
+      };
       return schedule === null
         ? createSchedule({ ...draft, instanceId: form.instanceId })
         : saveSchedule(schedule.id, draft);
@@ -111,7 +118,10 @@ export function ScheduleEditorDialog({
       schema={scheduleFormSchema}
       defaultValues={{
         instanceId: instance?.id ?? "",
-        name: schedule?.name ?? "",
+        name:
+          schedule?.names[i18n.language === "cs" ? "cs" : "en"] ??
+          schedule?.names[i18n.language === "cs" ? "en" : "cs"] ??
+          "",
         overlap: schedule?.overlap ?? "skip",
         ...formOfCadence(schedule?.cadence ?? { every: "day", at: "02:00" }),
       }}

@@ -743,7 +743,8 @@ function templateRefusal(session: Session, draft: IntentionTemplateDraft): Refus
 
 // The draft's mix choice becomes the stored mix and revision; it is not kept on the repeat.
 function withoutMixChoice({ mix: _mix, ...rest }: IntentionTemplateDraft) {
-  return rest;
+  const namePattern = rest.namePatterns.cs ?? rest.namePatterns.en ?? "";
+  return { ...rest, namePattern };
 }
 
 function templateMixOf(

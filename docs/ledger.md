@@ -141,6 +141,9 @@ The base seed and mock fixtures include both.
 Built (2026-11-13, L75p): plugin instances of every kind, including predefined Identifier instances,
 hold names in Czech and English; Plugin reads resolve the request language and writes send both.
 The base seed and mock fixtures include both.
+Built (2026-11-13, L75s): schedules and intention repeat patterns hold names in Czech and English;
+reads resolve the request language, edits send both, and occurrences use the Czech pattern when
+available.
 
 ### L77: The signer of a plugin version
 

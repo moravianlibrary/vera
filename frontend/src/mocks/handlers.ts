@@ -387,14 +387,23 @@ function pluginNamesInLanguage<T>(value: T, language: "cs" | "en"): T {
   if (value === null || typeof value !== "object") return value;
   const record = value as Record<string, unknown>;
   const localized =
-    "plugin" in record &&
-    typeof record.name === "string" &&
-    typeof record.names === "object" &&
-    record.names !== null
+    typeof record.name === "string" && typeof record.names === "object" && record.names !== null
       ? { ...record, name: nameIn(record.names as { cs?: string; en?: string }, language) }
       : record;
+  const localizedPattern =
+    "namePatterns" in localized &&
+    typeof localized.namePatterns === "object" &&
+    localized.namePatterns !== null
+      ? {
+          ...localized,
+          namePattern: nameIn(localized.namePatterns as { cs?: string; en?: string }, language),
+        }
+      : localized;
   return Object.fromEntries(
-    Object.entries(localized).map(([key, child]) => [key, pluginNamesInLanguage(child, language)]),
+    Object.entries(localizedPattern).map(([key, child]) => [
+      key,
+      pluginNamesInLanguage(child, language),
+    ]),
   ) as T;
 }
 
@@ -819,7 +828,12 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      return outcomeResponse(createSchedule(currentSession(), draft.data));
+      const outcome = createSchedule(currentSession(), draft.data);
+      return "refusal" in outcome
+        ? problemResponse(outcome.refusal)
+        : HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)), {
+            status: 201,
+          });
     }),
     http.put(route(`${apiRoutes.schedules}/:scheduleId`), async ({ params, request }) => {
       const draft = scheduleDraftSchema.safeParse(await request.json());
@@ -827,7 +841,10 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      return outcomeResponse(saveSchedule(currentSession(), String(params.scheduleId), draft.data));
+      const outcome = saveSchedule(currentSession(), String(params.scheduleId), draft.data);
+      return "refusal" in outcome
+        ? problemResponse(outcome.refusal)
+        : HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)));
     }),
     http.delete(route(`${apiRoutes.schedules}/:scheduleId`), ({ params }) => {
       const outcome = deleteSchedule(currentSession(), String(params.scheduleId));
@@ -1103,13 +1120,15 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
 
-    http.get(route(apiRoutes.intentionIndex), () => {
+    http.get(route(apiRoutes.intentionIndex), ({ request }) => {
       const session = currentSession();
       if (!canReadIntentions(session)) {
         return problemResponse({ status: 403, message: "You may not read intentions" });
       }
 
-      return HttpResponse.json(queryIntentionIndex(session));
+      return HttpResponse.json(
+        pluginNamesInLanguage(queryIntentionIndex(session), languageOf(request)),
+      );
     }),
     http.get(route(apiRoutes.mixes), ({ request }) => {
       const outcome = listMixRecords(currentSession());
@@ -1252,7 +1271,9 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse(outcome.refusal);
       }
 
-      return HttpResponse.json(outcome.value, { status: 201 });
+      return HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)), {
+        status: 201,
+      });
     }),
 
     http.put(route(`${apiRoutes.intentionTemplates}/:templateId`), async ({ params, request }) => {
@@ -1261,9 +1282,14 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      return outcomeResponse(
-        saveIntentionTemplate(currentSession(), String(params.templateId), draft.data),
+      const outcome = saveIntentionTemplate(
+        currentSession(),
+        String(params.templateId),
+        draft.data,
       );
+      return "refusal" in outcome
+        ? problemResponse(outcome.refusal)
+        : HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)));
     }),
 
     // Before `/:projectId`, so the index is not read as a project named "overview".

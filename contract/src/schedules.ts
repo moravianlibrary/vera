@@ -8,6 +8,7 @@ import { pluginInstanceSchema } from "@vera/domain/plugins";
 import { cadenceSchema, overlapSchema } from "@vera/domain/schedules";
 import { z } from "zod";
 import { runSchema } from "./tasks";
+import { namesSchema } from "./user-settings";
 
 const id = z.string().min(1);
 
@@ -37,6 +38,7 @@ export type SchedulePause = z.infer<typeof schedulePauseSchema>;
 export const scheduleRowSchema = z.object({
   id,
   name: z.string(),
+  names: namesSchema,
   // A plugin schedule runs an instance; a repeat makes an intention's next occurrence.
   source: z.discriminatedUnion("kind", [
     z.object({ kind: z.literal("plugin"), instance: pluginInstanceSchema }),
@@ -71,7 +73,7 @@ export type ScheduleIndex = z.infer<typeof scheduleIndexSchema>;
 
 // The instance is chosen once, when the schedule is made.
 export const scheduleDraftSchema = z.object({
-  name: z.string().trim().min(1, "Give it a name: it is what a run is listed under."),
+  names: namesSchema,
   cadence: cadenceSchema,
   overlap: overlapSchema,
 });

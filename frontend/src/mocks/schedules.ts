@@ -15,6 +15,7 @@ import type {
 import { listedRunCeiling } from "@vera/contract/schedules";
 import type { Run } from "@vera/contract/tasks";
 import type { Session } from "@vera/domain/entities";
+import { nameIn } from "@vera/domain/names";
 import { hasPermission } from "@vera/domain/permissions";
 import type { Cadence } from "@vera/domain/schedules";
 import {
@@ -44,6 +45,7 @@ export function canReadSchedules(session: Session): boolean {
 interface Listed {
   readonly id: string;
   readonly name: string;
+  readonly names: StoredSchedule["names"];
   readonly source: ScheduleRow["source"];
   readonly cadence: Cadence;
   readonly overlap: ScheduleRow["overlap"];
@@ -55,20 +57,29 @@ interface Listed {
 function listedSchedules(): Listed[] {
   const plugin = database.schedules.flatMap((schedule): Listed[] => {
     const instance = findInstanceSummary(schedule.instanceId);
-    return instance === undefined ? [] : [{ ...schedule, source: { kind: "plugin", instance } }];
+    return instance === undefined
+      ? []
+      : [{ ...schedule, name: nameIn(schedule.names, "en"), source: { kind: "plugin", instance } }];
   });
-  const repeats = database.intentionTemplates.map(
-    (template): Listed => ({
+  const repeats = database.intentionTemplates.map((template): Listed => {
+    const names = Object.fromEntries(
+      Object.entries(template.namePatterns).map(([language, pattern]) => [
+        language,
+        pattern?.replace("{period}", "next period"),
+      ]),
+    );
+    return {
       id: template.id,
-      name: template.namePattern.replace("{period}", "next period"),
+      name: nameIn(names, "en"),
+      names,
       source: { kind: "repeat", templateId: template.id },
       cadence: repeatCadenceOf(template.every),
       overlap: "skip",
       pause: null,
       createdBy: template.createdBy,
       since: template.since,
-    }),
-  );
+    };
+  });
   return [...plugin, ...repeats];
 }
 
@@ -87,6 +98,7 @@ function rowOf(listed: Listed, now: Date, windowEnd: Date): ScheduleRow {
   return {
     id: listed.id,
     name: listed.name,
+    names: listed.names,
     source: listed.source,
     cadence: listed.cadence,
     overlap: listed.overlap,
@@ -204,7 +216,7 @@ export function createSchedule(session: Session, draft: NewSchedule): Outcome<Sc
   const schedule: StoredSchedule = {
     id: `s${highest + 1}`,
     instanceId: draft.instanceId,
-    name: draft.name.trim(),
+    names: draft.names,
     cadence: draft.cadence,
     overlap: draft.overlap,
     pause: null,
@@ -238,7 +250,7 @@ export function saveSchedule(
 
   return replaceStored(index, {
     ...stored,
-    name: draft.name.trim(),
+    names: draft.names,
     cadence: draft.cadence,
     overlap: draft.overlap,
   });
@@ -322,7 +334,7 @@ export function runScheduleNow(session: Session, scheduleId: string): Outcome<Ru
   }
 
   const started = startRun({
-    what: stored.name,
+    what: nameIn(stored.names, "cs"),
     instanceId: stored.instanceId,
     trigger: { kind: "manual", from: { label: "Schedules", path: `/schedules?s=${scheduleId}` } },
     startedBy: session.user.id,

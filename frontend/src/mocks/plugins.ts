@@ -24,6 +24,7 @@ import type {
 import { openProposalPlacements } from "@vera/contract/queries/requests";
 import type { Run } from "@vera/contract/tasks";
 import type { Session } from "@vera/domain/entities";
+import { nameIn } from "@vera/domain/names";
 import { hasPermission } from "@vera/domain/permissions";
 import type { InstancePolicy, PluginKind } from "@vera/domain/plugins";
 import {
@@ -132,7 +133,7 @@ function detailOf(
       .filter((schedule) => schedule.instanceId === instance.id)
       .map((schedule) => ({
         id: schedule.id,
-        name: schedule.name,
+        name: nameIn(schedule.names, "en"),
         cadence: schedule.cadence,
         isPaused: schedule.pause !== null,
       })),

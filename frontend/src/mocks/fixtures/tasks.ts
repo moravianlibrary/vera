@@ -48,7 +48,7 @@ export interface StoredRun {
 export interface StoredSchedule {
   readonly id: string;
   readonly instanceId: string;
-  readonly name: string;
+  readonly names: { cs?: string; en?: string };
   readonly cadence: Cadence;
   readonly overlap: Overlap;
   readonly pause: {
@@ -71,7 +71,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s1",
     instanceId: "pi1",
-    name: "MZK Aleph — catalog resync",
+    names: { cs: "MZK Aleph — synchronizace katalogu", en: "MZK Aleph — catalog resync" },
     cadence: every15Minutes,
     overlap: "skip",
     pause: null,
@@ -81,7 +81,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s6",
     instanceId: "pi2",
-    name: "NKP Aleph — catalog resync",
+    names: { cs: "NKP Aleph — synchronizace katalogu", en: "NKP Aleph — catalog resync" },
     cadence: every15Minutes,
     overlap: "skip",
     pause: null,
@@ -91,7 +91,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s7",
     instanceId: "pi3",
-    name: "VKOL Aleph — catalog resync",
+    names: { cs: "VKOL Aleph — synchronizace katalogu", en: "VKOL Aleph — catalog resync" },
     cadence: every15Minutes,
     overlap: "skip",
     pause: {
@@ -105,7 +105,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s2",
     instanceId: "pi4",
-    name: "Kramerius — registry refresh",
+    names: { cs: "Kramerius — aktualizace registru", en: "Kramerius — registry refresh" },
     cadence: { every: "minutes", interval: 30 },
     overlap: "skip",
     pause: null,
@@ -115,7 +115,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s3",
     instanceId: "pi5",
-    name: "RDCZ — registry refresh",
+    names: { cs: "RDCZ — aktualizace registru", en: "RDCZ — registry refresh" },
     cadence: { every: "hours", interval: 6 },
     overlap: "skip",
     pause: null,
@@ -125,7 +125,10 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s4",
     instanceId: "pi9",
-    name: "Catalog validity — nightly sweep",
+    names: {
+      cs: "Kontrola platnosti katalogu — noční běh",
+      en: "Catalog validity — nightly sweep",
+    },
     cadence: { every: "day", at: "02:00" },
     overlap: "wait",
     pause: null,
@@ -135,7 +138,7 @@ export const schedules: readonly StoredSchedule[] = [
   {
     id: "s5",
     instanceId: "pi8",
-    name: "ISSN harvest — weekly",
+    names: { cs: "Sklizeň ISSN — týdně", en: "ISSN harvest — weekly" },
     cadence: { every: "week", weekday: 1, at: "06:00" },
     overlap: "skip",
     pause: null,

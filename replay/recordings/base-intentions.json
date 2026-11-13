@@ -2614,6 +2614,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -5257,6 +5261,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -9066,6 +9074,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -12073,6 +12085,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -14851,6 +14867,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -17502,6 +17522,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -20166,6 +20190,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -20198,7 +20226,9 @@
           "status": 201,
           "body": {
             "template": {
-              "namePattern": "Weekly maps — {period}",
+              "namePatterns": {
+                "en": "Weekly maps — {period}"
+              },
               "description": "A recurring description.",
               "every": "month",
               "funding": {
@@ -20207,6 +20237,7 @@
               "scopeCategoryId": null,
               "targetPages": null,
               "isArchivingPrevious": true,
+              "namePattern": "Weekly maps — {period}",
               "distributionId": "<U1>",
               "id": "t2",
               "since": "2026-06-25",
@@ -20220,7 +20251,9 @@
           },
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -22845,6 +22878,10 @@
                   "id": "t1",
                   "description": "What the scanning room should deliver this month.",
                   "namePattern": "Monthly output — {period}",
+                  "namePatterns": {
+                    "cs": "Měsíční výstup — {period}",
+                    "en": "Monthly output — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -22864,7 +22901,9 @@
               },
               {
                 "template": {
-                  "namePattern": "Weekly maps — {period}",
+                  "namePatterns": {
+                    "en": "Weekly maps — {period}"
+                  },
                   "description": "A recurring description.",
                   "every": "month",
                   "funding": {
@@ -22873,6 +22912,7 @@
                   "scopeCategoryId": null,
                   "targetPages": null,
                   "isArchivingPrevious": true,
+                  "namePattern": "Weekly maps — {period}",
                   "distributionId": "<U1>",
                   "id": "t2",
                   "since": "2026-06-25",
@@ -22897,6 +22937,9 @@
               "id": "t1",
               "description": "A recurring description.",
               "namePattern": "Weekly maps — {period}",
+              "namePatterns": {
+                "en": "Weekly maps — {period}"
+              },
               "every": "month",
               "funding": {
                 "kind": "any"
@@ -22916,7 +22959,9 @@
           },
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -25541,6 +25586,9 @@
                   "id": "t1",
                   "description": "A recurring description.",
                   "namePattern": "Weekly maps — {period}",
+                  "namePatterns": {
+                    "en": "Weekly maps — {period}"
+                  },
                   "every": "month",
                   "funding": {
                     "kind": "any"
@@ -25560,7 +25608,9 @@
               },
               {
                 "template": {
-                  "namePattern": "Weekly maps — {period}",
+                  "namePatterns": {
+                    "en": "Weekly maps — {period}"
+                  },
                   "description": "A recurring description.",
                   "every": "month",
                   "funding": {
@@ -25569,6 +25619,7 @@
                   "scopeCategoryId": null,
                   "targetPages": null,
                   "isArchivingPrevious": true,
+                  "namePattern": "Weekly maps — {period}",
                   "distributionId": "<U1>",
                   "id": "t2",
                   "since": "2026-06-25",
@@ -26231,7 +26282,9 @@
           "code": "forbidden",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26254,7 +26307,9 @@
           "code": "invalid",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Maps",
+            "namePatterns": {
+              "en": "Maps"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26277,7 +26332,9 @@
           "code": "intention.mix_revision_required",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26300,7 +26357,9 @@
           "code": "intention.mix_revision_required",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26323,7 +26382,9 @@
           "code": "category.not_found",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26346,7 +26407,9 @@
           "code": "property.not_found",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"
@@ -26375,7 +26438,9 @@
           "code": "forbidden",
           "requestBody": {
             "description": "A recurring description.",
-            "namePattern": "Weekly maps — {period}",
+            "namePatterns": {
+              "en": "Weekly maps — {period}"
+            },
             "every": "month",
             "funding": {
               "kind": "any"

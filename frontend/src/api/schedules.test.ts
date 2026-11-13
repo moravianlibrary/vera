@@ -18,6 +18,7 @@ import {
 } from "@/api/schedules";
 import { listRuns } from "@/api/tasks";
 import type { MockUserProfile } from "@/config/env";
+import { i18n } from "@/i18n";
 import { historicalRuns } from "@/mocks/fixtures/tasks";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -46,12 +47,24 @@ const rowOf = (index: ScheduleIndex, scheduleId: string) =>
   index.schedules.find((row) => row.id === scheduleId);
 
 const draft = {
-  name: "RDCZ — nightly check",
+  names: { en: "RDCZ — nightly check" },
   cadence: { every: "day" as const, at: "03:30" },
   overlap: "wait" as const,
 };
 
 describe("listSchedules", () => {
+  it("resolves schedule and repeat names in the request language", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+    try {
+      const index = await listSchedules("day");
+      expect(rowOf(index, "s1")?.name).toBe("MZK Aleph — synchronizace katalogu");
+      expect(rowOf(index, "t1")?.name).toBe("Měsíční výstup — next period");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("is task.read's", async () => {
     signInAs("curator");
 
@@ -143,7 +156,12 @@ describe("changing a schedule", () => {
     signInAs("admin");
     const made = await createSchedule({ ...draft, instanceId: "pi5" });
 
-    expect(made).toMatchObject({ id: "s8", createdBy: "u3", since: "2026-06-25" });
+    expect(made).toMatchObject({
+      id: "s8",
+      names: { en: "RDCZ — nightly check" },
+      createdBy: "u3",
+      since: "2026-06-25",
+    });
     expect(new Date(made.nextAt ?? "")).toEqual(new Date(2026, 5, 26, 3, 30));
 
     const saved = await saveSchedule("s8", {
@@ -152,6 +170,25 @@ describe("changing a schedule", () => {
     });
 
     expect(new Date(saved.nextAt ?? "")).toEqual(new Date(2026, 5, 28, 4, 0));
+  });
+
+  it("writes both names and resolves a schedule response in the request language", async () => {
+    signInAs("admin");
+    await i18n.changeLanguage("cs");
+    try {
+      const made = await createSchedule({
+        names: { cs: "Noční kontrola RDCZ", en: "RDCZ night check" },
+        instanceId: "pi5",
+        cadence: { every: "day", at: "03:30" },
+        overlap: "wait",
+      });
+      expect(made).toMatchObject({
+        name: "Noční kontrola RDCZ",
+        names: { cs: "Noční kontrola RDCZ", en: "RDCZ night check" },
+      });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
   });
 
   it("never changes a repeat here", async () => {

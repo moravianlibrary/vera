@@ -23,6 +23,25 @@ export default {
       })),
     },
     {
+      name: "reads-in-Czech",
+      calls: [
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/schedules?range=day",
+          acceptLanguage: "cs",
+          compare: "body",
+        },
+        {
+          as: "admin",
+          method: "GET",
+          path: "/api/intentions/overview",
+          acceptLanguage: "cs",
+          compare: "body",
+        },
+      ],
+    },
+    {
       name: "create-and-save-schedule",
       calls: [
         {
@@ -30,7 +49,7 @@ export default {
           method: "POST",
           path: "/api/schedules",
           requestBody: {
-            name: "RDCZ — nightly check",
+            names: { en: "RDCZ — nightly check" },
             instanceId: "pi5",
             cadence: { every: "day", at: "03:30" },
             overlap: "wait",
@@ -43,7 +62,7 @@ export default {
           method: "PUT",
           path: "/api/schedules/s8",
           requestBody: {
-            name: "RDCZ — weekly check",
+            names: { en: "RDCZ — weekly check" },
             cadence: { every: "week", weekday: 0, at: "04:00" },
             overlap: "wait",
           },
@@ -56,7 +75,7 @@ export default {
           method: "PUT",
           path: "/api/schedules/s8",
           requestBody: {
-            name: "Quarterly",
+            names: { en: "Quarterly" },
             cadence: { every: "quarter", at: "00:00" },
             overlap: "wait",
           },
@@ -67,7 +86,7 @@ export default {
           method: "PUT",
           path: "/api/schedules/s8",
           requestBody: {
-            name: "Too frequent",
+            names: { en: "Too frequent" },
             cadence: { every: "minutes", interval: 3 },
             overlap: "wait",
           },
@@ -78,7 +97,7 @@ export default {
           method: "POST",
           path: "/api/schedules",
           requestBody: {
-            name: "Too frequent",
+            names: { en: "Too frequent" },
             instanceId: "pi5",
             cadence: { every: "minutes", interval: 3 },
             overlap: "wait",
@@ -90,7 +109,7 @@ export default {
           method: "POST",
           path: "/api/schedules",
           requestBody: {
-            name: "Quarterly",
+            names: { en: "Quarterly" },
             instanceId: "pi5",
             cadence: { every: "quarter", at: "00:00" },
             overlap: "wait",
@@ -102,7 +121,7 @@ export default {
           method: "POST",
           path: "/api/schedules",
           requestBody: {
-            name: "Not schedulable",
+            names: { en: "Not schedulable" },
             instanceId: "pi14",
             cadence: { every: "day", at: "03:30" },
             overlap: "wait",
@@ -113,7 +132,12 @@ export default {
           as: "admin",
           method: "POST",
           path: "/api/schedules",
-          requestBody: { name: "Invalid", instanceId: "pi5", cadence: {}, overlap: "wait" },
+          requestBody: {
+            names: { en: "Invalid" },
+            instanceId: "pi5",
+            cadence: {},
+            overlap: "wait",
+          },
           compare: "code",
         },
         {
@@ -121,7 +145,7 @@ export default {
           method: "POST",
           path: "/api/schedules",
           requestBody: {
-            name: "Denied",
+            names: { en: "Denied" },
             instanceId: "pi5",
             cadence: { every: "day", at: "03:30" },
             overlap: "wait",

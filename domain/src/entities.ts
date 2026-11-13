@@ -178,6 +178,7 @@ export const intentionTemplateSchema = z.object({
   description: z.string(),
   // "Monthly output — {period}".
   namePattern: z.string(),
+  namePatterns: namesSchema,
   every: repeatEverySchema,
   funding: intentionFundingSchema,
   scopeCategoryId: id.nullable(),

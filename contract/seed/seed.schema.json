@@ -2055,6 +2055,19 @@
               "namePattern": {
                 "type": "string"
               },
+              "namePatterns": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
               "every": {
                 "type": "string",
                 "enum": ["week", "month", "quarter"]
@@ -2242,6 +2255,7 @@
               "id",
               "description",
               "namePattern",
+              "namePatterns",
               "every",
               "funding",
               "scopeCategoryId",
@@ -11739,8 +11753,18 @@
                 "type": "string",
                 "minLength": 1
               },
-              "name": {
-                "type": "string"
+              "names": {
+                "type": "object",
+                "properties": {
+                  "cs": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
               },
               "cadence": {
                 "oneOf": [
@@ -11880,7 +11904,7 @@
             "required": [
               "id",
               "instanceId",
-              "name",
+              "names",
               "cadence",
               "overlap",
               "pause",

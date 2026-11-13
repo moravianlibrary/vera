@@ -226,6 +226,7 @@ export const intentionTemplates: readonly IntentionTemplate[] = [
     id: "t1",
     description: "What the scanning room should deliver this month.",
     namePattern: "Monthly output — {period}",
+    namePatterns: { cs: "Měsíční výstup — {period}", en: "Monthly output — {period}" },
     every: "month",
     funding: everything,
     scopeCategoryId: null,

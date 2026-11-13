@@ -25,6 +25,7 @@ import {
   unarchiveIntention,
 } from "@/api/intentions";
 import type { MockUserProfile } from "@/config/env";
+import { i18n } from "@/i18n";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -366,7 +367,7 @@ describe("archiving and deleting an intention", () => {
 describe("repeats", () => {
   const repeat: IntentionTemplateDraft = {
     description: "A recurring description.",
-    namePattern: "Weekly maps — {period}",
+    namePatterns: { en: "Weekly maps — {period}" },
     every: "month",
     funding: { kind: "any" },
     scopeCategoryId: "c3",
@@ -385,7 +386,30 @@ describe("repeats", () => {
         createIntentionTemplate({ ...repeat, mix: { kind: "use", mixId: "d9", revision: null } }),
       ),
     ).toBe(422);
-    expect(await statusOf(createIntentionTemplate({ ...repeat, namePattern: "Maps" }))).toBe(422);
+    expect(
+      await statusOf(createIntentionTemplate({ ...repeat, namePatterns: { en: "Maps" } })),
+    ).toBe(422);
+  });
+
+  it("resolves the repeat pattern and preserves the other language on edit", async () => {
+    signInAs("admin");
+    const created = await createIntentionTemplate({
+      ...repeat,
+      namePatterns: { cs: "Týdenní mapy — {period}", en: "Weekly maps — {period}" },
+    });
+    await i18n.changeLanguage("cs");
+    try {
+      const row = (await listIntentionIndex()).templates.find(
+        (item) => item.template.id === created.template.id,
+      );
+      expect(row?.template.namePattern).toBe("Týdenní mapy — {period}");
+      expect(row?.template.namePatterns).toEqual({
+        cs: "Týdenní mapy — {period}",
+        en: "Weekly maps — {period}",
+      });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
   });
 
   it("makes its first one when the next period starts, and moves it when the period changes", async () => {

@@ -11,6 +11,7 @@ import {
   repeatEverySchema,
 } from "@vera/domain/entities";
 import { intentionStates, mixFlags, targetVerdicts } from "@vera/domain/intentions";
+import { namesSchema } from "@vera/domain/names";
 import { propertyConditionSchema } from "@vera/domain/properties";
 import { z } from "zod";
 
@@ -241,10 +242,10 @@ export const correctionPreviewSchema = z.object({
 export type CorrectionPreview = z.infer<typeof correctionPreviewSchema>;
 
 export const intentionTemplateDraftSchema = z.object({
-  namePattern: z
-    .string()
-    .trim()
-    .includes("{period}", { message: "Put {period} in the name, so each one is told apart" }),
+  namePatterns: namesSchema.refine(
+    (names) => [names.cs, names.en].some((pattern) => pattern?.includes("{period}")),
+    "Put {period} in at least one name, so each one is told apart",
+  ),
   description: z.string().trim(),
   every: repeatEverySchema,
   funding: intentionFundingSchema,

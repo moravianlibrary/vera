@@ -81,6 +81,7 @@ const index: IntentionIndex = {
         id: "repeat",
         description: "Regional work.",
         namePattern: "Regional {period}",
+        namePatterns: { en: "Regional {period}" },
         every: "month",
         funding: { kind: "any" },
         scopeCategoryId: null,
