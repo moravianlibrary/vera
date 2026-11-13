@@ -518,6 +518,8 @@ public class IterationReviewCommands {
         OffsetDateTime at = now();
         int keyPosition = dsl.selectCount().from(DOCUMENT_PROPERTY_SOURCES)
                 .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId)).fetchOne(0, int.class);
+        // A key the catalog gave no value for keeps the reading VERA holds.
+        values.values().removeIf(Objects::isNull);
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             Result<DocumentPropertySourcesRecord> rows = dsl.selectFrom(DOCUMENT_PROPERTY_SOURCES)
                     .where(DOCUMENT_PROPERTY_SOURCES.DOCUMENT_ID.eq(documentId))
@@ -548,9 +550,9 @@ public class IterationReviewCommands {
                     .set(DOCUMENT_PROPERTY_SOURCES.OBSERVED_AT, at).execute();
         }
         dsl.update(DOCUMENTS)
-                .set(DOCUMENTS.TITLE, (String) values.get("title"))
-                .set(DOCUMENTS.TYPE, (String) values.get("material_type"))
-                .set(DOCUMENTS.SHELF_MARK, shelfMark)
+                .set(DOCUMENTS.TITLE, (String) values.getOrDefault("title", document.getTitle()))
+                .set(DOCUMENTS.TYPE, (String) values.getOrDefault("material_type", document.getType()))
+                .set(DOCUMENTS.SHELF_MARK, (String) values.getOrDefault("shelf_mark", document.getShelfMark()))
                 .where(DOCUMENTS.ID.eq(documentId)).execute();
     }
 

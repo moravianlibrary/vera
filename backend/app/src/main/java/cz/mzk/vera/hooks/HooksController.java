@@ -389,7 +389,8 @@ class HooksController {
             if (!hasEventKind) {
                 return Problems.response(422, "Pick an event for this page before adding its condition",
                         "hook.condition_kind", List.of(Map.of("pointer", "/conditions/" + kind,
-                                "code", "hook.condition_kind")));
+                                "code", "hook.condition_kind",
+                                "detail", "Pick an event for this page before adding its condition")));
             }
         }
         return null;
@@ -397,7 +398,8 @@ class HooksController {
 
     private ResponseEntity<?> conditionInvalid(String pointer) {
         return Problems.response(422, "Use valid filter values for this page", "hook.condition_invalid",
-                List.of(Map.of("pointer", pointer, "code", "hook.condition_invalid")));
+                List.of(Map.of("pointer", pointer, "code", "hook.condition_invalid",
+                        "detail", "Use valid filter values for this page")));
     }
 
     private String conditionRoute(String kind) {

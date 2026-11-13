@@ -812,6 +812,9 @@ export function readUpload(
 
 type Reading = Omit<UploadReading, "id" | "fileName">;
 
+// L77: packages uploaded outside production are signed with the test certificate.
+const uploadSigner = "VERA test plugin";
+
 function readNextVersion(
   implementation: StoredPluginImplementation,
   namedVersion: string | undefined,
@@ -836,7 +839,7 @@ function readNextVersion(
   const next = {
     version,
     contractVersion: newest.contractVersion,
-    signer: "Moravská zemská knihovna v Brně",
+    signer: uploadSigner,
     triggers: [...newest.triggers],
     declares: { ...newest.declares, ...change?.declares },
     configFields:
@@ -872,7 +875,7 @@ function readNewPackage(slug: string, namedVersion: string | undefined): Outcome
       version: {
         version: namedVersion ?? "0.1.0",
         contractVersion: known.contractVersion,
-        signer: "Moravská zemská knihovna v Brně",
+        signer: uploadSigner,
         triggers: [...known.triggers],
         declares: { ...noDeclarations, ...known.declares },
         configFields: configFieldsOf(...known.fields),
