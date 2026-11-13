@@ -345,16 +345,6 @@ class PluginTests {
     }
 
     private void assertRecordedPluginRead(JsonNode actual, JsonNode expected) {
-        JsonNode normalized = actual.deepCopy();
-        if (normalized.has("instances")) normalized.path("instances").forEach(this::removeNestedScheduleNames);
-        removeNestedScheduleNames(normalized);
-        assertThat(normalized).isEqualTo(expected);
-    }
-
-    private void removeNestedScheduleNames(JsonNode instance) {
-        instance.path("schedules").forEach(schedule -> {
-            assertThat(schedule.path("names").path("en").asString()).isEqualTo(schedule.path("name").asString());
-            ((ObjectNode) schedule).remove("names");
-        });
+        assertThat(actual).isEqualTo(expected);
     }
 }

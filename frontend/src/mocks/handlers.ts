@@ -386,10 +386,16 @@ function pluginNamesInLanguage<T>(value: T, language: "cs" | "en"): T {
   if (Array.isArray(value)) return value.map((item) => pluginNamesInLanguage(item, language)) as T;
   if (value === null || typeof value !== "object") return value;
   const record = value as Record<string, unknown>;
-  const localized =
+  const named =
     typeof record.name === "string" && typeof record.names === "object" && record.names !== null
       ? { ...record, name: nameIn(record.names as { cs?: string; en?: string }, language) }
       : record;
+  const category =
+    typeof named.categoryId === "string" && typeof named.name === "string"
+      ? database.categories.find(({ id }) => id === named.categoryId)
+      : undefined;
+  const localized =
+    category === undefined ? named : { ...named, name: nameIn(category.names, language) };
   const localizedPattern =
     "namePatterns" in localized &&
     typeof localized.namePatterns === "object" &&
@@ -402,7 +408,26 @@ function pluginNamesInLanguage<T>(value: T, language: "cs" | "en"): T {
   return Object.fromEntries(
     Object.entries(localizedPattern).map(([key, child]) => [
       key,
-      pluginNamesInLanguage(child, language),
+      key === "mix" && child !== null && typeof child === "object" && !Array.isArray(child)
+        ? (() => {
+            const mix = child as Record<string, unknown>;
+            const distribution =
+              typeof mix.id === "string"
+                ? database.distributions.find(({ id }) => id === mix.id)
+                : undefined;
+            return distribution === undefined
+              ? pluginNamesInLanguage(child, language)
+              : { ...mix, name: nameIn(distribution.names, language) };
+          })()
+        : key === "path" && Array.isArray(child)
+          ? child.map((label) => {
+              if (typeof label !== "string") return label;
+              const match = database.categories.find(
+                ({ name, names }) => name === label || names.cs === label || names.en === label,
+              );
+              return match === undefined ? label : nameIn(match.names, language);
+            })
+          : pluginNamesInLanguage(child, language),
     ]),
   ) as T;
 }
@@ -412,7 +437,7 @@ export function createHandlers(profile: MockUserProfile) {
   const watchlistInLanguage = <T extends { names: { cs?: string; en?: string }; name: string }>(
     watchlist: T,
     request: Request,
-  ) => ({ ...watchlist, name: nameIn(watchlist.names, languageOf(request)) });
+  ) => pluginNamesInLanguage(watchlist, languageOf(request));
   const signedOutKey = `vera.mock.signed-out.${profile}`;
 
   // An act on one record: its body parsed by the action's own schema, the outcome as a status.
@@ -863,13 +888,7 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       const index = pluginIndex(currentSession());
-      return HttpResponse.json({
-        ...index,
-        instances: index.instances.map((instance) => ({
-          ...instance,
-          name: nameIn(instance.names, languageOf(request)),
-        })),
-      });
+      return HttpResponse.json(pluginNamesInLanguage(index, languageOf(request)));
     }),
     accessWrite(
       "post",
@@ -2299,10 +2318,7 @@ function namedOutcomeResponse<Value extends { name: string; names: Names }>(
   request: Request,
 ) {
   if ("refusal" in outcome) return problemResponse(outcome.refusal);
-  return HttpResponse.json({
-    ...outcome.value,
-    name: nameIn(outcome.value.names, languageOf(request)),
-  });
+  return HttpResponse.json(pluginNamesInLanguage(outcome.value, languageOf(request)));
 }
 
 function forbidden() {

@@ -1874,7 +1874,7 @@
                 "schedules": [
                   {
                     "id": "s1",
-                    "name": "MZK Aleph — catalog resync",
+                    "name": "MZK Aleph — synchronizace katalogu",
                     "names": {
                       "cs": "MZK Aleph — synchronizace katalogu",
                       "en": "MZK Aleph — catalog resync"
@@ -2014,7 +2014,7 @@
                 "schedules": [
                   {
                     "id": "s6",
-                    "name": "NKP Aleph — catalog resync",
+                    "name": "NKP Aleph — synchronizace katalogu",
                     "names": {
                       "cs": "NKP Aleph — synchronizace katalogu",
                       "en": "NKP Aleph — catalog resync"
@@ -2087,7 +2087,7 @@
                 "schedules": [
                   {
                     "id": "s7",
-                    "name": "VKOL Aleph — catalog resync",
+                    "name": "VKOL Aleph — synchronizace katalogu",
                     "names": {
                       "cs": "VKOL Aleph — synchronizace katalogu",
                       "en": "VKOL Aleph — catalog resync"
@@ -2140,7 +2140,7 @@
                 "schedules": [
                   {
                     "id": "s2",
-                    "name": "Kramerius — registry refresh",
+                    "name": "Kramerius — aktualizace registru",
                     "names": {
                       "cs": "Kramerius — aktualizace registru",
                       "en": "Kramerius — registry refresh"
@@ -2244,7 +2244,7 @@
                 "schedules": [
                   {
                     "id": "s3",
-                    "name": "RDCZ — registry refresh",
+                    "name": "RDCZ — aktualizace registru",
                     "names": {
                       "cs": "RDCZ — aktualizace registru",
                       "en": "RDCZ — registry refresh"
@@ -2447,7 +2447,7 @@
                 "schedules": [
                   {
                     "id": "s5",
-                    "name": "ISSN harvest — weekly",
+                    "name": "Sklizeň ISSN — týdně",
                     "names": {
                       "cs": "Sklizeň ISSN — týdně",
                       "en": "ISSN harvest — weekly"
@@ -2552,7 +2552,7 @@
                 "schedules": [
                   {
                     "id": "s4",
-                    "name": "Catalog validity — nightly sweep",
+                    "name": "Kontrola platnosti katalogu — noční běh",
                     "names": {
                       "cs": "Kontrola platnosti katalogu — noční běh",
                       "en": "Catalog validity — nightly sweep"

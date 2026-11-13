@@ -880,7 +880,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -892,7 +892,7 @@
                     "outputPages": 1240,
                     "drift": -21.18384401114206,
                     "flag": "under",
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -902,7 +902,7 @@
                     "outputPages": 5867,
                     "drift": 20.370473537604454,
                     "flag": "over",
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -912,7 +912,7 @@
                     "outputPages": 1258,
                     "drift": -0.9832869080779929,
                     "flag": "inBand",
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -922,7 +922,7 @@
                     "outputPages": 610,
                     "drift": 1.7966573816155993,
                     "flag": "inBand",
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -988,12 +988,12 @@
                 "scope": {
                   "id": "c2",
                   "path": [
-                    "Periodicals"
+                    "Periodika"
                   ]
                 },
                 "mix": {
                   "id": "d2",
-                  "name": "Periodicals push",
+                  "name": "Podpora periodik",
                   "revision": 2
                 },
                 "mixRows": [
@@ -1005,7 +1005,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Regional"
+                    "name": "Regionální"
                   },
                   {
                     "categoryId": "c22",
@@ -1015,7 +1015,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "National"
+                    "name": "Národní"
                   },
                   {
                     "categoryId": "c23",
@@ -1025,7 +1025,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": "noShare",
-                    "name": "Specialist"
+                    "name": "Odborné"
                   }
                 ],
                 "unallocated": 10,
@@ -1039,7 +1039,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Regional"
+                      "Regionální"
                     ]
                   },
                   {
@@ -1050,7 +1050,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "National"
+                      "Národní"
                     ]
                   },
                   {
@@ -1061,7 +1061,7 @@
                     "deliveredPages": 0,
                     "isShort": false,
                     "path": [
-                      "Specialist"
+                      "Odborné"
                     ]
                   }
                 ],
@@ -1106,7 +1106,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -1118,7 +1118,7 @@
                     "outputPages": 420,
                     "drift": 60.8904109589041,
                     "flag": "over",
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -1128,7 +1128,7 @@
                     "outputPages": 0,
                     "drift": -45,
                     "flag": "under",
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -1138,7 +1138,7 @@
                     "outputPages": 18,
                     "drift": -10.89041095890411,
                     "flag": "under",
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -1148,7 +1148,7 @@
                     "outputPages": 0,
                     "drift": -5,
                     "flag": "inBand",
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -1162,8 +1162,8 @@
                     "deliveredPages": 420,
                     "isShort": false,
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ]
                   },
                   {
@@ -1174,8 +1174,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ]
                   },
                   {
@@ -1186,8 +1186,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ]
                   },
                   {
@@ -1198,8 +1198,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ]
                   },
                   {
@@ -1210,8 +1210,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ]
                   },
                   {
@@ -1222,8 +1222,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ]
                   },
                   {
@@ -1234,8 +1234,8 @@
                     "deliveredPages": 18,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ]
                   },
                   {
@@ -1246,7 +1246,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ]
                   }
                 ],
@@ -1294,13 +1294,13 @@
                 "scope": {
                   "id": "c21",
                   "path": [
-                    "Periodicals",
-                    "Regional"
+                    "Periodika",
+                    "Regionální"
                   ]
                 },
                 "mix": {
                   "id": "d2",
-                  "name": "Periodicals push",
+                  "name": "Podpora periodik",
                   "revision": 2
                 },
                 "mixRows": [],
@@ -1315,7 +1315,7 @@
                     "deliveredPages": 0,
                     "isShort": false,
                     "path": [
-                      "Regional"
+                      "Regionální"
                     ]
                   }
                 ],
@@ -1369,7 +1369,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -1381,7 +1381,7 @@
                     "outputPages": 420,
                     "drift": -22.21461187214612,
                     "flag": "under",
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -1391,7 +1391,7 @@
                     "outputPages": 2847,
                     "drift": 41.66666666666667,
                     "flag": "over",
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -1401,7 +1401,7 @@
                     "outputPages": 18,
                     "drift": -14.452054794520548,
                     "flag": "under",
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -1411,7 +1411,7 @@
                     "outputPages": 0,
                     "drift": -5,
                     "flag": "inBand",
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -1425,8 +1425,8 @@
                     "deliveredPages": 420,
                     "isShort": false,
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ]
                   },
                   {
@@ -1437,8 +1437,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ]
                   },
                   {
@@ -1449,8 +1449,8 @@
                     "deliveredPages": 0,
                     "isShort": false,
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ]
                   },
                   {
@@ -1461,8 +1461,8 @@
                     "deliveredPages": 2847,
                     "isShort": false,
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ]
                   },
                   {
@@ -1473,8 +1473,8 @@
                     "deliveredPages": 0,
                     "isShort": false,
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ]
                   },
                   {
@@ -1485,8 +1485,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ]
                   },
                   {
@@ -1497,8 +1497,8 @@
                     "deliveredPages": 18,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ]
                   },
                   {
@@ -1509,7 +1509,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ]
                   }
                 ],
@@ -1568,7 +1568,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -1580,7 +1580,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -1590,7 +1590,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -1600,7 +1600,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -1610,7 +1610,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -1624,8 +1624,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ]
                   },
                   {
@@ -1636,8 +1636,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ]
                   },
                   {
@@ -1648,8 +1648,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ]
                   },
                   {
@@ -1660,8 +1660,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ]
                   },
                   {
@@ -1672,8 +1672,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ]
                   },
                   {
@@ -1684,8 +1684,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ]
                   },
                   {
@@ -1696,8 +1696,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ]
                   },
                   {
@@ -1708,7 +1708,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ]
                   }
                 ],
@@ -1749,7 +1749,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -1761,7 +1761,7 @@
                     "outputPages": 420,
                     "drift": -22.21461187214612,
                     "flag": "under",
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -1771,7 +1771,7 @@
                     "outputPages": 2847,
                     "drift": 41.66666666666667,
                     "flag": "over",
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -1781,7 +1781,7 @@
                     "outputPages": 18,
                     "drift": -14.452054794520548,
                     "flag": "under",
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -1791,7 +1791,7 @@
                     "outputPages": 0,
                     "drift": -5,
                     "flag": "inBand",
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -1805,8 +1805,8 @@
                     "deliveredPages": 420,
                     "isShort": false,
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ]
                   },
                   {
@@ -1817,8 +1817,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ]
                   },
                   {
@@ -1829,8 +1829,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ]
                   },
                   {
@@ -1841,8 +1841,8 @@
                     "deliveredPages": 2847,
                     "isShort": false,
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ]
                   },
                   {
@@ -1853,8 +1853,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ]
                   },
                   {
@@ -1865,8 +1865,8 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ]
                   },
                   {
@@ -1877,8 +1877,8 @@
                     "deliveredPages": 18,
                     "isShort": true,
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ]
                   },
                   {
@@ -1889,7 +1889,7 @@
                     "deliveredPages": 0,
                     "isShort": true,
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ]
                   }
                 ],
@@ -1937,12 +1937,12 @@
                 "scope": {
                   "id": "c2",
                   "path": [
-                    "Periodicals"
+                    "Periodika"
                   ]
                 },
                 "mix": {
                   "id": "d2",
-                  "name": "Periodicals push",
+                  "name": "Podpora periodik",
                   "revision": 2
                 },
                 "mixRows": [
@@ -1954,7 +1954,7 @@
                     "outputPages": 0,
                     "drift": -55,
                     "flag": "under",
-                    "name": "Regional"
+                    "name": "Regionální"
                   },
                   {
                     "categoryId": "c22",
@@ -1964,7 +1964,7 @@
                     "outputPages": 2847,
                     "drift": 65,
                     "flag": "over",
-                    "name": "National"
+                    "name": "Národní"
                   },
                   {
                     "categoryId": "c23",
@@ -1974,7 +1974,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": "noShare",
-                    "name": "Specialist"
+                    "name": "Odborné"
                   }
                 ],
                 "unallocated": 10,
@@ -2036,7 +2036,7 @@
                 "scope": null,
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [
@@ -2048,7 +2048,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Monographs"
+                    "name": "Monografie"
                   },
                   {
                     "categoryId": "c2",
@@ -2058,7 +2058,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Periodicals"
+                    "name": "Periodika"
                   },
                   {
                     "categoryId": "c3",
@@ -2068,7 +2068,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Manuscripts"
+                    "name": "Rukopisy"
                   },
                   {
                     "categoryId": "c4",
@@ -2078,7 +2078,7 @@
                     "outputPages": 0,
                     "drift": null,
                     "flag": null,
-                    "name": "Maps"
+                    "name": "Mapy"
                   }
                 ],
                 "unallocated": 0,
@@ -2127,12 +2127,12 @@
                 "scope": {
                   "id": "c4",
                   "path": [
-                    "Maps"
+                    "Mapy"
                   ]
                 },
                 "mix": {
                   "id": "d1",
-                  "name": "House mix",
+                  "name": "Domácí mix",
                   "revision": 4
                 },
                 "mixRows": [],
@@ -2182,7 +2182,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2192,7 +2192,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2202,7 +2202,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2212,7 +2212,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2227,8 +2227,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2239,8 +2239,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2251,8 +2251,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2263,8 +2263,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2275,8 +2275,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2287,8 +2287,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2299,8 +2299,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2311,7 +2311,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2363,7 +2363,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": 0,
                     "output": 0,
@@ -2373,7 +2373,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": 100,
                     "output": 100,
@@ -2383,7 +2383,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": 0,
                     "output": 0,
@@ -2393,7 +2393,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": 0,
                     "output": 0,
@@ -2408,8 +2408,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2420,8 +2420,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2432,8 +2432,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2444,8 +2444,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2456,8 +2456,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2468,8 +2468,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2480,8 +2480,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2492,7 +2492,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2563,7 +2563,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": 95.89041095890411,
                     "output": 95.89041095890411,
@@ -2573,7 +2573,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": 0,
                     "output": 0,
@@ -2583,7 +2583,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": 4.109589041095891,
                     "output": 4.109589041095891,
@@ -2593,7 +2593,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": 0,
                     "output": 0,
@@ -2608,8 +2608,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2620,8 +2620,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2632,8 +2632,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2644,8 +2644,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2656,8 +2656,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2668,8 +2668,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2680,8 +2680,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2692,7 +2692,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2757,7 +2757,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2767,7 +2767,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2777,7 +2777,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2787,7 +2787,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": null,
                     "output": null,
@@ -2802,8 +2802,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2814,8 +2814,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2826,8 +2826,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2838,8 +2838,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2850,8 +2850,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2862,8 +2862,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2874,8 +2874,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2886,7 +2886,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2938,7 +2938,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": null,
                     "output": 34.166666666666664,
@@ -2948,7 +2948,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": null,
                     "output": 65.83333333333333,
@@ -2958,7 +2958,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -2968,7 +2968,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -2983,8 +2983,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -2995,8 +2995,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3007,8 +3007,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3019,8 +3019,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3031,8 +3031,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3043,8 +3043,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3055,8 +3055,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3067,7 +3067,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3119,7 +3119,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3129,7 +3129,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3139,7 +3139,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": null,
                     "output": 100,
@@ -3149,7 +3149,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3164,8 +3164,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3176,8 +3176,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3188,8 +3188,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3200,8 +3200,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3212,8 +3212,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3224,8 +3224,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3236,8 +3236,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3248,7 +3248,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3300,7 +3300,7 @@
                 "mixRows": [
                   {
                     "categoryId": "c1",
-                    "name": "Monographs",
+                    "name": "Monografie",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3310,7 +3310,7 @@
                   },
                   {
                     "categoryId": "c2",
-                    "name": "Periodicals",
+                    "name": "Periodika",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3320,7 +3320,7 @@
                   },
                   {
                     "categoryId": "c3",
-                    "name": "Manuscripts",
+                    "name": "Rukopisy",
                     "intended": null,
                     "planned": null,
                     "output": 0,
@@ -3330,7 +3330,7 @@
                   },
                   {
                     "categoryId": "c4",
-                    "name": "Maps",
+                    "name": "Mapy",
                     "intended": null,
                     "planned": null,
                     "output": 100,
@@ -3345,8 +3345,8 @@
                   {
                     "categoryId": "c11",
                     "path": [
-                      "Monographs",
-                      "19th century"
+                      "Monografie",
+                      "19. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3357,8 +3357,8 @@
                   {
                     "categoryId": "c12",
                     "path": [
-                      "Monographs",
-                      "20th century"
+                      "Monografie",
+                      "20. století"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3369,8 +3369,8 @@
                   {
                     "categoryId": "c21",
                     "path": [
-                      "Periodicals",
-                      "Regional"
+                      "Periodika",
+                      "Regionální"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3381,8 +3381,8 @@
                   {
                     "categoryId": "c22",
                     "path": [
-                      "Periodicals",
-                      "National"
+                      "Periodika",
+                      "Národní"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3393,8 +3393,8 @@
                   {
                     "categoryId": "c23",
                     "path": [
-                      "Periodicals",
-                      "Specialist"
+                      "Periodika",
+                      "Odborné"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3405,8 +3405,8 @@
                   {
                     "categoryId": "c31",
                     "path": [
-                      "Manuscripts",
-                      "Medieval"
+                      "Rukopisy",
+                      "Středověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3417,8 +3417,8 @@
                   {
                     "categoryId": "c32",
                     "path": [
-                      "Manuscripts",
-                      "Early modern"
+                      "Rukopisy",
+                      "Raně novověké"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3429,7 +3429,7 @@
                   {
                     "categoryId": "c4",
                     "path": [
-                      "Maps"
+                      "Mapy"
                     ],
                     "share": null,
                     "targetPages": null,
@@ -3465,7 +3465,7 @@
                 },
                 "mix": {
                   "id": "d1",
-                  "name": "House mix"
+                  "name": "Domácí mix"
                 }
               }
             ]
