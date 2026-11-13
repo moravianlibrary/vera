@@ -7,6 +7,7 @@ import type { Problem } from "@vera/contract/problem";
 import { problemSchema } from "@vera/contract/problem";
 import { z } from "zod";
 import { env } from "@/config/env";
+import { i18n } from "@/i18n";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -30,12 +31,12 @@ export async function getJson<T>(
   schema: z.ZodType<T>,
   query?: URLSearchParams,
 ): Promise<T> {
-  const response = await fetch(apiUrl(path, query), { headers: jsonHeaders });
+  const response = await fetch(apiUrl(path, query), { headers: requestHeaders() });
   return parseResponse("GET", path, response, schema);
 }
 
 export async function findJson<T>(path: string, schema: z.ZodType<T>): Promise<T | null> {
-  const response = await fetch(apiUrl(path), { headers: jsonHeaders });
+  const response = await fetch(apiUrl(path), { headers: requestHeaders() });
   if (response.status === notFoundStatus) {
     return null;
   }
@@ -51,7 +52,7 @@ export async function postJson<T>(path: string, body: unknown, schema: z.ZodType
 export async function postNoContent(path: string, body: unknown): Promise<void> {
   const response = await fetch(apiUrl(path), {
     method: "POST",
-    headers: { ...jsonHeaders, "Content-Type": "application/json" },
+    headers: { ...requestHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -65,7 +66,11 @@ export async function patchJson<T>(path: string, body: unknown, schema: z.ZodTyp
 
 // A file, as multipart form data; the browser sets the boundary.
 export async function postForm<T>(path: string, form: FormData, schema: z.ZodType<T>): Promise<T> {
-  const response = await fetch(apiUrl(path), { method: "POST", headers: jsonHeaders, body: form });
+  const response = await fetch(apiUrl(path), {
+    method: "POST",
+    headers: requestHeaders(),
+    body: form,
+  });
   return parseResponse("POST", path, response, schema);
 }
 
@@ -75,13 +80,13 @@ export async function putJson<T>(path: string, body: unknown, schema: z.ZodType<
 }
 
 export async function deleteJson<T>(path: string, schema: z.ZodType<T>): Promise<T> {
-  const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });
+  const response = await fetch(apiUrl(path), { method: "DELETE", headers: requestHeaders() });
   return parseResponse("DELETE", path, response, schema);
 }
 
 // A delete answers with no body.
 export async function deleteResource(path: string): Promise<void> {
-  const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });
+  const response = await fetch(apiUrl(path), { method: "DELETE", headers: requestHeaders() });
   if (!response.ok) {
     throw await failureOf("DELETE", path, response);
   }
@@ -95,13 +100,17 @@ async function sendJson<T>(
 ): Promise<T> {
   const response = await fetch(apiUrl(path), {
     method,
-    headers: { ...jsonHeaders, "Content-Type": "application/json" },
+    headers: { ...requestHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   return parseResponse(method, path, response, schema);
 }
 
-const jsonHeaders = { Accept: "application/json" } as const;
+const jsonHeaders = { Accept: "application/json", "Accept-Language": "en" };
+
+function requestHeaders(): typeof jsonHeaders {
+  return { ...jsonHeaders, "Accept-Language": i18n.language === "cs" ? "cs" : "en" };
+}
 
 // Resolved against the page origin so the same call works in the browser and under jsdom.
 function apiUrl(path: string, query?: URLSearchParams): URL {

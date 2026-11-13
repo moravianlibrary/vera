@@ -16,6 +16,22 @@ export const languages = ["cs", "en"] as const;
 
 export type Language = (typeof languages)[number];
 
+export const namesSchema = z
+  .object({
+    cs: z.string().trim().min(1).optional(),
+    en: z.string().trim().min(1).optional(),
+  })
+  .refine(
+    (names) => names.cs !== undefined || names.en !== undefined,
+    "Give it a name in at least one language",
+  );
+
+export type Names = z.infer<typeof namesSchema>;
+
+export function nameIn(names: Names, language: Language): string {
+  return names[language] ?? names[language === "cs" ? "en" : "cs"]!;
+}
+
 export const userSettingsSchema = z.object({
   // Per view, the watchlist last opened there, null for "All". A view never opened is absent.
   lastOpenedWatchlists: z.partialRecord(watchlistViewSchema, z.string().nullable()),

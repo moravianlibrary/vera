@@ -4,6 +4,7 @@ import type { Language } from "@vera/contract/user-settings";
 import { useEffect } from "react";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
 import { i18n } from "@/i18n";
+import { queryClient } from "@/lib/query-client";
 import {
   forgetLoginLanguagePick,
   languageInUse,
@@ -31,7 +32,7 @@ export function useAppliedLanguage(): void {
 
   useEffect(() => {
     if (i18n.language !== language) {
-      void i18n.changeLanguage(language);
+      void i18n.changeLanguage(language).then(() => queryClient.invalidateQueries());
     }
     document.documentElement.lang = language;
   }, [language]);
