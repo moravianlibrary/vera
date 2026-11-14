@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Enumeration;
 import java.io.InputStream;
@@ -94,7 +95,10 @@ class RealPluginIntegrationTests {
         try (PluginLoader.LoadedPlugin loaded = loader.load(
                 Files.readAllBytes(packages.resolve("entry-link-1.1.0.jar")))) {
             EntryLinkInput plugin = (EntryLinkInput) loaded.implementation();
-            TestContext context = new TestContext("pi43", strings(configurations.get("pi43")),
+            // The seed still installs the fake; the real plugin is configured for the portal's sysno.
+            Map<String, String> entryLink = new LinkedHashMap<>(strings(configurations.get("pi43")));
+            entryLink.put("record_parameter", "sysno");
+            TestContext context = new TestContext("pi43", entryLink,
                     (username, password) -> PasswordCheck.NONE);
             EntryLinkInput.EntryAnswer answer = plugin.entry(context,
                     new EntryLinkInput.EntryInput(Map.of("sysno", "MZK01-001234567", "unit", "volume 2",

@@ -13957,8 +13957,7 @@
         "names": { "cs": "Tlačítko digitalizovat", "en": "Tlačítko digitalizovat" },
         "implementationId": "pt32",
         "configuration": {
-          "allowed_origins": "https://www.mzk.cz https://tlacitko.osdd.mzk.cz",
-          "record_parameter": "sysno"
+          "allowed_origins": "https://www.mzk.cz https://tlacitko.osdd.mzk.cz"
         },
         "triggers": ["OnDemand"],
         "createdAt": "2026-10-29",
