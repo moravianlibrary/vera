@@ -142,6 +142,19 @@ refusal codes ([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-k
 `PriorityThenMix`: fills by priority first, then by the intention's mix proportions (the old
 VERA's generator, there called *PriorityFirst*) · `ShelfAdvisor`.
 
+### `PriorityThenMix`
+
+`tolerance` is a percentage, with or without `%` (for example `5%`); invalid or zero values use
+5%. `order` must be `priority,asked`; VERA supplies the pool in descending priority, then oldest
+request order. A mix is filled leaf by leaf within that order; whole documents may exceed a
+leaf goal by the tolerance and 50 pages of fixed slack. Unfilled shares spread to the nearest
+eligible category and are reported as shortfalls when they cannot be filled. Without a mix, the
+same order fills the requested page total without a category split. A correcting allocation does
+not spread. These answers follow [PLAN-generate](../reference/planning/generation.md#plan-generate),
+[PLAN-generate-mix](../reference/planning/generation.md#plan-generate-mix),
+[PLAN-generate-correcting](../reference/planning/generation.md#plan-generate-correcting) and
+[PLAN-generate-no-mix](../reference/planning/generation.md#plan-generate-no-mix).
+
 ## Link
 
 `KrameriusLink`: a PID or viewer address to the canonical link, naming which Kramerius. An

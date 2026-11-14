@@ -17,13 +17,18 @@ import cz.mzk.vera.plugin.custody.Custody;
 import cz.mzk.vera.plugin.custody.PlaceInput;
 import cz.mzk.vera.plugin.input.EntryLinkInput;
 import cz.mzk.vera.plugin.input.EntryLinkInput.CatalogId;
+import cz.mzk.vera.plugin.listgenerator.GenerateAnswer;
+import cz.mzk.vera.plugin.listgenerator.GenerateInput;
+import cz.mzk.vera.plugin.listgenerator.ListGenerator;
 import cz.mzk.vera.plugin.message.HandOffAnswer;
 import cz.mzk.vera.plugin.message.HandOffInput;
 import cz.mzk.vera.plugin.message.Message;
 import cz.mzk.vera.plugin.propertysource.PropertySource;
 import cz.mzk.vera.plugin.propertysource.ValuesAnswer;
 import cz.mzk.vera.plugin.propertysource.ValuesInput;
+import cz.mzk.vera.plugin.records.Category;
 import cz.mzk.vera.plugin.records.Document;
+import cz.mzk.vera.plugin.records.Iteration;
 import cz.mzk.vera.plugin.records.Request;
 import cz.mzk.vera.pluginhost.PluginDeclarations;
 import cz.mzk.vera.pluginhost.PluginLoader;
@@ -142,18 +147,44 @@ class RealPluginIntegrationTests {
                     new PlaceInput(request, document, custodyIds.get("pi35"))).custodies())
                     .containsExactly("pc3");
         }
+
+        verifySigned(packages.resolve("priority-then-mix-1.3.0.jar"));
+        try (PluginLoader.LoadedPlugin loaded = loader.load(
+                Files.readAllBytes(packages.resolve("priority-then-mix-1.3.0.jar")))) {
+            ListGenerator plugin = (ListGenerator) loaded.implementation();
+            GenerateInput input = new GenerateInput(new GenerateInput.ShapingIntention("i4", "Overall output"),
+                    false, List.of(
+                            new GenerateInput.Leaf(new Category("c11", "North", "c1"), "c1", null, null),
+                            new GenerateInput.Leaf(new Category("c12", "South", "c1"), "c1", null, null)),
+                    List.of(), List.of(
+                            generatorItem("IT30", "c11", "Normal", 188, "2026-05-21T08:00:00.000Z"),
+                            generatorItem("IT31", "c12", "High", 264, "2026-05-18T08:00:00.000Z")),
+                    List.of(), 1000, List.of(), null);
+            GenerateAnswer answer = plugin.generate(new TestContext("pi14", strings(configurations.get("pi14")),
+                    (username, password) -> PasswordCheck.NONE), input);
+            JsonNode recording = JSON.readTree(Path.of("../../replay/recordings/base-lists.json").toFile());
+            JsonNode generated = scenario(recording, "generate-list-draft").path("calls").get(0).path("body");
+            assertThat(answer.picks()).extracting(GenerateAnswer.Pick::iterationId)
+                    .containsExactly(generated.path("picks").get(0).path("item").path("iteration").path("id")
+                            .asString(), generated.path("picks").get(1).path("item").path("iteration").path("id")
+                            .asString());
+            assertThat(answer.picks()).extracting(GenerateAnswer.Pick::why)
+                    .containsExactly(generated.path("picks").get(0).path("reason").asString(),
+                            generated.path("picks").get(1).path("reason").asString());
+        }
     }
 
     private Map<String, JsonNode> configurations(JsonNode seed) {
         Map<String, JsonNode> result = new HashMap<>();
         for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
             String id = instance.path("id").asString();
-            if ("pi24".equals(id) || "pi26".equals(id) || "pi31".equals(id) || "pi43".equals(id)
+            if ("pi14".equals(id) || "pi24".equals(id) || "pi26".equals(id)
+                    || "pi31".equals(id) || "pi43".equals(id)
                     || "pi25".equals(id) || "pi34".equals(id) || "pi35".equals(id)) {
                 result.put(id, instance.path("configuration"));
             }
         }
-        assertThat(result).containsKeys("pi24", "pi26", "pi31", "pi43", "pi25", "pi34", "pi35");
+        assertThat(result).containsKeys("pi14", "pi24", "pi26", "pi31", "pi43", "pi25", "pi34", "pi35");
         return result;
     }
 
@@ -174,6 +205,21 @@ class RealPluginIntegrationTests {
         Map<String, String> result = new HashMap<>();
         values.properties().forEach(entry -> result.put(entry.getKey(), entry.getValue().asString()));
         return Map.copyOf(result);
+    }
+
+    private GenerateInput.PoolItem generatorItem(String id, String category, String priority,
+            int pages, String askedAt) {
+        return new GenerateInput.PoolItem(new Iteration(id, "D1", 1, "R1", category, priority,
+                null, "Ready", null, null), pages, askedAt);
+    }
+
+    private JsonNode scenario(JsonNode recording, String name) {
+        for (JsonNode candidate : recording.path("scenarios")) {
+            if (name.equals(candidate.path("name").asString())) {
+                return candidate;
+            }
+        }
+        throw new AssertionError("No recorded scenario " + name);
     }
 
     private void verifySigned(Path path) throws IOException {
