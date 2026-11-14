@@ -102,6 +102,10 @@ final class MessageSubjects {
                 .map(user -> new Recipient(user.getId(), user.getName())).toList();
     }
 
+    String emailOf(String userId) {
+        return dsl.select(USERS.EMAIL).from(USERS).where(USERS.ID.eq(userId)).fetchOne(USERS.EMAIL);
+    }
+
     List<String> reachable(String instanceId, String implementation, List<Recipient> recipients) {
         return recipients.stream().filter(recipient -> canReach(instanceId, implementation, recipient.userId()))
                 .map(Recipient::userId).toList();

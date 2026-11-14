@@ -29,7 +29,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -125,6 +125,9 @@ backend-replay: backend-db ## Replay recordings against the background backend
 	cd backend && ./gradlew :testing:pluginPackages
 	$(MAKE) backend-bg
 	@trap '$(MAKE) backend-stop' EXIT; VERA_REPLAY_PACKAGES=$(CURDIR)/backend/testing/build/plugin-packages VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) $(MAKE) replay
+
+plugins: ## Build and sign the shipped plugin packages
+	cd backend && ./gradlew :plugins:packages
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build

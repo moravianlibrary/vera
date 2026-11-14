@@ -63,7 +63,7 @@ final class MessagesController {
         result.put("about", about);
         result.put("context", resolved.context());
         result.put("recipients", recipients.stream().map(MessageSubjects.Recipient::asMap).toList());
-        result.put("handOffs", commands.handOffs(resolved, recipients));
+        result.put("handOffs", commands.handOffs(resolved, recipients, subjects.emailOf(caller.userId())));
         return ResponseEntity.ok(result);
     }
 

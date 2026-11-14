@@ -119,13 +119,13 @@ class AdditionalPluginFakesTests {
     void messageInstancesReturnMailAndSlackHandoffsAndBotSends() {
         var email = answer(calls.call("pi26", Message.class, "handOff",
                 (plugin, context) -> plugin.handOff(context,
-                        new HandOffInput(List.of("reader@example.test"), "Subject", "Body"))));
+                        new HandOffInput(List.of("reader@example.test"), "Subject", "Body", null))));
         var slack = answer(calls.call("pi27", Message.class, "handOff",
                 (plugin, context) -> plugin.handOff(context,
-                        new HandOffInput(List.of("u3"), "Subject", "Body"))));
+                        new HandOffInput(List.of("u3"), "Subject", "Body", null))));
         var bot = answer(calls.call("pi44", Message.class, "handOff",
                 (plugin, context) -> plugin.handOff(context,
-                        new HandOffInput(List.of("u3"), "Subject", "Body"))));
+                        new HandOffInput(List.of("u3"), "Subject", "Body", null))));
         assertThat(email.address()).startsWith("mailto:");
         assertThat(slack.address()).contains("slack.com/app_redirect").contains("pdvorak");
         assertThat(bot.sent()).isTrue();

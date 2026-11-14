@@ -19,8 +19,9 @@ class ContractVersionTests {
     @Test void acceptsCompatibleContractVersions() {
         assertTrue(ContractVersion.accepts("1.0"));
         assertTrue(ContractVersion.accepts("1.1"));
+        assertTrue(ContractVersion.accepts("1.2"));
         assertTrue(ContractVersion.accepts("1.0.3"));
-        assertFalse(ContractVersion.accepts("1.2"));
+        assertFalse(ContractVersion.accepts("1.3"));
         assertFalse(ContractVersion.accepts("2.0"));
     }
 }

@@ -134,7 +134,9 @@ tasks.register("pluginPackages") {
 }
 
 tasks.named<Test>("test") {
-    dependsOn("pluginPackages")
+    dependsOn("pluginPackages", ":plugins:packages")
+    systemProperty("vera.plugin.packages", project(":plugins").layout.buildDirectory.dir("packages")
+        .get().asFile.absolutePath)
 }
 
 tasks.named<ProcessResources>("processResources") {

@@ -13,6 +13,20 @@ builds a fake of each one it needs ([engine.md](engine.md)); the real ones come 
 
 *Match by email* only for an instance whose email claim is verified.
 
+### `LocalAccounts`
+
+The form entry answers no redirect. `complete` accepts only a username and password form and
+checks it through VERA's instance-scoped `localPasswords()` context; a match answers the username
+as the external id and name, while a missing account or wrong password is refused as
+`wrong_credentials` ([PLG-api-call](../reference/integrations/plugin-api.md#plg-api-call),
+[PLG-api-outcome](../reference/integrations/plugin-api.md#plg-api-outcome)). It makes no HTTP
+fallback call. VERA refuses a matched account that is suspended ([ACCESS-suspend](../reference/access/people.md#access-suspend)).
+
+Its configuration retains the seeded keys: `signup` is `on` or `off`; `password_min` is a
+positive decimal character count; and `mail_channel` is an enabled Delivery channel instance id.
+VERA uses these for sign-up, password length and email delivery ([ACCESS-sign-up](../reference/access/people.md#access-sign-up));
+the plugin does not perform those operations.
+
 ## Input
 
 | Implementation | Notes |
@@ -105,6 +119,14 @@ iteration may hold several links ([DEC-0014](../decisions/DEC-0014-several-publi
 
 `MailtoMessage` · `SlackMessage` · `SlackBotMessage` (VERA's Slack app posts a direct message to
 the recipients; its result is *sent*).
+
+### `MailtoMessage`
+
+`cc_sender` is `on` or `off`. `handOff` returns a `mailto:` address with the supplied recipient
+addresses, subject and text URL-encoded; when enabled, the caller's email is added as the `cc`
+address ([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds)). The hand-off
+does not send or retain a message ([MSG-handoff](../reference/integrations/messaging.md#msg-handoff),
+[MSG-keeps-nothing](../reference/integrations/messaging.md#msg-keeps-nothing)).
 
 ## Delivery channel
 

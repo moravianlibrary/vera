@@ -53,7 +53,7 @@ final class MessageCommands {
     }
 
     List<Map<String, Object>> handOffs(MessageSubjects.Subject subject,
-            List<MessageSubjects.Recipient> recipients) {
+            List<MessageSubjects.Recipient> recipients, String sender) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Message")) {
             String implementation = implementationOf(instance.id());
@@ -61,7 +61,7 @@ final class MessageCommands {
                 continue;
             }
             List<String> reachable = subjects.reachable(instance.id(), implementation, recipients);
-            String href = handOff(instance, implementation, subject, reachable);
+            String href = handOff(instance, implementation, subject, reachable, sender);
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("channelId", instance.id());
             item.put("reachableIds", reachable);
@@ -84,14 +84,14 @@ final class MessageCommands {
         }
         PluginOutcome<HandOffAnswer> outcome = plugins.call(channelId, Message.class, "handOff",
                 (plugin, context) -> plugin.handOff(context,
-                        new HandOffInput(reachedIds, "[VERA] " + subject.label(), text)));
+                        new HandOffInput(reachedIds, "[VERA] " + subject.label(), text, null)));
         boolean sent = outcome instanceof PluginOutcome.Answered<HandOffAnswer> answer
                 && answer.answer().sent();
         return new SendResult(reachedIds, sent);
     }
 
     private String handOff(PluginInstances.Instance instance, String implementation,
-            MessageSubjects.Subject subject, List<String> reachable) {
+            MessageSubjects.Subject subject, List<String> reachable, String sender) {
         if (reachable.isEmpty() || "slackBot".equals(implementation)) {
             return null;
         }
@@ -99,7 +99,7 @@ final class MessageCommands {
         PluginOutcome<HandOffAnswer> outcome = plugins.call(instance.id(), Message.class,
                 "handOff", (plugin, context) -> plugin.handOff(context,
                         new HandOffInput(subjects.routedRecipients(instance.id(), implementation, reachable),
-                                "[VERA] " + subject.label(), subject.context() + "\n\n" + link)));
+                                "[VERA] " + subject.label(), subject.context() + "\n\n" + link, sender)));
         if (!(outcome instanceof PluginOutcome.Answered<HandOffAnswer> answer)) {
             return null;
         }

@@ -81,7 +81,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | List generator | `generate` | the shaping intention, its leaves and shares in scope, the pool, the current members, the pages, the top categories, a correcting allocation | the picks and why each, how many were spread, and each short leaf with its cause | — |
 | Link | `canonical` | a pasted PID or viewer address | the canonical link and where it is | `not_this_registry`, `malformed` |
 | Publication detector | `detect` | digitized and published iterations | links found | — |
-| Message | `handOff` | recipients, subject, text | an address to open (mailto, a chat link), or *sent* | — |
+| Message | `handOff` | recipients, subject, text, and the sender (optional) | an address to open (mailto, a chat link), or *sent* | — |
 | Delivery channel | `send` | the recipient, the payload or text | sent | `recipient_rejected` |
 | | `test` | the recipient | sent, with the time it took | `recipient_rejected` |
 
@@ -154,7 +154,8 @@ next run.
 #### PLG-api-version
 
 The contract's minor versions only add: a new optional operation, a new refusal code, a new
-field in an answer. A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
+field in an answer or input. Contract 1.2 adds the optional sender to the Message `handOff` input.
+A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
 1.2 does not know and is refused on a VERA running 1.2
 ([PLG-contract](plugins.md#plg-contract)).
 
