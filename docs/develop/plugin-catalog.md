@@ -40,6 +40,17 @@ the plugin does not perform those operations.
 The recognition inputs return, per item recognised: the catalog record and unit when found, the
 identifiers matched with their types, and the evidence, a crop of the photo per item.
 
+### `EntryLink`
+
+`allowed_origins` is a whitespace-separated list of origins VERA checks before offering a return
+link; the plugin does not enforce it ([ACT-entry-link](../reference/access/acts.md#act-entry-link),
+[PLG-api-entry](../reference/integrations/plugin-api.md#plg-api-entry)). `record_parameter` is an
+optional query parameter name for a portal's catalog record id; when absent or empty, no portal
+specific record parameter is read. The plugin also reads VERA's `record`, `identifier`, `type`,
+`unit` and `reason` parameters; reason is limited to 500 characters. It answers the page's origin
+for VERA to check. The plugin returns no refusals; VERA handles the `origin_not_allowed` check, and
+an unparseable page has no origin ([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds)).
+
 ## Identifier
 
 `Pattern`: one instance per identifier type (MZK sysno, barcode, shelf mark, ČNB). ISBN and ISSN
@@ -77,6 +88,14 @@ an entry link instead.
 | `ShelfMarkToSize` | size from the shelf mark's prefix |
 | `JqProperty` | any property by a jq expression over the record |
 
+### `ShelfMarkToSize`
+
+`table` is an optional comma-separated list of `prefix → size` pairs (also `->`), where the size
+is a value of the `size` property. The longest matching prefix wins. `tier` is an optional decimal
+integer and defaults to `50`. `values` answers the `size` property at that tier only when a prefix
+matches; otherwise it answers nothing. It has no refusal codes, and no MZK prefix table is shipped
+([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds)).
+
 ## Registry
 
 `KrameriusRegistry` (one instance per Kramerius: MZK, NDK, ČDK) · `RdczRegistry`.
@@ -100,6 +119,13 @@ an entry link instead.
 
 `MaterialType` · `PlaceOfPublication`. Worth trying later: a classifier trained on past
 approvals (17 000 labelled documents in the old VERA).
+
+### `MaterialType`
+
+`table` is a comma-separated list of `type → categoryId` pairs; `->` is also accepted, and type
+matching ignores case. For example, `periodical→c22, map→c4`. A matching document type answers
+that category with why `Document type: <type>`; an unmapped type answers no suggestion. It has no
+refusal codes ([PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds)).
 
 ## List generator
 

@@ -1,0 +1,18 @@
+{
+  "implementation": "cz.mzk.vera.material-type",
+  "version": "1.2.0",
+  "contractVersion": "1.2",
+  "triggers": ["OnProposal"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [{ "key": "table", "isSecret": false, "isRequired": true }]
+}

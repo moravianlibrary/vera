@@ -662,67 +662,67 @@
       {
         "id": "c1",
         "name": "Monographs",
-        "names": {"en": "Monographs", "cs": "Monografie"},
+        "names": { "en": "Monographs", "cs": "Monografie" },
         "parentId": null
       },
       {
         "id": "c11",
         "name": "19th century",
-        "names": {"en": "19th century", "cs": "19. století"},
+        "names": { "en": "19th century", "cs": "19. století" },
         "parentId": "c1"
       },
       {
         "id": "c12",
         "name": "20th century",
-        "names": {"en": "20th century", "cs": "20. století"},
+        "names": { "en": "20th century", "cs": "20. století" },
         "parentId": "c1"
       },
       {
         "id": "c2",
         "name": "Periodicals",
-        "names": {"en": "Periodicals", "cs": "Periodika"},
+        "names": { "en": "Periodicals", "cs": "Periodika" },
         "parentId": null
       },
       {
         "id": "c21",
         "name": "Regional",
-        "names": {"en": "Regional", "cs": "Regionální"},
+        "names": { "en": "Regional", "cs": "Regionální" },
         "parentId": "c2"
       },
       {
         "id": "c22",
         "name": "National",
-        "names": {"en": "National", "cs": "Národní"},
+        "names": { "en": "National", "cs": "Národní" },
         "parentId": "c2"
       },
       {
         "id": "c23",
         "name": "Specialist",
-        "names": {"en": "Specialist", "cs": "Odborné"},
+        "names": { "en": "Specialist", "cs": "Odborné" },
         "parentId": "c2"
       },
       {
         "id": "c3",
         "name": "Manuscripts",
-        "names": {"en": "Manuscripts", "cs": "Rukopisy"},
+        "names": { "en": "Manuscripts", "cs": "Rukopisy" },
         "parentId": null
       },
       {
         "id": "c31",
         "name": "Medieval",
-        "names": {"en": "Medieval", "cs": "Středověké"},
+        "names": { "en": "Medieval", "cs": "Středověké" },
         "parentId": "c3"
       },
       {
         "id": "c32",
         "name": "Early modern",
-        "names": {"en": "Early modern", "cs": "Raně novověké"},
+        "names": { "en": "Early modern", "cs": "Raně novověké" },
         "parentId": "c3"
       },
       {
         "id": "c4",
         "name": "Maps",
-        "names": {"en": "Maps", "cs": "Mapy"},
+        "names": { "en": "Maps", "cs": "Mapy" },
         "parentId": null
       }
     ],
@@ -1243,7 +1243,7 @@
       {
         "id": "d1",
         "name": "House mix",
-        "names": {"en": "House mix", "cs": "Domácí mix"},
+        "names": { "en": "House mix", "cs": "Domácí mix" },
         "isPrimary": true,
         "archivedAt": null,
         "shares": {
@@ -1284,7 +1284,7 @@
       {
         "id": "d2",
         "name": "Periodicals push",
-        "names": {"en": "Periodicals push", "cs": "Podpora periodik"},
+        "names": { "en": "Periodicals push", "cs": "Podpora periodik" },
         "isPrimary": false,
         "archivedAt": null,
         "shares": {
@@ -1326,7 +1326,7 @@
         "id": "t1",
         "description": "What the scanning room should deliver this month.",
         "namePattern": "Monthly output — {period}",
-        "namePatterns": {"cs": "Měsíční výstup — {period}", "en": "Monthly output — {period}"},
+        "namePatterns": { "cs": "Měsíční výstup — {period}", "en": "Monthly output — {period}" },
         "every": "month",
         "funding": {
           "kind": "any"
@@ -13083,7 +13083,7 @@
       {
         "id": "pi1",
         "name": "MZK Aleph",
-        "names": {"cs": "MZK Aleph", "en": "MZK Aleph"},
+        "names": { "cs": "MZK Aleph", "en": "MZK Aleph" },
         "implementationId": "pt1",
         "configuration": {
           "base_url": "aleph.mzk.cz",
@@ -13103,7 +13103,7 @@
       {
         "id": "pi2",
         "name": "NKP Aleph",
-        "names": {"cs": "NKP Aleph", "en": "NKP Aleph"},
+        "names": { "cs": "NKP Aleph", "en": "NKP Aleph" },
         "implementationId": "pt1",
         "configuration": {
           "base_url": "aleph.nkp.cz",
@@ -13124,7 +13124,7 @@
       {
         "id": "pi3",
         "name": "VKOL Aleph",
-        "names": {"cs": "VKOL Aleph", "en": "VKOL Aleph"},
+        "names": { "cs": "VKOL Aleph", "en": "VKOL Aleph" },
         "implementationId": "pt1",
         "configuration": {
           "base_url": "aleph.vkol.cz",
@@ -13144,7 +13144,7 @@
       {
         "id": "pi4",
         "name": "MZK Kramerius",
-        "names": {"cs": "MZK Kramerius", "en": "MZK Kramerius"},
+        "names": { "cs": "MZK Kramerius", "en": "MZK Kramerius" },
         "implementationId": "pt2",
         "configuration": {
           "base_url": "kramerius.mzk.cz",
@@ -13163,7 +13163,7 @@
       {
         "id": "pi5",
         "name": "RDCZ production",
-        "names": {"cs": "Produkce RDCZ", "en": "RDCZ production"},
+        "names": { "cs": "Produkce RDCZ", "en": "RDCZ production" },
         "implementationId": "pt3",
         "configuration": {
           "base_url": "registrdigitalizace.cz",
@@ -13182,7 +13182,7 @@
       {
         "id": "pi6",
         "name": "Periodicals model",
-        "names": {"cs": "Model periodik", "en": "Periodicals model"},
+        "names": { "cs": "Model periodik", "en": "Periodicals model" },
         "implementationId": "pt4",
         "configuration": {
           "model": "periodical-v3",
@@ -13201,7 +13201,7 @@
       {
         "id": "pi7",
         "name": "Monographs model",
-        "names": {"cs": "Model monografií", "en": "Monographs model"},
+        "names": { "cs": "Model monografií", "en": "Monographs model" },
         "implementationId": "pt4",
         "configuration": {
           "model": "monograph-v1",
@@ -13220,7 +13220,7 @@
       {
         "id": "pi8",
         "name": "Moravian periodicals",
-        "names": {"cs": "Moravská periodika", "en": "Moravian periodicals"},
+        "names": { "cs": "Moravská periodika", "en": "Moravian periodicals" },
         "implementationId": "pt5",
         "configuration": {
           "region": "CZ-64",
@@ -13240,7 +13240,7 @@
       {
         "id": "pi29",
         "name": "MZK Kramerius sweep",
-        "names": {"cs": "Sklizeň Krameria MZK", "en": "MZK Kramerius sweep"},
+        "names": { "cs": "Sklizeň Krameria MZK", "en": "MZK Kramerius sweep" },
         "implementationId": "pt26",
         "configuration": {
           "base_url": "kramerius.mzk.cz",
@@ -13260,7 +13260,7 @@
       {
         "id": "pi9",
         "name": "Default ruleset",
-        "names": {"cs": "Výchozí sada pravidel", "en": "Default ruleset"},
+        "names": { "cs": "Výchozí sada pravidel", "en": "Default ruleset" },
         "implementationId": "pt6",
         "configuration": {
           "severity": "blocking",
@@ -13279,7 +13279,7 @@
       {
         "id": "pi10",
         "name": "Language check",
-        "names": {"cs": "Kontrola jazyka", "en": "Language check"},
+        "names": { "cs": "Kontrola jazyka", "en": "Language check" },
         "implementationId": "pt7",
         "configuration": {
           "severity": "advisory"
@@ -13297,7 +13297,7 @@
       {
         "id": "pi28",
         "name": "Czech copyright",
-        "names": {"cs": "Česká autorská práva", "en": "Czech copyright"},
+        "names": { "cs": "Česká autorská práva", "en": "Czech copyright" },
         "implementationId": "pt25",
         "configuration": {
           "years": "70",
@@ -13317,7 +13317,7 @@
       {
         "id": "pi25",
         "name": "Serials",
-        "names": {"cs": "Periodika", "en": "Serials"},
+        "names": { "cs": "Periodika", "en": "Serials" },
         "implementationId": "pt19",
         "configuration": {
           "expr": ".document.type == \"Periodical\""
@@ -13338,7 +13338,7 @@
       {
         "id": "pi34",
         "name": "Printed 1800–1899",
-        "names": {"cs": "Tisky 1800–1899", "en": "Printed 1800–1899"},
+        "names": { "cs": "Tisky 1800–1899", "en": "Printed 1800–1899" },
         "implementationId": "pt19",
         "configuration": {
           "expr": ".record.fields.\"260\".c // \"\" | test(\"^18\")"
@@ -13359,7 +13359,7 @@
       {
         "id": "pi35",
         "name": "Moravica project",
-        "names": {"cs": "Projekt Moravica", "en": "Moravica project"},
+        "names": { "cs": "Projekt Moravica", "en": "Moravica project" },
         "implementationId": "pt19",
         "configuration": {
           "expr": ".request.project == \"Moravica\""
@@ -13380,7 +13380,7 @@
       {
         "id": "pi12",
         "name": "Camera",
-        "names": {"cs": "Fotoaparát", "en": "Camera"},
+        "names": { "cs": "Fotoaparát", "en": "Camera" },
         "implementationId": "pt9",
         "configuration": {
           "formats": "ean13,code128",
@@ -13399,7 +13399,7 @@
       {
         "id": "pi13",
         "name": "OCR pilot",
-        "names": {"cs": "Pilot OCR", "en": "OCR pilot"},
+        "names": { "cs": "Pilot OCR", "en": "OCR pilot" },
         "implementationId": "pt10",
         "configuration": {
           "engine": "tesseract",
@@ -13419,7 +13419,7 @@
       {
         "id": "pi14",
         "name": "Priority, then age",
-        "names": {"cs": "Nejdřív priorita, pak stáří", "en": "Priority, then age"},
+        "names": { "cs": "Nejdřív priorita, pak stáří", "en": "Priority, then age" },
         "implementationId": "pt11",
         "configuration": {
           "tolerance": "5%",
@@ -13438,7 +13438,7 @@
       {
         "id": "pi15",
         "name": "Pilot",
-        "names": {"cs": "Pilot", "en": "Pilot"},
+        "names": { "cs": "Pilot", "en": "Pilot" },
         "implementationId": "pt12",
         "configuration": {
           "model": "vera-advisor-2",
@@ -13457,7 +13457,7 @@
       {
         "id": "pi22",
         "name": "MZK Keycloak",
-        "names": {"cs": "MZK Keycloak", "en": "MZK Keycloak"},
+        "names": { "cs": "MZK Keycloak", "en": "MZK Keycloak" },
         "implementationId": "pt20",
         "configuration": {
           "issuer": "sso.mzk.cz/realms/mzk",
@@ -13498,7 +13498,7 @@
       {
         "id": "pi24",
         "name": "Local accounts",
-        "names": {"cs": "Místní účty", "en": "Local accounts"},
+        "names": { "cs": "Místní účty", "en": "Local accounts" },
         "implementationId": "pt22",
         "configuration": {
           "signup": "on",
@@ -13526,7 +13526,7 @@
       {
         "id": "pi41",
         "name": "Google",
-        "names": {"cs": "Google", "en": "Google"},
+        "names": { "cs": "Google", "en": "Google" },
         "implementationId": "pt20",
         "configuration": {
           "issuer": "accounts.google.com",
@@ -13551,7 +13551,7 @@
       {
         "id": "pi42",
         "name": "Seznam",
-        "names": {"cs": "Seznam", "en": "Seznam"},
+        "names": { "cs": "Seznam", "en": "Seznam" },
         "implementationId": "pt20",
         "configuration": {
           "issuer": "login.szn.cz",
@@ -13576,7 +13576,7 @@
       {
         "id": "pi26",
         "name": "Email",
-        "names": {"cs": "E-mail", "en": "Email"},
+        "names": { "cs": "E-mail", "en": "Email" },
         "implementationId": "pt23",
         "configuration": {
           "cc_sender": "off"
@@ -13597,7 +13597,7 @@
       {
         "id": "pi27",
         "name": "MZK Slack",
-        "names": {"cs": "MZK Slack", "en": "MZK Slack"},
+        "names": { "cs": "MZK Slack", "en": "MZK Slack" },
         "implementationId": "pt24",
         "configuration": {
           "workspace": "mzk",
@@ -13619,7 +13619,7 @@
       {
         "id": "pi44",
         "name": "MZK Slack bot",
-        "names": {"cs": "MZK Slack bot", "en": "MZK Slack bot"},
+        "names": { "cs": "MZK Slack bot", "en": "MZK Slack bot" },
         "implementationId": "pt39",
         "configuration": {
           "workspace": "mzk",
@@ -13641,7 +13641,7 @@
       {
         "id": "pi16",
         "name": "MZK SMTP",
-        "names": {"cs": "MZK SMTP", "en": "MZK SMTP"},
+        "names": { "cs": "MZK SMTP", "en": "MZK SMTP" },
         "implementationId": "pt13",
         "configuration": {
           "host": "smtp.mzk.cz",
@@ -13662,7 +13662,7 @@
       {
         "id": "pi17",
         "name": "Mailgun — requesters",
-        "names": {"cs": "Mailgun — žadatelé", "en": "Mailgun — requesters"},
+        "names": { "cs": "Mailgun — žadatelé", "en": "Mailgun — requesters" },
         "implementationId": "pt14",
         "configuration": {
           "domain": "mg.mzk.cz",
@@ -13683,7 +13683,7 @@
       {
         "id": "pi18",
         "name": "MZK Slack",
-        "names": {"cs": "MZK Slack", "en": "MZK Slack"},
+        "names": { "cs": "MZK Slack", "en": "MZK Slack" },
         "implementationId": "pt15",
         "configuration": {
           "workspace": "mzk",
@@ -13703,7 +13703,7 @@
       {
         "id": "pi20",
         "name": "Webhooks",
-        "names": {"cs": "Webhooky", "en": "Webhooks"},
+        "names": { "cs": "Webhooky", "en": "Webhooks" },
         "implementationId": "pt17",
         "configuration": {
           "timeout": "10s",
@@ -13723,7 +13723,7 @@
       {
         "id": "pi21",
         "name": "Scan-ops SFTP",
-        "names": {"cs": "Digitalizační operace SFTP", "en": "Scan-ops SFTP"},
+        "names": { "cs": "Digitalizační operace SFTP", "en": "Scan-ops SFTP" },
         "implementationId": "pt18",
         "configuration": {
           "host": "scan-ops",
@@ -13744,7 +13744,7 @@
       {
         "id": "pi30",
         "name": "Regional press",
-        "names": {"cs": "Regionální tisk", "en": "Regional press"},
+        "names": { "cs": "Regionální tisk", "en": "Regional press" },
         "implementationId": "pt27",
         "configuration": {
           "places": "morav,brn,ostrav,olomou,znojm,slovác"
@@ -13765,7 +13765,7 @@
       {
         "id": "pi32",
         "name": "Digitální knihovna MZK",
-        "names": {"cs": "Digitální knihovna MZK", "en": "Digitální knihovna MZK"},
+        "names": { "cs": "Digitální knihovna MZK", "en": "Digitální knihovna MZK" },
         "implementationId": "pt29",
         "configuration": {
           "base_url": "https://www.digitalniknihovna.cz/mzk"
@@ -13783,7 +13783,7 @@
       {
         "id": "pi33",
         "name": "MZK Kramerius publications",
-        "names": {"cs": "Publikace MZK Kramerius", "en": "MZK Kramerius publications"},
+        "names": { "cs": "Publikace MZK Kramerius", "en": "MZK Kramerius publications" },
         "implementationId": "pt30",
         "configuration": {
           "base_url": "https://kramerius.mzk.cz"
@@ -13801,7 +13801,7 @@
       {
         "id": "pi36",
         "name": "Catalog ID",
-        "names": {"cs": "ID katalogového záznamu", "en": "Catalog ID"},
+        "names": { "cs": "ID katalogového záznamu", "en": "Catalog ID" },
         "configuration": {
           "type": "catalogId",
           "label_en": "Catalog ID",
@@ -13827,7 +13827,7 @@
       {
         "id": "pi37",
         "name": "NBN",
-        "names": {"cs": "ČNB", "en": "NBN"},
+        "names": { "cs": "ČNB", "en": "NBN" },
         "configuration": {
           "type": "nbn",
           "label_en": "NBN",
@@ -13853,7 +13853,7 @@
       {
         "id": "pi38",
         "name": "ISBN",
-        "names": {"cs": "ISBN", "en": "ISBN"},
+        "names": { "cs": "ISBN", "en": "ISBN" },
         "configuration": {
           "type": "isbn",
           "label_en": "ISBN",
@@ -13880,7 +13880,7 @@
       {
         "id": "pi39",
         "name": "ISSN",
-        "names": {"cs": "ISSN", "en": "ISSN"},
+        "names": { "cs": "ISSN", "en": "ISSN" },
         "configuration": {
           "type": "issn",
           "label_en": "ISSN",
@@ -13907,7 +13907,7 @@
       {
         "id": "pi40",
         "name": "Barcode",
-        "names": {"cs": "Čárový kód", "en": "Barcode"},
+        "names": { "cs": "Čárový kód", "en": "Barcode" },
         "configuration": {
           "type": "barcode",
           "label_en": "Barcode",
@@ -13933,7 +13933,7 @@
       {
         "id": "pi31",
         "name": "Material type",
-        "names": {"cs": "Typ dokumentu", "en": "Material type"},
+        "names": { "cs": "Typ dokumentu", "en": "Material type" },
         "implementationId": "pt28",
         "configuration": {
           "table": "periodical→c22, map→c4"
@@ -13954,10 +13954,11 @@
       {
         "id": "pi43",
         "name": "Tlačítko digitalizovat",
-        "names": {"cs": "Tlačítko digitalizovat", "en": "Tlačítko digitalizovat"},
+        "names": { "cs": "Tlačítko digitalizovat", "en": "Tlačítko digitalizovat" },
         "implementationId": "pt32",
         "configuration": {
-          "allowed_origins": "https://www.mzk.cz https://tlacitko.osdd.mzk.cz"
+          "allowed_origins": "https://www.mzk.cz https://tlacitko.osdd.mzk.cz",
+          "record_parameter": "sysno"
         },
         "triggers": ["OnDemand"],
         "createdAt": "2026-10-29",
@@ -17268,7 +17269,7 @@
       {
         "id": "s1",
         "instanceId": "pi1",
-        "names": {"cs": "MZK Aleph — synchronizace katalogu", "en": "MZK Aleph — catalog resync"},
+        "names": { "cs": "MZK Aleph — synchronizace katalogu", "en": "MZK Aleph — catalog resync" },
         "cadence": {
           "every": "minutes",
           "interval": 15
@@ -17281,7 +17282,7 @@
       {
         "id": "s6",
         "instanceId": "pi2",
-        "names": {"cs": "NKP Aleph — synchronizace katalogu", "en": "NKP Aleph — catalog resync"},
+        "names": { "cs": "NKP Aleph — synchronizace katalogu", "en": "NKP Aleph — catalog resync" },
         "cadence": {
           "every": "minutes",
           "interval": 15
@@ -17294,7 +17295,10 @@
       {
         "id": "s7",
         "instanceId": "pi3",
-        "names": {"cs": "VKOL Aleph — synchronizace katalogu", "en": "VKOL Aleph — catalog resync"},
+        "names": {
+          "cs": "VKOL Aleph — synchronizace katalogu",
+          "en": "VKOL Aleph — catalog resync"
+        },
         "cadence": {
           "every": "minutes",
           "interval": 15
@@ -17311,7 +17315,7 @@
       {
         "id": "s2",
         "instanceId": "pi4",
-        "names": {"cs": "Kramerius — aktualizace registru", "en": "Kramerius — registry refresh"},
+        "names": { "cs": "Kramerius — aktualizace registru", "en": "Kramerius — registry refresh" },
         "cadence": {
           "every": "minutes",
           "interval": 30
@@ -17324,7 +17328,7 @@
       {
         "id": "s3",
         "instanceId": "pi5",
-        "names": {"cs": "RDCZ — aktualizace registru", "en": "RDCZ — registry refresh"},
+        "names": { "cs": "RDCZ — aktualizace registru", "en": "RDCZ — registry refresh" },
         "cadence": {
           "every": "hours",
           "interval": 6
@@ -17337,7 +17341,10 @@
       {
         "id": "s4",
         "instanceId": "pi9",
-        "names": {"cs": "Kontrola platnosti katalogu — noční běh", "en": "Catalog validity — nightly sweep"},
+        "names": {
+          "cs": "Kontrola platnosti katalogu — noční běh",
+          "en": "Catalog validity — nightly sweep"
+        },
         "cadence": {
           "every": "day",
           "at": "02:00"
@@ -17350,7 +17357,7 @@
       {
         "id": "s5",
         "instanceId": "pi8",
-        "names": {"cs": "Sklizeň ISSN — týdně", "en": "ISSN harvest — weekly"},
+        "names": { "cs": "Sklizeň ISSN — týdně", "en": "ISSN harvest — weekly" },
         "cadence": {
           "every": "week",
           "weekday": 1,

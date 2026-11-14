@@ -10,9 +10,19 @@ import cz.mzk.vera.plugin.identity.BeginInput;
 import cz.mzk.vera.plugin.identity.CompleteAnswer;
 import cz.mzk.vera.plugin.identity.CompleteInput;
 import cz.mzk.vera.plugin.identity.Identity;
+import cz.mzk.vera.plugin.classifier.Classifier;
+import cz.mzk.vera.plugin.classifier.SuggestInput;
+import cz.mzk.vera.plugin.classifier.Suggestion;
+import cz.mzk.vera.plugin.input.EntryLinkInput;
+import cz.mzk.vera.plugin.input.EntryLinkInput.CatalogId;
 import cz.mzk.vera.plugin.message.HandOffAnswer;
 import cz.mzk.vera.plugin.message.HandOffInput;
 import cz.mzk.vera.plugin.message.Message;
+import cz.mzk.vera.plugin.propertysource.PropertySource;
+import cz.mzk.vera.plugin.propertysource.ValuesAnswer;
+import cz.mzk.vera.plugin.propertysource.ValuesInput;
+import cz.mzk.vera.plugin.records.Document;
+import cz.mzk.vera.plugin.records.Request;
 import cz.mzk.vera.pluginhost.PluginDeclarations;
 import cz.mzk.vera.pluginhost.PluginLoader;
 import java.io.IOException;
@@ -71,17 +81,55 @@ class RealPluginIntegrationTests {
             assertThat(context.configuration()).containsEntry("signup", "on")
                     .containsEntry("password_min", "12").containsEntry("mail_channel", "pi16");
         }
+
+        verifySigned(packages.resolve("entry-link-1.1.0.jar"));
+        try (PluginLoader.LoadedPlugin loaded = loader.load(
+                Files.readAllBytes(packages.resolve("entry-link-1.1.0.jar")))) {
+            EntryLinkInput plugin = (EntryLinkInput) loaded.implementation();
+            TestContext context = new TestContext("pi43", strings(configurations.get("pi43")),
+                    (username, password) -> PasswordCheck.NONE);
+            EntryLinkInput.EntryAnswer answer = plugin.entry(context,
+                    new EntryLinkInput.EntryInput(Map.of("sysno", "MZK01-001234567", "unit", "volume 2",
+                            "reason", "Research"), "https://www.mzk.cz/digitize"));
+            assertThat(answer.item()).isEqualTo(new CatalogId("MZK01-001234567"));
+            assertThat(answer.unit()).isEqualTo("volume 2");
+            assertThat(answer.reason()).isEqualTo("Research");
+            assertThat(answer.origin()).isEqualTo("https://www.mzk.cz");
+        }
+
+        verifySigned(packages.resolve("material-type-1.2.0.jar"));
+        try (PluginLoader.LoadedPlugin loaded = loader.load(
+                Files.readAllBytes(packages.resolve("material-type-1.2.0.jar")))) {
+            Classifier plugin = (Classifier) loaded.implementation();
+            TestContext context = new TestContext("pi31", strings(configurations.get("pi31")),
+                    (username, password) -> PasswordCheck.NONE);
+            Suggestion answer = plugin.suggest(context, new SuggestInput(
+                    new Request("r1", "d1", null, null, null, null, null, null, null),
+                    new Document("d1", null, null, "Title", "Periodical", null))).orElseThrow();
+            assertThat(answer.category().id()).isEqualTo("c22");
+            assertThat(answer.why()).isEqualTo("Document type: Periodical");
+        }
+
+        verifySigned(packages.resolve("shelf-mark-to-size-1.1.0.jar"));
+        try (PluginLoader.LoadedPlugin loaded = loader.load(
+                Files.readAllBytes(packages.resolve("shelf-mark-to-size-1.1.0.jar")))) {
+            PropertySource plugin = (PropertySource) loaded.implementation();
+            ValuesAnswer answer = plugin.values(new TestContext("pi48", Map.of(),
+                            (username, password) -> PasswordCheck.NONE),
+                    new ValuesInput(new Document("d1", null, null, "Title", "Book", "ST1-0032"), null));
+            assertThat(answer.values()).isEmpty();
+        }
     }
 
     private Map<String, JsonNode> configurations(JsonNode seed) {
         Map<String, JsonNode> result = new HashMap<>();
         for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
             String id = instance.path("id").asString();
-            if ("pi24".equals(id) || "pi26".equals(id)) {
+            if ("pi24".equals(id) || "pi26".equals(id) || "pi31".equals(id) || "pi43".equals(id)) {
                 result.put(id, instance.path("configuration"));
             }
         }
-        assertThat(result).containsKeys("pi24", "pi26");
+        assertThat(result).containsKeys("pi24", "pi26", "pi31", "pi43");
         return result;
     }
 
