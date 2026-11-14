@@ -1,6 +1,7 @@
 package cz.mzk.vera.requests;
 
 import static cz.mzk.vera.db.tables.Tables.DOCUMENTS;
+import static cz.mzk.vera.db.tables.Tables.PROJECTS;
 import static cz.mzk.vera.db.tables.Tables.REQUESTS;
 
 import cz.mzk.vera.plugin.records.Document;
@@ -13,10 +14,11 @@ record RequestPluginInput(Request request, Document document) {
     static RequestPluginInput read(DSLContext dsl, String requestId) {
         Record row = dsl.select(REQUESTS.ID, REQUESTS.DOCUMENT_ID, REQUESTS.REQUESTER_ID,
                         REQUESTS.AT, REQUESTS.REASON, REQUESTS.BATCH_ID, REQUESTS.PROJECT_ID,
-                        REQUESTS.CHECKED_AT, REQUESTS.DECISION,
+                        REQUESTS.CHECKED_AT, REQUESTS.DECISION, PROJECTS.NAME,
                         DOCUMENTS.ID, DOCUMENTS.CATALOG_ID, DOCUMENTS.UNIT_TYPE,
                         DOCUMENTS.UNIT_VALUE, DOCUMENTS.TITLE, DOCUMENTS.TYPE, DOCUMENTS.SHELF_MARK)
-                .from(REQUESTS.join(DOCUMENTS).on(REQUESTS.DOCUMENT_ID.eq(DOCUMENTS.ID)))
+                .from(REQUESTS.join(DOCUMENTS).on(REQUESTS.DOCUMENT_ID.eq(DOCUMENTS.ID))
+                        .leftJoin(PROJECTS).on(REQUESTS.PROJECT_ID.eq(PROJECTS.ID)))
                 .where(REQUESTS.ID.eq(requestId))
                 .fetchOne();
         if (row == null) {
@@ -29,7 +31,7 @@ record RequestPluginInput(Request request, Document document) {
         Request request = new Request(row.get(REQUESTS.ID), row.get(REQUESTS.DOCUMENT_ID),
                 row.get(REQUESTS.REQUESTER_ID), row.get(REQUESTS.AT).toInstant(),
                 row.get(REQUESTS.REASON),
-                row.get(REQUESTS.BATCH_ID), row.get(REQUESTS.PROJECT_ID),
+                row.get(REQUESTS.BATCH_ID), row.get(REQUESTS.PROJECT_ID), row.get(PROJECTS.NAME),
                 row.get(REQUESTS.CHECKED_AT) == null ? null : row.get(REQUESTS.CHECKED_AT).toInstant(),
                 row.get(REQUESTS.DECISION));
         return new RequestPluginInput(request, document);

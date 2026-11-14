@@ -18,7 +18,7 @@ class MaterialTypeTests {
     void mapsCaseInsensitiveTypesWithEitherArrowAndProvidesAReason() {
         PluginContext context = new TestContext(Map.of("table", "periodical→c22, map -> c4"));
         Optional<Suggestion> answer = new MaterialType().suggest(context,
-                new SuggestInput(new Request("r1", "d1", null, null, null, null, null, null, null),
+                new SuggestInput(new Request("r1", "d1", null, null, null, null, null, null, null, null),
                         new Document("d1", null, null, "Title", "PERIODICAL", null)));
 
         assertTrue(answer.isPresent());
@@ -29,7 +29,7 @@ class MaterialTypeTests {
     @Test
     void returnsNoSuggestionForAnUnmappedType() {
         Optional<Suggestion> answer = new MaterialType().suggest(new TestContext(Map.of("table", "map→c4")),
-                new SuggestInput(new Request("r1", "d1", null, null, null, null, null, null, null),
+                new SuggestInput(new Request("r1", "d1", null, null, null, null, null, null, null, null),
                         new Document("d1", null, null, "Title", "Periodical", null)));
 
         assertTrue(answer.isEmpty());

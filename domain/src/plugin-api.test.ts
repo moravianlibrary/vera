@@ -44,6 +44,7 @@ const request = {
   reason: null,
   batchId: "b1",
   projectId: null,
+  projectName: null,
   existingCopies: [],
   checkedAt: null,
   decision: "Pending",
@@ -99,7 +100,7 @@ const examples: [string, unknown, unknown][] = [
   ["lookup", { record, identifiers: [] }, { records: [] }],
   ["validationCheck", { record, properties: [] }, { defects: [] }],
   ["restrictionCheck", { record, properties: [] }, { findings: [] }],
-  ["place", { request, document: record }, { custodies: [] }],
+  ["place", { request, document: record, custodyId: null }, { custodies: [] }],
   ["suggest", { request, document: record }, null],
   [
     "generate",

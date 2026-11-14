@@ -13,6 +13,8 @@ import cz.mzk.vera.plugin.identity.Identity;
 import cz.mzk.vera.plugin.classifier.Classifier;
 import cz.mzk.vera.plugin.classifier.SuggestInput;
 import cz.mzk.vera.plugin.classifier.Suggestion;
+import cz.mzk.vera.plugin.custody.Custody;
+import cz.mzk.vera.plugin.custody.PlaceInput;
 import cz.mzk.vera.plugin.input.EntryLinkInput;
 import cz.mzk.vera.plugin.input.EntryLinkInput.CatalogId;
 import cz.mzk.vera.plugin.message.HandOffAnswer;
@@ -49,6 +51,7 @@ class RealPluginIntegrationTests {
         Path seedPath = Path.of(System.getenv("VERA_SEEDS_DIR"), "base.json");
         JsonNode seed = JSON.readTree(Files.readAllBytes(seedPath));
         Map<String, JsonNode> configurations = configurations(seed);
+        Map<String, String> custodyIds = custodyIds(seed);
         Path packages = Path.of(System.getProperty("vera.plugin.packages"));
         PluginDeclarations declarations = new PluginDeclarations(System.getenv("VERA_CONTRACT_DIR"));
         Path cache = Files.createTempDirectory("vera-plugin-integration-");
@@ -104,7 +107,7 @@ class RealPluginIntegrationTests {
             TestContext context = new TestContext("pi31", strings(configurations.get("pi31")),
                     (username, password) -> PasswordCheck.NONE);
             Suggestion answer = plugin.suggest(context, new SuggestInput(
-                    new Request("r1", "d1", null, null, null, null, null, null, null),
+                    new Request("r1", "d1", null, null, null, null, null, null, null, null),
                     new Document("d1", null, null, "Title", "Periodical", null))).orElseThrow();
             assertThat(answer.category().id()).isEqualTo("c22");
             assertThat(answer.why()).isEqualTo("Document type: Periodical");
@@ -119,17 +122,51 @@ class RealPluginIntegrationTests {
                     new ValuesInput(new Document("d1", null, null, "Title", "Book", "ST1-0032"), null));
             assertThat(answer.values()).isEmpty();
         }
+
+        verifySigned(packages.resolve("jq-custody-1.1.0.jar"));
+        try (PluginLoader.LoadedPlugin loaded = loader.load(
+                Files.readAllBytes(packages.resolve("jq-custody-1.1.0.jar")))) {
+            Custody plugin = (Custody) loaded.implementation();
+            Request request = new Request("r1", "d1", null, null, null, null,
+                    "p3", "Moravica", null, "Pending");
+            Document document = new Document("d1", null, null, "Title", "Periodical", null);
+            assertThat(plugin.place(new TestContext("pi25", strings(configurations.get("pi25")),
+                            (username, password) -> PasswordCheck.NONE),
+                    new PlaceInput(request, document, custodyIds.get("pi25"))).custodies())
+                    .containsExactly("pc1");
+            assertThat(plugin.place(new TestContext("pi34", strings(configurations.get("pi34")),
+                            (username, password) -> PasswordCheck.NONE),
+                    new PlaceInput(request, document, custodyIds.get("pi34"))).custodies()).isEmpty();
+            assertThat(plugin.place(new TestContext("pi35", strings(configurations.get("pi35")),
+                            (username, password) -> PasswordCheck.NONE),
+                    new PlaceInput(request, document, custodyIds.get("pi35"))).custodies())
+                    .containsExactly("pc3");
+        }
     }
 
     private Map<String, JsonNode> configurations(JsonNode seed) {
         Map<String, JsonNode> result = new HashMap<>();
         for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
             String id = instance.path("id").asString();
-            if ("pi24".equals(id) || "pi26".equals(id) || "pi31".equals(id) || "pi43".equals(id)) {
+            if ("pi24".equals(id) || "pi26".equals(id) || "pi31".equals(id) || "pi43".equals(id)
+                    || "pi25".equals(id) || "pi34".equals(id) || "pi35".equals(id)) {
                 result.put(id, instance.path("configuration"));
             }
         }
-        assertThat(result).containsKeys("pi24", "pi26", "pi31", "pi43");
+        assertThat(result).containsKeys("pi24", "pi26", "pi31", "pi43", "pi25", "pi34", "pi35");
+        return result;
+    }
+
+    private Map<String, String> custodyIds(JsonNode seed) {
+        Map<String, String> result = new HashMap<>();
+        for (JsonNode instance : seed.path("collections").path("pluginInstances")) {
+            String id = instance.path("id").asString();
+            if ("pi25".equals(id) || "pi34".equals(id) || "pi35".equals(id)) {
+                result.put(id, instance.path("settings").path("custodyId").asString(null));
+            }
+        }
+        assertThat(result).containsEntry("pi25", "pc1").containsEntry("pi34", "pc2")
+                .containsEntry("pi35", "pc3");
         return result;
     }
 

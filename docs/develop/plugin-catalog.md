@@ -115,6 +115,16 @@ matches; otherwise it answers nothing. It has no refusal codes, and no MZK prefi
 
 `JqCustody`.
 
+### `JqCustody`
+
+`expr` is a required jq 1.6 filter over `{ request, document, record }`; `request.project` is the
+project name, and `record` is null until record data is added to this API. An exact `true` output
+places the proposal in the instance's picked request custody; other outputs place it nowhere. A
+missing custody choice places nothing. An invalid expression or evaluation error fails the plugin
+call and makes no placement ([ACCESS-custody-by-plugins](../reference/access/custody.md#access-custody-by-plugins),
+[PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds),
+[PLG-api-outcome](../reference/integrations/plugin-api.md#plg-api-outcome)).
+
 ## Classifier
 
 `MaterialType` · `PlaceOfPublication`. Worth trying later: a classifier trained on past

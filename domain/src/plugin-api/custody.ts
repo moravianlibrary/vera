@@ -2,7 +2,11 @@
 import { z } from "zod";
 import { documentSchema, requestSchema } from "../entities";
 export const custodyRefusals = z.never();
-export const placeInputSchema = z.object({ request: requestSchema, document: documentSchema });
+export const placeInputSchema = z.object({
+  request: requestSchema.and(z.object({ projectName: z.string().nullable() })),
+  document: documentSchema,
+  custodyId: z.string().nullable(),
+});
 export const placeAnswerSchema = z.object({ custodies: z.array(z.string()) });
 export interface Custody {
   place(input: PlaceInput): Promise<PlaceAnswer>;

@@ -76,8 +76,8 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Registry | `lookup` | the record's identifiers | the raw state and its link, per record found | — |
 | Validation | `check` | the record and its properties | defects: rule, field, detail | — |
 | Restriction | `check` | the record and its properties | a finding per rule: forbidden or not, until when, why | — |
-| Custody | `place` | the request and its document | the request custodies that take it | — |
-| Classifier | `suggest` | the request and its document | a category and why, or none | — |
+| Custody | `place` | the request and its document, and the request custody picked for this instance (nullable); the request includes `projectName` | the request custodies that take it | — |
+| Classifier | `suggest` | the request (including `projectName`) and its document | a category and why, or none | — |
 | List generator | `generate` | the shaping intention, its leaves and shares in scope, the pool, the current members, the pages, the top categories, a correcting allocation | the picks and why each, how many were spread, and each short leaf with its cause | — |
 | Link | `canonical` | a pasted PID or viewer address | the canonical link and where it is | `not_this_registry`, `malformed` |
 | Publication detector | `detect` | digitized and published iterations | links found | — |

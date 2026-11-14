@@ -158,10 +158,10 @@ class PluginRecordCallsTests {
         Document document = new Document("D20", "MZK01-001622010",
                 new Document.Unit("volume-name", "1889"), "Národní listy", "Periodical", "ST1-0901");
         Request request = new Request("R16", "D20", "u6", Instant.parse("2026-06-22T09:00:00Z"),
-                "Needed for a seminar in October.", "B-0038", null,
+                "Needed for a seminar in October.", "B-0038", null, null,
                 Instant.parse("2026-06-22T09:00:00Z"), "Pending");
         PlaceAnswer placed = answer(calls.call("pi25", Custody.class, "place",
-                (plugin, context) -> plugin.place(context, new PlaceInput(request, document))),
+                (plugin, context) -> plugin.place(context, new PlaceInput(request, document, "pc1"))),
                 cz.mzk.vera.plugin.custody.PlaceAnswer.class);
         assertThat(placed.custodies()).containsExactly("pc1", "pc2");
     }
@@ -171,9 +171,9 @@ class PluginRecordCallsTests {
         Document document = new Document("D20", "MZK01-001622010",
                 new Document.Unit("volume-name", "1889"), "Národní listy", "Periodical", "ST1-0901");
         Request request = new Request("new-request", "D20", "u6", Instant.parse("2026-06-22T09:00:00Z"),
-                null, "B-0038", null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
+                null, "B-0038", null, null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
         PlaceAnswer fallback = answer(calls.call("pi25", Custody.class, "place",
-                (plugin, context) -> plugin.place(context, new PlaceInput(request, document))),
+                (plugin, context) -> plugin.place(context, new PlaceInput(request, document, "pc1"))),
                 cz.mzk.vera.plugin.custody.PlaceAnswer.class);
         assertThat(fallback.custodies()).containsExactly("pc1");
     }
@@ -181,7 +181,7 @@ class PluginRecordCallsTests {
     @Test
     void classifierSuggestsRegionalPlaceForPeriodical() {
         Request request = new Request("new-request", "D20", "u6", Instant.parse("2026-06-22T09:00:00Z"),
-                null, "B-0038", null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
+                null, "B-0038", null, null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
         Document periodical = new Document("D20", "MZK01-001622010", null,
                 "Brno regional gazette", "Periodical", null);
         Optional<Suggestion> regional = suggestion("pi30", request, periodical);
@@ -192,7 +192,7 @@ class PluginRecordCallsTests {
     @Test
     void classifierSuggestsMaterialLeafForMap() {
         Request request = new Request("new-request", "D20", "u6", Instant.parse("2026-06-22T09:00:00Z"),
-                null, "B-0038", null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
+                null, "B-0038", null, null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
         Document map = new Document("D-map", "", null, "Map", "Map", null);
         assertThat(suggestion("pi31", request, map)).contains(new Suggestion(new Category("c4", "Maps", null),
                 "Map"));
@@ -201,7 +201,7 @@ class PluginRecordCallsTests {
     @Test
     void classifierHasNoSuggestionForMonograph() {
         Request request = new Request("new-request", "D20", "u6", Instant.parse("2026-06-22T09:00:00Z"),
-                null, "B-0038", null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
+                null, "B-0038", null, null, Instant.parse("2026-06-22T09:00:00Z"), "Pending");
         Document monograph = new Document("D-book", "", null, "Book", "Monograph", null);
         assertThat(suggestion("pi31", request, monograph)).isEmpty();
     }
