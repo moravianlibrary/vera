@@ -16,12 +16,12 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/api": {
-          target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8080",
+          target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8081",
           changeOrigin: true,
         },
-        // The engine's fake Identity providers' page, in live mode only (handoff decision 3).
+        // The backend's fake Identity providers' page, in live mode only (handoff decision 3).
         "/_engine/identity": {
-          target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8080",
+          target: env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8081",
           changeOrigin: true,
         },
       },

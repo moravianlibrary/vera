@@ -32,7 +32,7 @@ describe("OpenAPI document", () => {
       if (endpoint.status === 201) expect(operation.responses["201"]).toBeDefined();
       if (endpoint.redirects) expect(operation.responses["302"]?.headers?.Location).toBeDefined();
       expect(operation["x-vera-codes"]).toEqual(endpoint.codes);
-      expect(operation["x-vera-engine"] === false).toBe(endpoint.engine === false);
+      expect(operation["x-vera-engine"]).toBeUndefined();
       expect(name).toBeTruthy();
     }
   });

@@ -256,7 +256,6 @@ export function openApiOf(table: Record<string, OpenApiEndpoint>) {
         },
       };
     if (endpoint.public) operation["x-vera-public"] = true;
-    if (endpoint.engine === false) operation["x-vera-engine"] = false;
     if (endpoint.redirects) {
       operation.responses["302"] = {
         description: "Redirect",

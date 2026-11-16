@@ -4,21 +4,17 @@ MAKEFLAGS += --no-print-directory
 FRONTEND_PID := .frontend.pid
 FRONTEND_LOG := .frontend.log
 
-# ─── The engine, which the frontend's live mode proxies /api to ───
-ENGINE_PORT ?= 8080
-ENGINE_URL := http://127.0.0.1:$(ENGINE_PORT)
-ENGINE_PID := .engine.pid
-ENGINE_LOG := .engine.log
+# ─── The Java testing backend, which the frontend's live mode proxies /api to ───
 BACKEND_PORT ?= 8081
 BACKEND_DB_PORT ?= 5433
 SEED ?= base
 SEED_NUMBER ?= 1
 SCALE ?= 1
 # VERA_TEST_WORKERS  frontend test workers (default 4)
-# live: the dev servers talk to the engine, started for them; mock: to the in-browser mock.
+# live: the dev servers talk to the backend, started for them; mock: to the in-browser mock.
 API_MODE ?= live
-api-env = VITE_API_MODE=$(API_MODE) VITE_API_PROXY_TARGET=$(ENGINE_URL)
-engine-for-api = $(if $(filter live,$(API_MODE)),engine-bg)
+api-env = VITE_API_MODE=$(API_MODE) VITE_API_PROXY_TARGET=http://127.0.0.1:$(BACKEND_PORT)
+backend-for-api = $(if $(filter live,$(API_MODE)),backend-bg)
 
 # ─── One frontend per fake user ───
 # Each fake user gets its own port, by its place in this list: admin on 5201, curator on 5202…
@@ -29,7 +25,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up engine engine-bg engine-stop engine-reset engine-test backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -54,39 +50,6 @@ frontend-user: ## Set the frontend fake user (make frontend-user MOCK_USER=reade
 frontend-fault: ## Make the mock fail on purpose (make frontend-fault MOCK_FAULT=data; none ends it)
 	@case "$(MOCK_FAULT)" in none|unavailable|data|slow) ;; *) echo "Usage: make frontend-fault MOCK_FAULT=none|unavailable|data|slow"; exit 1 ;; esac
 	cd frontend && bun -e 'const fault = Bun.argv[1]; const file = Bun.file(".env.local"); let text = await file.exists() ? await file.text() : await Bun.file(".env.example").text(); if (/^VITE_MOCK_FAULT=/m.test(text)) text = text.replace(/^VITE_MOCK_FAULT=.*$$/m, "VITE_MOCK_FAULT=" + fault); else text = text.trimEnd() + "\nVITE_MOCK_FAULT=" + fault + "\n"; await Bun.write(".env.local", text); console.log("Mock fault set to " + fault + ". Restart the dev server to apply it.");' "$(MOCK_FAULT)"
-
-# The engine in the foreground; Ctrl-C stops it. Its database is engine/.data/vera.sqlite.
-engine: ## Run the engine in the foreground (ENGINE_PORT=8080)
-	cd engine && VERA_ENGINE_DEVELOPMENT=1 VERA_ENGINE_PORT=$(ENGINE_PORT) bun run src/main.ts
-
-engine-pid = $$(head -n 1 $(ENGINE_PID))
-engine-is-running = test -f $(ENGINE_PID) && \
-	test "$$(ps -o lstart= -p $(engine-pid) 2>/dev/null)" = "$$(tail -n 1 $(ENGINE_PID))"
-
-# The same pid-and-start-time scheme as the frontend's, below.
-engine-bg: ## Run the engine in the background (pid in .engine.pid, logs in .engine.log)
-	@if $(engine-is-running); then echo "Engine already running (pid $(engine-pid)) on $(ENGINE_URL)"; exit 0; fi; \
-	rm -f $(ENGINE_PID); \
-	( cd engine && VERA_ENGINE_DEVELOPMENT=1 VERA_ENGINE_PORT=$(ENGINE_PORT) setsid sh -c \
-		'{ echo $$$$; ps -o lstart= -p $$$$; } > ../$(ENGINE_PID).tmp && mv ../$(ENGINE_PID).tmp ../$(ENGINE_PID) && exec bun run src/main.ts' \
-	) > $(ENGINE_LOG) 2>&1 < /dev/null & \
-	while ! test -f $(ENGINE_PID); do sleep 0.1; done; \
-	tries=0; while ! grep -q "VERA engine on" $(ENGINE_LOG) && $(engine-is-running) && [ $$tries -lt 100 ]; do \
-		sleep 0.1; tries=$$((tries + 1)); done; \
-	if grep -q "VERA engine on" $(ENGINE_LOG); then echo "Engine on $(ENGINE_URL) (pid $(engine-pid))"; \
-	else echo "Engine did not start, see $(ENGINE_LOG)"; exit 1; fi
-
-engine-stop: ## Stop the background engine
-	@if ! test -f $(ENGINE_PID); then echo "Engine is not running (no $(ENGINE_PID))"; exit 0; fi; \
-	if $(engine-is-running); then kill -- -"$(engine-pid)" && echo "Engine stopped (pid $(engine-pid))"; \
-	else echo "Engine was not running: pid $(engine-pid) is gone or now belongs to another process"; fi; \
-	rm -f $(ENGINE_PID)
-
-engine-reset: ## Reset the running engine to a seed (SEED=base)
-	@curl -fsS -X POST -H 'Content-Type: application/json' -d '{"seed":"$(SEED)"}' $(ENGINE_URL)/_engine/reset; echo
-
-engine-test: ## Run the engine's tests
-	cd engine && bun test
 
 backend-db: ## Start the local PostgreSQL 18 backend database (BACKEND_DB_PORT=5433)
 	@if docker container inspect vera-backend-db >/dev/null 2>&1; then docker start vera-backend-db; else \
@@ -121,10 +84,8 @@ backend-stop: ## Stop the background backend
 	else echo "Backend was not running: pid $(backend-pid) is gone or now belongs to another process"; fi; \
 	rm -f .backend.pid
 
-backend-replay: backend-db ## Replay recordings against the background backend
-	cd backend && ./gradlew :testing:pluginPackages
-	$(MAKE) backend-bg
-	@trap '$(MAKE) backend-stop' EXIT; VERA_REPLAY_PACKAGES=$(CURDIR)/backend/testing/build/plugin-packages VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) $(MAKE) replay
+backend-reset: ## Reset the running backend to a seed (SEED=base)
+	@curl -fsS -X POST -H 'Content-Type: application/json' -d '{"seed":"$(SEED)"}' http://127.0.0.1:$(BACKEND_PORT)/_engine/reset; echo
 
 plugins: ## Build and sign the shipped plugin packages
 	cd backend && ./gradlew :plugins:packages
@@ -135,13 +96,24 @@ backend-build: ## Build the backend
 backend-test: ## Run the backend tests
 	cd backend && ./gradlew test
 
-replay: ## Replay recordings against VERA_API_URL or an in-process engine; VERA_REPLAY_ALL=1 runs skips (backend)
-	cd replay && bun test
+replay: ## Replay recordings against VERA_API_URL or the background backend
+	@if [ -n "$(VERA_API_URL)" ]; then \
+		cd replay && VERA_API_URL="$(VERA_API_URL)" bun test; \
+	else \
+		$(MAKE) backend-db || exit $$?; \
+		(cd backend && ./gradlew :testing:pluginPackages) || exit $$?; \
+		started=0; \
+		if ! $(backend-is-running); then $(MAKE) backend-bg || exit $$?; started=1; fi; \
+		trap 'if [ "$$started" = 1 ]; then $(MAKE) -C $(CURDIR) backend-stop; fi' EXIT; \
+		cd $(CURDIR)/replay && VERA_REPLAY_PACKAGES=$(CURDIR)/backend/testing/build/plugin-packages VERA_API_URL=http://127.0.0.1:$(BACKEND_PORT) bun test; \
+	fi
+
+backend-replay: replay ## Alias for replay
 
 record: ## Record mock API call lists through the frontend's MSW handlers
 	cd frontend && TZ=Europe/Prague VITE_API_BASE_URL=http://recording.test/api bun recordings/record.ts
 
-dev-frontend: frontend-env $(engine-for-api) ## Run the frontend dev server (API_MODE=live against the engine, or mock)
+dev-frontend: frontend-env $(backend-for-api) ## Run the frontend dev server (API_MODE=live against the backend, or mock)
 	cd frontend && $(api-env) bun run dev
 
 # The server runs in its own session and records its own pid, which is also its process group,
@@ -152,7 +124,7 @@ frontend-pid = $$(head -n 1 $(FRONTEND_PID))
 frontend-is-running = test -f $(FRONTEND_PID) && \
 	test "$$(ps -o lstart= -p $(frontend-pid) 2>/dev/null)" = "$$(tail -n 1 $(FRONTEND_PID))"
 
-dev-frontend-bg: frontend-env $(engine-for-api) ## Run the frontend dev server in the background (pid in .frontend.pid)
+dev-frontend-bg: frontend-env $(backend-for-api) ## Run the frontend dev server in the background (API_MODE=live against the backend, or mock; pid in .frontend.pid)
 	@if $(frontend-is-running); then \
 		echo "Frontend already running (pid $(frontend-pid))"; exit 0; \
 	fi; \
@@ -186,7 +158,7 @@ roles-shell = \
 	is_running() { test -f "$$1" && \
 		test "$$(ps -o lstart= -p "$$(head -n 1 "$$1")" 2>/dev/null)" = "$$(tail -n 1 "$$1")"; }
 
-dev-roles: frontend-env $(engine-for-api) ## Run a background dev server per fake user (ROLES="admin reader" for some)
+dev-roles: frontend-env $(backend-for-api) ## Run a background dev server per fake user against the backend (ROLES="admin reader" for some)
 	@$(roles-shell); mkdir -p $(ROLES_DIR); \
 	for role in $(ROLES); do \
 		port=$$(port_of "$$role"); \
@@ -286,7 +258,7 @@ test: ## Run the frontend tests and the shared packages' tests
 	cd domain && bun test
 	cd engine && bun test
 	cd seeds/tools && bun test
-	cd replay && bun test
+	cd replay && bun test refusal-coverage.test.ts src/coverage.test.ts src/endpoints.test.ts src/instants.test.ts src/recording.test.ts src/selection.test.ts
 
 version-check: ## Ensure package version matches VERSION
 	@test "$$(node -p "require('./frontend/package.json').version")" = "$$(cat VERSION)" || { echo "frontend/package.json and VERSION differ"; exit 1; }

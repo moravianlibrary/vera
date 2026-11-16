@@ -1,8 +1,7 @@
-// Every endpoint of VERA's API, as a table (docs/develop/engine.md, E1): its method, its path
+// Every endpoint of VERA's API, as a table: its method, its path
 // under the API's base (a route, with `:name` for a path segment), the schemas its input and its
-// answer fit, and the problem codes it may refuse with besides its status's own. The engine
-// serves exactly this table, and the OpenAPI document for the Java backend is to be made from it.
-// It grows with the engine, a step at a time.
+// answer fit, and the problem codes it may refuse with besides its status's own. The backend
+// serves this API, and the OpenAPI document for it is made from the table.
 
 import {
   accessGroupSchema,
@@ -258,8 +257,6 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   response?: z.ZodType<Value>;
   redirects?: boolean;
   public?: boolean;
-  // An endpoint the engine does not serve; the mock serves it until the backend does (DEC-0022).
-  engine?: false;
   // The codes of the refusals it may answer (ACT-refusal), besides each status's own.
   codes: readonly string[];
 }
@@ -339,7 +336,6 @@ export const endpoints = {
       "document.catalog_record_held",
       "iteration.outside_custody",
     ],
-    engine: false,
   }),
   requests: spec({
     method: "GET",
@@ -728,7 +724,6 @@ export const endpoints = {
     body: entryRequestSchema,
     response: entryAnswerSchema,
     codes: ["forbidden"],
-    engine: false,
   }),
   proposalRateLimit: spec({
     method: "GET",
@@ -805,7 +800,6 @@ export const endpoints = {
       "property.no_attempt",
       "iteration.scanned",
     ],
-    engine: false,
   }),
   propertyEntries: spec({
     method: "POST",
@@ -820,7 +814,6 @@ export const endpoints = {
       "property.no_attempt",
       "iteration.scanned",
     ],
-    engine: false,
   }),
   // Iterations and their links.
   iterationReclassify: spec({
@@ -837,7 +830,6 @@ export const endpoints = {
       "iteration.outside_custody",
       "iteration.not_current",
     ],
-    engine: false,
   }),
   iterationPublish: spec({
     method: "POST",
@@ -853,7 +845,6 @@ export const endpoints = {
       "iteration.outside_custody",
       "iteration.not_current",
     ],
-    engine: false,
   }),
   iterationReplaceLink: spec({
     method: "POST",
@@ -868,7 +859,6 @@ export const endpoints = {
       "iteration.outside_custody",
       "iteration.not_current",
     ],
-    engine: false,
   }),
   iterationPrimaryLink: spec({
     method: "POST",
@@ -878,7 +868,6 @@ export const endpoints = {
     body: z.object({}),
     response: publicationResultSchema,
     codes: ["iteration.already_primary_link", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationRemoveLink: spec({
     method: "DELETE",
@@ -887,7 +876,6 @@ export const endpoints = {
     params: z.object({ id: z.string(), linkId: z.string() }),
     response: publicationResultSchema,
     codes: ["iteration.last_link", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationPageCount: spec({
     method: "POST",
@@ -897,7 +885,6 @@ export const endpoints = {
     body: pageCountSchema,
     response: recheckResultSchema,
     codes: ["iteration.scanned", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationRecheck: spec({
     method: "POST",
@@ -907,7 +894,6 @@ export const endpoints = {
     body: recheckSchema,
     response: recheckResultSchema,
     codes: ["iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationCancel: spec({
     method: "POST",
@@ -917,7 +903,6 @@ export const endpoints = {
     body: cancellationRequestSchema,
     response: cancellationResultSchema,
     codes: ["iteration.already_held", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationResume: spec({
     method: "POST",
@@ -927,7 +912,6 @@ export const endpoints = {
     body: resumeSchema,
     response: releaseResultSchema,
     codes: ["iteration.not_held", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   iterationOverrule: spec({
     method: "POST",
@@ -937,7 +921,6 @@ export const endpoints = {
     body: overruleSchema,
     response: releaseResultSchema,
     codes: ["iteration.no_restriction", "iteration.outside_custody", "iteration.not_current"],
-    engine: false,
   }),
   // Validation lists and verdicts.
   validations: spec({
@@ -954,7 +937,6 @@ export const endpoints = {
     propertyFilters: true,
     response: validationPageSchema,
     codes: [],
-    engine: false,
   }),
   validationDetail: spec({
     method: "GET",
@@ -963,7 +945,6 @@ export const endpoints = {
     params: z.object({ iterationId: z.string() }),
     response: validationDetailSchema,
     codes: ["validation.not_waiting"],
-    engine: false,
   }),
   validationAccept: spec({
     method: "POST",
@@ -973,7 +954,6 @@ export const endpoints = {
     body: acceptanceSchema,
     response: verdictResultSchema,
     codes: ["validation.not_waiting", "validation.forbidden_by_rule"],
-    engine: false,
   }),
   validationDeny: spec({
     method: "POST",
@@ -983,7 +963,6 @@ export const endpoints = {
     body: denialSchema,
     response: verdictResultSchema,
     codes: ["validation.not_waiting", "validation.forbidden_by_rule"],
-    engine: false,
   }),
   validationRevoke: spec({
     method: "POST",
@@ -997,7 +976,6 @@ export const endpoints = {
       "validation.forbidden_by_rule",
       "validation.defects_not_accepted",
     ],
-    engine: false,
   }),
   // Batch retry.
   batchRetry: spec({
@@ -1008,7 +986,6 @@ export const endpoints = {
     body: z.object({}),
     response: batchRetryResultSchema,
     codes: ["batch.no_failed_items", "batch.outside_custody"],
-    engine: false,
   }),
   // Properties.
   properties: spec({
@@ -1017,7 +994,6 @@ export const endpoints = {
     summary: "Read property definitions.",
     response: propertyIndexSchema,
     codes: [],
-    engine: false,
   }),
   propertyCreate: spec({
     method: "POST",
@@ -1026,7 +1002,6 @@ export const endpoints = {
     body: newPropertySchema,
     response: propertyDefinitionSchema,
     codes: ["property.key_taken", "property.duplicate_value", "property.catalog_fact"],
-    engine: false,
   }),
   propertySave: spec({
     method: "PUT",
@@ -1041,7 +1016,6 @@ export const endpoints = {
       "property.duplicate_value",
       "property.catalog_fact",
     ],
-    engine: false,
   }),
   propertyImpact: spec({
     method: "GET",
@@ -1050,7 +1024,6 @@ export const endpoints = {
     params: z.object({ id: z.string() }),
     response: propertyImpactSchema,
     codes: [],
-    engine: false,
   }),
   propertyDelete: spec({
     method: "DELETE",
@@ -1058,7 +1031,6 @@ export const endpoints = {
     summary: "Deletes a property definition.",
     params: z.object({ id: z.string() }),
     codes: ["property.predefined"],
-    engine: false,
   }),
   // Users.
   users: spec({
@@ -1067,7 +1039,6 @@ export const endpoints = {
     summary: "Read people.",
     response: z.array(userSchema),
     codes: [],
-    engine: false,
   }),
   // Groups.
   groups: spec({
@@ -1076,7 +1047,6 @@ export const endpoints = {
     summary: "Read groups.",
     response: z.array(groupSchema),
     codes: [],
-    engine: false,
   }),
   // Roles.
   roles: spec({
@@ -1085,7 +1055,6 @@ export const endpoints = {
     summary: "Read role names.",
     response: z.array(roleNameSchema),
     codes: [],
-    engine: false,
   }),
   // Session channels.
   watchlistChannels: spec({
@@ -1094,7 +1063,6 @@ export const endpoints = {
     summary: "Read watchlist delivery channels.",
     response: z.array(watchlistChannelSchema),
     codes: [],
-    engine: false,
   }),
   // Push devices.
   pushDevices: spec({
@@ -1103,7 +1071,6 @@ export const endpoints = {
     summary: "Read registered push devices.",
     response: pushDevicesSchema,
     codes: [],
-    engine: false,
   }),
   pushDeviceRegister: spec({
     method: "POST",
@@ -1112,7 +1079,6 @@ export const endpoints = {
     body: pushSubscriptionSchema,
     response: pushDevicesSchema,
     codes: [],
-    engine: false,
   }),
   notificationPreferenceGet: spec({
     method: "GET",
@@ -1121,7 +1087,6 @@ export const endpoints = {
     params: z.object({ token: z.string() }),
     response: publicNotificationPreferencesSchema,
     codes: ["notification.link_expired"],
-    engine: false,
   }),
   // Notification preferences.
   notificationPreferencePatch: spec({
@@ -1132,7 +1097,6 @@ export const endpoints = {
     body: z.object({ notifications: notificationChoicesSchema }),
     response: publicNotificationPreferencesSchema,
     codes: ["notification.link_expired"],
-    engine: false,
   }),
   // Notification hooks.
   notificationHooks: spec({
@@ -1141,7 +1105,6 @@ export const endpoints = {
     summary: "Read notification hooks.",
     response: z.array(notificationHookSchema),
     codes: [],
-    engine: false,
   }),
   // Messages.
   messageChannels: spec({
@@ -1150,7 +1113,6 @@ export const endpoints = {
     summary: "Read message channels.",
     response: z.array(messageChannelSchema),
     codes: [],
-    engine: false,
   }),
   messageHandOff: spec({
     method: "GET",
@@ -1162,7 +1124,6 @@ export const endpoints = {
     }),
     response: messageHandOffSchema,
     codes: ["message.subject_missing", "message.subject_not_found"],
-    engine: false,
   }),
   messageSend: spec({
     method: "POST",
@@ -1181,7 +1142,6 @@ export const endpoints = {
       "message.subject_not_found",
       "message.unreachable",
     ],
-    engine: false,
   }),
   // Digitization lists: the reference data and the list planning inputs.
   lists: spec({
@@ -1190,7 +1150,6 @@ export const endpoints = {
     summary: "Read digitization lists.",
     response: z.array(digitizationListSchema),
     codes: [],
-    engine: false,
   }),
   digitizationLists: spec({
     method: "GET",
@@ -1205,7 +1164,6 @@ export const endpoints = {
     ),
     response: listPageSchema,
     codes: [],
-    engine: false,
   }),
   digitizationListCreate: spec({
     method: "POST",
@@ -1215,7 +1173,6 @@ export const endpoints = {
     body: listDraftSchema,
     response: listDetailSchema,
     codes: ["list.ends_before_start", "list.member_unknown", "list.member_unavailable"],
-    engine: false,
   }),
   digitizationListPool: spec({
     method: "GET",
@@ -1232,7 +1189,6 @@ export const endpoints = {
     propertyFilters: true,
     response: poolPageSchema,
     codes: [],
-    engine: false,
   }),
   listGenerators: spec({
     method: "GET",
@@ -1240,7 +1196,6 @@ export const endpoints = {
     summary: "Read enabled list generators.",
     response: z.array(listGeneratorSchema),
     codes: [],
-    engine: false,
   }),
   listShapes: spec({
     method: "GET",
@@ -1248,7 +1203,6 @@ export const endpoints = {
     summary: "Read list shapes.",
     response: z.array(listShapeSchema),
     codes: [],
-    engine: false,
   }),
   listReading: spec({
     method: "POST",
@@ -1257,7 +1211,6 @@ export const endpoints = {
     body: listReadingRequestSchema,
     response: listReadingSchema,
     codes: ["list.intention_not_found"],
-    engine: false,
   }),
   listGeneration: spec({
     method: "POST",
@@ -1266,7 +1219,6 @@ export const endpoints = {
     body: generationRequestSchema,
     response: generationDraftSchema,
     codes: ["list.intention_ended", "list.allocation_outside_mix", "list.correction_needs_mix"],
-    engine: false,
   }),
   listDetail: spec({
     method: "GET",
@@ -1275,7 +1227,6 @@ export const endpoints = {
     params: z.object({ listId: z.string() }),
     response: listDetailSchema,
     codes: [],
-    engine: false,
   }),
   listSave: spec({
     method: "PUT",
@@ -1290,7 +1241,6 @@ export const endpoints = {
       "list.member_unknown",
       "list.member_unavailable",
     ],
-    engine: false,
   }),
   listStart: spec({
     method: "POST",
@@ -1300,7 +1250,6 @@ export const endpoints = {
     body: z.object({}),
     response: listDetailSchema,
     codes: ["list.done", "list.already_started"],
-    engine: false,
   }),
   listDonePreview: spec({
     method: "GET",
@@ -1309,7 +1258,6 @@ export const endpoints = {
     params: z.object({ listId: z.string() }),
     response: markDoneDryRunSchema,
     codes: ["list.done", "list.not_started"],
-    engine: false,
   }),
   listDone: spec({
     method: "POST",
@@ -1319,7 +1267,6 @@ export const endpoints = {
     body: z.object({}),
     response: listDetailSchema,
     codes: ["list.done", "list.not_started"],
-    engine: false,
   }),
   listDeletion: spec({
     method: "GET",
@@ -1328,7 +1275,6 @@ export const endpoints = {
     params: z.object({ listId: z.string() }),
     response: deletionDryRunSchema,
     codes: ["list.done"],
-    engine: false,
   }),
   listDelete: spec({
     method: "DELETE",
@@ -1336,7 +1282,6 @@ export const endpoints = {
     summary: "Deletes a digitization list.",
     params: z.object({ listId: z.string() }),
     codes: ["list.done"],
-    engine: false,
   }),
   listNotDigitizable: spec({
     method: "POST",
@@ -1346,7 +1291,6 @@ export const endpoints = {
     body: notDigitizableRequestSchema,
     response: listDetailSchema,
     codes: ["list.done", "list.not_started", "list.member_not_found", "iteration.stopped"],
-    engine: false,
   }),
   // Projects: reference data and the project index.
   projects: spec({
@@ -1355,7 +1299,6 @@ export const endpoints = {
     summary: "Read projects.",
     response: z.array(projectSchema),
     codes: [],
-    engine: false,
   }),
   projectIndex: spec({
     method: "GET",
@@ -1368,7 +1311,6 @@ export const endpoints = {
     ),
     response: projectIndexSchema,
     codes: [],
-    engine: false,
   }),
   projectDetail: spec({
     method: "GET",
@@ -1377,7 +1319,6 @@ export const endpoints = {
     params: z.object({ projectId: z.string() }),
     response: projectDetailSchema,
     codes: [],
-    engine: false,
   }),
   projectCreate: spec({
     method: "POST",
@@ -1387,7 +1328,6 @@ export const endpoints = {
     body: projectDraftSchema,
     response: projectDetailSchema,
     codes: [],
-    engine: false,
   }),
   projectPreview: spec({
     method: "POST",
@@ -1397,7 +1337,6 @@ export const endpoints = {
     body: projectDraftSchema,
     response: projectChangeSchema,
     codes: [],
-    engine: false,
   }),
   projectSave: spec({
     method: "PUT",
@@ -1407,7 +1346,6 @@ export const endpoints = {
     body: projectDraftSchema,
     response: projectDetailSchema,
     codes: [],
-    engine: false,
   }),
   projectMembers: spec({
     method: "PUT",
@@ -1417,7 +1355,6 @@ export const endpoints = {
     body: projectMembersSchema,
     response: projectDetailSchema,
     codes: ["person.not_found", "group.not_found"],
-    engine: false,
   }),
   projectDecision: spec({
     method: "GET",
@@ -1426,7 +1363,6 @@ export const endpoints = {
     params: z.object({ projectId: z.string() }),
     response: decisionDryRunSchema,
     codes: ["project.decided"],
-    engine: false,
   }),
   projectApprove: spec({
     method: "POST",
@@ -1436,7 +1372,6 @@ export const endpoints = {
     body: projectApprovalSchema,
     response: projectDetailSchema,
     codes: ["project.decided"],
-    engine: false,
   }),
   projectReject: spec({
     method: "POST",
@@ -1446,7 +1381,6 @@ export const endpoints = {
     body: projectRejectionSchema,
     response: projectDetailSchema,
     codes: ["project.decided"],
-    engine: false,
   }),
   projectDelete: spec({
     method: "DELETE",
@@ -1454,7 +1388,6 @@ export const endpoints = {
     summary: "Deletes a project.",
     params: z.object({ projectId: z.string() }),
     codes: ["project.has_proposals"],
-    engine: false,
   }),
   // Categories: reference data and the category index.
   categories: spec({
@@ -1463,7 +1396,6 @@ export const endpoints = {
     summary: "Read categories.",
     response: z.array(categorySchema),
     codes: [],
-    engine: false,
   }),
   categoryIndex: spec({
     method: "GET",
@@ -1472,7 +1404,6 @@ export const endpoints = {
     query: z.object({ mix: z.string().optional() }),
     response: categoryIndexSchema,
     codes: [],
-    engine: false,
   }),
   categoryCreate: spec({
     method: "POST",
@@ -1481,7 +1412,6 @@ export const endpoints = {
     body: categoryDraftSchema,
     response: categorySchema,
     codes: ["category.not_found", "category.holds_documents", "category.name_taken"],
-    engine: false,
   }),
   categorySave: spec({
     method: "PUT",
@@ -1496,7 +1426,6 @@ export const endpoints = {
       "category.holds_documents",
       "category.name_taken",
     ],
-    engine: false,
   }),
   categoryDelete: spec({
     method: "DELETE",
@@ -1504,7 +1433,6 @@ export const endpoints = {
     summary: "Deletes a category.",
     params: z.object({ categoryId: z.string() }),
     codes: ["category.has_children", "category.holds_documents", "category.scope"],
-    engine: false,
   }),
   categoryImpact: spec({
     method: "GET",
@@ -1513,7 +1441,6 @@ export const endpoints = {
     params: z.object({ categoryId: z.string() }),
     response: categoryImpactSchema,
     codes: [],
-    engine: false,
   }),
   categoryCustody: spec({
     method: "PUT",
@@ -1523,7 +1450,6 @@ export const endpoints = {
     body: custodyDraftSchema,
     response: categoryNodeSchema,
     codes: ["category.custody_member_unknown"],
-    engine: false,
   }),
   categoryRefine: spec({
     method: "POST",
@@ -1533,7 +1459,6 @@ export const endpoints = {
     body: refineDraftSchema,
     response: categorySchema,
     codes: ["category.has_children", "category.name_taken"],
-    engine: false,
   }),
   // Mixes: the current mix records.
   mixes: spec({
@@ -1542,7 +1467,6 @@ export const endpoints = {
     summary: "Read mix records.",
     response: z.array(mixRecordSchema),
     codes: [],
-    engine: false,
   }),
   mixDetail: spec({
     method: "GET",
@@ -1551,7 +1475,6 @@ export const endpoints = {
     params: z.object({ mixId: z.string() }),
     response: mixRecordSchema,
     codes: [],
-    engine: false,
   }),
   mixCreate: spec({
     method: "POST",
@@ -1560,7 +1483,6 @@ export const endpoints = {
     body: mixDraftSchema,
     response: mixRecordSchema,
     codes: ["mix.name_taken", "mix.revision_not_found"],
-    engine: false,
   }),
   mixSetSave: spec({
     method: "PUT",
@@ -1570,7 +1492,6 @@ export const endpoints = {
     body: mixSetChangeSchema,
     response: mixRecordSchema,
     codes: ["mix.is_archived", "mix.revision", "mix.child_missing", "mix.over_hundred"],
-    engine: false,
   }),
   mixSnapshot: spec({
     method: "POST",
@@ -1580,7 +1501,6 @@ export const endpoints = {
     body: mixSnapshotDraftSchema,
     response: mixRecordSchema,
     codes: ["mix.revision_not_found", "mix.revision_labelled"],
-    engine: false,
   }),
   mixPrimary: spec({
     method: "POST",
@@ -1590,7 +1510,6 @@ export const endpoints = {
     body: z.object({}),
     response: mixRecordSchema,
     codes: ["mix.is_archived"],
-    engine: false,
   }),
   mixArchive: spec({
     method: "POST",
@@ -1600,7 +1519,6 @@ export const endpoints = {
     body: z.object({}),
     response: mixRecordSchema,
     codes: ["mix.is_primary"],
-    engine: false,
   }),
   mixDelete: spec({
     method: "DELETE",
@@ -1608,7 +1526,6 @@ export const endpoints = {
     summary: "Deletes a mix.",
     params: z.object({ mixId: z.string() }),
     codes: ["mix.is_primary", "mix.in_use"],
-    engine: false,
   }),
   // Intentions: index, preview, creation and repeat templates.
   intentions: spec({
@@ -1627,7 +1544,6 @@ export const endpoints = {
       "intention.mix_inactive",
       "intention.revision_required",
     ],
-    engine: false,
   }),
   intentionIndex: spec({
     method: "GET",
@@ -1635,7 +1551,6 @@ export const endpoints = {
     summary: "Read the intention index.",
     response: intentionIndexSchema,
     codes: [],
-    engine: false,
   }),
   intentionPreview: spec({
     method: "POST",
@@ -1644,7 +1559,6 @@ export const endpoints = {
     body: intentionPreviewRequestSchema,
     response: intentionPreviewSchema,
     codes: [],
-    engine: false,
   }),
   intentionTemplates: spec({
     method: "POST",
@@ -1659,7 +1573,6 @@ export const endpoints = {
       "category.not_found",
       "property.not_found",
     ],
-    engine: false,
   }),
   intentionSave: spec({
     method: "PUT",
@@ -1680,7 +1593,6 @@ export const endpoints = {
       "intention.mix_inactive",
       "intention.revision_required",
     ],
-    engine: false,
   }),
   intentionArchive: spec({
     method: "POST",
@@ -1690,7 +1602,6 @@ export const endpoints = {
     body: z.object({}),
     response: intentionRowSchema,
     codes: ["intention.overall", "intention.project"],
-    engine: false,
   }),
   intentionUnarchive: spec({
     method: "POST",
@@ -1700,7 +1611,6 @@ export const endpoints = {
     body: z.object({}),
     response: intentionRowSchema,
     codes: ["intention.project", "intention.is_archived"],
-    engine: false,
   }),
   intentionCorrection: spec({
     method: "GET",
@@ -1710,7 +1620,6 @@ export const endpoints = {
     query: z.object({ pages: z.string().optional() }),
     response: correctionPreviewSchema,
     codes: ["list.page_count_required", "list.intention_not_found", "list.correction_needs_mix"],
-    engine: false,
   }),
   intentionMix: spec({
     method: "GET",
@@ -1719,7 +1628,6 @@ export const endpoints = {
     params: z.object({ intentionId: z.string() }),
     response: intentionMixSchema,
     codes: [],
-    engine: false,
   }),
   intentionDeletion: spec({
     method: "GET",
@@ -1728,7 +1636,6 @@ export const endpoints = {
     params: z.object({ intentionId: z.string() }),
     response: intentionDeletionSchema,
     codes: ["intention.is_archived", "intention.overall", "intention.project"],
-    engine: false,
   }),
   intentionDelete: spec({
     method: "DELETE",
@@ -1736,7 +1643,6 @@ export const endpoints = {
     summary: "Deletes an intention.",
     params: z.object({ intentionId: z.string() }),
     codes: ["intention.is_archived", "intention.overall", "intention.project"],
-    engine: false,
   }),
   intentionTemplateSave: spec({
     method: "PUT",
@@ -1751,7 +1657,6 @@ export const endpoints = {
       "category.not_found",
       "property.not_found",
     ],
-    engine: false,
   }),
 
   // Plugins
@@ -1761,7 +1666,6 @@ export const endpoints = {
     summary: "Read plugins.",
     response: pluginIndexSchema,
     codes: [],
-    engine: false,
   }),
   pluginInstances: spec({
     method: "GET",
@@ -1769,7 +1673,6 @@ export const endpoints = {
     summary: "Read plugin instances.",
     response: z.array(pluginInstanceSchema),
     codes: [],
-    engine: false,
   }),
   pluginInstanceCreate: spec({
     method: "POST",
@@ -1788,7 +1691,6 @@ export const endpoints = {
       "plugin.config_missing",
       "plugin.no_such_category",
     ],
-    engine: false,
   }),
   pluginInstanceSave: spec({
     method: "PUT",
@@ -1810,7 +1712,6 @@ export const endpoints = {
       "plugin.last_identity",
       "plugin.predefined",
     ],
-    engine: false,
   }),
   pluginInstanceDelete: spec({
     method: "DELETE",
@@ -1818,7 +1719,6 @@ export const endpoints = {
     summary: "Deletes a plugin instance.",
     params: z.object({ id: z.string() }),
     codes: ["plugin.last_identity", "plugin.predefined"],
-    engine: false,
   }),
   pluginInstanceEnable: spec({
     method: "POST",
@@ -1834,7 +1734,6 @@ export const endpoints = {
       "plugin.no_such_role",
       "plugin.predefined",
     ],
-    engine: false,
   }),
   pluginInstanceDisable: spec({
     method: "POST",
@@ -1844,7 +1743,6 @@ export const endpoints = {
     body: z.object({}),
     response: pluginInstanceDetailSchema,
     codes: ["plugin.predefined"],
-    engine: false,
   }),
   pluginInstanceReset: spec({
     method: "POST",
@@ -1854,7 +1752,6 @@ export const endpoints = {
     body: z.object({}),
     response: pluginInstanceDetailSchema,
     codes: ["forbidden", "not_found", "plugin.no_cursor"],
-    engine: false,
   }),
   pluginInstanceImpact: spec({
     method: "GET",
@@ -1863,7 +1760,6 @@ export const endpoints = {
     params: z.object({ id: z.string() }),
     response: pluginImpactSchema,
     codes: [],
-    engine: false,
   }),
   pluginInstanceRun: spec({
     method: "POST",
@@ -1873,7 +1769,6 @@ export const endpoints = {
     body: z.object({}),
     response: runSchema,
     codes: ["forbidden", "plugin.not_runnable", "plugin.disabled"],
-    engine: false,
   }),
   pluginInstanceUpgradeRead: spec({
     method: "GET",
@@ -1882,7 +1777,6 @@ export const endpoints = {
     params: z.object({ id: z.string() }),
     response: instanceUpgradeSchema,
     codes: [],
-    engine: false,
   }),
   pluginInstanceUpgrade: spec({
     method: "POST",
@@ -1892,7 +1786,6 @@ export const endpoints = {
     body: z.object({}),
     response: pluginInstanceDetailSchema,
     codes: ["plugin.up_to_date", "plugin.contract"],
-    engine: false,
   }),
   pluginUpload: spec({
     method: "POST",
@@ -1907,7 +1800,6 @@ export const endpoints = {
       "plugin.other_implementation",
       "plugin.version_installed",
     ],
-    engine: false,
   }),
   pluginUploadInstall: spec({
     method: "POST",
@@ -1917,7 +1809,6 @@ export const endpoints = {
     body: z.object({}),
     response: pluginImplementationSchema,
     codes: [],
-    engine: false,
   }),
 
   // Tasks and runs
@@ -1927,7 +1818,6 @@ export const endpoints = {
     summary: "Read running tasks.",
     response: runningRunsSchema,
     codes: [],
-    engine: false,
   }),
   taskRetention: spec({
     method: "PUT",
@@ -1936,7 +1826,6 @@ export const endpoints = {
     body: retentionSchema,
     response: retentionSchema,
     codes: ["retention.failed_shorter"],
-    engine: false,
   }),
   tasks: spec({
     method: "GET",
@@ -1952,7 +1841,6 @@ export const endpoints = {
     ),
     response: runIndexSchema,
     codes: [],
-    engine: false,
   }),
   taskDetail: spec({
     method: "GET",
@@ -1961,7 +1849,6 @@ export const endpoints = {
     params: z.object({ runId: z.string() }),
     response: runDetailSchema,
     codes: [],
-    engine: false,
   }),
   taskLog: spec({
     method: "GET",
@@ -1970,7 +1857,6 @@ export const endpoints = {
     params: z.object({ runId: z.string() }),
     response: z.string(),
     codes: [],
-    engine: false,
   }),
   taskCancel: spec({
     method: "POST",
@@ -1980,7 +1866,6 @@ export const endpoints = {
     body: z.object({}),
     response: runSchema,
     codes: ["task.not_running"],
-    engine: false,
   }),
   taskRerun: spec({
     method: "POST",
@@ -1990,7 +1875,6 @@ export const endpoints = {
     body: z.object({}),
     response: runSchema,
     codes: ["task.not_rerunnable"],
-    engine: false,
   }),
 
   // Schedules
@@ -2001,7 +1885,6 @@ export const endpoints = {
     query: z.object({ range: z.string().optional() }),
     response: scheduleIndexSchema,
     codes: [],
-    engine: false,
   }),
   scheduleCreate: spec({
     method: "POST",
@@ -2010,7 +1893,6 @@ export const endpoints = {
     body: newScheduleSchema,
     response: scheduleRowSchema,
     codes: ["schedule.quarterly_not_allowed", "schedule.too_often", "schedule.not_schedulable"],
-    engine: false,
   }),
   scheduleSave: spec({
     method: "PUT",
@@ -2020,7 +1902,6 @@ export const endpoints = {
     body: scheduleDraftSchema,
     response: scheduleRowSchema,
     codes: ["schedule.quarterly_not_allowed", "schedule.too_often", "schedule.not_schedulable"],
-    engine: false,
   }),
   scheduleDelete: spec({
     method: "DELETE",
@@ -2028,7 +1909,6 @@ export const endpoints = {
     summary: "Deletes a schedule.",
     params: z.object({ scheduleId: z.string() }),
     codes: [],
-    engine: false,
   }),
   schedulePause: spec({
     method: "POST",
@@ -2038,7 +1918,6 @@ export const endpoints = {
     body: pauseRequestSchema,
     response: scheduleRowSchema,
     codes: ["schedule.already_paused"],
-    engine: false,
   }),
   scheduleResume: spec({
     method: "POST",
@@ -2048,7 +1927,6 @@ export const endpoints = {
     body: z.object({}),
     response: scheduleRowSchema,
     codes: ["schedule.not_paused"],
-    engine: false,
   }),
   scheduleRun: spec({
     method: "POST",
@@ -2058,7 +1936,6 @@ export const endpoints = {
     body: z.object({}),
     response: runSchema,
     codes: [],
-    engine: false,
   }),
 
   // Hooks
@@ -2068,7 +1945,6 @@ export const endpoints = {
     summary: "Read hooks.",
     response: hookIndexSchema,
     codes: ["forbidden"],
-    engine: false,
   }),
   hookCreate: spec({
     method: "POST",
@@ -2083,7 +1959,6 @@ export const endpoints = {
       "hook.condition_kind",
       "hook.condition_invalid",
     ],
-    engine: false,
   }),
   hookSave: spec({
     method: "PUT",
@@ -2099,7 +1974,6 @@ export const endpoints = {
       "hook.condition_kind",
       "hook.condition_invalid",
     ],
-    engine: false,
   }),
   hookDelete: spec({
     method: "DELETE",
@@ -2107,7 +1981,6 @@ export const endpoints = {
     summary: "Deletes a hook.",
     params: z.object({ id: z.string() }),
     codes: [],
-    engine: false,
   }),
   hookPause: spec({
     method: "POST",
@@ -2117,7 +1990,6 @@ export const endpoints = {
     body: hookPauseSchema,
     response: hookSchema,
     codes: ["hook.already_paused"],
-    engine: false,
   }),
   hookResume: spec({
     method: "POST",
@@ -2127,7 +1999,6 @@ export const endpoints = {
     body: z.object({}),
     response: hookSchema,
     codes: ["hook.active", "hook.channel_unavailable"],
-    engine: false,
   }),
   hookRetry: spec({
     method: "POST",
@@ -2137,7 +2008,6 @@ export const endpoints = {
     body: z.object({}),
     response: z.array(hookDeliverySchema),
     codes: ["hook.channel_unavailable"],
-    engine: false,
   }),
   hookSendNow: spec({
     method: "POST",
@@ -2147,7 +2017,6 @@ export const endpoints = {
     body: z.object({}),
     response: z.array(hookDeliverySchema),
     codes: ["hook.already_paused", "hook.channel_unavailable"],
-    engine: false,
   }),
   hookDeliveryRetry: spec({
     method: "POST",
@@ -2157,7 +2026,6 @@ export const endpoints = {
     body: z.object({}),
     response: hookDeliverySchema,
     codes: ["hook.not_exhausted", "hook.channel_unavailable"],
-    engine: false,
   }),
   hookDeliveryDiscard: spec({
     method: "POST",
@@ -2167,7 +2035,6 @@ export const endpoints = {
     body: z.object({}),
     response: hookDeliverySchema,
     codes: ["hook.not_exhausted"],
-    engine: false,
   }),
   hookPreview: spec({
     method: "POST",
@@ -2182,7 +2049,6 @@ export const endpoints = {
       "hook.condition_kind",
       "hook.condition_invalid",
     ],
-    engine: false,
   }),
   hookTest: spec({
     method: "POST",
@@ -2197,7 +2063,6 @@ export const endpoints = {
       "hook.condition_kind",
       "hook.condition_invalid",
     ],
-    engine: false,
   }),
 
   // Watchlists
@@ -2211,7 +2076,6 @@ export const endpoints = {
     }),
     response: z.array(watchlistSummarySchema),
     codes: ["watchlist.manager_required"],
-    engine: false,
   }),
   watchlistCreate: spec({
     method: "POST",
@@ -2226,7 +2090,6 @@ export const endpoints = {
       "watchlist.source_unavailable",
       "watchlist.already_saved",
     ],
-    engine: false,
   }),
   watchlistReach: spec({
     method: "POST",
@@ -2235,7 +2098,6 @@ export const endpoints = {
     body: watchlistReachRequestSchema,
     response: watchlistReachSchema,
     codes: ["watchlist.manager_required", "watchlist.invalid_filter"],
-    engine: false,
   }),
   watchlistSave: spec({
     method: "PATCH",
@@ -2251,7 +2113,6 @@ export const endpoints = {
       "watchlist.personal_to_system",
       "watchlist.already_saved",
     ],
-    engine: false,
   }),
   watchlistViewer: spec({
     method: "PATCH",
@@ -2261,7 +2122,6 @@ export const endpoints = {
     body: watchlistViewerChangeSchema,
     response: watchlistViewerSchema,
     codes: [],
-    engine: false,
   }),
   watchlistSeen: spec({
     method: "POST",
@@ -2271,7 +2131,6 @@ export const endpoints = {
     body: z.object({}),
     response: watchlistViewerSchema,
     codes: [],
-    engine: false,
   }),
   watchlistDelete: spec({
     method: "DELETE",
@@ -2279,7 +2138,6 @@ export const endpoints = {
     summary: "Deletes a watchlist.",
     params: z.object({ watchlistId: z.string() }),
     codes: ["watchlist.manager_required"],
-    engine: false,
   }),
 };
 

@@ -1,19 +1,15 @@
-import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { beforeAll, describe, expect, it } from "bun:test";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
 import { normalizeInstants } from "./instants";
 import { knownGapCall, knownGaps } from "./known-gaps";
-import { startLocalEngine } from "./local-engine";
 import { mask } from "./mask";
 import { mediaTypeOf, type Recording, type RecordingCall, recordingSchema } from "./recording";
 import { selectScenario } from "./selection";
 
-const local = process.env.VERA_API_URL === undefined ? startLocalEngine() : undefined;
-const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "") ?? local?.url;
-if (baseUrl === undefined) throw new Error("Could not resolve the API base URL");
-afterAll(() => local?.stop());
+const baseUrl = process.env.VERA_API_URL?.replace(/\/$/, "");
+if (baseUrl === undefined) throw new Error("Set VERA_API_URL, or run make replay");
 
 const endpointResponse = await fetch(`${baseUrl}/_engine/endpoints`);
 const servedEndpoints =
@@ -42,15 +38,7 @@ const recordings = files.map((file) => ({
   ) as Recording,
 }));
 
-function unsupported(scenario: Recording["scenarios"][number]) {
-  return scenario.calls.find((call) => {
-    const name = endpointOf(call);
-    return name !== undefined && endpoints[name].engine === false;
-  });
-}
-
 function knownGap(file: string, scenario: Recording["scenarios"][number]) {
-  // These gaps describe the engine; a server that names its endpoints owns its own support set.
   return knownGaps.find(
     (gap) => gap.recording === file && gap.scenario === scenario.name && gap.calls === undefined,
   );
@@ -246,7 +234,6 @@ for (const { file, recording } of recordings) {
 
     for (const scenario of recording.scenarios) {
       const gap = knownGap(file, scenario);
-      const notServed = unsupported(scenario);
       const selection =
         servedEndpoints === undefined || process.env.VERA_REPLAY_ALL === "1"
           ? undefined
@@ -259,12 +246,6 @@ for (const { file, recording } of recordings) {
         gap !== undefined
       ) {
         it.skip(`${scenario.name} (known gap: ${gap.reason})`, () => {});
-      } else if (
-        process.env.VERA_REPLAY_ALL !== "1" &&
-        servedEndpoints === undefined &&
-        notServed !== undefined
-      ) {
-        it.skip(`${scenario.name} (engine does not serve ${notServed.method} ${notServed.path})`, () => {});
       } else {
         const replayScenario =
           selection?.kind === "run-without-reads"

@@ -316,8 +316,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/requests": {
@@ -2368,8 +2367,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/proposals/rate-limit": {
@@ -2752,8 +2750,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/documents/properties/{key}": {
@@ -2807,8 +2804,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/reclassify": {
@@ -2863,8 +2859,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/publish": {
@@ -2919,8 +2914,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/links/{linkId}/replace": {
@@ -2982,8 +2976,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/links/{linkId}/primary": {
@@ -3046,8 +3039,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/links/{linkId}": {
@@ -3098,8 +3090,7 @@
           "iteration.last_link",
           "iteration.outside_custody",
           "iteration.not_current"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/iterations/{id}/page-count": {
@@ -3152,8 +3143,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/recheck": {
@@ -3205,8 +3195,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/cancel": {
@@ -3259,8 +3248,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/resume": {
@@ -3313,8 +3301,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/iterations/{id}/overrule": {
@@ -3367,8 +3354,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/validations": {
@@ -3504,8 +3490,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/validations/{iterationId}": {
@@ -3546,8 +3531,7 @@
         },
         "x-vera-codes": [
           "validation.not_waiting"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/validations/{id}/accept": {
@@ -3599,8 +3583,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/validations/{id}/deny": {
@@ -3652,8 +3635,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/validations/{id}/revoke": {
@@ -3706,8 +3688,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/batches/{batchId}/retry": {
@@ -3761,8 +3742,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/properties": {
@@ -3792,8 +3772,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "propertyCreate",
@@ -3835,8 +3814,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/properties/{id}": {
@@ -3890,8 +3868,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "propertyDelete",
@@ -3923,8 +3900,7 @@
         },
         "x-vera-codes": [
           "property.predefined"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/properties/{id}/impact": {
@@ -3963,8 +3939,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/users": {
@@ -3998,8 +3973,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/groups": {
@@ -4033,8 +4007,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/roles": {
@@ -4068,8 +4041,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/session/watchlist-channels": {
@@ -4103,8 +4075,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/session/push-devices": {
@@ -4134,8 +4105,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "pushDeviceRegister",
@@ -4173,8 +4143,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/notification-preferences/{token}": {
@@ -4215,8 +4184,7 @@
         },
         "x-vera-codes": [
           "notification.link_expired"
-        ],
-        "x-vera-engine": false
+        ]
       },
       "patch": {
         "operationId": "notificationPreferencePatch",
@@ -4274,8 +4242,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/session/notification-hooks": {
@@ -4309,8 +4276,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/message-channels": {
@@ -4344,8 +4310,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/messages/hand-off": {
@@ -4395,8 +4360,7 @@
         "x-vera-codes": [
           "message.subject_missing",
           "message.subject_not_found"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/messages/send": {
@@ -4459,8 +4423,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/lists": {
@@ -4494,8 +4457,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/digitization-lists": {
@@ -4582,8 +4544,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "digitizationListCreate",
@@ -4625,8 +4586,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/digitization-lists/pool": {
@@ -4706,8 +4666,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/digitization-lists/generators": {
@@ -4741,8 +4700,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/digitization-lists/shapes": {
@@ -4776,8 +4734,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/digitization-lists/reading": {
@@ -4819,8 +4776,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/digitization-lists/generate": {
@@ -4864,8 +4820,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/digitization-lists/{listId}": {
@@ -4904,8 +4859,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "put": {
         "operationId": "listSave",
@@ -4957,8 +4911,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "listDelete",
@@ -4990,8 +4943,7 @@
         },
         "x-vera-codes": [
           "list.done"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/digitization-lists/{listId}/start": {
@@ -5045,8 +4997,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/digitization-lists/{listId}/done": {
@@ -5088,8 +5039,7 @@
         "x-vera-codes": [
           "list.done",
           "list.not_started"
-        ],
-        "x-vera-engine": false
+        ]
       },
       "post": {
         "operationId": "listDone",
@@ -5141,8 +5091,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/digitization-lists/{listId}/deletion": {
@@ -5183,8 +5132,7 @@
         },
         "x-vera-codes": [
           "list.done"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/digitization-lists/{listId}/items/{iterationId}/not-digitizable": {
@@ -5246,8 +5194,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/projects": {
@@ -5281,8 +5228,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "projectCreate",
@@ -5320,8 +5266,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/projects/overview": {
@@ -5408,8 +5353,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/projects/{projectId}": {
@@ -5448,8 +5392,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "put": {
         "operationId": "projectSave",
@@ -5496,8 +5439,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "projectDelete",
@@ -5529,8 +5471,7 @@
         },
         "x-vera-codes": [
           "project.has_proposals"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/projects/{projectId}/preview": {
@@ -5579,8 +5520,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/projects/{projectId}/members": {
@@ -5632,8 +5572,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/projects/{projectId}/decision": {
@@ -5674,8 +5613,7 @@
         },
         "x-vera-codes": [
           "project.decided"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/projects/{projectId}/approve": {
@@ -5726,8 +5664,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/projects/{projectId}/reject": {
@@ -5778,8 +5715,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/categories": {
@@ -5813,8 +5749,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "categoryCreate",
@@ -5856,8 +5791,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/categories/overview": {
@@ -5896,8 +5830,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/categories/{categoryId}": {
@@ -5951,8 +5884,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "categoryDelete",
@@ -5986,8 +5918,7 @@
           "category.has_children",
           "category.holds_documents",
           "category.scope"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/categories/{categoryId}/impact": {
@@ -6026,8 +5957,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/categories/{categoryId}/custody": {
@@ -6078,8 +6008,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/categories/{id}/refine": {
@@ -6131,8 +6060,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/mixes": {
@@ -6166,8 +6094,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "mixCreate",
@@ -6208,8 +6135,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/mixes/{mixId}": {
@@ -6248,8 +6174,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "delete": {
         "operationId": "mixDelete",
@@ -6282,8 +6207,7 @@
         "x-vera-codes": [
           "mix.is_primary",
           "mix.in_use"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/mixes/{mixId}/sets": {
@@ -6337,8 +6261,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/mixes/{mixId}/snapshots": {
@@ -6390,8 +6313,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/mixes/{mixId}/primary": {
@@ -6444,8 +6366,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/mixes/{mixId}/archive": {
@@ -6498,8 +6419,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intentions": {
@@ -6547,8 +6467,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intentions/overview": {
@@ -6578,8 +6497,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/intentions/preview": {
@@ -6619,8 +6537,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intention-templates": {
@@ -6665,8 +6582,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intentions/{intentionId}": {
@@ -6726,8 +6642,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "intentionDelete",
@@ -6761,8 +6676,7 @@
           "intention.is_archived",
           "intention.overall",
           "intention.project"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/intentions/{intentionId}/archive": {
@@ -6816,8 +6730,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intentions/{intentionId}/unarchive": {
@@ -6871,8 +6784,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/intentions/{intentionId}/correction": {
@@ -6923,8 +6835,7 @@
           "list.page_count_required",
           "list.intention_not_found",
           "list.correction_needs_mix"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/intentions/{intentionId}/mix": {
@@ -6963,8 +6874,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/intentions/{intentionId}/deletion": {
@@ -7007,8 +6917,7 @@
           "intention.is_archived",
           "intention.overall",
           "intention.project"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/intention-templates/{templateId}": {
@@ -7062,8 +6971,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugins": {
@@ -7093,8 +7001,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/plugin-instances": {
@@ -7128,8 +7035,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "pluginInstanceCreate",
@@ -7177,8 +7083,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-instances/{id}": {
@@ -7239,8 +7144,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "pluginInstanceDelete",
@@ -7273,8 +7177,7 @@
         "x-vera-codes": [
           "plugin.last_identity",
           "plugin.predefined"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/plugin-instances/{id}/enable": {
@@ -7331,8 +7234,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-instances/{id}/disable": {
@@ -7385,8 +7287,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-instances/{id}/reset": {
@@ -7441,8 +7342,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-instances/{id}/impact": {
@@ -7481,8 +7381,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/plugin-instances/{id}/run": {
@@ -7537,8 +7436,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-instances/{id}/upgrade": {
@@ -7577,8 +7475,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "pluginInstanceUpgrade",
@@ -7630,8 +7527,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-implementations/uploads": {
@@ -7690,8 +7586,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/plugin-implementations/uploads/{id}/install": {
@@ -7742,8 +7637,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/tasks/running": {
@@ -7773,8 +7667,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/tasks/retention": {
@@ -7816,8 +7709,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/tasks": {
@@ -7898,8 +7790,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/tasks/{runId}": {
@@ -7938,8 +7829,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/tasks/{runId}/log": {
@@ -7979,8 +7869,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/tasks/{runId}/cancel": {
@@ -8033,8 +7922,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/tasks/{runId}/rerun": {
@@ -8087,8 +7975,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/schedules": {
@@ -8127,8 +8014,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       },
       "post": {
         "operationId": "scheduleCreate",
@@ -8170,8 +8056,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/schedules/{scheduleId}": {
@@ -8224,8 +8109,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "scheduleDelete",
@@ -8255,8 +8139,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/schedules/{id}/pause": {
@@ -8307,8 +8190,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/schedules/{scheduleId}/resume": {
@@ -8361,8 +8243,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/schedules/{scheduleId}/run": {
@@ -8413,8 +8294,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks": {
@@ -8446,8 +8326,7 @@
         },
         "x-vera-codes": [
           "forbidden"
-        ],
-        "x-vera-engine": false
+        ]
       },
       "post": {
         "operationId": "hookCreate",
@@ -8491,8 +8370,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/{id}": {
@@ -8547,8 +8425,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "hookDelete",
@@ -8578,8 +8455,7 @@
             }
           }
         },
-        "x-vera-codes": [],
-        "x-vera-engine": false
+        "x-vera-codes": []
       }
     },
     "/hooks/{id}/pause": {
@@ -8630,8 +8506,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/{id}/resume": {
@@ -8685,8 +8560,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/{id}/retry": {
@@ -8743,8 +8617,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/{id}/send-now": {
@@ -8802,8 +8675,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/deliveries/{id}/retry": {
@@ -8857,8 +8729,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/deliveries/{id}/discard": {
@@ -8911,8 +8782,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/preview": {
@@ -8958,8 +8828,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/hooks/test": {
@@ -9005,8 +8874,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/watchlists": {
@@ -9059,8 +8927,7 @@
         },
         "x-vera-codes": [
           "watchlist.manager_required"
-        ],
-        "x-vera-engine": false
+        ]
       },
       "post": {
         "operationId": "watchlistCreate",
@@ -9103,8 +8970,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/watchlists/reach": {
@@ -9147,8 +9013,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/watchlists/{watchlistId}": {
@@ -9203,8 +9068,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       },
       "delete": {
         "operationId": "watchlistDelete",
@@ -9236,8 +9100,7 @@
         },
         "x-vera-codes": [
           "watchlist.manager_required"
-        ],
-        "x-vera-engine": false
+        ]
       }
     },
     "/watchlists/{watchlistId}/viewer": {
@@ -9286,8 +9149,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     },
     "/watchlists/{watchlistId}/seen": {
@@ -9338,8 +9200,7 @@
               }
             }
           }
-        },
-        "x-vera-engine": false
+        }
       }
     }
   },
