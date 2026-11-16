@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-// ACT-request-decide; VIEW-requests; LOG-one-act-one-story: port decisions.ts in one transaction.
+// ACT-approve; ACT-decline; VIEW-requests; LOG-one-act-one-story: port decisions.ts in one transaction.
 @Component
 public class RequestDecisions {
     private static final String PENDING = "Pending";

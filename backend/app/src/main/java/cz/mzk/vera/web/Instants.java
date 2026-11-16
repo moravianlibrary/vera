@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-/** Keeps wire instants in the engine's millisecond ISO format. */
+/** Keeps wire instants in the millisecond ISO format. */
 public final class Instants {
     private Instants() {}
 

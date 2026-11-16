@@ -1,6 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import {
   batchSchema,
@@ -12,19 +10,16 @@ import {
   userSchema,
 } from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
-import { createEngine } from "../../../engine/src/engine";
+import { extendSeed } from "../../../contract/src/seed-extends";
+import { seedPatchSchema, seedSchema } from "../../../contract/seed/seed";
 import { generateVolumeSeed } from "../seed-volume";
 import { logNormal, mulberry32 } from "./random";
 import { sampleArrival } from "./time";
 
 const seedDir = join(import.meta.dir, "../../..", "seeds");
-const base = await Bun.file(join(seedDir, "base.json")).json();
-const installation = await Bun.file(join(seedDir, "installation.json")).json();
+const base = seedSchema.parse(await Bun.file(join(seedDir, "base.json")).json());
+const installation = seedSchema.parse(await Bun.file(join(seedDir, "installation.json")).json());
 const reviewScaleSample = generateVolumeSeed(base, 321, 0.2);
-const temporary: string[] = [];
-afterEach(async () =>
-  Promise.all(temporary.splice(0).map((path) => rm(path, { recursive: true, force: true }))),
-);
 
 describe("volume seed generator", () => {
   test("is deterministic and validates all generated records", () => {
@@ -39,14 +34,14 @@ describe("volume seed generator", () => {
     const validationIds = new Set([
       "V-pi1",
       ...(base.collections.pluginInstances ?? [])
-        .filter((instance: any) =>
+        .filter((instance) =>
           (base.collections.pluginImplementations ?? []).some(
-            (implementation: any) =>
+            (implementation) =>
               implementation.id === instance.implementationId &&
               implementation.kind === "Validation",
           ),
         )
-        .map((instance: any) => instance.id),
+        .map((instance) => instance.id),
     ]);
     for (const iteration of first.collections.iterations)
       for (const defect of iteration.defects) {
@@ -61,12 +56,11 @@ describe("volume seed generator", () => {
 
   test("produces scaled volumes and synthetic identities", () => {
     const result = generateVolumeSeed(base, 1, 0.02);
+    const baseCatalogCount = base.fakes?.catalogRecords?.length ?? 0;
     expect(result.collections.documents.length).toBeGreaterThan(308);
     expect(result.collections.documents.length).toBeLessThan(377);
-    expect(result.fakes.catalogRecords.length - base.fakes.catalogRecords.length).toBeLessThan(312);
-    expect(result.fakes.catalogRecords.length - base.fakes.catalogRecords.length).toBeGreaterThan(
-      255,
-    );
+    expect(result.fakes.catalogRecords.length - baseCatalogCount).toBeLessThan(312);
+    expect(result.fakes.catalogRecords.length - baseCatalogCount).toBeGreaterThan(255);
     expect(
       result.collections.users.filter(
         (user: any) =>
@@ -274,43 +268,9 @@ describe("volume seed generator", () => {
     expect(values[999]).toBeLessThan(154 * 1.15);
   });
 
-  test("the engine loads the extension and opens a staff session", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "vera-volume-"));
-    temporary.push(directory);
-    await writeFile(join(directory, "base.json"), JSON.stringify(base));
-    await writeFile(
-      join(directory, "installation.json"),
-      await readFile(join(seedDir, "installation.json"), "utf8"),
-    );
-    await writeFile(
-      join(directory, "volume.json"),
-      JSON.stringify(generateVolumeSeed(base, 2, 0.02)),
-    );
-    const engine = createEngine({
-      databasePath: ":memory:",
-      development: true,
-      seed: "volume",
-      seedsDir: directory,
-      frozenClock: true,
-    });
-    try {
-      const session = await engine.fetch(
-        new Request("http://engine.test/_engine/sessions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: "vu1" }),
-        }),
-      );
-      expect(session.status).toBe(200);
-      const response = await engine.fetch(
-        new Request("http://engine.test/api/session", {
-          headers: { Cookie: session.headers.get("Set-Cookie")!.split(";")[0]! },
-        }),
-      );
-      expect(response.status).toBe(200);
-    } finally {
-      engine.close();
-    }
+  test("the generated seed is a patch that extends the base seed", () => {
+    const generated = seedPatchSchema.parse(generateVolumeSeed(base, 2, 0.02));
+    expect(seedSchema.parse(extendSeed(base, generated))).toBeDefined();
   });
 });
 
@@ -328,7 +288,7 @@ function expectGeneratedIdsDoNotCollide(result: ReturnType<typeof generateVolume
         : [];
     const parentIds = new Set(
       parentCollections.flatMap((collections) => {
-        const rows = collections[name];
+        const rows = (collections as Record<string, unknown>)[name];
         return Array.isArray(rows)
           ? rows.map(idOf).filter((id): id is string => id !== undefined)
           : typeof rows === "object" && rows !== null
@@ -340,7 +300,7 @@ function expectGeneratedIdsDoNotCollide(result: ReturnType<typeof generateVolume
   }
 
   const parentCatalogIds = new Set(
-    [...(base.fakes.catalogRecords ?? []), ...(installation.fakes?.catalogRecords ?? [])].map(
+    [...(base.fakes?.catalogRecords ?? []), ...(installation.fakes?.catalogRecords ?? [])].map(
       (record: { catalogId: string }) => record.catalogId,
     ),
   );
@@ -354,7 +314,7 @@ function expectGeneratedIdsDoNotCollide(result: ReturnType<typeof generateVolume
     true,
   );
   expect(generatedCatalogIds.length).toBe(
-    result.fakes.catalogRecords.length - base.fakes.catalogRecords.length,
+    result.fakes.catalogRecords.length - (base.fakes?.catalogRecords?.length ?? 0),
   );
   expect(new Set(catalogIds).size).toBe(catalogIds.length);
 }

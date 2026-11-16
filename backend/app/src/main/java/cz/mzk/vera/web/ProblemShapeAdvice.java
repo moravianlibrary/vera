@@ -11,7 +11,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-// The engine's problem shape omits instance.
+// The API problem shape omits instance.
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public final class ProblemShapeAdvice implements ResponseBodyAdvice<Object> {

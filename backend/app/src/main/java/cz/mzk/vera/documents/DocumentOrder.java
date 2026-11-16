@@ -12,7 +12,7 @@ import org.jooq.Select;
 import org.jooq.SortField;
 import org.jooq.impl.DSL;
 
-// VIEW-documents-order: define the audience-specific list order once.
+// VIEW-documents-audience: define the audience-specific list order once.
 public final class DocumentOrder {
     private enum Priority {
         LOW("Low", 0.0), NORMAL("Normal", 1.0), HIGH("High", 2.0), URGENT("Urgent", 3.0);

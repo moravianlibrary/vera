@@ -1,4 +1,4 @@
-// Property readers shared by the mock and the engine.
+// Property readers of the mock.
 
 import { countValues } from "@vera/domain/arrangement";
 import type { Document, Iteration, Session } from "@vera/domain/entities";

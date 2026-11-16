@@ -1,4 +1,5 @@
-// The complete on-disk seed format, shared by the engine and the backend loader.
+// The complete on-disk seed format: the seed tools write it, and the backend loader reads it
+// through its JSON Schema.
 
 import { hookConditionsSchema, hookRetrySchema } from "@vera/contract/hooks";
 import { intentionRowSchema } from "@vera/contract/intentions";
@@ -303,9 +304,9 @@ const seedCollections = z.strictObject({
 });
 // Data the fake plugins answer from: the catalog's records and the like.
 const fakesSchema = z.strictObject({
-  // engineRequestPlugins reads placement answers.
+  // The backend's fakes read placement answers.
   custodyPlacements: objectMap(z.array(id)).optional(),
-  // engineRequestPlugins reads the custody fallback rules.
+  // The backend's fakes read the custody fallback rules.
   custodyRules: z
     .array(
       z
@@ -313,11 +314,11 @@ const fakesSchema = z.strictObject({
         .strict(),
     )
     .optional(),
-  // engineRequestPlugins reads classification explanations by document type.
+  // The backend's fakes read classification explanations by document type.
   materialLeaves: objectMap(z.strictObject({ categoryId: id, reason: z.string() })).optional(),
-  // engineRequestPlugins reads place names for periodical suggestions.
+  // The backend's fakes read place names for periodical suggestions.
   moravianPlaces: z.array(z.string()).optional(),
-  // engineProposalPlugins reads catalog lookup records.
+  // The backend's fakes read catalog lookup records.
   catalogRecords: z
     .array(
       z
@@ -333,11 +334,11 @@ const fakesSchema = z.strictObject({
         .strict(),
     )
     .optional(),
-  // engineProposalPlugins reads registry results for records VERA does not hold.
+  // The backend's fakes read registry results for records VERA does not hold.
   registryAnswers: objectMap(
     z.array(z.strictObject({ registry: id, state: registryStateSchema, link: z.url().nullable() })),
   ).optional(),
-  // engineProposalPlugins reads catalog record prefixes and OPAC links.
+  // The backend's fakes read catalog record prefixes and OPAC links.
   catalogBases: objectMap(z.strictObject({ base: z.string(), opacUrl: z.url() })).optional(),
   // Aleph's changes and sync answers name replaced catalog records.
   catalogReplacements: objectMap(id).optional(),
@@ -347,7 +348,7 @@ const fakesSchema = z.strictObject({
   catalogAdapter: z.strictObject({ name: z.string() }).optional(),
   // frontend/src/mocks/catalog.ts reads repairs by catalog ID.
   catalogRepairs: objectMap(z.array(z.string())).optional(),
-  // engineProposalPlugins reads the photo reader's returned sample.
+  // The backend's fakes read the photo reader's returned sample.
   photo: z
     .strictObject({
       seen: z.string(),
@@ -358,7 +359,7 @@ const fakesSchema = z.strictObject({
       near: z.string(),
     })
     .optional(),
-  // engineProposalPlugins reads the catalog property source and tier.
+  // The backend's fakes read the catalog property source and tier.
   catalogReading: z
     .strictObject({
       source: z.strictObject({
@@ -428,7 +429,7 @@ const fakesSchema = z.strictObject({
   slackHandles: objectMap(z.string()).optional(),
   // frontend/src/mocks/messages.ts reads the Slack workspace name.
   slackWorkspace: z.string().optional(),
-  // engine/src/seed.ts reads these accounts into fake_identity_accounts.
+  // The backend loader reads these accounts into fake_identity_accounts.
   identityAccounts: objectMap(
     z.array(
       z

@@ -46,7 +46,7 @@ import tools.jackson.databind.json.JsonMapper;
 // ACT-propose; ENT-batch; LC-REQ-join; LC-REQ-approve-now: port planSubmission as one act.
 @Component
 public class ProposalSubmit {
-    private static final int CATALOG_TIER = 50; // Engine fakes.catalogReading is tier 50.
+    private static final int CATALOG_TIER = 50; // The backend's catalog fake uses tier 50.
     private final DSLContext dsl;
     private final ProposalCheck check;
     private final ProposalSettings settings;

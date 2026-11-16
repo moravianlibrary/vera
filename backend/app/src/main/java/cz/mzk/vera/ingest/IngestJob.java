@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// LC-ITER-ingest; STAT-defect-key; STAT-gates; DOC-page-count; REG-records.
+// LC-ITER-ingest; STAT-defect-key; STAT-gates; DOC-page-count; REG-evidence.
 @Component
 public class IngestJob implements JobKind<IngestJob.Result> {
     private final DSLContext dsl;

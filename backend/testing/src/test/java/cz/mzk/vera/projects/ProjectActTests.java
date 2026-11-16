@@ -28,7 +28,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// ACT-project-create; ACT-project-save; ACT-project-members; ACT-project-decide; ACT-project-delete.
+// ACT-project-create; ACT-project-save; ACT-project-members; ACT-project-approve; ACT-project-reject; ACT-project-delete.
 @SpringBootTest(classes = VeraTestingApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
 @ActiveProfiles("test")

@@ -21,7 +21,7 @@ import org.jooq.DSLContext;
 import org.jooq.Table;
 import org.springframework.stereotype.Repository;
 
-// VIEW-requests; DOC-property-visibility; LOG-history: batch-read rows, their asks and history.
+// VIEW-requests; DOC-property-visibility; LOG-where-read: batch-read rows, their asks and history.
 @Repository
 public class RequestRowReader {
     private final DSLContext dsl;

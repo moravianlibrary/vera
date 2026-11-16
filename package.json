@@ -5,7 +5,6 @@
     "frontend",
     "contract",
     "domain",
-    "engine",
     "replay",
     "seeds/tools"
   ],

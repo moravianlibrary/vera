@@ -58,7 +58,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// VIEW-documents; VIEW-requests; STAT-validation; STAT-public. Stores the derived list values.
+// VIEW-documents-audience; VIEW-requests; STAT-validation; STAT-public. Stores the derived list values.
 @Component
 public class DocumentStates {
     private final JsonMapper mapper;

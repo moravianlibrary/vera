@@ -5,8 +5,7 @@ import { endpoints } from "@vera/contract/endpoints";
 import { endpointOf } from "./endpoints";
 import type { Recording } from "./recording";
 
-// The mock fakes provider login, so these are covered by the engine's own tests
-// (engine/src/identity/login.test.ts) and, for the backend, by the user journeys.
+// The mock fakes provider login, so this is covered by backend tests and user journeys.
 const notRecordable = ["loginStart", "loginCallback"] as const;
 
 it("covers every endpoint with a recording call", () => {

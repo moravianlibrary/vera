@@ -134,7 +134,7 @@ class JobRunnerTests {
     }
 
     @Test
-    void unknownKindUsesTheEngineFailureMessage() {
+    void unknownKindUsesTheBackendFailureMessage() {
         long id = jobs.enqueue(dsl, "missing", clock.instant(), null);
         assertThat(runner.runDue().failed()).isEqualTo(1);
         assertThat(dsl.select(JOBS.ERROR).from(JOBS).where(JOBS.ID.eq(id)).fetchOne(JOBS.ERROR))

@@ -42,7 +42,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// VIEW-requests; ACCESS-membership-not-capability; DOC-property-visibility; LOG-history.
+// VIEW-requests; ACCESS-membership-not-capability; DOC-property-visibility; LOG-where-read.
 @SpringBootTest(classes = VeraTestingApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient

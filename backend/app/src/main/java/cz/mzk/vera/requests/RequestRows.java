@@ -57,7 +57,7 @@ public class RequestRows {
         return exists(selectOne().from(rows).where(rows.field("document_id", String.class).eq(documentId)));
     }
 
-    // VIEW-requests; ACCESS-custody-request: use placed asks' distinct custodies, then fallback if empty.
+    // VIEW-requests; ACCESS-custody-by-plugins; ACCESS-fallback: use placed asks' distinct custodies, then fallback if empty.
     public Map<String, List<String>> custodyIdsOf(Collection<String> documentIds) {
         if (documentIds.isEmpty()) {
             return Map.of();

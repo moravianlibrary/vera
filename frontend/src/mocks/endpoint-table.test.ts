@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { env } from "@/config/env";
 import { handlers } from "@/mocks/handlers";
 
-// The real API the engine serves; the mock fakes provider login.
+// The real API the backend serves; the mock fakes provider login.
 const notInMock = ["GET /login/:instanceId", "GET /login/:instanceId/callback"];
 // This handler is a mock stand-in for the real provider login flow.
 const mockOnly = ["POST /login/:instanceId/mock", "POST /_engine/jobs/run"];

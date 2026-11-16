@@ -1,5 +1,5 @@
 // How a person logs in (ACCESS-login-page): one entry per enabled Identity instance, in order.
-// The protocol is the engine's (plans/engine-step-2/handoff.md §1): a form entry posts its
+// The protocol follows the shared API contract: a form entry posts its
 // credentials; a redirect entry sends the browser to GET /login/:instanceId?returnTo=, which
 // goes to the provider and comes back with a session.
 

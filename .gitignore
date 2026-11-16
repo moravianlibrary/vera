@@ -12,11 +12,8 @@ frontend/.env.*
 .frontend.log
 .dev-roles/
 plans/
-engine/.data/
 seeds/volume.json
 frontend/public/seeds/
-.engine.pid
-.engine.log
 .backend.pid
 .backend.log
 backend/.gradle-home/

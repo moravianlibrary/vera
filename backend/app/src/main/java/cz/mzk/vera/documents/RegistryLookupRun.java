@@ -16,7 +16,7 @@ import java.util.List;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Component;
 
-// REG-lookup; LC-REQ-checks-job: ingest and proposal checks share ordered Registry lookup calls.
+// REG-evidence; LC-REQ-checks-job: ingest and proposal checks share ordered Registry lookup calls.
 @Component
 public class RegistryLookupRun {
     private final DSLContext dsl;

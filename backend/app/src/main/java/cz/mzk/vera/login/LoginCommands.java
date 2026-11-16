@@ -172,7 +172,7 @@ public class LoginCommands {
     }
 
     public boolean expired(LoginFlow flow) {
-        // The engine expires login flows after ten minutes.
+        // The backend expires login flows after ten minutes.
         return Duration.between(flow.createdAt().toInstant(), clock.instant()).compareTo(FLOW_LIFETIME) > 0;
     }
 

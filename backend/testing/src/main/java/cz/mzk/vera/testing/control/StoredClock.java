@@ -34,7 +34,7 @@ public final class StoredClock extends Clock {
     public Instant instant() {
         Row row = row();
         if (row == null) {
-            throw new IllegalStateException("The clock is not set; reset the engine to a seed first.");
+            throw new IllegalStateException("The clock is not set; reset the backend to a seed first.");
         }
         return row.at().plus(row.wallAt() == null ? Duration.ZERO : Duration.between(row.wallAt(), wall.instant()));
     }

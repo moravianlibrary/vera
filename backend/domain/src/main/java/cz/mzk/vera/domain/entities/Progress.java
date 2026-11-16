@@ -1,6 +1,6 @@
 package cz.mzk.vera.domain.entities;
 
-// STAT-status-model: progress values follow the shared status vocabulary.
+// STAT-axes: progress values follow the shared status vocabulary.
 public enum Progress {
   Enqueued,
   IngestFailed,

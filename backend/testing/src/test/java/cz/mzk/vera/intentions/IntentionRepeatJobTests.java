@@ -23,7 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.ObjectMapper;
 
-// LC-INT-repeat; LC-INT-archive. Jobs execute only through the engine control route.
+// LC-INT-repeat; LC-INT-archive. Jobs execute only through the backend testing control route.
 @SpringBootTest(classes = VeraTestingApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient

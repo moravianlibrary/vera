@@ -1,4 +1,4 @@
-// The mock and engine apply seed extensions with the same keyed merge rules.
+// The mock and backend apply seed extensions with the same keyed merge rules.
 import { extendSeed } from "@vera/contract/seed-extends";
 import { database } from "@/mocks/database";
 

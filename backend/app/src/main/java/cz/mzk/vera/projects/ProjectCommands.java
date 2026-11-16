@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-// ACT-project-create; ACT-project-save; ACT-project-members; ACT-project-decide; LOG-one-act-one-story.
+// ACT-project-create; ACT-project-save; ACT-project-members; ACT-project-approve; ACT-project-reject; LOG-one-act-one-story.
 @Service
 class ProjectCommands {
     private static final String PROJECT_READ = "project.read";

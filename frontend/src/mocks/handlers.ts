@@ -1779,7 +1779,7 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
     }),
 
-    // LC-REQ-checks-job: the engine control runs the mock's queued proposal checks on demand.
+    // LC-REQ-checks-job: the mock's stand-in for the control route runs its queued proposal checks.
     http.post(route("/_engine/jobs/run"), () => HttpResponse.json(runProposalChecks())),
 
     http.get(route(apiRoutes.requestCustodies), ({ request }) => {

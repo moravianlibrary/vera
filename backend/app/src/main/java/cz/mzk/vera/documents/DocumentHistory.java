@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// LOG-history; LOG-ingest-detail: preserve event order and apply the audience's history rules.
+// LOG-where-read; LOG-ingest-detail: preserve event order and apply the audience's history rules.
 @Repository
 public class DocumentHistory {
     private final DSLContext dsl;

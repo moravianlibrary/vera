@@ -13,7 +13,7 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 
-// VIEW-documents: one grouped SQL query per facet, preserving subject and value order.
+// UI-facets: one grouped SQL query per facet, preserving subject and value order.
 @Component
 public class Facets {
     private final DSLContext dsl;

@@ -1,6 +1,6 @@
 package cz.mzk.vera.domain.entities;
 
-// DOC-registry-status: registry evidence follows the shared order.
+// REG-strongest: registry evidence follows the shared order.
 public enum RegistryState {
   CheckFailed,
   NotFound,

@@ -27,7 +27,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// DOC-property-hand; ACT-property-entry: one document or selection, including every refusal.
+// DOC-property-hand; ACT-property-enter: one document or selection, including every refusal.
 @SpringBootTest(classes = VeraTestingApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient

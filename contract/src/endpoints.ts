@@ -261,7 +261,7 @@ export interface EndpointSpec<Params = unknown, Query = unknown, Body = unknown,
   codes: readonly string[];
 }
 
-// Only for the types: an entry keeps its schemas' types, for the engine's handler.
+// Only for the types: an entry keeps its schemas' types.
 function spec<Params = undefined, Query = undefined, Body = undefined, Value = undefined>(
   entry: EndpointSpec<Params, Query, Body, Value>,
 ): EndpointSpec<Params, Query, Body, Value> {

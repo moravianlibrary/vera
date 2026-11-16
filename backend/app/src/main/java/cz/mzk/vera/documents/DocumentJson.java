@@ -6,7 +6,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// DOC-property-values; LOG-history: parse stored JSON through the configured mapper.
+// DOC-property-values: parse stored JSON through the configured mapper.
 @Component
 final class DocumentJson {
     private final JsonMapper mapper;

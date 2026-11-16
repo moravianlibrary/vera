@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
-// WATCH-push: the test profile captures push deliveries in the engine outbox, in place of the real sender.
+// WATCH-push: the test profile captures push deliveries in the backend outbox, in place of the real sender.
 @Component
 @Primary
 @Profile("test")

@@ -122,7 +122,7 @@ class RoleGroupTests {
     }
 
     @Test
-    void role_names_and_ids_follow_engine_rules() {
+    void role_names_and_ids_follow_backend_rules() {
         JsonNode role = body(post("/api/access/roles", session("u3"), draft("Maps Curator")));
         assertThat(role.path("name").asString()).isEqualTo("Maps Curator");
         assertThat(role.path("id").asString()).isEqualTo("maps-curator");

@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-// PLG-run-items; LC-ITER-ingest; STAT-defect-key; DOC-page-count; REG-records.
+// PLG-run-items; LC-ITER-ingest; STAT-defect-key; DOC-page-count; REG-evidence.
 @Component
 public class PluginAnswerWrites {
     private final Clock clock;

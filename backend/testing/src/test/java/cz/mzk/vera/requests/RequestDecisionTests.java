@@ -30,7 +30,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// ACT-request-decide; STAT-validation; STAT-public; LOG-one-act-one-story.
+// ACT-approve; ACT-decline; STAT-validation; STAT-public; LOG-one-act-one-story.
 @SpringBootTest(classes = VeraTestingApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
@@ -146,7 +146,7 @@ class RequestDecisionTests {
     }
 
     @Test
-    void refusalProblemMatchesEngineShapeWithoutInstance() throws Exception {
+    void refusalProblemMatchesApiShapeWithoutInstance() throws Exception {
         JsonNode refusal = post("/api/requests/D22/approve", session("u8"), approval(), 403);
         assertThat(refusal).isEqualTo(mapper.readTree("""
                 {

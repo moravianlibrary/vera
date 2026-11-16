@@ -5,7 +5,7 @@ import org.jooq.Record1;
 import org.jooq.Select;
 import org.springframework.stereotype.Component;
 
-// VIEW-documents: reads every matching id for totals and groups; a real cursor encodes its sort key.
+// UI-grouping: reads every matching id for totals and groups; a real cursor encodes its sort key.
 @Component
 public class ListQuery {
     public List<String> ids(Select<Record1<String>> orderedSelect) {

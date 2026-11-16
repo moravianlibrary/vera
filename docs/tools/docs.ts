@@ -67,7 +67,7 @@ import { tiers, valueForTier } from "../../frontend/src/hooks/use-tier.ts";
 import { i18n } from "../../frontend/src/i18n/index.ts";
 import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definition.ts";
 
-// L11: the shipped roles are what the engine installs, not a mock fixture.
+// L11: the shipped roles are what the installation seed installs.
 const roles = roleSchema
   .array()
   .parse(
@@ -444,23 +444,24 @@ for (const name of existsSync(decisions) ? readdirSync(decisions) : []) {
   defined.set(id, where);
 }
 
-function sourceFiles(directory: string): string[] {
+function sourceFiles(directory: string, extensions = /\.(tsx?|md)$/): string[] {
   return readdirSync(directory).flatMap((name) => {
     const path = join(directory, name);
     if (statSync(path).isDirectory()) {
-      return name === "node_modules" ? [] : sourceFiles(path);
+      return name === "node_modules" ? [] : sourceFiles(path, extensions);
     }
 
-    return /\.(tsx?|md)$/.test(name) ? [path] : [];
+    return extensions.test(name) ? [path] : [];
   });
 }
 
 // The structure and the reference's own README name example IDs that are not rules.
 const examples = [join(docs, "structure.md"), join(docs, "reference/README.md")];
-// The code: the frontend and the packages it shares with the engine.
-const codeFiles = ["frontend/src", "contract/src", "domain/src", "engine/src"].flatMap((dir) =>
+// The code: the frontend, shared packages and backend sources.
+const codeFiles = ["frontend/src", "contract/src", "domain/src"].flatMap((dir) =>
   sourceFiles(join(root, dir)),
 );
+codeFiles.push(...sourceFiles(join(root, "backend"), /\.java$/));
 const citing = [...codeFiles, ...newDocs.filter((file) => !examples.includes(file))];
 for (const file of citing) {
   for (const [, id] of readFileSync(file, "utf8").matchAll(citation)) {

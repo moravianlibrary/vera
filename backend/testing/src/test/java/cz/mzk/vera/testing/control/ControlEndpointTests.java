@@ -73,7 +73,7 @@ class ControlEndpointTests {
     }
 
     @Test
-    void returnsEngineShapedNotFoundAndClockBackwardsProblems() {
+    void returnsApiShapedNotFoundAndClockBackwardsProblems() {
         client.post().uri("/_engine/reset")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{\"seed\":\"missing-seed\"}")

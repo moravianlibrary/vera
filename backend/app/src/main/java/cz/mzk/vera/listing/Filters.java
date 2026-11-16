@@ -5,7 +5,7 @@ import static org.jooq.impl.DSL.noCondition;
 import java.util.List;
 import org.jooq.Condition;
 
-// VIEW-documents: combine active filters and omit a field while counting its facet.
+// UI-filters: combine active filters and omit a field while counting its facet.
 public record Filters(List<ListFilter> active) {
     public Filters {
         active = List.copyOf(active);

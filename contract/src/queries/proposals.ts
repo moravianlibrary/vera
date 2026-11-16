@@ -661,7 +661,7 @@ function withRegistryAnswers(
   return { ...document, registryRecords: [...byRegistry.values()] };
 }
 
-// LC-REQ-checks-job: the mock and engine run the same queued check and optional approval plan.
+// LC-REQ-checks-job: the mock runs the queued check and optional approval plan, as the backend's job does.
 export function planProposalCheck(
   store: RecordStore,
   plugins: ProposalPlugins,
