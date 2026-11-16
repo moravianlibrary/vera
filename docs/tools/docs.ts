@@ -71,7 +71,7 @@ import type { FilterFieldDefinition } from "../../frontend/src/lib/view-definiti
 const roles = roleSchema
   .array()
   .parse(
-    JSON.parse(readFileSync(join(import.meta.dir, "../../engine/seeds/installation.json"), "utf8"))
+    JSON.parse(readFileSync(join(import.meta.dir, "../../seeds/installation.json"), "utf8"))
       .collections.roles,
   );
 

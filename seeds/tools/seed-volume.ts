@@ -79,7 +79,7 @@ const randInt = (random: Random, min: number, max: number) =>
 const timestamp = (date: Date) => date.toISOString();
 
 function createCategories(): Row[] {
-  const rows = [{ id: "vc0", name: "Old VERA", parentId: null }];
+  const rows: Row[] = [{ id: "vc0", name: "Old VERA", parentId: null }];
   const roots = categoryNames.slice(0, 6);
   const children = categoryNames.slice(6, 29).filter((name) => name !== "Požadavky čtenářů");
   let childIndex = 0;
@@ -100,9 +100,7 @@ function createCategories(): Row[] {
     }
   }
   rows.push({ id: "vc32", name: "Požadavky čtenářů", parentId: "vc0" });
-  return rows.map((row) =>
-    categorySchema.parse({ ...row, names: { en: row.name, cs: row.name } }),
-  );
+  return rows.map((row) => categorySchema.parse({ ...row, names: { en: row.name, cs: row.name } }));
 }
 
 function generate(base: Row, seedNumber = 1, scale = 1): Seed {
@@ -529,8 +527,8 @@ if (import.meta.main) {
   };
   const seedNumber = Number(value("--seed", "1"));
   const scale = Number(value("--scale", "1"));
-  const output = resolve(value("--out", "engine/seeds/volume.json"));
-  const base = await Bun.file("engine/seeds/base.json").json();
+  const output = resolve(value("--out", "seeds/volume.json"));
+  const base = await Bun.file("seeds/base.json").json();
   const result = generate(base, seedNumber, scale);
   await mkdir(dirname(output), { recursive: true });
   const json = `${JSON.stringify(result)}\n`;

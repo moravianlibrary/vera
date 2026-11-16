@@ -97,7 +97,7 @@ backend-db-stop: ## Stop the local backend database container
 	docker stop vera-backend-db
 
 backend: backend-db ## Run the backend in the foreground (BACKEND_PORT=8081)
-	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract ./gradlew :testing:bootRun
+	cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract ./gradlew :testing:bootRun
 
 backend-pid = $$(head -n 1 .backend.pid)
 backend-is-running = test -f .backend.pid && \
@@ -106,7 +106,7 @@ backend-is-running = test -f .backend.pid && \
 backend-bg: ## Run the backend in the background (pid in .backend.pid, logs in .backend.log)
 	@if $(backend-is-running); then echo "Backend already running (pid $(backend-pid)) on http://127.0.0.1:$(BACKEND_PORT)"; exit 0; fi; \
 	rm -f .backend.pid; \
-	( cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/engine/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract setsid sh -c \
+	( cd backend && VERA_PORT=$(BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract setsid sh -c \
 		'{ echo $$$$; ps -o lstart= -p $$$$; } > ../.backend.pid.tmp && mv ../.backend.pid.tmp ../.backend.pid && exec ./gradlew :testing:bootRun' \
 	) > .backend.log 2>&1 < /dev/null & \
 	while ! test -f .backend.pid; do sleep 0.1; done; \
@@ -250,6 +250,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd contract && bun run typecheck
 	cd domain && bun run typecheck
 	cd engine && bun run typecheck
+	cd seeds/tools && bun run typecheck
 	cd replay && bun run typecheck
 
 # check and test do not build the backend; they will once the backend builds in CI.
@@ -284,6 +285,7 @@ test: ## Run the frontend tests and the shared packages' tests
 	cd contract && bun test
 	cd domain && bun test
 	cd engine && bun test
+	cd seeds/tools && bun test
 	cd replay && bun test
 
 version-check: ## Ensure package version matches VERSION
@@ -295,7 +297,7 @@ set-version: ## Set VERSION and frontend package version (VERSION=x.y.z)
 	cd frontend && bun -e 'const p = await Bun.file("package.json").json(); p.version = "$(VERSION)"; await Bun.write("package.json", JSON.stringify(p, null, 2) + "\n")'
 
 seed-volume: ## Generate the production-sized seed (SEED_NUMBER=1 SCALE=1)
-	bun engine/tools/seed-volume.ts --seed $(SEED_NUMBER) --scale $(SCALE)
+	bun seeds/tools/seed-volume.ts --seed $(SEED_NUMBER) --scale $(SCALE)
 
 open-client: dev-frontend ## Start the client
 

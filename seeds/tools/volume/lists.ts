@@ -1,6 +1,6 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: generated rows are validated with entity schemas.
 import { digitizationListSchema, iterationSchema } from "@vera/domain/entities";
-import { logNormal, pick, type Random, weighted } from "./random";
+import { logNormal, pick, type Random } from "./random";
 
 const words = ["Monografie", "Periodika", "Regionální literatura", "Dary", "Mapy", "Hudebniny"];
 const day = 86400000;
@@ -106,7 +106,6 @@ export function addLists(
     const selected = available.length
       ? pick(random, available)
       : { root: pick(random, roots), pool: [] };
-    const root = selected.root;
     const pool = selected.pool;
     pool.sort(
       (a, b) =>

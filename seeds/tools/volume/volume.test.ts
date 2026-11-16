@@ -9,16 +9,15 @@ import {
   documentSchema,
   iterationSchema,
   requestSchema,
-  statusLogEntrySchema,
   userSchema,
 } from "@vera/domain/entities";
 import { eventEntrySchema } from "@vera/domain/events";
-import { createEngine } from "../../src/engine";
+import { createEngine } from "../../../engine/src/engine";
 import { generateVolumeSeed } from "../seed-volume";
 import { logNormal, mulberry32 } from "./random";
 import { sampleArrival } from "./time";
 
-const seedDir = join(import.meta.dir, "../../seeds");
+const seedDir = join(import.meta.dir, "../../..", "seeds");
 const base = await Bun.file(join(seedDir, "base.json")).json();
 const installation = await Bun.file(join(seedDir, "installation.json")).json();
 const reviewScaleSample = generateVolumeSeed(base, 321, 0.2);
@@ -70,18 +69,20 @@ describe("volume seed generator", () => {
     );
     expect(
       result.collections.users.filter(
-        (user) =>
+        (user: any) =>
           user.id.startsWith("vu") &&
           result.collections.userAccess[user.id]?.mappedRoles[0]?.roleId === "reader",
       ).length,
     ).toBe(9);
     expect(
       result.collections.users.filter(
-        (user) => user.id.startsWith("vu") && userAccessIsStaff(result, user.id),
+        (user: any) => user.id.startsWith("vu") && userAccessIsStaff(result, user.id),
       ),
     ).toHaveLength(10);
     expect(
-      result.collections.users.every((user) => !user.email || user.email.endsWith("@example.org")),
+      result.collections.users.every(
+        (user: any) => !user.email || user.email.endsWith("@example.org"),
+      ),
     ).toBe(true);
     expectGeneratedIdsDoNotCollide(result);
   });
@@ -239,7 +240,7 @@ describe("volume seed generator", () => {
     const result = generateVolumeSeed(base, 1, 0.1);
     expect(
       result.collections.requests.every(
-        (request) => Date.parse(request.at) < Date.parse(result.now),
+        (request: any) => Date.parse(request.at) < Date.parse(result.now),
       ),
     ).toBe(true);
     const formatter = new Intl.DateTimeFormat("en-GB", {
@@ -346,8 +347,12 @@ function expectGeneratedIdsDoNotCollide(result: ReturnType<typeof generateVolume
   const catalogIds = result.fakes.catalogRecords.map(
     (record: { catalogId: string }) => record.catalogId,
   );
-  const generatedCatalogIds = catalogIds.filter((catalogId) => catalogId.startsWith("MZK01-9"));
-  expect(generatedCatalogIds.every((catalogId) => !parentCatalogIds.has(catalogId))).toBe(true);
+  const generatedCatalogIds = catalogIds.filter((catalogId: string) =>
+    catalogId.startsWith("MZK01-9"),
+  );
+  expect(generatedCatalogIds.every((catalogId: string) => !parentCatalogIds.has(catalogId))).toBe(
+    true,
+  );
   expect(generatedCatalogIds.length).toBe(
     result.fakes.catalogRecords.length - base.fakes.catalogRecords.length,
   );

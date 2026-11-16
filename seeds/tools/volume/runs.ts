@@ -167,7 +167,7 @@ export function addRuns(
       : random() < 0.07
         ? 1
         : 0;
-    const errors = Array.from({ length: errorCount }, (_, index) => ({
+    const errors = Array.from({ length: errorCount }, () => ({
       iterationId: iterations[randInt(random, 0, iterations.length - 1)]?.id ?? "V-IT1",
       message: weighted(random, itemErrors),
       atItem: randInt(random, 1, itemCount),

@@ -9,7 +9,7 @@ that certificate. Production trust is supplied by `vera.plugins.trusted-certific
 This is the observed behavior of the mock and engine fakes, for the backend implementations
 described in [backend.md](backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)
 and [PLG-api-kinds](../reference/integrations/plugin-api.md#plg-api-kinds). “Base seed” means
-`engine/seeds/base.json` extending `installation.json`; instance names and ids below are from
+`seeds/base.json` extending `installation.json`; instance names and ids below are from
 `base.collections.pluginInstances` (the corresponding implementation kind is in
 `base.collections.pluginImplementations`). The mock fixtures are `frontend/src/mocks/fixtures/plugins.ts`.
 
@@ -40,7 +40,7 @@ switches. Plugin API refusals below are the operation-specific outcomes in `plug
 
 **Base instances:** `pi1` MZK Aleph, `pi2` NKP Aleph and `pi3` VKOL Aleph. `pt45`
 XmlDumpCatalogAdapter is an installed implementation with no instance in the base seed. These
-instances and implementations are in `engine/seeds/base.json:collections.pluginInstances` and
+instances and implementations are in `seeds/base.json:collections.pluginInstances` and
 `collections.pluginImplementations`.
 
 | Operation | Fake answer, input data, fallback |
@@ -66,7 +66,7 @@ codes is not established.
 `lookup(record, identifiers)` answers the `records` entry for every distinct registry record matching
 any identifier of the record. It returns each record once, with its stored `rawState` and nullable
 `link` (`domain/src/plugin-api/registry.ts`). For an existing document, read its `registryRecords`,
-grouped by `instanceId`; the base seed stores these with documents (`engine/seeds/base.json`,
+grouped by `instanceId`; the base seed stores these with documents (`seeds/base.json`,
 `collections.documents[*].registryRecords`, e.g. D1 near line 1745). The fixture identifies `pi4`
 and `pi5` as registry instances (`frontend/src/mocks/fixtures/plugins.ts:73,95–141`). Registry
 evidence and raw-state rules are `docs/reference/integrations/registries.md:5–44`. An absent row
@@ -86,14 +86,14 @@ implementations are in `installation.json`, but no additional base instances are
 `values(record, iteration)` answers only values attributed to that property-source instance, with
 each key, value and tier (`domain/src/plugin-api/property-source.ts`). For seeded iterations, use
 `iterations[*].properties` values attributed to the instance; the base seed stores them with the
-iterations (`engine/seeds/base.json`, `collections.iterations[*].properties`, e.g. lines 1777–1823).
+iterations (`seeds/base.json`, `collections.iterations[*].properties`, e.g. lines 1777–1823).
 Property definitions are in `collections.propertyDefinitions` and the mock fixture
 (`frontend/src/mocks/fixtures/properties.ts`). For catalog properties, use the source and tier in
 `fakes.catalogReading`; the engine query helper reads this key and defaults to tier 50
 (`engine/src/records/plugins.ts:26–45`, `contract/seed/seed.ts:347–356`). Ingest takes page count
 from the document's `pageSources` as the `page_count` property; it does not invent a count. Its
 value follows the highest applicable source: manual tier 100, catalog tier 50 and predictor tier
-20 (`docs/reference/model/documents.md:174–181`, `engine/seeds/base.json`,
+20 (`docs/reference/model/documents.md:174–181`, `seeds/base.json`,
 `collections.documents[*].pageSources`, e.g. lines 1729–1743).
 
 For a new document use `fakes.ingest[catalogId].properties`; default is an empty array. The API has
@@ -120,7 +120,7 @@ both instances through installed JARs.
 (`domain/src/plugin-api/validation.ts`). For a seeded document, take the current iteration's
 defects, preserving `ruleCode`, subject and the stored internal text as answer rule, field and
 detail; route each defect to its `instanceId` (`pi9` or `pi10`). This preserves STAT-defect-key
-(instance, rule, subject) and the stored findings (`engine/seeds/base.json`,
+(instance, rule, subject) and the stored findings (`seeds/base.json`,
 `collections.iterations[*].defects`, e.g. IT1 lines 6185–6195;
 `docs/reference/model/status.md:24–42`). On recheck, remove defects whose subject is in
 `fakes.catalogRepairs[catalogId]`, as the mock does (`contract/seed/seed.ts:334`,
@@ -140,7 +140,7 @@ Defects on repaired subjects disappear; other defects remain.
 `forbidden: true`, its `rule`, `until: null` unless stored, and `why` from its internal text
 (`domain/src/plugin-api/restriction.ts`). It returns no per-rule non-forbidden findings. No stored
 restriction means no finding. The seed stores restriction and override on iterations
-(`engine/seeds/base.json`, `collections.iterations[*].restriction`, e.g. IT6 lines 6368–6376);
+(`seeds/base.json`, `collections.iterations[*].restriction`, e.g. IT6 lines 6368–6376);
 STAT-gates uses whether a restriction stands (`docs/reference/model/status.md:48–58`).
 
 For a new document, read `fakes.ingest[catalogId].restriction`; default is null/no restriction.

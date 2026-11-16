@@ -13,7 +13,7 @@ frontend/.env.*
 .dev-roles/
 plans/
 engine/.data/
-engine/seeds/volume.json
+seeds/volume.json
 frontend/public/seeds/
 .engine.pid
 .engine.log

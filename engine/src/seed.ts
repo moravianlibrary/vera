@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { extendSeed } from "@vera/contract/seed-extends";
 import { eventEntrySchema } from "@vera/domain/events";
 import { type Seed, seedPatchSchema, seedSchema } from "../../contract/seed/seed";
-export const seedsDir = join(import.meta.dir, "..", "seeds");
+export const seedsDir = join(import.meta.dir, "..", "..", "seeds");
 
 export class SeedNotFound extends Error {}
 

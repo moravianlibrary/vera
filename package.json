@@ -6,7 +6,8 @@
     "contract",
     "domain",
     "engine",
-    "replay"
+    "replay",
+    "seeds/tools"
   ],
   "devDependencies": {
     "@biomejs/biome": "^2.5.0"

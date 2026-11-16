@@ -6,7 +6,7 @@ import { expect, it } from "vitest";
 import { roles } from "@/mocks/fixtures/access";
 
 const installation = JSON.parse(
-  readFileSync(join(process.cwd(), "../engine/seeds/installation.json"), "utf8"),
+  readFileSync(join(process.cwd(), "../seeds/installation.json"), "utf8"),
 );
 
 it("holds the roles the engine installs", () => {

@@ -252,7 +252,7 @@ upload. Only showing it in the Plugins drawer remains. → frontend.
 - **L71:** local sign-up, email verification and password reset, in the client with the mock and
   in the engine ([ACCESS-sign-up](reference/access/people.md#access-sign-up)).
 - **L11:** the shipped roles and the fallback custody are the engine's installation seed
-  (`engine/seeds/installation.json`), which `base.json` extends; `docs/tools/docs.ts` reads the
+  (`seeds/installation.json`), which `base.json` extends; `docs/tools/docs.ts` reads the
   roles there, and a frontend test keeps the mock's fixture equal to it
   ([ROLE-shipped](reference/access/roles.md#role-shipped)).
 

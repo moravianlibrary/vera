@@ -102,7 +102,7 @@ Development and tests only, under `/_engine`:
 The first seed is the mock's fixtures, converted once, so every page looks as it does today. Each
 user journey names the state it starts from; a seed can be the base plus a few rows.
 
-Seeds are static JSON files in `engine/seeds/`: `base`, and `minimal` for the engine's own tests.
+Seeds are static JSON files in `seeds/`: `base`, and `minimal` for the engine's own tests.
 Seeding functions that generate data at volume come later; what they generate is settled then
 (E6, E13).
 

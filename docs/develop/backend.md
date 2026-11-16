@@ -275,7 +275,7 @@ Settled on 2026-11-04. The backend is accepted by tests it did not write:
 
 For that, the backend serves the control endpoints of [engine.md](engine.md#control-endpoints)
 (`/_engine/reset`, `clock`, `outbox`, `jobs/run`, `sessions`, `identity`) and loads the same seeds
-from `engine/seeds/`. They live in a `testing` module, wired only under the `test` profile, and
+from `seeds/`. They live in a `testing` module, wired only under the `test` profile, and
 the production image does not contain it.
 
 `GET /_engine/endpoints` names what a server serves. The replay leaves an unserved read out of its
