@@ -1,9 +1,14 @@
 # The engine
 
-> **Plan for part 4.** Drafted on 2026-10-14 and settled on 2026-10-15 (below). Steps 1 to 3
-> are built (2026-10-16, 2026-10-29, 2026-11-03). The engine stops there
-> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)): steps 4 to 8
-> are not built, the mock serves those areas, and recordings of the mock judge the backend.
+> **Retired** on 2026-11-16 ([DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)): its
+> code is gone, and the Java backend's `testing` module serves the development servers, the
+> control routes and the seeds ([backend.md](backend.md#running-it)). This page is kept for its
+> settled decisions, E1 to E21, which the contract and the backend still follow; what it says
+> about running the engine is history.
+>
+> Its plan: drafted on 2026-10-14 and settled on 2026-10-15. Steps 1 to 3 were built
+> (2026-10-16, 2026-10-29, 2026-11-03); the engine stopped there
+> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 
 ## What it is for
 

@@ -2,8 +2,9 @@
 
 > **Settled.** Drafted on 2026-10-30; B1, B2, B6 and where it lives settled on 2026-10-30,
 > and B3–B5, B7–B9 on 2026-11-04. The backend starts once [what comes first](#what-comes-first) is done; the
-> engine stops at its step 3
-> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)). Each choice below is numbered `B1`… so it can be settled, changed or rejected one at a
+> engine stopped at its step 3
+> ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)) and was retired
+> on 2026-11-16 ([DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)). Each choice below is numbered `B1`… so it can be settled, changed or rejected one at a
 > time, as the engine's `E1`… were.
 
 ## What it is for
@@ -16,8 +17,8 @@ plugins in place of the fakes. It is done when:
 - it is deployed beside the old VERA, the old data is moved by hand, and the old VERA is
   switched off.
 
-The engine stays as built: the development server for access, asking and deciding, and a
-working model of the server's shape.
+The engine is retired ([DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)): the
+backend's `testing` module, with the fakes and the seeds, is the development server.
 
 What it is not: a redesign. Where the backend would like to differ, the reference and the
 contract change first, then the mock and its recordings, and the backend follows.
@@ -273,9 +274,21 @@ Settled on 2026-11-04. The backend is accepted by tests it did not write:
 | the shared rule cases (B3) | JUnit |
 | the backend's own | JUnit with Testcontainers PostgreSQL: migrations, jobs, plugin loading, the real plugins against recorded answers |
 
-For that, the backend serves the control endpoints of [engine.md](engine.md#control-endpoints)
-(`/_engine/reset`, `clock`, `outbox`, `jobs/run`, `sessions`, `identity`) and loads the same seeds
-from `seeds/`. They live in a `testing` module, wired only under the `test` profile, and
+For that, the backend serves the control endpoints and loads the seeds from `seeds/`:
+
+| Endpoint | Does |
+|---|---|
+| `POST /_engine/reset` | drop the database and load a named seed; takes `{ seed, frozen }` |
+| `POST /_engine/clock` | set or advance the clock; due jobs run |
+| `GET /_engine/outbox` | the mail, chat and webhook messages the fakes "sent" |
+| `GET /_engine/audit` | audit records waiting for the collector, oldest first |
+| `POST /_engine/audit/send` | send pending audit records once to the configured collector |
+| `POST /_engine/jobs/run` | run due jobs now |
+| `POST /_engine/sessions` | open a session for a user, `{ userId }`, with its cookie |
+| `GET /_engine/identity/:instanceId` | the fake provider's page for a login under way |
+| `GET /_engine/endpoints` | the endpoints the server serves |
+
+The routes keep the engine's name. They live in a `testing` module, wired only under the `test` profile, and
 the production image does not contain it.
 
 `GET /_engine/endpoints` names what a server serves. The replay leaves an unserved read out of its
@@ -420,17 +433,27 @@ backend/
 ```
 
 `make backend`, `make backend-test`, `make backend-contract` (the contract tests against a running
-backend) and `make backend-journeys` sit beside the engine's targets. The [Java conventions](java.md)
+backend) and `make backend-journeys` sit beside the frontend's targets. The [Java conventions](java.md)
 were written during step 1 from what step 1 settled. The backend starts on the backend, API,
 persistence and Helm layers.
 
 ## Running it
 
-For the local step-1 backend:
+Locally, the testing backend (the `test` profile: fakes, a movable clock, the seeds):
 
-- `make backend` runs it in the foreground;
-- `make backend-db` starts PostgreSQL;
-- `make backend-replay` starts the database and backend, replays the recordings, then stops the backend.
+- `make backend` runs it in the foreground on port 8081, `make backend-bg` in the background,
+  `make backend-stop` stops it;
+- `make backend-db` starts PostgreSQL in Docker;
+- `make backend-reset` resets the running backend to a seed (`SEED=base`);
+- the dev servers in live mode (`make dev-frontend`, `make dev-roles`; `API_MODE=live` is the
+  default) start it and proxy `/api` and `/_engine/identity` to it; `API_MODE=mock` gives the
+  in-browser mock;
+- `make replay` starts the database and the backend, replays the recordings and stops the backend
+  it started; with `VERA_API_URL` set it replays against that server instead.
+
+The seeds are static JSON files in `seeds/`: `installation` (what VERA installs), `base`, which
+extends it, and `minimal`. `make seed-volume` writes a production-sized seed, `seeds/volume.json`,
+with the generator in `seeds/tools/`.
 
 - **One image, two roles**: `VERA_ROLE=api`, `worker`, or `all` for a small installation. The
   worker runs jobs, schedules, hook deliveries and watchlist sends; the API never waits on them.

@@ -1,6 +1,7 @@
 # Documentation structure
 
-Settled 2026-10-14. This is part 1 of the docs phase: the final shape of VERA's
+Settled 2026-10-14. The engine of step 4 was retired on 2026-11-16 for the Java backend
+([DEC-0023](decisions/DEC-0023-the-engine-is-retired.md)). This is part 1 of the docs phase: the final shape of VERA's
 documentation, the rules it follows, and where each existing document ends up.
 
 The phase, in order:

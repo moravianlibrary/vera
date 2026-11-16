@@ -1,5 +1,11 @@
 # The fakes
 
+> The engine this page cites is retired
+> ([DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)); its `engine/src/` paths name
+> code in the history before that. The backend's fakes, in
+> `backend/testing/src/main/java/cz/mzk/vera/testing/fakes/`, were written from this page and
+> now play these answers.
+
 The signed plugin upload replay packages are built by `backend/testing:pluginPackages` with
 `jarsigner`. Their test-only certificate and private key are checked in under
 `backend/testing/src/main/resources/test-plugin-cert.pem` and `test-plugin-key.p12`; the key is

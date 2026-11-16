@@ -1,8 +1,9 @@
 # User journeys
 
 What each kind of person comes to VERA to do, step by step, with what they should see. A journey
-is an acceptance test: the engine is built to pass every one (part 4), and each becomes a
-Playwright test run against it. The user and admin guides are written from them later.
+is an acceptance test: the backend is built to pass every one, and each becomes a Playwright
+test run against it (the engine of part 4 is retired,
+[DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)). The user and admin guides are written from them later.
 
 > **Draft, 2026-10-14.** Drafted from the frontend as built, for you to refine. Steps that need an
 > act that is not built yet are marked **(not built)** and link to the ledger.
@@ -15,7 +16,7 @@ Each journey is one file:
 |---|---|
 | **Who** | the person, by role, and the fixture person the dev server signs in as |
 | **Goal** | what they want, in their words |
-| **Starting state** | what must be true before step 1, named from the fixtures; the engine's seed reproduces it |
+| **Starting state** | what must be true before step 1, named from the fixtures; the base seed reproduces it |
 | **Steps** | numbered: what the person does, and what they see after it. An expected result is something a test can check |
 | **Rules** | the reference rules the journey exercises |
 | **Not covered** | what it deliberately leaves to another journey |

@@ -6,8 +6,8 @@ and the questions only the user can answer. Every open question in the reference
 Each entry says:
 - the rules it touches;
 - what the code does now;
-- who has to move: a **decision** from the user, the **frontend**, or the **engine**, once it
-  exists.
+- who has to move: a **decision** from the user, the **frontend**, the **backend** or
+  **deployment**.
 
 When the change is made and checked, the entry moves to *Done*.
 
@@ -21,7 +21,10 @@ None.
 
 None.
 
-## For the engine
+## For the frontend, the backend and deployment
+
+The engine these entries once waited on is retired
+([DEC-0023](decisions/DEC-0023-the-engine-is-retired.md)); what it was left, the backend does.
 
 ### L26: Repeats
 
@@ -49,11 +52,10 @@ and deletes rows only after acceptance (built 2026-11-13).
 Decided on 2026-10-30 ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md)): they go to the
 Audit stream in ClickStack, not to the log, with the configuration codes of the
 [catalogue](reference/model/events.md#configuration); no History card on the admin pages. The
-backend's durable outbox and worker sender are built; the engine outbox and sender, collector's
+backend's durable outbox and worker sender are built; the collector's
 audit table with no expiry, and ready-made HyperDX dashboards remain. The mock records nothing.
-The rest come with the engine's steps for those pages; the collector's table and dashboards with
-deployment. Plugins, Hooks and Schedules record theirs in the backend (built 2026-11-12). →
-engine and deployment.
+The collector's table and dashboards come with deployment. Plugins, Hooks and Schedules record theirs in the backend (built 2026-11-12). →
+deployment.
 
 ### L33: Hook events
 
@@ -99,7 +101,7 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   [OBS-audit](reference/integrations/observability.md#obs-audit)): see
   [L7](#l7-access-and-planning-changes-are-not-logged).
 
-→ frontend, engine and deployment.
+→ frontend and deployment.
 
 ### L73: Plugin API
 
