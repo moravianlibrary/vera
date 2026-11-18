@@ -26,15 +26,6 @@ None.
 The engine these entries once waited on is retired
 ([DEC-0023](decisions/DEC-0023-the-engine-is-retired.md)); what it was left, the backend does.
 
-### L26: Repeats
-
-Rules: [LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat).
-
-Decided on 2026-10-15. Repeats show on Schedules, with when the next occurrence is made. The
-backend makes occurrences (built 2026-11-09: an `intention.repeat` job queued for each repeat's
-next period start) and lists them on Schedules from their queued jobs (built 2026-11-12); the
-mock makes none and lists none. → frontend.
-
 ### L7: Access and planning changes are not logged
 
 Rules: [ACCESS-provenance](reference/access/people.md#access-provenance),
@@ -107,6 +98,10 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 ### Built, 2026-11-18
 
+- **L26:** Schedules lists each repeat after the plugin schedules, with its next occurrence and
+  a link to its definition on Intentions, in the mock as from the backend
+  ([LC-INT-repeat](reference/lifecycles/intention.md#lc-int-repeat)). Only the backend makes
+  occurrences; the mock's are fixtures.
 - **L75:** every editor of a named record (roles, custodies, watchlists, categories, mixes,
   plugin instances, schedules, repeats) shows the name in the language in use and offers the
   other through *Add language*; a blank name is left out, at least one stays

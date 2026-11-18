@@ -64,5 +64,5 @@ only the current period's; periods missed are skipped.
 A new intention's counting start is not prefilled: most intentions are made ahead of time, and a
 default of today would be saved by mistake.
 
-> **Open — [L26](../../ledger.md#l26-repeats).** The backend makes occurrences; the mock makes
+> **Open — [L26](../../ledger.md#built-2026-11-18).** The backend makes occurrences; the mock makes
 > none. Repeats are to show on Schedules, with when the next occurrence is made.
