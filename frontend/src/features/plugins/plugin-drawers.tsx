@@ -44,7 +44,7 @@ import { RunOverlayLink } from "@/features/tasks/run-overlay-link";
 import { i18n } from "@/i18n";
 import { cadenceText } from "@/lib/format-cadence";
 import { formatCalendarDay, formatLongCalendarDay } from "@/lib/format-date";
-import { agoText, shortDayOf } from "@/lib/format-moment";
+import { agoText, dayAndTimeOf, shortDayOf } from "@/lib/format-moment";
 
 const linkClass = "text-primary underline-offset-2 hover:underline";
 
@@ -156,7 +156,8 @@ export function ImplementationDrawer({
             >
               <span className="font-mono">v{version.version}</span>{" "}
               <Muted>
-                · {formatCalendarDay(version.installedAt)} · {names.userOf(version.installedBy)}
+                · {formatCalendarDay(version.installedAt)} · {names.userOf(version.installedBy)} ·{" "}
+                {i18n.t("plugins:pluginDrawers.signedBy", { signer: version.signer })}
               </Muted>
             </DetailRow>
           );
@@ -586,6 +587,16 @@ function RecentRunsCard({
         ) : undefined
       }
     >
+      {instance.mirror !== null && (
+        <DetailRow>
+          {instance.mirror.syncedAt === null
+            ? i18n.t("plugins:pluginDrawers.mirrorNotSynced")
+            : i18n.t("plugins:pluginDrawers.mirrorSynced", {
+                count: instance.mirror.records,
+                date: dayAndTimeOf(instance.mirror.syncedAt),
+              })}
+        </DetailRow>
+      )}
       {instance.recentRuns.length === 0 ? (
         <Muted>
           {instance.lastRunAt === null

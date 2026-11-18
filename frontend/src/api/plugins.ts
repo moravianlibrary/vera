@@ -51,6 +51,10 @@ export async function disablePluginInstance(instanceId: string): Promise<PluginI
   return postJson(pluginInstanceActionRoute(instanceId, "disable"), {}, pluginInstanceDetailSchema);
 }
 
+export async function resetPluginInstance(instanceId: string): Promise<PluginInstanceDetail> {
+  return postJson(pluginInstanceActionRoute(instanceId, "reset"), {}, pluginInstanceDetailSchema);
+}
+
 export async function getPluginImpact(instanceId: string): Promise<PluginImpact> {
   return getJson(pluginInstanceActionRoute(instanceId, "impact"), pluginImpactSchema);
 }

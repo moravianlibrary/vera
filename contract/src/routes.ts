@@ -279,7 +279,7 @@ export function pluginInstanceRoute(instanceId: string): string {
 
 // Switch it on or off, say what switching it off stops, run it now, or move it to the newest
 // version installed.
-export const pluginInstanceActions = ["enable", "disable", "impact", "run", "upgrade"] as const;
+export const pluginInstanceActions = ["enable", "disable", "impact", "run", "upgrade", "reset"] as const;
 export type PluginInstanceAction = (typeof pluginInstanceActions)[number];
 
 export function pluginInstanceActionRoute(

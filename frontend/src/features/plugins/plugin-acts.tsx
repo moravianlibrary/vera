@@ -24,6 +24,7 @@ import {
   deletePluginInstance,
   disablePluginInstance,
   installPluginUpload,
+  resetPluginInstance,
   upgradePluginInstance,
   uploadPluginPackage,
 } from "@/api/plugins";
@@ -62,7 +63,7 @@ export interface PluginNotice {
 
 export type PluginDialog =
   | { kind: "newInstance"; implementationId: string }
-  | { kind: "edit" | "disable" | "delete" | "upgrade"; instanceId: string }
+  | { kind: "edit" | "disable" | "delete" | "upgrade" | "reset"; instanceId: string }
   // From an implementation, its package must be a version of it.
   | { kind: "upload"; implementationId: string | null };
 
@@ -136,7 +137,7 @@ export function instanceActionsFor(
   const isRunnable = (schedulableKinds as readonly string[]).includes(instance.kind);
   const canConfigure = hasPermission(session, "plugin.configure");
   const newer = newerVersionOf(instance, implementation);
-  const act = (kind: "edit" | "disable" | "delete" | "upgrade") => () =>
+  const act = (kind: "edit" | "disable" | "delete" | "upgrade" | "reset") => () =>
     open({ kind, instanceId: instance.id });
   return [
     ...(isRunnable && instance.isEnabled && hasPermission(session, "plugin.run")
@@ -156,6 +157,15 @@ export function instanceActionsFor(
             label: i18n.t("plugins:pluginActs.editConfiguration"),
             onSelect: act("edit"),
           },
+          ...(instance.canReset
+            ? [
+                {
+                  id: "reset",
+                  label: i18n.t("plugins:pluginActs.reset"),
+                  onSelect: act("reset"),
+                },
+              ]
+            : []),
           instance.isEnabled
             ? {
                 id: "disable",
@@ -247,6 +257,14 @@ export function PluginDialogView({ dialog, index, onClose, onDone }: PluginDialo
           onDone={(notice) => onDone(notice, { instanceId: instance.id })}
         />
       );
+    case "reset":
+      return instance === undefined ? null : (
+        <ResetDialog
+          onClose={onClose}
+          instance={instance}
+          onDone={(notice) => onDone(notice, { instanceId: instance.id })}
+        />
+      );
     case "delete":
       return instance === undefined ? null : (
         <SwitchOffDialog
@@ -265,6 +283,50 @@ export function PluginDialogView({ dialog, index, onClose, onDone }: PluginDialo
         />
       );
   }
+}
+
+function ResetDialog({
+  onClose,
+  instance,
+  onDone,
+}: {
+  onClose: () => void;
+  instance: PluginInstanceDetail;
+  onDone: (notice: PluginNotice) => void;
+}) {
+  const { t } = useTranslation("plugins");
+  const reset = useActionMutation({
+    call: resetPluginInstance,
+    invalidates: pluginInvalidations,
+    refusalTexts: {
+      "plugin.no_cursor": t("pluginActs.refusalNoCursor"),
+    },
+  });
+  return (
+    <ConsequenceDialog
+      isOpen
+      onClose={onClose}
+      title={t("pluginActs.resetTitle", { name: instance.name })}
+      description={t(
+        instance.mirror === null ? "pluginActs.resetShort" : "pluginActs.resetDescription",
+      )}
+      consequences={[]}
+      confirmLabel={t("pluginActs.resetConfirm")}
+      cancelLabel={t("pluginActs.cancel")}
+      isDestructive={false}
+      onConfirm={async () => {
+        const result = await reset.run(instance.id);
+        if (result.isDone) {
+          onDone({
+            title: t("pluginActs.resetConfirm"),
+            text: t("pluginActs.resetNotice", { name: instance.name }),
+            tone: "green",
+          });
+        }
+        return result;
+      }}
+    />
+  );
 }
 
 // Disable… and Delete…: what stops, from the server's count, then what stays.
@@ -586,6 +648,9 @@ function ReadingView({ reading }: { reading: UploadReading }) {
           <span className="font-semibold">{reading.name}</span>
           <span className="font-mono text-xs text-muted-foreground">
             v{reading.version.version}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {t("pluginDrawers.signedBy", { signer: reading.version.signer })}
           </span>
           <KindBadge kind={reading.kind} />
         </div>
