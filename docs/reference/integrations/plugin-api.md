@@ -1,11 +1,11 @@
 # Plugin API
 
 > Decided in [DEC-0019](../../decisions/DEC-0019-plugin-api-and-capabilities.md) (2026-10-30
-> and 2026-10-31). Nothing follows it yet: [L73](../../ledger.md#l73-plugin-api).
+> and 2026-10-31). Built in the mock, the backend and the client ([L73](../../ledger.md#built-2026-11-18)).
 
 What VERA asks of each plugin kind ([PLG-kinds](plugins.md#plg-kinds)), and how a plugin says
 which of it it can do. This is the plugin contract 1.x
-([PLG-contract](plugins.md#plg-contract)): the engine's fakes implement it in TypeScript, and the
+([PLG-contract](plugins.md#plg-contract)): the mock's fakes implement it in TypeScript, and the
 backend's `plugin-api` module in Java ([B6](../../develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version)).
 Both are written from this page and from the types in `domain/src/plugin-api/`.
 

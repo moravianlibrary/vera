@@ -103,20 +103,6 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 → frontend and deployment.
 
-### L73: Plugin API
-
-Rules: [PLG-api-call](reference/integrations/plugin-api.md#plg-api-call) and the rules after it.
-
-Decided on 2026-10-30 and 2026-10-31 ([DEC-0019](decisions/DEC-0019-plugin-api-and-capabilities.md)).
-`readLink` is optional, type detection is the Identifier instances' `recognise`, and an
-`EntryLink` instance reads its portal's link.
-Written down (2026-11-03): each kind's operations are zod types in `domain/src/plugin-api/`;
-declarations carry `operations`, and ways in and search follow them, an instance's setting
-switching search off. Type detection follows it in the mock (2026-10-31), with *Which type?* for
-a line several Identifier instances recognise. The backend keeps cursors and mirrors. Built (2026-11-13): the contract and mock expose mirror
-freshness and reset capability; *Reset* needs `plugin.configure`, clears cursors, and a full sync
-begun after it rebuilds the mirror. The drawer's mirror line and *Reset* button remain. → frontend.
-
 ### L75: Names in each language
 
 Rules: [UI-names](reference/ui/navigation.md#ui-names),
@@ -147,17 +133,16 @@ Built (2026-11-13, L75s): schedules and intention repeat patterns hold names in 
 reads resolve the request language, edits send both, and occurrences use the Czech pattern when
 available.
 
-### L77: The signer of a plugin version
-
-Rules: [PLG-upload](reference/integrations/plugins.md#plg-upload),
-B6 *Signed* in [backend.md](develop/backend.md#b6-plugins-a-plugin-api-and-one-class-loader-per-version).
-
-Settled on 2026-10-30: upload refuses a package not signed by a certificate the deployment trusts,
-and the signer is shown beside the version. The contract, mock, seeds and backend now carry the
-signer on the upload reading and each installed version, read from the signing certificate on
-upload. Only showing it in the Plugins drawer remains. → frontend.
-
 ## Done
+
+### Built, 2026-11-18
+
+- **L73:** the Plugins drawer says when an instance's mirror was last synced and how many records
+  it holds, and offers *Reset…* to those with `plugin.configure`
+  ([PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror),
+  [ACT-plugin-reset](reference/access/acts.md)).
+- **L77:** each installed version, and an upload's reading, names who signed it
+  ([PLG-upload](reference/integrations/plugins.md#plg-upload)).
 
 ### Built, 2026-11-13
 
