@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { createWatchlist, deleteWatchlist, listWatchlists } from "@/api/watchlists";
 import { WatchlistPreferences, WatchlistsPage } from "@/features/preferences/watchlists-page";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -63,5 +64,33 @@ describe("Watchlist pages", () => {
     const documentsTable = within(documentsHeading.parentElement as HTMLElement).getByRole("table");
     expect(within(documentsTable).getByRole("link", { name: "Forbidden" })).toBeInTheDocument();
     expect(within(documentsTable).getAllByText("System").length).toBeGreaterThan(0);
+  });
+
+  it("adds a Czech name to an English-only personal watchlist", async () => {
+    server.use(...createHandlers("reader"));
+    const created = await createWatchlist({
+      names: { en: "English only" },
+      view: "my-documents",
+      filter: { status: "Available", q: "FE2a names test" },
+      audience: { kind: "personal" },
+    });
+    try {
+      open("reader", "/preferences/watchlists");
+      await screen.findByRole("link", { name: "English only" });
+      fireEvent.click(screen.getByRole("button", { name: "Rename English only" }));
+      fireEvent.click(screen.getByRole("button", { name: "Add Czech name" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "Name in Czech" }), {
+        target: { value: "Jen anglicky" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+      await waitFor(async () => {
+        expect(
+          (await listWatchlists("my-documents")).find((item) => item.id === created.id)?.names,
+        ).toEqual({ en: "English only", cs: "Jen anglicky" });
+      });
+    } finally {
+      await deleteWatchlist(created.id);
+    }
   });
 });

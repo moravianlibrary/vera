@@ -8,14 +8,10 @@
 // its delete, as the server counts it. Each says where it is done and what follows.
 
 import type { AccessIndex, CustodyDraft, LocalAccount, RecordDraft } from "@vera/contract/access";
-import {
-  identityLinkSchema,
-  localAccountSchema,
-  recordDraftSchema,
-  requestCustodyDraftSchema,
-} from "@vera/contract/access";
+import { identityLinkSchema, localAccountSchema, recordDraftSchema } from "@vera/contract/access";
 import type { AccessGroup, AccessUser, CustodyRecord, Role } from "@vera/domain/access";
 import { heldRoleIdsOf, requestReachOf } from "@vera/domain/access";
+import { namesToSave } from "@vera/domain/names";
 import { useId } from "react";
 import { z } from "zod";
 import {
@@ -38,6 +34,7 @@ import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { PickerDialog } from "@/components/dialogs/picker-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { FieldError } from "@/components/iteration-dialogs";
 import { AgentBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
@@ -82,6 +79,16 @@ const refusalTexts = {
 export const accessRefusalTexts = refusalTexts;
 
 const noRoleText = t("record.groupRolesDescription");
+
+const custodyEditorSchema = z.object({
+  names: z
+    .object({ cs: z.string().optional(), en: z.string().optional() })
+    .refine((names) => Object.values(names).some((name) => (name ?? "").trim() !== ""), {
+      message: t("watchlist.nameRequired"),
+      path: ["cs"],
+    }),
+  description: z.string().trim(),
+});
 
 interface DialogProps {
   isOpen: boolean;
@@ -709,7 +716,7 @@ export function CustodyEditorDialog({
           : t("dialog.editCustody", { name: custody.name })
       }
       description={t("dialog.custodyDescription")}
-      schema={requestCustodyDraftSchema}
+      schema={custodyEditorSchema}
       defaultValues={{
         names: custody?.names ?? { [language]: "" },
         description: custody?.description ?? "",
@@ -721,7 +728,7 @@ export function CustodyEditorDialog({
           : null
       }
       onSubmit={async (draft) => {
-        const result = await save.run(draft);
+        const result = await save.run({ ...draft, names: namesToSave(draft.names) });
         if (result.isDone) {
           onSaved(
             custody === null
@@ -738,15 +745,19 @@ export function CustodyEditorDialog({
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label={t("dialog.name")}>
-            <Input
-              id={`${id}-name`}
-              placeholder={t("dialog.custodyNameExample")}
-              disabled={custody?.isFallback === true}
-              {...form.register(`names.${language}`)}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.names?.[language]?.message} />
+          <NamesField
+            id={`${id}-name`}
+            label={t("dialog.name")}
+            placeholder={t("dialog.custodyNameExample")}
+            disabled={custody?.isFallback === true}
+            names={form.watch("names")}
+            onChange={(names) => form.setValue("names", names, { shouldDirty: true })}
+          />
+          <FieldError
+            message={
+              form.formState.errors.names?.cs?.message ?? form.formState.errors.names?.en?.message
+            }
+          />
           <Field id={`${id}-description`} label={t("dialog.custodyCoverage")}>
             <Input id={`${id}-description`} {...form.register("description")} />
           </Field>

@@ -9,7 +9,8 @@ import type { WatchlistSummary, WatchlistViewerChange } from "@vera/contract/wat
 import { isChannelOn } from "@vera/contract/watchlists";
 import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared, watchlistViewSchema } from "@vera/domain/entities";
-import { namesAfterEdit } from "@vera/domain/names";
+import type { Names } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import { hasPermission } from "@vera/domain/permissions";
 import { ArrowDown, ArrowUp, Pencil, Share2, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +19,7 @@ import { Link, useSearchParams } from "react-router";
 import { listWatchlists } from "@/api/watchlists";
 import { DataTable } from "@/components/data-table";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { navigationEntries } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -25,7 +27,6 @@ import type { ColumnDefinition } from "@/components/lists/record-list";
 import { failureOf, QueryError } from "@/components/query-state";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   isOffForAll,
@@ -88,7 +89,6 @@ function WatchlistDirectory({
   mode: "system" | "preferences";
 }) {
   const { t } = useTranslation("preferences");
-  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const isSystem = mode === "system";
   const { data: session } = useSessionQuery();
   const { data: userSettings } = useUserSettingsQuery();
@@ -118,7 +118,7 @@ function WatchlistDirectory({
   const visibleIds = new Set(visibleWatchlists.map(({ id }) => id));
   const { create, update, remove, updateViewer } = useWatchlistMutations();
   const [editing, setEditing] = useState<string | null>(null);
-  const [name, setName] = useState("");
+  const [names, setNames] = useState<Names>({});
   const [sharing, setSharing] = useState<WatchlistSummary | null>(null);
   const [deleting, setDeleting] = useState<WatchlistSummary | null>(null);
   const [error, setError] = useState("");
@@ -194,7 +194,7 @@ function WatchlistDirectory({
                   await update.mutateAsync({
                     watchlistId: watchlist.id,
                     change: {
-                      names: namesAfterEdit(watchlist.names, language, name.trim()),
+                      names: namesToSave(names),
                     },
                   });
                   setEditing(null);
@@ -202,16 +202,23 @@ function WatchlistDirectory({
                   setError(t("watchlists.renameError"));
                 }
               }}
-              className="flex flex-wrap gap-2"
+              className="flex flex-wrap items-end gap-2"
             >
-              <Input
-                aria-label={t("watchlists.nameLabel")}
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                maxLength={100}
-                required
-              />
-              <Button type="submit" size="sm" disabled={busy || !name.trim()}>
+              <div className="min-w-48 flex-1">
+                <NamesField
+                  id={`watchlist-name-${watchlist.id}`}
+                  label={t("watchlists.nameLabel")}
+                  names={names}
+                  onChange={setNames}
+                />
+              </div>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  busy || !Object.values(names).some((value) => (value ?? "").trim() !== "")
+                }
+              >
                 {t("watchlists.save")}
               </Button>
               <Button type="button" size="sm" variant="ghost" onClick={() => setEditing(null)}>
@@ -371,7 +378,7 @@ function WatchlistDirectory({
                 disabled={busy}
                 onClick={() => {
                   setEditing(watchlist.id);
-                  setName(watchlist.names[language] ?? "");
+                  setNames(watchlist.names);
                 }}
               >
                 <Pencil />

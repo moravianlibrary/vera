@@ -17,7 +17,7 @@ import {
   roleChangeReachOf,
   roleNameOf,
 } from "@vera/domain/access";
-import { namesAfterEdit } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import type { CatalogScope, Grant, Permission } from "@vera/domain/permissions";
 import {
   byCatalogOrder,
@@ -36,6 +36,7 @@ import { createRole, deleteRole, saveRole } from "@/api/access";
 import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,7 +103,10 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
   });
 
   const invalidReasonOf = ([draft]: readonly RoleDraft[]): string | null => {
-    if (draft === undefined || (draft.names[language] ?? "").trim() === "") {
+    if (
+      draft === undefined ||
+      Object.values(draft.names).every((name) => (name ?? "").trim() === "")
+    ) {
       return t("role.validation.nameRequired");
     }
     if (
@@ -130,14 +134,19 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
       });
     }
 
-    const name = roleNameOf(draft.names[language] ?? "");
-    if (
-      index.roles.some(
-        (other) =>
-          roleNameOf(other.names[language] ?? "") === name && (isNew || other.id !== role?.id),
-      )
-    ) {
-      return t("role.validation.nameTaken", { name });
+    for (const nameLanguage of ["cs", "en"] as const) {
+      const rawName = (draft.names[nameLanguage] ?? "").trim();
+      if (rawName === "") continue;
+      const name = roleNameOf(rawName);
+      if (
+        index.roles.some(
+          (other) =>
+            roleNameOf(other.names[nameLanguage] ?? "") === name &&
+            (isNew || other.id !== role?.id),
+        )
+      ) {
+        return t("role.validation.nameTaken", { name: rawName });
+      }
     }
 
     if (!isNew && role !== null) {
@@ -212,7 +221,6 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
           <RoleFields
             id={id}
             draft={draft}
-            language={language}
             properties={index.properties}
             onChange={(next) => onChange([next])}
           />
@@ -234,7 +242,7 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
           throw new Error(t("role.oneDraftError"));
         }
 
-        const result = await save.run(draft);
+        const result = await save.run({ ...draft, names: namesToSave(draft.names) });
         if (result.isDone) {
           const holderCount = holdersOf(index.users, result.value.id).length;
           onSaved(
@@ -263,13 +271,11 @@ export function RoleEditorDialog({ isOpen, onClose, index, source, onSaved }: Ro
 function RoleFields({
   id,
   draft,
-  language,
   properties,
   onChange,
 }: {
   id: string;
   draft: RoleDraft;
-  language: "cs" | "en";
   // Each brings its own permission, under Properties (PERM-property-edit).
   properties: AccessIndex["properties"];
   onChange: (next: RoleDraft) => void;
@@ -301,20 +307,13 @@ function RoleFields({
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="grid gap-1.5">
-          <Label htmlFor={`${id}-name`}>{t("role.name")}</Label>
-          <Input
-            id={`${id}-name`}
-            placeholder={t("role.nameExample")}
-            value={draft.names[language] ?? ""}
-            onChange={(event) =>
-              onChange({
-                ...draft,
-                names: namesAfterEdit(draft.names, language, event.target.value),
-              })
-            }
-          />
-        </div>
+        <NamesField
+          id={`${id}-name`}
+          label={t("role.name")}
+          placeholder={t("role.nameExample")}
+          names={draft.names}
+          onChange={(names) => onChange({ ...draft, names })}
+        />
         <div className="grid gap-1.5">
           <Label htmlFor={`${id}-description`}>{t("role.purpose")}</Label>
           <Input

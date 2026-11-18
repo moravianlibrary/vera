@@ -129,19 +129,23 @@ describe("WatchlistTabs", () => {
 
     await screen.findByRole("button", { name: /Awaiting a decision/ });
     fireEvent.click(screen.getByRole("button", { name: "Current search" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Save this filter as a watchlist" }), {
-      target: { value: "My archive" },
+    fireEvent.click(screen.getByRole("button", { name: "Add Czech name" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Name in Czech" }), {
+      target: { value: "Můj archiv" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save new watchlist" }));
 
     await waitFor(() =>
       expect(onOpen).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "My archive", filter: { q: "archive" } }),
+        expect.objectContaining({ name: "Můj archiv", filter: { q: "archive" } }),
       ),
     );
     expect(
-      (await listWatchlists("documents")).find((row) => row.name === "My archive")?.audience,
+      (await listWatchlists("documents")).find((row) => row.names.cs === "Můj archiv")?.audience,
     ).toEqual({ kind: "personal" });
+    expect(
+      (await listWatchlists("documents")).find((row) => row.names.cs === "Můj archiv")?.names,
+    ).toEqual({ cs: "Můj archiv" });
   });
 
   it("lets a manager create a watchlist for selected groups and roles", async () => {
@@ -161,7 +165,7 @@ describe("WatchlistTabs", () => {
 
     await screen.findByRole("button", { name: /Awaiting a decision/ });
     fireEvent.click(screen.getByRole("button", { name: "Current search" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Save this filter as a watchlist" }), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Watchlist name" }), {
       target: { value: "Selected audience test" },
     });
     fireEvent.click(screen.getByRole("radio", { name: /Some groups and roles/ }));

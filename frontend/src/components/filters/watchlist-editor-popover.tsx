@@ -3,18 +3,18 @@ import type { WatchlistSummary } from "@vera/contract/watchlists";
 import type { WatchlistAudience, WatchlistView } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
 import type { Names } from "@vera/domain/names";
-import { namesAfterEdit } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "@/api/http";
 import { getWatchlistReach } from "@/api/watchlists";
+import { NamesField } from "@/components/fields/names-field";
 import {
   isEmptyWatchlistAudience,
   WatchlistAudiencePicker,
 } from "@/components/filters/share-watchlist-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -24,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { i18n } from "@/i18n";
 
 type Filter = WatchlistSummary["filter"];
 
@@ -58,12 +57,11 @@ export function WatchlistEditorPopover({
   onOpen,
 }: Props) {
   const { t } = useTranslation("common");
-  const language = i18n.language.startsWith("cs") ? "cs" : "en";
   const nameId = useId();
   const targetIdLabel = useId();
   const [open, setOpen] = useState(false);
   const [names, setNames] = useState<Names>(watchlist?.names ?? {});
-  const name = names[language] ?? "";
+  const hasName = Object.values(names).some((value) => (value ?? "").trim() !== "");
   const [audience, setAudience] = useState<WatchlistAudience>(
     watchlist?.audience ?? { kind: "personal" },
   );
@@ -124,26 +122,23 @@ export function WatchlistEditorPopover({
           className="grid gap-3"
           onSubmit={(event) => {
             event.preventDefault();
-            if (canEdit && name.trim() && !emptyAudience && !pending) {
-              void run(() => onSave(namesAfterEdit(names, language, name.trim()), audience));
+            if (canEdit && hasName && !emptyAudience && !pending) {
+              void run(() => onSave(namesToSave(names), audience));
             }
           }}
         >
-          <Label htmlFor={nameId} className="text-xs font-medium">
+          <p className="text-xs font-medium">
             {watchlist === null
               ? t("watchlist.saveFilterAs")
               : canEdit
                 ? t("watchlist.edit")
                 : t("watchlist.personalCopyName")}
-          </Label>
-          <Input
+          </p>
+          <NamesField
             id={nameId}
-            aria-label={watchlist === null ? t("watchlist.saveFilterAs") : t("watchlist.nameLabel")}
-            value={name}
-            maxLength={100}
-            onChange={(event) =>
-              setNames((current) => namesAfterEdit(current, language, event.target.value))
-            }
+            label={t("watchlist.nameLabel")}
+            names={names}
+            onChange={setNames}
           />
           {canEdit && canShare && (
             <WatchlistAudiencePicker
@@ -184,7 +179,7 @@ export function WatchlistEditorPopover({
             </p>
           )}
           {canEdit && (
-            <Button type="submit" size="sm" disabled={!name.trim() || emptyAudience || pending}>
+            <Button type="submit" size="sm" disabled={!hasName || emptyAudience || pending}>
               {watchlist === null || createsSystemCopy
                 ? t("watchlist.saveNew")
                 : t("watchlist.save")}
@@ -199,8 +194,8 @@ export function WatchlistEditorPopover({
               type="button"
               size="sm"
               variant="secondary"
-              disabled={!name.trim() || pending}
-              onClick={() => void run(() => onCopy(namesAfterEdit(names, language, name.trim())))}
+              disabled={!hasName || pending}
+              onClick={() => void run(() => onCopy(namesToSave(names)))}
             >
               {t("watchlist.savePersonalCopy")}
             </Button>

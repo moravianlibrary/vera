@@ -4,17 +4,17 @@
 
 import type { SharedWatchlist } from "@vera/contract/access";
 import type { WatchlistAudience } from "@vera/domain/entities";
-import { namesAfterEdit } from "@vera/domain/names";
+import type { Names } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import { useId } from "react";
 import { z } from "zod";
 import { deleteWatchlist, updateWatchlist } from "@/api/watchlists";
-import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import { FieldError } from "@/components/iteration-dialogs";
 import { navigationEntries } from "@/components/layout/navigation";
-import { Input } from "@/components/ui/input";
 import type { AccessNotice } from "@/features/access/access-dialogs";
 import { accessQueryKey } from "@/features/access/use-access-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
@@ -74,15 +74,19 @@ export function ShareSharedWatchlistDialog({ onClose, watchlist, onDone }: Watch
   );
 }
 
-const nameSchema = z.object({ name: z.string().trim().min(1, t("watchlist.nameRequired")) });
+const nameSchema = z.object({
+  names: z
+    .object({ cs: z.string().optional(), en: z.string().optional() })
+    .refine((names) => Object.values(names).some((name) => (name ?? "").trim() !== ""), {
+      message: t("watchlist.nameRequired"),
+      path: ["cs"],
+    }),
+});
 
 export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: WatchlistDialogProps) {
   const id = useId();
   const rename = useActionMutation({
-    call: (name: string) =>
-      updateWatchlist(watchlist.id, {
-        names: namesAfterEdit(watchlist.names, i18n.language.startsWith("cs") ? "cs" : "en", name),
-      }),
+    call: (names: Names) => updateWatchlist(watchlist.id, { names: namesToSave(names) }),
     invalidates,
     refusalTexts,
   });
@@ -93,14 +97,16 @@ export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: Watc
       title={t("watchlist.renameTitle", { name: watchlist.name })}
       description={t("watchlist.renameDescription")}
       schema={nameSchema}
-      defaultValues={{ name: watchlist.name }}
+      defaultValues={{ names: watchlist.names }}
       submitLabel={t("watchlist.rename")}
-      onSubmit={async ({ name }) => {
-        const result = await rename.run(name);
+      onSubmit={async ({ names }) => {
+        const result = await rename.run(names);
         if (result.isDone) {
           onDone({
             title: t("watchlist.renamed"),
-            text: t("watchlist.renamedDescription", { name }),
+            text: t("watchlist.renamedDescription", {
+              name: names[i18n.language.startsWith("cs") ? "cs" : "en"] ?? watchlist.name,
+            }),
           });
         }
 
@@ -108,10 +114,17 @@ export function RenameSharedWatchlistDialog({ onClose, watchlist, onDone }: Watc
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label={t("watchlist.name")}>
-            <Input id={`${id}-name`} {...form.register("name")} />
-          </Field>
-          <FieldError message={form.formState.errors.name?.message} />
+          <NamesField
+            id={`${id}-name`}
+            label={t("watchlist.name")}
+            names={form.watch("names")}
+            onChange={(names) => form.setValue("names", names, { shouldDirty: true })}
+          />
+          <FieldError
+            message={
+              form.formState.errors.names?.cs?.message ?? form.formState.errors.names?.en?.message
+            }
+          />
         </>
       )}
     />
