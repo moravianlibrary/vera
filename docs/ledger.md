@@ -80,19 +80,20 @@ it.
 Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 - the client: an OpenTelemetry web module, a no-op without `VITE_OTEL_ENDPOINT`, recording page
   views by route template, acts, errors with the crash reference, slow answers and web vitals,
-  and sending the trace context with each API call; the user id only for a role beyond reader;
+  and sending the trace context with each API call; the user id only for a role beyond reader
+  (built 2026-10-29: `frontend/src/lib/telemetry/`; each API call is a span with its duration);
 - the engine: the same streams from its HTTP boundary, jobs and fake plugins, behind an endpoint
   setting, so the simulation fills HyperDX. Built for the engine on 2026-10-30: API calls, jobs
   and Identity plugin calls; the fake plugins of later steps call `withPluginSpan`;
-- a local stack for development (collector, ClickHouse, HyperDX) in a compose file, and its
-  production counterpart beside the deployment;
+- a local stack for development (collector, ClickHouse, HyperDX), and its production counterpart
+  beside the deployment (local stack built: `make obs-up`, a k3d cluster);
 - the Java application and its workers: OpenTelemetry agent, structured logs, allow-listed spans
-  and the Audit sender (built 2026-11-13); client, local compose stack and deployment remain;
+  and the Audit sender (built 2026-11-13); only the deployment remains;
 - the Audit stream ([DEC-0018](decisions/DEC-0018-one-event-catalogue.md),
   [OBS-audit](reference/integrations/observability.md#obs-audit)): see
   [L7](#l7-access-and-planning-changes-are-not-logged).
 
-→ frontend and deployment.
+→ deployment.
 
 ## Done
 
