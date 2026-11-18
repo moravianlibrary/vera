@@ -103,40 +103,14 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 → frontend and deployment.
 
-### L75: Names in each language
-
-Rules: [UI-names](reference/ui/navigation.md#ui-names),
-[DEC-0021](decisions/DEC-0021-names-in-each-language.md).
-
-Every record holds one `name` string, and the shipped watchlists, properties, instances and roles
-are named in English. Needs: `names` by language in the contract and the domain for watchlists,
-properties and enum values, plugin instances, roles, custodies, categories, mixes, schedules and
-repeats; the seeds in both languages; search and uniqueness by language; then the client shows the
-viewer's language and its editors gain *Add language*. Decided on 2026-11-13: each record keeps
-`name`, which the server gives in the viewer's language (or the other one), and adds `names` by
-language, which editors read and writes send. → backend (contract, mock and seed), then
-frontend.
-Built (2026-11-13, L75r): roles and request custodies now hold names in Czech and English; their
-reads resolve the request language, their edits send both names, and installation and base seeds
-include both.
-Built (2026-11-13, L75w): personal and system watchlists hold names in Czech and English; reads
-resolve the request language, writes send both names, and the base seed and mock fixtures include
-both.
-Built (2026-11-13, L75c): categories and mixes hold names in Czech and English; reads resolve the
-request language, searches match either language, and category and mix editors send both names.
-The base seed and mock fixtures include both.
-
-Built (2026-11-13, L75p): plugin instances of every kind, including predefined Identifier instances,
-hold names in Czech and English; Plugin reads resolve the request language and writes send both.
-The base seed and mock fixtures include both.
-Built (2026-11-13, L75s): schedules and intention repeat patterns hold names in Czech and English;
-reads resolve the request language, edits send both, and occurrences use the Czech pattern when
-available.
-
 ## Done
 
 ### Built, 2026-11-18
 
+- **L75:** every editor of a named record (roles, custodies, watchlists, categories, mixes,
+  plugin instances, schedules, repeats) shows the name in the language in use and offers the
+  other through *Add language*; a blank name is left out, at least one stays
+  ([UI-names](reference/ui/navigation.md#ui-names)). Properties keep asking for both names.
 - **L73:** the Plugins drawer says when an instance's mirror was last synced and how many records
   it holds, and offers *Reset…* to those with `plugin.configure`
   ([PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror),

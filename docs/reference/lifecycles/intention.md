@@ -58,7 +58,7 @@ previous occurrence as it makes the next; the system archives it.
 An occurrence takes the repeat's description, funding, scope, mix and target, counts from the
 period's first day to its last, and is named by the repeat's pattern with the period in English:
 `June 2026`, `Week 23, 2026` (the ISO week), `Q2 2026` (decided 2026-11-09; the language of
-stored names is [L75](../../ledger.md#l75-names-in-each-language)). An occurrence made late is
+stored names is [L75](../../ledger.md#built-2026-11-18)). An occurrence made late is
 only the current period's; periods missed are skipped.
 
 A new intention's counting start is not prefilled: most intentions are made ahead of time, and a
