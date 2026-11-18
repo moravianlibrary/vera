@@ -18,6 +18,7 @@ import type {
 import type { Category, IntentionFunding, Project, Session } from "@vera/domain/entities";
 import { repeatEverySchema } from "@vera/domain/entities";
 import { mixBand } from "@vera/domain/intentions";
+import { namesToSave } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { scopeOfProject } from "@vera/domain/projects";
 import { propertyConditionSchema } from "@vera/domain/properties";
@@ -41,6 +42,7 @@ import { CompactTable } from "@/components/compact-table";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { FormDialog } from "@/components/dialogs/form-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { FieldError } from "@/components/iteration-dialogs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -812,10 +814,19 @@ export function DeleteIntentionDialog({
 const templateFormSchemaOf = () =>
   z.object({
     description: z.string(),
-    namePattern: z
-      .string()
-      .trim()
-      .includes("{period}", { message: message("intentionDialog.periodRequired") }),
+    namePatterns: z
+      .object({ cs: z.string().optional(), en: z.string().optional() })
+      .refine(
+        (names) => !!names.cs?.trim() || !!names.en?.trim(),
+        message("intentionDialog.repeatNameRequired"),
+      )
+      .refine(
+        (names) =>
+          Object.values(names)
+            .filter(Boolean)
+            .every((value) => value?.includes("{period}")),
+        message("intentionDialog.periodRequired"),
+      ),
     every: repeatEverySchema,
     funding: z.string(),
     scope: z.string(),
@@ -826,15 +837,9 @@ const templateFormSchemaOf = () =>
   });
 type TemplateForm = z.infer<ReturnType<typeof templateFormSchemaOf>>;
 
-const templateDraftOf = (
-  values: TemplateForm,
-  template: IntentionTemplateRow["template"] | null,
-): IntentionTemplateDraft => ({
+const templateDraftOf = (values: TemplateForm): IntentionTemplateDraft => ({
   description: values.description.trim(),
-  namePatterns: {
-    ...(template?.namePatterns ?? {}),
-    [i18n.language === "cs" ? "cs" : "en"]: values.namePattern.trim(),
-  },
+  namePatterns: namesToSave(values.namePatterns),
   every: values.every,
   funding: fundingOf(values.funding),
   scopeCategoryId: values.scope === allCategories ? null : values.scope,
@@ -890,10 +895,7 @@ export function TemplateFormDialog({
       schema={schema}
       defaultValues={{
         description: template?.description ?? "",
-        namePattern:
-          template?.namePatterns[i18n.language === "cs" ? "cs" : "en"] ??
-          template?.namePatterns[i18n.language === "cs" ? "en" : "cs"] ??
-          "",
+        namePatterns: template?.namePatterns ?? {},
         every: template?.every ?? "month",
         funding: template === null ? fundingAny : fundingValueOf(template.funding),
         scope: template?.scopeCategoryId ?? allCategories,
@@ -913,24 +915,29 @@ export function TemplateFormDialog({
           ? message("intentionDialog.createRepeat")
           : message("intentionDialog.save")
       }
-      onSubmit={(values) => save.run(templateDraftOf(values, template))}
+      onSubmit={(values) => save.run(templateDraftOf(values))}
       render={(form) => {
         const values = form.watch();
         const touched = { shouldDirty: true } as const;
         return (
           <>
-            <Field
+            <NamesField
               id={`${id}-name`}
               label={message("categoryDialog.name")}
-              hint={message("intentionDialog.periodHint")}
-            >
-              <Input
-                id={`${id}-name`}
-                placeholder={message("intentionDialog.repeatNamePlaceholder")}
-                {...form.register("namePattern")}
-              />
-            </Field>
-            <FieldError message={form.formState.errors.namePattern?.message} />
+              placeholder={message("intentionDialog.repeatNamePlaceholder")}
+              names={form.watch("namePatterns")}
+              onChange={(names) =>
+                form.setValue("namePatterns", names, { shouldDirty: true, shouldValidate: true })
+              }
+            />
+            <p className="text-xs text-muted-foreground">{message("intentionDialog.periodHint")}</p>
+            <FieldError
+              message={
+                form.formState.errors.namePatterns?.message ??
+                form.formState.errors.namePatterns?.cs?.message ??
+                form.formState.errors.namePatterns?.en?.message
+              }
+            />
             <Field
               id={`${id}-description`}
               label={message("intentionDialog.description")}

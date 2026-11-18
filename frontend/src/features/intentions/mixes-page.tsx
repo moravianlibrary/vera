@@ -12,7 +12,8 @@ import {
   mixStates,
 } from "@vera/contract/mix-filters";
 import { categoryPathOf, searchedCategoriesOf } from "@vera/domain/categories";
-import { namesAfterEdit } from "@vera/domain/names";
+import type { Names } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
@@ -30,6 +31,7 @@ import { DetailCard, DetailRow, FinePrint } from "@/components/detail-card";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
@@ -82,7 +84,7 @@ export function MixesPage() {
   const [categorySearch, setCategorySearch] = useState("");
   const [collapsedCategoryIds, setCollapsedCategoryIds] = useState<ReadonlySet<string>>(new Set());
   const [editor, setEditor] = useState<Editor>(null);
-  const [name, setName] = useState("");
+  const [names, setNames] = useState<Names>({});
   const [label, setLabel] = useState("");
   const [revision, setRevision] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -180,11 +182,7 @@ export function MixesPage() {
   const createCurrent = async () => {
     const result = await act(() =>
       create.run({
-        names: namesAfterEdit(
-          editor === "copy" ? (current?.names ?? {}) : {},
-          i18n.language === "cs" ? "cs" : "en",
-          name.trim(),
-        ),
+        names: namesToSave(names),
         fromMixId: editor === "copy" ? (current?.id ?? null) : null,
         fromRevision: editor === "copy" ? revision : null,
       }),
@@ -204,7 +202,7 @@ export function MixesPage() {
                   label: msg("mixesPage.newMix"),
                   isPrimary: true,
                   onSelect: () => {
-                    setName("");
+                    setNames({});
                     setEditor("new");
                   },
                 },
@@ -310,7 +308,12 @@ export function MixesPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setName(msg("mixesPage.copyName", { name: current.name }));
+                          setNames({
+                            ...current.names,
+                            [i18n.language === "cs" ? "cs" : "en"]: msg("mixesPage.copyName", {
+                              name: current.name,
+                            }),
+                          });
                           setRevision((selected) => selected ?? current.revision);
                           setEditor("copy");
                         }}
@@ -625,7 +628,7 @@ export function MixesPage() {
           description={msg("mixesPage.newDescription")}
           primary={{
             label: msg("mixesPage.createMix"),
-            isDisabled: name.trim() === "",
+            isDisabled: !names.cs?.trim() && !names.en?.trim(),
             isPending: create.isPending,
             onSelect: () => void createCurrent(),
           }}
@@ -635,8 +638,12 @@ export function MixesPage() {
               {message}
             </p>
           )}
-          <Label htmlFor="mix-name">{msg("mixesPage.name")}</Label>
-          <Input id="mix-name" value={name} onChange={(event) => setName(event.target.value)} />
+          <NamesField
+            id="mix-name"
+            label={msg("mixesPage.name")}
+            names={names}
+            onChange={setNames}
+          />
           {editor === "copy" && (
             <div className="mt-3 space-y-2">
               <Label htmlFor="copy-revision">

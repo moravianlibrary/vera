@@ -45,7 +45,12 @@ export const cadenceKindLabels = {
 export const scheduleFormSchema = z
   .object({
     instanceId: z.string().min(1, "scheduleDialogs.validationChoosePlugin"),
-    name: z.string().trim().min(1, "scheduleDialogs.validationName"),
+    names: z
+      .object({ cs: z.string().optional(), en: z.string().optional() })
+      .refine(
+        (names) => !!names.cs?.trim() || !!names.en?.trim(),
+        "scheduleDialogs.validationName",
+      ),
     every: z.enum(editableCadenceKinds),
     interval: z
       .number({ error: "scheduleDialogs.validationNumber" })

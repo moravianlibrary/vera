@@ -18,7 +18,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-it("sends the edited language and keeps the other loaded instance name", async () => {
+it("saves an instance named only in the other language", async () => {
   server.use(...createHandlers("admin"));
   const original = structuredClone(database.pluginInstances);
   await i18n.changeLanguage("cs");
@@ -48,12 +48,14 @@ it("sends the edited language and keeps the other loaded instance name", async (
     );
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText("Název"), { target: { value: "Aleph MZK nový" } });
+      fireEvent.change(screen.getByLabelText("Název"), { target: { value: "   " } });
+      fireEvent.change(screen.getByLabelText("Název anglicky"), {
+        target: { value: "New MZK Aleph" },
+      });
       fireEvent.click(screen.getByRole("button", { name: "Uložit" }));
       await waitFor(() => {
         expect(database.pluginInstances.find(({ id }) => id === "pi1")?.names).toEqual({
-          cs: "Aleph MZK nový",
-          en: "MZK Aleph",
+          en: "New MZK Aleph",
         });
       });
     });

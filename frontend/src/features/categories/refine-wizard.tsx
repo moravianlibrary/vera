@@ -5,16 +5,15 @@
 // share in each mix that gives it one, since it holds everything that was there; left with none,
 // the branch would drop out of generation. Routed as `?c=ID&refine=1`.
 import type { CategoryNode } from "@vera/contract/categories";
-import { isNameTaken } from "@vera/domain/categories";
 import type { Category } from "@vera/domain/entities";
-import { namesAfterEdit } from "@vera/domain/names";
+import type { Names } from "@vera/domain/names";
+import { nameIn, namesToSave } from "@vera/domain/names";
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { refineCategory } from "@/api/categories";
-import { Field } from "@/components/classification-fields";
 import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
+import { NamesField } from "@/components/fields/names-field";
 import { PaneWizard } from "@/components/pane-wizard";
-import { Input } from "@/components/ui/input";
 import type { CategoryNotice } from "@/features/categories/category-dialogs";
 import {
   categoryInvalidations,
@@ -48,14 +47,14 @@ export function RefineWizard({
   const id = useId();
   const steps = [message("refine.stepName"), message("refine.stepMoves")];
   const [stepIndex, setStepIndex] = useState(0);
-  const [name, setName] = useState("");
+  const [names, setNames] = useState<Names>({});
   const [isTouched, setIsTouched] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const { data: impact } = useCategoryImpactQuery(category.id, stepIndex === 1);
   const refine = useActionMutation({
-    call: (childName: string) =>
+    call: (childNames: Names) =>
       refineCategory(category.id, {
-        names: namesAfterEdit({}, i18n.language === "cs" ? "cs" : "en", childName),
+        names: namesToSave(childNames),
       }),
     invalidates: categoryInvalidations,
     refusalTexts: {
@@ -64,17 +63,26 @@ export function RefineWizard({
       403: message("categoryDialog.forbidden"),
     },
   });
-  const trimmed = name.trim();
-  const nameProblem =
-    trimmed === ""
-      ? message("refine.nameRequired")
-      : isNameTaken(categories, category.id, trimmed, null)
-        ? message("categoryDialog.nameTaken")
-        : null;
+  const trimmed = nameIn(names, i18n.language === "cs" ? "cs" : "en").trim();
+  const hasName = !!names.cs?.trim() || !!names.en?.trim();
+  const nameProblem = !hasName
+    ? message("refine.nameRequired")
+    : Object.entries(names).some(
+          ([language, value]) =>
+            value?.trim() &&
+            categories.some(
+              (candidate) =>
+                candidate.parentId === category.id &&
+                candidate.names[language as "cs" | "en"]?.toLocaleLowerCase() ===
+                  value.trim().toLocaleLowerCase(),
+            ),
+        )
+      ? message("categoryDialog.nameTaken")
+      : null;
   const { documentCount } = node;
 
   const submit = async () => {
-    const result = await refine.run(trimmed);
+    const result = await refine.run(namesToSave(names));
     if (!result.isDone) {
       setRefusal(result.refusal);
       return;
@@ -123,23 +131,20 @@ export function RefineWizard({
     >
       {stepIndex === 0 ? (
         <DetailCard title={message("refine.stepName")}>
-          <Field id={`${id}-name`} label={message("categoryDialog.name")}>
-            <Input
-              id={`${id}-name`}
-              autoFocus
-              value={name}
-              placeholder={message("refine.placeholder", { name: category.name })}
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  setIsTouched(true);
-                  if (nameProblem === null) {
-                    setStepIndex(1);
-                  }
-                }
-              }}
-            />
-          </Field>
+          <NamesField
+            id={`${id}-name`}
+            label={message("categoryDialog.name")}
+            names={names}
+            onChange={setNames}
+            onEnter={() => {
+              setIsTouched(true);
+              if (nameProblem === null) {
+                setStepIndex(1);
+              }
+            }}
+            placeholder={message("refine.placeholder", { name: category.name })}
+            autoFocus
+          />
           {isTouched && nameProblem !== null && (
             <p className="mt-1.5 text-xs text-destructive">{nameProblem}</p>
           )}

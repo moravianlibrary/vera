@@ -7,7 +7,7 @@
 import type { CategoryNode, CustodyGrant } from "@vera/contract/categories";
 import { categoryPathOf, isInSubtree, placesFor, scopeOfCategory } from "@vera/domain/categories";
 import type { Category, Session } from "@vera/domain/entities";
-import { namesAfterEdit } from "@vera/domain/names";
+import { namesToSave } from "@vera/domain/names";
 import { can } from "@vera/domain/permissions";
 import { useId } from "react";
 import { z } from "zod";
@@ -22,9 +22,9 @@ import type { Consequence } from "@/components/dialogs/consequence-dialog";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { SetEditorDialog } from "@/components/dialogs/set-editor-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { AddSelect, RemoveButton } from "@/components/fields/picked-list";
 import { FieldError } from "@/components/iteration-dialogs";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -252,7 +252,12 @@ const topLevel = "top";
 
 const categoryFormSchemaOf = () =>
   z.object({
-    name: z.string().trim().min(1, message("categoryDialog.nameRequired")),
+    names: z
+      .object({ cs: z.string().optional(), en: z.string().optional() })
+      .refine(
+        (names) => !!names.cs?.trim() || !!names.en?.trim(),
+        message("categoryDialog.nameRequired"),
+      ),
     parentId: z.string(),
   });
 type CategoryForm = z.infer<ReturnType<typeof categoryFormSchemaOf>>;
@@ -289,9 +294,8 @@ export function CategoryFormDialog({
   const schema = categoryFormSchemaOf();
   const save = useActionMutation({
     call: (form: CategoryForm) => {
-      const language = i18n.language === "cs" ? "cs" : "en";
       const draft = {
-        names: namesAfterEdit(category?.names ?? {}, language, form.name),
+        names: namesToSave(form.names),
         parentId: parentIdOf(form.parentId),
       };
       return category === null ? createCategory(draft) : saveCategory(category.id, draft);
@@ -330,11 +334,11 @@ export function CategoryFormDialog({
           : message("categoryDialog.editDescription")
       }
       schema={schema}
-      defaultValues={{ name: category?.name ?? "", parentId: parent ?? topLevel }}
+      defaultValues={{ names: category?.names ?? {}, parentId: parent ?? topLevel }}
       submitLabel={
         category === null ? message("categoryDialog.create") : message("categoryDialog.save")
       }
-      fieldOf={(refusal) => (refusal.code === "category.name_taken" ? "name" : null)}
+      fieldOf={(refusal) => (refusal.code === "category.name_taken" ? "names" : null)}
       onSubmit={async (form) => {
         const result = await save.run(form);
         if (result.isDone) {
@@ -368,15 +372,17 @@ export function CategoryFormDialog({
       }
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label={message("categoryDialog.name")}>
-            <Input
-              id={`${id}-name`}
-              placeholder={message("categoryDialog.namePlaceholder")}
-              autoFocus
-              {...form.register("name")}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.name?.message} />
+          <NamesField
+            id={`${id}-name`}
+            label={message("categoryDialog.name")}
+            placeholder={message("categoryDialog.namePlaceholder")}
+            names={form.watch("names")}
+            onChange={(names) =>
+              form.setValue("names", names, { shouldDirty: true, shouldValidate: true })
+            }
+            autoFocus
+          />
+          <FieldError message={form.formState.errors.names?.message} />
           {category !== null && (
             <Field id={`${id}-parent`} label={message("categoryDialog.under")}>
               <Select

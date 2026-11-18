@@ -5,6 +5,7 @@
 // reason shown on the row so nobody resumes it too early.
 
 import type { ScheduleRow } from "@vera/contract/schedules";
+import { namesToSave } from "@vera/domain/names";
 import {
   editableCadenceKinds,
   occurrencesOf,
@@ -18,6 +19,7 @@ import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { FieldError } from "@/components/iteration-dialogs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -79,7 +81,7 @@ export function ScheduleEditorDialog({
   onSaved,
   onDelete,
 }: ScheduleEditorDialogProps) {
-  const { t, i18n } = useTranslation("tasks");
+  const { t } = useTranslation("tasks");
   const id = useId();
   const { data: instances = [] } = usePluginInstancesQuery();
   const schedulable = instances.filter(
@@ -91,8 +93,7 @@ export function ScheduleEditorDialog({
     call: (form: ScheduleForm) => {
       const draft = {
         names: {
-          ...(schedule?.names ?? {}),
-          [i18n.language === "cs" ? "cs" : "en"]: form.name,
+          ...namesToSave(form.names),
         },
         cadence: cadenceOfForm(form),
         overlap: form.overlap,
@@ -118,10 +119,7 @@ export function ScheduleEditorDialog({
       schema={scheduleFormSchema}
       defaultValues={{
         instanceId: instance?.id ?? "",
-        name:
-          schedule?.names[i18n.language === "cs" ? "cs" : "en"] ??
-          schedule?.names[i18n.language === "cs" ? "en" : "cs"] ??
-          "",
+        names: schedule?.names ?? {},
         overlap: schedule?.overlap ?? "skip",
         ...formOfCadence(schedule?.cadence ?? { every: "day", at: "02:00" }),
       }}
@@ -205,14 +203,16 @@ export function ScheduleEditorDialog({
               </p>
             )}
 
-            <Field id={`${id}-name`} label={t("scheduleDialogs.name")}>
-              <Input
-                id={`${id}-name`}
-                placeholder={t("scheduleDialogs.namePlaceholder")}
-                {...form.register("name")}
-              />
-            </Field>
-            <FieldError message={errors.name?.message ? t(errors.name.message) : undefined} />
+            <NamesField
+              id={`${id}-name`}
+              label={t("scheduleDialogs.name")}
+              placeholder={t("scheduleDialogs.namePlaceholder")}
+              names={form.watch("names")}
+              onChange={(names) =>
+                form.setValue("names", names, { shouldDirty: true, shouldValidate: true })
+              }
+            />
+            <FieldError message={errors.names?.message ? t(errors.names.message) : undefined} />
 
             <div className="grid gap-3 sm:grid-cols-3">
               <Field id={`${id}-every`} label={t("scheduleDialogs.repeat")}>

@@ -213,6 +213,7 @@
   "intentionDialog.repeatDescription": "A repeat makes one intention per period, each with its own window and progress.",
   "intentionDialog.createRepeat": "Create repeat",
   "intentionDialog.periodHint": "{period} becomes e.g. July 2026",
+  "intentionDialog.repeatNameRequired": "A repeat needs a name",
   "intentionDialog.repeatNamePlaceholder": "e.g. Monthly output — {period}",
   "intentionDialog.every": "Every",
   "intentionDialog.repeatPagesPlaceholder": "e.g. 3,000",

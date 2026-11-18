@@ -15,7 +15,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-it("sends the edited language and keeps the other loaded category name", async () => {
+it("saves a category named only in the other language", async () => {
   server.use(...createHandlers("admin"));
   await i18n.changeLanguage("cs");
   try {
@@ -42,12 +42,14 @@ it("sends the edited language and keeps the other loaded category name", async (
 
     const field = screen.getByLabelText("Název");
     await act(async () => {
-      fireEvent.change(field, { target: { value: "Nové monografie" } });
+      fireEvent.change(field, { target: { value: "   " } });
+      fireEvent.change(screen.getByLabelText("Název anglicky"), {
+        target: { value: "New monographs" },
+      });
       fireEvent.click(screen.getByRole("button", { name: "Uložit" }));
       await waitFor(() => {
         expect(database.categories.find(({ id }) => id === "c1")?.names).toEqual({
-          en: "Monographs",
-          cs: "Nové monografie",
+          en: "New monographs",
         });
       });
     });

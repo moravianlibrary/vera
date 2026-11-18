@@ -2,6 +2,7 @@
 
 import type { Names } from "@vera/domain/names";
 import { namesAfterEdit, otherLanguage } from "@vera/domain/names";
+import type { KeyboardEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ interface NamesFieldProps {
   autoFocus?: boolean;
   // A name that cannot change, such as the fallback custody's.
   disabled?: boolean;
+  // Enter in either name, where a form moves on without a submit button.
+  onEnter?: () => void;
 }
 
 export function NamesField({
@@ -28,6 +31,7 @@ export function NamesField({
   onChange,
   autoFocus,
   disabled,
+  onEnter,
 }: NamesFieldProps) {
   const { t } = useTranslation("common");
   const language = i18n.language.startsWith("cs") ? "cs" : "en";
@@ -35,6 +39,12 @@ export function NamesField({
   const otherId = useId();
   const otherInput = useRef<HTMLInputElement>(null);
   const shouldFocusOther = useRef(false);
+  const enter =
+    onEnter === undefined
+      ? undefined
+      : (event: KeyboardEvent<HTMLInputElement>) => {
+          if (event.key === "Enter") onEnter();
+        };
   const [showOther, setShowOther] = useState((names[other] ?? "").trim() !== "");
 
   useEffect(() => {
@@ -54,6 +64,7 @@ export function NamesField({
           value={names[language] ?? ""}
           autoFocus={autoFocus}
           disabled={disabled}
+          onKeyDown={enter}
           onChange={(event) => onChange(namesAfterEdit(names, language, event.target.value))}
         />
       </div>
@@ -68,6 +79,7 @@ export function NamesField({
             placeholder={placeholder}
             value={names[other] ?? ""}
             disabled={disabled}
+            onKeyDown={enter}
             onChange={(event) => onChange(namesAfterEdit(names, other, event.target.value))}
           />
         </div>

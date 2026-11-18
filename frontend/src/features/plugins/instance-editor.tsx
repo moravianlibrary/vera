@@ -17,6 +17,8 @@ import type {
   PluginInstanceDetail,
   PluginVersion,
 } from "@vera/contract/plugins";
+import type { Names } from "@vera/domain/names";
+import { nameIn, namesToSave } from "@vera/domain/names";
 import type { EntryPoint, InstancePolicy } from "@vera/domain/plugins";
 import {
   defaultPolicyOf,
@@ -32,6 +34,7 @@ import { z } from "zod";
 import { createPluginInstance, savePluginInstance } from "@/api/plugins";
 import { categoryLabelOf, Field } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
+import { NamesField } from "@/components/fields/names-field";
 import { FieldError } from "@/components/iteration-dialogs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -64,7 +67,7 @@ interface NamedRole {
 }
 
 interface InstanceForm {
-  name: string;
+  names: Names;
   configuration: Record<string, string>;
   linkedCategoryId: string;
   label: string;
@@ -119,7 +122,12 @@ function formSchemaOf(
 ) {
   return z
     .object({
-      name: z.string().trim().min(1, t("instanceEditor.validationName")),
+      names: z
+        .object({ cs: z.string().optional(), en: z.string().optional() })
+        .refine(
+          (names) => !!names.cs?.trim() || !!names.en?.trim(),
+          t("instanceEditor.validationName"),
+        ),
       configuration: z.record(z.string(), z.string()),
       linkedCategoryId: z.string(),
       label: z.string(),
@@ -194,13 +202,14 @@ function settingsOf(
   kind: PluginImplementation["kind"],
   values: InstanceForm,
   roles: readonly NamedRole[],
+  language: "cs" | "en",
 ): InstanceSettings | null {
   const order = Math.max(1, Number.parseInt(values.order, 10) || 1);
   switch (kind) {
     case "Identity":
       return {
         kind,
-        label: values.label.trim() || values.name.trim(),
+        label: values.label.trim() || nameIn(values.names, language),
         order,
         userIdClaim: values.userIdClaim.trim(),
         defaultRoleId: values.defaultRoleId === noRole ? null : values.defaultRoleId,
@@ -312,7 +321,7 @@ export function InstanceEditorDialog({
         isCustody ? new Set(pickable.map((custody) => custody.id)) : null,
       )}
       defaultValues={{
-        name: instance?.names[language] ?? instance?.names[language === "cs" ? "en" : "cs"] ?? "",
+        names: instance?.names ?? {},
         configuration: Object.fromEntries(
           version.configFields.map((field) => [field.key, configured.get(field.key) ?? ""]),
         ),
@@ -339,16 +348,13 @@ export function InstanceEditorDialog({
         agentEntryPoint: policy.agent?.entryPoint ?? "proposals",
       }}
       submitLabel={isNew ? t("instanceEditor.createInstance") : t("instanceEditor.save")}
-      fieldOf={(refusal) => (refusal.code === "plugin.name_taken" ? "name" : null)}
+      fieldOf={(refusal) => (refusal.code === "plugin.name_taken" ? "names" : null)}
       onSubmit={async (values) => {
         const secrets = new Set(
           version.configFields.filter((field) => field.isSecret).map((field) => field.key),
         );
         const result = await save.run({
-          names: {
-            ...(instance?.names ?? {}),
-            [language]: values.name,
-          },
+          names: namesToSave(values.names),
           // A secret left blank is not sent, so it keeps its value.
           configuration: Object.fromEntries(
             Object.entries(values.configuration).filter(
@@ -357,7 +363,7 @@ export function InstanceEditorDialog({
           ),
           linkedCategoryId:
             values.linkedCategoryId === allCategories ? null : values.linkedCategoryId,
-          settings: settingsOf(implementation.kind, values, roles),
+          settings: settingsOf(implementation.kind, values, roles, language),
           policy: policyOf(version, values),
         });
         if (result.isDone) {
@@ -381,14 +387,16 @@ export function InstanceEditorDialog({
       }}
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label={t("instanceEditor.name")}>
-            <Input
-              id={`${id}-name`}
-              placeholder={t("instanceEditor.namePlaceholder")}
-              {...form.register("name")}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.name?.message} />
+          <NamesField
+            id={`${id}-name`}
+            label={t("instanceEditor.name")}
+            placeholder={t("instanceEditor.namePlaceholder")}
+            names={form.watch("names")}
+            onChange={(names) =>
+              form.setValue("names", names, { shouldDirty: true, shouldValidate: true })
+            }
+          />
+          <FieldError message={form.formState.errors.names?.message} />
 
           {version.configFields.length > 0 && (
             <fieldset className="grid gap-3">

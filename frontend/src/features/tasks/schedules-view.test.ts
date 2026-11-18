@@ -10,7 +10,7 @@ import {
 
 const form = {
   instanceId: "pi5",
-  name: "RDCZ — nightly check",
+  names: { en: "RDCZ — nightly check" },
   every: "day" as const,
   interval: 15,
   weekday: 1,
@@ -40,6 +40,9 @@ describe("cadenceOfForm and formOfCadence", () => {
 });
 
 describe("scheduleFormSchema", () => {
+  it("accepts a schedule named only in the other language", () => {
+    expect(scheduleFormSchema.safeParse({ ...form, names: { cs: "Kontrola" } }).success).toBe(true);
+  });
   it("refuses an interval under 5 minutes, and only in minutes", () => {
     expect(scheduleFormSchema.safeParse({ ...form, every: "minutes", interval: 4 }).success).toBe(
       false,

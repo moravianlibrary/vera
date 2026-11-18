@@ -227,6 +227,7 @@
   "intentionDialog.repeatDescription": "Opakování vytvoří jeden záměr za období, každý s vlastním obdobím a postupem.",
   "intentionDialog.createRepeat": "Vytvořit opakování",
   "intentionDialog.periodHint": "{period} bude např. červenec 2026",
+  "intentionDialog.repeatNameRequired": "Opakování potřebuje název",
   "intentionDialog.repeatNamePlaceholder": "např. Měsíční výstup — {period}",
   "intentionDialog.every": "Každý",
   "intentionDialog.repeatPagesPlaceholder": "např. 3 000",
