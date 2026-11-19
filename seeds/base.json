@@ -17723,6 +17723,16 @@
       ]
     },
     "ingest": {
+      "MZK01-001555012": {
+        "defects": [
+          {
+            "instanceId": "pi9",
+            "rule": "R04",
+            "field": "pages",
+            "detail": "No page count: the catalog record states none and no peer volume has been counted."
+          }
+        ]
+      },
       "MZK01-001502234": {
         "defects": [
           {
