@@ -21,8 +21,9 @@ we are reorganising who decides proposals."
    ([ACCESS-local-account](../../reference/access/people.md#access-local-account)).
 4. He links a Keycloak identity to an existing person.
    → One person, two ways in ([ACCESS-link-identity](../../reference/access/people.md#access-link-identity)).
-5. He edits the `curator` role, adding a permission at a scope it does not take.
-   → Refused ([PERM-accepted-scopes](../../reference/access/permissions.md#perm-accepted-scopes)).
+5. He edits the `curator` role and looks for a scope a permission does not take.
+   → It is not offered: each permission offers only the scopes it accepts
+   ([PERM-accepted-scopes](../../reference/access/permissions.md#perm-accepted-scopes)).
 6. He removes `access.manage` from the `admin` role.
    → Refused: nobody could manage access
    ([ACCESS-last-manager](../../reference/access/people.md#access-last-manager)).
