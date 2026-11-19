@@ -19,6 +19,17 @@ None.
 
 ## Not built yet
 
+### L84: an intention with a scope condition answers 500
+
+Rules: [PLAN-scope](reference/planning/intentions.md#plan-scope).
+
+Found by the journeys on 2026-11-19 (digitization/plan-intentions step 2). `POST /intentions`
+with any `scopeConditions` writes the intention but answers 500 `contract.response` (*null
+found, boolean expected*): the Java `PropertyCondition` record serialises its unused fields as
+`null` (`hasNoValue: null`, …), which the contract's optional fields do not accept. No seed
+intention has a condition, so the replay never met it. → backend: leave unset fields out of the
+answer (and check the other places that answer a `PropertyCondition`).
+
 ### L83: My Documents gets no watchlist badge
 
 Rules: [WATCH-new](reference/integrations/watchlists.md#watch-new).
