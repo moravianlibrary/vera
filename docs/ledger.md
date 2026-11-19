@@ -19,6 +19,29 @@ None.
 
 ## Not built yet
 
+### L81: one submission can ask for the same item twice
+
+Rules: [LC-REQ-check](reference/lifecycles/request.md#lc-req-check),
+[ACT-propose](reference/access/acts.md#proposing).
+
+Found by the journeys on 2026-11-19. The backend's `POST /proposals` with the same item three
+times in one submission writes three asks (`joined: 3`, three counted against the daily limit);
+the same item in a later submission is skipped as *mine*, as it should be. The Propose dialog
+does not send duplicates, so only the API shows it. → backend (and the mock, if it does the
+same): an item repeated within one submission is skipped as *mine* after its first.
+
+### L82: the Propose dialog's batch name and daily-limit refusal
+
+Rules: [ENT-batch](reference/model/entities.md#ent-batch),
+[ACT-refusal](reference/access/acts.md#act-refusal).
+
+Found by the journeys on 2026-11-19. The batch-name field is offered only to holders of
+`iteration.read` (`propose-dialog.tsx`, `isStaff`), so `staff` and `reader` cannot name a batch,
+while ENT-batch lets the person name it. And with no proposals left today the dialog still
+submits, and the 429 shows the generic *could not be submitted* instead of the
+`proposal.daily_limit` wording. → frontend: offer the name to every proposer of two items or
+more; word the refusal by its code (and do not offer Submit with none left).
+
 ### L80: `request.held` with why `copy_exists`
 
 Rules: [EVENT-catalogue](reference/model/events.md#event-catalogue),
