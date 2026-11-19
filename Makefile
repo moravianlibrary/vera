@@ -179,8 +179,12 @@ journeys-down: ## Stop the isolated journeys backend and frontend
 	@if test -f .journeys-backend.pid; then if $(journeys-backend-is-running); then kill -- -"$(journeys-backend-pid)" && echo "Journeys backend stopped"; fi; rm -f .journeys-backend.pid; fi
 	@if test -f .journeys-frontend.pid; then if $(journeys-frontend-is-running); then kill -- -"$(journeys-frontend-pid)" && echo "Journeys frontend stopped"; fi; rm -f .journeys-frontend.pid; fi
 
+# A stack that answers is up, whatever ps can see (a sandbox may not see processes started outside it).
+journeys-answer = curl -fsS -o /dev/null http://127.0.0.1:$(JOURNEYS_BACKEND_PORT)/api/login && \
+	curl -fsS -o /dev/null http://127.0.0.1:$(JOURNEYS_PORT)/
+
 journeys: ## Run Playwright user journeys against the isolated stack
-	@started=0; if ! $(journeys-backend-is-running) || ! $(journeys-frontend-is-running); then $(MAKE) journeys-up || exit $$?; started=1; fi; \
+	@started=0; if ! { $(journeys-answer); }; then $(MAKE) journeys-up || exit $$?; started=1; fi; \
 	trap 'if [ "$$started" = 1 ]; then $(MAKE) -C $(CURDIR) journeys-down; fi' EXIT; \
 	cd journeys && VERA_JOURNEYS_URL=http://127.0.0.1:$(JOURNEYS_PORT) VERA_JOURNEYS_BACKEND=http://127.0.0.1:$(JOURNEYS_BACKEND_PORT) bunx playwright test $(SPEC)
 
