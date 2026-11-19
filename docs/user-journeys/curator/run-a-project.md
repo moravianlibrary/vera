@@ -16,10 +16,10 @@ any project.
 2. She adds two colleagues and the *Periodicals Curators* group as members.
    → They can now propose into it
    ([LC-PROJ-propose-into](../../reference/lifecycles/project.md#lc-proj-propose-into)).
-3. She opens another curator's Proposed project and approves it at *High* priority.
+3. She opens Martin's Proposed project, *Hudebniny — NAKI III*, and approves it at *High* priority.
    → The impact is shown first. Its pending proposals are approved, except those with a copy or
    still being checked ([LC-PROJ-decide](../../reference/lifecycles/project.md#lc-proj-decide)).
-4. Its manager, Eva, extends the approved project's end date.
+4. Its manager, Martin, extends the approved project's end date.
    → Allowed; its intention's window follows and is recounted
    ([LC-PROJ-after-approval](../../reference/lifecycles/project.md#lc-proj-after-approval)).
 
