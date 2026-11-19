@@ -62,7 +62,7 @@ destination that takes it.
 | `request.created` | batch, source | *Asked* | ✓ | ✓ | ✓ |
 | `request.approved` | iteration; rescan; batch size when bulk; the classifier's suggestion (category, instance, kept) or none | *Accepted* | ✓ | ✓ | ✓ |
 | `request.declined` | batch size when bulk | *Not accepted* | ✓ | ✓ | ✓ |
-| `request.held` | why: `copy_exists` \| `checking` | — | ✓ | ✓ | ✓ |
+| `request.held` | why: `checking` | — | ✓ | ✓ | ✓ |
 | `request.withdrawn` | — | *Withdrawn* | ✓ | – | ✓ |
 | `request.ingest_retried` | attempt | — | ✓ | – | ✓ |
 

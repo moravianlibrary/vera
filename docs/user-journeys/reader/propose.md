@@ -15,7 +15,7 @@
    *Watchlists*.
    → No other page is offered ([VIEW-own-label](../../reference/access/views.md#view-own-label)).
 2. He opens *Propose…* and types one catalog ID with a volume, and a reason.
-   → The identifier's format is checked as he types
+   → The identifier's format is checked as the item lands in the list
    ([DOC-identifiers](../../reference/model/documents.md#doc-identifiers)).
 3. He switches to pasting a list of five lines, one of them a comment, one an ISSN without a
    volume.

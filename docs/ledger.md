@@ -15,18 +15,20 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
+None.
+
+## Not built yet
+
 ### L80: `request.held` with why `copy_exists`
 
 Rules: [EVENT-catalogue](reference/model/events.md#event-catalogue),
 [LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now).
 
-The catalogue offers `request.held` with why `copy_exists` or `checking`. Since
-[L78](#built-2026-11-12) an *approve now* item with a copy stays Pending and nothing holds it, so
-only `checking` is fired; `copy_exists` lives on in one mock fixture
-(`mocks/fixtures/status-log.ts`). Drop it from the catalogue and the fixture, or hold such an
-item? → decision.
-
-## Not built yet
+Decided on 2026-11-19: dropped. Since [L78](#built-2026-11-12) an *approve now* item with a copy
+stays Pending and nothing holds it, so `request.held` only ever says why `checking`. Still to go:
+`copy_exists` in the base seed's status log and the mock fixture (`R20`'s held entry), the volume
+generator (`seeds/tools/volume/history.ts`) and its wording (`frontend/src/lib/event-wording.ts`).
+→ frontend, seeds.
 
 ### L79: `iteration.restricted` is never fired
 

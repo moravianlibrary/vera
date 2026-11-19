@@ -23,11 +23,11 @@
    internal note ([LOG-public](../../reference/model/log.md#log-public)).
 3. He opens the published one.
    → The link to read it is there.
-4. He filters by status *Available* and saves the filter as a watchlist.
-   → A personal watchlist on *My Documents* appears as a tab
-   ([WATCH-model](../../reference/integrations/watchlists.md#watch-model)).
+4. He filters by status *Scheduled* and saves the filter as a watchlist.
+   → A personal watchlist on *My Documents* appears as a tab, beside his *Ready to read*, which
+   watches *Available* ([WATCH-model](../../reference/integrations/watchlists.md#watch-model)).
 5. Later, another of his asks is published. He returns to VERA.
-   → *My Documents* in the sidebar carries a badge of 1. Opening the watchlist shows the new
+   → *My Documents* in the sidebar carries a badge of 1. Opening *Ready to read* shows the new
    entry, and the badge clears ([WATCH-new](../../reference/integrations/watchlists.md#watch-new)).
 6. He withdraws the ask still waiting for review.
    → It shows *Withdrawn*; asking again later would make a new request
