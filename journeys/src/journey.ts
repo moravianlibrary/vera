@@ -21,6 +21,7 @@ type JourneyBody = (tools: {
   clock: (
     input: { at: string } | { advance: { days?: number; hours?: number; minutes?: number } },
   ) => Promise<string>;
+  outbox: () => Promise<unknown>;
 }) => void;
 
 const people: Record<Role, string> = {
@@ -142,7 +143,15 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       return result.now;
     };
 
-    body({ step, as, api, clock });
+    const outbox = async (): Promise<unknown> => {
+      const response = await fetch(`${backend}/_engine/outbox`);
+      if (!response.ok) {
+        throw new Error(`Outbox failed (${response.status}): ${await response.text()}`);
+      }
+      return response.json();
+    };
+
+    body({ step, as, api, clock, outbox });
   });
 }
 
