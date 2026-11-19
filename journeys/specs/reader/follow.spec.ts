@@ -91,7 +91,9 @@ journey("reader/follow", ({ step, as, api, clock }) => {
   );
 
   step(6, "withdraw the waiting ask", async () => {
-    await page.getByRole("button", { name: "All" }).click();
+    // Start from My Documents with no filter, whatever the earlier steps left in the URL.
+    await page.goto("/my-documents");
+    await expect(page.getByRole("button", { name: "Status: any" })).toBeVisible();
     await page.getByRole("button", { name: /MZK01-001622010.*Národní listy/ }).click();
     await page.getByRole("button", { name: "Withdraw…" }).click();
     await page.getByRole("button", { name: "Withdraw" }).click();
