@@ -25,7 +25,16 @@ journey("curator/shape-my-branch", ({ step, as, api }) => {
     await page.getByRole("button", { name: "+ Child category" }).click();
     await page.getByLabel("Name").fill("Modern");
     await page.getByRole("button", { name: "Create" }).click();
-    await expect(page.getByText("Modern", { exact: true })).toBeVisible();
+    const modern = page.getByRole("treeitem", { name: /^Modern/ });
+    await expect(modern).toBeVisible();
+    const details = page.getByRole("complementary");
+    await expect(details.getByText("Modern", { exact: true })).toBeVisible();
+    await expect(
+      details.getByText(
+        "Created Modern: Under Maps, with no share in any mix yet, so its set is flagged until somebody gives it one.",
+        { exact: true },
+      ),
+    ).toBeVisible();
   });
 
   step(4, "grant custody to a colleague", async () => {
