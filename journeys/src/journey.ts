@@ -11,8 +11,8 @@ import {
 } from "@playwright/test";
 
 type Role = "reader" | "staff" | "curator" | "dig-curator" | "admin";
-type Step = ((n: number, title: string, fn: () => Promise<void>) => void) & {
-  fixme: (n: number, title: string, mismatch: string, fn?: () => Promise<void>) => void;
+type Step = ((n: number | string, title: string, fn: () => Promise<void>) => void) & {
+  fixme: (n: number | string, title: string, mismatch: string, fn?: () => Promise<void>) => void;
 };
 type JourneyBody = (tools: {
   step: Step;
@@ -22,6 +22,7 @@ type JourneyBody = (tools: {
     input: { at: string } | { advance: { days?: number; hours?: number; minutes?: number } },
   ) => Promise<string>;
   outbox: () => Promise<unknown>;
+  runJobs: () => Promise<void>;
 }) => void;
 
 const people: Record<Role, string> = {
@@ -151,7 +152,14 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       return response.json();
     };
 
-    body({ step, as, api, clock, outbox });
+    const runJobs = async (): Promise<void> => {
+      const response = await fetch(`${backend}/_engine/jobs/run`, { method: "POST" });
+      if (!response.ok) {
+        throw new Error(`Running jobs failed (${response.status}): ${await response.text()}`);
+      }
+    };
+
+    body({ step, as, api, clock, outbox, runJobs });
   });
 }
 
