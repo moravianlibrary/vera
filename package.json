@@ -6,6 +6,7 @@
     "contract",
     "domain",
     "replay",
+    "journeys",
     "seeds/tools"
   ],
   "devDependencies": {

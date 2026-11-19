@@ -7,6 +7,9 @@ FRONTEND_LOG := .frontend.log
 # ─── The Java testing backend, which the frontend's live mode proxies /api to ───
 BACKEND_PORT ?= 8081
 BACKEND_DB_PORT ?= 5433
+JOURNEYS_BACKEND_PORT ?= 8091
+JOURNEYS_PORT ?= 5290
+JOURNEYS_DB ?= vera_journeys
 SEED ?= base
 SEED_NUMBER ?= 1
 SCALE ?= 1
@@ -25,7 +28,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume
+.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume journeys-up journeys-down journeys
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -144,6 +147,43 @@ dev-frontend-stop: ## Stop the background frontend dev server
 	fi; \
 	rm -f $(FRONTEND_PID)
 
+journeys-backend-pid = $$(head -n 1 .journeys-backend.pid)
+journeys-backend-is-running = test -f .journeys-backend.pid && \
+	test "$$(ps -o lstart= -p $(journeys-backend-pid) 2>/dev/null)" = "$$(tail -n 1 .journeys-backend.pid)"
+journeys-frontend-pid = $$(head -n 1 .journeys-frontend.pid)
+journeys-frontend-is-running = test -f .journeys-frontend.pid && \
+	test "$$(ps -o lstart= -p $(journeys-frontend-pid) 2>/dev/null)" = "$$(tail -n 1 .journeys-frontend.pid)"
+
+journeys-up: ## Start the isolated journeys backend and frontend
+	$(MAKE) backend-db
+	@if ! docker exec vera-backend-db psql -U vera -d vera -tAc "SELECT 1 FROM pg_database WHERE datname='$(JOURNEYS_DB)'" | grep -q 1; then docker exec vera-backend-db createdb -U vera $(JOURNEYS_DB); fi
+	cd backend && ./gradlew -q :testing:bootJar && ./gradlew -q :testing:javaLauncher > ../.journeys-backend.java
+	@if $(journeys-backend-is-running); then echo "Journeys backend already running (pid $(journeys-backend-pid))"; else \
+		rm -f .journeys-backend.pid; \
+		( cd backend && VERA_PORT=$(JOURNEYS_BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract VERA_DB_URL=jdbc:postgresql://localhost:$(BACKEND_DB_PORT)/$(JOURNEYS_DB) setsid sh -c \
+			'{ echo $$$$; ps -o lstart= -p $$$$; } > ../.journeys-backend.pid.tmp && mv ../.journeys-backend.pid.tmp ../.journeys-backend.pid && exec "$$(cat ../.journeys-backend.java)" -jar testing/build/libs/testing-*-SNAPSHOT.jar' \
+		) > .journeys-backend.log 2>&1 < /dev/null & \
+		while ! test -f .journeys-backend.pid; do sleep 0.1; done; \
+		tries=0; while ! grep -q "Started VeraTestingApplication" .journeys-backend.log && $(journeys-backend-is-running) && [ $$tries -lt 1200 ]; do sleep 0.1; tries=$$((tries + 1)); done; \
+		if grep -q "Started VeraTestingApplication" .journeys-backend.log; then echo "Journeys backend started"; else echo "Journeys backend did not start, see .journeys-backend.log"; exit 1; fi; fi
+	@if $(journeys-frontend-is-running); then echo "Journeys frontend already running (pid $(journeys-frontend-pid))"; else \
+		rm -f .journeys-frontend.pid; \
+		( cd frontend && VITE_API_MODE=live VITE_API_PROXY_TARGET=http://127.0.0.1:$(JOURNEYS_BACKEND_PORT) setsid sh -c \
+			'{ echo $$$$; ps -o lstart= -p $$$$; } > ../.journeys-frontend.pid.tmp && mv ../.journeys-frontend.pid.tmp ../.journeys-frontend.pid && exec bun run dev --host 127.0.0.1 --port $(JOURNEYS_PORT) --strictPort' \
+		) > .journeys-frontend.log 2>&1 < /dev/null & \
+		while ! test -f .journeys-frontend.pid; do sleep 0.1; done; \
+		tries=0; while ! grep -q "Local:" .journeys-frontend.log && $(journeys-frontend-is-running) && [ $$tries -lt 100 ]; do sleep 0.1; tries=$$((tries + 1)); done; \
+		if grep -q "Local:" .journeys-frontend.log; then echo "Journeys frontend started"; else echo "Journeys frontend did not start, see .journeys-frontend.log"; exit 1; fi; fi
+
+journeys-down: ## Stop the isolated journeys backend and frontend
+	@if test -f .journeys-backend.pid; then if $(journeys-backend-is-running); then kill -- -"$(journeys-backend-pid)" && echo "Journeys backend stopped"; fi; rm -f .journeys-backend.pid; fi
+	@if test -f .journeys-frontend.pid; then if $(journeys-frontend-is-running); then kill -- -"$(journeys-frontend-pid)" && echo "Journeys frontend stopped"; fi; rm -f .journeys-frontend.pid; fi
+
+journeys: ## Run Playwright user journeys against the isolated stack
+	@started=0; if ! $(journeys-backend-is-running) || ! $(journeys-frontend-is-running); then $(MAKE) journeys-up || exit $$?; started=1; fi; \
+	trap 'if [ "$$started" = 1 ]; then $(MAKE) -C $(CURDIR) journeys-down; fi' EXIT; \
+	cd journeys && VERA_JOURNEYS_URL=http://127.0.0.1:$(JOURNEYS_PORT) VERA_JOURNEYS_BACKEND=http://127.0.0.1:$(JOURNEYS_BACKEND_PORT) bunx playwright test $(SPEC)
+
 # Shell helpers for the per-user servers, the same pid-and-start-time scheme as above:
 # `port_of <user>` prints the user's port; `host_of <user>` prints the loopback address the user's
 # server listens on. Each has its own, so each browser window keeps its own session cookie (cookies
@@ -223,6 +263,7 @@ typecheck: ## Type-check the frontend and the shared packages
 	cd domain && bun run typecheck
 	cd seeds/tools && bun run typecheck
 	cd replay && bun run typecheck
+	cd journeys && bun run typecheck
 
 # check and test do not build the backend; they will once the backend builds in CI.
 check: format-check lint ui-check typecheck version-check docs-check openapi-check seed-schema-check plugin-schema-check event-catalogue-check ## Run the project checks

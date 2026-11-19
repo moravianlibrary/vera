@@ -269,7 +269,7 @@ Settled on 2026-11-04. The backend is accepted by tests it did not write:
 | Tests | How they reach the backend |
 |---|---|
 | recordings of the mock's answers ([what comes first](#what-comes-first)) | `bun test` with `VERA_API_URL` set, over HTTP |
-| user journeys | Playwright: the frontend's live mode with `VITE_API_PROXY_TARGET` at the backend |
+| user journeys | Playwright in journeys/ (make journeys): the frontend's live mode against a backend of its own on 8091 |
 | API fuzzing | Schemathesis over `contract/openapi.json` |
 | the shared rule cases (B3) | JUnit |
 | the backend's own | JUnit with Testcontainers PostgreSQL: migrations, jobs, plugin loading, the real plugins against recorded answers |

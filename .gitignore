@@ -16,6 +16,10 @@ seeds/volume.json
 frontend/public/seeds/
 .backend.pid
 .backend.log
+.journeys-backend.*
+.journeys-frontend.*
+journeys/test-results/
+journeys/playwright-report/
 backend/.gradle-home/
 backend/.gradle/
 backend/**/build/

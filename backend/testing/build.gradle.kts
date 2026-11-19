@@ -149,3 +149,9 @@ tasks.named<ProcessResources>("processResources") {
         }
     }
 }
+
+// make journeys-up runs the boot jar outside Gradle, with the toolchain's java.
+tasks.register("javaLauncher") {
+    val launcher = javaToolchains.launcherFor(java.toolchain)
+    doLast { println(launcher.get().executablePath.asFile.absolutePath) }
+}
