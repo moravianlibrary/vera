@@ -17731,7 +17731,8 @@
             "field": "pages",
             "detail": "No page count: the catalog record states none and no peer volume has been counted."
           }
-        ]
+        ],
+        "restriction": null
       },
       "MZK01-001502234": {
         "defects": [
