@@ -19,6 +19,16 @@ None.
 
 ## Not built yet
 
+### L83: My Documents gets no watchlist badge
+
+Rules: [WATCH-new](reference/integrations/watchlists.md#watch-new).
+
+Found by the journeys on 2026-11-19 (reader/follow step 5). The sidebar counts a `my-documents`
+watchlist's news under the `documents` entry (`components/layout/sidebar.tsx`, from before
+My Documents became its own entry, L53), so a reader, who has no Documents entry, never sees the
+badge; the tab itself shows *+1 new*. → frontend: count each watchlist under its own view's
+entry.
+
 ### L81: one submission can ask for the same item twice
 
 Rules: [LC-REQ-check](reference/lifecycles/request.md#lc-req-check),
