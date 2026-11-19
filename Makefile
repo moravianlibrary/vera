@@ -157,7 +157,7 @@ journeys-frontend-is-running = test -f .journeys-frontend.pid && \
 journeys-up: ## Start the isolated journeys backend and frontend
 	$(MAKE) backend-db
 	@if ! docker exec vera-backend-db psql -U vera -d vera -tAc "SELECT 1 FROM pg_database WHERE datname='$(JOURNEYS_DB)'" | grep -q 1; then docker exec vera-backend-db createdb -U vera $(JOURNEYS_DB); fi
-	cd backend && ./gradlew -q :testing:bootJar && ./gradlew -q :testing:javaLauncher > ../.journeys-backend.java
+	cd backend && ./gradlew -q :testing:bootJar :testing:pluginPackages && ./gradlew -q :testing:javaLauncher > ../.journeys-backend.java
 	@if $(journeys-backend-is-running); then echo "Journeys backend already running (pid $(journeys-backend-pid))"; else \
 		rm -f .journeys-backend.pid; \
 		( cd backend && VERA_PORT=$(JOURNEYS_BACKEND_PORT) VERA_SEEDS_DIR=$(CURDIR)/seeds VERA_CONTRACT_DIR=$(CURDIR)/contract VERA_DB_URL=jdbc:postgresql://localhost:$(BACKEND_DB_PORT)/$(JOURNEYS_DB) setsid sh -c \
