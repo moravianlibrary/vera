@@ -2,7 +2,7 @@
 
 **Context.** The log's events were free text, matched by prefix for the public wording
 ([L23](../ledger.md#built-2026-11-03)); the hooks had event names of their own, coarser than the
-log's ([L33](../ledger.md#l33-hook-events)); the payload's field names were a draft
+log's ([L33](../ledger.md#built-2026-11-19)); the payload's field names were a draft
 ([L49](../ledger.md#built-2026-11-12)); and what an admin changes (access, categories,
 intentions, mixes, plugins, hooks, schedules) was recorded nowhere
 ([L7](../ledger.md#l7-access-and-planning-changes-are-not-logged)). The engine needs all four

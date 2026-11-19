@@ -15,11 +15,29 @@ When the change is made and checked, the entry moves to *Done*.
 
 Each of these waits for a decision first.
 
-None.
+### L80: `request.held` with why `copy_exists`
+
+Rules: [EVENT-catalogue](reference/model/events.md#event-catalogue),
+[LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now).
+
+The catalogue offers `request.held` with why `copy_exists` or `checking`. Since
+[L78](#built-2026-11-12) an *approve now* item with a copy stays Pending and nothing holds it, so
+only `checking` is fired; `copy_exists` lives on in one mock fixture
+(`mocks/fixtures/status-log.ts`). Drop it from the catalogue and the fixture, or hold such an
+item? → decision.
 
 ## Not built yet
 
-None.
+### L79: `iteration.restricted` is never fired
+
+Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
+[HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources).
+
+The restriction checks (proposal check job, ingest, Check runs, recheck) write a forbidden
+finding on the iteration, but neither the backend nor the mock records or fires
+`iteration.restricted`; only a mock fixture holds one. `HookEventCoverageTests` lists the code as
+covered without a case that produces it. → backend and mock: fire it when a check finds a
+restriction the iteration did not have, with the rule and outcome.
 
 ## For the frontend, the backend and deployment
 
@@ -47,20 +65,6 @@ backend's durable outbox and worker sender are built; the collector's
 audit table with no expiry, and ready-made HyperDX dashboards remain. The mock records nothing.
 The collector's table and dashboards come with deployment. Plugins, Hooks and Schedules record theirs in the backend (built 2026-11-12). →
 deployment.
-
-### L33: Hook events
-
-Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
-[HOOK-condition](reference/integrations/hooks.md#hook-condition).
-
-The client part is done: the contract, editor and mock use hookable catalogue codes, and the
-mock's lists fire `list.started` and `list.marked_done`
-([HOOK-list-transitions](reference/integrations/hooks.md#hook-list-transitions)).
-The backend fires every hookable code from the act or job that causes it, each with a test (built
-2026-11-12), the last two with [L78](#built-2026-11-12). The condition builder is built: a
-condition is the filter of the page that lists the event's subject (Requests, Documents, Lists,
-Tasks), held per subject kind in the page URL's form and edited with that page's filter chips, as
-watchlists are; free text is gone. Left: the act matrix naming each act's event. → docs.
 
 ### L70: Entry links
 
@@ -96,6 +100,13 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 → deployment.
 
 ## Done
+
+### Built, 2026-11-19
+
+- **L33:** every hookable event is fired by the act or job that causes it; each act's row names
+  its events and [HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources) reads
+  the matrix by event. Wrong codes in the acts (`list.dates_changed`, `list.done`, the link acts)
+  corrected. `iteration.restricted` is not fired: [L79](#l79-iterationrestricted-is-never-fired).
 
 ### Built, 2026-11-18
 

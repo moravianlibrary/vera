@@ -34,8 +34,34 @@ at once on *Start now…*, which also sends `list.started_early`. `list.marked_d
 ([LC-LIST-state](../lifecycles/list.md#lc-list-state)), so nothing would otherwise mark the
 moment the scanning operation should begin.
 
-> **Open — [L33](../../ledger.md#l33-hook-events).** The backend fires every event from the act or
-> job that causes it; the [acts](../access/acts.md) still need a column naming them.
+#### HOOK-event-sources
+
+Each hookable event is fired by the act or job that causes it, never afterwards from the log.
+An act's row in [acts](../access/acts.md) names the events it fires; this is the same matrix
+read by event.
+
+| Event | Fired by |
+|---|---|
+| `request.created` | [ACT-propose](../access/acts.md#proposing), one per item |
+| `request.held` | [ACT-propose-approved](../access/acts.md#proposing), why `checking` |
+| `request.approved` | [ACT-approve](../access/acts.md#request-review) and *Approve N…*, per ask; the proposal check job for an *approve now* item with no copy ([LC-REQ-approve-now](../lifecycles/request.md#lc-req-approve-now)) |
+| `request.declined` | [ACT-decline](../access/acts.md#request-review), per ask; [ACT-project-reject](../access/acts.md#projects), per pending proposal |
+| `iteration.ingested` · `iteration.ingest_failed` | the ingest job, after an approval or *Retry failed* ([LC-ITER-ingest](../lifecycles/iteration.md#lc-iter-ingest)) |
+| `iteration.verdict_accepted` · `_denied` · `_revoked` | [ACT-accept, ACT-deny, ACT-revoke](../access/acts.md#validation-verdicts) |
+| `iteration.restricted` | nothing yet: the restriction checks write their finding but fire no event ([L79](../../ledger.md#l79-iterationrestricted-is-never-fired)) |
+| `iteration.reclassified` | [ACT-reclassify](../access/acts.md#iterations); [ACT-category-refine](../access/acts.md#categories), per document moved |
+| `iteration.cancelled` | [ACT-cancel](../access/acts.md#iterations) |
+| `iteration.not_digitizable` | [ACT-list-not-digitizable](../access/acts.md#digitization-lists) |
+| `iteration.listed` | [ACT-list-create, ACT-list-save](../access/acts.md#digitization-lists), per member added |
+| `iteration.digitized` | [ACT-list-done](../access/acts.md#digitization-lists), per member |
+| `iteration.published` · `iteration.link_added` | [ACT-publish](../access/acts.md#iterations) (the first link publishes); a Publication detector run that finds a link |
+| `iteration.link_changed` · `_made_primary` · `_removed` | [ACT-link-replace, ACT-link-primary, ACT-link-remove](../access/acts.md#iterations) |
+| `iteration.property_changed` · `document.property_changed` | [ACT-property-enter](../access/acts.md#properties); `document.property_changed` also from a recheck, a relink, or a Catalog adapter run, per catalog value that changed |
+| `document.relinked` | [ACT-relink](../access/acts.md#iterations); a Catalog adapter run that names a replacement record ([DOC-relink](../model/documents.md#doc-relink)) |
+| `document.registry_changed` | a registry answer that changes the state: the proposal check job, the ingest job, a Check run |
+| `list.created` · `list.dates_moved` · `list.deleted` | [ACT-list-create, ACT-list-save, ACT-list-delete](../access/acts.md#digitization-lists) |
+| `list.started_early` · `list.started` · `list.marked_done` | see [HOOK-list-transitions](#hook-list-transitions) |
+| `run.finished` · `run.failed` | the end of a run, however it was started: a schedule, [ACT-schedule-run, ACT-instance-run, ACT-run-again](../access/acts.md#tasks-and-schedules) |
 
 #### HOOK-condition
 

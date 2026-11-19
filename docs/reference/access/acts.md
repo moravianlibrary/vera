@@ -145,16 +145,16 @@ category ([SCOPE-custody-category](scopes.md#scope-custody-category)).
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-reclassify` | *Reclassify — category, priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over |
-| `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again, its title, material type and shelf mark recorded with the recheck's time ([DOC-property-predefined](../model/documents.md#doc-property-predefined)), and the checks rerun; defects no longer found are gone; log *Rechecked* |
-| `ACT-relink` | *Relink…*, on the document's drawer | `iteration.recheck`, at the current iteration's category, or any for a document with no iteration | a catalog id the catalog adapter reads (422); not the document's own (422); not another document's in VERA (409) | the document linked to that record ([DOC-relink](../model/documents.md#doc-relink)), then a recheck; `document.relinked` |
+| `ACT-reclassify` | *Reclassify — category, priority…* | `iteration.classify` | not scanned yet (409); a leaf category (422); something changed (422) | log *Reclassified*; outside the person's custody it is handed over; hook `iteration.reclassified` |
+| `ACT-recheck` | *Recheck* | `iteration.recheck` | any time, after the scan too | the record is read from the catalog again, its title, material type and shelf mark recorded with the recheck's time ([DOC-property-predefined](../model/documents.md#doc-property-predefined)), and the checks rerun; defects no longer found are gone; log *Rechecked*; hook `document.property_changed` per catalog value that changed |
+| `ACT-relink` | *Relink…*, on the document's drawer | `iteration.recheck`, at the current iteration's category, or any for a document with no iteration | a catalog id the catalog adapter reads (422); not the document's own (422); not another document's in VERA (409) | the document linked to that record ([DOC-relink](../model/documents.md#doc-relink)), then a recheck; `document.relinked`, and `document.property_changed` per catalog value that changed |
 | `ACT-page-count` | *Enter page count…* | `iteration.recheck` | not scanned (409) | a manual page count above every other source, then a recheck; log *Page count entered* |
-| `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled* |
+| `ACT-cancel` | *Cancel…* | `iteration.cancel` | not cancelled and not scanned (409) | held where it is with the two texts; taken off its list; log *Cancelled*; hook `iteration.cancelled` |
 | `ACT-resume` | *Resume…* | `iteration.resume` | cancelled or not digitizable, and not scanned (409) | the hold lifted; off its list if it was on one; back to the pool, where the gates say whether it is Ready; log *Resumed* |
 | `ACT-publish` | *Add link…* | `iteration.publish` | digitized (409); a web address, or a PID or viewer's address a Link instance reads, which it makes canonical (422); not already held (422) | the link added ([LC-ITER-links](../lifecycles/iteration.md#lc-iter-links)), primary if it is the first; the first makes progress Published; log *Published* or *Link added*; hook `iteration.published` for the first, `iteration.link_added` after |
 | `ACT-link-replace` | *Replace link…* | `iteration.publish` | the link is held (404); the new one read as for *Add link…* (422) and not already held (422) | the address replaced in place, primary kept; log *Link changed* from what to what; hook `iteration.link_changed` |
-| `ACT-link-primary` | *Make primary* | `iteration.publish` | the link is held and not primary (409) | it becomes primary; log *Primary link changed*; hook `iteration.link_changed` |
-| `ACT-link-remove` | *Remove link…* | `iteration.publish` | the link is held (404); not the last (409) | removed, and if it was primary the oldest remaining one becomes primary; log *Link removed*; hook `iteration.link_changed` |
+| `ACT-link-primary` | *Make primary* | `iteration.publish` | the link is held and not primary (409) | it becomes primary; log *Primary link changed*; hook `iteration.link_made_primary` |
+| `ACT-link-remove` | *Remove link…* | `iteration.publish` | the link is held (404); not the last (409) | removed, and if it was primary the oldest remaining one becomes primary; log *Link removed*; hook `iteration.link_removed` |
 | `ACT-overrule` | *Overrule restriction…* | `restriction.overrule` | a restriction stands and is not overruled (409) | the overrule with a staff note, beside the rule's finding; gates move progress; log *Restriction overruled* |
 
 *Cancel…* at `custody` covers an item already on a list: the curator is responsible for it, the
@@ -167,20 +167,20 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-accept` | *Accept…* | `validation.approve` | Review needed | a verdict row; gates move progress; log *Validation approved* |
-| `ACT-deny` | *Deny…* | `validation.deny` | Review needed | a verdict row with the two texts; log *Validation denied* |
-| `ACT-revoke` | *Revoke…* | `validation.revoke` | the defects are accepted now | a verdict row; back in review; log *Validation revoked* |
+| `ACT-accept` | *Accept…* | `validation.approve` | Review needed | a verdict row; gates move progress; log *Validation approved*; hook `iteration.verdict_accepted` |
+| `ACT-deny` | *Deny…* | `validation.deny` | Review needed | a verdict row with the two texts; log *Validation denied*; hook `iteration.verdict_denied` |
+| `ACT-revoke` | *Revoke…* | `validation.revoke` | the defects are accepted now | a verdict row; back in review; log *Validation revoked*; hook `iteration.verdict_revoked` |
 
 ## Digitization lists
 
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
-| `ACT-list-create` | *New list* / *Generate* | `list.create` | ends on or after it starts (422); every member is in the pool (409 `list.member_unavailable`) | log *Created*, *Generated — …*, *Listed* per member; hook `list.created` |
-| `ACT-list-save` | *Edit* | `list.edit` | not Done (409 `list.done`); members on this list or in the pool | log *Dates moved*, *Renamed*, *Members moved*; *Taken off a list* per member removed |
-| `ACT-list-start` | *Start now…* | `list.edit` | Planned: its start date is still ahead (409 `list.already_started`) | its start date becomes today, so it is In progress and its members move from Planned to In progress; log *Started early* with the old date; hooks `list.dates_changed`, `list.started` |
-| `ACT-list-done` | *Mark Done…* | `list.edit` | In progress (409 `list.not_started`), not Done | every open member Digitized; dates fixed; log *Marked Done*; hook `list.done` |
-| `ACT-list-not-digitizable` | *Could not be digitized…* | `list.edit` | In progress; the member neither scanned nor stopped (409 `iteration.stopped`) | cancelled as Not digitizable with a public message; log *Could not be digitized* |
-| `ACT-list-delete` | *Delete…* | `list.delete` | not Done (409 `list.done`) | members back to the pool or Enqueued; each keeps the list's name; log *List deleted*, *Deleted* |
+| `ACT-list-create` | *New list* / *Generate* | `list.create` | ends on or after it starts (422); every member is in the pool (409 `list.member_unavailable`) | log *Created*, *Generated — …*, *Listed* per member; hooks `list.created`, `iteration.listed` per member, and `list.started` when it starts today ([HOOK-list-transitions](../integrations/hooks.md#hook-list-transitions)) |
+| `ACT-list-save` | *Edit* | `list.edit` | not Done (409 `list.done`); members on this list or in the pool | log *Dates moved*, *Renamed*, *Members moved*; *Taken off a list* per member removed; hooks `list.dates_moved` when the dates move, `iteration.listed` per member added |
+| `ACT-list-start` | *Start now…* | `list.edit` | Planned: its start date is still ahead (409 `list.already_started`) | its start date becomes today, so it is In progress and its members move from Planned to In progress; log *Started early* with the old date; hooks `list.started_early`, `list.started` |
+| `ACT-list-done` | *Mark Done…* | `list.edit` | In progress (409 `list.not_started`), not Done | every open member Digitized; dates fixed; log *Marked Done*; hooks `iteration.digitized` per member, `list.marked_done` |
+| `ACT-list-not-digitizable` | *Could not be digitized…* | `list.edit` | In progress; the member neither scanned nor stopped (409 `iteration.stopped`) | cancelled as Not digitizable with a public message; log *Could not be digitized*; hook `iteration.not_digitizable` |
+| `ACT-list-delete` | *Delete…* | `list.delete` | not Done (409 `list.done`) | members back to the pool or Enqueued; each keeps the list's name; log *List deleted*, *Deleted*; hook `list.deleted` |
 
 ## Projects
 
@@ -190,7 +190,7 @@ ones outstanding now (409 if they changed meanwhile). A forbidden item takes no 
 | `ACT-project-save` | *Edit* | `project.edit` at the project | any state; on an Approved one, dates and target stay editable | the intention follows the dates and target; log *Dates or target changed*, *Details changed* |
 | `ACT-project-members` | *Members…* | `project.manage_members` at the project | members are people, never agents (422) | log *Member added*, *Member removed*, *Manager changed* |
 | `ACT-project-approve` | *Approve…* | `project.decide` | Proposed (409 `project.decided`) | priority set once; every pending proposal in it, except those with a copy, stays on Requests marked as after the project's approval, for a curator to place in a category ([LC-PROJ-decide](../lifecycles/project.md#lc-proj-decide)); log *Approved* |
-| `ACT-project-reject` | *Reject…* | `project.decide` | Proposed (409) | its pending proposals declined with the reason; its intention archived; log *Rejected* |
+| `ACT-project-reject` | *Reject…* | `project.decide` | Proposed (409) | its pending proposals declined with the reason; its intention archived; log *Rejected*; hook `request.declined` per proposal |
 | `ACT-project-delete` | *Delete…* | `project.delete` at the project | nothing ever proposed into it (409 `project.has_proposals`) | the project and its intention removed; log *Deleted* |
 
 ## Intentions and repeats
@@ -212,7 +212,7 @@ At `custody` that is the person's own subtree; the top level needs `any`.
 |---|---|---|---|---|
 | `ACT-category-create` | *New category* | `category.edit` at the parent | the parent is not a leaf holding documents (409 `category.holds_documents`); a unique name beside it (409 `category.name_taken`) | no share in any mix *(no log)* |
 | `ACT-category-save` | *Edit…*: rename or move | `category.edit` | not under itself (422); as create at the new parent | moved: its subtree goes along, it has no share in its new set, and its old share is unallocated *(no log)* |
-| `ACT-category-refine` | *Refine…* | `category.edit` | a leaf (409 `category.has_children`) | a child that takes every document and the leaf's whole share; log *Reclassified* per document |
+| `ACT-category-refine` | *Refine…* | `category.edit` | a leaf (409 `category.has_children`) | a child that takes every document and the leaf's whole share; log *Reclassified* per document; hook `iteration.reclassified` per document |
 | `ACT-category-delete` | *Delete…* | `category.edit` | no children (409); no documents (409); no intention or repeat scoped to it (409 `category.scope`) | its shares unallocated; custody on it removed *(no log)* |
 | `ACT-category-custody` | *Grant custody…* | `category.grant_custody` | people and existing groups | the set of holders, written whole *(no log)* |
 
@@ -242,11 +242,11 @@ The Categories tree picker selects a mix to display.
 | ID | Act | Needs | Allowed when | Writes |
 |---|---|---|---|---|
 | `ACT-run-cancel` | *Cancel* | the person's own run with `task.read_own`, or `task.cancel` | Running (409 `task.not_running`) | Cancelled; what it did stays |
-| `ACT-run-again` | *Run again* | the person's own run, or `plugin.run` | a failed or cancelled plugin run (409 `task.not_rerunnable`) | a new run, linked to the old |
+| `ACT-run-again` | *Run again* | the person's own run, or `plugin.run` | a failed or cancelled plugin run (409 `task.not_rerunnable`) | a new run, linked to the old; hook `run.finished` or `run.failed` when it ends |
 | `ACT-retention` | *Keep runs…* | `task.schedule` | failed runs kept at least as long as the others (422) | — |
 | `ACT-schedule-save` | *New schedule*, *Edit* | `task.schedule` | a plugin that can be scheduled (422); every 5 minutes at the most often (422) | — |
 | `ACT-schedule-pause` | *Pause…*, *Resume* | `task.schedule` | not paused, or paused (409) | — |
-| `ACT-schedule-run` | *Run now* | `plugin.run` | — | a run |
+| `ACT-schedule-run` | *Run now* | `plugin.run` | — | a run; hook `run.finished` or `run.failed` when it ends |
 
 Whoever started a run may cancel it and run it again: they could start it, so stopping and
 retrying it is the same right.
@@ -259,7 +259,7 @@ retrying it is the same right.
 | `ACT-instance-save` | *Edit configuration…* | `plugin.configure` | as create; an identity's user id claim unchanged once people logged in (409) | — |
 | `ACT-instance-disable` | *Disable…*, *Enable* | `plugin.configure` | not the last enabled Identity (409 `plugin.last_identity`) | — |
 | `ACT-instance-delete` | *Delete…* | `plugin.configure` | as disable | kept for its runs' sake; its schedules removed |
-| `ACT-instance-run` | *Run now* | `plugin.run` | enabled, and runnable on demand (409) | a run |
+| `ACT-instance-run` | *Run now* | `plugin.run` | enabled, and runnable on demand (409) | a run; hook `run.finished` or `run.failed` when it ends |
 | `ACT-plugin-reset` | *Reset…* on the instance’s drawer | `plugin.configure` (decided 2026-11-13) | its version declares `harvest`, `changes` or `sync` (409 `plugin.no_cursor`) | its cursors cleared; its mirror rebuilt on the next run ([PLG-api-mirror](../integrations/plugin-api.md#plg-api-mirror)); configuration `plugin_instance.reset` |
 | `ACT-instance-upgrade` | *Move to v…* | `plugin.configure` | a newer installed version whose contract VERA runs (409) | the instance's version |
 | `ACT-plugin-upload` | *Upload plugin code…* | `plugin.upload_code` | a package with a descriptor, for this implementation, of a version not yet installed (422, 409) | a new implementation or version; no instance moves |
