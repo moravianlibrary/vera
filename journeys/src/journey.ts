@@ -1,12 +1,27 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { type Browser, type BrowserContext, expect, type Page, test } from "@playwright/test";
+import {
+  type APIRequestContext,
+  type Browser,
+  type BrowserContext,
+  expect,
+  type Page,
+  request,
+  test,
+} from "@playwright/test";
 
 type Role = "reader" | "staff" | "curator" | "dig-curator" | "admin";
 type Step = ((n: number, title: string, fn: () => Promise<void>) => void) & {
   fixme: (n: number, title: string, mismatch: string, fn?: () => Promise<void>) => void;
 };
-type JourneyBody = (tools: { step: Step; as: (role: Role) => Promise<Page> }) => void;
+type JourneyBody = (tools: {
+  step: Step;
+  as: (role: Role) => Promise<Page>;
+  api: (role: Role) => Promise<APIRequestContext>;
+  clock: (
+    input: { at: string } | { advance: { days?: number; hours?: number; minutes?: number } },
+  ) => Promise<string>;
+}) => void;
 
 const people: Record<Role, string> = {
   reader: "u5",
@@ -34,6 +49,7 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
   const seed = options.seed ?? "base";
   const contexts = new Map<Role, BrowserContext>();
   const pages = new Map<Role, Page>();
+  const apis = new Map<Role, APIRequestContext>();
   let browser: Browser;
 
   test.describe(path, () => {
@@ -52,7 +68,10 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
     });
 
     test.afterAll(async () => {
-      await Promise.all([...contexts.values()].map((context) => context.close()));
+      await Promise.all([
+        ...[...contexts.values()].map((context) => context.close()),
+        ...[...apis.values()].map((context) => context.dispose()),
+      ]);
     });
 
     const as = async (role: Role): Promise<Page> => {
@@ -91,7 +110,39 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       test.fixme(`Step ${n}: ${title} — MISMATCH: ${mismatch}`, fn);
     };
 
-    body({ step, as });
+    const api = async (role: Role): Promise<APIRequestContext> => {
+      const existing = apis.get(role);
+      if (existing) return existing;
+      await as(role);
+      const cookie = (await pages.get(role)?.context().cookies(baseURL))?.find(
+        (entry) => entry.name === "vera_session",
+      )?.value;
+      if (!cookie) throw new Error(`Session for ${role} has no vera_session cookie`);
+      const context = await request.newContext({
+        baseURL,
+        extraHTTPHeaders: { Cookie: `vera_session=${cookie}` },
+      });
+      apis.set(role, context);
+      return context;
+    };
+
+    const clock = async (
+      input: { at: string } | { advance: { days?: number; hours?: number; minutes?: number } },
+    ): Promise<string> => {
+      const response = await fetch(`${backend}/_engine/clock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) {
+        throw new Error(`Clock failed (${response.status}): ${await response.text()}`);
+      }
+      const result = (await response.json()) as { now: string };
+      await Promise.all([...pages.values()].map((page) => page.clock.setFixedTime(result.now)));
+      return result.now;
+    };
+
+    body({ step, as, api, clock });
   });
 }
 
