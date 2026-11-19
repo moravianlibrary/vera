@@ -33,9 +33,9 @@ There are also open proposals in *Moravica*, which she is not a member of.
 6. She groups by batch and approves the batch under one category, unticking one item.
    → All but the unticked one, any rescan and any unchecked one are approved; those left out are
    counted ([ACT-approve-batch](../../reference/access/acts.md#request-review)).
-7. She opens a link to a *Moravica* proposal and tries to decide it.
-   → Refused: it is outside her request custody
-   ([ACT-out-of-reach](../../reference/access/acts.md#act-out-of-reach)).
+7. She opens a link to a *Moravica* proposal.
+   → The page says the request is not within her reach, and offers no decision: it is outside
+   her request custody ([ACT-out-of-reach](../../reference/access/acts.md#act-out-of-reach)).
 
 ## Rules
 

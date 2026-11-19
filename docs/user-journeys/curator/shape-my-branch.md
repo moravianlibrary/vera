@@ -8,8 +8,8 @@
 
 ## Steps
 
-1. On *Categories* she tries to add a child to *Maps*.
-   → Refused: it holds documents, so it must be refined
+1. On *Categories* she looks for a way to add a child to *Maps*.
+   → Only *Refine…* is offered: it holds documents, so it must be refined
    ([PLAN-leaf-with-documents](../../reference/planning/categories.md#plan-leaf-with-documents)).
 2. She refines *Maps* into *Maps → Historical*.
    → Every document moves into the child, each logged; the child takes all of Maps' share
@@ -20,9 +20,9 @@
 4. She grants custody of *Maps* to a colleague.
    → The colleague now reaches everything under *Maps*
    ([ACCESS-grant-custody](../../reference/access/custody.md#access-grant-custody)).
-5. She tries to move *Maps → Modern* up to the top level of the tree.
-   → Refused: at `custody` she changes only her own subtree, and only an administrator changes
-   the top level ([PLAN-top-level](../../reference/planning/categories.md#plan-top-level)).
+5. She moves *Maps → Modern* and looks for the top level among the destinations.
+   → It is not offered: at `custody` she changes only her own subtree, and only an administrator
+   changes the top level ([PLAN-top-level](../../reference/planning/categories.md#plan-top-level)).
 
 ## Rules
 
