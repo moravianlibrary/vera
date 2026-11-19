@@ -18,17 +18,15 @@ journey("curator/rule-on-defects", ({ step, as }) => {
     await expect(page.getByText(/The checks found nothing left to rule on.*Ready/)).toBeVisible();
   });
 
-  step.fixme(
-    3,
-    "recheck catalog defects",
-    "the two-defect Periodicals review items are Selské noviny (MZK01-001388120: R07:260$c, R04:pages) and Hlas lidu (MZK01-001476310: R03:pages, R07:260$c); neither record is in catalogRepairs",
-    async () => {
-      await page.getByRole("button", { name: /Selské noviny.*2 outstanding/ }).click();
-      await page.getByRole("button", { name: "Recheck" }).click();
-      await expect(page.getByText(/Rechecked/)).toBeVisible();
-      await expect(page.getByText(/1 outstanding/)).toBeVisible();
-    },
-  );
+  step(3, "recheck catalog defects", async () => {
+    await page.getByRole("button", { name: /Hlas lidu.*1 outstanding/ }).click();
+    await page.getByRole("button", { name: "Recheck" }).click();
+    await expect(page.getByText("Rechecked", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Only the predictor answered (tier 20); no catalog extent on the record."),
+    ).toBeVisible();
+    await expect(page.getByText(/MARC 260\$c changed upstream/)).toHaveCount(0);
+  });
 
   step(4, "accept the outstanding defects with a note", async () => {
     await page.getByRole("link", { name: "Documents Validations" }).click();

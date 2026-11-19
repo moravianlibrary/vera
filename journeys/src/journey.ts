@@ -6,7 +6,6 @@ import {
   type BrowserContext,
   expect,
   type Page,
-  request,
   test,
 } from "@playwright/test";
 
@@ -51,7 +50,6 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
   const seed = options.seed ?? "base";
   const contexts = new Map<Role, BrowserContext>();
   const pages = new Map<Role, Page>();
-  const apis = new Map<Role, APIRequestContext>();
   let browser: Browser;
 
   test.describe(path, () => {
@@ -70,21 +68,10 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
     });
 
     test.afterAll(async () => {
-      await Promise.all([
-        ...[...contexts.values()].map((context) => context.close()),
-        ...[...apis.values()].map((context) => context.dispose()),
-      ]);
+      await Promise.all([...contexts.values()].map((context) => context.close()));
     });
 
-    const as = async (role: Role): Promise<Page> => {
-      const existing = pages.get(role);
-      if (existing) return existing;
-      const context = await browser.newContext({
-        baseURL,
-        locale: "en-US",
-        timezoneId: "Europe/Prague",
-      });
-      contexts.set(role, context);
+    const signIn = async (role: Role, context: BrowserContext): Promise<void> => {
       const response = await fetch(`${backend}/_engine/sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,6 +85,18 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       const cookie = response.headers.get("set-cookie")?.match(/vera_session=([^;]+)/)?.[1];
       if (!cookie) throw new Error(`Session for ${role} did not set vera_session`);
       await context.addCookies([{ name: "vera_session", value: cookie, url: baseURL }]);
+    };
+
+    const as = async (role: Role): Promise<Page> => {
+      const existing = pages.get(role);
+      if (existing) return existing;
+      const context = await browser.newContext({
+        baseURL,
+        locale: "en-US",
+        timezoneId: "Europe/Prague",
+      });
+      contexts.set(role, context);
+      await signIn(role, context);
       const page = await context.newPage();
       await page.clock.setFixedTime(seedNow(seed));
       await page.goto("/");
@@ -112,21 +111,9 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       test.fixme(`Step ${n}: ${title} — MISMATCH: ${mismatch}`, fn);
     };
 
-    const api = async (role: Role): Promise<APIRequestContext> => {
-      const existing = apis.get(role);
-      if (existing) return existing;
-      await as(role);
-      const cookie = (await pages.get(role)?.context().cookies(baseURL))?.find(
-        (entry) => entry.name === "vera_session",
-      )?.value;
-      if (!cookie) throw new Error(`Session for ${role} has no vera_session cookie`);
-      const context = await request.newContext({
-        baseURL,
-        extraHTTPHeaders: { Cookie: `vera_session=${cookie}` },
-      });
-      apis.set(role, context);
-      return context;
-    };
+    // The person's own context's request shares its cookies, so a renewed session carries over.
+    const api = async (role: Role): Promise<APIRequestContext> =>
+      (await as(role)).context().request;
 
     const clock = async (
       input: { at: string } | { advance: { days?: number; hours?: number; minutes?: number } },
@@ -141,6 +128,8 @@ export function journey(path: string, body: JourneyBody, options: { seed?: strin
       }
       const result = (await response.json()) as { now: string };
       await Promise.all([...pages.values()].map((page) => page.clock.setFixedTime(result.now)));
+      // A long move outlives the sessions (12 h at most), so everyone open signs in again.
+      await Promise.all([...contexts].map(([role, context]) => signIn(role, context)));
       return result.now;
     };
 
