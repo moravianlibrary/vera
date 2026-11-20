@@ -42,6 +42,8 @@ function fields(...keys: readonly string[]): ConfigField[] {
 
 interface VersionSource {
   readonly version: string;
+  // The plugin API the version was built against; 1.0 unless it says otherwise.
+  readonly contractVersion?: string;
   readonly installedAt: string;
   readonly triggers: readonly PluginTrigger[];
   readonly declares?: Partial<Declarations>;
@@ -52,7 +54,7 @@ interface VersionSource {
 function versionOf(source: VersionSource): PluginVersion {
   return {
     version: source.version,
-    contractVersion: "1.0",
+    contractVersion: source.contractVersion ?? "1.0",
     signer: "Moravská zemská knihovna v Brně",
     installedAt: source.installedAt,
     installedBy: "u3",
@@ -325,7 +327,8 @@ export const pluginImplementations: readonly StoredPluginImplementation[] = [
     "Identity",
     "Logs in through an OpenID Connect provider — Keycloak, or any other.",
     {
-      version: "2.1.0",
+      version: "2.2.0",
+      contractVersion: "1.3",
       installedAt: "2026-01-15",
       triggers: ["OnLogin"],
       declares: { loginEntry: "Redirect" },

@@ -21,7 +21,8 @@ class ContractVersionTests {
         assertTrue(ContractVersion.accepts("1.1"));
         assertTrue(ContractVersion.accepts("1.2"));
         assertTrue(ContractVersion.accepts("1.0.3"));
-        assertFalse(ContractVersion.accepts("1.3"));
+        assertTrue(ContractVersion.accepts("1.3"));
+        assertFalse(ContractVersion.accepts("1.4"));
         assertFalse(ContractVersion.accepts("2.0"));
     }
 }

@@ -75,7 +75,8 @@ public class ControlController {
 
     @GetMapping(value = "/identity/{instanceId}", produces = "text/html")
     public ResponseEntity<?> identityPage(@PathVariable String instanceId,
-            @RequestParam(name = "return", required = false) String returnTo) {
+            @RequestParam(name = "callback") String callback,
+            @RequestParam(name = "state") String state) {
         var instance = dsl.select(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.ID,
                         cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.SETTINGS)
                 .from(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES)
@@ -100,7 +101,8 @@ public class ControlController {
                 .append("</h1><ul>");
         for (var accountEntry : fakeWorld.accountsForInstance(instanceId).entrySet()) {
             var account = accountEntry.getValue();
-            String href = (returnTo == null ? "" : returnTo) + "&code="
+            String href = java.net.URI.create(callback).getRawPath() + "?state="
+                    + java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8) + "&code="
                     + java.net.URLEncoder.encode(
                             accountEntry.getKey(), java.nio.charset.StandardCharsets.UTF_8);
             html.append("<li><a href=\"").append(escapeHtml(href)).append("\">")

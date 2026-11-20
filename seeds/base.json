@@ -12101,8 +12101,8 @@
         "description": "Logs in through an OpenID Connect provider — Keycloak, or any other.",
         "versions": [
           {
-            "version": "2.1.0",
-            "contractVersion": "1.0",
+            "version": "2.2.0",
+            "contractVersion": "1.3",
             "signer": "Moravská zemská knihovna v Brně",
             "installedAt": "2026-01-15",
             "installedBy": "u3",
@@ -13489,7 +13489,7 @@
         },
         "createdAt": "2026-01-15",
         "lastRunAt": "2026-06-25T08:36:00.000Z",
-        "version": "2.1.0",
+        "version": "2.2.0",
         "isEnabled": true,
         "linkedCategoryId": null,
         "createdBy": "u3",
@@ -13546,7 +13546,7 @@
         "isEnabled": true,
         "createdAt": "2026-10-29",
         "lastRunAt": null,
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "id": "pi42",
@@ -13571,7 +13571,7 @@
         "isEnabled": true,
         "createdAt": "2026-10-29",
         "lastRunAt": null,
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "id": "pi26",

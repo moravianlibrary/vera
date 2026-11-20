@@ -15,7 +15,7 @@ import java.util.List;
 public final class LocalAccounts implements Identity {
     @Override
     public BeginAnswer begin(PluginContext context, BeginInput input) {
-        return new BeginAnswer(null);
+        return new BeginAnswer(null, java.util.Map.of());
     }
 
     @Override

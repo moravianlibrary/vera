@@ -1,1 +1,22 @@
-{"implementation":"cz.mzk.vera.oidc-identity","version":"2.1.0","contractVersion":"1.0","triggers":["OnLogin"],"declares":{"properties":[],"identifierTypes":[],"rawStates":[],"rules":[],"agent":null,"generatorClass":null,"channelInterface":null,"operations":[],"loginEntry":"Redirect"},"configFields":[{"key":"issuer","isSecret":false,"isRequired":true},{"key":"client","isSecret":false,"isRequired":true},{"key":"client_secret","isSecret":true,"isRequired":true}]}
+{
+  "implementation": "cz.mzk.vera.oidc-identity",
+  "version": "2.2.0",
+  "contractVersion": "1.3",
+  "triggers": ["OnLogin"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": "Redirect"
+  },
+  "configFields": [
+    { "key": "issuer", "isSecret": false, "isRequired": true },
+    { "key": "client", "isSecret": false, "isRequired": true },
+    { "key": "client_secret", "isSecret": true, "isRequired": true }
+  ]
+}

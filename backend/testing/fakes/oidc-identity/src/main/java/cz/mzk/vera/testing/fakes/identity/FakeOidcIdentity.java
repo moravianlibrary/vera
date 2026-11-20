@@ -23,10 +23,10 @@ import java.util.Map;
 public final class FakeOidcIdentity implements Identity {
     @Override
     public BeginAnswer begin(PluginContext context, BeginInput input) {
-        String returned = input.returnTo() == null
-                ? ""
-                : URLEncoder.encode(input.returnTo(), StandardCharsets.UTF_8);
-        return new BeginAnswer("/_engine/identity/" + context.instanceId() + "?return=" + returned);
+        String callback = URLEncoder.encode(input.callback(), StandardCharsets.UTF_8);
+        String state = URLEncoder.encode(input.state(), StandardCharsets.UTF_8);
+        return new BeginAnswer("/_engine/identity/" + context.instanceId() + "?callback=" + callback
+                + "&state=" + state, Map.of());
     }
 
     @Override

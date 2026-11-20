@@ -6,6 +6,7 @@
   "login.password": "Heslo",
   "login.submit": "Přihlásit se",
   "login.wrongPassword": "Uživatelské jméno nebo heslo není správné.",
+  "login.error.login.refused": "Přihlášení bylo zrušeno nebo odmítnuto u poskytovatele.",
   "login.error.access.suspended": "Tento účet je pozastavený. Obraťte se na správce.",
   "login.error.other": "Přihlášení se nepodařilo. Zkuste to znovu.",
   "login.language": "Jazyk",

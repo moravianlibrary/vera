@@ -162,7 +162,7 @@ class PluginLoaderTests {
     }
 
     private CompleteAnswer complete(PluginLoader.LoadedPlugin plugin) {
-        return identity(plugin).complete(null, new CompleteInput.Form("user", "password"));
+        return identity(plugin).complete(null, new CompleteInput.Form("user", "password", null));
     }
 
     private Identity identity(PluginLoader.LoadedPlugin plugin) {
@@ -244,9 +244,9 @@ class PluginLoaderTests {
         String beginBody = lookForSpring
                 ? "try { Class.forName(\"org.springframework.context.ApplicationContext\"); } "
                         + "catch (ClassNotFoundException error) { throw new IllegalStateException(error); }"
-                : "return new BeginAnswer(null);";
+                : "return new BeginAnswer(null, java.util.Map.of());";
         if (lookForSpring) {
-            beginBody += " return new BeginAnswer(null);";
+            beginBody += " return new BeginAnswer(null, java.util.Map.of());";
         }
         return """
                 package test;

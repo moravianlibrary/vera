@@ -47,12 +47,15 @@ class IdentityFakesTests {
     @Test
     void oidcFakeStartsCompletesAndRefusesUnknownAccountsAndForms() {
         PluginOutcome<BeginAnswer> begin = calls.call("pi22", Identity.class, "begin",
-                (identity, context) -> identity.begin(context, new BeginInput("/requests")));
-        assertThat(answer(begin).redirect()).isEqualTo("/_engine/identity/pi22?return=%2Frequests");
+                (identity, context) -> identity.begin(context, new BeginInput("http://localhost/callback", "state")));
+        assertThat(answer(begin).redirect()).isEqualTo(
+                "/_engine/identity/pi22?callback=http%3A%2F%2Flocalhost%2Fcallback&state=state");
+        assertThat(answer(begin).flowData()).isEmpty();
 
         PluginOutcome<CompleteAnswer> completed = calls.call("pi22", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Callback(Map.of("code", "jnovakova"))));
+                        new CompleteInput.Callback(Map.of("code", "jnovakova"), Map.of(),
+                                "http://localhost/callback", "sub")));
         CompleteAnswer account = answer(completed);
         assertThat(account.externalId()).isEqualTo("jnovakova");
         assertThat(account.name()).isEqualTo("Jana Nováková");
@@ -61,18 +64,20 @@ class IdentityFakesTests {
 
         PluginOutcome<CompleteAnswer> slackAccount = calls.call("pi22", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Callback(Map.of("code", "pdvorak"))));
+                        new CompleteInput.Callback(Map.of("code", "pdvorak"), Map.of(),
+                                "http://localhost/callback", "sub")));
         assertThat(answer(slackAccount).claims())
                 .containsExactly("group mzk-staff", "slack_id pdvorak");
 
         PluginOutcome<CompleteAnswer> unknown = calls.call("pi22", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Callback(Map.of("code", "unknown"))));
+                        new CompleteInput.Callback(Map.of("code", "unknown"), Map.of(),
+                                "http://localhost/callback", "sub")));
         assertThat(unknown).isEqualTo(new PluginOutcome.Refused<>("wrong_credentials", "wrong_credentials"));
 
         PluginOutcome<CompleteAnswer> form = calls.call("pi22", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Form("user", "password")));
+                        new CompleteInput.Form("user", "password", "sub")));
         assertThat(form).isEqualTo(new PluginOutcome.Refused<>("not_allowed", "not_allowed"));
     }
 
@@ -80,11 +85,12 @@ class IdentityFakesTests {
     void googleFakePreservesEmailCaseAndLocalFakeUsesAFormEntry() {
         PluginOutcome<CompleteAnswer> google = calls.call("pi41", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Callback(Map.of("code", "google-u1"))));
+                        new CompleteInput.Callback(Map.of("code", "google-u1"), Map.of(),
+                                "http://localhost/callback", "sub")));
         assertThat(answer(google).email()).isEqualTo("JANA.NOVAKOVA@MZK.CZ");
 
         PluginOutcome<BeginAnswer> localBegin = calls.call("pi24", Identity.class, "begin",
-                (identity, context) -> identity.begin(context, new BeginInput(null)));
+                (identity, context) -> identity.begin(context, new BeginInput(null, null)));
         assertThat(answer(localBegin).redirect()).isNull();
     }
 
@@ -110,7 +116,7 @@ class IdentityFakesTests {
     private PluginOutcome<CompleteAnswer> localLogin(String password) {
         return calls.call("pi24", Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Form("local-test-user", password)));
+                        new CompleteInput.Form("local-test-user", password, null)));
     }
 
     @SuppressWarnings("unchecked")

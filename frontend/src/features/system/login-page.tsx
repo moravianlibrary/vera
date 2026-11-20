@@ -44,7 +44,9 @@ export function LoginPage() {
         : errorCode !== null
           ? errorCode === "access.suspended"
             ? t("login.error.access.suspended")
-            : t("login.error.other")
+            : errorCode === "login.refused"
+              ? t("login.error.login.refused")
+              : t("login.error.other")
           : undefined;
 
   const submitForm = async (event: FormEvent<HTMLFormElement>, instanceId: string) => {

@@ -21,8 +21,8 @@ class LocalAccountsTests {
         LocalAccounts plugin = new LocalAccounts();
         TestContext context = new TestContext(PasswordCheck.MATCHES);
 
-        assertEquals(null, plugin.begin(context, new BeginInput("/requests")).redirect());
-        CompleteAnswer answer = plugin.complete(context, new CompleteInput.Form("reader", "password"));
+        assertEquals(null, plugin.begin(context, new BeginInput("http://localhost/callback", "state")).redirect());
+        CompleteAnswer answer = plugin.complete(context, new CompleteInput.Form("reader", "password", "sub"));
         assertEquals("reader", answer.externalId());
         assertEquals("reader", answer.name());
         assertEquals(false, answer.emailVerified());
@@ -32,9 +32,9 @@ class LocalAccountsTests {
     void refusesMissingOrInvalidLocalPasswordsWithoutAnHttpFallback() {
         LocalAccounts plugin = new LocalAccounts();
         IdentityRefused wrong = assertThrows(IdentityRefused.class, () -> plugin.complete(
-                new TestContext(PasswordCheck.DIFFERS), new CompleteInput.Form("reader", "bad")));
+                new TestContext(PasswordCheck.DIFFERS), new CompleteInput.Form("reader", "bad", "sub")));
         IdentityRefused missing = assertThrows(IdentityRefused.class, () -> plugin.complete(
-                new TestContext(PasswordCheck.NONE), new CompleteInput.Form("unknown", "bad")));
+                new TestContext(PasswordCheck.NONE), new CompleteInput.Form("unknown", "bad", "sub")));
 
         assertEquals(IdentityRefusal.WRONG_CREDENTIALS.code(), wrong.code());
         assertEquals(IdentityRefusal.WRONG_CREDENTIALS.code(), missing.code());
@@ -43,7 +43,8 @@ class LocalAccountsTests {
     @Test
     void refusesCallbackInput() {
         IdentityRefused refused = assertThrows(IdentityRefused.class, () -> new LocalAccounts().complete(
-                new TestContext(PasswordCheck.MATCHES), new CompleteInput.Callback(Map.of())));
+                new TestContext(PasswordCheck.MATCHES), new CompleteInput.Callback(Map.of(), Map.of(),
+                        "http://localhost/callback", "sub")));
 
         assertEquals(IdentityRefusal.NOT_ALLOWED.code(), refused.code());
     }

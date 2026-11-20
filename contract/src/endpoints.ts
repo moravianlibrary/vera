@@ -448,7 +448,12 @@ export const endpoints = {
     path: `${apiRoutes.login}/:instanceId/callback`,
     summary: "Completes a provider login.",
     params: z.object({ instanceId: z.string() }),
-    query: z.object({ flow: z.string(), code: z.string() }),
+    query: z.object({
+      state: z.string(),
+      code: z.string().optional(),
+      error: z.string().optional(),
+      iss: z.string().optional(),
+    }),
     codes: ["access.suspended", "login.expired"],
     redirects: true,
     public: true,
