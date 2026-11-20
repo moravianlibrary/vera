@@ -32,9 +32,11 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
@@ -104,7 +106,21 @@ public class ProposalSubmit {
             return Outcome.refused(422, "At most " + max + " items at once", ProposalCodes.TOO_MANY_ITEMS);
         }
         Instant now = clock.instant();
-        int count = (int) items.stream().filter(item -> acceptedCheck(item, userId)).count();
+        List<CheckedItem> checked = new ArrayList<>();
+        Set<ItemIdentity> seen = new HashSet<>();
+        for (Map<String, Object> item : items) {
+            Map<String, Object> result = check.checkItem(item, userId, false);
+            if (accepted(result)) {
+                ItemIdentity identity = new ItemIdentity((String) result.get("catalogId"),
+                        (String) result.get("unit"));
+                if (!seen.add(identity)) {
+                    result = new LinkedHashMap<>(result);
+                    result.put("kind", "mine");
+                }
+            }
+            checked.add(new CheckedItem(item, result));
+        }
+        int count = (int) checked.stream().filter(value -> accepted(value.check())).count();
         if (!settings.canSubmitRateLimited(userId, count)) {
             return Outcome.refused(429, "Today's proposal limit has been reached", ProposalCodes.DAILY_LIMIT);
         }
@@ -115,9 +131,6 @@ public class ProposalSubmit {
                     "Only a member proposes into a project, and not into a rejected one",
                     ProposalCodes.PROJECT_NOT_PROPOSABLE);
         }
-        List<CheckedItem> checked = items.stream()
-                .map(item -> new CheckedItem(item, check.checkItem(item, userId, false)))
-                .toList();
         List<CheckedItem> accepted = checked.stream()
                 .filter(value -> accepted(value.check())).toList();
         List<Map<String, Object>> skipped = checked.stream().filter(value -> !accepted(value.check()))
@@ -241,11 +254,6 @@ public class ProposalSubmit {
         report.put("joined", joined);
         report.put("skipped", skipped);
         return Outcome.ok(report);
-    }
-
-    private boolean acceptedCheck(Map<String, Object> item, String userId) {
-        // contract/src/queries/proposals.ts: submittableProposalItemCount.
-        return accepted(check.checkItem(item, userId, false));
     }
 
     private boolean accepted(Map<String, Object> value) {
@@ -374,6 +382,7 @@ public class ProposalSubmit {
     }
 
     private record CheckedItem(Map<String, Object> item, Map<String, Object> check) {}
+    private record ItemIdentity(String catalogId, String unit) {}
     public record Copy(String source, String state, String link, String iterationId) {}
     public record Outcome(int status, String detail, String code, Map<String, Object> body) {
         static Outcome refused(int status, String detail, String code) {
