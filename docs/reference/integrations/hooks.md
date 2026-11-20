@@ -48,7 +48,7 @@ read by event.
 | `request.declined` | [ACT-decline](../access/acts.md#request-review), per ask; [ACT-project-reject](../access/acts.md#projects), per pending proposal |
 | `iteration.ingested` · `iteration.ingest_failed` | the ingest job, after an approval or *Retry failed* ([LC-ITER-ingest](../lifecycles/iteration.md#lc-iter-ingest)) |
 | `iteration.verdict_accepted` · `_denied` · `_revoked` | [ACT-accept, ACT-deny, ACT-revoke](../access/acts.md#validation-verdicts) |
-| `iteration.restricted` | nothing yet: the restriction checks write their finding but fire no event ([L79](../../ledger.md#l79-iterationrestricted-is-never-fired)) |
+| `iteration.restricted` | the ingest job and restriction Check runs, when they find a forbidding restriction the iteration did not have ([L79](../../ledger.md#built-2026-11-20)) |
 | `iteration.reclassified` | [ACT-reclassify](../access/acts.md#iterations); [ACT-category-refine](../access/acts.md#categories), per document moved |
 | `iteration.cancelled` | [ACT-cancel](../access/acts.md#iterations) |
 | `iteration.not_digitizable` | [ACT-list-not-digitizable](../access/acts.md#digitization-lists) |

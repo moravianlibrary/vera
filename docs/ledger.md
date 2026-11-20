@@ -31,27 +31,6 @@ sends it through the Local accounts instance's `mail_channel` (the shipped SmtpM
 since B5). → backend: queue account mail as a job that sends through the instance's mail
 channel (as watchlist and hook mail do), keeping the outbox only under the test profile.
 
-### L85: Documents answers 500 when there are no categories
-
-Rules: [VIEW-documents-audience](reference/access/views.md#view-documents-audience).
-
-Found on 2026-11-20 by the first-install smoke (D2b): on a fresh installation, which has no
-categories yet, `GET /documents` fails with *Cannot create a VALUES() constructor with an empty
-set of rows* (`DocumentField.categoryLineagePairs`, the category facet). No seed ever had zero
-categories. → backend: an empty category tree gives an empty facet; check the other pages'
-facets and counts on an empty installation too.
-
-### L84: an intention with a scope condition answers 500
-
-Rules: [PLAN-scope](reference/planning/intentions.md#plan-scope).
-
-Found by the journeys on 2026-11-19 (digitization/plan-intentions step 2). `POST /intentions`
-with any `scopeConditions` writes the intention but answers 500 `contract.response` (*null
-found, boolean expected*): the Java `PropertyCondition` record serialises its unused fields as
-`null` (`hasNoValue: null`, …), which the contract's optional fields do not accept. No seed
-intention has a condition, so the replay never met it. → backend: leave unset fields out of the
-answer (and check the other places that answer a `PropertyCondition`).
-
 ### L83: My Documents gets no watchlist badge
 
 Rules: [WATCH-new](reference/integrations/watchlists.md#watch-new).
@@ -61,17 +40,6 @@ watchlist's news under the `documents` entry (`components/layout/sidebar.tsx`, f
 My Documents became its own entry, L53), so a reader, who has no Documents entry, never sees the
 badge; the tab itself shows *+1 new*. → frontend: count each watchlist under its own view's
 entry.
-
-### L81: one submission can ask for the same item twice
-
-Rules: [LC-REQ-check](reference/lifecycles/request.md#lc-req-check),
-[ACT-propose](reference/access/acts.md#proposing).
-
-Found by the journeys on 2026-11-19. The backend's `POST /proposals` with the same item three
-times in one submission writes three asks (`joined: 3`, three counted against the daily limit);
-the same item in a later submission is skipped as *mine*, as it should be. The Propose dialog
-does not send duplicates, so only the API shows it. → backend (and the mock, if it does the
-same): an item repeated within one submission is skipped as *mine* after its first.
 
 ### L82: the Propose dialog's batch name and daily-limit refusal
 
@@ -95,17 +63,6 @@ stays Pending and nothing holds it, so `request.held` only ever says why `checki
 `copy_exists` in the base seed's status log and the mock fixture (`R20`'s held entry), the volume
 generator (`seeds/tools/volume/history.ts`) and its wording (`frontend/src/lib/event-wording.ts`).
 → frontend, seeds.
-
-### L79: `iteration.restricted` is never fired
-
-Rules: [HOOK-events](reference/integrations/hooks.md#hook-events),
-[HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources).
-
-The restriction checks (proposal check job, ingest, Check runs, recheck) write a forbidden
-finding on the iteration, but neither the backend nor the mock records or fires
-`iteration.restricted`; only a mock fixture holds one. `HookEventCoverageTests` lists the code as
-covered without a case that produces it. → backend and mock: fire it when a check finds a
-restriction the iteration did not have, with the rule and outcome.
 
 ## For the frontend, the backend and deployment
 
@@ -174,7 +131,22 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 - **L33:** every hookable event is fired by the act or job that causes it; each act's row names
   its events and [HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources) reads
   the matrix by event. Wrong codes in the acts (`list.dates_changed`, `list.done`, the link acts)
-  corrected. `iteration.restricted` is not fired: [L79](#l79-iterationrestricted-is-never-fired).
+  corrected.
+
+### Built, 2026-11-20
+
+- **L85:** document and validation category facets use empty tables when no categories exist.
+  The first installation also writes its task retention row, so its sidebar lists return 200
+  ([VIEW-documents-audience](reference/access/views.md#view-documents-audience)).
+- **L81:** after its first occurrence in one submission, a repeated catalog item is skipped as
+  *mine* and does not count again against the daily proposal limit
+  ([LC-REQ-check](reference/lifecycles/request.md#lc-req-check)).
+- **L84:** intention answers include only the fields set on each scope condition, so a scoped
+  intention passes the contract response check ([PLAN-scope](reference/planning/intentions.md#plan-scope)).
+- **L79:** the ingest job and restriction Check runs record `iteration.restricted` when they find a
+  forbidding restriction the iteration did not have, with the plugin instance as the rule. Finding
+  the same one again records nothing. The mock writes no restriction findings, so it has none to
+  fire ([HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources)).
 
 ### Built, 2026-11-18
 

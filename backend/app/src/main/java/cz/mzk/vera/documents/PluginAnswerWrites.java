@@ -191,7 +191,8 @@ public class PluginAnswerWrites {
         return defects.size();
     }
 
-    public int restriction(DSLContext tx, String iterationId, RestrictionCheckAnswer answer) {
+    public int restriction(DSLContext tx, String iterationId, String instanceId, String instanceName,
+            RestrictionCheckAnswer answer, String runId) {
         RestrictionCheckAnswer.Finding finding = answer.findings().stream()
                 .filter(RestrictionCheckAnswer.Finding::forbidden).findFirst().orElse(null);
         String oldRule = tx.select(ITERATIONS.RESTRICTION_RULE).from(ITERATIONS)
@@ -214,6 +215,15 @@ public class PluginAnswerWrites {
                 .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, finding.why())
                 .set(ITERATIONS.RESTRICTION_FOUND_AT, same ? oldAt : now())
                 .where(ITERATIONS.ID.eq(iterationId)).execute();
+        // HOOK-event-sources: only a restriction the iteration did not have is news; only forbidden is stored.
+        if (!same) {
+            Map<String, Object> data = Map.of("rule", Map.of("id", instanceId, "name", instanceName),
+                    "outcome", "forbidden");
+            EventInput event = new EventInput(EventCode.ITERATION_RESTRICTED, "iteration", iterationId, null,
+                    new EventInput.System(), Correlation.newId(), clock.instant(), json.valueToTree(data), null);
+            if (runId == null) events.record(event);
+            else events.recordRun(event, runId);
+        }
         return 1;
     }
 

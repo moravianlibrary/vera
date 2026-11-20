@@ -173,7 +173,7 @@ public class CheckRunKind implements RunKind {
         }
         if ("Restriction".equals(context.kind())) {
             return answerWrites.restriction(tx, target.iterationId(),
-                    (RestrictionCheckAnswer) answer.answer());
+                    context.instanceId(), instanceName, (RestrictionCheckAnswer) answer.answer(), context.runId());
         }
         return 0;
     }

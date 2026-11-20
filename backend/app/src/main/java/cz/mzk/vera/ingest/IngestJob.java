@@ -200,7 +200,7 @@ public class IngestJob implements JobKind<IngestJob.Result> {
         applyRegistry(tx, result);
         applyProperties(tx, result);
         applyDefects(tx, result);
-        applyRestriction(tx, result);
+        applyRestriction(tx, job, result);
         String progress = progressAfterGates(states.recordOf(tx, result.documentId()).iterations().stream()
                 .filter(value -> value.id().equals(id)).findFirst().orElseThrow()).name();
         tx.update(ITERATIONS).set(ITERATIONS.PROGRESS, progress).set(ITERATIONS.INGEST_FAILURE_ERROR, (String) null)
@@ -232,10 +232,21 @@ public class IngestJob implements JobKind<IngestJob.Result> {
         }
     }
 
-    private void applyRestriction(DSLContext tx, Result result) {
-        List<RestrictionCheckAnswer.Finding> findings = result.restrictionAnswers().stream()
-                .flatMap(answer -> answer.answer().findings().stream()).toList();
-        answerWrites.restriction(tx, result.iterationId(), new RestrictionCheckAnswer(findings));
+    private void applyRestriction(DSLContext tx, Job job, Result result) {
+        RestrictionAnswer selected = result.restrictionAnswers().stream()
+                .filter(answer -> answer.answer().findings().stream()
+                        .anyMatch(RestrictionCheckAnswer.Finding::forbidden))
+                .findFirst().orElseGet(() -> result.restrictionAnswers().stream().findFirst().orElse(null));
+        if (selected == null) {
+            answerWrites.restriction(tx, result.iterationId(), null, null,
+                    new RestrictionCheckAnswer(List.of()), Long.toString(job.id()));
+            return;
+        }
+        RestrictionCheckAnswer.Finding finding = selected.answer().findings().stream()
+                .filter(RestrictionCheckAnswer.Finding::forbidden).findFirst()
+                .orElseGet(() -> selected.answer().findings().stream().findFirst().orElse(null));
+        answerWrites.restriction(tx, result.iterationId(), selected.instance().id(), selected.instance().name(),
+                new RestrictionCheckAnswer(finding == null ? List.of() : List.of(finding)), Long.toString(job.id()));
     }
 
     private String outcome(String instance, PluginOutcome<?> outcome) {
