@@ -184,5 +184,5 @@ does not send or retain a message ([MSG-handoff](../reference/integrations/messa
 | `HttpWebhook` | |
 | `SlackNotifier` | |
 | `SftpDrop` | |
-| `SmtpMailer` | password or OAuth2 (XOAUTH2) login |
+| `SmtpMailer` | SMTP with optional password login; opens its own connection |
 | `GmailAccountMailer` | the Gmail API with an OAuth2 client from Google Cloud Console; send-only scope |
