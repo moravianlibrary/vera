@@ -19,6 +19,18 @@ None.
 
 ## Not built yet
 
+### L86: account mail never leaves VERA
+
+Rules: [ACCESS-sign-up](reference/access/people.md#access-sign-up),
+[ACCESS-local-account](reference/access/people.md#access-local-account).
+
+Found on 2026-11-20 by the local deployment (D4): a password reset answers 202 and Mailpit gets
+nothing. Sign-up verification and password-reset mail (`login/SignUpCommands.java`, `mail(…)`)
+is written only to the `outbox` table, which the testing backend's fake world reads; nothing
+sends it through the Local accounts instance's `mail_channel` (the shipped SmtpMailer instance,
+since B5). → backend: queue account mail as a job that sends through the instance's mail
+channel (as watchlist and hook mail do), keeping the outbox only under the test profile.
+
 ### L85: Documents answers 500 when there are no categories
 
 Rules: [VIEW-documents-audience](reference/access/views.md#view-documents-audience).
