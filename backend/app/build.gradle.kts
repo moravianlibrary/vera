@@ -4,6 +4,23 @@ plugins {
 }
 
 val codegen = sourceSets.create("codegen")
+val otelAgent = configurations.create("otelAgent")
+
+dependencies {
+    otelAgent(libs.opentelemetry.agent)
+}
+
+tasks.register<Sync>("otelDist") {
+    val extensionJar = project(":otel-extension").tasks.named<Jar>("jar")
+    dependsOn(extensionJar)
+    from(otelAgent) {
+        rename { "opentelemetry-javaagent.jar" }
+    }
+    from(extensionJar.map { it.archiveFile }) {
+        rename { "vera-otel-extension.jar" }
+    }
+    into(layout.buildDirectory.dir("otel"))
+}
 
 configurations[codegen.implementationConfigurationName].extendsFrom(configurations.testRuntimeClasspath.get())
 dependencies {
