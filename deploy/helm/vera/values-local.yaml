@@ -27,3 +27,11 @@ vera:
     storage:
       size: 2Gi
       class: local-path
+  localServices:
+    enabled: true
+    instances: true
+    keycloak:
+      staffPassword: staff-password
+      curatorPassword: curator-password
+      digitizationPassword: digitization-password
+      clientSecret: vera-test-secret

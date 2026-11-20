@@ -40,6 +40,41 @@ spec:
       targetPort: 4318
 {{- end }}
 
+{{- if and .Values.vera.enabled .Values.vera.localServices.enabled .Values.localAccess.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-local-keycloak
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: keycloak
+  ports:
+    - name: http
+      port: 8480
+      targetPort: 8480
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-local-mailpit
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: mailpit
+  ports:
+    - name: web
+      port: 8025
+      targetPort: 8025
+{{- end }}
+
 {{- if and .Values.vera.enabled .Values.localAccess.enabled }}
 ---
 apiVersion: v1
