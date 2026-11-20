@@ -13,6 +13,7 @@ logstash-encoder = "8.1"
 jackson-jq = "1.6.5"
 angus-mail = "2.0.4"
 greenmail = "2.1.3"
+oauth2-oidc-sdk = "11.23.1"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
@@ -54,5 +55,6 @@ logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-enc
 jackson-jq = { module = "net.thisptr:jackson-jq", version.ref = "jackson-jq" }
 angus-mail = { module = "org.eclipse.angus:angus-mail", version.ref = "angus-mail" }
 greenmail-junit5 = { module = "com.icegreen:greenmail-junit5", version.ref = "greenmail" }
+oauth2-oidc-sdk = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "oauth2-oidc-sdk" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }

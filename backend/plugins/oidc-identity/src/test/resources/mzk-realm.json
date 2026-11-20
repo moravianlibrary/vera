@@ -1,0 +1,74 @@
+{
+  "realm": "mzk",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "vera",
+      "name": "VERA tests",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "vera-test-secret",
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost/*"],
+      "webOrigins": ["http://localhost"],
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "groups",
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "mzk-staff"
+    },
+    {
+      "name": "mzk-digitization"
+    }
+  ],
+  "users": [
+    {
+      "username": "staff",
+      "enabled": true,
+      "email": "staff@example.org",
+      "emailVerified": true,
+      "firstName": "MZK",
+      "lastName": "Staff",
+      "groups": ["mzk-staff"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "staff-password",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "digitizer",
+      "enabled": true,
+      "email": "digitizer@example.org",
+      "emailVerified": true,
+      "firstName": "MZK",
+      "lastName": "Digitizer",
+      "groups": ["mzk-digitization"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "digitizer-password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

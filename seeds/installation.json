@@ -681,6 +681,7 @@
       ]
     },
     { "package": "aleph-oai-catalog-adapter", "instances": [] },
-    { "package": "kramerius-registry", "instances": [] }
+    { "package": "kramerius-registry", "instances": [] },
+    { "package": "oidc-identity", "instances": [] }
   ]
 }
