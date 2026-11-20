@@ -48,6 +48,7 @@ vera:
     port: 8400
   localServices:
     enabled: false
+    instances: false
   secret:
     # Supply these through a private values file, or use vera.existingSecret.
     firstAdminEmail: ""

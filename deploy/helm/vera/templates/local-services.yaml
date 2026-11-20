@@ -1,0 +1,200 @@
+{{- if and .Values.vera.enabled .Values.vera.localServices.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-keycloak-realm
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+data:
+  mzk-realm.json: {{ tpl (.Files.Get "files/mzk-realm.json") . | toJson }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+data:
+  keycloak.server: |
+    rewrite name keycloak.localhost {{ .Release.Name }}-keycloak.{{ .Release.Namespace }}.svc.cluster.local
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-keycloak
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: keycloak
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+        app.kubernetes.io/component: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.3
+          args: ["start-dev", "--http-port=8480", "--import-realm"]
+          env:
+            - name: KC_HOSTNAME
+              value: http://keycloak.localhost:8480
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: admin
+          ports:
+            - name: http
+              containerPort: 8480
+          volumeMounts:
+            - name: realm
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
+      volumes:
+        - name: realm
+          configMap:
+            name: {{ .Release.Name }}-keycloak-realm
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-keycloak
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: keycloak
+  ports:
+    - name: http
+      port: 8480
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-mailpit
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: mailpit
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+        app.kubernetes.io/component: mailpit
+    spec:
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:latest
+          ports:
+            - name: smtp
+              containerPort: 1025
+            - name: web
+              containerPort: 8025
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mailpit
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: mailpit
+  ports:
+    - name: smtp
+      port: 1025
+      targetPort: smtp
+    - name: web
+      port: 8025
+      targetPort: web
+{{- end }}
+
+{{- if and .Values.vera.enabled .Values.vera.localServices.enabled .Values.vera.localServices.instances }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-local-instances
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: configure
+          # curlimages/curl has no jq; alpine gets both from its package index.
+          image: alpine:3.20
+          command: ["sh", "-ec"]
+          args:
+            - |
+              apk add --no-cache curl jq >/dev/null
+              api=http://{{ .Release.Name }}-api:8081/api
+              until curl -fsS "${api%/api}/actuator/health" >/dev/null; do sleep 3; done
+              curl -fsS -c /tmp/cookies -H 'content-type: application/json' \
+                -d "$(jq -n --arg u "$VERA_FIRST_ADMIN_EMAIL" --arg p "$VERA_FIRST_ADMIN_PASSWORD" '{username:$u,password:$p}')" \
+                "${api}/login/local-accounts-installation" -o /dev/null
+              # The installation's roles and Mail server instance have fixed ids (seeds/installation.json).
+              oidc_id=$(curl -fsS -b /tmp/cookies "${api}/plugins" \
+                | jq -r '.implementations[] | select(.descriptorId == "cz.mzk.vera.oidc-identity") | .id')
+              test -n "$oidc_id"
+              jq -n --arg impl "$oidc_id" --arg secret "$OIDC_CLIENT_SECRET" '{
+                implementationId: $impl,
+                names: {en: "MZK Keycloak (local)", cs: "MZK Keycloak (lokální)"},
+                configuration: {issuer: "http://keycloak.localhost:8480/realms/mzk", client: "vera",
+                  client_secret: $secret, groups_claim: "groups"},
+                linkedCategoryId: null,
+                settings: {kind: "Identity", label: "Log in with MZK account", order: 2,
+                  userIdClaim: "preferred_username", defaultRoleId: null, matchByEmail: false,
+                  mappings: [
+                    {claim: "group mzk-staff", roleId: "staff"},
+                    {claim: "group mzk-curators", roleId: "curator"},
+                    {claim: "group mzk-digitization", roleId: "dig-curator"}]}}' > /tmp/oidc.json
+              curl -fsS -b /tmp/cookies -H 'content-type: application/json' -d @/tmp/oidc.json \
+                "${api}/plugin-instances" -o /dev/null
+              mail=$(curl -fsS -b /tmp/cookies "${api}/plugin-instances" \
+                | jq -c '.[] | select(.id == "smtp-mailer-installation")')
+              test -n "$mail"
+              printf '%s' "$mail" | jq -c --arg host "{{ .Release.Name }}-mailpit" \
+                '{names, configuration: (.configuration + {host: $host, port: "1025", from: "vera@localhost", tls: "none"}),
+                  linkedCategoryId, settings}' > /tmp/mail.json
+              curl -fsS -b /tmp/cookies -H 'content-type: application/json' -X PUT -d @/tmp/mail.json \
+                "${api}/plugin-instances/smtp-mailer-installation" -o /dev/null
+              curl -fsS -b /tmp/cookies -X POST "${api}/plugin-instances/smtp-mailer-installation/enable" -o /dev/null
+          env:
+            - name: VERA_FIRST_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_FIRST_ADMIN_EMAIL
+            - name: VERA_FIRST_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_FIRST_ADMIN_PASSWORD
+            - name: OIDC_CLIENT_SECRET
+              value: {{ .Values.vera.localServices.keycloak.clientSecret | quote }}
+{{- end }}
