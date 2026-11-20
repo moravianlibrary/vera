@@ -29,6 +29,7 @@ import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
 import cz.mzk.vera.tasks.ScheduleQueue;
+import cz.mzk.vera.installation.InstallationCollectionsWriter;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Duration;
@@ -54,12 +55,15 @@ public class SeedLoader {
     private final RecordsSeedLoader records;
     private final JsonMapper json;
     private final ScheduleQueue scheduleQueue;
+    private final InstallationCollectionsWriter collectionsWriter;
 
-    public SeedLoader(DSLContext dsl, RecordsSeedLoader records, JsonMapper json, ScheduleQueue scheduleQueue) {
+    public SeedLoader(DSLContext dsl, RecordsSeedLoader records, JsonMapper json, ScheduleQueue scheduleQueue,
+            InstallationCollectionsWriter collectionsWriter) {
         this.dsl = dsl;
         this.records = records;
         this.json = json;
         this.scheduleQueue = scheduleQueue;
+        this.collectionsWriter = collectionsWriter;
     }
 
     public void load(JsonNode seed) {
@@ -72,135 +76,9 @@ public class SeedLoader {
 
     private void insert(DSLContext transaction, JsonNode seed) {
         JsonNode collections = seed.path("collections");
+        collectionsWriter.write(transaction, withFakeIdentityClaims(seed));
+
         int position = 0;
-        for (JsonNode user : collections.path("users")) {
-            JsonNode access = collections.path("userAccess").path(user.path("id").asString());
-            transaction.insertInto(USERS)
-                    .set(USERS.ID, string(user, "id"))
-                    .set(USERS.NAME, string(user, "name"))
-                    .set(USERS.KIND, string(user, "kind"))
-                    .set(USERS.EMAIL, nullableString(user, "email"))
-                    .set(USERS.ENTRY, nullableString(access, "entry"))
-                    .set(USERS.SUSPENDED_AT, instant(access, "suspendedAt"))
-                    .set(USERS.POSITION, position++)
-                    .execute();
-        }
-
-        position = 0;
-        for (JsonNode role : collections.path("roles")) {
-            String roleId = string(role, "id");
-            transaction.insertInto(ROLES)
-                    .set(ROLES.ID, roleId)
-                    .set(ROLES.NAME, string(role, "name"))
-                    .set(ROLES.NAMES, JSONB.valueOf(namesJson(role)))
-                    .set(ROLES.DESCRIPTION, string(role, "description"))
-                    .set(ROLES.IS_SHIPPED, role.path("isShipped").asBoolean())
-                    .set(ROLES.PROPOSAL_BATCH_LIMIT, nullableInteger(role, "proposalBatchLimit"))
-                    .set(ROLES.PROPOSAL_DAILY_LIMIT, nullableInteger(role, "proposalDailyLimit"))
-                    .set(ROLES.POSITION, position++)
-                    .execute();
-
-            int grantPosition = 0;
-            for (JsonNode grant : role.path("grants")) {
-                transaction.insertInto(ROLE_GRANTS)
-                        .set(ROLE_GRANTS.ROLE_ID, roleId)
-                        .set(ROLE_GRANTS.POSITION, grantPosition++)
-                        .set(ROLE_GRANTS.PERMISSION, string(grant, "permission"))
-                        .set(ROLE_GRANTS.SCOPE, nullableString(grant, "scope"))
-                        .execute();
-            }
-        }
-
-        collections.path("userAccess").properties().forEach(entry -> {
-            String userId = entry.getKey();
-            JsonNode access = entry.getValue();
-            int rolePosition = 0;
-            for (JsonNode roleId : access.path("handRoleIds")) {
-                transaction.insertInto(USER_HAND_ROLES)
-                        .set(USER_HAND_ROLES.USER_ID, userId)
-                        .set(USER_HAND_ROLES.ROLE_ID, roleId.asString())
-                        .set(USER_HAND_ROLES.POSITION, rolePosition++)
-                        .execute();
-            }
-            rolePosition = 0;
-            for (JsonNode mappedRole : access.path("mappedRoles")) {
-                transaction.insertInto(USER_MAPPED_ROLES)
-                        .set(USER_MAPPED_ROLES.USER_ID, userId)
-                        .set(USER_MAPPED_ROLES.ROLE_ID, string(mappedRole, "roleId"))
-                        .set(USER_MAPPED_ROLES.INSTANCE_ID, string(mappedRole, "instanceId"))
-                        .set(USER_MAPPED_ROLES.CLAIM, string(mappedRole, "claim"))
-                        .set(USER_MAPPED_ROLES.POSITION, rolePosition++)
-                        .execute();
-            }
-            int identityPosition = 0;
-            for (JsonNode identity : access.path("identities")) {
-                Map<String, List<String>> claims = new LinkedHashMap<>();
-                String slackHandle = seed.path("fakes").path("slackHandles").path(userId).asString(null);
-                if (slackHandle != null && !slackHandle.isBlank()) {
-                    // The seed has no claims of its own, so supply the fake Slack claim on each identity.
-                    claims.put("slack_id", List.of(slackHandle));
-                }
-                transaction.insertInto(USER_IDENTITIES)
-                        .set(USER_IDENTITIES.USER_ID, userId)
-                        .set(USER_IDENTITIES.INSTANCE_ID, string(identity, "instanceId"))
-                        .set(USER_IDENTITIES.EXTERNAL_ID, string(identity, "externalId"))
-                        .set(USER_IDENTITIES.CLAIMS, JSONB.valueOf(json.valueToTree(claims).toString()))
-                        .set(USER_IDENTITIES.LAST_LOGIN_AT, instant(identity, "lastLoginAt"))
-                        .set(USER_IDENTITIES.POSITION, identityPosition++)
-                        .execute();
-            }
-        });
-
-        position = 0;
-        for (JsonNode category : collections.path("categories")) {
-            transaction.insertInto(CATEGORIES)
-                    .set(CATEGORIES.ID, string(category, "id"))
-                    .set(CATEGORIES.NAME, string(category, "name"))
-                    .set(CATEGORIES.NAMES, JSONB.valueOf(namesJson(category)))
-                    .set(CATEGORIES.PARENT_ID, nullableString(category, "parentId"))
-                    .set(CATEGORIES.POSITION, position++)
-                    .execute();
-        }
-
-        position = 0;
-        for (JsonNode group : collections.path("groups")) {
-            String groupId = string(group, "id");
-            transaction.insertInto(GROUPS)
-                    .set(GROUPS.ID, groupId)
-                    .set(GROUPS.NAME, string(group, "name"))
-                    .set(GROUPS.DESCRIPTION, string(group, "description"))
-                    .set(GROUPS.POSITION, position++)
-                    .execute();
-            int memberPosition = 0;
-            for (JsonNode memberId : group.path("memberIds")) {
-                transaction.insertInto(GROUP_MEMBERS)
-                        .set(GROUP_MEMBERS.GROUP_ID, groupId)
-                        .set(GROUP_MEMBERS.USER_ID, memberId.asString())
-                        .set(GROUP_MEMBERS.POSITION, memberPosition++)
-                        .execute();
-            }
-            int categoryPosition = 0;
-            for (JsonNode categoryId : group.path("categoryIds")) {
-                transaction.insertInto(GROUP_CATEGORIES)
-                        .set(GROUP_CATEGORIES.GROUP_ID, groupId)
-                        .set(GROUP_CATEGORIES.CATEGORY_ID, categoryId.asString())
-                        .set(GROUP_CATEGORIES.POSITION, categoryPosition++)
-                        .execute();
-            }
-        }
-
-        for (Map.Entry<String, JsonNode> entry : collections.path("categoryMembers").properties()) {
-            int memberPosition = 0;
-            for (JsonNode userId : entry.getValue()) {
-                transaction.insertInto(CATEGORY_MEMBERS)
-                        .set(CATEGORY_MEMBERS.CATEGORY_ID, entry.getKey())
-                        .set(CATEGORY_MEMBERS.USER_ID, userId.asString())
-                        .set(CATEGORY_MEMBERS.POSITION, memberPosition++)
-                        .execute();
-            }
-        }
-
-        position = 0;
         for (JsonNode implementation : collections.path("pluginImplementations")) {
             transaction.insertInto(PLUGIN_IMPLEMENTATIONS)
                     .set(PLUGIN_IMPLEMENTATIONS.ID, string(implementation, "id"))
@@ -256,6 +134,22 @@ public class SeedLoader {
         tasks(transaction, seed, collections);
         hooks(transaction, collections);
         watchlists(transaction, collections);
+    }
+
+    private JsonNode withFakeIdentityClaims(JsonNode seed) {
+        JsonNode copy = seed.deepCopy();
+        JsonNode handles = seed.path("fakes").path("slackHandles");
+        copy.path("collections").path("userAccess").properties().forEach(entry -> {
+            String handle = handles.path(entry.getKey()).asString(null);
+            if (handle == null || handle.isBlank()) return;
+            for (JsonNode identity : entry.getValue().path("identities")) {
+                ObjectNode claims = identity.path("claims").isObject()
+                        ? (ObjectNode) identity.path("claims") : json.createObjectNode();
+                claims.put("slack_id", handle);
+                ((ObjectNode) identity).set("claims", claims);
+            }
+        });
+        return copy;
     }
 
     // HOOK-model; seeded subscriptions and delivery history follow the contract seed.

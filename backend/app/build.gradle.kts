@@ -76,3 +76,7 @@ dependencies {
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
 }
+
+tasks.test {
+    dependsOn(":plugins:packages")
+}

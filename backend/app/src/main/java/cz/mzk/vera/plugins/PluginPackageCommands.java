@@ -195,6 +195,62 @@ public class PluginPackageCommands {
                         .findFirst().orElseThrow() : Map.of());
     }
 
+    // INST-first-install: a shipped package, verified as an upload is, installed with nobody acting.
+    @Transactional
+    public String installTrustedPackage(String fileName, byte[] jar) {
+        if (jar == null || jar.length == 0 || fileName == null || !fileName.endsWith(".jar")) {
+            throw new IllegalArgumentException("Invalid shipped plugin package: " + fileName);
+        }
+        String signer = signatures.verify(jar);
+        JsonNode descriptor = declarations.read(jar);
+        String descriptorId = descriptor.path("implementation").asString();
+        Record implementation = dsl.selectFrom(PLUGIN_IMPLEMENTATIONS)
+                .where(PLUGIN_IMPLEMENTATIONS.DESCRIPTOR_ID.eq(descriptorId)).fetchOne();
+        JsonNode versions = implementation == null ? json.createArrayNode()
+                : json.readTree(implementation.get(PLUGIN_IMPLEMENTATIONS.VERSIONS).data());
+        String version = descriptor.path("version").asString();
+        if (hasVersion(versions, version)) return implementation.get(PLUGIN_IMPLEMENTATIONS.ID);
+        PluginLoader.LoadedPlugin loaded = installed.install(jar);
+        if (!loaded.descriptorId().equals(descriptorId) || !loaded.version().equals(version)) {
+            throw new IllegalArgumentException("Shipped plugin package does not match its descriptor: " + fileName);
+        }
+        String implementationId;
+        if (implementation == null) {
+            implementationId = RecordIds.next("pt", dsl.select(PLUGIN_IMPLEMENTATIONS.ID)
+                    .from(PLUGIN_IMPLEMENTATIONS).fetch(PLUGIN_IMPLEMENTATIONS.ID));
+            dsl.insertInto(PLUGIN_IMPLEMENTATIONS).set(PLUGIN_IMPLEMENTATIONS.ID, implementationId)
+                    .set(PLUGIN_IMPLEMENTATIONS.DESCRIPTOR_ID, descriptorId)
+                    // The descriptor names neither; the loaded class and its kind interface do.
+                    .set(PLUGIN_IMPLEMENTATIONS.NAME, loaded.implementation().getClass().getSimpleName())
+                    .set(PLUGIN_IMPLEMENTATIONS.KIND, loaded.kind().getSimpleName())
+                    .set(PLUGIN_IMPLEMENTATIONS.DESCRIPTION, "")
+                    .set(PLUGIN_IMPLEMENTATIONS.POSITION, dsl.select(org.jooq.impl.DSL.coalesce(
+                            org.jooq.impl.DSL.max(PLUGIN_IMPLEMENTATIONS.POSITION), -1).add(1))
+                            .from(PLUGIN_IMPLEMENTATIONS).fetchOne(0, int.class))
+                    .set(PLUGIN_IMPLEMENTATIONS.VERSIONS, JSONB.valueOf("[]")).execute();
+            implementation = dsl.selectFrom(PLUGIN_IMPLEMENTATIONS)
+                    .where(PLUGIN_IMPLEMENTATIONS.ID.eq(implementationId)).fetchOne();
+            versions = json.createArrayNode();
+        } else {
+            implementationId = implementation.get(PLUGIN_IMPLEMENTATIONS.ID);
+        }
+        String sha;
+        try {
+            sha = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(jar));
+        } catch (java.security.NoSuchAlgorithmException exception) {
+            throw new IllegalStateException(exception);
+        }
+        jdbc.update("INSERT INTO plugin_packages(implementation_id,version,sha256,jar,signer) VALUES (?,?,?,?,?)",
+                implementationId, version, sha, jar, signer);
+        List<JsonNode> updated = new ArrayList<>();
+        updated.add(installedVersion(versionEntry(descriptor, signer), null));
+        versions.forEach(updated::add);
+        dsl.update(PLUGIN_IMPLEMENTATIONS).set(PLUGIN_IMPLEMENTATIONS.VERSIONS,
+                JSONB.valueOf(json.writeValueAsString(updated)))
+                .where(PLUGIN_IMPLEMENTATIONS.ID.eq(implementationId)).execute();
+        return implementationId;
+    }
+
     public ActResult upgradeRead(Caller caller, String instanceId) {
         if (!Permissions.hasPermission(access.heldBy(caller.userId()).grants(), "plugin.configure")) {
             return ActResult.refused(403, "You may not configure plugins", "forbidden");

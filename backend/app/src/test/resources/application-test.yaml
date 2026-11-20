@@ -6,3 +6,5 @@ vera:
     trusted-certificates: ""
   jobs:
     poll: false
+  installation:
+    enabled: false
