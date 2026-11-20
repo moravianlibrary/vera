@@ -111,6 +111,8 @@ journey("cross-role/a-funded-project", ({ step, as, api, runJobs }) => {
     const report = staff.getByRole("dialog");
     await expect(report.getByText(/Submitted as B-/)).toBeVisible();
     await expect(report).toContainText(/10\s*proposed — waiting for review/);
+    // The proposals' checks run as jobs; settle them before reading the project's counts.
+    await runJobs();
     await curator.goto(`/projects/${projectId}`);
     await curator.reload();
     await expect(curator.getByText(/10 documents are proposed into it/)).toBeVisible();
