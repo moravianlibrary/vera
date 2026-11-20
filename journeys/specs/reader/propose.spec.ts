@@ -96,20 +96,15 @@ journey("reader/propose", ({ step, as, api }) => {
     ).toBeVisible();
   });
 
-  step.fixme(
-    6,
-    "the refusal is worded",
-    "with none left the dialog still submits and shows the generic could-not-be-submitted text (L82)",
-    async () => {
-      const extra = (await submittableItems(await api("reader"), [], 1))[0];
-      if (extra === undefined) throw new Error("No distinct catalog item for the refusal check");
-      await page.getByRole("tab", { name: "Type it" }).click();
-      await page.getByRole("textbox", { name: "Identifier" }).fill(extra.value);
-      if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
-      await page.getByRole("button", { name: "Add" }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByRole("button", { name: "Submit" }).click();
-      await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
-    },
-  );
+  step(6, "the refusal is worded", async () => {
+    const extra = (await submittableItems(await api("reader"), [], 1))[0];
+    if (extra === undefined) throw new Error("No distinct catalog item for the refusal check");
+    await page.getByRole("tab", { name: "Type it" }).click();
+    await page.getByRole("textbox", { name: "Identifier" }).fill(extra.value);
+    if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
+    await page.getByRole("button", { name: "Add" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("button", { name: "Submit" }).click();
+    await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
+  });
 });

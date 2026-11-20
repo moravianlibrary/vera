@@ -42,19 +42,14 @@ journey("staff/propose-a-batch", ({ step, as, api }) => {
     await expect(report.getByRole("listitem").nth(1).getByText("4", { exact: true })).toBeVisible();
   });
 
-  step.fixme(
-    1,
-    "she names the batch",
-    "the batch-name field is offered only with iteration.read (L82)",
-    async () => {
-      await page.getByRole("button", { name: "Done" }).click();
-      await page.getByRole("button", { name: "Propose…" }).click();
-      await page.getByRole("tab", { name: "Paste list" }).click();
-      await page.getByLabel("Items, one per line").fill(lines(batchItems.slice(0, 10)));
-      await page.getByRole("button", { name: "Add these" }).click();
-      await page.getByRole("textbox", { name: "Batch name" }).fill("Reading room requests");
-    },
-  );
+  step(1, "she names the batch", async () => {
+    await page.getByRole("button", { name: "Done" }).click();
+    await page.getByRole("button", { name: "Propose…" }).click();
+    await page.getByRole("tab", { name: "Paste list" }).click();
+    await page.getByLabel("Items, one per line").fill(lines(batchItems.slice(0, 10)));
+    await page.getByRole("button", { name: "Add these" }).click();
+    await page.getByRole("textbox", { name: "Batch name" }).fill("Reading room requests");
+  });
 
   step(2, "warn near the daily limit and refuse the next batch", async () => {
     const staffApi = await api("staff");
@@ -82,20 +77,15 @@ journey("staff/propose-a-batch", ({ step, as, api }) => {
     ).toBeVisible();
   });
 
-  step.fixme(
-    2,
-    "the refusal is worded",
-    "with none left the dialog still submits and shows the generic could-not-be-submitted text (L82)",
-    async () => {
-      const extra = batchItems[batchItems.length - 1];
-      if (extra === undefined) throw new Error("No distinct catalog item for the refusal check");
-      await page.getByRole("tab", { name: "Type it" }).click();
-      await page.getByRole("textbox", { name: "Identifier" }).fill(extra.value);
-      if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
-      await page.getByRole("button", { name: "Add" }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await page.getByRole("button", { name: "Submit" }).click();
-      await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
-    },
-  );
+  step(2, "the refusal is worded", async () => {
+    const extra = batchItems[batchItems.length - 1];
+    if (extra === undefined) throw new Error("No distinct catalog item for the refusal check");
+    await page.getByRole("tab", { name: "Type it" }).click();
+    await page.getByRole("textbox", { name: "Identifier" }).fill(extra.value);
+    if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
+    await page.getByRole("button", { name: "Add" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("button", { name: "Submit" }).click();
+    await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
+  });
 });
