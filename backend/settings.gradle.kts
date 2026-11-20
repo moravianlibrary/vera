@@ -19,7 +19,7 @@ rootProject.name = "vera-backend"
 
 include("plugin-api", "domain", "app", "testing", "otel-extension", "plugins", "plugins:mailto-message",
     "plugins:local-accounts", "plugins:entry-link", "plugins:material-type", "plugins:shelf-mark-to-size",
-    "plugins:jq-custody", "plugins:priority-then-mix", "plugins:aleph-oai-catalog-adapter",
+    "plugins:jq-custody", "plugins:oidc-identity", "plugins:priority-then-mix", "plugins:aleph-oai-catalog-adapter",
     "plugins:kramerius-registry", "plugins:smtp-mailer",
     "testing:fakes:oidc-identity", "testing:fakes:local-accounts",
     "testing:fakes:aleph-catalog-adapter", "testing:fakes:barcode-reader",

@@ -94,7 +94,7 @@ class InstallationSetupTests {
         int usersBefore = jdbc.queryForObject("SELECT count(*) FROM users", Integer.class);
         setup.run(null);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users", Integer.class)).isEqualTo(usersBefore);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_packages", Integer.class)).isEqualTo(10);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_packages", Integer.class)).isEqualTo(11);
         http.post().uri("/api/login/local-accounts-installation")
                 .body(java.util.Map.of("username", "admin@example.org", "password", "long-installation-password"))
                 .exchange().expectStatus().isNoContent();

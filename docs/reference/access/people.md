@@ -87,7 +87,9 @@ interface language ([UI-language](../ui/navigation.md#ui-language)).
 A person sent to log in from a page of VERA comes back to that page, its address included, once
 logged in, through any instance. Only a path within VERA is kept; an address elsewhere is
 dropped and the person lands on their first destination. Redirect providers receive a fixed
-absolute callback URL; the flow id is returned as the provider's `state` parameter.
+absolute callback URL; the flow id is returned as the provider's `state` parameter. The callback
+also receives the authorization code and provider errors; a refused login returns to the login
+page without completing the identity plugin.
 
 #### ACCESS-last-identity
 

@@ -9,7 +9,7 @@ builds a fake of each one it needs ([engine.md](engine.md)); the real ones come 
 | Implementation | Instances | Notes |
 |---|---|---|
 | `LocalAccounts` | Local accounts | form login; staff without a library account, and, with `signup` on, anyone who creates their own ([DEC-0016](../decisions/DEC-0016-local-sign-up.md)); `mail_channel` names the mailer for its emails |
-| `OidcIdentity` | MZK Keycloak · **Google** · **Seznam** | Keycloak for staff and library readers (it can broker eduID). Google and Seznam are the public's way in ([DEC-0015](../decisions/DEC-0015-public-requests-by-entry-link.md)): default role *reader*. Verify that Seznam's login speaks OpenID Connect (discovery and an ID token with a verified email); if it is plain OAuth 2.0, `OidcIdentity` needs a profile-endpoint mode rather than a second implementation |
+| `OidcIdentity` | MZK Keycloak | OpenID Connect authorization code login with PKCE; an administrator configures the issuer, client and secret, then maps provider groups through identity claims. |
 
 *Match by email* only for an instance whose email claim is verified.
 
@@ -26,6 +26,14 @@ Its configuration retains the seeded keys: `signup` is `on` or `off`; `password_
 positive decimal character count; and `mail_channel` is an enabled Delivery channel instance id.
 VERA uses these for sign-up, password length and email delivery ([ACCESS-sign-up](../reference/access/people.md#access-sign-up));
 the plugin does not perform those operations.
+
+### `OidcIdentity`
+
+The redirect entry discovers the provider from `issuer`, sends the configured `scopes` (default
+`openid email profile`) with a fresh PKCE challenge and nonce, and exchanges the returned code
+through VERA's plugin HTTP client. It validates the ID token's signature, issuer, client audience,
+expiry and nonce. `client_secret` is secret configuration; `groups_claim` defaults to `groups`.
+String groups become `group <name>` claims, with a leading slash removed for Keycloak group paths.
 
 ## Input
 
