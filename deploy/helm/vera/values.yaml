@@ -1,6 +1,4 @@
-# VERA's chart. Today it holds only the observability stack (DEC-0017, OBS-pipeline); the
-# application's own components join it when the backend exists.
-
+# VERA's chart installs the application and optional observability stack.
 observability:
   enabled: true
 
@@ -10,10 +8,53 @@ clickstack:
     # HyperDX does not report its own usage to its makers.
     usageStatsEnabled: false
 
-# Exposes HyperDX and the OpenTelemetry collector as LoadBalancer services, for a local k3d
-# cluster whose load balancer maps them to localhost. Off outside a local cluster.
 localAccess:
   enabled: false
+  port: 8400
   hyperdxPort: 8300
   otlpGrpcPort: 4317
   otlpHttpPort: 4318
+
+vera:
+  enabled: true
+  publicUrl: ""
+  replicas:
+    api: 1
+    worker: 1
+  image:
+    backend:
+      repository: vera-backend
+      tag: ""
+      pullPolicy: IfNotPresent
+    frontend:
+      repository: vera-frontend
+      tag: ""
+      pullPolicy: IfNotPresent
+  resources:
+    api: {}
+    worker: {}
+    frontend: {}
+  database:
+    instances: 3
+    storage:
+      size: 10Gi
+      class: ""
+  ingress:
+    enabled: false
+    className: ""
+    host: ""
+    tlsSecret: ""
+  localAccess:
+    port: 8400
+  localServices:
+    enabled: false
+  secret:
+    # Supply these through a private values file, or use vera.existingSecret.
+    firstAdminEmail: ""
+    firstAdminPassword: ""
+    watchlistLinkKey: ""
+    pushVapidPublicKey: ""
+    pushVapidPrivateKey: ""
+    pushSubject: ""
+  existingSecret: ""
+  trustedCertificates: ""

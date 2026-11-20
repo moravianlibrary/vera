@@ -39,3 +39,23 @@ spec:
       port: {{ .Values.localAccess.otlpHttpPort }}
       targetPort: 4318
 {{- end }}
+
+{{- if and .Values.vera.enabled .Values.localAccess.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-local-frontend
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: http
+      port: {{ .Values.vera.localAccess.port }}
+      targetPort: 8080
+{{- end }}

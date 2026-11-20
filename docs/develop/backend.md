@@ -460,8 +460,11 @@ with the generator in `seeds/tools/`.
 
 - **One image, two roles**: `VERA_ROLE=api`, `worker`, or `all` for a small installation. The
   worker runs jobs, schedules, hook deliveries and watchlist sends; the API never waits on them.
-- **A Helm chart** in `deploy/helm/vera/`: the API, the worker, the frontend's static files
-  behind the proxy, CloudNativePG for PostgreSQL, migrations as a pre-upgrade hook job.
+- **A Helm chart** in `deploy/helm/vera/`: CloudNativePG for PostgreSQL, the API and worker
+  (each pod migrates first in an init container, `VERA_ROLE=migrate`, which exits once Liquibase
+  has run; its lock lets one pod at a time do it, and a hook could not, since on a first install
+  the database is created by the same release), the frontend behind the proxy, and optional
+  ingress and local-cluster access; ClickStack remains optional observability.
 - **Telemetry**: with `VERA_OTEL_ENDPOINT` set, `make backend` and `backend-bg` attach the
   Gradle-fetched OpenTelemetry Java agent 2.33.1. System properties set `service.name=vera-backend`,
   `vera.role` from `VERA_ROLE`, disable HTTP request and response header capture, and enable JDBC

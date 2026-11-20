@@ -1,0 +1,29 @@
+{{- if and .Values.vera.enabled .Values.vera.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.vera.ingress.className }}
+  ingressClassName: {{ . | quote }}
+  {{- end }}
+  {{- if .Values.vera.ingress.tlsSecret }}
+  tls:
+    - hosts:
+        - {{ .Values.vera.ingress.host | quote }}
+      secretName: {{ .Values.vera.ingress.tlsSecret }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.vera.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-frontend
+                port:
+                  number: 8080
+{{- end }}

@@ -1,6 +1,6 @@
 apiVersion: v2
 name: vera
-description: VERA, the Moravian Library's digitization planner. For now it holds the observability stack (DEC-0017); the application's components join it when the backend exists.
+description: VERA, the Moravian Library's digitization planner, with its database and optional observability stack.
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
