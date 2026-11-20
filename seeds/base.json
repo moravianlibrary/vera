@@ -17570,24 +17570,6 @@
     },
     "catalogRecords": [
       {
-        "catalogId": "MZK01-000185101",
-        "title": "Pražské noviny",
-        "type": "Periodical",
-        "units": ["1851", "1852"],
-        "identifiers": [],
-        "shelfMarks": {},
-        "barcodes": {}
-      },
-      {
-        "catalogId": "MZK03-000186001",
-        "title": "Mapa Čech",
-        "type": "Map",
-        "units": null,
-        "identifiers": [],
-        "shelfMarks": {},
-        "barcodes": {}
-      },
-      {
         "catalogId": "MZK01-001277001",
         "title": "Slovácké noviny",
         "type": "Periodical",
@@ -17726,6 +17708,24 @@
         "title": "Zlatá Praha",
         "type": "Periodical",
         "units": ["roč. 12", "roč. 13"],
+        "identifiers": [],
+        "shelfMarks": {},
+        "barcodes": {}
+      },
+      {
+        "catalogId": "MZK01-000185101",
+        "title": "Pražské noviny",
+        "type": "Periodical",
+        "units": ["1851", "1852"],
+        "identifiers": [],
+        "shelfMarks": {},
+        "barcodes": {}
+      },
+      {
+        "catalogId": "MZK03-000186001",
+        "title": "Mapa Čech",
+        "type": "Map",
+        "units": null,
         "identifiers": [],
         "shelfMarks": {},
         "barcodes": {}
