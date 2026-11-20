@@ -16,6 +16,7 @@ public final class JqCustody implements Custody {
         Wire.put(fields, "baseId", input.request().id().replaceFirst("\\.\\d+$", ""));
         Wire.put(fields, "projectId", input.request().projectId());
         Wire.put(fields, "documentType", input.document().type());
+        Wire.put(fields, "catalogId", input.document().catalogId());
         Map<String, List<String>> answer = Wire.send(context, "place", fields);
         return new PlaceAnswer(Wire.all(answer, "custody"));
     }

@@ -12117,6 +12117,9 @@
               "projectId": {
                 "type": "string",
                 "minLength": 1
+              },
+              "catalogId": {
+                "type": "string"
               }
             },
             "required": ["custodyId"],

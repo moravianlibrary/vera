@@ -310,7 +310,12 @@ const fakesSchema = z.strictObject({
   custodyRules: z
     .array(
       z
-        .object({ custodyId: id, documentType: z.string().optional(), projectId: id.optional() })
+        .object({
+          custodyId: id,
+          documentType: z.string().optional(),
+          projectId: id.optional(),
+          catalogId: z.string().optional(),
+        })
         .strict(),
     )
     .optional(),

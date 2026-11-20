@@ -413,7 +413,9 @@ public class FakeRecords {
                     (rule.path("documentType").isMissingNode()
                             || rule.path("documentType").asString().equals(first(input, "documentType")))
                     && (rule.path("projectId").isMissingNode()
-                            || rule.path("projectId").asString().equals(first(input, "projectId"))))
+                            || rule.path("projectId").asString().equals(first(input, "projectId")))
+                    && (rule.path("catalogId").isMissingNode()
+                            || rule.path("catalogId").asString().equals(first(input, "catalogId"))))
                     .map(rule -> rule.path("custodyId").asString()).toList();
         }
         return response("custody", selected);
