@@ -126,6 +126,8 @@ journey("cross-role/a-funded-project", ({ step, as, api, runJobs }) => {
   });
 
   step(4, "approve nine at High priority", async () => {
+    // The proposals' checks run as jobs; settle them before the project is decided.
+    await runJobs();
     const admin = await as("admin");
     await admin.goto(`/projects/${projectId}`);
     await admin.getByRole("button", { name: "Approve…", exact: true }).click();
@@ -269,6 +271,8 @@ journey("cross-role/a-funded-project (alternative)", ({ step, as, api, runJobs }
   });
 
   step("4b", "reject with a reason", async () => {
+    // The proposals' checks run as jobs; settle them before the project is decided.
+    await runJobs();
     const admin = await as("admin");
     await admin.goto(`/projects/${projectId}`);
     await admin.getByRole("button", { name: "Reject…", exact: true }).click();
