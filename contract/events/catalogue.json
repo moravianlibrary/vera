@@ -1049,10 +1049,7 @@
       "properties": {
         "why": {
           "type": "string",
-          "enum": [
-            "copy_exists",
-            "checking"
-          ]
+          "const": "checking"
         }
       },
       "required": [

@@ -451,6 +451,12 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
             items={items}
             session={session}
             isFailed={submit.isError}
+            failureMessage={
+              submit.error instanceof ApiError &&
+              submit.error.problem?.code === "proposal.daily_limit"
+                ? i18n.t("refusals:proposal.daily_limit")
+                : i18n.t("proposal.submitError", { ns: "documents" })
+            }
             onRefusalChange={setSubmitRefusal}
             submitRef={detailsSubmit}
             rateLimit={rateLimit}
@@ -1155,6 +1161,7 @@ interface DetailsStepProps {
   items: DraftItem[];
   session: Session;
   isFailed: boolean;
+  failureMessage: string;
   rateLimit: RateLimitStatus | undefined;
   initialReason: string;
   onRefusalChange: (refusal: string | null) => void;
@@ -1166,6 +1173,7 @@ function DetailsStep({
   items,
   session,
   isFailed,
+  failureMessage,
   rateLimit,
   initialReason,
   onRefusalChange,
@@ -1174,7 +1182,6 @@ function DetailsStep({
 }: DetailsStepProps) {
   const fieldId = useId();
   const canDecide = hasPermission(session, "request.decide");
-  const isStaff = hasPermission(session, "iteration.read");
   const { data: projects = [] } = useProjectsQuery();
   const newCount = items.filter((item) => outcomeOf(item) === "new").length;
   const joinCount = items.filter((item) => outcomeOf(item) === "inVera").length;
@@ -1194,23 +1201,25 @@ function DetailsStep({
   const [priority, setPriority] = useState<Priority>("Normal");
   const isApproving = canDecide && newCount > 0 && isApprovedNow;
   const submitRefusal =
-    isApproving && categoryId === null
-      ? i18n.t("proposal.chooseCategory", { ns: "documents" })
-      : null;
+    rateLimit?.perDay === 0
+      ? i18n.t("refusals:proposal.daily_limit")
+      : isApproving && categoryId === null
+        ? i18n.t("proposal.chooseCategory", { ns: "documents" })
+        : null;
   useEffect(() => onRefusalChange(submitRefusal), [onRefusalChange, submitRefusal]);
   useEffect(() => {
     submitRef.current = () =>
       onSubmit({
         reason: reason.trim() || null,
         projectId: projectId === noProject ? null : projectId,
-        batchName: isStaff && isBatch ? batchName.trim() || null : null,
+        batchName: isBatch ? batchName.trim() || null : null,
         approval: isApproving && categoryId !== null ? { categoryId, priority } : null,
       });
   });
 
   return (
     <div className="grid content-start gap-4">
-      {isStaff && isBatch && (
+      {isBatch && (
         <Field
           id={`${fieldId}-batch`}
           label={i18n.t("proposal.batchName", { ns: "documents" })}
@@ -1335,11 +1344,7 @@ function DetailsStep({
         </p>
       )}
 
-      {isFailed && (
-        <p className="text-xs text-destructive">
-          {i18n.t("proposal.submitError", { ns: "documents" })}
-        </p>
-      )}
+      {isFailed && <p className="text-xs text-destructive">{failureMessage}</p>}
     </div>
   );
 }

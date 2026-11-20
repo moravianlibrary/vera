@@ -26,6 +26,7 @@ function openPropose(
   settingsOverride?: ProposalSettings,
   withAsk = true,
   lookupOverride?: unknown,
+  rateLimitOverride?: number,
 ) {
   server.use(...createHandlers("reader"));
   if (settingsOverride !== undefined) {
@@ -35,6 +36,13 @@ function openPropose(
   }
   if (lookupOverride !== undefined) {
     server.use(http.post(`*${apiRoutes.proposalLookup}`, () => HttpResponse.json(lookupOverride)));
+  }
+  if (rateLimitOverride !== undefined) {
+    server.use(
+      http.get(`*${apiRoutes.proposalRateLimit}`, () =>
+        HttpResponse.json({ perDay: rateLimitOverride }),
+      ),
+    );
   }
   vi.stubGlobal("matchMedia", () => ({
     matches: true,
@@ -68,6 +76,79 @@ function openPropose(
 }
 
 describe("ProposeDialog", () => {
+  it("lets a reader name a batch of two items and sends that name", async () => {
+    let submitted: { batchName: string | null } | undefined;
+    openPropose(undefined, true, [
+      {
+        kind: "new",
+        catalogId: "MZK03-000778120",
+        unit: null,
+        title: "First title",
+        isAskedBefore: false,
+        preview: { copies: [], restrictions: [] },
+      },
+    ]);
+    server.use(
+      http.post(`*${apiRoutes.proposals}`, async ({ request }) => {
+        submitted = (await request.json()) as { batchName: string | null };
+        return HttpResponse.json({ batch: null, proposed: 2, approved: 0, joined: 0, skipped: [] });
+      }),
+    );
+    expect(
+      resolveSession("reader").grants.some(({ permission }) => permission === "iteration.read"),
+    ).toBe(false);
+
+    await screen.findByText("1 item");
+    fireEvent.click(await screen.findByRole("tab", { name: "Type it" }));
+    fireEvent.change(await screen.findByRole("textbox", { name: "Identifier" }), {
+      target: { value: "MZK03-000778121" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    await screen.findByText("2 items");
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    await waitFor(() => expect(continueButton).toBeEnabled());
+    fireEvent.click(continueButton);
+    const batchName = await screen.findByRole("textbox", { name: /Batch name/ });
+    fireEvent.change(batchName, { target: { value: "Reader batch" } });
+    fireEvent.click(screen.getByRole("button", { name: "Submit" }));
+
+    await waitFor(() => expect(submitted?.batchName).toBe("Reader batch"));
+  });
+
+  it("does not offer Submit and explains a zero daily limit", async () => {
+    openPropose(undefined, true, undefined, 0);
+    const pasteTab = await screen.findByRole("tab", { name: "Paste list" });
+    fireEvent.focus(pasteTab);
+    fireEvent.keyDown(pasteTab, { key: "Enter" });
+    await screen.findByText("No more proposals today.");
+    const continueButton = screen.getByRole("button", { name: "Continue" });
+    await waitFor(() => expect(continueButton).toBeEnabled());
+    fireEvent.click(continueButton);
+    const submitButton = screen.getByRole("button", { name: "Submit" });
+    await waitFor(() => expect(submitButton).toBeDisabled());
+    expect(submitButton).toHaveAttribute("title", "Today’s proposal limit has been reached.");
+  });
+
+  it("words a daily-limit refusal by its code", async () => {
+    openPropose();
+    server.use(
+      http.post(`*${apiRoutes.proposals}`, () =>
+        HttpResponse.json(
+          { status: 429, code: "proposal.daily_limit", detail: "limit reached" },
+          { status: 429 },
+        ),
+      ),
+    );
+    const continueButton = await screen.findByRole("button", { name: "Continue" });
+    await waitFor(() => expect(continueButton).toBeEnabled());
+    fireEvent.click(continueButton);
+    fireEvent.click(await screen.findByRole("button", { name: "Submit" }));
+    expect(await screen.findByText("Today’s proposal limit has been reached.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("The proposal could not be submitted. Try again."),
+    ).not.toBeInTheDocument();
+  });
+
   it("asks which type when two Identifier instances recognise a pasted line", async () => {
     openPropose(
       {

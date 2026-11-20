@@ -93,10 +93,6 @@ export function addHistory(
           suggestion: null,
         },
       );
-      if (request.existingCopies?.length && request.iteration?.relation === "Tracks")
-        add("request", request.id, meta.at, { kind: "system" }, correlation, "request.held", {
-          why: "copy_exists",
-        });
     }
   }
   for (const iteration of iterations) {

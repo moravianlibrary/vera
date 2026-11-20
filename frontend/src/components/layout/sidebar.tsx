@@ -84,8 +84,7 @@ export function Sidebar({
   const changedByView = new Map<string, number>();
   for (const watchlist of watchlists) {
     if (watchlist.newCount > 0) {
-      const navView = watchlist.view === "my-documents" ? "documents" : watchlist.view;
-      changedByView.set(navView, (changedByView.get(navView) ?? 0) + 1);
+      changedByView.set(watchlist.view, (changedByView.get(watchlist.view) ?? 0) + 1);
     }
   }
   const isShowingLabels = isExpanded || isPeeking;

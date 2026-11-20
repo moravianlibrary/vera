@@ -548,7 +548,7 @@ Following the engine's steps, so each lands with its recordings already made:
    ([DEC-0022](../decisions/DEC-0022-the-engine-stops-at-asking-and-deciding.md)).
 4. **Every journey passes** against the backend. Built 2026-11-20: each journey is a Playwright
    spec in `journeys/` (`make journeys`); a step the app does not do yet is `fixme` and names
-   its ledger entry (L82, L83).
+   its ledger entry (none left).
 5. **The real plugins**, in the order the first installation needs them: `OidcIdentity` (MZK
    Keycloak), `LocalAccounts`, `AlephOaiCatalogAdapter`, `KrameriusRegistry`, `MarcComparator`,
    `SmtpMailer`, then the rest of the catalog.
