@@ -1,0 +1,13 @@
+[
+  {
+    "comparator": "standard",
+    "base": "SKC",
+    "other_record_id": "SKC-1",
+    "result": {
+      "overall_score": 12.5,
+      "quality": "Excellent",
+      "scale": "match15",
+      "field_results": []
+    }
+  }
+]

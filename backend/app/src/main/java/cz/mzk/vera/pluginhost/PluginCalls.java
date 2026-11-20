@@ -12,10 +12,13 @@ import cz.mzk.vera.pluginhost.InstalledPlugins;
 import cz.mzk.vera.pluginhost.PluginLoader;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiFunction;
@@ -40,6 +43,7 @@ import tools.jackson.databind.ObjectMapper;
 public class PluginCalls {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginCalls.class);
     private static final Duration PLUGIN_TIMEOUT = Duration.ofSeconds(10); // 10 seconds is a placeholder, as the session limits are.
+    private static final Pattern TIMEOUT = Pattern.compile("^(\\d+)(ms|s|m)$");
 
     private final DSLContext dsl;
     private final InstalledPlugins installed;
@@ -74,7 +78,7 @@ public class PluginCalls {
 
     public <K, A> PluginOutcome<A> call(DSLContext source, String instanceId, Class<K> kind,
             String operation, BiFunction<K, PluginContext, A> body) {
-        return call(source, instanceId, kind, operation, timeout, body);
+        return call(source, instanceId, kind, operation, null, body);
     }
 
     public <K, A> PluginOutcome<A> call(DSLContext source, String instanceId, Class<K> kind,
@@ -133,7 +137,8 @@ public class PluginCalls {
                     instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock,
                     localPasswords.forInstance(instanceId));
             K implementation = kind.cast(plugin.implementation());
-            A answer = invoke(plugin, implementation, context, callTimeout, body);
+            A answer = invoke(plugin, implementation, context,
+                    callTimeout == null ? configuredTimeout(values, timeout) : callTimeout, body);
             if (answer == null) {
                 LOGGER.error("Plugin fault instance={} kind={} operation={} returned a null answer",
                         instanceId, kindName, operation);
@@ -161,6 +166,26 @@ public class PluginCalls {
         }
     }
 
+    // An instance's own timeout setting, else the host's default for every call.
+    static Duration configuredTimeout(JsonNode values, Duration fallback) {
+        JsonNode configured = values.get("timeout");
+        if (configured == null || !configured.isString()) return fallback;
+        Matcher matcher = TIMEOUT.matcher(configured.asString());
+        if (!matcher.matches()) return fallback;
+        long amount;
+        try {
+            amount = Long.parseLong(matcher.group(1));
+        } catch (NumberFormatException invalid) {
+            return fallback;
+        }
+        return switch (matcher.group(2)) {
+            case "ms" -> Duration.ofMillis(amount);
+            case "s" -> Duration.ofSeconds(amount);
+            case "m" -> Duration.ofMinutes(amount);
+            default -> fallback;
+        };
+    }
+
     private <K, A> A invoke(PluginLoader.LoadedPlugin plugin, K implementation,
             PluginContext context, Duration callTimeout, BiFunction<K, PluginContext, A> body)
             throws InterruptedException, TimeoutException, PluginUnavailable {
@@ -171,10 +196,7 @@ public class PluginCalls {
                 return body.apply(implementation, context);
             }));
             try {
-                return future.get(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
-            } catch (TimeoutException timedOut) {
-                future.cancel(true);
-                throw timedOut;
+                return await(future, callTimeout);
             } catch (ExecutionException failed) {
                 Throwable cause = failed.getCause();
                 if (cause instanceof RuntimeException runtime) {
@@ -187,6 +209,16 @@ public class PluginCalls {
             }
         } finally {
             executor.shutdownNow();
+        }
+    }
+
+    static <A> A await(Future<A> future, Duration callTimeout)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        try {
+            return future.get(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException timedOut) {
+            future.cancel(true);
+            throw timedOut;
         }
     }
 

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "one",
+    "validator": "kramerius_links",
+    "result": {
+      "target": { "tag": "856", "codes": ["u"], "field_index": 0 },
+      "status": "Valid",
+      "reason": null,
+      "params": null
+    }
+  }
+]

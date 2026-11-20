@@ -1,0 +1,18 @@
+[
+  {
+    "comparator": "standard",
+    "base": "SKC",
+    "other_record_id": "SKC-1",
+    "result": {
+      "overall_score": 4.2,
+      "quality": "Poor",
+      "scale": "match15",
+      "field_results": [
+        { "tag": "245", "score": 1.0, "value_a": "Title A", "value_b": "Title B" },
+        { "tag": "100", "score": 2.0, "value_a": "Author A", "value_b": "Author B" },
+        { "tag": "260", "score": 3.0, "value_a": "Place A", "value_b": "Place B" },
+        { "tag": "650", "score": 10.0, "value_a": "Other", "value_b": "Other" }
+      ]
+    }
+  }
+]
