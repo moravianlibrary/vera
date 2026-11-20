@@ -108,7 +108,6 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   forbidding restriction the iteration did not have, with the plugin instance as the rule. Finding
   the same one again records nothing. The mock writes no restriction findings, so it has none to
   fire ([HOOK-event-sources](reference/integrations/hooks.md#hook-event-sources)).
-
 - **L83:** each watchlist's new count appears on the navigation entry for its own view; the
   reader journey verifies My Documents' badge ([WATCH-new](reference/integrations/watchlists.md#watch-new)).
 - **L82:** every proposer can name a batch; the Propose dialog refuses submission at a zero daily
