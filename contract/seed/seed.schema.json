@@ -14,6 +14,173 @@
       "format": "date-time",
       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
     },
+    "shippedPlugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "package": {
+            "type": "string",
+            "minLength": 1
+          },
+          "instances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "names": {
+                  "type": "object",
+                  "properties": {
+                    "cs": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "en": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "configuration": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "settings": {
+                  "anyOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "Identity"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "number"
+                            },
+                            "userIdClaim": {
+                              "type": "string"
+                            },
+                            "defaultRoleId": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "matchByEmail": {
+                              "type": "boolean"
+                            },
+                            "mappings": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "claim": {
+                                    "type": "string"
+                                  },
+                                  "roleId": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": ["claim", "roleId"],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "label",
+                            "order",
+                            "userIdClaim",
+                            "defaultRoleId",
+                            "matchByEmail",
+                            "mappings"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "Custody"
+                            },
+                            "custodyId": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": ["kind", "custodyId"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": ["Message", "Classifier", "Identifier"]
+                            },
+                            "order": {
+                              "type": "number"
+                            }
+                          },
+                          "required": ["kind", "order"],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "triggers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "OnProposal",
+                      "OnIngest",
+                      "OnRecordChange",
+                      "OnSchedule",
+                      "OnDemand",
+                      "OnLogin",
+                      "OnEvent"
+                    ]
+                  }
+                },
+                "isEnabled": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["id", "names", "configuration", "settings", "triggers", "isEnabled"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["package", "instances"],
+        "additionalProperties": false
+      }
+    },
     "collections": {
       "type": "object",
       "properties": {
