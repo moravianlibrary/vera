@@ -451,8 +451,10 @@ Locally, the testing backend (the `test` profile: fakes, a movable clock, the se
 - `make replay` starts the database and the backend, replays the recordings and stops the backend
   it started; with `VERA_API_URL` set it replays against that server instead.
 
-The seeds are static JSON files in `seeds/`: `installation` (the shipped roles, fallback custody,
-plugin packages and their default instances), `base`, which extends it, and `minimal`.
+The seeds are static JSON files in `seeds/`: `installation` (the shipped roles, fallback
+custody, plugin packages and default instances; the plain app applies it on an empty database and
+creates the first administrator from deployment variables), `base`, which extends it, and
+`minimal`.
 `make seed-volume` writes a production-sized seed, `seeds/volume.json`,
 with the generator in `seeds/tools/`.
 

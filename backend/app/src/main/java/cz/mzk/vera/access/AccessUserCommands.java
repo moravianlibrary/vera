@@ -16,6 +16,9 @@ import cz.mzk.vera.domain.access.RoleHolder;
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.events.EventChanges;
 import cz.mzk.vera.events.EventRecorder;
+import cz.mzk.vera.events.EventInput;
+import tools.jackson.databind.json.JsonMapper;
+import java.util.UUID;
 import cz.mzk.vera.login.IdentityInstances;
 import cz.mzk.vera.login.LoginCommands;
 import cz.mzk.vera.session.Caller;
@@ -48,10 +51,11 @@ public class AccessUserCommands {
     private final IdentityInstances instances;
     private final LoginCommands loginCommands;
     private final UserIds userIds;
+    private final JsonMapper json;
 
     public AccessUserCommands(DSLContext dsl, Clock clock, EventRecorder events,
             AccessQueries users, AccessManagerQueries managers, HeldAccessQueries heldAccess,
-            IdentityInstances instances, LoginCommands loginCommands, UserIds userIds) {
+            IdentityInstances instances, LoginCommands loginCommands, UserIds userIds, JsonMapper json) {
         this.dsl = dsl;
         this.clock = clock;
         this.events = events;
@@ -61,6 +65,7 @@ public class AccessUserCommands {
         this.instances = instances;
         this.loginCommands = loginCommands;
         this.userIds = userIds;
+        this.json = json;
     }
 
     @Transactional
@@ -99,10 +104,16 @@ public class AccessUserCommands {
                     .execute();
         }
         insertIdentity(userId, instanceId, body.username(), null);
-        events.recordAct(EventCode.USER_CREATED, "user", userId, caller, List.of(
-                EventChanges.change("how", null, "local_account"),
+        List<Map<String, Object>> changes = List.of(
+                EventChanges.change("how", null, caller == null ? "installation" : "local_account"),
                 EventChanges.change("roleIds", List.of(), roleIds),
-                EventChanges.change("instanceId", null, instanceId)), clock.instant());
+                EventChanges.change("instanceId", null, instanceId));
+        if (caller == null) {
+            events.record(new EventInput(EventCode.USER_CREATED, "user", userId, null, new EventInput.System(),
+                    UUID.randomUUID().toString(), clock.instant(), EventChanges.configurationOf(json, changes), null));
+        } else {
+            events.recordAct(EventCode.USER_CREATED, "user", userId, caller, changes, clock.instant());
+        }
         return ActResult.ok(users.user(userId));
     }
 

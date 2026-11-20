@@ -27,6 +27,11 @@ vera:
     vapid-public-key: ${VERA_PUSH_VAPID_PUBLIC_KEY:}
     vapid-private-key: ${VERA_PUSH_VAPID_PRIVATE_KEY:}
     subject: ${VERA_PUSH_SUBJECT:mailto:admin@example.org}
+  installation:
+    # INST-first-install: an empty database sets itself up; tests and the testing backend seed their own.
+    enabled: ${VERA_INSTALLATION_ENABLED:true}
+    seed: ${VERA_INSTALLATION_SEED:/app/installation.json}
+    plugins: ${VERA_INSTALLATION_PLUGINS:/app/plugins}
   plugins:
     # B6 Signed: the deployment's trusted signers, never a page in VERA.
     trusted-certificates: ${VERA_PLUGIN_TRUSTED_CERTIFICATES:}

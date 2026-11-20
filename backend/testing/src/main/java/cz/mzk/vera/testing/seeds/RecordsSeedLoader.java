@@ -73,7 +73,6 @@ class RecordsSeedLoader {
         intentions(dsl, collections.path("intentions"));
         archivedIntentionSnapshots(dsl, collections);
         lists(dsl, collections.path("lists"));
-        custodies(dsl, collections.path("requestCustodies"));
         batches(dsl, collections.path("batches"));
         documents(dsl, collections.path("documents"));
         iterations(dsl, collections.path("iterations"));
