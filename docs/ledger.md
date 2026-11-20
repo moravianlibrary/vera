@@ -19,6 +19,16 @@ None.
 
 ## Not built yet
 
+### L85: Documents answers 500 when there are no categories
+
+Rules: [VIEW-documents-audience](reference/access/views.md#view-documents-audience).
+
+Found on 2026-11-20 by the first-install smoke (D2b): on a fresh installation, which has no
+categories yet, `GET /documents` fails with *Cannot create a VALUES() constructor with an empty
+set of rows* (`DocumentField.categoryLineagePairs`, the category facet). No seed ever had zero
+categories. → backend: an empty category tree gives an empty facet; check the other pages'
+facets and counts on an empty installation too.
+
 ### L84: an intention with a scope condition answers 500
 
 Rules: [PLAN-scope](reference/planning/intentions.md#plan-scope).
