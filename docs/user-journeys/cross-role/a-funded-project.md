@@ -18,8 +18,9 @@
 3. One of them already has a copy in Kramerius.
 4. **Petr** approves the project at *High* priority, reading the impact first: nine to approve,
    one skipped.
-   → Nine are approved at High priority; the one with a copy waits for review as a rescan
-   ([LC-PROJ-decide](../../reference/lifecycles/project.md#lc-proj-decide)).
+   → Nine are approved by the project and wait on *Requests*, marked as after the project's
+   approval, for a curator to place each in a category at High priority; the one with a copy
+   waits for review as a rescan ([LC-PROJ-decide](../../reference/lifecycles/project.md#lc-proj-decide)).
 5. The project's intention appears on *Intentions*, counting what the project funds over its
    dates ([LC-PROJ-own-intention](../../reference/lifecycles/project.md#lc-proj-own-intention)).
 6. **Eva** proposes one more item after approval.
