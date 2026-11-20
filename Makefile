@@ -29,7 +29,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume journeys-up journeys-down journeys images images-import
+.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume journeys-up journeys-down journeys images images-import deploy-local deploy-local-down
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -107,7 +107,11 @@ images: ## Build the backend and frontend container images
 	docker build -f frontend/Dockerfile -t vera-frontend:$(IMAGE_TAG) .
 
 images-import: ## Import the backend and frontend images into the k3d cluster
-	k3d image import vera-backend:$(IMAGE_TAG) vera-frontend:$(IMAGE_TAG) -c $(K3D_CLUSTER)
+	@# direct mode: the default tools-node mode can fail and still report success. Direct mode now
+	@# and then loses its stream ("closed pipe"), so it gets three tries.
+	@for try in 1 2 3; do \
+		k3d image import --mode direct vera-backend:$(IMAGE_TAG) vera-frontend:$(IMAGE_TAG) -c $(K3D_CLUSTER) && exit 0; \
+		echo "Image import failed (try $$try of 3)"; sleep 5; done; exit 1
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build
@@ -337,15 +341,46 @@ open-client: dev-frontend ## Start the client
 K3D_CLUSTER ?= vera
 OBS_CONTEXT = k3d-$(K3D_CLUSTER)
 
-obs-cluster: ## Create the local k3d cluster for the observability stack, if it is missing
+obs-cluster: ## Create the local k3d cluster (VERA, Keycloak, Mailpit, observability ports), if it is missing
 	@k3d cluster list $(K3D_CLUSTER) >/dev/null 2>&1 || k3d cluster create $(K3D_CLUSTER) \
-		-p "8300:8300@loadbalancer" -p "4317:4317@loadbalancer" -p "4318:4318@loadbalancer" --wait
+		-p "8300:8300@loadbalancer" -p "4317:4317@loadbalancer" -p "4318:4318@loadbalancer" \
+		-p "8400:8400@loadbalancer" -p "8480:8480@loadbalancer" -p "8025:8025@loadbalancer" \
+		--volume "$(CURDIR)/deploy/k3d/resolv.conf:/etc/k3d-resolv.conf@server:0" \
+		--k3s-arg "--resolv-conf=/etc/k3d-resolv.conf@server:0" --wait
 	@k3d cluster start $(K3D_CLUSTER) >/dev/null 2>&1 || true
 
 obs-up: obs-cluster ## Install or upgrade the local observability stack (HyperDX on http://localhost:8300)
 	helm dependency build deploy/helm/vera
 	helm upgrade --install vera deploy/helm/vera -f deploy/helm/vera/values-local.yaml \
 		--namespace vera --create-namespace --kube-context $(OBS_CONTEXT) --wait --timeout 15m
+
+# ─── The local deployment: VERA as production runs it, in the k3d cluster ───
+# OBS=1 adds the observability stack (ClickHouse alone wants about 2 GB). The first administrator's
+# password and the watchlist link key are made once and kept in .deploy-local.env.
+OBS ?= 0
+DEPLOY_ENV := .deploy-local.env
+
+deploy-local: obs-cluster images images-import ## Install VERA into the local k3d cluster (VERA on http://localhost:8400)
+	@test -f $(DEPLOY_ENV) || { \
+		echo "ADMIN_EMAIL=admin@vera.localhost"; \
+		echo "ADMIN_PASSWORD=$$(head -c 18 /dev/urandom | base64 | tr -d '/+=')"; \
+		echo "LINK_KEY=$$(head -c 32 /dev/urandom | base64)"; } > $(DEPLOY_ENV)
+	helm upgrade --install cnpg cloudnative-pg --repo https://cloudnative-pg.github.io/charts \
+		--namespace cnpg-system --create-namespace --kube-context $(OBS_CONTEXT) --wait
+	helm dependency build deploy/helm/vera
+	@. ./$(DEPLOY_ENV); helm upgrade --install vera deploy/helm/vera -f deploy/helm/vera/values-local.yaml \
+		--namespace vera --create-namespace --kube-context $(OBS_CONTEXT) \
+		--set observability.enabled=$(if $(filter 1,$(OBS)),true,false) \
+		--set-file vera.trustedCertificates=backend/testing/src/main/resources/test-plugin-cert.pem \
+		--set vera.secret.firstAdminEmail="$$ADMIN_EMAIL" --set vera.secret.firstAdminPassword="$$ADMIN_PASSWORD" \
+		--set vera.secret.watchlistLinkKey="$$LINK_KEY" --wait --timeout 15m
+	@# CoreDNS reads the keycloak.localhost rewrite (coredns-custom) when it restarts.
+	kubectl --context $(OBS_CONTEXT) -n kube-system rollout restart deployment coredns
+	@. ./$(DEPLOY_ENV); echo "VERA on http://localhost:8400 — first administrator $$ADMIN_EMAIL / $$ADMIN_PASSWORD"; \
+		echo "Keycloak on http://keycloak.localhost:8480 (staff/staff-password, curator/curator-password, digitizer/digitization-password); Mailpit on http://localhost:8025"
+
+deploy-local-down: ## Uninstall VERA from the local k3d cluster; the cluster and its volumes stay
+	helm uninstall vera --namespace vera --kube-context $(OBS_CONTEXT)
 
 obs-status: ## Show the local observability stack's pods and services
 	kubectl --context $(OBS_CONTEXT) -n vera get pods,svc

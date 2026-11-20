@@ -16,7 +16,8 @@ metadata:
   labels:
     {{- include "vera.labels" . | nindent 4 }}
 data:
-  keycloak.server: |
+  # .override lands inside CoreDNS main server block; .server would be a separate block.
+  keycloak.override: |
     rewrite name keycloak.localhost {{ .Release.Name }}-keycloak.{{ .Release.Namespace }}.svc.cluster.local
 ---
 apiVersion: apps/v1
@@ -143,7 +144,7 @@ spec:
       labels:
         {{- include "vera.labels" . | nindent 8 }}
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       containers:
         - name: configure
           # curlimages/curl has no jq; alpine gets both from its package index.
@@ -154,11 +155,14 @@ spec:
               apk add --no-cache curl jq >/dev/null
               api=http://{{ .Release.Name }}-api:8081/api
               until curl -fsS "${api%/api}/actuator/health" >/dev/null; do sleep 3; done
-              curl -fsS -c /tmp/cookies -H 'content-type: application/json' \
+              # VERA's session cookie is Secure, which curl keeps off plain HTTP: send it by hand.
+              session=$(curl -fsS -D - -o /dev/null -H 'content-type: application/json' \
                 -d "$(jq -n --arg u "$VERA_FIRST_ADMIN_EMAIL" --arg p "$VERA_FIRST_ADMIN_PASSWORD" '{username:$u,password:$p}')" \
-                "${api}/login/local-accounts-installation" -o /dev/null
+                "${api}/login/local-accounts-installation" | sed -n 's/^[Ss]et-[Cc]ookie: \(vera_session=[^;]*\).*/\1/p')
+              test -n "$session"
+              printf 'cookie: %s\n' "$session" > /tmp/cookie
               # The installation's roles and Mail server instance have fixed ids (seeds/installation.json).
-              oidc_id=$(curl -fsS -b /tmp/cookies "${api}/plugins" \
+              oidc_id=$(curl -fsS -H @/tmp/cookie "${api}/plugins" \
                 | jq -r '.implementations[] | select(.descriptorId == "cz.mzk.vera.oidc-identity") | .id')
               test -n "$oidc_id"
               jq -n --arg impl "$oidc_id" --arg secret "$OIDC_CLIENT_SECRET" '{
@@ -173,17 +177,19 @@ spec:
                     {claim: "group mzk-staff", roleId: "staff"},
                     {claim: "group mzk-curators", roleId: "curator"},
                     {claim: "group mzk-digitization", roleId: "dig-curator"}]}}' > /tmp/oidc.json
-              curl -fsS -b /tmp/cookies -H 'content-type: application/json' -d @/tmp/oidc.json \
+              curl -fsS -H @/tmp/cookie -H 'content-type: application/json' -d @/tmp/oidc.json \
                 "${api}/plugin-instances" -o /dev/null
-              mail=$(curl -fsS -b /tmp/cookies "${api}/plugin-instances" \
-                | jq -c '.[] | select(.id == "smtp-mailer-installation")')
+              # The instance list carries no configuration; the Plugins index does.
+              mail=$(curl -fsS -H @/tmp/cookie "${api}/plugins" \
+                | jq -c '.instances[] | select(.id == "smtp-mailer-installation")')
               test -n "$mail"
               printf '%s' "$mail" | jq -c --arg host "{{ .Release.Name }}-mailpit" \
                 '{names, configuration: (.configuration + {host: $host, port: "1025", from: "vera@localhost", tls: "none"}),
                   linkedCategoryId, settings}' > /tmp/mail.json
-              curl -fsS -b /tmp/cookies -H 'content-type: application/json' -X PUT -d @/tmp/mail.json \
+              curl -fsS -H @/tmp/cookie -H 'content-type: application/json' -X PUT -d @/tmp/mail.json \
                 "${api}/plugin-instances/smtp-mailer-installation" -o /dev/null
-              curl -fsS -b /tmp/cookies -X POST "${api}/plugin-instances/smtp-mailer-installation/enable" -o /dev/null
+              curl -fsS -H @/tmp/cookie -H 'content-type: application/json' -X POST -d '{}' \
+                "${api}/plugin-instances/smtp-mailer-installation/enable" -o /dev/null
           env:
             - name: VERA_FIRST_ADMIN_EMAIL
               valueFrom:

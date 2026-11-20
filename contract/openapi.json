@@ -969,6 +969,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "extra",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Any further parameter the caller sends, passed on as it came.",
+            "schema": {
+              "type": "object",
+              "patternProperties": {
+                "": {
+                  "type": "string"
+                }
+              }
+            }
           }
         ],
         "responses": {

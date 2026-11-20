@@ -33,4 +33,12 @@ initContainers:
           secretKeyRef:
             name: {{ .Release.Name }}-postgres-app
             key: password
+      # The migrate role starts the whole context, which reads these too.
+      - name: VERA_PUBLIC_URL
+        value: {{ .Values.vera.publicUrl | quote }}
+      - name: VERA_WATCHLIST_LINK_KEY
+        valueFrom:
+          secretKeyRef:
+            name: {{ include "vera.secretName" . }}
+            key: VERA_WATCHLIST_LINK_KEY
 {{- end }}

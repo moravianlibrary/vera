@@ -484,6 +484,18 @@ with the generator in `seeds/tools/`.
 - **Configuration** by environment variables, secrets from the cluster; plugin secrets in the
   database, encrypted with a key from the environment.
 
+## Deploying locally
+
+`make deploy-local` installs VERA into the local k3d cluster as production runs it: the images
+(`make images`, imported into the node), the CloudNativePG operator, then the chart with
+`values-local.yaml`, a local Keycloak (realm *mzk*, users `staff`, `curator`, `digitizer`) and
+Mailpit. It prints the first administrator's login, made once and kept in `.deploy-local.env`.
+VERA is on http://localhost:8400, Keycloak on http://keycloak.localhost:8480 (one issuer for the
+browser and the pods: a CoreDNS rewrite inside the cluster), Mailpit on http://localhost:8025.
+`OBS=1` adds the observability stack; `make deploy-local-down` uninstalls VERA and keeps the
+cluster. The cluster's pods resolve outside names through `deploy/k3d/resolv.conf`: Docker's
+embedded resolver answers only from inside the node.
+
 ## Order of work
 
 Following the engine's steps, so each lands with its recordings already made:

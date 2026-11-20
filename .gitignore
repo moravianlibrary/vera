@@ -23,3 +23,4 @@ journeys/playwright-report/
 backend/.gradle-home/
 backend/.gradle/
 backend/**/build/
+.deploy-local.env

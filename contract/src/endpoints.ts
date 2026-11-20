@@ -448,12 +448,15 @@ export const endpoints = {
     path: `${apiRoutes.login}/:instanceId/callback`,
     summary: "Completes a provider login.",
     params: z.object({ instanceId: z.string() }),
-    query: z.object({
-      state: z.string(),
-      code: z.string().optional(),
-      error: z.string().optional(),
-      iss: z.string().optional(),
-    }),
+    // A provider may send more than these (Keycloak adds session_state); the plugin gets them all.
+    query: z
+      .object({
+        state: z.string(),
+        code: z.string().optional(),
+        error: z.string().optional(),
+        iss: z.string().optional(),
+      })
+      .catchall(z.string()),
     codes: ["access.suspended", "login.expired"],
     redirects: true,
     public: true,

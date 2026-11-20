@@ -214,6 +214,20 @@ function paramsOf(
           },
         ]
       : []),
+    // A query that takes any further parameter (a provider's callback): any name, as a string.
+    ...(where === "query" && !propertyFilters && typeof full.additionalProperties === "object"
+      ? [
+          {
+            name: "extra",
+            in: "query",
+            required: false,
+            style: "form",
+            explode: true,
+            description: "Any further parameter the caller sends, passed on as it came.",
+            schema: { type: "object", patternProperties: { "": { type: "string" } } },
+          },
+        ]
+      : []),
   ];
 }
 
