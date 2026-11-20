@@ -1,0 +1,1 @@
+{"response":{"docs":[],"numFound":0,"start":0,"maxScore":0,"numFoundExact":true},"responseHeader":{"zkConnected":true,"QTime":4,"params":{"q":"id_barcode:(2619752751)","fl":"pid,model,title.search,id_ccnb,id_barcode,id_urnnbn,root.pid,date.str,part.number.str,accessibility","rows":"50","wt":"json"},"status":0}}

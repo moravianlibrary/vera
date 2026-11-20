@@ -1,0 +1,1 @@
+{"response":{"docs":[],"numFound":0,"start":0,"maxScore":0,"numFoundExact":true},"responseHeader":{"zkConnected":true,"QTime":7,"params":{"q":"id_barcode:(2610827530 OR 2610829206 OR 2610845982 OR 2610845983 OR 2610916532 OR 2610954906)","fl":"pid,model,title.search,id_ccnb,id_barcode,id_urnnbn,root.pid,date.str,part.number.str,accessibility","rows":"50","wt":"json"},"status":0}}
