@@ -104,7 +104,8 @@ journey("reader/propose", ({ step, as, api }) => {
     if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
     await page.getByRole("button", { name: "Add" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Submit" }).click();
-    await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
+    // With none left, Submit is not offered; the 429's wording is the dialog's unit test (L82).
+    await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    await expect(page.getByText("Daily proposal limit · 0 left today")).toBeVisible();
   });
 });

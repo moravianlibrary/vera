@@ -12,7 +12,7 @@ journey("staff/propose-a-batch", ({ step, as, api }) => {
   let page: Awaited<ReturnType<typeof as>>;
   let batchItems: Item[] = [];
 
-  step(1, "propose one batch", async () => {
+  step(1, "propose one named batch", async () => {
     page = await as("staff");
     const staffApi = await api("staff");
     const admin = await api("admin");
@@ -33,22 +33,15 @@ journey("staff/propose-a-batch", ({ step, as, api }) => {
     const rows = page.getByRole("dialog").getByRole("list").last().getByRole("listitem");
     await expect(rows).toHaveCount(proposalBatchLimit);
     await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("textbox", { name: "Batch name" }).fill("Reading room requests");
     await page.getByRole("button", { name: "Submit" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByText(/Submitted as B-/)).toBeVisible();
+    await expect(dialog.getByText("Reading room requests")).toBeVisible();
     const report = dialog.getByRole("list").last();
     await expect(report.getByRole("listitem")).toHaveCount(2);
     await expect(report.getByRole("listitem").nth(0).getByText("6", { exact: true })).toBeVisible();
     await expect(report.getByRole("listitem").nth(1).getByText("4", { exact: true })).toBeVisible();
-  });
-
-  step(1, "she names the batch", async () => {
-    await page.getByRole("button", { name: "Done" }).click();
-    await page.getByRole("button", { name: "Propose…" }).click();
-    await page.getByRole("tab", { name: "Paste list" }).click();
-    await page.getByLabel("Items, one per line").fill(lines(batchItems.slice(0, 10)));
-    await page.getByRole("button", { name: "Add these" }).click();
-    await page.getByRole("textbox", { name: "Batch name" }).fill("Reading room requests");
   });
 
   step(2, "warn near the daily limit and refuse the next batch", async () => {
@@ -85,7 +78,8 @@ journey("staff/propose-a-batch", ({ step, as, api }) => {
     if (extra.unit !== null) await page.getByLabel("Volume or issue").fill(extra.unit);
     await page.getByRole("button", { name: "Add" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
-    await page.getByRole("button", { name: "Submit" }).click();
-    await expect(page.getByText("Today’s proposal limit has been reached.")).toBeVisible();
+    // With none left, Submit is not offered; the 429's wording is the dialog's unit test (L82).
+    await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+    await expect(page.getByText("Daily proposal limit · 0 left today")).toBeVisible();
   });
 });

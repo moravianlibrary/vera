@@ -79,10 +79,10 @@ journey("reader/follow", ({ step, as, api, clock }) => {
     await page.reload();
     await page.getByRole("button", { name: "Expand navigation" }).click();
     const documents = page.getByRole("link", { name: /My Documents/ });
-    await expect(documents.getByText("1", { exact: true })).toBeVisible();
+    await expect(documents).toHaveAccessibleName(/1 watchlist with new items/);
     await page.getByRole("button", { name: /^Ready to read/ }).click();
     await expect(page.getByRole("button", { name: /Kniha o Brně/ })).toBeVisible();
-    await expect(documents.getByText("1", { exact: true })).toHaveCount(0);
+    await expect(documents).not.toHaveAccessibleName(/with new items/);
   });
 
   step(6, "withdraw the waiting ask", async () => {

@@ -152,7 +152,7 @@
   "filter.or": "or",
   "navigation.newWatchlists_one": "watchlist with new items",
   "navigation.newWatchlists_other": "watchlists with new items",
-  "navigation.newWatchlistsIn_one": "{{count}} watchlists with new items in {{view}}",
+  "navigation.newWatchlistsIn_one": "{{count}} watchlist with new items in {{view}}",
   "navigation.newWatchlistsIn_other": "{{count}} watchlists with new items in {{view}}",
   "navigation.entry.my-documents": "My Documents",
   "navigation.entry.documents": "Documents",
