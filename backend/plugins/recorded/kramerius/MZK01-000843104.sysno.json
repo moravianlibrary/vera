@@ -1,0 +1,1 @@
+{"response":{"docs":[],"numFound":0,"start":0,"maxScore":0,"numFoundExact":true},"responseHeader":{"zkConnected":true,"QTime":3,"params":{"q":"id_sysno:(\"mzk01-000843104\" OR \"000843104\")","fl":"pid,model,title.search,id_ccnb,id_barcode,id_urnnbn,root.pid,date.str,part.number.str,accessibility","rows":"50","wt":"json"},"status":0}}

@@ -5,7 +5,7 @@
 set -eu
 cd "$(dirname "$0")"
 mkdir -p aleph kramerius
-fields="pid,model,title.search,id_ccnb,id_barcode,id_urnnbn,root.pid,date.str,part.number.str,accessibility"
+fields="pid,model,title.search,id_ccnb,id_barcode,id_urnnbn,id_sysno,root.pid,date.str,part.number.str,accessibility"
 search() {
   curl -fsS -m 30 -G "https://api.kramerius.mzk.cz/search/api/client/v7.0/search" \
     --data-urlencode "q=$1" --data-urlencode "fl=$fields" --data-urlencode "rows=50" -o "$2"
@@ -13,6 +13,10 @@ search() {
 grep -v '^#' records.psv | while IFS='|' read -r sysno cnb isxn barcodes why; do
   curl -fsS -m 30 -o "aleph/$sysno.xml" \
     "https://aleph.mzk.cz/OAI?verb=GetRecord&identifier=oai:aleph.mzk.cz:$sysno&metadataPrefix=marc21"
+  sleep 0.4
+  # Kramerius keeps a sysno for few records, lowercased or bare: try both forms.
+  lower=$(echo "$sysno" | tr 'A-Z' 'a-z')
+  search "id_sysno:(\"$lower\" OR \"${sysno#*-}\")" "kramerius/$sysno.sysno.json"
   sleep 0.4
   if [ -n "$cnb" ]; then search "id_ccnb:$cnb" "kramerius/$sysno.ccnb.json"; sleep 0.4; fi
   if [ -n "$barcodes" ]; then
