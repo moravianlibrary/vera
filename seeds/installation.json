@@ -625,7 +625,7 @@
           "configuration": {
             "signup": "off",
             "password_min": "12",
-            "mail_channel": ""
+            "mail_channel": "smtp-mailer-installation"
           },
           "settings": {
             "kind": "Identity",
@@ -659,6 +659,27 @@
     { "package": "material-type", "instances": [] },
     { "package": "shelf-mark-to-size", "instances": [] },
     { "package": "entry-link", "instances": [] },
+    {
+      "package": "smtp-mailer",
+      "instances": [
+        {
+          "id": "smtp-mailer-installation",
+          "names": { "cs": "Poštovní server", "en": "Mail server" },
+          "configuration": {
+            "host": "",
+            "port": "587",
+            "from": "",
+            "tls": "starttls",
+            "username": "",
+            "timeout": "30s",
+            "reply_to": ""
+          },
+          "settings": null,
+          "triggers": ["OnEvent"],
+          "isEnabled": false
+        }
+      ]
+    },
     { "package": "aleph-oai-catalog-adapter", "instances": [] },
     { "package": "kramerius-registry", "instances": [] }
   ]

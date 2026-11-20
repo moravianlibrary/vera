@@ -86,7 +86,7 @@ class InstallationSetupTests {
                 "admin@example.org", "long-installation-password");
         setup.run(null);
         assertThat(dsl.selectCount().from(ROLES).fetchOne(0, int.class)).isEqualTo(6);
-        assertThat(dsl.selectCount().from(PLUGIN_INSTANCES).fetchOne(0, int.class)).isEqualTo(2);
+        assertThat(dsl.selectCount().from(PLUGIN_INSTANCES).fetchOne(0, int.class)).isEqualTo(3);
         assertThat(dsl.selectCount().from(PLUGIN_INSTANCES).where(PLUGIN_INSTANCES.CREATED_BY.isNull())
                 .fetchOne(0, int.class)).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_implementations "
@@ -94,7 +94,7 @@ class InstallationSetupTests {
         int usersBefore = jdbc.queryForObject("SELECT count(*) FROM users", Integer.class);
         setup.run(null);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users", Integer.class)).isEqualTo(usersBefore);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_packages", Integer.class)).isEqualTo(9);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_packages", Integer.class)).isEqualTo(10);
         http.post().uri("/api/login/local-accounts-installation")
                 .body(java.util.Map.of("username", "admin@example.org", "password", "long-installation-password"))
                 .exchange().expectStatus().isNoContent();

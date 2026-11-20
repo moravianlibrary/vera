@@ -1,0 +1,28 @@
+{
+  "implementation": "cz.mzk.vera.smtp-mailer",
+  "version": "1.0.0",
+  "contractVersion": "1.2",
+  "triggers": ["OnEvent"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": "Email",
+    "operations": [],
+    "loginEntry": null,
+    "personReach": { "by": "email" }
+  },
+  "configFields": [
+    { "key": "host", "isSecret": false, "isRequired": true },
+    { "key": "port", "isSecret": false, "isRequired": false },
+    { "key": "from", "isSecret": false, "isRequired": true },
+    { "key": "tls", "isSecret": false, "isRequired": false },
+    { "key": "username", "isSecret": false, "isRequired": false },
+    { "key": "password", "isSecret": true, "isRequired": false },
+    { "key": "timeout", "isSecret": false, "isRequired": false },
+    { "key": "reply_to", "isSecret": false, "isRequired": false }
+  ]
+}
