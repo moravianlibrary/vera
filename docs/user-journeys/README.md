@@ -1,7 +1,7 @@
 # User journeys
 
 What each kind of person comes to VERA to do, step by step, with what they should see. A journey
-is an acceptance test: the backend is built to pass every one, and each becomes a Playwright
+is an acceptance test: the backend is built to pass every one, and each is a Playwright
 test run against it (the engine of part 4 is retired,
 [DEC-0023](../decisions/DEC-0023-the-engine-is-retired.md)). The user and admin guides are written from them later.
 
