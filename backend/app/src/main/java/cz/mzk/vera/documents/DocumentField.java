@@ -378,6 +378,11 @@ enum DocumentField {
                 lineageRows.add(DSL.row(inline(category.id()), inline(ancestor), inline(ordinal++)));
             }
         }
+        if (lineageRows.isEmpty()) {
+            return dsl.select(inline("", String.class), inline("", String.class), inline(0))
+                .where(DSL.falseCondition())
+                .asTable("category_lineage", "category_id", "ancestor_id", "ordinal");
+        }
         return DSL.values(lineageRows.toArray(Row3[]::new))
             .asTable("category_lineage", "category_id", "ancestor_id", "ordinal");
     }

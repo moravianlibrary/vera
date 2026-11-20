@@ -7,6 +7,7 @@ import static cz.mzk.vera.db.tables.Tables.GROUP_MEMBERS;
 import static cz.mzk.vera.db.tables.Tables.GROUPS;
 import static cz.mzk.vera.db.tables.Tables.ROLE_GRANTS;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
+import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
 import static cz.mzk.vera.db.tables.Tables.USER_HAND_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
@@ -36,6 +37,15 @@ public class InstallationCollectionsWriter {
     }
     public void write(DSLContext transaction, JsonNode seed) {
         JsonNode collections = seed.path("collections");
+        // The Tasks page and plugin run counts read this one row; every installation has it.
+        JsonNode retention = collections.path("taskRetention");
+        if (!retention.isMissingNode()) {
+            transaction.insertInto(TASK_RETENTION)
+                    .set(TASK_RETENTION.ID, 1)
+                    .set(TASK_RETENTION.DAYS, retention.path("days").asInt())
+                    .set(TASK_RETENTION.FAILED_DAYS, retention.path("failedDays").asInt())
+                    .execute();
+        }
         int position = 0;
         for (JsonNode user : collections.path("users")) {
             JsonNode access = collections.path("userAccess").path(user.path("id").asString());

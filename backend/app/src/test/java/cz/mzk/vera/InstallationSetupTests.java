@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -95,8 +96,12 @@ class InstallationSetupTests {
         setup.run(null);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM users", Integer.class)).isEqualTo(usersBefore);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_packages", Integer.class)).isEqualTo(12);
-        http.post().uri("/api/login/local-accounts-installation")
+        var login = http.post().uri("/api/login/local-accounts-installation")
                 .body(java.util.Map.of("username", "admin@example.org", "password", "long-installation-password"))
-                .exchange().expectStatus().isNoContent();
+                .exchange().expectStatus().isNoContent().returnResult();
+        String cookie = login.getResponseHeaders().getFirst(HttpHeaders.SET_COOKIE);
+        for (String path : List.of("/api/documents", "/api/requests", "/api/lists", "/api/tasks", "/api/projects")) {
+            http.get().uri(path).header(HttpHeaders.COOKIE, cookie).exchange().expectStatus().isOk();
+        }
     }
 }
