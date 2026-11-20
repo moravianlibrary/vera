@@ -659,6 +659,7 @@
     { "package": "material-type", "instances": [] },
     { "package": "shelf-mark-to-size", "instances": [] },
     { "package": "entry-link", "instances": [] },
-    { "package": "aleph-oai-catalog-adapter", "instances": [] }
+    { "package": "aleph-oai-catalog-adapter", "instances": [] },
+    { "package": "kramerius-registry", "instances": [] }
   ]
 }

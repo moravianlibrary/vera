@@ -1,0 +1,25 @@
+{
+  "implementation": "cz.mzk.vera.kramerius-registry",
+  "version": "1.0.0",
+  "contractVersion": "1.2",
+  "triggers": ["OnProposal", "OnIngest", "OnSchedule"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [
+      { "raw": "published", "state": "Published", "isExistingCopy": true },
+      { "raw": "(absent)", "state": "NotFound", "isExistingCopy": false }
+    ],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "api_url", "isSecret": false, "isRequired": true },
+    { "key": "client_url", "isSecret": false, "isRequired": true },
+    { "key": "timeout", "isSecret": false, "isRequired": false }
+  ]
+}

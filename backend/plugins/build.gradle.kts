@@ -25,6 +25,8 @@ subprojects {
 val packageOutput = layout.buildDirectory.dir("packages")
 val packages = tasks.register("packages") {
     dependsOn(subprojects.map { it.tasks.named("jar") })
+    // The signed copies follow the JARs: without inputs Gradle kept stale packages up to date.
+    inputs.files(subprojects.map { it.tasks.named("jar") })
     outputs.dir(packageOutput)
     doLast {
         val output = packageOutput.get().asFile
