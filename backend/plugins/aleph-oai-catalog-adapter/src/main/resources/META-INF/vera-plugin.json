@@ -1,0 +1,30 @@
+{
+  "implementation": "cz.mzk.vera.aleph-oai-catalog-adapter",
+  "version": "1.0.0",
+  "contractVersion": "1.2",
+  "triggers": ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"],
+  "declares": {
+    "properties": [
+      { "key": "page_count", "tier": 50 },
+      { "key": "material_type", "tier": 50 },
+      { "key": "shelf_mark", "tier": 50 },
+      { "key": "title", "tier": 50 },
+      { "key": "unit_enumeration", "tier": 50 }
+    ],
+    "identifierTypes": ["NBN", "ISSN", "ISBN", "Shelf mark"],
+    "rawStates": [],
+    "rules": [],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": ["readLink", "changes"],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "oai_url", "isSecret": false, "isRequired": true },
+    { "key": "base", "isSecret": false, "isRequired": true },
+    { "key": "opac_url", "isSecret": false, "isRequired": false },
+    { "key": "timeout", "isSecret": false, "isRequired": false },
+    { "key": "set", "isSecret": false, "isRequired": false }
+  ]
+}

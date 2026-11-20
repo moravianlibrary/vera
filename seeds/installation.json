@@ -658,6 +658,7 @@
     { "package": "priority-then-mix", "instances": [] },
     { "package": "material-type", "instances": [] },
     { "package": "shelf-mark-to-size", "instances": [] },
-    { "package": "entry-link", "instances": [] }
+    { "package": "entry-link", "instances": [] },
+    { "package": "aleph-oai-catalog-adapter", "instances": [] }
   ]
 }
