@@ -23,28 +23,23 @@ journey("digitization/plan-intentions", ({ step, as, api }) => {
     await expect(page.getByText(/1 Oct 2026/).first()).toBeVisible();
   });
 
-  step.fixme(
-    2,
-    "create a scanner scoped intention",
-    "creating an intention with a scope condition answers 500 contract.response (L84)",
-    async () => {
-      await page.getByRole("button", { name: "New intention", exact: true }).click();
-      const dialog = page.getByRole("dialog");
-      await dialog.getByLabel("Name").fill("Zeutschel scanner");
-      await dialog.getByLabel("Project").click();
-      await page.getByRole("option", { name: "All work — with or without a project" }).click();
-      await dialog.getByLabel("Categories").click();
-      await page.getByRole("option", { name: "All categories", exact: true }).click();
-      await dialog.getByLabel("Counts from").fill("2026-06-25");
-      await dialog.getByLabel("Ends").fill("2026-12-31");
-      await dialog.getByLabel("Add a condition on a property").click();
-      await page.getByRole("option", { name: "Machines", exact: true }).click();
-      await dialog.getByLabel("Zeutschel", { exact: true }).check();
-      await expect(dialog.getByText("Machines")).toBeVisible();
-      await dialog.getByRole("button", { name: "Create intention" }).click();
-      await expect(page.getByText("Zeutschel scanner", { exact: true })).toBeVisible();
-    },
-  );
+  step(2, "create a scanner scoped intention", async () => {
+    await page.getByRole("button", { name: "New intention", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name").fill("Zeutschel scanner");
+    await dialog.getByLabel("Project").click();
+    await page.getByRole("option", { name: "All work — with or without a project" }).click();
+    await dialog.getByLabel("Categories").click();
+    await page.getByRole("option", { name: "All categories", exact: true }).click();
+    await dialog.getByLabel("Counts from").fill("2026-06-25");
+    await dialog.getByLabel("Ends").fill("2026-12-31");
+    await dialog.getByLabel("Add a condition on a property").click();
+    await page.getByRole("option", { name: "Machines", exact: true }).click();
+    await dialog.getByLabel("Zeutschel", { exact: true }).check();
+    await expect(dialog.getByText("Machines")).toBeVisible();
+    await dialog.getByRole("button", { name: "Create intention" }).click();
+    await expect(page.getByText("Zeutschel scanner", { exact: true })).toBeVisible();
+  });
 
   step(3, "edit the Primary mix proportions", async () => {
     await page.getByRole("link", { name: "Category mixes", exact: true }).click();
