@@ -363,6 +363,22 @@ class ProposalSubmitTests {
     }
 
     @Test
+    void repeatedItemJoinsOnceAndCountsOnceAgainstTheDailyLimit() {
+        giveProposalRole("u5", 10, 1);
+        Map<String, Object> repeated = item("catalogId", "MZK01-001277001", "1936–1938");
+        JsonNode report = post(draft(List.of(repeated, repeated, repeated)), "u5", 201);
+
+        assertThat(report.path("joined").asInt()).isEqualTo(1);
+        assertThat(report.path("skipped")).hasSize(2);
+        assertThat(report.path("batch").path("size").asInt()).isEqualTo(1);
+        client.post().uri("/api/proposals").header("Cookie", session("u5"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(draft(List.of(item("catalogId", "MZK03-000778120", null))))
+                .exchange().expectStatus().isEqualTo(429)
+                .expectBody().jsonPath("$.code").isEqualTo("proposal.daily_limit");
+    }
+
+    @Test
     void projectUserCanSubmitIntoTheirApprovedProject() {
         Map<String, Object> draft = draft(List.of(item("catalogId", "MZK01-001277001", "1940")));
         draft.put("projectId", "p1");

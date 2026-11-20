@@ -1,11 +1,14 @@
 package cz.mzk.vera.events;
 
 import static cz.mzk.vera.db.tables.Tables.HOOK_EVENTS;
+import static cz.mzk.vera.db.tables.Tables.EVENTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.domain.events.EventCode;
 import cz.mzk.vera.testing.VeraTestingApplication;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
+import cz.mzk.vera.tasks.Runs;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -16,11 +19,13 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.ObjectMapper;
 
 // HOOK-events; HOOK-list-transitions: every supported hook code has an explicit act or job case.
 @SpringBootTest(classes = VeraTestingApplication.class,
@@ -57,6 +62,12 @@ class HookEventCoverageTests {
     private TemplateResetService reset;
     @Autowired
     private DSLContext dsl;
+    @Autowired
+    private JdbcTemplate jdbc;
+    @Autowired
+    private Runs runs;
+    @Autowired
+    private ObjectMapper mapper;
 
     @BeforeEach
     void loadBase() {
@@ -81,6 +92,43 @@ class HookEventCoverageTests {
         assertThat(dsl.select(HOOK_EVENTS.CODE).from(HOOK_EVENTS)
                 .where(HOOK_EVENTS.SUBJECT_ID.eq("L-2026-017")).fetch(HOOK_EVENTS.CODE))
                 .contains("list.created", "list.started");
+    }
+
+    @Test
+    void restrictionCheckWritesItsEventOnceForANewFinding() throws Exception {
+        jdbc.update("UPDATE iterations SET restriction_rule=NULL, restriction_public_text=NULL, "
+                + "restriction_internal_text=NULL, restriction_found_at=NULL WHERE id='IT6'");
+
+        finishRestrictionRun();
+        var event = dsl.select(EVENTS.DATA).from(EVENTS)
+                .where(EVENTS.SUBJECT_ID.eq("IT6")).and(EVENTS.CODE.eq("iteration.restricted"))
+                .fetchOne(EVENTS.DATA);
+        assertThat(mapper.readTree(event.data()).path("rule").path("id").asString()).isEqualTo("pi28");
+        assertThat(mapper.readTree(event.data()).path("outcome").asString()).isEqualTo("forbidden");
+        assertThat(dsl.fetchCount(HOOK_EVENTS, HOOK_EVENTS.SUBJECT_ID.eq("IT6")
+                .and(HOOK_EVENTS.CODE.eq("iteration.restricted")))).isEqualTo(1);
+
+        finishRestrictionRun();
+        assertThat(dsl.fetchCount(EVENTS, EVENTS.SUBJECT_ID.eq("IT6")
+                .and(EVENTS.CODE.eq("iteration.restricted")))).isEqualTo(1);
+        assertThat(dsl.fetchCount(HOOK_EVENTS, HOOK_EVENTS.SUBJECT_ID.eq("IT6")
+                .and(HOOK_EVENTS.CODE.eq("iteration.restricted")))).isEqualTo(1);
+    }
+
+    private void finishRestrictionRun() {
+        String runId = runs.start("Restriction check", "pi28", null,
+                Map.of("kind", "manual", "from", Map.of("label", "Plugins", "path", "/plugins")),
+                "u3", null);
+        for (int chunk = 0; chunk < 100; chunk++) {
+            client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"advance\":{\"minutes\":1}}")
+                    .exchange().expectStatus().isOk();
+            client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
+            String state = jdbc.queryForObject("SELECT state FROM runs WHERE id=?", String.class, runId);
+            if (!"Running".equals(state)) break;
+        }
+        assertThat(jdbc.queryForObject("SELECT state FROM runs WHERE id=?", String.class, runId))
+                .isEqualTo("Done");
     }
 
     private String session(String userId) {

@@ -641,7 +641,8 @@ public class IntentionReads {
         intention.put("projectId", stored.projectId());
         intention.put("scopeCategoryId", rule.scopeCategoryId());
         if (!rule.scopeConditions().isEmpty()) {
-            intention.put("scopeConditions", rule.scopeConditions());
+            intention.put("scopeConditions", rule.scopeConditions().stream()
+                .map(IntentionReads::propertyConditionJson).toList());
         }
         intention.put("distributionId", stored.distributionId());
         if (stored.mixRevision() != null) {
@@ -668,6 +669,19 @@ public class IntentionReads {
         }
         intention.put("archived", rule.archivedAt() == null ? null : archived);
         return intention;
+    }
+
+    private static Map<String, Object> propertyConditionJson(PropertyCondition condition) {
+        Map<String, Object> value = new LinkedHashMap<>();
+        value.put("key", condition.key());
+        if (condition.hasNoValue() != null) value.put("hasNoValue", condition.hasNoValue());
+        if (condition.contains() != null) value.put("contains", condition.contains());
+        if (condition.startsWith() != null) value.put("startsWith", condition.startsWith());
+        if (condition.endsWith() != null) value.put("endsWith", condition.endsWith());
+        if (condition.numberRange() != null) value.put("numberRange", condition.numberRange());
+        if (condition.dayRange() != null) value.put("dayRange", condition.dayRange());
+        if (condition.anyOf() != null) value.put("anyOf", condition.anyOf());
+        return value;
     }
 
     private Map<String, Object> scope(List<Category> categories, String categoryId) {

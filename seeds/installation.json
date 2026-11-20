@@ -613,7 +613,11 @@
         "memberIds": [],
         "groupIds": []
       }
-    ]
+    ],
+    "taskRetention": {
+      "days": 90,
+      "failedDays": 365
+    }
   },
   "shippedPlugins": [
     {

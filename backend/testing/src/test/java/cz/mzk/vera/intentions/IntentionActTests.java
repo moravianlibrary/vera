@@ -126,6 +126,32 @@ class IntentionActTests {
     }
 
     @Test
+    void createdIntentionReturnsScopeConditionsWithoutUnsetFields() throws Exception {
+        String condition = "{\"key\":\"machines\",\"anyOf\":[\"zeutschel\"]}";
+        String draft =
+                "{\"name\":\"Scanner scope\",\"description\":\"\","
+                    + "\"funding\":{\"kind\":\"any\"},\"scopeCategoryId\":null,"
+                    + "\"countsFrom\":\"2026-06-25\",\"endsOn\":\"2026-12-31\","
+                    + "\"targetPages\":1000,\"mix\":{\"kind\":\"none\"},"
+                    + "\"scopeConditions\":[" + condition + "]}";
+
+        String response = client.post()
+                .uri("/api/intentions")
+                .header("Cookie", session("u2"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(draft)
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .expectBody(String.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(mapper.readTree(response).path("intention").path("scopeConditions").get(0))
+                .isEqualTo(mapper.readTree(condition));
+    }
+
+    @Test
     void everyIntentionActAndRepeatActNeedsASession() {
         String draft =
                 "{\"name\":\"No session\",\"description\":\"\",\"funding\":{\"kind\":\"any\"},"

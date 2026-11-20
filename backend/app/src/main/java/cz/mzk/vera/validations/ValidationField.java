@@ -145,8 +145,12 @@ enum ValidationField {
                 pairs.add(DSL.row(inline(category.id()), inline(ancestor), inline(ordinal++)));
             }
         }
-        Table<?> lineage = DSL.values(pairs.toArray(Row3[]::new))
-                .asTable("validation_category_lineage", "category_id", "ancestor_id", "ordinal");
+        Table<?> lineage = pairs.isEmpty()
+                ? dsl.select(inline("", String.class), inline("", String.class), inline(0))
+                        .where(DSL.falseCondition())
+                        .asTable("validation_category_lineage", "category_id", "ancestor_id", "ordinal")
+                : DSL.values(pairs.toArray(Row3[]::new))
+                        .asTable("validation_category_lineage", "category_id", "ancestor_id", "ordinal");
         Field<String> categoryId = lineage.field("category_id", String.class);
         Field<String> ancestorId = lineage.field("ancestor_id", String.class);
         Field<Integer> ordinal = lineage.field("ordinal", Integer.class);

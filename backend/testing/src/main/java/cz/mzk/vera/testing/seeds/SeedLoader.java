@@ -13,7 +13,6 @@ import static cz.mzk.vera.db.tables.Tables.RUN_ERRORS;
 import static cz.mzk.vera.db.tables.Tables.RUN_ITEMS;
 import static cz.mzk.vera.db.tables.Tables.RUN_LOG;
 import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
-import static cz.mzk.vera.db.tables.Tables.TASK_RETENTION;
 import static cz.mzk.vera.db.tables.Tables.HOOKS;
 import static cz.mzk.vera.db.tables.Tables.HOOK_DELIVERIES;
 import static cz.mzk.vera.db.tables.Tables.HOOK_ATTEMPTS;
@@ -350,14 +349,6 @@ public class SeedLoader {
                     .set(SCHEDULES.SINCE, LocalDate.parse(string(schedule, "since")))
                     .set(SCHEDULES.NEXT_AT, nextAt == null ? null : nextAt.atOffset(ZoneOffset.UTC))
                     .set(SCHEDULES.POSITION, schedulePosition++)
-                    .execute();
-        }
-        JsonNode retention = collections.path("taskRetention");
-        if (!retention.isMissingNode()) {
-            target.insertInto(TASK_RETENTION)
-                    .set(TASK_RETENTION.ID, 1)
-                    .set(TASK_RETENTION.DAYS, retention.path("days").asInt())
-                    .set(TASK_RETENTION.FAILED_DAYS, retention.path("failedDays").asInt())
                     .execute();
         }
     }
