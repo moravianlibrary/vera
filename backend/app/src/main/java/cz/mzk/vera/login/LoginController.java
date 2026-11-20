@@ -9,6 +9,7 @@ import cz.mzk.vera.pluginhost.PluginCalls;
 import cz.mzk.vera.pluginhost.PluginOutcome;
 import cz.mzk.vera.session.SessionCommands;
 import cz.mzk.vera.web.Problems;
+import cz.mzk.vera.web.PublicUrl;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpHeaders;
@@ -30,14 +31,16 @@ final class LoginController {
     private final LoginCommands commands;
     private final SessionCommands sessions;
     private final PluginCalls plugins;
+    private final PublicUrl publicUrl;
 
     LoginController(LoginQueries queries, IdentityInstances instances, LoginCommands commands,
-            SessionCommands sessions, PluginCalls plugins) {
+            SessionCommands sessions, PluginCalls plugins, PublicUrl publicUrl) {
         this.queries = queries;
         this.instances = instances;
         this.commands = commands;
         this.sessions = sessions;
         this.plugins = plugins;
+        this.publicUrl = publicUrl;
     }
 
     @GetMapping
@@ -56,7 +59,8 @@ final class LoginController {
             return Problems.response(401, "The username or password is not accepted.");
         }
         PluginOutcome<CompleteAnswer> outcome = plugins.call(instanceId, Identity.class, "complete",
-                (identity, context) -> identity.complete(context, new CompleteInput.Form(body.username(), body.password())));
+                (identity, context) -> identity.complete(context,
+                        new CompleteInput.Form(body.username(), body.password(), instance.settings().userIdClaim())));
         if (outcome instanceof PluginOutcome.Refused<CompleteAnswer> refused) {
             if ("wrong_credentials".equals(refused.code())) {
                 return Problems.response(401, "The username or password is not accepted.");
@@ -85,20 +89,24 @@ final class LoginController {
             return Problems.response(404, "There is no redirect login for this instance.");
         }
         String flowId = commands.startFlow(instanceId, returnTo);
-        String callback = "/api/login/" + instanceId + "/callback?flow=" + flowId;
+        String callback = publicUrl.value().replaceAll("/$", "") + "/api/login/" + instanceId + "/callback";
         PluginOutcome<BeginAnswer> outcome = plugins.call(instanceId, Identity.class, "begin",
-                (identity, context) -> identity.begin(context, new BeginInput(callback)));
+                (identity, context) -> identity.begin(context, new BeginInput(callback, flowId)));
         if (!(outcome instanceof PluginOutcome.Answered<BeginAnswer> answer)
                 || answer.answer().redirect() == null) {
+            return ResponseEntity.status(302).header(HttpHeaders.LOCATION, "/login?error=login.unknown").build();
+        }
+        Map<String, String> flowData = answer.answer().flowData() == null ? Map.of() : answer.answer().flowData();
+        if (!commands.saveFlowData(flowId, flowData)) {
             return ResponseEntity.status(302).header(HttpHeaders.LOCATION, "/login?error=login.unknown").build();
         }
         return ResponseEntity.status(302).header(HttpHeaders.LOCATION, answer.answer().redirect()).build();
     }
 
     @GetMapping("/{instanceId}/callback")
-    ResponseEntity<Void> loginCallback(@PathVariable String instanceId, @RequestParam String flow,
-            @RequestParam String code) {
-        var flowRow = commands.takeFlow(flow);
+    ResponseEntity<Void> loginCallback(@PathVariable String instanceId, @RequestParam Map<String, String> parameters) {
+        String state = parameters.get("state");
+        var flowRow = commands.takeFlow(state);
         if (flowRow.isEmpty() || !instanceId.equals(flowRow.get().instanceId()) || commands.expired(flowRow.get())) {
             return redirect("/login?error=login.expired", null);
         }
@@ -106,9 +114,14 @@ final class LoginController {
         if (instance == null || !instance.entry().equals("redirect")) {
             return redirect("/login?error=login.expired", null);
         }
+        if (parameters.containsKey("error")) {
+            return redirect("/login?error=login.refused", null);
+        }
+        String callback = publicUrl.value().replaceAll("/$", "") + "/api/login/" + instanceId + "/callback";
         PluginOutcome<CompleteAnswer> outcome = plugins.call(instanceId, Identity.class, "complete",
                 (identity, context) -> identity.complete(context,
-                        new CompleteInput.Callback(Map.of("flow", flow, "code", code))));
+                        new CompleteInput.Callback(parameters, flowRow.get().flowData(), callback,
+                                instance.settings().userIdClaim())));
         if (!(outcome instanceof PluginOutcome.Answered<CompleteAnswer> answered)) {
             return redirect("/login?error=login.unknown", null);
         }

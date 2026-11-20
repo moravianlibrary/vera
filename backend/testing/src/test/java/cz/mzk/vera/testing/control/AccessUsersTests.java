@@ -98,11 +98,11 @@ class AccessUsersTests {
         var start = client.get().uri("/api/login/pi41").exchange().expectStatus().is3xxRedirection()
                 .expectBody().returnResult();
         String location = start.getResponseHeaders().getFirst("Location");
-        String callback = java.net.URLDecoder.decode(location.substring(location.indexOf("return=") + 7),
+        String callback = java.net.URLDecoder.decode(location.substring(location.indexOf("callback=") + 7),
                 java.nio.charset.StandardCharsets.UTF_8);
-        String flow = java.util.regex.Pattern.compile("flow=([^&]+)").matcher(callback).results()
+        String flow = java.util.regex.Pattern.compile("state=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
-        client.get().uri("/api/login/pi41/callback?flow=" + flow + "&code=nova.ctenarka@muni.cz")
+        client.get().uri("/api/login/pi41/callback?state=" + flow + "&code=nova.ctenarka@muni.cz")
                 .exchange().expectStatus().is3xxRedirection();
         String userId = jdbc.queryForObject("SELECT user_id FROM user_identities WHERE instance_id='pi41' "
                 + "AND external_id='nova.ctenarka@muni.cz'", String.class);

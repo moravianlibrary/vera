@@ -159,16 +159,33 @@ public class LoginCommands {
         return flowId;
     }
 
+    public boolean saveFlowData(String flowId, Map<String, String> flowData) {
+        String serialized = json.valueToTree(flowData).toString();
+        if (serialized.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 4096) {
+            return false;
+        }
+        dsl.update(LOGIN_FLOWS).set(LOGIN_FLOWS.FLOW_DATA, JSONB.valueOf(serialized))
+                .where(LOGIN_FLOWS.ID.eq(flowId)).execute();
+        return true;
+    }
+
     public Optional<LoginFlow> takeFlow(String flowId) {
         var row = dsl.deleteFrom(LOGIN_FLOWS)
                 .where(LOGIN_FLOWS.ID.eq(flowId))
-                .returning(LOGIN_FLOWS.ID, LOGIN_FLOWS.INSTANCE_ID, LOGIN_FLOWS.RETURN_TO, LOGIN_FLOWS.CREATED_AT)
+                .returning(LOGIN_FLOWS.ID, LOGIN_FLOWS.INSTANCE_ID, LOGIN_FLOWS.RETURN_TO,
+                        LOGIN_FLOWS.CREATED_AT, LOGIN_FLOWS.FLOW_DATA)
                 .fetchOne();
         if (row == null) {
             return Optional.empty();
         }
+        Map<String, String> flowData = new LinkedHashMap<>();
+        JSONB stored = row.get(LOGIN_FLOWS.FLOW_DATA);
+        if (stored != null) {
+            json.readTree(stored.data()).properties().forEach(entry ->
+                    flowData.put(entry.getKey(), entry.getValue().asString()));
+        }
         return Optional.of(new LoginFlow(row.get(LOGIN_FLOWS.ID), row.get(LOGIN_FLOWS.INSTANCE_ID),
-                row.get(LOGIN_FLOWS.RETURN_TO), row.get(LOGIN_FLOWS.CREATED_AT)));
+                row.get(LOGIN_FLOWS.RETURN_TO), row.get(LOGIN_FLOWS.CREATED_AT), Map.copyOf(flowData)));
     }
 
     public boolean expired(LoginFlow flow) {
@@ -256,7 +273,8 @@ public class LoginCommands {
         }
     }
 
-    public record LoginFlow(String id, String instanceId, String returnTo, OffsetDateTime createdAt) {}
+    public record LoginFlow(String id, String instanceId, String returnTo, OffsetDateTime createdAt,
+            Map<String, String> flowData) {}
     public record Result(String userId, String refusal) {}
     private record Mapped(String roleId, String claim) {}
 }

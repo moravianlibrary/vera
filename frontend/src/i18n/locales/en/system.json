@@ -6,6 +6,7 @@
   "login.password": "Password",
   "login.submit": "Log in",
   "login.wrongPassword": "The username or password is wrong.",
+  "login.error.login.refused": "The login was cancelled or refused at the provider.",
   "login.error.access.suspended": "This account is suspended. Ask an administrator.",
   "login.error.other": "Logging in did not work. Try again.",
   "login.language": "Language",

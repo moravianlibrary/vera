@@ -939,7 +939,7 @@
             }
           },
           {
-            "name": "flow",
+            "name": "state",
             "in": "query",
             "required": true,
             "schema": {
@@ -949,7 +949,23 @@
           {
             "name": "code",
             "in": "query",
-            "required": true,
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "iss",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             }

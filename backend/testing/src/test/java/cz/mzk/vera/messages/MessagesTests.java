@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.testing.VeraTestingApplication;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,13 +83,10 @@ class MessagesTests {
         String redirect = client.get().uri("/api/login/pi22?returnTo=/requests")
                 .exchange().expectStatus().is3xxRedirection().expectBody(String.class).returnResult()
                 .getResponseHeaders().getLocation().toString();
-        String callback = UriComponentsBuilder.fromUriString(redirect).build()
-                .getQueryParams().getFirst("return");
-        callback = URLDecoder.decode(callback, StandardCharsets.UTF_8);
-        String flow = UriComponentsBuilder.fromUriString(callback).build()
-                .getQueryParams().getFirst("flow");
+        String flow = UriComponentsBuilder.fromUriString(redirect).build()
+                .getQueryParams().getFirst("state");
         assertThat(flow).isNotBlank();
-        client.get().uri("/api/login/pi22/callback?flow=" + flow + "&code=pdvorak")
+        client.get().uri("/api/login/pi22/callback?state=" + flow + "&code=pdvorak")
                 .exchange().expectStatus().is3xxRedirection()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, "/requests")
                 .expectHeader().exists(HttpHeaders.SET_COOKIE);

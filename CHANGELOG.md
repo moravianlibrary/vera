@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Redirect identity logins now use a fixed callback URL and retain per-login flow data for the
+  provider callback. Identity plugins receive all callback parameters and the configured user id
+  claim.
+
 - Running task links in the sidebar, Schedules and Plugins open the run drawer over the current
   page instead of navigating to Tasks. The current URL names the run for direct linking.
 - System watchlists have their own administration page. Each person's watchlists, order and

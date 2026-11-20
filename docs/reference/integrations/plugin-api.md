@@ -60,8 +60,8 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 
 | Kind | Operation | Takes | Answers | Refusals |
 |---|---|---|---|---|
-| Identity | `begin` | where to return | a redirect, or nothing for a form entry | — |
-| | `complete` | the provider's callback, or the form's username and password | the external id, email and whether the provider verified it, name, and claims as strings | `wrong_credentials`, `suspended`, `not_allowed` |
+| Identity | `begin` | the fixed absolute callback URL and this login's state | a redirect and up to 4 KiB of per-login flow data, or nothing for a form entry | — |
+| | `complete` | every callback query parameter, the flow data, fixed callback URL and user id claim; or the form's username, password and user id claim | the external id, email and whether the provider verified it, name, and claims as strings | `wrong_credentials`, `suspended`, `not_allowed` |
 | Input | `readBarcode` *(optional)* | a photo | the code read, or none | `unreadable` |
 | | `readPhoto` *(optional)* | a photo | what was seen, the values read with confidence, candidate records with why | `unreadable` |
 | | `entry` *(optional; EntryLink)* | an incoming `/ask` request: its parameters and the portal's page, which may be null | `{ item: catalogId | identifier | null, unit, reason, origin }`, each nullable; null `item` means VERA reads its own parameters | `origin_not_allowed`, `unreadable` |
@@ -154,8 +154,8 @@ next run.
 #### PLG-api-version
 
 The contract's minor versions only add: a new optional operation, a new refusal code, a new
-field in an answer or input. Contract 1.2 adds the optional sender to the Message `handOff` input.
-A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
+field in an answer or input. Contract 1.2 adds the optional sender to the Message `handOff` input;
+1.3 adds redirect identity callback details and per-login flow data. A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
 1.2 does not know and is refused on a VERA running 1.2
 ([PLG-contract](plugins.md#plg-contract)).
 

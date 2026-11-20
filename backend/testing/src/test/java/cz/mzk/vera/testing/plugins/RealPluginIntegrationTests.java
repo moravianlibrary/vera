@@ -83,8 +83,8 @@ class RealPluginIntegrationTests {
             TestContext context = new TestContext("pi24", strings(configurations.get("pi24")),
                     (username, password) -> "reader".equals(username) && "secret".equals(password)
                             ? PasswordCheck.MATCHES : PasswordCheck.NONE);
-            assertThat(plugin.begin(context, new BeginInput("/requests")).redirect()).isNull();
-            CompleteAnswer answer = plugin.complete(context, new CompleteInput.Form("reader", "secret"));
+            assertThat(plugin.begin(context, new BeginInput("http://localhost/callback", "state")).redirect()).isNull();
+            CompleteAnswer answer = plugin.complete(context, new CompleteInput.Form("reader", "secret", null));
             assertThat(answer.externalId()).isEqualTo("reader");
             assertThat(answer.name()).isEqualTo("reader");
             assertThat(context.configuration()).containsEntry("signup", "on")
