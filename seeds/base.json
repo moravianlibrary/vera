@@ -8686,24 +8686,6 @@
         }
       },
       {
-        "id": "E07",
-        "subjectKind": "request",
-        "subjectId": "R20",
-        "at": "2026-06-23T06:02:00Z",
-        "actor": {
-          "kind": "system"
-        },
-        "correlationId": "k11",
-        "reason": {
-          "public": null,
-          "internal": "Approval was requested on arrival; Kramerius already has it."
-        },
-        "code": "request.held",
-        "data": {
-          "why": "copy_exists"
-        }
-      },
-      {
         "id": "E08",
         "subjectKind": "request",
         "subjectId": "R20",

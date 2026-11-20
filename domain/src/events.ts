@@ -685,7 +685,7 @@ export const historyDataSchemas = {
     suggestion: z.object({ category: ref, classifier: ref, kept: z.boolean() }).nullable(),
   }),
   "request.declined": z.object({ batchSize: nullableCount }),
-  "request.held": z.object({ why: z.enum(["copy_exists", "checking"]) }),
+  "request.held": z.object({ why: z.literal("checking") }),
   "request.withdrawn": empty,
   "request.ingest_retried": z.object({ attempt: count }),
   "iteration.ingested": empty,

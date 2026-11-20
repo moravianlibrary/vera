@@ -25,10 +25,7 @@ export function wordingOf(
 
   switch (entry.code) {
     case "request.held":
-      title = i18n.t(
-        entry.data.why === "copy_exists" ? "request.held.copyExists" : "request.held.checksRunning",
-        { ns: "history" },
-      );
+      title = i18n.t("request.held.checksRunning", { ns: "history" });
       break;
     case "iteration.restricted":
       title = i18n.t("iteration.restricted.by", {

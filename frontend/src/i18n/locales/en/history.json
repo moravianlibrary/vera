@@ -57,7 +57,6 @@
   "iteration.digitized.public": "Digitized",
   "iteration.published.public": "Available to read",
   "change": "{{from}} → {{to}}",
-  "request.held.copyExists": "Held: a copy exists",
   "request.held.checksRunning": "Held: checks still running",
   "iteration.restricted.by": "{{restriction}} by {{rule}}",
   "iteration.restricted.forbidden": "Forbidden",

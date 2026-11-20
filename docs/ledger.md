@@ -52,16 +52,6 @@ found, boolean expected*): the Java `PropertyCondition` record serialises its un
 intention has a condition, so the replay never met it. → backend: leave unset fields out of the
 answer (and check the other places that answer a `PropertyCondition`).
 
-### L83: My Documents gets no watchlist badge
-
-Rules: [WATCH-new](reference/integrations/watchlists.md#watch-new).
-
-Found by the journeys on 2026-11-19 (reader/follow step 5). The sidebar counts a `my-documents`
-watchlist's news under the `documents` entry (`components/layout/sidebar.tsx`, from before
-My Documents became its own entry, L53), so a reader, who has no Documents entry, never sees the
-badge; the tab itself shows *+1 new*. → frontend: count each watchlist under its own view's
-entry.
-
 ### L81: one submission can ask for the same item twice
 
 Rules: [LC-REQ-check](reference/lifecycles/request.md#lc-req-check),
@@ -72,29 +62,6 @@ times in one submission writes three asks (`joined: 3`, three counted against th
 the same item in a later submission is skipped as *mine*, as it should be. The Propose dialog
 does not send duplicates, so only the API shows it. → backend (and the mock, if it does the
 same): an item repeated within one submission is skipped as *mine* after its first.
-
-### L82: the Propose dialog's batch name and daily-limit refusal
-
-Rules: [ENT-batch](reference/model/entities.md#ent-batch),
-[ACT-refusal](reference/access/acts.md#act-refusal).
-
-Found by the journeys on 2026-11-19. The batch-name field is offered only to holders of
-`iteration.read` (`propose-dialog.tsx`, `isStaff`), so `staff` and `reader` cannot name a batch,
-while ENT-batch lets the person name it. And with no proposals left today the dialog still
-submits, and the 429 shows the generic *could not be submitted* instead of the
-`proposal.daily_limit` wording. → frontend: offer the name to every proposer of two items or
-more; word the refusal by its code (and do not offer Submit with none left).
-
-### L80: `request.held` with why `copy_exists`
-
-Rules: [EVENT-catalogue](reference/model/events.md#event-catalogue),
-[LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now).
-
-Decided on 2026-11-19: dropped. Since [L78](#built-2026-11-12) an *approve now* item with a copy
-stays Pending and nothing holds it, so `request.held` only ever says why `checking`. Still to go:
-`copy_exists` in the base seed's status log and the mock fixture (`R20`'s held entry), the volume
-generator (`seeds/tools/volume/history.ts`) and its wording (`frontend/src/lib/event-wording.ts`).
-→ frontend, seeds.
 
 ### L79: `iteration.restricted` is never fired
 
@@ -168,6 +135,16 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 → deployment.
 
 ## Done
+
+### Built, 2026-11-20
+
+- **L83:** each watchlist's new count appears on the navigation entry for its own view; the
+  reader journey verifies My Documents' badge ([WATCH-new](reference/integrations/watchlists.md#watch-new)).
+- **L82:** every proposer can name a batch; the Propose dialog refuses submission at a zero daily
+  limit and shows the `proposal.daily_limit` wording ([ENT-batch](reference/model/entities.md#ent-batch),
+  [ACT-refusal](reference/access/acts.md#act-refusal)).
+- **L80:** approve-now requests with an existing copy no longer produce a held event; `request.held`
+  records only a running check ([LC-REQ-approve-now](reference/lifecycles/request.md#lc-req-approve-now)).
 
 ### Built, 2026-11-19
 
