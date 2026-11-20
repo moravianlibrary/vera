@@ -1,0 +1,9 @@
+**/node_modules
+**/build
+**/dist
+**/.gradle
+**/.gradle*
+**/test-results
+**/*.log
+**/*.pid
+.git

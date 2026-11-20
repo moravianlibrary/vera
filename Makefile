@@ -13,6 +13,7 @@ JOURNEYS_DB ?= vera_journeys
 SEED ?= base
 SEED_NUMBER ?= 1
 SCALE ?= 1
+IMAGE_TAG ?= $(shell cat VERSION)
 # VERA_TEST_WORKERS  frontend test workers (default 4)
 # live: the dev servers talk to the backend, started for them; mock: to the in-browser mock.
 API_MODE ?= live
@@ -28,7 +29,7 @@ ROLES_BASE_PORT := 5200
 OPEN := $(shell command -v xdg-open 2>/dev/null || echo open)
 
 .DEFAULT_GOAL := help
-.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume journeys-up journeys-down journeys
+.PHONY: help up backend backend-bg backend-stop backend-build backend-test backend-db backend-db-stop backend-replay plugins replay record frontend-env frontend-install frontend-users frontend-user frontend-fault dev-frontend dev-frontend-bg dev-frontend-stop dev-roles dev-roles-stop dev-roles-status dev-roles-open build-frontend format format-check lint ui-check typecheck check test version-check set-version open-client docs docs-check openapi openapi-check seed-schema seed-schema-check plugin-schema plugin-schema-check obs-cluster obs-up obs-status obs-down obs-cluster-delete seed-volume journeys-up journeys-down journeys images images-import
 
 help: ## Show available tasks
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z0-9_-]+:.*##/ {printf "  %-22s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -92,6 +93,20 @@ backend-reset: ## Reset the running backend to a seed (SEED=base)
 
 plugins: ## Build and sign the shipped plugin packages
 	cd backend && ./gradlew :plugins:packages
+
+images: ## Build the backend and frontend container images
+	cd backend && ./gradlew -q :app:bootJar :plugins:packages :app:otelDist
+	rm -rf backend/build/image && mkdir -p backend/build/image
+	cp "$$(ls backend/app/build/libs/app-*.jar | grep -v -- -plain)" backend/build/image/vera.jar
+	cp -r backend/plugins/build/packages backend/build/image/plugins
+	cp -r backend/app/build/otel backend/build/image/otel
+	install -m 0555 backend/docker/entrypoint.sh backend/build/image/entrypoint.sh
+	tar -C . --exclude=node_modules -cf - contract | tar -C backend/build/image -xf -
+	docker build -f backend/Dockerfile -t vera-backend:$(IMAGE_TAG) backend/build/image
+	docker build -f frontend/Dockerfile -t vera-frontend:$(IMAGE_TAG) .
+
+images-import: ## Import the backend and frontend images into the k3d cluster
+	k3d image import vera-backend:$(IMAGE_TAG) vera-frontend:$(IMAGE_TAG) -c $(K3D_CLUSTER)
 
 backend-build: ## Build the backend
 	cd backend && ./gradlew build
