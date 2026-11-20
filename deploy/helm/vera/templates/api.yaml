@@ -1,0 +1,118 @@
+{{- if .Values.vera.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.vera.replicas.api }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+    spec:
+      {{- include "vera.migrateInit" . | nindent 6 }}
+      containers:
+        - name: api
+          image: {{ include "vera.backendImage" . | quote }}
+          imagePullPolicy: {{ .Values.vera.image.backend.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8081
+          env:
+            - name: VERA_ROLE
+              value: api
+            - name: VERA_DB_URL
+              value: jdbc:postgresql://{{ .Release.Name }}-postgres-rw:5432/vera
+            - name: VERA_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-app
+                  key: username
+            - name: VERA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-app
+                  key: password
+            - name: SPRING_LIQUIBASE_ENABLED
+              value: "false"
+            - name: VERA_PUBLIC_URL
+              value: {{ .Values.vera.publicUrl | quote }}
+            - name: VERA_OTEL_ENDPOINT
+              value: {{ if .Values.observability.enabled }}http://{{ .Release.Name }}-clickstack-otel-collector:4318{{ else }}""{{ end }}
+            - name: VERA_FIRST_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_FIRST_ADMIN_EMAIL
+            - name: VERA_FIRST_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_FIRST_ADMIN_PASSWORD
+            - name: VERA_WATCHLIST_LINK_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_WATCHLIST_LINK_KEY
+            - name: VERA_PUSH_VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_PUSH_VAPID_PUBLIC_KEY
+            - name: VERA_PUSH_VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_PUSH_VAPID_PRIVATE_KEY
+          {{- if .Values.vera.trustedCertificates }}
+            - name: VERA_PLUGIN_TRUSTED_CERTIFICATES
+              value: /etc/vera/trusted-certificates/certificates.pem
+          {{- end }}
+          {{- with .Values.vera.resources.api }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+          {{- if .Values.vera.trustedCertificates }}
+          volumeMounts:
+            - name: trusted-certificates
+              mountPath: /etc/vera/trusted-certificates
+              readOnly: true
+          {{- end }}
+      {{- if .Values.vera.trustedCertificates }}
+      volumes:
+        - name: trusted-certificates
+          secret:
+            secretName: {{ .Release.Name }}-trusted-certificates
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: api
+  ports:
+    - name: http
+      port: 8081
+      targetPort: http
+{{- end }}

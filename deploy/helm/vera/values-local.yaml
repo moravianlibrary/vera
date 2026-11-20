@@ -16,3 +16,14 @@ clickstack:
 
 localAccess:
   enabled: true
+
+vera:
+  publicUrl: http://localhost:8400
+  replicas:
+    api: 1
+    worker: 1
+  database:
+    instances: 1
+    storage:
+      size: 2Gi
+      class: local-path

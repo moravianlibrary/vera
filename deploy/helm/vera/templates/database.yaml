@@ -1,0 +1,20 @@
+{{- if .Values.vera.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Release.Name }}-postgres
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.vera.database.instances }}
+  imageName: ghcr.io/cloudnative-pg/postgresql:18
+  storage:
+    size: {{ .Values.vera.database.storage.size }}
+    {{- with .Values.vera.database.storage.class }}
+    storageClass: {{ . | quote }}
+    {{- end }}
+  bootstrap:
+    initdb:
+      database: vera
+      owner: vera
+{{- end }}

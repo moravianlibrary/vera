@@ -1,0 +1,50 @@
+{{- if .Values.vera.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: {{ include "vera.frontendImage" . | quote }}
+          imagePullPolicy: {{ .Values.vera.image.frontend.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: VERA_API_UPSTREAM
+              value: http://{{ .Release.Name }}-api:8081
+          {{- with .Values.vera.resources.frontend }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-frontend
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+{{- end }}

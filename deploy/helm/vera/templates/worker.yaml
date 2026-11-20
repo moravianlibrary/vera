@@ -1,0 +1,82 @@
+{{- if .Values.vera.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker
+  labels:
+    {{- include "vera.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.vera.replicas.worker }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "vera.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      {{- include "vera.migrateInit" . | nindent 6 }}
+      containers:
+        - name: worker
+          image: {{ include "vera.backendImage" . | quote }}
+          imagePullPolicy: {{ .Values.vera.image.backend.pullPolicy }}
+          env:
+            - name: VERA_ROLE
+              value: worker
+            - name: VERA_DB_URL
+              value: jdbc:postgresql://{{ .Release.Name }}-postgres-rw:5432/vera
+            - name: VERA_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-app
+                  key: username
+            - name: VERA_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres-app
+                  key: password
+            - name: SPRING_LIQUIBASE_ENABLED
+              value: "false"
+            - name: VERA_PUBLIC_URL
+              value: {{ .Values.vera.publicUrl | quote }}
+            - name: VERA_OTEL_ENDPOINT
+              value: {{ if .Values.observability.enabled }}http://{{ .Release.Name }}-clickstack-otel-collector:4317{{ else }}""{{ end }}
+            - name: VERA_WATCHLIST_LINK_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_WATCHLIST_LINK_KEY
+            - name: VERA_PUSH_VAPID_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_PUSH_VAPID_PUBLIC_KEY
+            - name: VERA_PUSH_VAPID_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "vera.secretName" . }}
+                  key: VERA_PUSH_VAPID_PRIVATE_KEY
+          {{- if .Values.vera.trustedCertificates }}
+            - name: VERA_PLUGIN_TRUSTED_CERTIFICATES
+              value: /etc/vera/trusted-certificates/certificates.pem
+          {{- end }}
+          {{- with .Values.vera.resources.worker }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.vera.trustedCertificates }}
+          volumeMounts:
+            - name: trusted-certificates
+              mountPath: /etc/vera/trusted-certificates
+              readOnly: true
+          {{- end }}
+      {{- if .Values.vera.trustedCertificates }}
+      volumes:
+        - name: trusted-certificates
+          secret:
+            secretName: {{ .Release.Name }}-trusted-certificates
+      {{- end }}
+{{- end }}
