@@ -614,5 +614,50 @@
         "groupIds": []
       }
     ]
-  }
+  },
+  "shippedPlugins": [
+    {
+      "package": "local-accounts",
+      "instances": [
+        {
+          "id": "local-accounts-installation",
+          "names": { "cs": "Místní účty", "en": "Local accounts" },
+          "configuration": {
+            "signup": "off",
+            "password_min": "12",
+            "mail_channel": ""
+          },
+          "settings": {
+            "kind": "Identity",
+            "label": "Log in with a VERA account",
+            "order": 1,
+            "userIdClaim": "username",
+            "defaultRoleId": "reader",
+            "matchByEmail": false,
+            "mappings": []
+          },
+          "triggers": ["OnLogin"],
+          "isEnabled": true
+        }
+      ]
+    },
+    {
+      "package": "mailto-message",
+      "instances": [
+        {
+          "id": "mailto-message-installation",
+          "names": { "cs": "Pošta", "en": "Mail" },
+          "configuration": { "cc_sender": "" },
+          "settings": { "kind": "Message", "order": 1 },
+          "triggers": ["OnDemand"],
+          "isEnabled": false
+        }
+      ]
+    },
+    { "package": "jq-custody", "instances": [] },
+    { "package": "priority-then-mix", "instances": [] },
+    { "package": "material-type", "instances": [] },
+    { "package": "shelf-mark-to-size", "instances": [] },
+    { "package": "entry-link", "instances": [] }
+  ]
 }

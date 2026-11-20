@@ -103,6 +103,19 @@ const storedPluginInstance = z.strictObject({
   isDeleted: z.boolean().optional(),
   isPredefined: z.boolean().optional(),
 });
+const shippedPlugin = z.strictObject({
+  package: z.string().min(1),
+  instances: z.array(
+    z.strictObject({
+      id,
+      names: namesSchema,
+      configuration: z.record(z.string(), z.string()),
+      settings: settings.nullable(),
+      triggers: z.array(pluginTriggerSchema),
+      isEnabled: z.boolean(),
+    }),
+  ),
+});
 const storedRequestCustody = z.strictObject({
   id,
   name: z.string(),
@@ -454,6 +467,7 @@ const seedShape = {
   // Child rows append or replace by id; keyed collections and fakes merge by key, with child values winning.
   extends: z.string().optional(),
   now: z.iso.datetime(),
+  shippedPlugins: z.array(shippedPlugin).optional(),
   collections: seedCollections,
   fakes: fakesSchema.optional(),
   faults: z
@@ -473,6 +487,7 @@ export const seedPatchSchema = z.strictObject({
   // Child rows append or replace by id; keyed collections and fakes merge by key, with child values winning.
   extends: z.string().optional(),
   now: z.iso.datetime().optional(),
+  shippedPlugins: z.array(shippedPlugin).optional(),
   collections: seedCollections.partial().optional(),
   fakes: fakesSchema.partial().optional(),
   faults: seedShape.faults,
