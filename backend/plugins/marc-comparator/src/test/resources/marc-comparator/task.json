@@ -1,0 +1,11 @@
+{
+  "task_id": "6e6f0716-f2f7-4e3d-a6c6-6509a5fbe0a1",
+  "name": "task",
+  "type": "FetchRecord",
+  "status": "Pending",
+  "severity": "Info",
+  "created_by": "6e6f0716-f2f7-4e3d-a6c6-6509a5fbe0a2",
+  "created_at": "2026-01-01T00:00:00Z",
+  "progress": 0,
+  "traceback_lines": 0
+}

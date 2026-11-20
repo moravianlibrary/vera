@@ -1,0 +1,29 @@
+{
+  "implementation": "cz.mzk.vera.marc-comparator",
+  "version": "1.0.0",
+  "contractVersion": "1.3",
+  "triggers": ["OnIngest", "OnSchedule", "OnDemand"],
+  "declares": {
+    "properties": [],
+    "identifierTypes": [],
+    "rawStates": [],
+    "rules": [
+      { "code": "match-poor", "label": "Poor match with another catalog" },
+      { "code": "validator:kramerius_links", "label": "Kramerius links are valid" }
+    ],
+    "agent": null,
+    "generatorClass": null,
+    "channelInterface": null,
+    "operations": [],
+    "loginEntry": null
+  },
+  "configFields": [
+    { "key": "api_url", "isSecret": false, "isRequired": true },
+    { "key": "email", "isSecret": false, "isRequired": true },
+    { "key": "password", "isSecret": true, "isRequired": true },
+    { "key": "base_map", "isSecret": false, "isRequired": false },
+    { "key": "poor_below", "isSecret": false, "isRequired": false },
+    { "key": "wait", "isSecret": false, "isRequired": false },
+    { "key": "poll", "isSecret": false, "isRequired": false }
+  ]
+}

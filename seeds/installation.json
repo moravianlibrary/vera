@@ -682,6 +682,7 @@
     },
     { "package": "aleph-oai-catalog-adapter", "instances": [] },
     { "package": "kramerius-registry", "instances": [] },
+    { "package": "marc-comparator", "instances": [] },
     { "package": "oidc-identity", "instances": [] }
   ]
 }
