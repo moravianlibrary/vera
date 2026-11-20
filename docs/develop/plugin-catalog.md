@@ -75,7 +75,7 @@ an entry link instead.
 
 | Implementation | Notes |
 |---|---|
-| `AlephOaiCatalogAdapter` | MZK Aleph, live |
+| `AlephOaiCatalogAdapter` | MZK Aleph through OAI-PMH; reads records and change headers, and resolves VuFind/Aleph links. No search or mirrored catalog. |
 | `XmlDumpCatalogAdapter` | a downloaded catalog dump, refreshed on schedule; the reading's date is the dump's |
 
 ## Property source
