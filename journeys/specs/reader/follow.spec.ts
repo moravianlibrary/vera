@@ -60,35 +60,30 @@ journey("reader/follow", ({ step, as, api, clock }) => {
     await expect(page.getByRole("button", { name: "Status: any" })).toBeVisible();
   });
 
-  step.fixme(
-    5,
-    "see a newly published ask",
-    "the Ready to read tab shows +1 new but My Documents has no sidebar badge (L83)",
-    async () => {
-      const listEditor = await api("dig-curator");
-      const done = await listEditor.post(`/api/digitization-lists/${listId}/done`, { data: {} });
-      if (!done.ok()) {
-        throw new Error(
-          `Marking list ${listId} Done failed (${done.status()}): ${await done.text()}`,
-        );
-      }
-      const publisher = await api("admin");
-      const published = await publisher.post("/api/iterations/IT4/publish", {
-        data: { link: "https://www.digitalniknihovna.cz/mzk/uuid/it4" },
-      });
-      if (!published.ok()) {
-        throw new Error(`Publishing IT4 failed (${published.status()}): ${await published.text()}`);
-      }
-      await clock({ advance: { minutes: 1 } });
-      await page.reload();
-      await page.getByRole("button", { name: "Expand navigation" }).click();
-      const documents = page.getByRole("link", { name: /My Documents/ });
-      await expect(documents.getByText("1", { exact: true })).toBeVisible();
-      await page.getByRole("button", { name: /^Ready to read/ }).click();
-      await expect(page.getByRole("button", { name: /Kniha o Brně/ })).toBeVisible();
-      await expect(documents.getByText("1", { exact: true })).toHaveCount(0);
-    },
-  );
+  step(5, "see a newly published ask", async () => {
+    const listEditor = await api("dig-curator");
+    const done = await listEditor.post(`/api/digitization-lists/${listId}/done`, { data: {} });
+    if (!done.ok()) {
+      throw new Error(
+        `Marking list ${listId} Done failed (${done.status()}): ${await done.text()}`,
+      );
+    }
+    const publisher = await api("admin");
+    const published = await publisher.post("/api/iterations/IT4/publish", {
+      data: { link: "https://www.digitalniknihovna.cz/mzk/uuid/it4" },
+    });
+    if (!published.ok()) {
+      throw new Error(`Publishing IT4 failed (${published.status()}): ${await published.text()}`);
+    }
+    await clock({ advance: { minutes: 1 } });
+    await page.reload();
+    await page.getByRole("button", { name: "Expand navigation" }).click();
+    const documents = page.getByRole("link", { name: /My Documents/ });
+    await expect(documents.getByText("1", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: /^Ready to read/ }).click();
+    await expect(page.getByRole("button", { name: /Kniha o Brně/ })).toBeVisible();
+    await expect(documents.getByText("1", { exact: true })).toHaveCount(0);
+  });
 
   step(6, "withdraw the waiting ask", async () => {
     // Start from My Documents with no filter, whatever the earlier steps left in the URL.
