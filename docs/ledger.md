@@ -19,19 +19,6 @@ None.
 
 ## Not built yet
 
-### L86: account mail never leaves VERA
-
-Rules: [ACCESS-sign-up](reference/access/people.md#access-sign-up),
-[ACCESS-local-account](reference/access/people.md#access-local-account).
-
-Found on 2026-11-20 by the local deployment (D4): a password reset answers 202 and Mailpit gets
-nothing. Sign-up verification and password-reset mail (`login/SignUpCommands.java`, `mail(…)`)
-is written only to the `outbox` table, which the testing backend's fake world reads; nothing
-sends it through the Local accounts instance's `mail_channel` (the shipped SmtpMailer instance,
-since B5). → backend: queue account mail as a job that sends through the instance's mail
-channel (as watchlist and hook mail do), keeping the outbox only under the test profile.
-
-
 ## For the frontend, the backend and deployment
 
 The engine these entries once waited on is retired
@@ -93,6 +80,12 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 → deployment.
 
 ## Done
+
+### Built, 2026-11-21
+
+- **L86:** account mail is recorded in the outbox and delivered by a job through the Local
+  accounts instance's configured mail channel ([ACCESS-sign-up](reference/access/people.md#access-sign-up),
+  [ACCESS-local-account](reference/access/people.md#access-local-account)).
 
 ### Built, 2026-11-20
 

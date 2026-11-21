@@ -37,7 +37,7 @@ public class SignUpQueries {
     public long verificationMailCount(String email, Instant now) {
         return dsl.selectCount()
                 .from(OUTBOX)
-                .where(OUTBOX.CHANNEL.eq("mail"))
+                .where(OUTBOX.CHANNEL.eq("account"))
                 .and(DSL.lower(OUTBOX.RECIPIENT).eq(email.toLowerCase(Locale.ROOT)))
                 .and(DSL.field("payload->>'subject'", String.class).eq(SignUpCommands.VERIFY_SUBJECT))
                 .and(OUTBOX.SENT_AT.ge(now.minus(SignUpCommands.VERIFICATION_MAIL_WINDOW).atOffset(ZoneOffset.UTC)))

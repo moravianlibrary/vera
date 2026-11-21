@@ -2,6 +2,7 @@ package cz.mzk.vera.login;
 
 import static cz.mzk.vera.db.tables.Tables.LOCAL_PASSWORDS;
 import static cz.mzk.vera.db.tables.Tables.OUTBOX;
+import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.PENDING_SIGN_UPS;
 import static cz.mzk.vera.db.tables.Tables.USER_MAPPED_ROLES;
 import static cz.mzk.vera.db.tables.Tables.USER_IDENTITIES;
@@ -106,6 +107,8 @@ class SignUpTests {
         signUp("expires", "expires@example.org").expectStatus().isAccepted();
         assertThat(dsl.fetchExists(dsl.selectOne().from(PENDING_SIGN_UPS)
                 .where(PENDING_SIGN_UPS.USERNAME.eq("expires")))).isTrue();
+        // The verification mail goes out first, so only the expiry is left for the week.
+        runJobs();
         client.post().uri("/_engine/clock").contentType(MediaType.APPLICATION_JSON)
                 .body("{\"advance\":{\"days\":7}}").exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.ran").isEqualTo(1);
@@ -302,12 +305,30 @@ class SignUpTests {
         signUp("resend-first", "resend-many@example.org").expectStatus().isAccepted();
         signUp("resend-second", "resend-many@example.org").expectStatus().isAccepted();
         int before = dsl.selectCount().from(OUTBOX).where(OUTBOX.RECIPIENT.eq("resend-many@example.org"))
+                .and(OUTBOX.CHANNEL.eq("account"))
                 .fetchOne(0, int.class);
         client.post().uri("/api/email-verification/pi24").contentType(MediaType.APPLICATION_JSON)
                 .body("{\"email\":\"resend-many@example.org\"}").exchange().expectStatus().isAccepted();
         int after = dsl.selectCount().from(OUTBOX).where(OUTBOX.RECIPIENT.eq("resend-many@example.org"))
+                .and(OUTBOX.CHANNEL.eq("account"))
                 .fetchOne(0, int.class);
         assertThat(after).isEqualTo(before + 1);
+    }
+
+    @Test
+    void endsAccountMailWhenItsChannelIsDisabled() {
+        signUp("disabled-mail", "disabled-mail@example.org").expectStatus().isAccepted();
+        dsl.update(PLUGIN_INSTANCES).set(PLUGIN_INSTANCES.IS_ENABLED, false)
+                .where(PLUGIN_INSTANCES.ID.eq("pi16")).execute();
+
+        runJobs();
+
+        assertThat(dsl.fetchExists(dsl.selectOne().from(OUTBOX)
+                .where(OUTBOX.CHANNEL.eq("mail")).and(OUTBOX.RECIPIENT.eq("disabled-mail@example.org"))))
+                .isFalse();
+        assertThat(dsl.fetchExists(dsl.selectOne().from(OUTBOX)
+                .where(OUTBOX.CHANNEL.eq("account")).and(OUTBOX.RECIPIENT.eq("disabled-mail@example.org"))))
+                .isTrue();
     }
 
     @Test
@@ -338,18 +359,27 @@ class SignUpTests {
     }
 
     private String token(String subject) throws RuntimeException {
+        runJobs();
         var mail = dsl.selectFrom(OUTBOX).orderBy(OUTBOX.ID.desc()).fetch().stream()
                 .filter(row -> "mail".equals(row.getChannel()))
                 .map(row -> json.readTree(row.getPayload().data()))
                 .filter(payload -> subject.equals(payload.path("subject").asString()))
                 .findFirst().orElseThrow();
         String link = mail.path("link").asString();
+        assertThat(link).startsWith("http://localhost/");
         return link.substring(link.lastIndexOf('/') + 1);
     }
 
     private boolean mailSubject(String subject) {
+        runJobs();
         List<JsonNode> payloads = dsl.selectFrom(OUTBOX).fetch().stream()
+                .filter(row -> "mail".equals(row.getChannel()))
                 .map(row -> json.readTree(row.getPayload().data())).toList();
         return payloads.stream().anyMatch(payload -> subject.equals(payload.path("subject").asString()));
+    }
+
+    private void runJobs() {
+        client.post().uri("/_engine/jobs/run").contentType(MediaType.APPLICATION_JSON)
+                .body(java.util.Map.of()).exchange().expectStatus().isOk();
     }
 }
