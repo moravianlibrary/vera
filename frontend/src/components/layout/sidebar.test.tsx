@@ -32,7 +32,7 @@ describe("Sidebar watchlist counts", () => {
 
     const myDocuments = await screen.findByRole("link", { name: /My Documents/ });
     expect(
-      await screen.findByTitle(/watchlists with new items in My Documents/),
+      await screen.findByTitle("1 watchlist with new items in My Documents"),
     ).toBeInTheDocument();
     expect(myDocuments).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
