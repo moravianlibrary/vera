@@ -260,6 +260,7 @@ class AccessUsersTests {
                 "email", "hana@example.cz", "roleIds", List.of("reader")));
         client.post().uri("/api/password-reset/pi24").contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("email", "hana@example.cz")).exchange().expectStatus().isAccepted();
+        client.post().uri("/_engine/jobs/run").exchange().expectStatus().isOk();
         JsonNode messages = json.readTree(client.get().uri("/_engine/outbox?channel=mail").exchange()
                 .expectStatus().isOk().expectBody(String.class).returnResult().getResponseBody());
         String link = messages.get(messages.size() - 1).path("payload").path("link").asString();

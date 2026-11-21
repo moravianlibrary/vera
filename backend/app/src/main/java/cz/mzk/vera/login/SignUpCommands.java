@@ -93,7 +93,7 @@ public class SignUpCommands {
         if (queries.personHasEmail(body.email())) {
             String link = "/forgot-password?instance="
                     + URLEncoder.encode(instanceId, StandardCharsets.UTF_8);
-            mail(body.email(), EXISTING_SUBJECT, link);
+            mail(instanceId, body.email(), EXISTING_SUBJECT, link);
             return SignUpResult.ACCEPTED;
         }
         createPending(instanceId, body);
@@ -123,7 +123,7 @@ public class SignUpCommands {
                 .set(PENDING_SIGN_UPS.RETURN_TO, row.returnTo())
                 .set(PENDING_SIGN_UPS.CREATED_AT, clock.instant().atOffset(ZoneOffset.UTC))
                 .execute();
-        mail(row.email(), VERIFY_SUBJECT, "/verify-email/" + token);
+        mail(row.instanceId(), row.email(), VERIFY_SUBJECT, "/verify-email/" + token);
     }
 
     @Transactional
@@ -173,7 +173,7 @@ public class SignUpCommands {
                 .set(PASSWORD_RESETS.USER_ID, userId)
                 .set(PASSWORD_RESETS.CREATED_AT, clock.instant().atOffset(ZoneOffset.UTC))
                 .execute();
-        mail(email, RESET_SUBJECT, "/reset-password/" + token);
+        mail(instanceId, email, RESET_SUBJECT, "/reset-password/" + token);
     }
 
     @Transactional
@@ -222,12 +222,13 @@ public class SignUpCommands {
                 .execute();
         jobs.enqueue(dsl, "sign-up.expire", clock.instant().plus(SIGN_UP_LIFETIME),
                 Map.of("tokenHash", SessionFilter.hashOf(token)));
-        mail(body.email(), VERIFY_SUBJECT, "/verify-email/" + token);
+        mail(instanceId, body.email(), VERIFY_SUBJECT, "/verify-email/" + token);
     }
 
-    private void mail(String email, String subject, String link) {
+    private void mail(String instanceId, String email, String subject, String link) {
         var payload = json.createObjectNode().put("subject", subject).put("link", link);
-        outbox.send("mail", email, payload);
+        long outboxId = outbox.send("account", email, payload);
+        jobs.enqueue(dsl, "account.mail", clock.instant(), Map.of("outboxId", outboxId, "instanceId", instanceId));
     }
 
     private String token() {
