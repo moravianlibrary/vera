@@ -72,7 +72,7 @@ class RecordSeedTests {
         assertCount(DOCUMENTS, 54);
         assertCount(ITERATIONS, 41);
         assertCount(REQUESTS, 61);
-        assertCount(EVENTS, 107);
+        assertCount(EVENTS, 106);
         assertCount(PROJECT_MEMBERS, 15);
         assertCount(PROJECT_MEMBER_GROUPS, 2);
         assertCount(DOCUMENT_PAGE_SOURCES, 51);
