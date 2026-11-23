@@ -1679,9 +1679,11 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 403, message: "You may not propose" });
       }
 
-      const photo = (await request.formData()).get("photo");
+      const form = await request.formData();
+      const photo = form.get("photo");
+      const reader = form.get("reader");
       return photo instanceof File
-        ? outcomeResponse(readPhoto())
+        ? outcomeResponse(readPhoto(typeof reader === "string" && reader !== "" ? reader : null))
         : problemResponse({
             status: 422,
             code: "proposal.photo_missing",

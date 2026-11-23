@@ -767,8 +767,8 @@ export const endpoints = {
   proposalPhoto: spec({
     method: "POST",
     path: apiRoutes.proposalPhoto,
-    summary: "Read a catalog photo.",
-    form: ["photo"],
+    summary: "Read a catalog photo, by the reader named or the first one.",
+    form: ["photo", "reader"],
     response: photoReadingSchema,
     codes: ["forbidden", "proposal.no_photo_reader", "proposal.photo_missing"],
   }),

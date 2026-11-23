@@ -86,6 +86,10 @@ public class ProposalWaysIn {
         return plugins.firstInput(operation);
     }
 
+    public boolean isEnabledInput(String instanceId, String operation) {
+        return plugins.isEnabledInput(instanceId, operation);
+    }
+
     public boolean isEnabledEntryLink(String instanceId) { return plugins.isEnabledEntryLink(instanceId); }
 
     public String allowedReturn(String instanceId, String origin) { return plugins.allowedReturn(instanceId, origin); }

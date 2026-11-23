@@ -214,19 +214,23 @@ final class ProposalController {
 
     @PostMapping(value = "/photo", consumes = "multipart/form-data")
     ResponseEntity<?> photo(HttpServletRequest request, @RequestParam(name = "photo", required = false)
-            MultipartFile photo) throws IOException {
+            MultipartFile photo, @RequestParam(name = "reader", required = false) String readerId)
+            throws IOException {
         Caller caller = guard.callerOf(request);
         ResponseEntity<ProblemDetail> refusal = proposingRefusal(caller);
         if (refusal != null) {
             return refusal;
         }
-        if (!waysIn.hasEnabledInput(ProposalCodes.READ_PHOTO)) {
+        // ACT-ways-in: the reader the person picked, while it reads photos, else the first.
+        boolean named = readerId != null && !readerId.isEmpty();
+        if (named ? !waysIn.isEnabledInput(readerId, ProposalCodes.READ_PHOTO)
+                : !waysIn.hasEnabledInput(ProposalCodes.READ_PHOTO)) {
             return Problems.response(404, "Nothing reads photos here", ProposalCodes.NO_PHOTO_READER, null);
         }
         if (photo == null) {
             return Problems.response(422, "Take a photo to read", ProposalCodes.PHOTO_MISSING, null);
         }
-        String instance = waysIn.firstInput(ProposalCodes.READ_PHOTO);
+        String instance = named ? readerId : waysIn.firstInput(ProposalCodes.READ_PHOTO);
         String encodedPhoto = Base64.getEncoder().encodeToString(photo.getBytes());
         var outcome = plugins.call(instance, Input.class, ProposalCodes.READ_PHOTO,
                 (reader, context) -> ((PhotoReader) reader).readPhoto(context,

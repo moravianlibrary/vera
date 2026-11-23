@@ -81,9 +81,11 @@ public class ProposalSettings {
         boolean barcode = instances.stream().anyMatch(row -> plugins.enabled(row)
                 && plugins.kindOf(row, implementationById).equals(ProposalCodes.INPUT)
                 && plugins.declares(row, implementationById, ProposalCodes.READ_BARCODE));
-        boolean photo = instances.stream().anyMatch(row -> plugins.enabled(row)
+        // ACT-ways-in: in the order of Plugins, the first reading a photo unless another is picked.
+        List<Map<String, Object>> photoReaders = instances.stream().filter(row -> plugins.enabled(row)
                 && plugins.kindOf(row, implementationById).equals(ProposalCodes.INPUT)
-                && plugins.declares(row, implementationById, ProposalCodes.READ_PHOTO));
+                && plugins.declares(row, implementationById, ProposalCodes.READ_PHOTO))
+                .map(row -> plugins.named(row, false)).toList();
         List<Map<String, Object>> identifiers = identifierTypes(instances, implementationById);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("maxAtOnce", limit(held, "proposal_batch_limit"));
@@ -92,7 +94,7 @@ public class ProposalSettings {
         result.put("linkCatalogs", links);
         result.put("entrySources", entrySources);
         result.put("canScanWithCamera", barcode);
-        result.put("canReadPhotos", photo);
+        result.put("photoReaders", photoReaders);
         result.put("identifierTypes", identifiers);
         return result;
     }

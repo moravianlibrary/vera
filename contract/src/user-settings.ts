@@ -29,6 +29,8 @@ export const userSettingsSchema = z.object({
   // UI-language: absent until the first login saves the one in use.
   language: z.enum(languages).optional(),
   dateFormat: z.enum(["local", "iso"]).optional(),
+  // ACT-ways-in: the photo reader last picked. Absent, or no longer enabled, means the first.
+  photoReaderId: z.string().optional(),
   density: z.enum(["comfortable", "compact"]).optional(),
   // Per board, the sections a person closed or opened again. A section never toggled is absent
   // and starts open.

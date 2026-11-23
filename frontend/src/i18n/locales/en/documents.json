@@ -263,6 +263,7 @@
   "proposeWays.noBarcodePhoto": "No barcode was read on that photo. Take another, closer and straight on.",
   "proposeWays.photoUnreadable": "The photo could not be read. Take another.",
   "proposeWays.photoWhat": "A photo of a cover, title page or catalog card",
+  "proposeWays.photoReader": "Read by",
   "proposeWays.takePhoto": "Take photo",
   "proposeWays.readFromPhoto": "Read from the photo",
   "proposeWays.noIdMatchedText": "No ISBN, ISSN or barcode on it: matched by the text.",

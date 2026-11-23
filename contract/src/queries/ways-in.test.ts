@@ -182,7 +182,7 @@ describe("ways in queries", () => {
 
     expect(waysInOf(instances, implementations, catalogs)).toMatchObject({
       canScanWithCamera: true,
-      canReadPhotos: true,
+      photoReaders: [{ id: "photo", name: "photo" }],
     });
   });
 

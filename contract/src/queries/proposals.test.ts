@@ -66,7 +66,7 @@ const plugins = (
     linkCatalogs: [],
     entrySources: [],
     canScanWithCamera: false,
-    canReadPhotos: false,
+    photoReaders: [],
     identifierTypes: [],
   }),
 });

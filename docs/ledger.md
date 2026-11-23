@@ -95,6 +95,9 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   replaces theirs ([UI-language](reference/ui/navigation.md#ui-language),
   [UI-appearance](reference/ui/navigation.md#ui-appearance),
   [UI-preferences](reference/ui/navigation.md#ui-preferences)).
+- **L89:** with several enabled Input plugins that read photos, the photo way lets the person pick
+  the reader, the first in the order of Plugins until they do; the pick is kept with their
+  preferences ([ACT-ways-in](reference/access/acts.md#act-ways-in)).
 
 ### Built, 2026-11-21
 

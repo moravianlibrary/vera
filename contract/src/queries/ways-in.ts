@@ -72,16 +72,24 @@ function isSearchable(instance: Instance, implementations: readonly Implementati
     instance.configuration.search !== "off"
   );
 }
+function inputsReading(
+  instances: readonly Instance[],
+  implementations: readonly Implementation[],
+  operation: "readBarcode" | "readPhoto",
+) {
+  return enabledInstancesOf(implementations, instances, "Input").filter((instance) =>
+    implementationOf(implementations, instance)?.versions[0]?.declares.operations?.includes(
+      operation,
+    ),
+  );
+}
+
 function hasInput(
   instances: readonly Instance[],
   implementations: readonly Implementation[],
   operation: "readBarcode" | "readPhoto",
 ) {
-  return enabledInstancesOf(implementations, instances, "Input").some((instance) =>
-    implementationOf(implementations, instance)?.versions[0]?.declares.operations?.includes(
-      operation,
-    ),
-  );
+  return inputsReading(instances, implementations, operation).length > 0;
 }
 
 // The identifier types the propose settings carry (DOC-identifiers): each enabled Identifier
@@ -177,7 +185,10 @@ export function waysInOf(
         allowedOrigins: (configuration.allowed_origins ?? "").split(/\s+/).filter(Boolean),
       })),
     canScanWithCamera: hasInput(instances, implementations, "readBarcode"),
-    canReadPhotos: hasInput(instances, implementations, "readPhoto"),
+    photoReaders: inputsReading(instances, implementations, "readPhoto").map(({ id, name }) => ({
+      id,
+      name,
+    })),
     identifierTypes: identifierRules(instances, implementations),
   };
 }
@@ -255,8 +266,10 @@ export function readPhoto(
   implementations: readonly Implementation[],
   records: readonly CatalogRecord[],
   fake: PhotoFake,
+  readerId: string | null = null,
 ): WayInOutcome<PhotoReading> {
-  if (!hasInput(instances, implementations, "readPhoto"))
+  const readers = inputsReading(instances, implementations, "readPhoto");
+  if (readers.length === 0 || (readerId !== null && !readers.some(({ id }) => id === readerId)))
     return {
       refusal: {
         status: 404,

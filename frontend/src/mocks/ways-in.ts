@@ -56,12 +56,13 @@ export function readRecordLink(link: RecordLink): Outcome<{ catalogId: string }>
 
 // What the photo Input reads, whatever the photo: a 1932 catalog card with no identifier on it,
 // matched by its text.
-export function readPhoto(): Outcome<PhotoReading> {
+export function readPhoto(readerId: string | null): Outcome<PhotoReading> {
   return readPhotoShared(
     database.pluginInstances,
     database.pluginImplementations,
     records(),
     photoFake,
+    readerId,
   );
 }
 

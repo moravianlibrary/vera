@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIdentifierRules } from "@/features/documents/identifier-rules";
+import { usePhotoReader } from "@/hooks/use-photo-reader";
 import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 
@@ -551,9 +552,18 @@ export function PhotographedBarcodes({ onScan }: { onScan: (code: string) => voi
 // Not a slower barcode scan: a photo is read, the identifiers on it if there are any and its
 // text if there are none, and matched to catalog records. Reading can be wrong, so the
 // candidates come back with why each matched, and nothing is added until one is picked.
-export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInstead?: () => void }) {
+export function PhotoWay({
+  readers,
+  onAdd,
+  onSearchInstead,
+}: {
+  readers: ProposalSettings["photoReaders"];
+  onAdd: Add;
+  onSearchInstead?: () => void;
+}) {
   useTranslation("documents");
-  const read = useMutation({ mutationFn: readPhoto });
+  const { readerId, pickReader } = usePhotoReader(readers);
+  const read = useMutation({ mutationFn: (photo: File) => readPhoto(photo, readerId) });
   const picker = useFilePicker({
     accept: "image/*",
     capture: "environment",
@@ -588,6 +598,24 @@ export function PhotoWay({ onAdd, onSearchInstead }: { onAdd: Add; onSearchInste
       <span className="max-w-md text-xs text-muted-foreground">
         {i18n.t("proposeWays.photoDescription", { ns: "documents" })}
       </span>
+      {readers.length > 1 && readerId !== null && (
+        <Select value={readerId} onValueChange={pickReader}>
+          <SelectTrigger
+            size="sm"
+            aria-label={i18n.t("proposeWays.photoReader", { ns: "documents" })}
+            className="w-56"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {readers.map((reader) => (
+              <SelectItem key={reader.id} value={reader.id}>
+                {reader.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       <Button size="sm" variant="outline" onClick={take} disabled={read.isPending}>
         {read.isPending
           ? i18n.t("proposeWays.reading", { ns: "documents" })

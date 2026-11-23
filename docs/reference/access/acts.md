@@ -91,6 +91,10 @@ copy and restriction checks ([LC-REQ-preview](../lifecycles/request.md#lc-req-pr
 A way whose plugin is not enabled is absent, not disabled
 ([PERM-absent-not-disabled](permissions.md#perm-absent-not-disabled)).
 
+With several enabled Input plugins that read photos, the photo way lets the person pick the one
+that reads it: the first in the order of Plugins, until they pick another, which is kept with
+their preferences ([UI-preferences](../ui/navigation.md#ui-preferences)).
+
 The camera reads barcodes while the barcode-reading Input plugin is enabled. Where the browser can
 read codes from the camera, scanning stays continuous. Where it cannot, or the camera does not
 open in the page, the same way takes one photo per book and the plugin reads its code. Either way

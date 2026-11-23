@@ -50,7 +50,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -453,7 +458,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -781,7 +791,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -1109,7 +1124,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -1434,7 +1454,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -1755,7 +1780,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",
@@ -2014,7 +2044,12 @@
               }
             ],
             "canScanWithCamera": true,
-            "canReadPhotos": true,
+            "photoReaders": [
+              {
+                "id": "pi13",
+                "name": "OCR pilot"
+              }
+            ],
             "identifierTypes": [
               {
                 "type": "catalogId",

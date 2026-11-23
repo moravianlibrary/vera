@@ -355,7 +355,7 @@ describe("the ways in (ACT-ways-in)", () => {
     expect(settings).toMatchObject({
       canDetectTypes: true,
       canScanWithCamera: true,
-      canReadPhotos: true,
+      photoReaders: [{ id: "pi13", name: "OCR pilot" }],
     });
     expect(settings.searchCatalogs.map(({ name }) => name)).toEqual(["MZK Aleph", "VKOL Aleph"]);
     expect(settings.linkCatalogs.map(({ name }) => name)).toEqual([
@@ -379,7 +379,7 @@ describe("the ways in (ACT-ways-in)", () => {
       expect(await getProposalSettings()).toMatchObject({
         canDetectTypes: false,
         canScanWithCamera: false,
-        canReadPhotos: false,
+        photoReaders: [],
       });
       expect((await getProposalSettings()).linkCatalogs.map(({ name }) => name)).not.toContain(
         "NKP Aleph",

@@ -63,7 +63,8 @@ class ProposalReadTests {
                 .jsonPath("$.searchCatalogs.length()").isEqualTo(2)
                 .jsonPath("$.linkCatalogs.length()").isEqualTo(3)
                 .jsonPath("$.canScanWithCamera").isEqualTo(true)
-                .jsonPath("$.canReadPhotos").isEqualTo(true)
+                .jsonPath("$.photoReaders.length()").isEqualTo(1)
+                .jsonPath("$.photoReaders[0].id").isEqualTo("pi13")
                 .jsonPath("$.identifierTypes.length()").isEqualTo(6);
     }
 
@@ -290,6 +291,25 @@ class ProposalReadTests {
         client.post().uri("/api/proposals/photo").header("Cookie", session("u3"))
                 .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
                 .body(multipart).exchange()
+                .expectStatus().isNotFound().expectBody()
+                .jsonPath("$.code").isEqualTo("proposal.no_photo_reader");
+    }
+
+    // ACT-ways-in: the reader picked reads the photo, while it is an enabled one that reads photos.
+    @Test
+    void photoReadByTheReaderPicked() {
+        String multipart = "--proposal-boundary\r\n"
+                + "Content-Disposition: form-data; name=\"reader\"\r\n\r\n%s\r\n"
+                + "--proposal-boundary\r\n"
+                + "Content-Disposition: form-data; name=\"photo\"; filename=\"photo.jpg\"\r\n"
+                + "Content-Type: image/jpeg\r\n\r\nimage\r\n--proposal-boundary--\r\n";
+        client.post().uri("/api/proposals/photo").header("Cookie", session("u3"))
+                .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
+                .body(multipart.formatted("pi13")).exchange()
+                .expectStatus().isOk().expectBody().jsonPath("$.seen").exists();
+        client.post().uri("/api/proposals/photo").header("Cookie", session("u3"))
+                .header("Content-Type", "multipart/form-data; boundary=proposal-boundary")
+                .body(multipart.formatted("pi12")).exchange()
                 .expectStatus().isNotFound().expectBody()
                 .jsonPath("$.code").isEqualTo("proposal.no_photo_reader");
     }

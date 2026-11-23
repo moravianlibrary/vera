@@ -44,9 +44,16 @@ export async function readRecordLink(link: RecordLink): Promise<{ catalogId: str
   return postJson(apiRoutes.proposalRecordLink, link, recordLinkReadingSchema);
 }
 
-export async function readPhoto(photo: File): Promise<PhotoReading> {
+// The reader named, or the first one when none is (ACT-ways-in).
+export async function readPhoto(
+  photo: File,
+  readerId: string | null = null,
+): Promise<PhotoReading> {
   const body = new FormData();
   body.set("photo", photo);
+  if (readerId !== null) {
+    body.set("reader", readerId);
+  }
   return postForm(apiRoutes.proposalPhoto, body, photoReadingSchema);
 }
 

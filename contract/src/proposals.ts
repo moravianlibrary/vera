@@ -168,8 +168,9 @@ export const proposalSettingsSchema = z.object({
   ),
   // An enabled Input instance reads barcodes from the camera; a hardware scanner needs none.
   canScanWithCamera: z.boolean(),
-  // An enabled Input instance reads photos and matches them to catalog records.
-  canReadPhotos: z.boolean(),
+  // The enabled Input instances that read photos and match them to catalog records, in the order
+  // of Plugins; the first reads a photo unless the person picks another (ACT-ways-in).
+  photoReaders: z.array(namedSchema),
   // DOC-identifiers: each type by its Identifier instance, in the order that decides detection.
   identifierTypes: z.array(identifierTypeRuleSchema),
 });

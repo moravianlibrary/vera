@@ -577,13 +577,14 @@ function ItemsStep({
         <BarcodeWay canScanWithCamera={settings?.canScanWithCamera === true} onAdd={onAdd} />
       ),
     },
-    ...(settings?.canReadPhotos === true
+    ...(settings !== undefined && settings.photoReaders.length > 0
       ? [
           {
             value: "photo" as const,
             label: i18n.t("proposal.photoCapture", { ns: "documents" }),
             content: (
               <PhotoWay
+                readers={settings.photoReaders}
                 onAdd={onAdd}
                 onSearchInstead={hasCatalogWay ? () => setWay("catalog") : undefined}
               />

@@ -279,6 +279,7 @@
   "proposeWays.noBarcodePhoto": "Na této fotce se nepodařilo přečíst čárový kód. Vyfoťte ho znovu, blíž a zpříma.",
   "proposeWays.photoUnreadable": "Fotku se nepodařilo přečíst. Vyfoťte znovu.",
   "proposeWays.photoWhat": "Fotka obálky, titulní strany nebo katalogového lístku",
+  "proposeWays.photoReader": "Číst pomocí",
   "proposeWays.takePhoto": "Vyfotit",
   "proposeWays.readFromPhoto": "Přečteno z fotky",
   "proposeWays.noIdMatchedText": "Bez ISBN, ISSN či čárového kódu: dohledáno podle textu.",

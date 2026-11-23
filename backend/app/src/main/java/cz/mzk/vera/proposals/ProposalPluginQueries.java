@@ -77,6 +77,15 @@ public class ProposalPluginQueries {
                 && declares(row, byId, operation)).map(row -> (String) row.get("id")).findFirst().orElse(null);
     }
 
+    // ACT-ways-in: the reader named, while it is an enabled one, else none.
+    public boolean isEnabledInput(String instanceId, String operation) {
+        List<Map<String, Object>> implementations = implementations();
+        Map<String, Map<String, Object>> byId = new LinkedHashMap<>();
+        implementations.forEach(row -> byId.put((String) row.get("id"), row));
+        return instances().stream().anyMatch(row -> enabled(row) && instanceId.equals(row.get("id"))
+                && kindOf(row, byId).equals(ProposalCodes.INPUT) && declares(row, byId, operation));
+    }
+
     List<Map<String, Object>> instances() {
         return dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.IMPLEMENTATION_ID,
                         PLUGIN_INSTANCES.CONFIGURATION, PLUGIN_INSTANCES.IS_ENABLED, PLUGIN_INSTANCES.IS_DELETED,
