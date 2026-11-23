@@ -21,6 +21,9 @@ subprojects {
             // Each test class starts its own database, so no context is ever reused by another
             // class; caching Spring's default 32 of them only fills the heap.
             systemProperty("spring.test.context.cache.maxSize", "2")
+            // Memory still grows a little with each test class started in one JVM; at Gradle's
+            // default 512 MB the suite ran out at about fifty classes.
+            maxHeapSize = "1g"
         }
         tasks.withType<JavaExec>().configureEach {
             if (name == "bootRun") {
