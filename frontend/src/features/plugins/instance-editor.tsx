@@ -17,6 +17,7 @@ import type {
   PluginInstanceDetail,
   PluginVersion,
 } from "@vera/contract/plugins";
+import { baseLimitedKinds, catalogBaseSchema } from "@vera/contract/plugins";
 import type { Names } from "@vera/domain/names";
 import { nameIn, namesToSave } from "@vera/domain/names";
 import type { EntryPoint, InstancePolicy } from "@vera/domain/plugins";
@@ -58,6 +59,11 @@ import {
 
 const allCategories = "all";
 const noRole = "none";
+
+// PLG-bases: the bases as typed, each once.
+function basesOf(typed: string): string[] {
+  return [...new Set(typed.split(/[\s,]+/).filter(Boolean))];
+}
 const mappingArrow = "→";
 
 // A role by its name, as reference data lists them.
@@ -70,6 +76,8 @@ interface InstanceForm {
   names: Names;
   configuration: Record<string, string>;
   linkedCategoryId: string;
+  // PLG-bases: separated by spaces or commas; empty for every record.
+  catalogBases: string;
   label: string;
   order: string;
   userIdClaim: string;
@@ -130,6 +138,12 @@ function formSchemaOf(
         ),
       configuration: z.record(z.string(), z.string()),
       linkedCategoryId: z.string(),
+      catalogBases: z
+        .string()
+        .refine(
+          (bases) => basesOf(bases).every((base) => catalogBaseSchema.safeParse(base).success),
+          t("instanceEditor.validationBases"),
+        ),
       label: z.string(),
       order: z.string(),
       userIdClaim: z.string(),
@@ -294,6 +308,7 @@ export function InstanceEditorDialog({
   const identity = settings?.kind === "Identity" ? settings : null;
   const roleName = (roleId: string) => roles.find((role) => role.id === roleId)?.name ?? roleId;
   const isIdentity = implementation.kind === "Identity";
+  const readsBases = (baseLimitedKinds as readonly string[]).includes(implementation.kind);
   const hasOrder =
     implementation.kind === "Message" ||
     implementation.kind === "Classifier" ||
@@ -326,6 +341,7 @@ export function InstanceEditorDialog({
           version.configFields.map((field) => [field.key, configured.get(field.key) ?? ""]),
         ),
         linkedCategoryId: instance?.linkedCategoryId ?? allCategories,
+        catalogBases: (instance?.catalogBases ?? []).join(" "),
         label: identity?.label ?? "",
         order: String(
           settings !== null && "order" in settings ? settings.order : Math.max(1, kindCount + 1),
@@ -363,6 +379,7 @@ export function InstanceEditorDialog({
           ),
           linkedCategoryId:
             values.linkedCategoryId === allCategories ? null : values.linkedCategoryId,
+          ...(readsBases ? { catalogBases: basesOf(values.catalogBases) } : {}),
           settings: settingsOf(implementation.kind, values, roles, language),
           policy: policyOf(version, values),
         });
@@ -457,6 +474,24 @@ export function InstanceEditorDialog({
               )}
             />
           </Field>
+
+          {readsBases && (
+            <div className="grid gap-1.5">
+              <Field
+                id={`${id}-bases`}
+                label={t("instanceEditor.catalogBases")}
+                hint={t("instanceEditor.catalogBasesHint")}
+              >
+                <Input
+                  id={`${id}-bases`}
+                  placeholder="MZK01 MZK03"
+                  className="font-mono"
+                  {...form.register("catalogBases")}
+                />
+              </Field>
+              <FieldError message={form.formState.errors.catalogBases?.message} />
+            </div>
+          )}
 
           {isIdentity && (
             <fieldset className="grid gap-3">

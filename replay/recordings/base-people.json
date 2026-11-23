@@ -10850,6 +10850,7 @@
             },
             "secretsSet": [],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnDemand"
             ],
@@ -10908,6 +10909,7 @@
             },
             "secretsSet": [],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnDemand"
             ],

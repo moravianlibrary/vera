@@ -57,6 +57,20 @@ export const pluginImplementationSchema = z.object({
 
 export type PluginImplementation = z.infer<typeof pluginImplementationSchema>;
 
+// PLG-bases: a catalog base as a catalog ID begins, `MZK01`.
+export const catalogBaseSchema = z
+  .string()
+  .regex(/^[A-Z]{3,4}\d{2}$/, "A base is three or four capital letters and two digits: MZK01.");
+
+// PLG-bases: the kinds that read a record's catalog data, and so may be limited to some bases.
+export const baseLimitedKinds = [
+  "PropertySource",
+  "Validation",
+  "Restriction",
+  "Classifier",
+  "Custody",
+] as const;
+
 // VERA's settings on an instance, owned by VERA and edited beside the configuration (§2.2).
 export const identitySettingsSchema = z.object({
   kind: z.literal("Identity"),
@@ -104,6 +118,8 @@ export const pluginInstanceDetailSchema = z.object({
   secretsSet: z.array(z.string()),
   // The category subtree it serves; null for all of them.
   linkedCategoryId: id.nullable(),
+  // PLG-bases: the catalog bases whose records it reads; none for every record.
+  catalogBases: z.array(catalogBaseSchema),
   // Its own triggers; when it runs by itself is its schedules.
   triggers: z.array(pluginTriggerSchema),
   settings: instanceSettingsSchema.nullable(),
@@ -161,6 +177,8 @@ export const instanceDraftSchema = z.object({
   names: namesSchema,
   configuration: z.record(z.string(), z.string()),
   linkedCategoryId: id.nullable(),
+  // PLG-bases; left out, a new instance reads every base and a saved one keeps its own.
+  catalogBases: z.array(catalogBaseSchema).optional(),
   settings: instanceSettingsSchema.nullable(),
   // Left out, a new instance takes its version's defaults and a saved one keeps its own.
   policy: instancePolicySchema.optional(),

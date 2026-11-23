@@ -1539,6 +1539,7 @@
               "secret"
             ],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnEvent"
             ],
@@ -1620,6 +1621,7 @@
               "secret"
             ],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnEvent"
             ],
@@ -1677,6 +1679,7 @@
             },
             "secretsSet": [],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnEvent"
             ],
@@ -1736,6 +1739,7 @@
             },
             "secretsSet": [],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnEvent"
             ],

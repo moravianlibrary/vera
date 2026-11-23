@@ -94,6 +94,8 @@ const storedPluginInstance = z.strictObject({
   isEnabled: z.boolean(),
   configuration: z.record(z.string(), z.string()),
   linkedCategoryId: id.nullable().optional(),
+  // PLG-bases; absent for every base.
+  catalogBases: z.array(z.string()).optional(),
   triggers: z.array(pluginTriggerSchema),
   settings: settings.nullable().optional(),
   policy: instancePolicySchema.optional(),

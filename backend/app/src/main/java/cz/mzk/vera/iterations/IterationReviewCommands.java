@@ -562,6 +562,9 @@ public class IterationReviewCommands {
         DocumentsRecord document = dsl.selectFrom(DOCUMENTS).where(DOCUMENTS.ID.eq(current.document().id())).fetchOne();
         ValuesInput input = answerWrites.propertyInput(document, row);
         for (PluginInstances.Instance instance : pluginInstances.enabled(dsl, "PropertySource", "OnRecordChange")) {
+            if (!instance.reads(document.getCatalogId())) {
+                continue;
+            }
             PluginOutcome<ValuesAnswer> outcome = outsideTransaction.execute(status -> pluginCalls.call(
                     instance.id(), PropertySource.class, "values",
                     (plugin, context) -> plugin.values(context, input)));

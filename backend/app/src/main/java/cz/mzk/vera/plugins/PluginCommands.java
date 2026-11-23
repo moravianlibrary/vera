@@ -51,6 +51,9 @@ import tools.jackson.databind.json.JsonMapper;
 // PLG-triggers; PLG-secrets; PLG-last-identity; ACCESS-last-identity; ACCESS-custody-by-plugins; L8.
 @Service
 public class PluginCommands {
+    // PLG-bases: the kinds that read a record's catalog data keep the bases sent; others keep none.
+    private static final List<String> BASE_LIMITED_KINDS = List.of("PropertySource", "Validation",
+            "Restriction", "Classifier", "Custody");
     private static final List<String> SETTINGS_KINDS = List.of("Identity", "Custody", "Message",
             "Classifier", "Identifier");
     private static final Set<String> SCHEDULABLE_KINDS = Set.of("CatalogAdapter", "Registry", "Harvester",
@@ -121,6 +124,8 @@ public class PluginCommands {
                 .set(PLUGIN_INSTANCES.SETTINGS, nullableJson(body.path("settings")))
                 .set(PLUGIN_INSTANCES.POLICY, JSONB.valueOf(json.writeValueAsString(policy)))
                 .set(PLUGIN_INSTANCES.LINKED_CATEGORY_ID, nullableString(body.path("linkedCategoryId")))
+                .set(PLUGIN_INSTANCES.CATALOG_BASES, JSONB.valueOf(json.writeValueAsString(
+                        catalogBases(implementation, body, List.of()))))
                 .set(PLUGIN_INSTANCES.TRIGGERS, JSONB.valueOf(triggerValues(version)))
                 .set(PLUGIN_INSTANCES.IS_ENABLED, true)
                 .set(PLUGIN_INSTANCES.IS_DELETED, false)
@@ -169,6 +174,8 @@ public class PluginCommands {
         JsonNode newSettings = body.path("settings");
         String oldCategory = instance.get(PLUGIN_INSTANCES.LINKED_CATEGORY_ID);
         String newCategory = nullableString(body.path("linkedCategoryId"));
+        List<String> oldBases = stringList(json.readTree(instance.get(PLUGIN_INSTANCES.CATALOG_BASES).data()));
+        List<String> newBases = catalogBases(implementation, body, oldBases);
         String oldName = instance.get(PLUGIN_INSTANCES.NAME);
         String newName = body.path("names").path("en").asString(body.path("names").path("cs").asString()).trim();
         String oldNames = instance.get(PLUGIN_INSTANCES.NAMES).data();
@@ -189,6 +196,9 @@ public class PluginCommands {
         if (!Objects.equals(oldCategory, newCategory)) {
             changes.add(EventChanges.change("linkedCategoryId", oldCategory, newCategory));
         }
+        if (!oldBases.equals(newBases)) {
+            changes.add(EventChanges.change("catalogBases", oldBases, newBases));
+        }
         if (!oldSettings.equals(newSettings)) {
             changes.add(EventChanges.change("settings", values(oldSettings), values(newSettings)));
         }
@@ -205,6 +215,7 @@ public class PluginCommands {
                 .set(PLUGIN_INSTANCES.SETTINGS, nullableJson(newSettings))
                 .set(PLUGIN_INSTANCES.POLICY, JSONB.valueOf(json.writeValueAsString(policy)))
                 .set(PLUGIN_INSTANCES.LINKED_CATEGORY_ID, newCategory)
+                .set(PLUGIN_INSTANCES.CATALOG_BASES, JSONB.valueOf(json.writeValueAsString(newBases)))
                 .where(PLUGIN_INSTANCES.ID.eq(id))
                 .execute();
         events.recordAct(EventCode.PLUGIN_INSTANCE_CONFIGURED, "plugin_instance", id, caller, changes);
@@ -460,6 +471,7 @@ public class PluginCommands {
         changes.add(EventChanges.change("configuration", null, sanitizedConfiguration(configuration, version)));
         changes.add(EventChanges.change("secrets", List.of(), secretSet(configuration, version)));
         changes.add(EventChanges.change("linkedCategoryId", null, nullableString(body.path("linkedCategoryId"))));
+        changes.add(EventChanges.change("catalogBases", null, values(body.path("catalogBases"))));
         changes.add(EventChanges.change("settings", null, values(body.path("settings"))));
         changes.add(EventChanges.change("policy", null, values(policy)));
         return changes;
@@ -618,4 +630,19 @@ public class PluginCommands {
     }
 
     private record Configuration(ObjectNode value, ActResult refusal) { }
+
+    // PLG-bases: the bases sent, each once; left out, the ones kept.
+    private List<String> catalogBases(Record implementation, JsonNode body, List<String> kept) {
+        if (!BASE_LIMITED_KINDS.contains(implementation.get(PLUGIN_IMPLEMENTATIONS.KIND))) {
+            return List.of();
+        }
+        return body.has("catalogBases") ? stringList(body.path("catalogBases")).stream().distinct().toList()
+                : kept;
+    }
+
+    private static List<String> stringList(JsonNode values) {
+        List<String> result = new ArrayList<>();
+        values.forEach(value -> result.add(value.asString()));
+        return result;
+    }
 }

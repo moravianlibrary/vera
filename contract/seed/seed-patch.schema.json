@@ -10619,6 +10619,12 @@
                   }
                 ]
               },
+              "catalogBases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "triggers": {
                 "type": "array",
                 "items": {

@@ -37,6 +37,9 @@ public class IterationCheckRun {
         List<RestrictionCheckInput.PropertyValue> restrictionValues = values.stream()
                 .map(value -> new RestrictionCheckInput.PropertyValue(value.key(), value.value())).toList();
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Validation")) {
+            if (!instance.reads(record.catalogId())) {
+                continue;
+            }
             PluginOutcome<ValidationCheckAnswer> outcome = calls.call(
                     instance.id(), Validation.class, "check",
                     (plugin, context) -> plugin.check(context,
@@ -47,6 +50,9 @@ public class IterationCheckRun {
             validations.add(new ValidationAnswer(instance, answer.answer()));
         }
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Restriction")) {
+            if (!instance.reads(record.catalogId())) {
+                continue;
+            }
             PluginOutcome<RestrictionCheckAnswer> outcome = calls.call(
                     instance.id(), Restriction.class, "check",
                     (plugin, context) -> plugin.check(context,

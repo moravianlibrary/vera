@@ -21,6 +21,7 @@ import type {
   PluginVersion,
   UploadReading,
 } from "@vera/contract/plugins";
+import { baseLimitedKinds } from "@vera/contract/plugins";
 import { openProposalPlacements } from "@vera/contract/queries/requests";
 import type { Run } from "@vera/contract/tasks";
 import type { Session } from "@vera/domain/entities";
@@ -99,6 +100,11 @@ function secretKeysOf(instance: StoredPluginInstance): Set<string> {
   );
 }
 
+// PLG-bases: only the kinds that read a record's catalog data keep bases.
+function basesFor(kind: PluginKind, bases: readonly string[]): string[] {
+  return (baseLimitedKinds as readonly string[]).includes(kind) ? [...new Set(bases)] : [];
+}
+
 function detailOf(
   instance: StoredPluginInstance,
   now: Date,
@@ -123,6 +129,7 @@ function detailOf(
     ),
     secretsSet: [...secretKeys].filter((key) => (instance.configuration[key] ?? "") !== ""),
     linkedCategoryId: instance.linkedCategoryId,
+    catalogBases: [...(instance.catalogBases ?? [])],
     triggers: [...instance.triggers],
     settings: instance.settings,
     isPredefined: instance.isPredefined === true,
@@ -384,6 +391,7 @@ export function createInstance(
     isEnabled: true,
     configuration: configuration.value,
     linkedCategoryId: draft.linkedCategoryId,
+    catalogBases: basesFor(implementation.kind, draft.catalogBases ?? []),
     // Every trigger it accepts but a schedule, which is made on Schedules.
     triggers: version.triggers.filter((trigger) => trigger !== "OnSchedule"),
     settings: draft.settings,
@@ -431,6 +439,7 @@ export function saveInstance(
     names: draft.names,
     configuration: configuration.value,
     linkedCategoryId: draft.linkedCategoryId,
+    catalogBases: basesFor(kindOf(instance), draft.catalogBases ?? instance.catalogBases ?? []),
     settings: draft.settings,
     policy: draft.policy ?? instance.policy,
   });

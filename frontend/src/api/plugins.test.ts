@@ -312,6 +312,30 @@ describe("an instance", () => {
     await savePluginInstance("pi35", draft("pc3"));
   });
 
+  // PLG-bases: the kinds that read records keep their bases, each once; others keep none.
+  it("keeps catalog bases on the kinds that read records", async () => {
+    signInAs("admin");
+    const copyright = instanceOf(await getPluginIndex(), "pi28");
+    const draft = {
+      names: copyright?.names ?? { en: "Czech copyright" },
+      configuration: copyright?.configuration ?? {},
+      linkedCategoryId: null,
+      settings: null,
+    };
+    const saved = await savePluginInstance("pi28", { ...draft, catalogBases: ["MZK01", "MZK01"] });
+    expect(saved.catalogBases).toEqual(["MZK01"]);
+    expect((await savePluginInstance("pi28", draft)).catalogBases).toEqual(["MZK01"]);
+
+    const slack = await savePluginInstance("pi18", {
+      names: { en: "MZK Slack bot", cs: "MZK Slack bot" },
+      configuration: { workspace: "mzk", bot: "vera-bot" },
+      linkedCategoryId: null,
+      catalogBases: ["MZK01"],
+      settings: null,
+    });
+    expect(slack.catalogBases).toEqual([]);
+  });
+
   it("keeps a secret that is not sent again", async () => {
     signInAs("admin");
     const saved = await savePluginInstance("pi18", {

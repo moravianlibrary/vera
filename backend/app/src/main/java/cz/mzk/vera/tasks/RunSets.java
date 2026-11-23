@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
-import org.jooq.Record2;
+import org.jooq.Record3;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.JsonNode;
@@ -51,7 +51,8 @@ public class RunSets {
     }
 
     public List<Target> forInstance(DSLContext dsl, String instanceId) {
-        Record2<String, JSONB> plugin = dsl.select(PLUGIN_IMPLEMENTATIONS.KIND, PLUGIN_IMPLEMENTATIONS.VERSIONS)
+        Record3<String, JSONB, JSONB> plugin = dsl.select(PLUGIN_IMPLEMENTATIONS.KIND,
+                        PLUGIN_IMPLEMENTATIONS.VERSIONS, PLUGIN_INSTANCES.CATALOG_BASES)
                 .from(PLUGIN_INSTANCES).join(PLUGIN_IMPLEMENTATIONS)
                 .on(PLUGIN_IMPLEMENTATIONS.ID.eq(PLUGIN_INSTANCES.IMPLEMENTATION_ID))
                 .where(PLUGIN_INSTANCES.ID.eq(instanceId)).fetchOne();
@@ -69,7 +70,8 @@ public class RunSets {
                     .orderBy(ITERATIONS.ID)
                     .fetch(row -> new Target(row.get(DOCUMENTS.ID), row.get(ITERATIONS.ID)));
         }
-        List<Target> inPlay = documentsStillInPlay(dsl);
+        List<Target> inPlay = inBases(dsl, documentsStillInPlay(dsl),
+                json.readTree(plugin.get(PLUGIN_INSTANCES.CATALOG_BASES).data()));
         if (!"PropertySource".equals(kind)) {
             return inPlay;
         }
@@ -97,6 +99,20 @@ public class RunSets {
             }
         }
         return missing;
+    }
+
+    // PLG-bases: an instance limited to some bases runs only on documents from them.
+    private List<Target> inBases(DSLContext dsl, List<Target> targets, JsonNode bases) {
+        if (bases.isEmpty()) {
+            return targets;
+        }
+        Set<String> wanted = new HashSet<>();
+        bases.forEach(base -> wanted.add(base.asString()));
+        Set<String> documents = new HashSet<>(dsl.select(DOCUMENTS.ID, DOCUMENTS.CATALOG_ID).from(DOCUMENTS)
+                .where(DOCUMENTS.CATALOG_ID.isNotNull()).fetch().stream()
+                .filter(row -> wanted.contains(row.get(DOCUMENTS.CATALOG_ID).split("-", 2)[0]))
+                .map(row -> row.get(DOCUMENTS.ID)).toList());
+        return targets.stream().filter(target -> documents.contains(target.documentId())).toList();
     }
 
     public List<PlacementTarget> openProposals(DSLContext dsl) {

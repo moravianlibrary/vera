@@ -133,6 +133,9 @@ public class IngestJob implements JobKind<IngestJob.Result> {
             return Result.failed(id, documentId, row.get(ITERATIONS.ATTEMPT), failure.getMessage());
         }
         for (PluginInstances.Instance instance : propertySources) {
+            if (!instance.reads(record.catalogId())) {
+                continue;
+            }
             PluginOutcome<ValuesAnswer> result = calls.call(instance.id(), PropertySource.class, "values",
                     (plugin, context) -> plugin.values(context, new ValuesInput(record, iteration)));
             if (!(result instanceof PluginOutcome.Answered<ValuesAnswer> answer)) {

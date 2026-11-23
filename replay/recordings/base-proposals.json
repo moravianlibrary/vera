@@ -8452,6 +8452,7 @@
             },
             "secretsSet": [],
             "linkedCategoryId": null,
+            "catalogBases": [],
             "triggers": [
               "OnDemand"
             ],

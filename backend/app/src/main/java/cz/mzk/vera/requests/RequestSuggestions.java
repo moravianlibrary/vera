@@ -38,6 +38,9 @@ public class RequestSuggestions {
             return;
         }
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Classifier")) {
+            if (!instance.reads(input.document().catalogId())) {
+                continue;
+            }
             PluginOutcome<Optional<Suggestion>> outcome = calls.call(dsl, instance.id(), Classifier.class,
                     "suggest", (plugin, context) -> plugin.suggest(context,
                             new SuggestInput(input.request(), input.document())));

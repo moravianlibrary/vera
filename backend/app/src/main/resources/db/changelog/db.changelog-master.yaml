@@ -164,3 +164,6 @@ databaseChangeLog:
   - include:
       file: 0500-outbox-account-mail.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0510-plugin-instance-catalog-bases.sql
+      relativeToChangelogFile: true

@@ -109,6 +109,9 @@ public class ProposalPluginRuns {
                                 ? row.get(DOCUMENT_PROPERTY_VALUES.TEXT_VALUE)
                                 : row.get(DOCUMENT_PROPERTY_VALUES.NUMBER_VALUE)));
         for (PluginInstances.Instance instance : instances.enabled(dsl, "Restriction")) {
+            if (!instance.reads(document.catalogId())) {
+                continue;
+            }
             PluginOutcome<RestrictionCheckAnswer> outcome = timeout == null
                     ? calls.call(dsl, instance.id(), Restriction.class, "check",
                             (plugin, context) -> plugin.check(context, new RestrictionCheckInput(document, properties)))
@@ -188,7 +191,9 @@ public class ProposalPluginRuns {
                 .orderBy(CATALOG_MIRROR_KEYS.POSITION).fetch(CATALOG_MIRROR_KEYS.VALUE);
         List<RegistryLookupRun.RegistryInstance> registryInstances = registryCalls.enabled();
         List<PluginInstances.Instance> restrictionInstances = staff
-                ? instances.enabled(dsl, "Restriction") : List.of();
+                ? instances.enabled(dsl, "Restriction").stream()
+                        .filter(instance -> instance.reads(document.catalogId())).toList()
+                : List.of();
         List<RestrictionCheckInput.PropertyValue> properties = staff ? properties(document) : List.of();
         return new PreviewState(request, document, identifiers, properties, registryInstances, restrictionInstances);
     }

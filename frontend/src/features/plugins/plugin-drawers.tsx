@@ -13,6 +13,7 @@ import type {
   PluginInstanceDetail,
   PluginVersion,
 } from "@vera/contract/plugins";
+import { baseLimitedKinds } from "@vera/contract/plugins";
 import type { InstancePolicy } from "@vera/domain/plugins";
 import { isRunnableContract } from "@vera/domain/plugins";
 import { schedulableKinds } from "@vera/domain/schedules";
@@ -451,6 +452,17 @@ export function InstanceDrawer({
                   ? i18n.t("plugins:pluginDrawers.allCategories")
                   : names.categoryOf(instance.linkedCategoryId),
             },
+            ...((baseLimitedKinds as readonly string[]).includes(instance.kind)
+              ? [
+                  {
+                    label: i18n.t("plugins:pluginDrawers.catalogBases"),
+                    value:
+                      instance.catalogBases.length === 0
+                        ? i18n.t("plugins:pluginDrawers.allBases")
+                        : instance.catalogBases.join(", "),
+                  },
+                ]
+              : []),
             {
               label: i18n.t("plugins:pluginDrawers.created"),
               value: `${formatLongCalendarDay(instance.createdAt)} · ${names.userOf(instance.createdBy)}`,

@@ -119,6 +119,17 @@ Identity, Message and Classifier instances have an order. Identity's is the logi
 Message's is the dialog's (the first is preselected), and for classifiers the first suggestion
 wins.
 
+#### PLG-bases
+
+A Property source, Validation, Restriction, Classifier or Custody instance reads a record's catalog
+data, which each catalog base writes its own way. Such an instance may be limited to some bases,
+named as a catalog ID begins: `MZK01`, `MZK03`, `NKC01`. With no bases it reads every record. With
+some, VERA does not call it for a record from another base, nor for a document with no catalog
+record: there it is as if it were not enabled. The bases are set on Plugins with the instance's
+configuration.
+
+*Why:* an expression or a rule written for one base's cataloguing reads another's wrongly.
+
 #### PLG-no-fixing
 
 Validation and restriction plugins find; they never fix. A defect points to the catalog record,

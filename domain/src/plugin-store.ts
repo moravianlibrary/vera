@@ -46,6 +46,8 @@ export interface StoredPluginInstance {
   // With the secrets, which the server never sends back.
   readonly configuration: Readonly<Record<string, string>>;
   readonly linkedCategoryId: string | null;
+  // PLG-bases; absent or empty for every base.
+  readonly catalogBases?: readonly string[];
   readonly triggers: readonly PluginTrigger[];
   readonly settings: StoredInstanceSettings | null;
   // Absent while it keeps its version's defaults (PLG-upgrade).

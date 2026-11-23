@@ -48,6 +48,9 @@ public class RequestPlacements {
                 .from(REQUEST_CUSTODIES).fetch(REQUEST_CUSTODIES.ID));
         List<PluginInstances.Instance> custodians = instances.enabled(dsl, "Custody");
         for (PluginInstances.Instance instance : custodians) {
+            if (!instance.reads(input.document().catalogId())) {
+                continue;
+            }
             String pickedCustodyId = pickedCustody(dsl, instance.id());
             PluginOutcome<PlaceAnswer> outcome = calls.call(dsl, instance.id(), Custody.class, "place",
                     (plugin, context) -> plugin.place(context,

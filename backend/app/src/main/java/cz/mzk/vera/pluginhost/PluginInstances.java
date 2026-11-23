@@ -33,7 +33,7 @@ public class PluginInstances {
     }
 
     public List<Instance> enabled(DSLContext dsl, String kind) {
-        return dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME)
+        return dsl.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.NAME, PLUGIN_INSTANCES.CATALOG_BASES)
                 .from(PLUGIN_INSTANCES)
                 .join(PLUGIN_IMPLEMENTATIONS)
                 .on(PLUGIN_INSTANCES.IMPLEMENTATION_ID.eq(PLUGIN_IMPLEMENTATIONS.ID))
@@ -41,8 +41,24 @@ public class PluginInstances {
                 .and(PLUGIN_INSTANCES.IS_ENABLED.isTrue())
                 .and(PLUGIN_INSTANCES.IS_DELETED.isFalse())
                 .orderBy(PLUGIN_INSTANCES.POSITION)
-                .fetch(row -> new Instance(row.get(PLUGIN_INSTANCES.ID), row.get(PLUGIN_INSTANCES.NAME)));
+                .fetch(row -> new Instance(row.get(PLUGIN_INSTANCES.ID), row.get(PLUGIN_INSTANCES.NAME),
+                        bases(row.get(PLUGIN_INSTANCES.CATALOG_BASES).data())));
     }
 
-    public record Instance(String id, String name) {}
+    private List<String> bases(String stored) {
+        return json.readTree(stored).valueStream().map(JsonNode::asString).toList();
+    }
+
+    // PLG-bases: an instance with no bases reads every record; one with some reads only records
+    // whose catalog ID begins with one of them, and no document without a catalog record.
+    public record Instance(String id, String name, List<String> catalogBases) {
+        public Instance(String id, String name) {
+            this(id, name, List.of());
+        }
+
+        public boolean reads(String catalogId) {
+            return catalogBases.isEmpty() || catalogId != null
+                    && catalogBases.contains(catalogId.split("-", 2)[0]);
+        }
+    }
 }
