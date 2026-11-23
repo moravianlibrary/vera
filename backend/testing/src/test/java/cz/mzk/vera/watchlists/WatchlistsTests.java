@@ -381,6 +381,34 @@ class WatchlistsTests {
         assertThat(watchlists.matchesRecord("tasks", json.readTree("{}"), "u2", runId)).isTrue();
     }
 
+    // WATCH-model: a watchlist counts what its page shows under its filter now, entered or not.
+    @Test
+    void countsWhatEachPageMatchesNow() {
+        String cookie = session("u3");
+        String primary = createWatchlist(cookie, "Primary mix", "mixes", "{\"primary\":\"Primary\"}");
+        String archived = createWatchlist(cookie, "Archived mixes", "mixes", "{\"state\":\"Archived\"}");
+        JsonNode all = client.get().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie).exchange()
+                .expectStatus().isOk().expectBody(JsonNode.class).returnResult().getResponseBody();
+        Map<String, Integer> counts = new java.util.LinkedHashMap<>();
+        all.forEach(watchlist -> counts.put(watchlist.path("id").asString(), watchlist.path("itemCount").asInt()));
+
+        assertThat(counts).containsEntry("W-shared-5", 8)
+                .containsEntry("W-shared-7", 1)
+                .containsEntry("W-shared-8", 3)
+                .containsEntry("W-shared-9", 2)
+                .containsEntry("W-shared-10", 3)
+                .containsEntry("W-shared-11", 3)
+                .containsEntry("W-shared-12", 1)
+                .containsEntry("W-shared-13", 1)
+                .containsEntry("W-shared-14", 13)
+                .containsEntry("W-shared-15", 4)
+                .containsEntry("W-shared-17", 0)
+                .containsEntry("W-shared-18", 6)
+                .containsEntry("W-shared-19", 0)
+                .containsEntry(primary, 1)
+                .containsEntry(archived, 0);
+    }
+
     @Test
     void projectCategoryMixIntentionAndTaskEventsCreateTheirViewEntries() {
         String cookie = session("u2");
@@ -774,8 +802,12 @@ class WatchlistsTests {
     }
 
     private String createOtherViewWatchlist(String cookie, String name, String view) {
+        return createWatchlist(cookie, name, view, "{}");
+    }
+
+    private String createWatchlist(String cookie, String name, String view, String filter) {
         String body = "{\"names\":{\"en\":\"" + name + "\"},\"view\":\"" + view
-                + "\",\"filter\":{},\"audience\":{\"kind\":\"personal\"}}";
+                + "\",\"filter\":" + filter + ",\"audience\":{\"kind\":\"personal\"}}";
         JsonNode created = client.post().uri("/api/watchlists").header(HttpHeaders.COOKIE, cookie)
                 .contentType(MediaType.APPLICATION_JSON).body(body).exchange().expectStatus().isCreated()
                 .expectBody(JsonNode.class).returnResult().getResponseBody();

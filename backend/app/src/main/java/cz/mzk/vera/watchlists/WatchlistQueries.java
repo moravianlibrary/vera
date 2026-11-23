@@ -10,14 +10,17 @@ import static cz.mzk.vera.db.tables.Tables.WATCHLISTS;
 import static cz.mzk.vera.db.tables.Tables.WATCHLIST_VIEWERS;
 import static cz.mzk.vera.db.tables.Tables.USERS;
 
+import cz.mzk.vera.categories.CategoryFilters;
 import cz.mzk.vera.categories.CategoryReads;
 import cz.mzk.vera.db.tables.tables.records.UsersRecord;
 import cz.mzk.vera.db.tables.tables.records.WatchlistViewersRecord;
 import cz.mzk.vera.db.tables.tables.records.WatchlistsRecord;
 import cz.mzk.vera.documents.Audience;
 import cz.mzk.vera.documents.DocumentQueries;
+import cz.mzk.vera.intentions.IntentionFilters;
 import cz.mzk.vera.intentions.IntentionReads;
 import cz.mzk.vera.lists.ListsQueries;
+import cz.mzk.vera.mixes.MixFilters;
 import cz.mzk.vera.mixes.MixQueries;
 import cz.mzk.vera.projects.ProjectReads;
 import cz.mzk.vera.requests.RequestQueries;
@@ -412,7 +415,7 @@ public class WatchlistQueries {
         Map<String, Object> result = stored(row);
         String id = (String) result.get("id");
         Integer documentCount = documentCounts.get(id);
-        int count = documentCount == null ? itemCount(userId, row.getView(), read(row.getFilter().data()), id)
+        int count = documentCount == null ? itemCount(userId, row.getView(), read(row.getFilter().data()))
                 : documentCount;
         Map<String, Object> viewer = details.viewers().get(id);
         int unseen = details.unseenCounts().getOrDefault(id, 0);
@@ -514,21 +517,18 @@ public class WatchlistQueries {
     private record SummaryDetails(Map<String, Map<String, Object>> viewers,
             Map<String, Integer> unseenCounts, Map<String, Integer> subscriberCounts) {}
 
-    private int itemCount(String userId, String view, JsonNode filter, String watchlistId) {
+    // WATCH-model: every record that matches now, as opening the watchlist shows them.
+    private int itemCount(String userId, String view, JsonNode filter) {
         Map<String, String> parameters = filterParameters(filter);
         Map<String, Object> page = switch (view) {
             case "documents" -> Map.of("total", documents.count(parameters, userId, false));
             case "my-documents" -> Map.of("total", documents.count(parameters, userId, true));
-            case "requests" -> requests.page(parameters, userId);
-            case "tasks" -> tasks.index(userId, parameters);
-            default -> null;
+            default -> page(view, parameters, userId);
         };
-        if (page != null && page.get("total") instanceof Number total) {
+        if (page.get("total") instanceof Number total) {
             return total.intValue();
         }
-        return dsl.select(WATCHLIST_ENTRIES.RECORD_ID).from(WATCHLIST_ENTRIES)
-                .where(WATCHLIST_ENTRIES.WATCHLIST_ID.eq(watchlistId))
-                .groupBy(WATCHLIST_ENTRIES.RECORD_ID).fetch().size();
+        return ((List<?>) page.get("items")).size();
     }
 
     private Map<String, String> filterParameters(JsonNode filter) {
@@ -577,9 +577,22 @@ public class WatchlistQueries {
             case "validations" -> validations.page(parameters, userId);
             case "lists" -> lists.index(parameters, userId);
             case "projects" -> Map.of("items", projects.overview(userId, parameters).get("rows"));
-            case "categories" -> Map.of("items", categoryNodes(categories.index(userId, parameters.get("mix"))));
-            case "mixes" -> Map.of("items", mixes.list(userId));
-            case "intentions" -> Map.of("items", intentions.overview(userId).get("rows"));
+            case "categories" -> {
+                Map<String, Object> index = categories.index(userId, parameters.get("mix"));
+                Set<String> matching = CategoryFilters.matchingCategoryIds(categories.categories(), index,
+                        parameters);
+                yield Map.of("items", categoryNodes(index).stream().filter(node ->
+                        matching.contains(((Map<?, ?>) node).get("categoryId"))).toList());
+            }
+            case "mixes" -> Map.of("items", MixFilters.matchingMixes(mixes.list(userId),
+                    categories.categories(), parameters));
+            case "intentions" -> {
+                Map<String, Object> matching = IntentionFilters.matchingIntentions(
+                        intentions.overview(userId), parameters);
+                List<Object> items = new ArrayList<>((List<?>) matching.get("rows"));
+                items.addAll((List<?>) matching.get("templates"));
+                yield Map.of("items", items);
+            }
             case "tasks" -> {
                 Map<String, Object> result = tasks.index(userId, parameters);
                 List<Object> items = new ArrayList<>((List<?>) result.get("running"));
@@ -635,7 +648,7 @@ public class WatchlistQueries {
             return project instanceof Map<?, ?> values && recordId.equals(values.get("id"));
         }
         if ("intentions".equals(view)) {
-            Object intention = row.get("intention");
+            Object intention = row.containsKey("template") ? row.get("template") : row.get("intention");
             return intention instanceof Map<?, ?> values && recordId.equals(values.get("id"));
         }
         if (List.of("mixes", "tasks").contains(view)) {

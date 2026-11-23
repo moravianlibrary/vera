@@ -83,6 +83,14 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 ## Done
 
+### Built, 2026-11-23
+
+- **L87:** a watchlist's count is what its page matches now on every page, not only Documents,
+  My Documents and Requests; Categories, Category mixes and Intentions apply their page filters
+  in the backend, so their entries, badges and notices follow the filter too
+  ([WATCH-model](reference/integrations/watchlists.md#watch-model),
+  [UI-filters](reference/ui/pages.md#ui-filters)).
+
 ### Built, 2026-11-21
 
 - **L86:** account mail is recorded in the outbox and delivered by a job through the Local
