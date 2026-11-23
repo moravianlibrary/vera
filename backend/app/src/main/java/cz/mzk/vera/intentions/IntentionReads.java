@@ -40,10 +40,13 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.springframework.http.ResponseEntity;
@@ -525,11 +528,14 @@ public class IntentionReads {
 
     private List<Map<String, Object>> lists(IntentionCount count, CountingSnapshot data) {
         List<Map<String, Object>> result = new ArrayList<>();
+        Map<String, List<Iteration>> plannedByList = new HashMap<>();
+        for (Iteration item : selected(count.planned(), data.rules())) {
+            if (item.listId() != null) {
+                plannedByList.computeIfAbsent(item.listId(), ignored -> new ArrayList<>()).add(item);
+            }
+        }
         for (var list : data.rules().lists()) {
-            List<Iteration> items = selected(count.planned(), data.rules())
-                                        .stream()
-                                        .filter(item -> Objects.equals(item.listId(), list.id()))
-                                        .toList();
+            List<Iteration> items = plannedByList.getOrDefault(list.id(), List.of());
             if (!items.isEmpty()) {
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("id", list.id());
@@ -811,7 +817,8 @@ public class IntentionReads {
     }
 
     private List<Iteration> selected(List<String> ids, CountingData data) {
-        return data.iterations().stream().filter(item -> ids.contains(item.id())).toList();
+        Set<String> wanted = new HashSet<>(ids);
+        return data.iterations().stream().filter(item -> wanted.contains(item.id())).toList();
     }
 
     private int pagesUnder(String categoryId, List<String> ids, CountingSnapshot data) {
