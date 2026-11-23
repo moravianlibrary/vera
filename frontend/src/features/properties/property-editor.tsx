@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { propertyNameOf } from "@/features/properties/property-names";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 
 export const typeLabels = {
@@ -171,7 +172,7 @@ export function PropertyEditor({
     <DialogShell
       isOpen
       onClose={onClose}
-      title={isNew ? t("editor.new") : t("editor.edit", { name: definition.names.en })}
+      title={isNew ? t("editor.new") : t("editor.edit", { name: propertyNameOf(definition) })}
       description={t("editor.description")}
       width="wide"
       isDirty

@@ -180,6 +180,8 @@
   "proposal.volumeIssue": "Svazek nebo číslo",
   "proposal.volumeIssueOptional": "svazek nebo číslo — nepovinné",
   "proposal.add": "Přidat",
+  "proposal.act.Add": "Přidat",
+  "proposal.act.Propose": "Navrhnout",
   "proposal.itemsOnePerLine": "Položky, jedna na řádek",
   "proposal.pasteHelp": "Jedna na řádek: identifikátor ; svazek nebo číslo ; důvod",
   "proposal.addThese": "Přidat tyto",

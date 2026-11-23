@@ -168,6 +168,8 @@
   "proposal.volumeIssue": "Volume or issue",
   "proposal.volumeIssueOptional": "volume or issue — optional",
   "proposal.add": "Add",
+  "proposal.act.Add": "Add",
+  "proposal.act.Propose": "Propose",
   "proposal.itemsOnePerLine": "Items, one per line",
   "proposal.pasteHelp": "One per line: identifier ; volume or issue ; why",
   "proposal.addThese": "Add these",

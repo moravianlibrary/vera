@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import { propertyNameOf } from "@/features/properties/property-names";
+import { enumValueNameOf, propertyNameOf } from "@/features/properties/property-names";
 import { propertiesQueryKey } from "@/features/properties/use-properties-query";
 import { validationsQueryKey } from "@/features/validations/use-validations-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
@@ -185,7 +185,10 @@ function ValueInput({
   const name = propertyNameOf(definition);
   const options =
     type.kind === "enum"
-      ? type.values.map((value) => ({ value: value.value, label: value.names.en }))
+      ? type.values.map((value) => ({
+          value: value.value,
+          label: enumValueNameOf(definition, value.value),
+        }))
       : type.kind === "yesNo"
         ? [
             { value: "Yes", label: i18n.t("common:answer.Yes") },

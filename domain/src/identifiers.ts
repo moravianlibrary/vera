@@ -163,10 +163,11 @@ export function normalisedOf(
   return recogniser === null ? value.trim() : normalise(recogniser, value);
 }
 
-// TODO(rrandiak): the UI language comes with i18n; English until then.
+// DOC-identifiers: the types are named as the library names them, in the language asked for.
 export function identifierLabelOf(
   rules: readonly IdentifierTypeRule[],
   type: IdentifierType,
+  language: "cs" | "en",
 ): string {
-  return ruleOf(rules, type)?.labels.en ?? type;
+  return ruleOf(rules, type)?.labels[language] ?? type;
 }

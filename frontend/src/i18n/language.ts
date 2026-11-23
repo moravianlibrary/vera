@@ -5,6 +5,7 @@
 
 import type { Language } from "@vera/contract/user-settings";
 import { languages } from "@vera/contract/user-settings";
+import { i18n } from "@/i18n";
 
 // Each language named in itself, as a picker offers it.
 export const languageNames: Readonly<Record<Language, string>> = {
@@ -98,4 +99,9 @@ export function languageToSave(
 ): Language | null {
   const inUse = languageInUse(held, picked);
   return inUse === held ? null : inUse;
+}
+
+// The language the interface speaks now, for names held in each language (UI-names).
+export function interfaceLanguage(): Language {
+  return i18n.language === "cs" ? "cs" : "en";
 }

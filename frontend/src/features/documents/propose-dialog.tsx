@@ -69,6 +69,7 @@ import { requestsQueryKey } from "@/features/requests/use-requests-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { i18n } from "@/i18n";
+import { interfaceLanguage } from "@/i18n/language";
 import { recordAct } from "@/lib/telemetry/telemetry";
 import { cn } from "@/lib/utils";
 
@@ -348,7 +349,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
       i18n.t("proposal.pickedSource", {
         ns: "documents",
         source: picked.source,
-        type: identifierLabelOf(rules, picked.type),
+        type: identifierLabelOf(rules, picked.type, interfaceLanguage()),
         value: picked.value,
       }),
     );
@@ -382,7 +383,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
         : i18n.t("proposal.nothingToSubmit", { ns: "documents" });
   const description = i18n.t("proposal.description", {
     ns: "documents",
-    action: proposeActOf(session),
+    action: i18n.t(`proposal.act.${proposeActOf(session)}`, { ns: "documents" }),
   });
   const entrySource = (settings?.entrySources ?? []).find((entry) => entry.id === ask?.sourceId);
   const returnTo = ask?.sourceId
@@ -418,7 +419,7 @@ function ProposeFlow({ session, viewTitle, onClose, ask }: ProposeFlowProps) {
       <DialogShell
         isOpen
         onClose={onClose}
-        title={proposeActOf(session)}
+        title={i18n.t(`proposal.act.${proposeActOf(session)}`, { ns: "documents" })}
         description={description}
         width="wide"
         isDirty={items.length > 0 && step !== "Submitted"}
@@ -693,7 +694,7 @@ function TypedWay({ onAdd }: { onAdd: (line: ProposalLine) => void }) {
       }}
     >
       <IdentifierTypeSelect
-        className="w-full sm:w-36"
+        className="w-full sm:w-52"
         value={type}
         onChange={(picked) => {
           if (picked !== null) {
@@ -841,7 +842,7 @@ function IdentifierTypeSelect({
       <SelectTrigger
         size="sm"
         aria-label={i18n.t("proposal.identifierType", { ns: "documents" })}
-        className={cn("w-36", className)}
+        className={cn("w-52", className)}
       >
         <SelectValue />
       </SelectTrigger>
@@ -853,7 +854,7 @@ function IdentifierTypeSelect({
         )}
         {rules.map(({ type }) => (
           <SelectItem key={type} value={type}>
-            {identifierLabelOf(rules, type)}
+            {identifierLabelOf(rules, type, interfaceLanguage())}
           </SelectItem>
         ))}
       </SelectContent>
@@ -884,7 +885,8 @@ function ItemRow({ item, number, onChange, onPickRecords, onRemove }: ItemRowPro
       <span className="pt-0.5 text-xs text-muted-foreground tabular-nums">{number}</span>
       <span className="min-w-0">
         <span className="font-mono text-xs break-words">
-          {item.type === null ? "?" : identifierLabelOf(rules, item.type)} · {item.value}
+          {item.type === null ? "?" : identifierLabelOf(rules, item.type, interfaceLanguage())} ·{" "}
+          {item.value}
           {item.unit !== null && ` · ${item.unit}`}
         </span>{" "}
         <span className="text-xs text-muted-foreground">{item.source}</span>
@@ -1141,7 +1143,7 @@ function TypeFix({
       <SelectContent>
         {fitting.map((type) => (
           <SelectItem key={type} value={type}>
-            {identifierLabelOf(rules, type)}
+            {identifierLabelOf(rules, type, interfaceLanguage())}
           </SelectItem>
         ))}
       </SelectContent>
