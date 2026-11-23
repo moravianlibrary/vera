@@ -417,6 +417,8 @@
   "statusNote.cancelled": "Cancelled",
   "statusNote.couldNotBeDigitized": "Could not be digitized",
   "statusNote.forbidden": "Forbidden",
+  "statusNote.notAvailable": "Not available",
+  "statusNote.notAvailableForDigitization": "Not available for digitization.",
   "statusNote.couldNotBeAdded": "Could not be added",
   "statusNote.retryHelp": "a curator or an administrator retries it.",
   "statusNote.onHold": "On hold",

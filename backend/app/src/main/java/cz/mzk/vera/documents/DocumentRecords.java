@@ -89,7 +89,9 @@ public class DocumentRecords {
         dsl.selectFrom(ITERATIONS).where(ITERATIONS.DOCUMENT_ID.in(documentIds))
             .orderBy(ITERATIONS.DOCUMENT_ID, ITERATIONS.ATTEMPT).fetch().forEach(row -> {
                 Map<String, Object> restriction = row.getRestrictionRule() == null ? null : map(
-                    "rule", row.getRestrictionRule(), "publicText", row.getRestrictionPublicText(),
+                    "rule", row.getRestrictionRule(),
+                    "publicText", row.getRestrictionPublicText() == null ? null
+                            : json.read(row.getRestrictionPublicText().data()),
                     "internalText", row.getRestrictionInternalText(),
                     "foundAt", time(row.getRestrictionFoundAt()));
                 Map<String, Object> override = row.getOverrideNote() == null ? null : map(

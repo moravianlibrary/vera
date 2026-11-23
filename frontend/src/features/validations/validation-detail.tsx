@@ -50,6 +50,7 @@ import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatLongDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
+import { restrictionTextForAskers } from "@/lib/status-notes";
 
 // What the pane says once an act has taken the item out of the view.
 export interface LeftOutcome extends Outcome {
@@ -325,7 +326,7 @@ function ReviewNote({ row, nameOf }: RowProps) {
         })}
       >
         {restriction.internalText !== null && `${restriction.internalText} `}
-        {t("defect.askersRead")} “{restriction.publicText}”
+        {t("defect.askersRead")} “{restrictionTextForAskers(restriction)}”
       </StatusNote>
     );
   }

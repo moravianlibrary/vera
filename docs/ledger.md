@@ -102,6 +102,10 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   limited to some catalog bases, set on Plugins; VERA calls it only for records from them, and a
   run of it covers only their documents ([PLG-bases](reference/integrations/plugins.md#plg-bases)).
   The mock stores and shows the bases but answers from its fixtures whatever they are.
+- **L91:** a requester reads a restriction as *Not available*, badge and reason alike, and the
+  reason in their language: a Restriction finding may give askers' text per language (contract
+  1.4), else VERA says *Not available for digitization*. A restriction found by a plugin used to
+  store no public text at all ([STAT-public](reference/model/status.md#stat-public)).
 
 ### Built, 2026-11-21
 

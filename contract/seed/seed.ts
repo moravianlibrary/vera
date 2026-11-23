@@ -429,6 +429,7 @@ const fakesSchema = z.strictObject({
           forbidden: z.boolean(),
           until: z.string().nullable(),
           why: z.string(),
+          publicText: namesSchema.optional(),
         })
         .nullable()
         .optional(),

@@ -122,7 +122,7 @@ function resolveRestriction(
   return {
     label: `${document.title} · ${documentIdentifierOf(document)}`,
     path: `${pathOf("validations")}?id=${encodeURIComponent(iterationId)}&review=Forbidden`,
-    context: `Forbidden by ${restriction.rule}: ${restriction.internalText ?? restriction.publicText}`,
+    context: `Forbidden by ${restriction.rule}: ${restriction.internalText ?? restriction.rule}`,
     recipientIds: to === "overrule" ? holdersOfPermission("restriction.overrule") : row.askerIds,
   };
 }

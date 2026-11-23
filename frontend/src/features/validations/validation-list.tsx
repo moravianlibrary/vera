@@ -31,6 +31,7 @@ import type { PagedList } from "@/hooks/use-paged-list";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { i18n } from "@/i18n";
 import { formatDay } from "@/lib/format-date";
+import { restrictionTextForAskers } from "@/lib/status-notes";
 
 interface ValidationListProps {
   items: ValidationRow[] | undefined;
@@ -267,7 +268,7 @@ function WhyLine({
         <b className="font-semibold text-tone-red-foreground">
           {t("list.forbiddenBy", { rule: iteration.restriction.rule })}
         </b>{" "}
-        {iteration.restriction.internalText ?? iteration.restriction.publicText}
+        {iteration.restriction.internalText ?? restrictionTextForAskers(iteration.restriction)}
       </>
     );
   }

@@ -75,7 +75,7 @@ required. Inputs and answers are named here; their fields are in `domain/src/plu
 | Property source | `values` | the record and its iteration | values for the properties it declares, each with its tier | — |
 | Registry | `lookup` | the record's identifiers | the raw state and its link, per record found | — |
 | Validation | `check` | the record and its properties | defects: rule, field, detail | — |
-| Restriction | `check` | the record and its properties | a finding per rule: forbidden or not, until when, why | — |
+| Restriction | `check` | the record and its properties | a finding per rule: forbidden or not, until when, why for staff, and optionally what askers read, per language ([STAT-public](../model/status.md#stat-public)) | — |
 | Custody | `place` | the request and its document, and the request custody picked for this instance (nullable); the request includes `projectName` | the request custodies that take it | — |
 | Classifier | `suggest` | the request (including `projectName`) and its document | a category and why, or none | — |
 | List generator | `generate` | the shaping intention, its leaves and shares in scope, the pool, the current members, the pages, the top categories, a correcting allocation | the picks and why each, how many were spread, and each short leaf with its cause | — |
@@ -155,7 +155,8 @@ next run.
 
 The contract's minor versions only add: a new optional operation, a new refusal code, a new
 field in an answer or input. Contract 1.2 adds the optional sender to the Message `handOff` input;
-1.3 adds redirect identity callback details and per-login flow data. A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
+1.3 adds redirect identity callback details and per-login flow data; 1.4 adds what askers read to
+a Restriction finding. A plugin built for 1.2 runs on 1.4; one built for 1.4 declares an operation
 1.2 does not know and is refused on a VERA running 1.2
 ([PLG-contract](plugins.md#plg-contract)).
 

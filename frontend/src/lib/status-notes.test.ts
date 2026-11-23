@@ -4,6 +4,7 @@
 import type { DocumentRecord } from "@vera/domain/documents";
 import type { Iteration, Request } from "@vera/domain/entities";
 import { describe, expect, it } from "vitest";
+import { i18n } from "@/i18n";
 import { deskOf, iterationNoteOf } from "@/lib/status-notes";
 import { documents } from "@/mocks/fixtures/documents";
 import { iterations } from "@/mocks/fixtures/iterations";
@@ -70,6 +71,44 @@ describe("iterationNoteOf", () => {
     const attempt = iteration("IT14");
 
     expect(iterationNoteOf(attempt, originOf(attempt), "staff")?.title).toBe("Forbidden");
+  });
+
+  it("tells a requester a restriction in the badge's word and their own language", async () => {
+    const attempt = iteration("IT6");
+
+    expect(iterationNoteOf(attempt, null, "public")).toMatchObject({
+      title: "Not available",
+      text: "Not available for digitization (condition).",
+    });
+    expect(iterationNoteOf(attempt, originOf(attempt), "staff")?.text).toContain(
+      "Binding unstable",
+    );
+
+    await i18n.changeLanguage("cs");
+    try {
+      expect(iterationNoteOf(attempt, null, "public")).toMatchObject({
+        title: "Nedostupné",
+        text: "Nelze digitalizovat kvůli fyzickému stavu.",
+      });
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("says VERA's own words to a requester where the rule gave none", () => {
+    const attempt = iteration("IT6");
+    const restriction = attempt.restriction;
+    if (restriction === null) {
+      throw new Error("IT6 is restricted");
+    }
+
+    const note = iterationNoteOf(
+      { ...attempt, restriction: { ...restriction, publicText: null } },
+      null,
+      "public",
+    );
+
+    expect(note?.text).toBe("Not available for digitization.");
   });
 
   it("names a denial in review as on hold for a requester", () => {

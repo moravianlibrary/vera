@@ -3579,7 +3579,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },
@@ -6639,7 +6642,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },
@@ -8369,7 +8375,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },
@@ -10616,7 +10625,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },
@@ -12410,7 +12422,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },
@@ -14645,7 +14660,10 @@
                   "formerListName": null,
                   "restriction": {
                     "rule": "Copyright",
-                    "publicText": "Not available for digitization (rights).",
+                    "publicText": {
+                      "cs": "Nelze digitalizovat kvůli autorským právům.",
+                      "en": "Not available for digitization (rights)."
+                    },
                     "internalText": "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
                     "foundAt": "<time>"
                   },

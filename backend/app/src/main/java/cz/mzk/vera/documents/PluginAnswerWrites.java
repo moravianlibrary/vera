@@ -201,15 +201,19 @@ public class PluginAnswerWrites {
                 .where(ITERATIONS.ID.eq(iterationId)).fetchOne(0, OffsetDateTime.class);
         if (finding == null) {
             tx.update(ITERATIONS).set(ITERATIONS.RESTRICTION_RULE, (String) null)
-                    .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, (String) null)
+                    .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, (JSONB) null)
                     .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, (String) null)
                     .set(ITERATIONS.RESTRICTION_FOUND_AT, (OffsetDateTime) null)
                     .where(ITERATIONS.ID.eq(iterationId)).execute();
             return 0;
         }
         boolean same = finding.rule().equals(oldRule);
-        String publicText = same ? tx.select(ITERATIONS.RESTRICTION_PUBLIC_TEXT).from(ITERATIONS)
-                .where(ITERATIONS.ID.eq(iterationId)).fetchOne(0, String.class) : null;
+        // STAT-public: what askers read, in the languages the finding gives; a finding that gives
+        // none keeps what the same rule gave before, and otherwise askers read VERA's own wording.
+        Map<String, String> given = askersText(finding.publicText());
+        JSONB publicText = !given.isEmpty() ? JSONB.valueOf(json.writeValueAsString(given))
+                : same ? tx.select(ITERATIONS.RESTRICTION_PUBLIC_TEXT).from(ITERATIONS)
+                        .where(ITERATIONS.ID.eq(iterationId)).fetchOne(ITERATIONS.RESTRICTION_PUBLIC_TEXT) : null;
         tx.update(ITERATIONS).set(ITERATIONS.RESTRICTION_RULE, finding.rule())
                 .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, publicText)
                 .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, finding.why())
@@ -225,6 +229,21 @@ public class PluginAnswerWrites {
             else events.recordRun(event, runId);
         }
         return 1;
+    }
+
+    // Only the languages VERA speaks, each with text.
+    private static Map<String, String> askersText(Map<String, String> given) {
+        Map<String, String> result = new LinkedHashMap<>();
+        if (given == null) {
+            return result;
+        }
+        for (String language : List.of("cs", "en")) {
+            String text = given.get(language);
+            if (text != null && !text.isBlank()) {
+                result.put(language, text.strip());
+            }
+        }
+        return result;
     }
 
     private String registryState(String raw) {

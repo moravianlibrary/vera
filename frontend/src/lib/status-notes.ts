@@ -11,15 +11,17 @@ import {
   iterationOf,
   latestPublicAskOf,
 } from "@vera/domain/documents";
-import type { Iteration, Request } from "@vera/domain/entities";
+import type { Iteration, Request, Restriction } from "@vera/domain/entities";
 import {
   isProgressAtLeast,
   isRestricted,
   outstandingDefects,
   passesGates,
+  restrictionPublicTextIn,
   validationOf,
 } from "@vera/domain/status";
 import { i18n } from "@/i18n";
+import { interfaceLanguage } from "@/i18n/language";
 import { formatLongDay } from "@/lib/format-date";
 
 const message = (key: string, options?: Record<string, unknown>) =>
@@ -38,6 +40,15 @@ export interface StatusNote {
 // The text an audience may read: the internal one where it is held, else the public one.
 function textFor(audience: Audience, texts: { publicText: string; internalText: string | null }) {
   return audience === "public" ? texts.publicText : (texts.internalText ?? texts.publicText);
+}
+
+// What askers read about a restriction: the finding's text in the interface language, else
+// VERA's own wording (STAT-public).
+export function restrictionTextForAskers(restriction: Restriction): string {
+  return (
+    restrictionPublicTextIn(restriction, interfaceLanguage()) ??
+    message("statusNote.notAvailableForDigitization")
+  );
 }
 
 // What holds or troubles one attempt, first match wins. `request` is the ask it came from,
@@ -62,11 +73,16 @@ export function iterationNoteOf(
     };
   }
 
+  // STAT-public: a requester reads the badge's own word and the text meant for askers.
   if (isRestricted(iteration) && iteration.restriction !== null) {
+    const { restriction } = iteration;
     return {
       tone: "slate",
-      title: message("statusNote.forbidden"),
-      text: textFor(audience, iteration.restriction),
+      title: message(audience === "public" ? "statusNote.notAvailable" : "statusNote.forbidden"),
+      text:
+        audience === "public"
+          ? restrictionTextForAskers(restriction)
+          : (restriction.internalText ?? restrictionTextForAskers(restriction)),
       actedBy: null,
     };
   }

@@ -329,9 +329,12 @@ export const progressValues = [
 export const progressSchema = z.enum(progressValues);
 export type Progress = z.infer<typeof progressSchema>;
 
+// STAT-public: askers read `publicText` in their language, or VERA's own wording where the
+// Restriction finding gave none (null); `internalText` is the finding's why, for staff.
 export const restrictionSchema = z.object({
   rule: z.string(),
-  ...reasonTexts,
+  publicText: namesSchema.nullable(),
+  internalText: z.string().nullable(),
   foundAt: timestamp,
 });
 export type Restriction = z.infer<typeof restrictionSchema>;

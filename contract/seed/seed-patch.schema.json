@@ -3058,7 +3058,24 @@
                         "type": "string"
                       },
                       "publicText": {
-                        "type": "string"
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "cs": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "en": {
+                                "type": "string",
+                                "minLength": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       },
                       "internalText": {
                         "type": ["string", "null"]
@@ -12654,6 +12671,19 @@
                       },
                       "why": {
                         "type": "string"
+                      },
+                      "publicText": {
+                        "type": "object",
+                        "properties": {
+                          "cs": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "en": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
                       }
                     },
                     "required": ["rule", "forbidden", "until", "why"],

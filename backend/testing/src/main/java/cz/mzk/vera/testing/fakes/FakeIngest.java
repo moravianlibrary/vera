@@ -217,6 +217,10 @@ public class FakeIngest {
             add(result, "findingUntil", nullable(restriction.path("until")));
             add(result, "findingWhy",
                     restriction.path("why").asString(restriction.path("internalText").asString()));
+            // A seeded restriction's public text, or the one a custom finding gives askers.
+            JsonNode publicText = restriction.path("publicText");
+            add(result, "findingPublicCs", publicText.path("cs").asString(""));
+            add(result, "findingPublicEn", publicText.path("en").asString(""));
         }
         return result;
     }

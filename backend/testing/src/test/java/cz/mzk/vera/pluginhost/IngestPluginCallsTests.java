@@ -110,7 +110,9 @@ class IngestPluginCallsTests {
         assertThat(restriction("pi28", document("D6", "MZK05-000004412", "", "Monograph")))
                 .isEqualTo(new RestrictionCheckAnswer(List.of(new RestrictionCheckAnswer.Finding(
                         "Conservation hold", true, null,
-                        "Binding unstable; conservation report 2026/114 prohibits handling until restored."))));
+                        "Binding unstable; conservation report 2026/114 prohibits handling until restored.",
+                        java.util.Map.of("cs", "Nelze digitalizovat kvůli fyzickému stavu.",
+                                "en", "Not available for digitization (condition).")))));
     }
 
     @Test
@@ -142,10 +144,12 @@ class IngestPluginCallsTests {
     @Test
     void restrictionAnswersIngestData() {
         resetIngest("\"restriction\":{\"rule\":\"R-NEW\",\"forbidden\":true,"
-                + "\"until\":\"2027-01-01T00:00:00Z\",\"why\":\"Review the rights.\"}");
+                + "\"until\":\"2027-01-01T00:00:00Z\",\"why\":\"Review the rights.\","
+                + "\"publicText\":{\"cs\":\"Zatím nelze.\"}}");
         assertThat(restriction("pi28", document("NEW", "INGEST-NEW", "New item", "Map")))
                 .isEqualTo(new RestrictionCheckAnswer(List.of(new RestrictionCheckAnswer.Finding(
-                        "R-NEW", true, java.time.Instant.parse("2027-01-01T00:00:00Z"), "Review the rights."))));
+                        "R-NEW", true, java.time.Instant.parse("2027-01-01T00:00:00Z"), "Review the rights.",
+                        java.util.Map.of("cs", "Zatím nelze.")))));
     }
 
     @Test

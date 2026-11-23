@@ -443,7 +443,7 @@ class RecordsSeedLoader {
                     .set(ITERATIONS.LIST_ID, nullableString(row, "listId"))
                     .set(ITERATIONS.FORMER_LIST_NAME, nullableString(row, "formerListName"))
                     .set(ITERATIONS.RESTRICTION_RULE, nullableString(restriction, "rule"))
-                    .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, nullableString(restriction, "publicText"))
+                    .set(ITERATIONS.RESTRICTION_PUBLIC_TEXT, nullableJson(restriction, "publicText"))
                     .set(ITERATIONS.RESTRICTION_INTERNAL_TEXT, nullableString(restriction, "internalText"))
                     .set(ITERATIONS.RESTRICTION_FOUND_AT, nullableInstant(restriction, "foundAt"))
                     .set(ITERATIONS.OVERRIDE_ACTOR_ID, nullableString(override, "actorId"))

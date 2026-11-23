@@ -3,8 +3,9 @@
 // defects and verdicts (§2), the gates (§3), the displayed status by precedence (§4) and the
 // coarser public vocabulary a requester reads (§5, view-map §4).
 
-import type { Decision, Iteration, Progress, Request } from "./entities";
+import type { Decision, Iteration, Progress, Request, Restriction } from "./entities";
 import { progressValues } from "./entities";
+import { nameIn } from "./names";
 
 export const validations = ["Needed", "Denied", "Approved", "NotRequired"] as const;
 export type Validation = (typeof validations)[number];
@@ -189,6 +190,15 @@ export function publicStatusOf(request: Request, iteration: Iteration | null): P
   }
 
   return iteration === null ? "BeingAdded" : publicIterationStatusOf(iteration);
+}
+
+// STAT-public: what askers read about a restriction in a language, null where the finding gave
+// them nothing and VERA's own wording stands.
+export function restrictionPublicTextIn(
+  restriction: Restriction,
+  language: "cs" | "en",
+): string | null {
+  return restriction.publicText === null ? null : nameIn(restriction.publicText, language) || null;
 }
 
 // The public status of an attempt, whoever asked for it.

@@ -242,7 +242,7 @@ function previewFor(
                   {
                     forbidden: true,
                     until: null,
-                    why: restriction.internalText ?? restriction.publicText ?? restriction.rule,
+                    why: restriction.internalText ?? restriction.rule,
                   },
                 ],
         }

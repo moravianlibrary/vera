@@ -491,6 +491,8 @@
   "statusNote.cancelled": "Pozastaveno",
   "statusNote.couldNotBeDigitized": "Nebylo možné digitalizovat",
   "statusNote.forbidden": "Zakázáno",
+  "statusNote.notAvailable": "Nedostupné",
+  "statusNote.notAvailableForDigitization": "Nelze digitalizovat.",
   "statusNote.couldNotBeAdded": "Nepodařilo se přijmout",
   "statusNote.retryHelp": "zopakuje to kurátor nebo správce.",
   "statusNote.onHold": "Pozastaveno",

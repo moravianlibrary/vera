@@ -147,8 +147,9 @@ final class MessageSubjects {
         Map<?, ?> record = (Map<?, ?>) detail.get("record");
         Map<?, ?> document = (Map<?, ?>) record.get("document");
         List<String> recipientIds = "overrule".equals(kind) ? overruleHolders() : requestsForIteration(id);
+        // Staff read the finding's why; askers' text is theirs (STAT-public).
         String explanation = iteration.getRestrictionInternalText() == null
-                ? iteration.getRestrictionPublicText() : iteration.getRestrictionInternalText();
+                ? iteration.getRestrictionRule() : iteration.getRestrictionInternalText();
         return new Subject(label(document), "/review/documents?id=" + encode(id) + "&review=Forbidden",
                 "Forbidden by " + iteration.getRestrictionRule() + ": " + explanation, recipientIds);
     }

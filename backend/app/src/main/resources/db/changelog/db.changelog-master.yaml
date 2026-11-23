@@ -167,3 +167,6 @@ databaseChangeLog:
   - include:
       file: 0510-plugin-instance-catalog-bases.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0520-restriction-public-texts.sql
+      relativeToChangelogFile: true

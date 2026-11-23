@@ -1,10 +1,12 @@
 package cz.mzk.vera.plugin;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import cz.mzk.vera.plugin.catalog.ChangesAnswer;
 import cz.mzk.vera.plugin.catalog.SyncAnswer;
+import cz.mzk.vera.plugin.restriction.RestrictionCheckAnswer;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -16,13 +18,19 @@ class ContractVersionTests {
         assertEquals(List.of(), sync.replaced());
     }
 
+    @Test void version13RestrictionFindingsStillConstruct() {
+        RestrictionCheckAnswer.Finding finding = new RestrictionCheckAnswer.Finding("rule", true, null, "why");
+        assertNull(finding.publicText());
+    }
+
     @Test void acceptsCompatibleContractVersions() {
         assertTrue(ContractVersion.accepts("1.0"));
         assertTrue(ContractVersion.accepts("1.1"));
         assertTrue(ContractVersion.accepts("1.2"));
         assertTrue(ContractVersion.accepts("1.0.3"));
         assertTrue(ContractVersion.accepts("1.3"));
-        assertFalse(ContractVersion.accepts("1.4"));
+        assertTrue(ContractVersion.accepts("1.4"));
+        assertFalse(ContractVersion.accepts("1.5"));
         assertFalse(ContractVersion.accepts("2.0"));
     }
 }

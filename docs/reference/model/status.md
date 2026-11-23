@@ -115,6 +115,11 @@ A requester reads a coarser status, which only tells them whether to wait:
 | Scheduled | on a list: Planned or In progress |
 | Available | Digitized or Published |
 
+The reason beside it speaks the same vocabulary. A forbidden attempt reads *Not available*, and
+then the text the Restriction finding gave askers in their language, in the other language when
+it gave only that, and VERA's own *Not available for digitization* when it gave none; the
+finding's *why* is staff's alone.
+
 #### STAT-never-duplicate
 
 A requester whose ask follows other work sees that work's status, never the word *duplicate*.

@@ -171,7 +171,10 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     formerListName: null,
     restriction: {
       rule: "Conservation hold",
-      publicText: "Not available for digitization (condition).",
+      publicText: {
+        cs: "Nelze digitalizovat kvůli fyzickému stavu.",
+        en: "Not available for digitization (condition).",
+      },
       internalText:
         "Binding unstable; conservation report 2026/114 prohibits handling until restored.",
       foundAt: "2026-04-02T09:00:00Z",
@@ -460,7 +463,10 @@ const attempts: readonly Omit<Iteration, "properties">[] = [
     formerListName: null,
     restriction: {
       rule: "Copyright",
-      publicText: "Not available for digitization (rights).",
+      publicText: {
+        cs: "Nelze digitalizovat kvůli autorským právům.",
+        en: "Not available for digitization (rights).",
+      },
       internalText: "Editor-in-chief died 1961: protected until 2031 under the 70-year rule.",
       foundAt: "2026-06-21T09:00:00Z",
     },

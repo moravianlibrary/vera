@@ -1,7 +1,7 @@
 {
   "implementation": "cz.mzk.vera.copyright-rule",
   "version": "1.0.0",
-  "contractVersion": "1.0",
+  "contractVersion": "1.4",
   "triggers": [
     "OnIngest"
   ],
