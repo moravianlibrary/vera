@@ -99,10 +99,11 @@ public class WatchlistQueries {
         }
         SummaryDetails details = summaryDetails(userId, visibleRows);
         Map<String, Integer> documentCounts = documentCounts(userId, visibleRows);
+        PageReads reads = new PageReads(userId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (WatchlistsRecord row : visibleRows) {
             result.add(summary(userId, row, read(row.getAudience().data()), manager, details,
-                    documentCounts));
+                    documentCounts, reads));
         }
         result.sort((first, second) -> Integer.compare(
                 ((Number) first.get("viewerPosition")).intValue(),
@@ -411,11 +412,12 @@ public class WatchlistQueries {
     }
 
     private Map<String, Object> summary(String userId, WatchlistsRecord row, JsonNode audience,
-            boolean manager, SummaryDetails details, Map<String, Integer> documentCounts) {
+            boolean manager, SummaryDetails details, Map<String, Integer> documentCounts, PageReads reads) {
         Map<String, Object> result = stored(row);
         String id = (String) result.get("id");
         Integer documentCount = documentCounts.get(id);
-        int count = documentCount == null ? itemCount(userId, row.getView(), read(row.getFilter().data()))
+        int count = documentCount == null
+                ? itemCount(userId, row.getView(), read(row.getFilter().data()), reads)
                 : documentCount;
         Map<String, Object> viewer = details.viewers().get(id);
         int unseen = details.unseenCounts().getOrDefault(id, 0);
@@ -518,12 +520,12 @@ public class WatchlistQueries {
             Map<String, Integer> unseenCounts, Map<String, Integer> subscriberCounts) {}
 
     // WATCH-model: every record that matches now, as opening the watchlist shows them.
-    private int itemCount(String userId, String view, JsonNode filter) {
+    private int itemCount(String userId, String view, JsonNode filter, PageReads reads) {
         Map<String, String> parameters = filterParameters(filter);
         Map<String, Object> page = switch (view) {
             case "documents" -> Map.of("total", documents.count(parameters, userId, false));
             case "my-documents" -> Map.of("total", documents.count(parameters, userId, true));
-            default -> page(view, parameters, userId);
+            default -> page(view, parameters, userId, reads);
         };
         if (page.get("total") instanceof Number total) {
             return total.intValue();
@@ -550,7 +552,7 @@ public class WatchlistQueries {
             case "validations" -> validations.matches(parameters, userId, recordId);
             // These smaller views keep using their page query to match the full result.
             default -> {
-                Map<String, Object> page = page(view, parameters, userId);
+                Map<String, Object> page = page(view, parameters, userId, new PageReads(userId));
                 yield ((List<?>) page.get("items")).stream()
                         .anyMatch(item -> hasRecord(view, item, recordId));
             }
@@ -569,7 +571,48 @@ public class WatchlistQueries {
         };
     }
 
-    private Map<String, Object> page(String view, Map<String, String> parameters, String userId) {
+    // The pages filtered in memory read their whole model once per call, however many of their
+    // watchlists one call counts.
+    private final class PageReads {
+        private final String userId;
+        private final Map<String, Map<String, Object>> categoryIndexes = new HashMap<>();
+        private List<Map<String, Object>> categoryList;
+        private List<Map<String, Object>> mixList;
+        private Map<String, Object> intentionIndex;
+
+        PageReads(String userId) {
+            this.userId = userId;
+        }
+
+        Map<String, Object> categoryIndex(String mixId) {
+            return categoryIndexes.computeIfAbsent(String.valueOf(mixId),
+                    ignored -> categories.index(userId, mixId));
+        }
+
+        List<Map<String, Object>> categoryList() {
+            if (categoryList == null) {
+                categoryList = categories.categories();
+            }
+            return categoryList;
+        }
+
+        List<Map<String, Object>> mixList() {
+            if (mixList == null) {
+                mixList = mixes.list(userId);
+            }
+            return mixList;
+        }
+
+        Map<String, Object> intentionIndex() {
+            if (intentionIndex == null) {
+                intentionIndex = intentions.overview(userId);
+            }
+            return intentionIndex;
+        }
+    }
+
+    private Map<String, Object> page(String view, Map<String, String> parameters, String userId,
+            PageReads reads) {
         return switch (view) {
             case "documents" -> documents.page(parameters, userId, false);
             case "my-documents" -> documents.page(parameters, userId, true);
@@ -578,17 +621,17 @@ public class WatchlistQueries {
             case "lists" -> lists.index(parameters, userId);
             case "projects" -> Map.of("items", projects.overview(userId, parameters).get("rows"));
             case "categories" -> {
-                Map<String, Object> index = categories.index(userId, parameters.get("mix"));
-                Set<String> matching = CategoryFilters.matchingCategoryIds(categories.categories(), index,
+                Map<String, Object> index = reads.categoryIndex(parameters.get("mix"));
+                Set<String> matching = CategoryFilters.matchingCategoryIds(reads.categoryList(), index,
                         parameters);
                 yield Map.of("items", categoryNodes(index).stream().filter(node ->
                         matching.contains(((Map<?, ?>) node).get("categoryId"))).toList());
             }
-            case "mixes" -> Map.of("items", MixFilters.matchingMixes(mixes.list(userId),
-                    categories.categories(), parameters));
+            case "mixes" -> Map.of("items", MixFilters.matchingMixes(reads.mixList(),
+                    reads.categoryList(), parameters));
             case "intentions" -> {
                 Map<String, Object> matching = IntentionFilters.matchingIntentions(
-                        intentions.overview(userId), parameters);
+                        reads.intentionIndex(), parameters);
                 List<Object> items = new ArrayList<>((List<?>) matching.get("rows"));
                 items.addAll((List<?>) matching.get("templates"));
                 yield Map.of("items", items);
