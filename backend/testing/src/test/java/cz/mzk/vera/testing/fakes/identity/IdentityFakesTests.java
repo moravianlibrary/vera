@@ -56,7 +56,7 @@ class IdentityFakesTests {
         String callback = "http://localhost/api/login/pi22/callback";
         String page = (String) providerPage.page("pi22", "vera", callback, "openid", "s1").getBody();
         assertThat(page).contains("Jana Nováková", "Petr Dvořák", "VERA: Petr Dvořák", "mzk-curators",
-                "Kurátor", "Správce");
+                "Kurátor", "Správce", "action=\"/_engine/identity/pi22/auth\"");
 
         ResponseEntity<?> chosen = providerPage.choose("pi22", callback, "s1", "jnovakova", null);
         assertThat(chosen.getStatusCode().value()).isEqualTo(302);

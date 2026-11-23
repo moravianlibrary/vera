@@ -67,7 +67,9 @@ public class FakeProviderPage {
                 .append(escape(clientId == null ? "" : clientId)).append("</b> with <code>")
                 .append(escape(scope == null ? "" : scope))
                 .append("</code>. Pick an account; nobody is asked for a password.</p>")
-                .append("<form method=\"post\"><input type=\"hidden\" name=\"redirect_uri\" value=\"")
+                // The bare path: posting back to the query too would send redirect_uri and state twice.
+                .append("<form method=\"post\" action=\"/_engine/identity/").append(escape(instanceId))
+                .append("/auth\"><input type=\"hidden\" name=\"redirect_uri\" value=\"")
                 .append(escape(redirectUri)).append("\"><input type=\"hidden\" name=\"state\" value=\"")
                 .append(escape(state)).append("\"><ul>");
         Map<String, String> roleNames = roleNames();
