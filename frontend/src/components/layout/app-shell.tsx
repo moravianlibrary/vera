@@ -18,7 +18,7 @@ import { SwipePeekPill } from "@/components/swipe-peek-pill";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import { ServiceUnavailablePage } from "@/features/system/service-unavailable-page";
 import { GlobalRunDrawer } from "@/features/tasks/global-run-drawer";
-import { useAppearance } from "@/hooks/use-appearance";
+import { useAppliedAppearance } from "@/hooks/use-appearance";
 import { useAppliedLanguage } from "@/hooks/use-language";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useSidebarPeek } from "@/hooks/use-sidebar-peek";
@@ -37,7 +37,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const matches = useMatches();
   const lastPage = useRef<string | null>(null);
-  useAppearance();
+  useAppliedAppearance();
   useAppliedLanguage();
   const { data: userSettings } = useUserSettingsQuery();
   const sidebar = useSidebarPreference();

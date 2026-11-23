@@ -7,6 +7,7 @@ import { i18n } from "@/i18n";
 import { queryClient } from "@/lib/query-client";
 import {
   forgetLoginLanguagePick,
+  keepLanguage,
   languageInUse,
   languageToSave,
   loginLanguagePick,
@@ -21,8 +22,9 @@ export function useLanguage() {
   };
 }
 
-// Once, in the shell: applies the language to the messages and the page, and saves it as the
-// person's when they first log in or pick one on the login page.
+// Once, in the shell: applies the language to the messages and the page, keeps it in this browser
+// for the login page, and saves it as the person's when they first log in or pick one on the
+// login page.
 export function useAppliedLanguage(): void {
   const { data: settings, isSuccess } = useUserSettingsQuery();
   const { mutate } = useUserSettingsMutation();
@@ -35,6 +37,7 @@ export function useAppliedLanguage(): void {
       void i18n.changeLanguage(language).then(() => queryClient.invalidateQueries());
     }
     document.documentElement.lang = language;
+    keepLanguage(language);
   }, [language]);
 
   useEffect(() => {

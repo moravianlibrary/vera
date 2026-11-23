@@ -24,6 +24,27 @@ const nodeForm = await new Response("a=b", {
 }).formData();
 Object.assign(globalThis, { FormData: nodeForm.constructor, File: NodeFile });
 
+// Node's own localStorage, unset without --localstorage-file, hides jsdom's; a browser keeps one
+// per origin, so each test file gets an empty one.
+if (window.localStorage === undefined) {
+  const values = new Map<string, string>();
+  const storage: Storage = {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => {
+      values.delete(key);
+    },
+    setItem: (key, value) => {
+      values.set(key, String(value));
+    },
+  };
+  Object.defineProperty(window, "localStorage", { configurable: true, value: storage });
+}
+
 if (typeof window.matchMedia !== "function") {
   Object.defineProperty(window, "matchMedia", {
     configurable: true,

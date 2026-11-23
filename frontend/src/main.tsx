@@ -4,7 +4,8 @@ import { App } from "@/app";
 import { env } from "@/config/env";
 import { startTelemetry } from "@/lib/telemetry/telemetry";
 import "@/globals.css";
-import "@/i18n";
+import { i18n } from "@/i18n";
+import { languageBeforeLogin } from "@/i18n/language";
 
 async function prepareApp() {
   if (import.meta.env.DEV && env.VITE_API_MODE === "mock") {
@@ -17,6 +18,11 @@ async function prepareApp() {
       console.error("Mock API could not start; rendering the application anyway.", error);
     });
   }
+
+  // UI-language: the login page speaks this browser's language; the shell then applies the person's.
+  const language = languageBeforeLogin();
+  await i18n.changeLanguage(language);
+  document.documentElement.lang = language;
 
   const root = document.getElementById("root");
   if (root === null) {

@@ -1,6 +1,7 @@
 // UI-language: the interface speaks Czech or English. Before the person holds a language, it is
-// the one picked on the login page, else the browser's, else English; the first login keeps it
-// as theirs, and a pick on the login page replaces the one they hold.
+// the one picked on the login page, else the one this browser kept, else the browser's, else
+// English; the first login keeps it as theirs, and a pick on the login page replaces the one they
+// hold. The browser keeps the language last picked or used in it, for the login page.
 
 import type { Language } from "@vera/contract/user-settings";
 import { languages } from "@vera/contract/user-settings";
@@ -12,6 +13,7 @@ export const languageNames: Readonly<Record<Language, string>> = {
 };
 
 const loginPickKey = "vera.login-language";
+const keptKey = "vera.language";
 
 // The first of the browser's languages VERA speaks, in the browser's order of preference.
 export function browserLanguageOf(preferred: readonly string[]): Language {
@@ -32,13 +34,38 @@ export function browserLanguage(): Language {
     : browserLanguageOf(navigator.languages ?? [navigator.language]);
 }
 
-// The login page's pick lasts across an identity provider's redirect, in this tab only.
+// The login page's pick lasts across an identity provider's redirect, in this tab only, and the
+// browser keeps it.
 export function pickLoginLanguage(language: Language): void {
   try {
     window.sessionStorage.setItem(loginPickKey, language);
   } catch {
     // Without storage the pick lasts only for this page.
   }
+  keepLanguage(language);
+}
+
+// The language last picked or used in this browser.
+export function keptLanguage(): Language | null {
+  try {
+    const kept = window.localStorage.getItem(keptKey);
+    return languages.find((language) => language === kept) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function keepLanguage(language: Language): void {
+  try {
+    window.localStorage.setItem(keptKey, language);
+  } catch {
+    // Without storage the login page falls back to the browser's language.
+  }
+}
+
+// What the login page and the other pages outside the shell speak.
+export function languageBeforeLogin(): Language {
+  return loginLanguagePick() ?? keptLanguage() ?? browserLanguage();
 }
 
 export function loginLanguagePick(): Language | null {
@@ -58,9 +85,9 @@ export function forgetLoginLanguagePick(): void {
   }
 }
 
-// What the interface speaks: a fresh login pick, the person's own, else the browser's.
+// What the interface speaks: a fresh login pick, the person's own, else this browser's.
 export function languageInUse(held: Language | undefined, picked: Language | null): Language {
-  return picked ?? held ?? browserLanguage();
+  return picked ?? held ?? keptLanguage() ?? browserLanguage();
 }
 
 // What to save as the person's: a login pick replaces theirs, and a first login keeps the one in

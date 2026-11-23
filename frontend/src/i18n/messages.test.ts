@@ -8,6 +8,9 @@ import { i18n, resources } from "@/i18n";
 import {
   browserLanguageOf,
   forgetLoginLanguagePick,
+  keepLanguage,
+  keptLanguage,
+  languageBeforeLogin,
   languageInUse,
   languageToSave,
   loginLanguagePick,
@@ -64,7 +67,10 @@ describe("messages", () => {
 });
 
 describe("the language in use (UI-language)", () => {
-  afterEach(forgetLoginLanguagePick);
+  afterEach(() => {
+    forgetLoginLanguagePick();
+    window.localStorage.clear();
+  });
 
   it("takes the first of the browser's languages it speaks, else English", () => {
     expect(browserLanguageOf(["sk-SK", "cs-CZ", "en"])).toBe("cs");
@@ -88,5 +94,21 @@ describe("the language in use (UI-language)", () => {
     expect(loginLanguagePick()).toBe("cs");
     forgetLoginLanguagePick();
     expect(loginLanguagePick()).toBeNull();
+  });
+
+  it("keeps the language last picked or used in this browser for the login page", () => {
+    expect(keptLanguage()).toBeNull();
+    pickLoginLanguage("cs");
+    forgetLoginLanguagePick();
+    expect(languageBeforeLogin()).toBe("cs");
+    keepLanguage("en");
+    expect(languageBeforeLogin()).toBe("en");
+  });
+
+  it("moves the kept language to a first login, but never over the person's own", () => {
+    keepLanguage("cs");
+    expect(languageToSave(undefined, null)).toBe("cs");
+    expect(languageToSave("en", null)).toBeNull();
+    expect(languageInUse("en", null)).toBe("en");
   });
 });

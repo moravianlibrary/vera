@@ -90,6 +90,11 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
   in the backend, so their entries, badges and notices follow the filter too
   ([WATCH-model](reference/integrations/watchlists.md#watch-model),
   [UI-filters](reference/ui/pages.md#ui-filters)).
+- **L88:** the browser keeps the language and the appearance last picked or used in it; the
+  login page shows them, the first login moves them to the person, and a pick on the login page
+  replaces theirs ([UI-language](reference/ui/navigation.md#ui-language),
+  [UI-appearance](reference/ui/navigation.md#ui-appearance),
+  [UI-preferences](reference/ui/navigation.md#ui-preferences)).
 
 ### Built, 2026-11-21
 

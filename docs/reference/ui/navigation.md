@@ -50,18 +50,29 @@ A person's preferences (the Display choices, the watchlists they last opened, th
 choices) are theirs alone. They are kept on the server, apart from the user record, so they
 follow the person to any browser they log in from, and nobody else reads or changes them. A
 change sends only what changed; it is merged into what is kept, key by key, and leaves the other
-preferences as they were. Only what a person may choose before logging in, such as the
-appearance and the language on the login page, is kept in the browser until they log in; and the
-sidebar's expanded or collapsed state stays with the device ([UI-rail](#ui-rail)), since one
-person wants a different answer on a large monitor and on a notebook.
+preferences as they were. What a person may choose before logging in, the language and the
+appearance, is kept in the browser as well, as last chosen or used there
+([UI-language](#ui-language), [UI-appearance](#ui-appearance)); and the sidebar's expanded or
+collapsed state stays with the device ([UI-rail](#ui-rail)), since one person wants a different
+answer on a large monitor and on a notebook.
 
 #### UI-language
 
 The interface speaks Czech or English. On a person's first access it speaks the browser's
 language, or English when the browser prefers neither. The login page lets them pick the other.
+The browser keeps the language last picked or used in it, so the login page speaks it, after
+logging out too.
 The language is the person's: their first login keeps the one in use, it is the same in any
 browser they log in from, and they change it in Preferences → Display. A pick on the login page
-replaces the language they hold.
+replaces the language they hold; a language the browser kept from before does not.
+
+#### UI-appearance
+
+The interface is light, dark or follows the system's appearance, which it does until someone
+picks. The appearance is kept as the language is ([UI-language](#ui-language)): the browser keeps
+the one last picked or used in it and the login page shows it, the first login keeps the one in
+use as the person's, they change it in Preferences → Display or the user menu, and a pick on the
+login page replaces the one they hold.
 
 #### UI-names
 
