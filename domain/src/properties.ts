@@ -88,17 +88,26 @@ export function mayBeEnteredByHand(definition: Pick<PropertyDefinition, "key" | 
   return !definition.isCatalogFact || definition.key === pageCountKey;
 }
 
-// TODO(rrandiak): the UI language comes with i18n; English until then.
-export function propertyNameOf(definition: Pick<PropertyDefinition, "names">): string {
-  return definition.names.en;
+// UI-names: a property and its enum values are named in both languages; the caller says which.
+export function propertyNameOf(
+  definition: Pick<PropertyDefinition, "names">,
+  language: "cs" | "en",
+): string {
+  return definition.names[language];
 }
 
-export function enumValueNameOf(definition: PropertyDefinition, value: string): string {
+export function enumValueNameOf(
+  definition: PropertyDefinition,
+  value: string,
+  language: "cs" | "en",
+): string {
   if (definition.type.kind !== "enum") {
     return value;
   }
 
-  return definition.type.values.find((candidate) => candidate.value === value)?.names.en ?? value;
+  return (
+    definition.type.values.find((candidate) => candidate.value === value)?.names[language] ?? value
+  );
 }
 
 // ---------------------------------------------------------------- values
@@ -161,16 +170,26 @@ export function valuesOf(
 
 const scalarsOf = (value: PropertyValue): ScalarValue[] => (Array.isArray(value) ? value : [value]);
 
-// "A4", "Zeutschel, Bookeye", "42 cm", "Yes", "1 Jun 2026".
-export function formatPropertyValue(definition: PropertyDefinition, value: PropertyValue): string {
+// "A4", "Zeutschel, Bookeye", "42 cm", "Yes", "1 Jun 2026"; Czech says "Ano" and "1 234".
+export function formatPropertyValue(
+  definition: PropertyDefinition,
+  value: PropertyValue,
+  language: "cs" | "en",
+): string {
   const format = (scalar: ScalarValue): string => {
     switch (definition.type.kind) {
       case "yesNo":
-        return scalar === true ? "Yes" : "No";
+        return language === "cs"
+          ? scalar === true
+            ? "Ano"
+            : "Ne"
+          : scalar === true
+            ? "Yes"
+            : "No";
       case "enum":
-        return enumValueNameOf(definition, String(scalar));
+        return enumValueNameOf(definition, String(scalar), language);
       case "number": {
-        const number = Number(scalar).toLocaleString("en-GB");
+        const number = Number(scalar).toLocaleString(language === "cs" ? "cs-CZ" : "en-GB");
         return definition.type.unit === "" ? number : `${number} ${definition.type.unit}`;
       }
       case "date":

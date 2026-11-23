@@ -37,16 +37,15 @@ import type {
 } from "@vera/domain/properties";
 import {
   editPermissionOf,
-  formatPropertyValue,
   isValueOf,
   mayBeEnteredByHand,
   meetsCondition,
   pageCountKey,
-  propertyNameOf,
   valueInUseOf,
   valuesOf,
 } from "@vera/domain/properties";
 import { isFoundAfterScan, reviewStateOf } from "@vera/domain/validations";
+import { formatPropertyValue, propertyNameOf } from "@/features/properties/property-names";
 import { database, mockStore } from "@/mocks/database";
 import type { StoredPropertyDefinition } from "@/mocks/fixtures/properties";
 import { recordHookEvent } from "@/mocks/hooks";

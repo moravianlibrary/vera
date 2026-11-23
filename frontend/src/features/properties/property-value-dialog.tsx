@@ -7,7 +7,7 @@
 
 import type { BulkPropertyEntryResult, PropertyEntryResult } from "@vera/contract/properties";
 import type { PropertyDefinition, PropertyValue, ScalarValue } from "@vera/domain/properties";
-import { isValueOf, propertyNameOf } from "@vera/domain/properties";
+import { isValueOf } from "@vera/domain/properties";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { enterPropertyValue, enterPropertyValues } from "@/api/properties";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import { propertyNameOf } from "@/features/properties/property-names";
 import { propertiesQueryKey } from "@/features/properties/use-properties-query";
 import { validationsQueryKey } from "@/features/validations/use-validations-query";
 import type { Refusal } from "@/hooks/use-action-mutation";

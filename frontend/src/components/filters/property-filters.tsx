@@ -9,8 +9,6 @@ import type { PropertyFacets, PropertyParams } from "@vera/contract/properties";
 import { conditionsOf, withCondition, withoutCondition } from "@vera/contract/properties";
 import type { PropertyCondition, PropertyDefinition, TextMatch } from "@vera/domain/properties";
 import {
-  enumValueNameOf,
-  propertyNameOf,
   textConditionOf,
   textMatches,
   withTextCondition,
@@ -39,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { enumValueNameOf, propertyNameOf } from "@/features/properties/property-names";
 import { i18n } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { RangeFieldDefinition } from "@/lib/view-definition";

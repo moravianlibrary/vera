@@ -12,9 +12,7 @@ import { can } from "@vera/domain/permissions";
 import type { PropertyDefinition, PropertyValues, SourcedValue } from "@vera/domain/properties";
 import {
   editPermissionOf,
-  formatPropertyValue,
   mayBeEnteredByHand,
-  propertyNameOf,
   sourcesByTierOf,
   valueInUseOf,
   valuesOf,
@@ -25,6 +23,7 @@ import { useTranslation } from "react-i18next";
 import { DetailCard, DetailRow, FinePrint, Muted } from "@/components/detail-card";
 import { ToneBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
+import { formatPropertyValue, propertyNameOf } from "@/features/properties/property-names";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { useSessionQuery } from "@/hooks/use-session-query";

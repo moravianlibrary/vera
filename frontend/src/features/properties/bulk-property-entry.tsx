@@ -6,7 +6,6 @@
 import type { BulkPropertyEntryResult } from "@vera/contract/properties";
 import type { Session } from "@vera/domain/entities";
 import type { PropertyDefinition } from "@vera/domain/properties";
-import { propertyNameOf } from "@vera/domain/properties";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -21,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { canEnterProperty } from "@/features/properties/properties-card";
+import { propertyNameOf } from "@/features/properties/property-names";
 import { PropertyValueDialog } from "@/features/properties/property-value-dialog";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 

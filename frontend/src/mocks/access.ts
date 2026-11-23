@@ -39,7 +39,7 @@ import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@v
 import type { Session } from "@vera/domain/entities";
 import { isShared } from "@vera/domain/entities";
 import { hasPermission, isAcceptedGrant, missingRequirementsOf } from "@vera/domain/permissions";
-import { propertyNameOf } from "@vera/domain/properties";
+import { propertyNameOf } from "@/features/properties/property-names";
 import { database, mockStore } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredRequestCustody } from "@/mocks/fixtures/request-custodies";

@@ -5,9 +5,7 @@
 
 import type { PropertyCondition, PropertyDefinition, TextMatch } from "@vera/domain/properties";
 import {
-  enumValueNameOf,
   isActiveCondition,
-  propertyNameOf,
   textConditionOf,
   textMatches,
   withTextCondition,
@@ -27,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { enumValueNameOf, propertyNameOf } from "@/features/properties/property-names";
 import { usePropertiesQuery } from "@/features/properties/use-properties-query";
 import { i18n } from "@/i18n";
 

@@ -246,7 +246,7 @@ const functions: Record<string, (...args: unknown[]) => unknown> = {
   valueInUseOf: (...args) => valueInUseOf(args[0] as never),
   valueInUseAt: (...args) => valueInUseAt(args[0] as never, args[1] as string),
   isValueOf: (...args) => isValueOf(args[0] as never, args[1] as never),
-  formatPropertyValue: (...args) => formatPropertyValue(args[0] as never, args[1] as never),
+  formatPropertyValue: (...args) => formatPropertyValue(args[0] as never, args[1] as never, "en"),
   textSummaryOf: (...args) => textSummaryOf(args[0] as never),
   withTextCondition: (...args) =>
     withTextCondition(args[0] as never, args[1] as never, args[2] as string),

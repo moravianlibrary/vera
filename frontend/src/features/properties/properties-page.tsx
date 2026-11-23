@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { NewProperty } from "@vera/contract/properties";
 import { hasPermission } from "@vera/domain/permissions";
 import type { PropertyDefinition } from "@vera/domain/properties";
-import { editPermissionOf, mayBeEnteredByHand, propertyNameOf } from "@vera/domain/properties";
+import { editPermissionOf, mayBeEnteredByHand } from "@vera/domain/properties";
 import { Tags } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +38,7 @@ import {
   typeLabels,
   visibilityLabels,
 } from "@/features/properties/property-editor";
+import { propertyNameOf } from "@/features/properties/property-names";
 import {
   propertyInvalidations,
   usePropertiesQuery,
