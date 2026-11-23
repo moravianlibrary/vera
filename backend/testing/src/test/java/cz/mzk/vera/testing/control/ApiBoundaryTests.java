@@ -222,17 +222,20 @@ class ApiBoundaryTests {
                 .expectStatus().isFound().expectBody().returnResult();
         String providerPath = start.getResponseHeaders().getLocation().toString();
         assertThat(jdbc.queryForObject("SELECT return_to FROM login_flows", String.class)).isEqualTo("/requests");
-        var provider = client.get().uri(providerPath).exchange().expectStatus().isOk().expectBody(String.class)
-                .returnResult().getResponseBody();
-        assertThat(provider).contains("Jana Nováková").contains("href=");
+        var provider = client.get().uri(java.net.URI.create(providerPath)).exchange().expectStatus().isOk()
+                .expectBody(String.class).returnResult().getResponseBody();
+        assertThat(provider).contains("Jana Nováková").contains("name=\"code\"");
         assertThat(provider.split("<li>").length - 1).isEqualTo(7);
-        Matcher link = Pattern.compile("href=\\\"([^\\\"]*jnovakova[^\\\"]*)\\\"")
-                .matcher(provider);
-        assertThat(link.find()).isTrue();
-        String href = java.net.URLDecoder.decode(link.group(1).replace("&amp;", "&"), java.nio.charset.StandardCharsets.UTF_8);
-        java.net.URI callbackUri = java.net.URI.create(href);
-        String callbackPath = callbackUri.getRawPath() + "?" + callbackUri.getRawQuery();
         String expectedState = jdbc.queryForObject("SELECT id FROM login_flows", String.class);
+        String redirectUri = java.net.URLDecoder.decode(providerPath.split("redirect_uri=", 2)[1].split("&", 2)[0],
+                java.nio.charset.StandardCharsets.UTF_8);
+        // The provider page's form, as the browser posts it for the account picked.
+        String callbackPath = client.post().uri("/_engine/identity/pi22/auth")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body("redirect_uri=" + java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8)
+                        + "&state=" + expectedState + "&code=jnovakova")
+                .exchange().expectStatus().isFound().expectBody().returnResult()
+                .getResponseHeaders().getLocation().toString();
         assertThat(callbackPath).contains("state=" + expectedState);
         var callback = client.get().uri(callbackPath).exchange().expectStatus().isFound()
                 .expectHeader().value("Location", value -> assertThat(value).isEqualTo("/requests"))
@@ -241,8 +244,7 @@ class ApiBoundaryTests {
         String cookie = callback.getResponseHeaders().getFirst("Set-Cookie").split(";", 2)[0];
         client.get().uri("/api/session").header("Cookie", cookie).exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.user.id").isEqualTo("u1");
-        String flow = java.net.URLDecoder.decode(href.substring(href.indexOf("state=") + 6,
-                href.indexOf("&code=")), java.nio.charset.StandardCharsets.UTF_8);
+        String flow = expectedState;
         client.get().uri("/api/login/pi22/callback?state=" + flow + "&code=jnovakova").exchange()
                 .expectStatus().isFound().expectHeader().value("Location", value ->
                         assertThat(value).isEqualTo("/login?error=login.expired"));
@@ -281,7 +283,7 @@ class ApiBoundaryTests {
             var started = client.get().uri("/api/login/pi22?returnTo=" + returnTo)
                     .exchange().expectStatus().isFound().expectBody().returnResult();
             String provider = started.getResponseHeaders().getLocation().toString();
-            String flow = java.net.URLDecoder.decode(provider.substring(provider.indexOf("callback=") + 7),
+            String flow = java.net.URLDecoder.decode(provider.substring(provider.indexOf("redirect_uri=") + 13),
                     java.nio.charset.StandardCharsets.UTF_8);
             Matcher flowMatch = Pattern.compile("state=([^&]+)").matcher(flow);
             assertThat(flowMatch.find()).isTrue();
@@ -291,7 +293,7 @@ class ApiBoundaryTests {
         var started = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String provider = started.getResponseHeaders().getLocation().toString();
-        String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("callback=") + 7),
+        String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("redirect_uri=") + 13),
                 java.nio.charset.StandardCharsets.UTF_8);
         Matcher flowMatch = Pattern.compile("state=([^&]+)").matcher(callbackUrl);
         assertThat(flowMatch.find()).isTrue();
@@ -310,7 +312,7 @@ class ApiBoundaryTests {
         var crossStart = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String crossCallback = java.net.URLDecoder.decode(crossStart.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String crossFlow = Pattern.compile("state=([^&]+)").matcher(crossCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi41/callback?state=" + crossFlow + "&code=google-u1").exchange()
@@ -319,7 +321,7 @@ class ApiBoundaryTests {
         var unknownStart = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String unknownCallback = java.net.URLDecoder.decode(unknownStart.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String unknownFlow = Pattern.compile("state=([^&]+)").matcher(unknownCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?state=" + unknownFlow + "&code=unknown").exchange()
@@ -332,7 +334,7 @@ class ApiBoundaryTests {
         var start = client.get().uri("/api/login/pi41").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String provider = start.getResponseHeaders().getLocation().toString();
-        String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("callback=") + 7),
+        String callbackUrl = java.net.URLDecoder.decode(provider.substring(provider.indexOf("redirect_uri=") + 13),
                 java.nio.charset.StandardCharsets.UTF_8);
         String flow = Pattern.compile("state=([^&]+)").matcher(callbackUrl).results()
                 .findFirst().orElseThrow().group(1);
@@ -348,7 +350,7 @@ class ApiBoundaryTests {
         var emailStart = client.get().uri("/api/login/pi41").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String emailCallback = java.net.URLDecoder.decode(emailStart.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String emailFlow = Pattern.compile("state=([^&]+)").matcher(emailCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi41/callback?state=" + emailFlow + "&code=google-u1").exchange()
@@ -363,7 +365,7 @@ class ApiBoundaryTests {
         var start = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String flow = Pattern.compile("state=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?state=" + flow + "&code=jnovakova").exchange()
@@ -374,7 +376,7 @@ class ApiBoundaryTests {
         var second = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String secondCallback = java.net.URLDecoder.decode(second.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String secondFlow = Pattern.compile("state=([^&]+)").matcher(secondCallback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?state=" + secondFlow + "&code=jnovakova").exchange()
@@ -390,7 +392,7 @@ class ApiBoundaryTests {
         var start = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String flow = Pattern.compile("state=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         var login = client.get().uri("/api/login/pi22/callback?state=" + flow + "&code=bez.skupiny")
@@ -406,7 +408,7 @@ class ApiBoundaryTests {
         var start = client.get().uri("/api/login/pi22").exchange().expectStatus().isFound()
                 .expectBody().returnResult();
         String callback = java.net.URLDecoder.decode(start.getResponseHeaders().getLocation().toString()
-                .split("callback=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
+                .split("redirect_uri=", 2)[1], java.nio.charset.StandardCharsets.UTF_8);
         String flow = Pattern.compile("state=([^&]+)").matcher(callback).results()
                 .findFirst().orElseThrow().group(1);
         client.get().uri("/api/login/pi22/callback?state=" + flow + "&code=jnovakova").exchange()
