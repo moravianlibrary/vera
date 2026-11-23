@@ -92,7 +92,7 @@ export function ChoiceTabs<Value extends string>({
           ref={listRef}
           aria-label={label}
           onScroll={measureEdges}
-          className="flex w-full max-w-full flex-nowrap justify-start overflow-x-auto [scrollbar-width:thin] sm:w-fit sm:flex-wrap sm:h-auto"
+          className="flex w-full max-w-full flex-nowrap justify-start overflow-x-auto overflow-y-hidden [scrollbar-width:thin] sm:w-fit sm:flex-wrap sm:h-auto"
         >
           {panels.map((panel) => (
             <TabsTrigger key={panel.value} value={panel.value} className="flex-none sm:flex-1">
