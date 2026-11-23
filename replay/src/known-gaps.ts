@@ -20,7 +20,7 @@ export const knownGaps: KnownGap[] = [
     recording: "base-sign-in.json",
     scenario: "provider-login-mock-only",
     reason:
-      "the mock shortcut POST /api/login/pi22/mock answers 204; the backend completes provider login through /_engine/identity/pi22 after a real start and callback",
+      "the mock shortcut POST /api/login/pi22/mock answers 204; the backend completes provider login through the provider page /_engine/identity/pi22/auth after a real start and callback",
   },
 ];
 

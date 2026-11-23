@@ -21,12 +21,19 @@ import java.util.Map;
 
 // E15; fakes.md Identity.
 public final class FakeOidcIdentity implements Identity {
+    // As OidcIdentity sends the browser to the provider's authorization endpoint, this sends it to
+    // the test provider's sign-in page, which redirects back to the callback with a code.
     @Override
     public BeginAnswer begin(PluginContext context, BeginInput input) {
-        String callback = URLEncoder.encode(input.callback(), StandardCharsets.UTF_8);
-        String state = URLEncoder.encode(input.state(), StandardCharsets.UTF_8);
-        return new BeginAnswer("/_engine/identity/" + context.instanceId() + "?callback=" + callback
-                + "&state=" + state, Map.of());
+        String client = context.configuration().getOrDefault("client", "");
+        String scopes = context.configuration().getOrDefault("scopes", "openid email profile");
+        return new BeginAnswer("/_engine/identity/" + context.instanceId() + "/auth?response_type=code"
+                + "&client_id=" + encode(client) + "&redirect_uri=" + encode(input.callback())
+                + "&scope=" + encode(scopes) + "&state=" + encode(input.state()), Map.of());
+    }
+
+    private static String encode(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
     @Override

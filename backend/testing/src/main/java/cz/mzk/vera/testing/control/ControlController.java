@@ -9,7 +9,6 @@ import cz.mzk.vera.jobs.JobRunner;
 import cz.mzk.vera.session.SessionFilter;
 import cz.mzk.vera.testing.seeds.SeedReader;
 import cz.mzk.vera.testing.seeds.TemplateResetService;
-import cz.mzk.vera.testing.fakes.identity.FakeWorld;
 import cz.mzk.vera.web.Instants;
 import cz.mzk.vera.web.Problems;
 import cz.mzk.vera.web.RouteCheck;
@@ -55,12 +54,12 @@ public class ControlController {
     private final Environment environment;
     private final Outbox outbox;
     private final JsonMapper json;
-    private final FakeWorld fakeWorld;
     private final JobRunner jobs;
+    private final FakeProviderPage providerPage;
 
     public ControlController(StoredClock clock, SeedReader reader, TemplateResetService resetService,
             DSLContext dsl, RouteCheck routes, Environment environment, Outbox outbox, JsonMapper json,
-            FakeWorld fakeWorld, JobRunner jobs) {
+            JobRunner jobs, FakeProviderPage providerPage) {
         this.clock = clock;
         this.reader = reader;
         this.resetService = resetService;
@@ -69,58 +68,26 @@ public class ControlController {
         this.environment = environment;
         this.outbox = outbox;
         this.json = json;
-        this.fakeWorld = fakeWorld;
         this.jobs = jobs;
+        this.providerPage = providerPage;
     }
 
-    @GetMapping(value = "/identity/{instanceId}", produces = "text/html")
+    @GetMapping(value = "/identity/{instanceId}/auth", produces = "text/html")
     public ResponseEntity<?> identityPage(@PathVariable String instanceId,
-            @RequestParam(name = "callback") String callback,
+            @RequestParam(name = "client_id", required = false) String clientId,
+            @RequestParam(name = "redirect_uri") String redirectUri,
+            @RequestParam(name = "scope", required = false) String scope,
             @RequestParam(name = "state") String state) {
-        var instance = dsl.select(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.ID,
-                        cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.SETTINGS)
-                .from(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES)
-                .join(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS)
-                .on(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IMPLEMENTATION_ID
-                        .eq(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS.ID))
-                .where(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.ID.eq(instanceId))
-                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IS_ENABLED.isTrue())
-                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.IS_DELETED.isFalse())
-                .and(cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS.KIND.eq("Identity")).fetchOne();
-        if (instance == null) return Problems.response(404, "There is no enabled Identity instance.",
-                "identity.no_instance", null);
-        String label;
-        try {
-            label = json.readTree(instance.get(cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES.SETTINGS).data())
-                    .path("label").asString();
-        } catch (JacksonException exception) {
-            throw new IllegalStateException("Invalid Identity settings", exception);
-        }
-        StringBuilder html = new StringBuilder("<!doctype html><html><head><meta charset=\"utf-8\"><title>")
-                .append(escapeHtml(label)).append("</title></head><body><h1>").append(escapeHtml(label))
-                .append("</h1><ul>");
-        for (var accountEntry : fakeWorld.accountsForInstance(instanceId).entrySet()) {
-            var account = accountEntry.getValue();
-            String href = java.net.URI.create(callback).getRawPath() + "?state="
-                    + java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8) + "&code="
-                    + java.net.URLEncoder.encode(
-                            accountEntry.getKey(), java.nio.charset.StandardCharsets.UTF_8);
-            html.append("<li><a href=\"").append(escapeHtml(href)).append("\">")
-                    .append(escapeHtml(account.path("name").asString()))
-                    .append("</a> — ")
-                    .append(escapeHtml(account.path("email").isNull()
-                            ? ""
-                            : account.path("email").asString()))
-                    .append("</li>");
-        }
-        html.append("</ul></body></html>");
-        return ResponseEntity.ok().contentType(org.springframework.http.MediaType.TEXT_HTML)
-                .body(html.toString());
+        return providerPage.page(instanceId, clientId, redirectUri, scope, state);
     }
 
-    private static String escapeHtml(String value) {
-        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-                .replace("\"", "&quot;").replace("'", "&#39;");
+    @PostMapping(value = "/identity/{instanceId}/auth", consumes = "application/x-www-form-urlencoded")
+    public ResponseEntity<?> identityChoice(@PathVariable String instanceId,
+            @RequestParam(name = "redirect_uri") String redirectUri,
+            @RequestParam(name = "state") String state,
+            @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "error", required = false) String error) {
+        return providerPage.choose(instanceId, redirectUri, state, code, error);
     }
 
     @PostMapping("/reset")

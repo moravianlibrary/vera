@@ -513,8 +513,39 @@ function generate(base: Row, seedNumber = 1, scale = 1): Seed {
         },
       ],
     },
-    fakes: { catalogRecords: [...(base.fakes?.catalogRecords ?? []), ...catalogRecords] },
+    fakes: {
+      catalogRecords: [...(base.fakes?.catalogRecords ?? []), ...catalogRecords],
+      identityAccounts: identityAccountsOf(base, users, userAccess),
+    },
   };
+}
+
+// MZK Keycloak's fake accounts for the staff this seed adds, each with the group the instance maps
+// to their role. The requesters log in through Google and Seznam, which keep the base seed's few.
+const keycloakInstanceId = "pi22";
+const groupOfRole: Record<string, string> = {
+  curator: "group mzk-curators",
+  "dig-curator": "group mzk-digitization",
+  staff: "group mzk-staff",
+};
+
+function identityAccountsOf(base: Row, users: Row[], userAccess: Record<string, Row>) {
+  const accounts: Record<string, Row[]> = structuredClone(base.fakes?.identityAccounts ?? {});
+  const keycloak = (accounts[keycloakInstanceId] ??= []);
+  for (const user of users) {
+    const access = userAccess[user.id];
+    const identity = access?.identities?.[0];
+    if (identity?.instanceId !== keycloakInstanceId) continue;
+    const group = groupOfRole[access.handRoleIds?.[0]];
+    keycloak.push({
+      externalId: identity.externalId,
+      name: user.name,
+      email: user.email,
+      emailVerified: true,
+      claims: group === undefined ? [] : [group],
+    });
+  }
+  return accounts;
 }
 
 export { generate as generateVolumeSeed };

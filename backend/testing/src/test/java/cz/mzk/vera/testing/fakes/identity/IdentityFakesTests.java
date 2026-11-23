@@ -14,6 +14,9 @@ import cz.mzk.vera.testing.seeds.TemplateResetService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import cz.mzk.vera.testing.control.FakeProviderPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -39,17 +42,42 @@ class IdentityFakesTests {
     @Autowired
     private FakeWorld fakeWorld;
 
+    @Autowired
+    private FakeProviderPage providerPage;
+
     @BeforeEach
     void resetSeedAndFakeWorld() {
         resetService.reset("base", true);
+    }
+
+    // The provider's page names each account's roles in VERA and redirects back like a provider.
+    @Test
+    void providerPageShowsRolesAndRedirectsToTheCallback() {
+        String callback = "http://localhost/api/login/pi22/callback";
+        String page = (String) providerPage.page("pi22", "vera", callback, "openid", "s1").getBody();
+        assertThat(page).contains("Jana Nováková", "Petr Dvořák", "VERA: Petr Dvořák", "mzk-curators",
+                "Kurátor", "Správce");
+
+        ResponseEntity<?> chosen = providerPage.choose("pi22", callback, "s1", "jnovakova", null);
+        assertThat(chosen.getStatusCode().value()).isEqualTo(302);
+        assertThat(chosen.getHeaders().getFirst(HttpHeaders.LOCATION))
+                .isEqualTo("/api/login/pi22/callback?code=jnovakova&state=s1");
+        assertThat(providerPage.choose("pi22", callback, "s1", null, "access_denied").getHeaders()
+                .getFirst(HttpHeaders.LOCATION)).isEqualTo("/api/login/pi22/callback?error=access_denied&state=s1");
+
+        assertThat(providerPage.page("pi22", "vera", "https://elsewhere.example/steal", "openid", "s1")
+                .getStatusCode().value()).isEqualTo(400);
+        assertThat(providerPage.choose("pi24", callback, "s1", "admin", null).getStatusCode().value())
+                .isEqualTo(404);
     }
 
     @Test
     void oidcFakeStartsCompletesAndRefusesUnknownAccountsAndForms() {
         PluginOutcome<BeginAnswer> begin = calls.call("pi22", Identity.class, "begin",
                 (identity, context) -> identity.begin(context, new BeginInput("http://localhost/callback", "state")));
-        assertThat(answer(begin).redirect()).isEqualTo(
-                "/_engine/identity/pi22?callback=http%3A%2F%2Flocalhost%2Fcallback&state=state");
+        assertThat(answer(begin).redirect()).isEqualTo("/_engine/identity/pi22/auth?response_type=code"
+                + "&client_id=vera&redirect_uri=http%3A%2F%2Flocalhost%2Fcallback&scope=openid+email+profile"
+                + "&state=state");
         assertThat(answer(begin).flowData()).isEmpty();
 
         PluginOutcome<CompleteAnswer> completed = calls.call("pi22", Identity.class, "complete",

@@ -285,7 +285,8 @@ For that, the backend serves the control endpoints and loads the seeds from `see
 | `POST /_engine/audit/send` | send pending audit records once to the configured collector |
 | `POST /_engine/jobs/run` | run due jobs now |
 | `POST /_engine/sessions` | open a session for a user, `{ userId }`, with its cookie |
-| `GET /_engine/identity/:instanceId` | the fake provider's page for a login under way |
+| `GET /_engine/identity/:instanceId/auth` | the fake provider's sign-in page for a login under way: the seed's accounts with the roles each gets in VERA |
+| `POST /_engine/identity/:instanceId/auth` | the account picked, or `error`; redirects to the callback with `code` and `state` |
 | `GET /_engine/endpoints` | the endpoints the server serves |
 
 The routes keep the engine's name. They live in a `testing` module, wired only under the `test` profile, and
