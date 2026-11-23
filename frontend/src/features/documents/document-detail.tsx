@@ -821,7 +821,7 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 underline underline-offset-4"
                 >
-                  Read it in {readingLink.source}
+                  {i18n.t("list.readItIn", { ns: "documents", registry: readingLink.source })}
                   <ArrowUpRight className="size-3.5" />
                 </a>
               ),

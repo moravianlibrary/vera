@@ -424,7 +424,7 @@ export function HistoryCard({
                   )}
                   {entry.reason.public && (
                     <div className="text-muted-foreground">
-                      Told the asker: {entry.reason.public}
+                      {t("recordCards.toldAsker", { reason: entry.reason.public })}
                     </div>
                   )}
                 </>

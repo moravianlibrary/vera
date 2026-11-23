@@ -382,6 +382,7 @@
   "recordCards.whatHappened": "Co se stalo",
   "recordCards.history": "Historie",
   "recordCards.nothingRecorded": "Zatím nic nezaznamenáno.",
+  "recordCards.toldAsker": "Sděleno žadateli: {{reason}}",
   "runProgress.errorsSoFar_few": "zatím {{count}} chyby",
   "runProgress.errorsSoFar_many": "zatím {{count}} chyb",
   "categoryTree.matching_few": "{{count}} odpovídající kategorie · nadřazené jsou zobrazeny pro souvislosti",

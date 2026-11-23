@@ -352,6 +352,7 @@
   "recordCards.whatHappened": "What has happened",
   "recordCards.history": "History",
   "recordCards.nothingRecorded": "Nothing recorded yet.",
+  "recordCards.toldAsker": "Told the asker: {{reason}}",
   "recordCards.copySeenAfterApproval": "seen {{date}} · after approval",
   "transfer.takeOffAll": "Take off {{arrow}}",
   "transfer.takeOffCounted": "Take off {{count}} {{arrow}}",
