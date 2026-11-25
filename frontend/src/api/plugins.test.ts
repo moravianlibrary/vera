@@ -336,6 +336,31 @@ describe("an instance", () => {
     expect(slack.catalogBases).toEqual([]);
   });
 
+  // PLG-api-session: a limit set is kept until it is sent again; null goes back to the default.
+  it("keeps an instance's request limit", async () => {
+    signInAs("admin");
+    const copyright = instanceOf(await getPluginIndex(), "pi28");
+    const draft = {
+      names: copyright?.names ?? { en: "Czech copyright" },
+      configuration: copyright?.configuration ?? {},
+      linkedCategoryId: null,
+      settings: null,
+    };
+    expect(copyright?.requestLimit).toBeNull();
+    const limited = await savePluginInstance("pi28", {
+      ...draft,
+      requestLimit: { requests: 20, minutes: 5 },
+    });
+    expect(limited.requestLimit).toEqual({ requests: 20, minutes: 5 });
+    expect((await savePluginInstance("pi28", draft)).requestLimit).toEqual({
+      requests: 20,
+      minutes: 5,
+    });
+    expect(
+      (await savePluginInstance("pi28", { ...draft, requestLimit: null })).requestLimit,
+    ).toBeNull();
+  });
+
   it("keeps a secret that is not sent again", async () => {
     signInAs("admin");
     const saved = await savePluginInstance("pi18", {

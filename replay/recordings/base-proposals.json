@@ -8453,6 +8453,7 @@
             "secretsSet": [],
             "linkedCategoryId": null,
             "catalogBases": [],
+            "requestLimit": null,
             "triggers": [
               "OnDemand"
             ],

@@ -48,6 +48,8 @@ export interface StoredPluginInstance {
   readonly linkedCategoryId: string | null;
   // PLG-bases; absent or empty for every base.
   readonly catalogBases?: readonly string[];
+  // PLG-api-session; absent or null for VERA's default.
+  readonly requestLimit?: { readonly requests: number; readonly minutes: number } | null;
   readonly triggers: readonly PluginTrigger[];
   readonly settings: StoredInstanceSettings | null;
   // Absent while it keeps its version's defaults (PLG-upgrade).

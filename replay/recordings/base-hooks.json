@@ -1540,6 +1540,7 @@
             ],
             "linkedCategoryId": null,
             "catalogBases": [],
+            "requestLimit": null,
             "triggers": [
               "OnEvent"
             ],
@@ -1622,6 +1623,7 @@
             ],
             "linkedCategoryId": null,
             "catalogBases": [],
+            "requestLimit": null,
             "triggers": [
               "OnEvent"
             ],
@@ -1680,6 +1682,7 @@
             "secretsSet": [],
             "linkedCategoryId": null,
             "catalogBases": [],
+            "requestLimit": null,
             "triggers": [
               "OnEvent"
             ],
@@ -1740,6 +1743,7 @@
             "secretsSet": [],
             "linkedCategoryId": null,
             "catalogBases": [],
+            "requestLimit": null,
             "triggers": [
               "OnEvent"
             ],

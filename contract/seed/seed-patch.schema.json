@@ -10642,6 +10642,29 @@
                   "type": "string"
                 }
               },
+              "requestLimit": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "requests": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 100000
+                      },
+                      "minutes": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1440
+                      }
+                    },
+                    "required": ["requests", "minutes"]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "triggers": {
                 "type": "array",
                 "items": {

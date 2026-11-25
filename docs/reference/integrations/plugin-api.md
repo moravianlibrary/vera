@@ -25,20 +25,19 @@ instance's mirror ([PLG-api-mirror](#plg-api-mirror)), through the context, read
 Catalogs and registries limit how many sessions a client opens in a window, often five minutes.
 So each instance talks to the outside world as **one session**: its own cookies, and its own
 connections kept open and reused, whichever call or run is speaking.
-- **Pace:** an instance has a request limit, at most so many requests in a window, set on Plugins
-  with a safe default. A call over the limit waits for room instead of failing, so a long run
-  such as a mirror's first fetch paces itself.
+- **Pace:** an instance has a request limit, at most so many requests in so many minutes, set on
+  Plugins; with none set it is 300 requests in 5 minutes. A call over the limit waits for room
+  instead of failing, and the wait does not count against its timeout, so a long run such as a
+  mirror's first fetch paces itself.
 - **Back off:** an answer of 429 or 503 makes the instance wait, as long as its `Retry-After`
-  says when it says so. Refusals that go on end the call as *unavailable*
-  ([PLG-api-outcome](#plg-api-outcome)); a run resumes from its cursor
-  ([PLG-api-cursor](#plg-api-cursor)).
+  says when it says so, else a second, then two, then four, and the request is sent again.
+  A third refusal in a row, or a wait of more than a minute, ends the call as *unavailable*
+  ([PLG-api-outcome](#plg-api-outcome)); the instance still waits before its next request, and a
+  run resumes from its cursor ([PLG-api-cursor](#plg-api-cursor)).
 - **Timeout:** the instance's `timeout`, when its configuration has one, is the timeout of its
   calls.
 
 This is VERA's, not each plugin's: every kind that calls out gets it.
-
-> **Open — [L92](../../ledger.md#l92-one-session-per-plugin-instance).** All instances share one
-> HTTP client with a fixed 10-second timeout: no cookies, no limit, no back-off.
 
 #### PLG-api-outcome
 

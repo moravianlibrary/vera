@@ -16,8 +16,14 @@ import type {
   PluginImplementation,
   PluginInstanceDetail,
   PluginVersion,
+  RequestLimit,
 } from "@vera/contract/plugins";
-import { baseLimitedKinds, catalogBaseSchema } from "@vera/contract/plugins";
+import {
+  baseLimitedKinds,
+  catalogBaseSchema,
+  defaultRequestLimit,
+  requestLimitSchema,
+} from "@vera/contract/plugins";
 import type { Names } from "@vera/domain/names";
 import { nameIn, namesToSave } from "@vera/domain/names";
 import type { EntryPoint, InstancePolicy } from "@vera/domain/plugins";
@@ -66,6 +72,21 @@ function basesOf(typed: string): string[] {
 }
 const mappingArrow = "→";
 
+// PLG-api-session: null when both are empty (VERA's default); undefined when they make no limit.
+function requestLimitOf(values: {
+  limitRequests: string;
+  limitMinutes: string;
+}): RequestLimit | null | undefined {
+  const requests = values.limitRequests.trim();
+  const minutes = values.limitMinutes.trim();
+  if (requests === "" && minutes === "") return null;
+  const parsed = requestLimitSchema.safeParse({
+    requests: /^\d+$/.test(requests) ? Number(requests) : Number.NaN,
+    minutes: /^\d+$/.test(minutes) ? Number(minutes) : Number.NaN,
+  });
+  return parsed.success ? parsed.data : undefined;
+}
+
 // A role by its name, as reference data lists them.
 interface NamedRole {
   readonly id: string;
@@ -78,6 +99,9 @@ interface InstanceForm {
   linkedCategoryId: string;
   // PLG-bases: separated by spaces or commas; empty for every record.
   catalogBases: string;
+  // PLG-api-session: both empty for VERA's default.
+  limitRequests: string;
+  limitMinutes: string;
   label: string;
   order: string;
   userIdClaim: string;
@@ -144,6 +168,8 @@ function formSchemaOf(
           (bases) => basesOf(bases).every((base) => catalogBaseSchema.safeParse(base).success),
           t("instanceEditor.validationBases"),
         ),
+      limitRequests: z.string(),
+      limitMinutes: z.string(),
       label: z.string(),
       order: z.string(),
       userIdClaim: z.string(),
@@ -179,6 +205,14 @@ function formSchemaOf(
             message: t("instanceEditor.validationTier", { max: maxPluginTier }),
           });
         }
+      }
+
+      if (requestLimitOf(values) === undefined) {
+        context.addIssue({
+          code: "custom",
+          path: ["limitRequests"],
+          message: t("instanceEditor.validationRequestLimit"),
+        });
       }
 
       if (custodyIds !== null && !custodyIds.has(values.custodyId)) {
@@ -342,6 +376,8 @@ export function InstanceEditorDialog({
         ),
         linkedCategoryId: instance?.linkedCategoryId ?? allCategories,
         catalogBases: (instance?.catalogBases ?? []).join(" "),
+        limitRequests: instance?.requestLimit ? String(instance.requestLimit.requests) : "",
+        limitMinutes: instance?.requestLimit ? String(instance.requestLimit.minutes) : "",
         label: identity?.label ?? "",
         order: String(
           settings !== null && "order" in settings ? settings.order : Math.max(1, kindCount + 1),
@@ -380,6 +416,7 @@ export function InstanceEditorDialog({
           linkedCategoryId:
             values.linkedCategoryId === allCategories ? null : values.linkedCategoryId,
           ...(readsBases ? { catalogBases: basesOf(values.catalogBases) } : {}),
+          requestLimit: requestLimitOf(values) ?? null,
           settings: settingsOf(implementation.kind, values, roles, language),
           policy: policyOf(version, values),
         });
@@ -492,6 +529,37 @@ export function InstanceEditorDialog({
               <FieldError message={form.formState.errors.catalogBases?.message} />
             </div>
           )}
+
+          <div className="grid gap-1.5">
+            <Field
+              id={`${id}-limit`}
+              label={t("instanceEditor.requestLimit")}
+              hint={t("instanceEditor.requestLimitHint", defaultRequestLimit)}
+            >
+              <div className="flex items-center gap-2 text-sm">
+                <Input
+                  id={`${id}-limit`}
+                  inputMode="numeric"
+                  placeholder={String(defaultRequestLimit.requests)}
+                  className="w-24 tabular-nums"
+                  aria-label={t("instanceEditor.requestLimitRequests")}
+                  {...form.register("limitRequests")}
+                />
+                <span className="text-muted-foreground">{t("instanceEditor.requestLimitPer")}</span>
+                <Input
+                  inputMode="numeric"
+                  placeholder={String(defaultRequestLimit.minutes)}
+                  className="w-20 tabular-nums"
+                  aria-label={t("instanceEditor.requestLimitMinutes")}
+                  {...form.register("limitMinutes")}
+                />
+                <span className="text-muted-foreground">
+                  {t("instanceEditor.requestLimitUnit")}
+                </span>
+              </div>
+            </Field>
+            <FieldError message={form.formState.errors.limitRequests?.message} />
+          </div>
 
           {isIdentity && (
             <fieldset className="grid gap-3">

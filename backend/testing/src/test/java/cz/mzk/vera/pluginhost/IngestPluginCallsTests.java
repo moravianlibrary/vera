@@ -4,7 +4,6 @@ import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import cz.mzk.vera.plugin.PluginContext;
-import cz.mzk.vera.plugin.PluginHttp;
 import cz.mzk.vera.plugin.PasswordCheck;
 import cz.mzk.vera.plugin.propertysource.PropertySource;
 import cz.mzk.vera.plugin.propertysource.ValuesAnswer;
@@ -63,7 +62,7 @@ class IngestPluginCallsTests {
     @Autowired
     private DSLContext dsl;
     @Autowired
-    private PluginHttp http;
+    private PluginSessions sessions;
     @Autowired
     private Clock clock;
     @Autowired
@@ -330,7 +329,7 @@ class IngestPluginCallsTests {
     }
 
     private PluginCalls shortCalls() {
-        return new PluginCalls(dsl, installed, http, clock, observations,
+        return new PluginCalls(dsl, installed, sessions, clock, observations,
                 instanceId -> (username, password) -> PasswordCheck.NONE, Duration.ofMillis(100));
     }
 

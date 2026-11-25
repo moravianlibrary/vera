@@ -13,20 +13,26 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
-// PLG-api-call.
+// PLG-api-call; PLG-api-session: each session gets a JDK client of its own, so its connections
+// are its own and kept open between its requests.
 @AutoConfiguration
 public class JdkPluginHttp {
     @Bean
-    @ConditionalOnMissingBean(PluginHttp.class)
-    PluginHttp pluginHttp() {
+    @ConditionalOnMissingBean(PluginTransports.class)
+    PluginTransports pluginTransports() {
+        return JdkPluginHttp::open;
+    }
+
+    static PluginTransport open() {
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
-        return request -> {
+        return (request, timeout) -> {
             try {
-                HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
-                        .timeout(Duration.ofSeconds(10));
-                request.headers().forEach((key, values) -> values.forEach(value -> builder.header(key, value)));
+                HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri()).timeout(timeout);
+                if (request.headers() != null) {
+                    request.headers().forEach((key, values) -> values.forEach(value -> builder.header(key, value)));
+                }
                 byte[] body = request.body() == null ? new byte[0] : request.body();
                 builder.method(request.method(), HttpRequest.BodyPublishers.ofByteArray(body));
                 HttpResponse<byte[]> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofByteArray());

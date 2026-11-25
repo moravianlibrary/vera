@@ -130,6 +130,7 @@ function detailOf(
     secretsSet: [...secretKeys].filter((key) => (instance.configuration[key] ?? "") !== ""),
     linkedCategoryId: instance.linkedCategoryId,
     catalogBases: [...(instance.catalogBases ?? [])],
+    requestLimit: instance.requestLimit ?? null,
     triggers: [...instance.triggers],
     settings: instance.settings,
     isPredefined: instance.isPredefined === true,
@@ -392,6 +393,7 @@ export function createInstance(
     configuration: configuration.value,
     linkedCategoryId: draft.linkedCategoryId,
     catalogBases: basesFor(implementation.kind, draft.catalogBases ?? []),
+    requestLimit: draft.requestLimit ?? null,
     // Every trigger it accepts but a schedule, which is made on Schedules.
     triggers: version.triggers.filter((trigger) => trigger !== "OnSchedule"),
     settings: draft.settings,
@@ -440,6 +442,9 @@ export function saveInstance(
     configuration: configuration.value,
     linkedCategoryId: draft.linkedCategoryId,
     catalogBases: basesFor(kindOf(instance), draft.catalogBases ?? instance.catalogBases ?? []),
+    // PLG-api-session: left out, it keeps its own.
+    requestLimit:
+      draft.requestLimit === undefined ? (instance.requestLimit ?? null) : draft.requestLimit,
     settings: draft.settings,
     policy: draft.policy ?? instance.policy,
   });

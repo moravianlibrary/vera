@@ -13,7 +13,7 @@ import type {
   PluginInstanceDetail,
   PluginVersion,
 } from "@vera/contract/plugins";
-import { baseLimitedKinds } from "@vera/contract/plugins";
+import { baseLimitedKinds, defaultRequestLimit } from "@vera/contract/plugins";
 import type { InstancePolicy } from "@vera/domain/plugins";
 import { isRunnableContract } from "@vera/domain/plugins";
 import { schedulableKinds } from "@vera/domain/schedules";
@@ -463,6 +463,13 @@ export function InstanceDrawer({
                   },
                 ]
               : []),
+            {
+              label: i18n.t("plugins:pluginDrawers.requestLimit"),
+              value:
+                instance.requestLimit === null
+                  ? i18n.t("plugins:pluginDrawers.defaultRequestLimit", defaultRequestLimit)
+                  : i18n.t("plugins:pluginDrawers.requestLimitValue", instance.requestLimit),
+            },
             {
               label: i18n.t("plugins:pluginDrawers.created"),
               value: `${formatLongCalendarDay(instance.createdAt)} · ${names.userOf(instance.createdBy)}`,

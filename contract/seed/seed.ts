@@ -4,7 +4,7 @@
 import { hookConditionsSchema, hookRetrySchema } from "@vera/contract/hooks";
 import { intentionRowSchema } from "@vera/contract/intentions";
 import { mixTreeSchema } from "@vera/contract/mixes";
-import { uploadReadingSchema } from "@vera/contract/plugins";
+import { requestLimitSchema, uploadReadingSchema } from "@vera/contract/plugins";
 import { watchlistViewerSchema } from "@vera/contract/watchlists";
 import {
   accessGroupSchema,
@@ -96,6 +96,8 @@ const storedPluginInstance = z.strictObject({
   linkedCategoryId: id.nullable().optional(),
   // PLG-bases; absent for every base.
   catalogBases: z.array(z.string()).optional(),
+  // PLG-api-session; absent for VERA's default.
+  requestLimit: requestLimitSchema.nullable().optional(),
   triggers: z.array(pluginTriggerSchema),
   settings: settings.nullable().optional(),
   policy: instancePolicySchema.optional(),

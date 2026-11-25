@@ -71,6 +71,17 @@ export const baseLimitedKinds = [
   "Custody",
 ] as const;
 
+// PLG-api-session: at most so many requests in so many minutes; an instance with none set has
+// VERA's default.
+export const requestLimitSchema = z.object({
+  requests: z.number().int().positive().max(100_000),
+  minutes: z.number().int().positive().max(1440),
+});
+
+export type RequestLimit = z.infer<typeof requestLimitSchema>;
+
+export const defaultRequestLimit: RequestLimit = { requests: 300, minutes: 5 };
+
 // VERA's settings on an instance, owned by VERA and edited beside the configuration (§2.2).
 export const identitySettingsSchema = z.object({
   kind: z.literal("Identity"),
@@ -120,6 +131,8 @@ export const pluginInstanceDetailSchema = z.object({
   linkedCategoryId: id.nullable(),
   // PLG-bases: the catalog bases whose records it reads; none for every record.
   catalogBases: z.array(catalogBaseSchema),
+  // PLG-api-session; null for VERA's default.
+  requestLimit: requestLimitSchema.nullable(),
   // Its own triggers; when it runs by itself is its schedules.
   triggers: z.array(pluginTriggerSchema),
   settings: instanceSettingsSchema.nullable(),
@@ -179,6 +192,8 @@ export const instanceDraftSchema = z.object({
   linkedCategoryId: id.nullable(),
   // PLG-bases; left out, a new instance reads every base and a saved one keeps its own.
   catalogBases: z.array(catalogBaseSchema).optional(),
+  // PLG-api-session; null for VERA's default; left out, a saved one keeps its own.
+  requestLimit: requestLimitSchema.nullable().optional(),
   settings: instanceSettingsSchema.nullable(),
   // Left out, a new instance takes its version's defaults and a saved one keeps its own.
   policy: instancePolicySchema.optional(),

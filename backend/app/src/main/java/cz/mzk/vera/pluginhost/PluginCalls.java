@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -38,16 +39,16 @@ import cz.mzk.vera.telemetry.Telemetry;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-// B6; PLG-api-call; PLG-api-outcome; PLG-secrets.
+// B6; PLG-api-call; PLG-api-session; PLG-api-outcome; PLG-secrets.
 @Component
 public class PluginCalls {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginCalls.class);
-    private static final Duration PLUGIN_TIMEOUT = Duration.ofSeconds(10); // 10 seconds is a placeholder, as the session limits are.
+    private static final Duration PLUGIN_TIMEOUT = Duration.ofSeconds(10); // 10 seconds is a placeholder.
     private static final Pattern TIMEOUT = Pattern.compile("^(\\d+)(ms|s|m)$");
 
     private final DSLContext dsl;
     private final InstalledPlugins installed;
-    private final PluginHttp http;
+    private final PluginSessions sessions;
     private final Clock clock;
     private final ObservationRegistry observations;
     private final LocalPasswordSource localPasswords;
@@ -55,16 +56,16 @@ public class PluginCalls {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginHttp http, Clock clock,
+    public PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginSessions sessions, Clock clock,
             ObservationRegistry observations, LocalPasswordSource localPasswords) {
-        this(dsl, installed, http, clock, observations, localPasswords, PLUGIN_TIMEOUT);
+        this(dsl, installed, sessions, clock, observations, localPasswords, PLUGIN_TIMEOUT);
     }
 
-    PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginHttp http, Clock clock,
+    PluginCalls(DSLContext dsl, InstalledPlugins installed, PluginSessions sessions, Clock clock,
             ObservationRegistry observations, LocalPasswordSource localPasswords, Duration timeout) {
         this.dsl = dsl;
         this.installed = installed;
-        this.http = http;
+        this.sessions = sessions;
         this.clock = clock;
         this.observations = observations;
         this.localPasswords = localPasswords;
@@ -93,7 +94,7 @@ public class PluginCalls {
         Scope spanScope = span.makeCurrent();
         observation.start();
         try {
-            Record row = source.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.CONFIGURATION,
+            Record row = source.select(PLUGIN_INSTANCES.ID, PLUGIN_INSTANCES.CONFIGURATION, PLUGIN_INSTANCES.REQUEST_LIMIT,
                             PLUGIN_IMPLEMENTATIONS.DESCRIPTOR_ID, PLUGIN_IMPLEMENTATIONS.VERSIONS)
                     .from(PLUGIN_INSTANCES)
                     .join(PLUGIN_IMPLEMENTATIONS)
@@ -133,12 +134,17 @@ public class PluginCalls {
                 }
             }
 
+            Duration instanceTimeout = configuredTimeout(values, timeout);
+            AtomicLong waited = new AtomicLong();
+            JsonNode limit = row.get(PLUGIN_INSTANCES.REQUEST_LIMIT) == null ? null
+                    : mapper.readTree(row.get(PLUGIN_INSTANCES.REQUEST_LIMIT).data());
+            PluginHttp http = sessions.http(instanceId, RequestLimit.of(limit), instanceTimeout, waited);
             PluginContext context = new CallContext(
                     instanceId, Map.copyOf(configuration), Map.copyOf(secrets), http, clock,
                     localPasswords.forInstance(instanceId));
             K implementation = kind.cast(plugin.implementation());
             A answer = invoke(plugin, implementation, context,
-                    callTimeout == null ? configuredTimeout(values, timeout) : callTimeout, body);
+                    callTimeout == null ? instanceTimeout : callTimeout, waited, body);
             if (answer == null) {
                 LOGGER.error("Plugin fault instance={} kind={} operation={} returned a null answer",
                         instanceId, kindName, operation);
@@ -187,7 +193,7 @@ public class PluginCalls {
     }
 
     private <K, A> A invoke(PluginLoader.LoadedPlugin plugin, K implementation,
-            PluginContext context, Duration callTimeout, BiFunction<K, PluginContext, A> body)
+            PluginContext context, Duration callTimeout, AtomicLong waited, BiFunction<K, PluginContext, A> body)
             throws InterruptedException, TimeoutException, PluginUnavailable {
         var executor = Executors.newVirtualThreadPerTaskExecutor();
         try {
@@ -196,7 +202,7 @@ public class PluginCalls {
                 return body.apply(implementation, context);
             }));
             try {
-                return await(future, callTimeout);
+                return await(future, callTimeout, waited);
             } catch (ExecutionException failed) {
                 Throwable cause = failed.getCause();
                 if (cause instanceof RuntimeException runtime) {
@@ -214,11 +220,27 @@ public class PluginCalls {
 
     static <A> A await(Future<A> future, Duration callTimeout)
             throws InterruptedException, ExecutionException, TimeoutException {
-        try {
-            return future.get(callTimeout.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (TimeoutException timedOut) {
-            future.cancel(true);
-            throw timedOut;
+        return await(future, callTimeout, new AtomicLong());
+    }
+
+    // PLG-api-session: what the call waited for its session's room is added to its timeout.
+    static <A> A await(Future<A> future, Duration callTimeout, AtomicLong waited)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        long deadline = System.nanoTime() + callTimeout.toNanos();
+        long counted = 0;
+        while (true) {
+            try {
+                return future.get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
+            } catch (TimeoutException timedOut) {
+                long now = waited.get();
+                if (now > counted) {
+                    deadline += now - counted;
+                    counted = now;
+                    continue;
+                }
+                future.cancel(true);
+                throw timedOut;
+            }
         }
     }
 

@@ -19,18 +19,6 @@ None.
 
 ## Not built yet
 
-### L92: One session per plugin instance
-
-Rules: [PLG-api-session](reference/integrations/plugin-api.md#plg-api-session),
-[PLG-api-call](reference/integrations/plugin-api.md#plg-api-call).
-
-Decided on 2026-11-25. Every plugin's HTTP goes through one shared JDK client
-(`backend/app/.../pluginhost/JdkPluginHttp.java`): connections are reused, but there is no cookie
-jar, no request limit per instance, no back-off on 429 or 503, and the timeout is a fixed 10
-seconds whatever the instance's `timeout` says. Needs a session per instance: its cookies, its
-connections, its request limit (a setting on Plugins with a safe default) and the back-off. →
-backend, frontend (the limit's setting).
-
 ### L93: MZK Aleph is mirrored
 
 Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror),
@@ -42,8 +30,8 @@ Decided on 2026-11-25. `AlephOaiCatalogAdapter` declares `read`, `readLink` and 
 run (about a day for MZK01, at 30 records a page), then `from` the last datestamp; deleted headers
 drop their records. Then what the mirror keeps for documents and the check of held records. Aleph
 never names the record that replaced a merged one, so a merge reaches VERA as a dropped record and
-staff relink by hand. Waits for [L92](#l92-one-session-per-plugin-instance), so the first fetch
-keeps within Aleph's session limits. → backend.
+staff relink by hand. Built on [L92](#built-2026-11-25), so the first fetch keeps within Aleph's
+session limits. → backend.
 
 ### L94: An MZK installation
 
@@ -117,6 +105,15 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 → deployment.
 
 ## Done
+
+### Built, 2026-11-25
+
+- **L92:** each plugin instance talks to the outside world as one session: its own cookies and
+  kept-open connections, a request limit set on Plugins (300 requests in 5 minutes by default)
+  that makes a call wait for room instead of failing, back-off on 429 and 503 after `Retry-After`,
+  and the instance's `timeout` on each request
+  ([PLG-api-session](reference/integrations/plugin-api.md#plg-api-session)). All instances used to
+  share one client with a fixed 10-second timeout.
 
 ### Built, 2026-11-23
 

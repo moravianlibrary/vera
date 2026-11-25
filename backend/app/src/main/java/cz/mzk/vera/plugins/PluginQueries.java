@@ -260,6 +260,8 @@ public class PluginQueries {
         result.put("secretsSet", secrets);
         result.put("linkedCategoryId", row.get(PLUGIN_INSTANCES.LINKED_CATEGORY_ID));
         result.put("catalogBases", json.readTree(row.get(PLUGIN_INSTANCES.CATALOG_BASES).data()));
+        result.put("requestLimit", row.get(PLUGIN_INSTANCES.REQUEST_LIMIT) == null ? null
+                : json.readTree(row.get(PLUGIN_INSTANCES.REQUEST_LIMIT).data()));
         result.put("triggers", values(node(row.get(PLUGIN_INSTANCES.TRIGGERS))));
         result.put("settings", values(node(row.get(PLUGIN_INSTANCES.SETTINGS))));
         result.put("isPredefined", row.get(PLUGIN_INSTANCES.IS_PREDEFINED));

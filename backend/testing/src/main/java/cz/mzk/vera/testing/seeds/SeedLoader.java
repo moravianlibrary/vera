@@ -112,6 +112,8 @@ public class SeedLoader {
                             nullableString(instance, "linkedCategoryId"))
                     .set(PLUGIN_INSTANCES.CATALOG_BASES, JSONB.valueOf(instance.path("catalogBases").isArray()
                             ? instance.path("catalogBases").toString() : "[]"))
+                    .set(PLUGIN_INSTANCES.REQUEST_LIMIT, instance.path("requestLimit").isObject()
+                            ? JSONB.valueOf(instance.path("requestLimit").toString()) : null)
                     .set(PLUGIN_INSTANCES.IS_PREDEFINED, instance.path("isPredefined").asBoolean())
                     .set(PLUGIN_INSTANCES.CREATED_BY, instance.path("createdBy").isMissingNode()
                             || instance.path("createdBy").isNull()
