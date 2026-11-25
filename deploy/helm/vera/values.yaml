@@ -18,6 +18,9 @@ localAccess:
 vera:
   enabled: true
   publicUrl: ""
+  # The seed an empty database is installed from: any library's, or one that extends it, such as
+  # /app/installation-mzk.json (MZK's two Aleph catalogs, their mirror schedules paused).
+  installationSeed: /app/installation.json
   replicas:
     api: 1
     worker: 1

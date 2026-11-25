@@ -1,0 +1,53 @@
+{
+  "name": "installation-mzk",
+  "extends": "installation",
+  "shippedPlugins": [
+    {
+      "package": "aleph-oai-catalog-adapter",
+      "instances": [
+        {
+          "id": "aleph-mzk01",
+          "names": { "cs": "MZK Aleph MZK01", "en": "MZK Aleph MZK01" },
+          "configuration": {
+            "oai_url": "https://aleph.mzk.cz/OAI",
+            "base": "MZK01",
+            "set": "MZK01-VDK"
+          },
+          "settings": null,
+          "triggers": ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"],
+          "isEnabled": true,
+          "schedules": [
+            {
+              "id": "s1",
+              "names": { "cs": "MZK01 — zrcadlo katalogu", "en": "MZK01 — catalog mirror" },
+              "cadence": { "every": "hours", "interval": 1 },
+              "overlap": "skip",
+              "pauseReason": "Shipped off: the first run fetches the whole catalog, about a day."
+            }
+          ]
+        },
+        {
+          "id": "aleph-mzk03",
+          "names": { "cs": "MZK Aleph MZK03", "en": "MZK Aleph MZK03" },
+          "configuration": {
+            "oai_url": "https://aleph.mzk.cz/OAI",
+            "base": "MZK03",
+            "set": "MZK03-VDK"
+          },
+          "settings": null,
+          "triggers": ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"],
+          "isEnabled": true,
+          "schedules": [
+            {
+              "id": "s2",
+              "names": { "cs": "MZK03 — zrcadlo katalogu", "en": "MZK03 — catalog mirror" },
+              "cadence": { "every": "hours", "interval": 1 },
+              "overlap": "skip",
+              "pauseReason": "Shipped off: the first run fetches the whole catalog, about a day."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

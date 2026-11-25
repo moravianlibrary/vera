@@ -19,6 +19,7 @@ localAccess:
 
 vera:
   publicUrl: http://localhost:8400
+  installationSeed: /app/installation-mzk.json
   replicas:
     api: 1
     worker: 1

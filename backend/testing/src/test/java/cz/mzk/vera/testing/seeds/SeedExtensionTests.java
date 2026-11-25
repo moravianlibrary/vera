@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cz.mzk.vera.installation.SeedExtension;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 class SeedExtensionTests {
     @TempDir
@@ -70,6 +72,27 @@ class SeedExtensionTests {
         assertEquals("Changed", result.path("collections").path("groups").get(0).path("name").asString());
         assertEquals(2, result.path("collections").path("groups").size());
         assertFalse(result.has("extends"));
+    }
+
+    @Test
+    void addsShippedInstancesToTheParentsPackages() {
+        JsonMapper json = JsonMapper.builder().build();
+        JsonNode result = SeedExtension.extend(json.readTree("""
+                {"name":"installation","shippedPlugins":[
+                  {"package":"local-accounts","instances":[{"id":"local"}]},
+                  {"package":"aleph","instances":[]}]}
+                """), json.readTree("""
+                {"name":"installation-mzk","extends":"installation","shippedPlugins":[
+                  {"package":"aleph","instances":[{"id":"mzk01"},{"id":"mzk03"}]},
+                  {"package":"other","instances":[{"id":"o1"}]}]}
+                """));
+
+        JsonNode shipped = result.path("shippedPlugins");
+        assertEquals(3, shipped.size());
+        assertEquals("local", shipped.get(0).path("instances").get(0).path("id").asString());
+        assertEquals(2, shipped.get(1).path("instances").size());
+        assertEquals("other", shipped.get(2).path("package").asString());
+        assertFalse(result.has("fakes"));
     }
 
     @Test

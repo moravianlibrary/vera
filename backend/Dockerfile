@@ -5,7 +5,7 @@ RUN useradd --system --create-home --uid 10001 vera
 WORKDIR /app
 COPY vera.jar /app/vera.jar
 COPY plugins/ /app/plugins/
-COPY installation.json /app/installation.json
+COPY installation.json installation-mzk.json /app/
 COPY otel/ /app/otel/
 COPY contract/ /app/contract/
 COPY entrypoint.sh /app/entrypoint.sh

@@ -170,6 +170,148 @@
                 },
                 "isEnabled": {
                   "type": "boolean"
+                },
+                "schedules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "names": {
+                        "type": "object",
+                        "properties": {
+                          "cs": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "en": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "cadence": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "minutes"
+                              },
+                              "interval": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": ["every", "interval"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "hours"
+                              },
+                              "interval": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": ["every", "interval"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "day"
+                              },
+                              "at": {
+                                "type": "string",
+                                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                              }
+                            },
+                            "required": ["every", "at"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "week"
+                              },
+                              "weekday": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 6
+                              },
+                              "at": {
+                                "type": "string",
+                                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                              }
+                            },
+                            "required": ["every", "weekday", "at"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "month"
+                              },
+                              "day": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 28
+                              },
+                              "at": {
+                                "type": "string",
+                                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                              }
+                            },
+                            "required": ["every", "day", "at"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "every": {
+                                "type": "string",
+                                "const": "quarter"
+                              },
+                              "at": {
+                                "type": "string",
+                                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                              }
+                            },
+                            "required": ["every", "at"]
+                          }
+                        ]
+                      },
+                      "overlap": {
+                        "type": "string",
+                        "enum": ["skip", "wait"]
+                      },
+                      "pauseReason": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["id", "names", "cadence", "overlap", "pauseReason"],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": ["id", "names", "configuration", "settings", "triggers", "isEnabled"],

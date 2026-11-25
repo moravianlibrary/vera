@@ -117,6 +117,18 @@ const shippedPlugin = z.strictObject({
       settings: settings.nullable(),
       triggers: z.array(pluginTriggerSchema),
       isEnabled: z.boolean(),
+      // Installed on the first administrator's behalf; a pause reason ships the schedule paused.
+      schedules: z
+        .array(
+          z.strictObject({
+            id,
+            names: namesSchema,
+            cadence: cadenceSchema,
+            overlap: overlapSchema,
+            pauseReason: z.string().min(1).nullable(),
+          }),
+        )
+        .optional(),
     }),
   ),
 });

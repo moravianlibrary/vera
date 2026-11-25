@@ -13,6 +13,7 @@ import cz.mzk.vera.installation.InstallationSetup;
 import cz.mzk.vera.login.LocalPasswordStore;
 import cz.mzk.vera.login.Passwords;
 import cz.mzk.vera.plugins.PluginPackageCommands;
+import cz.mzk.vera.tasks.ScheduleQueue;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
@@ -58,6 +59,7 @@ class InstallationSetupTests {
     @Autowired AccessUserCommands users;
     @Autowired LocalPasswordStore localPasswords;
     @Autowired Passwords passwords;
+    @Autowired ScheduleQueue queue;
     @Autowired Clock clock;
     @Autowired RestTestClient http;
 
@@ -67,7 +69,7 @@ class InstallationSetupTests {
         String seed = root.resolve("../seeds/installation.json").toString();
         String pluginPath = root.resolve("plugins/build/packages").toString();
         var missingAdmin = new InstallationSetup(dsl, jdbc, transactions, json, writer, packages, users,
-                localPasswords, passwords, clock, true, "api", seed, pluginPath, "", "long-installation-password");
+                localPasswords, passwords, queue, clock, true, "api", seed, pluginPath, "", "long-installation-password");
         assertThatThrownBy(() -> missingAdmin.run(null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("VERA_FIRST_ADMIN_EMAIL");
@@ -76,14 +78,14 @@ class InstallationSetupTests {
                 .when(untrustedPackages).installTrustedPackage(org.mockito.ArgumentMatchers.anyString(),
                         org.mockito.ArgumentMatchers.any());
         var rejected = new InstallationSetup(dsl, jdbc, transactions, json, writer, untrustedPackages, users,
-                localPasswords, passwords, clock, true, "api", seed, pluginPath,
+                localPasswords, passwords, queue, clock, true, "api", seed, pluginPath,
                 "admin@example.org", "long-installation-password");
         assertThatThrownBy(() -> rejected.run(null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("local-accounts");
         assertThat(dsl.selectCount().from(ROLES).fetchOne(0, int.class)).isZero();
         var setup = new InstallationSetup(dsl, jdbc, transactions, json, writer, packages, users,
-                localPasswords, passwords, clock, true, "api", seed, pluginPath,
+                localPasswords, passwords, queue, clock, true, "api", seed, pluginPath,
                 "admin@example.org", "long-installation-password");
         setup.run(null);
         assertThat(dsl.selectCount().from(ROLES).fetchOne(0, int.class)).isEqualTo(6);

@@ -4,6 +4,7 @@ import com.networknt.schema.Error;
 import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SpecificationVersion;
+import cz.mzk.vera.installation.SeedExtension;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,17 +14,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 
 @Component
 public class SeedReader {
@@ -106,7 +103,7 @@ public class SeedReader {
         if (parentName != null && parentName.isString()) {
             List<String> next = new ArrayList<>(chain);
             next.add(name);
-            result = extend(read(parentName.asString(), next), patch);
+            result = SeedExtension.extend(read(parentName.asString(), next), patch);
         }
         validate(result, "seed.schema.json");
         return result;
@@ -152,86 +149,6 @@ public class SeedReader {
         } catch (IOException exception) {
             throw new IllegalStateException("Could not read " + schemaName, exception);
         }
-    }
-
-    // Seed extension semantics are shared with contract/src/seed-extends.ts.
-    private JsonNode extend(JsonNode parent, JsonNode child) {
-        ObjectNode base = (ObjectNode) parent.deepCopy();
-        base.remove("extends");
-        ObjectNode own = (ObjectNode) child.deepCopy();
-        own.remove("extends");
-        ObjectNode merged = base.deepCopy();
-        own.properties().forEach(entry -> {
-            String key = entry.getKey();
-            if (key.equals("collections") && entry.getValue().isObject()) {
-                merged.set(key, mergeCollections(base.get(key), entry.getValue()));
-            } else if (key.equals("fakes") && entry.getValue().isObject()) {
-                merged.set(key, mergeObjects(base.get(key), entry.getValue()));
-            } else {
-                merged.set(key, entry.getValue());
-            }
-        });
-        if (!own.has("collections")) {
-            merged.set("collections", base.path("collections"));
-        }
-        if (!own.has("fakes")) {
-            merged.set("fakes", base.path("fakes"));
-        }
-        return merged;
-    }
-
-    private ObjectNode mergeCollections(JsonNode parent, JsonNode child) {
-        ObjectNode out = parent != null && parent.isObject()
-                ? (ObjectNode) parent.deepCopy()
-                : mapper.createObjectNode();
-        child.properties().forEach(entry -> {
-            JsonNode value = out.has(entry.getKey())
-                    ? mergeValue(out.get(entry.getKey()), entry.getValue())
-                    : entry.getValue();
-            out.set(entry.getKey(), value);
-        });
-        return out;
-    }
-
-    private ObjectNode mergeObjects(JsonNode parent, JsonNode child) {
-        ObjectNode out = parent != null && parent.isObject()
-                ? (ObjectNode) parent.deepCopy()
-                : mapper.createObjectNode();
-        child.properties().forEach(entry -> out.set(entry.getKey(), entry.getValue()));
-        return out;
-    }
-
-    private JsonNode mergeValue(JsonNode parent, JsonNode child) {
-        if (parent.isArray() && child.isArray()) {
-            ArrayNode out = mapper.createArrayNode();
-            Map<String, Integer> indexes = new LinkedHashMap<>();
-            for (JsonNode item : parent) {
-                String id = id(item);
-                if (id != null && !indexes.containsKey(id)) {
-                    indexes.put(id, out.size());
-                }
-                out.add(item);
-            }
-            for (JsonNode item : child) {
-                String id = id(item);
-                Integer index = id == null ? null : indexes.get(id);
-                if (index == null) {
-                    if (id != null) {
-                        indexes.put(id, out.size());
-                    }
-                    out.add(item);
-                } else {
-                    out.set(index, item);
-                }
-            }
-            return out;
-        }
-        if (parent.isObject() && child.isObject()) return mergeObjects(parent, child);
-        return child;
-    }
-
-    private String id(JsonNode value) {
-        return value.isObject() && value.path("id").isString() ? value.path("id").asString() : null;
     }
 
     public static final class SeedNotFoundException extends RuntimeException {

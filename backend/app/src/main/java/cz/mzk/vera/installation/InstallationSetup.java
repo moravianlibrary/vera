@@ -3,16 +3,22 @@ package cz.mzk.vera.installation;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_IMPLEMENTATIONS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.ROLES;
+import static cz.mzk.vera.db.tables.Tables.SCHEDULES;
 
 import cz.mzk.vera.access.AccessUserCommands;
 import cz.mzk.vera.login.LocalPasswordStore;
 import cz.mzk.vera.login.Passwords;
 import cz.mzk.vera.plugins.PluginPackageCommands;
+import cz.mzk.vera.tasks.ScheduleQueue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.jooq.DSLContext;
@@ -42,6 +48,7 @@ public class InstallationSetup implements ApplicationRunner {
     private final AccessUserCommands users;
     private final LocalPasswordStore localPasswords;
     private final Passwords passwords;
+    private final ScheduleQueue queue;
     private final Clock clock;
     private final boolean enabled;
     private final String role;
@@ -52,7 +59,7 @@ public class InstallationSetup implements ApplicationRunner {
 
     public InstallationSetup(DSLContext dsl, JdbcTemplate jdbc, TransactionTemplate transactions, JsonMapper json,
             InstallationCollectionsWriter collections, PluginPackageCommands packages, AccessUserCommands users,
-            LocalPasswordStore localPasswords, Passwords passwords, Clock clock,
+            LocalPasswordStore localPasswords, Passwords passwords, ScheduleQueue queue, Clock clock,
             @Value("${vera.installation.enabled:true}") boolean enabled,
             @Value("${vera.role:${VERA_ROLE:all}}") String role,
             @Value("${vera.installation.seed:/app/installation.json}") String seed,
@@ -68,6 +75,7 @@ public class InstallationSetup implements ApplicationRunner {
         this.users = users;
         this.localPasswords = localPasswords;
         this.passwords = passwords;
+        this.queue = queue;
         this.clock = clock;
         this.enabled = enabled;
         this.role = role;
@@ -86,12 +94,7 @@ public class InstallationSetup implements ApplicationRunner {
             if (email.isBlank() || password.isBlank()) {
                 throw new IllegalStateException("VERA_FIRST_ADMIN_EMAIL and VERA_FIRST_ADMIN_PASSWORD are required for an empty database");
             }
-            JsonNode data;
-            try {
-                data = json.readTree(Files.readString(seed));
-            } catch (Exception exception) {
-                throw new IllegalStateException("Cannot read installation seed " + seed, exception);
-            }
+            JsonNode data = read(seed, new ArrayList<>());
             if (password.length() < localPasswordMinimum(data)) {
                 throw new IllegalStateException("VERA_FIRST_ADMIN_PASSWORD must meet the Local accounts password_min");
             }
@@ -106,7 +109,56 @@ public class InstallationSetup implements ApplicationRunner {
             if (instance == null) throw new IllegalStateException("The Local accounts instance was not installed");
             localPasswords.save(instance, email, passwords.hash(password));
             recordInstaller(instance);
+            installSchedules(data);
         });
+    }
+
+    // A library's seed extends the shipped one (seeds/installation-mzk.json extends installation.json):
+    // the parent is the file of that name beside it.
+    private JsonNode read(Path file, List<Path> chain) {
+        if (chain.contains(file)) throw new IllegalStateException("Installation seed " + file + " extends itself");
+        JsonNode data;
+        try {
+            data = json.readTree(Files.readString(file));
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot read installation seed " + file, exception);
+        }
+        if (!data.path("extends").isString()) return data;
+        chain.add(file);
+        Path parent = file.resolveSibling(data.path("extends").asString() + ".json");
+        return SeedExtension.extend(read(parent, chain), data);
+    }
+
+    // PLG-api-record-change: a shipped instance's schedules, made by the first administrator; one with
+    // a pause reason ships paused, so an administrator starts it.
+    private void installSchedules(JsonNode seedData) {
+        String adminId = dsl.select(PLUGIN_INSTANCES.CREATED_BY).from(PLUGIN_INSTANCES).limit(1)
+                .fetchOne(PLUGIN_INSTANCES.CREATED_BY);
+        OffsetDateTime now = OffsetDateTime.ofInstant(clock.instant(), ZoneOffset.UTC);
+        int position = 0;
+        for (JsonNode group : seedData.path("shippedPlugins")) {
+            for (JsonNode instance : group.path("instances")) {
+                for (JsonNode schedule : instance.path("schedules")) {
+                    String id = schedule.path("id").asString();
+                    boolean paused = schedule.path("pauseReason").isString();
+                    Instant nextAt = paused ? null : queue.next(queue.cadence(schedule.path("cadence").toString()), clock.instant());
+                    dsl.insertInto(SCHEDULES).set(SCHEDULES.ID, id)
+                            .set(SCHEDULES.INSTANCE_ID, instance.path("id").asString())
+                            .set(SCHEDULES.NAME, schedule.path("names").path("en").asString())
+                            .set(SCHEDULES.NAMES, JSONB.valueOf(schedule.path("names").toString()))
+                            .set(SCHEDULES.CADENCE, JSONB.valueOf(schedule.path("cadence").toString()))
+                            .set(SCHEDULES.OVERLAP, schedule.path("overlap").asString())
+                            .set(SCHEDULES.PAUSED_BY, paused ? adminId : null)
+                            .set(SCHEDULES.PAUSED_AT, paused ? now : null)
+                            .set(SCHEDULES.PAUSE_REASON, paused ? schedule.path("pauseReason").asString() : null)
+                            .set(SCHEDULES.CREATED_BY, adminId)
+                            .set(SCHEDULES.SINCE, LocalDate.ofInstant(clock.instant(), ZoneId.of("Europe/Prague")))
+                            .set(SCHEDULES.NEXT_AT, nextAt == null ? null : nextAt.atOffset(ZoneOffset.UTC))
+                            .set(SCHEDULES.POSITION, position++).execute();
+                    if (nextAt != null) queue.queueAt(dsl, id, nextAt);
+                }
+            }
+        }
     }
 
     // The installation is done on the first administrator's behalf: the shipped versions and instances

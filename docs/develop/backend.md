@@ -454,8 +454,11 @@ Locally, the testing backend (the `test` profile: fakes, a movable clock, the se
 
 The seeds are static JSON files in `seeds/`: `installation` (the shipped roles, fallback
 custody, plugin packages and default instances; the plain app applies it on an empty database and
-creates the first administrator from deployment variables), `base`, which extends it, and
-`minimal`.
+creates the first administrator from deployment variables), `installation-mzk`, which extends it
+with MZK's two Aleph catalogs and their mirror schedules, paused (the Helm value
+`vera.installationSeed` picks it, as `values-local.yaml` does), `base`, which also extends it, and
+`minimal`. A shipped plugin in a child seed adds its instances to the parent's package; a shipped
+instance's schedules are made by the first administrator.
 `make seed-volume` writes a production-sized seed, `seeds/volume.json`,
 with the generator in `seeds/tools/`.
 

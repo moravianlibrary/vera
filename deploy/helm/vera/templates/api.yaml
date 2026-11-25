@@ -47,6 +47,8 @@ spec:
               value: {{ .Values.vera.publicUrl | quote }}
             - name: VERA_OTEL_ENDPOINT
               value: {{ if .Values.observability.enabled }}http://{{ .Release.Name }}-clickstack-otel-collector:4318{{ else }}""{{ end }}
+            - name: VERA_INSTALLATION_SEED
+              value: {{ .Values.vera.installationSeed | quote }}
             - name: VERA_FIRST_ADMIN_EMAIL
               valueFrom:
                 secretKeyRef:

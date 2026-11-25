@@ -99,7 +99,7 @@ images: ## Build the backend and frontend container images
 	rm -rf backend/build/image && mkdir -p backend/build/image
 	cp "$$(ls backend/app/build/libs/app-*.jar | grep -v -- -plain)" backend/build/image/vera.jar
 	cp -r backend/plugins/build/packages backend/build/image/plugins
-	cp seeds/installation.json backend/build/image/installation.json
+	cp seeds/installation.json seeds/installation-mzk.json backend/build/image/
 	cp -r backend/app/build/otel backend/build/image/otel
 	install -m 0555 backend/docker/entrypoint.sh backend/build/image/entrypoint.sh
 	tar -C . --exclude=node_modules -cf - contract | tar -C backend/build/image -xf -

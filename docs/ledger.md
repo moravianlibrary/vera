@@ -19,16 +19,7 @@ None.
 
 ## Not built yet
 
-### L94: An MZK installation
-
-Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror).
-
-Decided on 2026-11-25. `seeds/installation.json` stays any library's. A second seed,
-`seeds/installation-mzk.json`, adds two `AlephOaiCatalogAdapter` instances, MZK01 (set `MZK01-VDK`)
-and MZK03 (set `MZK03-VDK`), on `https://aleph.mzk.cz/OAI`, each with a mirror sync schedule
-that ships **off**: an administrator starts the first fetch. The Helm chart picks the seed through
-`VERA_INSTALLATION_SEED`, and `values-local.yaml` picks the MZK one. Built on
-[L93](#built-2026-11-25). → backend, deployment.
+None.
 
 ## For the frontend, the backend and deployment
 
@@ -94,6 +85,14 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 ### Built, 2026-11-25
 
+- **L94:** `seeds/installation-mzk.json` extends the shipped installation with MZK01 and MZK03
+  `AlephOaiCatalogAdapter` instances on `https://aleph.mzk.cz/OAI` (sets `MZK01-VDK`, `MZK03-VDK`),
+  enabled, each with an hourly mirror schedule that ships paused, so an administrator starts the
+  first fetch. The installation now follows a seed's `extends` (a child's shipped plugin adds
+  instances to the parent's package) and makes a shipped instance's schedules on the first
+  administrator's behalf. The Helm value `vera.installationSeed` sets `VERA_INSTALLATION_SEED`;
+  `values-local.yaml` picks the MZK seed
+  ([PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror)).
 - **L93:** `AlephOaiCatalogAdapter` 1.1.0 keeps a mirror through `sync`: OAI `ListRecords` over its
   `set` (by default the base's `-VDK` set), the whole set on the first pass and what changed from
   the newest datestamp after; deleted headers drop their records. A record dropped while a
