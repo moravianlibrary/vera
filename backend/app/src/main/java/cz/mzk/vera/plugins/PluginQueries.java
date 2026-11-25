@@ -303,7 +303,8 @@ public class PluginQueries {
                 .where(CATALOG_MIRROR_SYNC.INSTANCE_ID.eq(id)).fetchOne(CATALOG_MIRROR_SYNC.SYNCED_AT);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("syncedAt", syncedAt == null ? null : Instants.format(syncedAt.toInstant()));
-        result.put("records", dsl.fetchCount(CATALOG_MIRROR, CATALOG_MIRROR.INSTANCE_ID.eq(id)));
+        result.put("records", dsl.fetchCount(CATALOG_MIRROR, CATALOG_MIRROR.INSTANCE_ID.eq(id)
+                .and(CATALOG_MIRROR.DROPPED_AT.isNull())));
         return result;
     }
 

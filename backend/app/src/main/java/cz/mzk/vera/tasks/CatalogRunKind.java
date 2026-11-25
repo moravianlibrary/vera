@@ -9,6 +9,8 @@ import static cz.mzk.vera.db.tables.Tables.PLUGIN_CURSORS;
 import static cz.mzk.vera.db.tables.Tables.PLUGIN_INSTANCES;
 import static cz.mzk.vera.db.tables.Tables.RUNS;
 import static cz.mzk.vera.db.tables.Tables.RUN_TARGETS;
+import static org.jooq.impl.DSL.coalesce;
+import static org.jooq.impl.DSL.max;
 
 import cz.mzk.vera.iterations.IterationReviewCommands;
 import cz.mzk.vera.plugin.catalog.ChangeFeed;
@@ -42,6 +44,10 @@ import tools.jackson.databind.json.JsonMapper;
 // PLG-api-cursor; PLG-api-mirror; PLG-api-record-change.
 @Component
 public class CatalogRunKind implements RunKind {
+    // PLG-api-mirror: VERA's own cursor for reading held records again after a pass, so many a call.
+    private static final String HELD_CHECK = "sync:held";
+    private static final int HELD_BATCH = 30;
+
     private final DSLContext dsl;
     private final PluginCalls calls;
     private final RunSets runSets;
@@ -77,6 +83,12 @@ public class CatalogRunKind implements RunKind {
                     affected.contains(target.position())
                             ? reviewCommands.callCatalogChanged(target.documentId()) : null, null, false)).toList();
             return new Call(answers, List.of(), answers.size(), false, null, null);
+        }
+        String heldCursor = dsl.select(PLUGIN_CURSORS.CURSOR).from(PLUGIN_CURSORS)
+                .where(PLUGIN_CURSORS.INSTANCE_ID.eq(context.instanceId()))
+                .and(PLUGIN_CURSORS.OPERATION.eq(HELD_CHECK)).fetchOne(PLUGIN_CURSORS.CURSOR);
+        if (heldCursor != null) {
+            return heldCheck(context.instanceId(), heldCursor);
         }
         JsonNode version = json.readTree(context.versions().data()).get(0);
         JsonNode operations = version.path("declares").path("operations");
@@ -138,14 +150,31 @@ public class CatalogRunKind implements RunKind {
                 tx.deleteFrom(PLUGIN_CURSORS).where(PLUGIN_CURSORS.INSTANCE_ID.eq(context.instanceId())
                         .and(PLUGIN_CURSORS.OPERATION.eq(operation))).execute();
             }
+            // A pass's held check waits for its rechecks, and the run goes on to it.
+            boolean held = tx.fetchExists(PLUGIN_CURSORS, PLUGIN_CURSORS.INSTANCE_ID.eq(context.instanceId())
+                    .and(PLUGIN_CURSORS.OPERATION.eq(HELD_CHECK)));
             return new Applied((int) call.answers().stream().filter(answer -> answer.answer() != null).count(),
-                    0, count, more || !finished, true, false, List.of(), "/documents");
+                    0, count, more || !finished || held, true, false, List.of(), "/documents");
         }
         RunKind.Page page = call.page();
         if (page.failure() != null) {
             return new Applied(0, 0, 0, false, true, false, List.of(page.failure()), "/documents");
         }
         OffsetDateTime now = clock.instant().atOffset(ZoneOffset.UTC);
+        if (page.answer() instanceof HeldPage held) {
+            for (String catalogId : held.gone()) {
+                dropFromMirror(tx, page.instanceId(), catalogId, now);
+                tx.select(DOCUMENTS.ID).from(DOCUMENTS).where(DOCUMENTS.CATALOG_ID.eq(catalogId))
+                        .fetch(DOCUMENTS.ID).forEach(reviewCommands::catalogGone);
+            }
+            if (held.done()) {
+                tx.deleteFrom(PLUGIN_CURSORS).where(PLUGIN_CURSORS.INSTANCE_ID.eq(page.instanceId())
+                        .and(PLUGIN_CURSORS.OPERATION.eq(HELD_CHECK))).execute();
+            } else {
+                saveCursor(tx, page.instanceId(), HELD_CHECK, held.last());
+            }
+            return new Applied(held.gone().size(), 0, 0, !held.done(), true, false, List.of(), "/documents");
+        }
         List<String> catalogIds = new ArrayList<>();
         List<String> droppedIds = new ArrayList<>();
         List<RunSets.Target> relinkedTargets = new ArrayList<>();
@@ -162,10 +191,7 @@ public class CatalogRunKind implements RunKind {
                 catalogIds.add(keep.catalogId());
             }
             for (String catalogId : answer.drop()) {
-                tx.deleteFrom(CATALOG_MIRROR_KEYS).where(CATALOG_MIRROR_KEYS.INSTANCE_ID.eq(page.instanceId())
-                        .and(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(catalogId))).execute();
-                tx.deleteFrom(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(page.instanceId())
-                        .and(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))).execute();
+                dropFromMirror(tx, page.instanceId(), catalogId, now);
                 droppedIds.add(catalogId);
             }
             tx.insertInto(CATALOG_MIRROR_SYNC).set(CATALOG_MIRROR_SYNC.INSTANCE_ID, page.instanceId())
@@ -173,7 +199,9 @@ public class CatalogRunKind implements RunKind {
                     .onConflict(CATALOG_MIRROR_SYNC.INSTANCE_ID).doUpdate()
                     .set(CATALOG_MIRROR_SYNC.SYNCED_AT, now).execute();
             if (!more) {
-                droppedIds.addAll(finishRebuild(tx, context));
+                droppedIds.addAll(finishRebuild(tx, context, now));
+                // The pass is read: the records VERA's documents name are read again before the run ends.
+                saveCursor(tx, page.instanceId(), HELD_CHECK, "");
             }
             replacements = answer.replaced();
             replacementUnits.putAll(result.units());
@@ -230,12 +258,58 @@ public class CatalogRunKind implements RunKind {
         if (recheck) {
             saveCursor(tx, page.instanceId(), recheckOperation(context.runId()), markerOf(more, affected));
         }
-        return new Applied(affected.size(), affected.size(), 0, more || recheck,
+        boolean heldCheck = page.answer() instanceof SyncPage && !more;
+        return new Applied(affected.size(), affected.size(), 0, more || recheck || heldCheck,
                 true, false, List.of(), "/documents");
     }
 
+    // PLG-api-mirror: a catalog may not report every deletion, so after a pass each record a document
+    // names is read again; one not found any more is dropped as the catalog would have dropped it.
+    private Call heldCheck(String instanceId, String after) {
+        List<String> catalogIds = dsl.select(CATALOG_MIRROR.CATALOG_ID).from(CATALOG_MIRROR)
+                .where(CATALOG_MIRROR.INSTANCE_ID.eq(instanceId)).and(CATALOG_MIRROR.DROPPED_AT.isNull())
+                .and(CATALOG_MIRROR.CATALOG_ID.gt(after))
+                .andExists(dsl.selectOne().from(DOCUMENTS).where(DOCUMENTS.CATALOG_ID.eq(CATALOG_MIRROR.CATALOG_ID)))
+                .orderBy(CATALOG_MIRROR.CATALOG_ID).limit(HELD_BATCH).fetch(CATALOG_MIRROR.CATALOG_ID);
+        List<String> gone = new ArrayList<>();
+        String last = after;
+        boolean stopped = false;
+        for (String catalogId : catalogIds) {
+            PluginOutcome<ReadAnswer> read = calls.call(instanceId, CatalogAdapter.class, "read",
+                    (plugin, pluginContext) -> plugin.read(pluginContext, new ReadInput(catalogId)));
+            if (read instanceof PluginOutcome.Unavailable<ReadAnswer>) {
+                stopped = true;
+                break;
+            }
+            if (read instanceof PluginOutcome.Refused<ReadAnswer> refused && "not_found".equals(refused.code())) {
+                gone.add(catalogId);
+            }
+            last = catalogId;
+        }
+        // Nothing read: the run fails and the next one starts here again.
+        String failure = stopped && last.equals(after) ? "The source did not answer." : null;
+        boolean done = !stopped && catalogIds.size() < HELD_BATCH;
+        return new Call(List.of(), List.of(), 0, false, null,
+                new RunKind.Page(instanceId, HELD_CHECK, new HeldPage(gone, last, done), failure, null));
+    }
+
+    // PLG-api-mirror: a dropped record a document names stays as last fetched, out of search and
+    // lookups; any other leaves the mirror.
+    private void dropFromMirror(DSLContext tx, String instanceId, String catalogId, OffsetDateTime now) {
+        tx.deleteFrom(CATALOG_MIRROR_KEYS).where(CATALOG_MIRROR_KEYS.INSTANCE_ID.eq(instanceId)
+                .and(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(catalogId))).execute();
+        if (tx.fetchExists(DOCUMENTS, DOCUMENTS.CATALOG_ID.eq(catalogId))) {
+            tx.update(CATALOG_MIRROR).set(CATALOG_MIRROR.DROPPED_AT, now)
+                    .where(CATALOG_MIRROR.INSTANCE_ID.eq(instanceId)).and(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))
+                    .and(CATALOG_MIRROR.DROPPED_AT.isNull()).execute();
+        } else {
+            tx.deleteFrom(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(instanceId)
+                    .and(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))).execute();
+        }
+    }
+
     // PLG-api-mirror: keep the old mirror until a run begun after Reset has read every page.
-    private List<String> finishRebuild(DSLContext tx, Context context) {
+    private List<String> finishRebuild(DSLContext tx, Context context, OffsetDateTime now) {
         OffsetDateTime resetAt = tx.select(PLUGIN_INSTANCES.REBUILD_AFTER).from(PLUGIN_INSTANCES)
                 .where(PLUGIN_INSTANCES.ID.eq(context.instanceId())).forUpdate()
                 .fetchOne(PLUGIN_INSTANCES.REBUILD_AFTER);
@@ -246,11 +320,9 @@ public class CatalogRunKind implements RunKind {
         }
         List<String> stale = tx.select(CATALOG_MIRROR.CATALOG_ID).from(CATALOG_MIRROR)
                 .where(CATALOG_MIRROR.INSTANCE_ID.eq(context.instanceId()))
-                .and(CATALOG_MIRROR.FETCHED_AT.lt(startedAt)).fetch(CATALOG_MIRROR.CATALOG_ID);
-        tx.deleteFrom(CATALOG_MIRROR_KEYS).where(CATALOG_MIRROR_KEYS.INSTANCE_ID.eq(context.instanceId()))
-                .and(CATALOG_MIRROR_KEYS.CATALOG_ID.in(stale)).execute();
-        tx.deleteFrom(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(context.instanceId()))
-                .and(CATALOG_MIRROR.CATALOG_ID.in(stale)).execute();
+                .and(CATALOG_MIRROR.FETCHED_AT.lt(startedAt)).and(CATALOG_MIRROR.DROPPED_AT.isNull())
+                .fetch(CATALOG_MIRROR.CATALOG_ID);
+        stale.forEach(catalogId -> dropFromMirror(tx, context.instanceId(), catalogId, now));
         tx.update(PLUGIN_INSTANCES).setNull(PLUGIN_INSTANCES.REBUILD_AFTER)
                 .where(PLUGIN_INSTANCES.ID.eq(context.instanceId())).execute();
         return stale;
@@ -291,29 +363,53 @@ public class CatalogRunKind implements RunKind {
     }
 
     private void upsertMirror(DSLContext tx, String instanceId, SyncAnswer.Keep keep, OffsetDateTime now) {
-        int position = tx.selectCount().from(CATALOG_MIRROR).where(CATALOG_MIRROR.INSTANCE_ID.eq(instanceId))
-                .fetchOne(0, int.class);
+        // The next position from the index: a mirror of a whole catalog is never counted row by row.
+        int position = tx.select(coalesce(max(CATALOG_MIRROR.POSITION), -1).add(1)).from(CATALOG_MIRROR)
+                .where(CATALOG_MIRROR.INSTANCE_ID.eq(instanceId)).fetchOne(0, int.class);
+        Object recordType = keep.record() == null ? null : keep.record().get("type");
+        String type = recordType instanceof String named && !named.isBlank() ? named : "Unknown";
         tx.insertInto(CATALOG_MIRROR).set(CATALOG_MIRROR.INSTANCE_ID, instanceId)
                 .set(CATALOG_MIRROR.CATALOG_ID, keep.catalogId()).set(CATALOG_MIRROR.TITLE, keep.title())
-                .set(CATALOG_MIRROR.TYPE, "Unknown")
+                .set(CATALOG_MIRROR.TYPE, type)
                 .set(CATALOG_MIRROR.UNITS, JSONB.valueOf(json.writeValueAsString(keep.units())))
                 .set(CATALOG_MIRROR.RECORD, JSONB.valueOf(json.writeValueAsString(keep.record())))
                 .set(CATALOG_MIRROR.FETCHED_AT, now).set(CATALOG_MIRROR.POSITION, position)
                 .onConflict(CATALOG_MIRROR.INSTANCE_ID, CATALOG_MIRROR.CATALOG_ID).doUpdate()
                 .set(CATALOG_MIRROR.TITLE, keep.title())
+                .set(CATALOG_MIRROR.TYPE, type)
                 .set(CATALOG_MIRROR.UNITS, JSONB.valueOf(json.writeValueAsString(keep.units())))
                 .set(CATALOG_MIRROR.RECORD, JSONB.valueOf(json.writeValueAsString(keep.record())))
-                .set(CATALOG_MIRROR.FETCHED_AT, now).execute();
+                .set(CATALOG_MIRROR.FETCHED_AT, now).setNull(CATALOG_MIRROR.DROPPED_AT).execute();
         tx.deleteFrom(CATALOG_MIRROR_KEYS).where(CATALOG_MIRROR_KEYS.INSTANCE_ID.eq(instanceId)
                 .and(CATALOG_MIRROR_KEYS.CATALOG_ID.eq(keep.catalogId()))).execute();
         int keyPosition = 0;
         for (String identifier : keep.identifiers()) {
-            tx.insertInto(CATALOG_MIRROR_KEYS).set(CATALOG_MIRROR_KEYS.INSTANCE_ID, instanceId)
-                    .set(CATALOG_MIRROR_KEYS.CATALOG_ID, keep.catalogId())
-                    .set(CATALOG_MIRROR_KEYS.KIND, "identifier").set(CATALOG_MIRROR_KEYS.VALUE, identifier)
-                    .set(CATALOG_MIRROR_KEYS.NORMALIZED, identifier.replace("-", "").toLowerCase(Locale.ROOT))
-                    .set(CATALOG_MIRROR_KEYS.POSITION, keyPosition++).execute();
+            keyPosition = addKey(tx, instanceId, keep.catalogId(), "identifier", identifier, null, keyPosition);
         }
+        // Barcodes and shelf marks, each with its unit, as the record keeps them.
+        for (String kind : List.of("barcode", "shelfMark")) {
+            Object values = keep.record() == null ? null : keep.record().get(kind + "s");
+            if (values instanceof Map<?, ?> byValue) {
+                for (Map.Entry<?, ?> entry : byValue.entrySet()) {
+                    keyPosition = addKey(tx, instanceId, keep.catalogId(), kind, String.valueOf(entry.getKey()),
+                            entry.getValue() == null ? null : String.valueOf(entry.getValue()), keyPosition);
+                }
+            }
+        }
+    }
+
+    private int addKey(DSLContext tx, String instanceId, String catalogId, String kind, String value, String unit,
+            int position) {
+        String normalized = switch (kind) {
+            case "identifier" -> value.replace("-", "").toLowerCase(Locale.ROOT);
+            case "shelfMark" -> value.trim().toUpperCase(Locale.ROOT);
+            default -> value;
+        };
+        tx.insertInto(CATALOG_MIRROR_KEYS).set(CATALOG_MIRROR_KEYS.INSTANCE_ID, instanceId)
+                .set(CATALOG_MIRROR_KEYS.CATALOG_ID, catalogId).set(CATALOG_MIRROR_KEYS.KIND, kind)
+                .set(CATALOG_MIRROR_KEYS.VALUE, value).set(CATALOG_MIRROR_KEYS.NORMALIZED, normalized)
+                .set(CATALOG_MIRROR_KEYS.UNIT, unit).set(CATALOG_MIRROR_KEYS.POSITION, position).execute();
+        return position + 1;
     }
 
     private Map<String, List<String>> readReplacementUnits(String instanceId,
@@ -334,4 +430,5 @@ public class CatalogRunKind implements RunKind {
 
     private record ChangesPage(ChangesAnswer answer, Map<String, List<String>> units) {}
     private record SyncPage(SyncAnswer answer, Map<String, List<String>> units) {}
+    private record HeldPage(List<String> gone, String last, boolean done) {}
 }

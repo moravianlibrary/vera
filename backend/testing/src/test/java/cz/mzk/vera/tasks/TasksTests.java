@@ -356,6 +356,43 @@ class TasksTests {
                 Boolean.class)).isTrue();
     }
 
+    // PLG-api-mirror: after a pass the held records are read again; one the catalog no longer has
+    // stays in the mirror for its document, out of search and lookups.
+    @Test
+    void aPassReadsHeldRecordsAgainAndKeepsADroppedOneForItsDocument() throws Exception {
+        declareOperation("pi1", "sync");
+        String goneId = "MZK01-001284756";
+        String goneDocument = jdbc.queryForObject("SELECT id FROM documents WHERE catalog_id=?", String.class, goneId);
+        String keptDocument = jdbc.queryForObject("SELECT id FROM documents WHERE catalog_id='MZK01-001452200'",
+                String.class);
+        jdbc.update("INSERT INTO catalog_mirror(instance_id,catalog_id,title,type,record,fetched_at,position) "
+                + "VALUES ('pi1',?,'Withdrawn from the catalog','Monograph','{}'::jsonb,'2026-06-24T08:40:00Z',998)",
+                goneId);
+        jdbc.update("INSERT INTO catalog_mirror_keys(instance_id,catalog_id,kind,value,normalized,position) "
+                + "VALUES ('pi1',?,'barcode','2610999999','2610999999',0)", goneId);
+
+        JsonNode done = finishRun(startPluginRun("pi1", "Catalog sync with held check"));
+
+        assertThat(done.path("run").path("state").asString()).isEqualTo("Done");
+        assertThat(jdbc.queryForObject("SELECT catalog_state->>'kind' FROM documents WHERE id=?", String.class,
+                goneDocument)).isEqualTo("gone");
+        assertThat(jdbc.queryForObject("SELECT catalog_state FROM documents WHERE id=?", String.class,
+                keptDocument)).isNull();
+        assertThat(jdbc.queryForObject("SELECT dropped_at IS NOT NULL FROM catalog_mirror WHERE instance_id='pi1' "
+                + "AND catalog_id=?", Boolean.class, goneId)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror_keys WHERE catalog_id=?",
+                Integer.class, goneId)).isZero();
+        assertThat(get("/api/proposals/catalog-search?q=Withdrawn&catalog=pi1", "u3").toString())
+                .doesNotContain(goneId);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM plugin_cursors WHERE instance_id='pi1' "
+                + "AND operation='sync:held'", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT type FROM catalog_mirror WHERE instance_id='pi1' "
+                + "AND catalog_id='MZK01-001277001'", String.class)).isEqualTo("Periodical");
+        assertThat(pluginDetail(get("/api/plugins", "u3"), "pi1").path("mirror").path("records").asInt())
+                .isEqualTo(jdbc.queryForObject("SELECT count(*) FROM catalog_mirror WHERE instance_id='pi1' "
+                        + "AND dropped_at IS NULL", Integer.class));
+    }
+
     private JsonNode pluginDetail(JsonNode index, String id) {
         for (JsonNode instance : index.path("instances")) {
             if (id.equals(instance.path("id").asString())) {

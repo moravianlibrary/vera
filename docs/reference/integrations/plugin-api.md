@@ -173,9 +173,6 @@ record itself as the plugin gave it, with the moment it was fetched.
   again, one by one, the records VERA's documents name, so a deletion the catalog left out still
   reaches those documents.
 
-> **Open — [L93](../../ledger.md#l93-mzk-aleph-is-mirrored).** No real catalog adapter declares
-> `sync`; only the testing fakes fill the mirror.
-
 Deleting the instance drops its mirror; *Reset* clears the cursor and rebuilds the mirror on the
 next run.
 

@@ -1,6 +1,6 @@
 {
   "implementation": "cz.mzk.vera.aleph-oai-catalog-adapter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "contractVersion": "1.2",
   "triggers": ["OnProposal", "OnIngest", "OnSchedule", "OnDemand"],
   "declares": {
@@ -17,7 +17,7 @@
     "agent": null,
     "generatorClass": null,
     "channelInterface": null,
-    "operations": ["readLink", "changes"],
+    "operations": ["readLink", "changes", "sync"],
     "loginEntry": null
   },
   "configFields": [

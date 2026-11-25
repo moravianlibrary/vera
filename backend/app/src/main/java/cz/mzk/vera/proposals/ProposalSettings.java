@@ -60,7 +60,6 @@ public class ProposalSettings {
         List<Map<String, Object>> adapters = instances.stream()
                 .filter(row -> plugins.enabled(row)
                         && plugins.kindOf(row, implementationById).equals(ProposalCodes.CATALOG_ADAPTER))
-                .filter(row -> plugins.catalogConfiguration(row).containsKey("catalog_base"))
                 .toList();
         List<Map<String, Object>> searchable = adapters.stream()
                 .filter(row -> plugins.searchable(row, implementationById))

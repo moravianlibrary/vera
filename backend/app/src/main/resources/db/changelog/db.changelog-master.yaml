@@ -173,3 +173,6 @@ databaseChangeLog:
   - include:
       file: 0530-plugin-instance-request-limit.sql
       relativeToChangelogFile: true
+  - include:
+      file: 0540-catalog-mirror-dropped.sql
+      relativeToChangelogFile: true

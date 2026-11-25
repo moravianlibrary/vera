@@ -19,20 +19,6 @@ None.
 
 ## Not built yet
 
-### L93: MZK Aleph is mirrored
-
-Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror),
-[PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change),
-[DOC-relink](reference/model/documents.md#doc-relink).
-
-Decided on 2026-11-25. `AlephOaiCatalogAdapter` declares `read`, `readLink` and `changes`, not
-`sync`. Needs `sync` over OAI `ListRecords` in the instance's `set`: the whole set on the first
-run (about a day for MZK01, at 30 records a page), then `from` the last datestamp; deleted headers
-drop their records. Then what the mirror keeps for documents and the check of held records. Aleph
-never names the record that replaced a merged one, so a merge reaches VERA as a dropped record and
-staff relink by hand. Built on [L92](#built-2026-11-25), so the first fetch keeps within Aleph's
-session limits. → backend.
-
 ### L94: An MZK installation
 
 Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror).
@@ -41,8 +27,8 @@ Decided on 2026-11-25. `seeds/installation.json` stays any library's. A second s
 `seeds/installation-mzk.json`, adds two `AlephOaiCatalogAdapter` instances, MZK01 (set `MZK01-VDK`)
 and MZK03 (set `MZK03-VDK`), on `https://aleph.mzk.cz/OAI`, each with a mirror sync schedule
 that ships **off**: an administrator starts the first fetch. The Helm chart picks the seed through
-`VERA_INSTALLATION_SEED`, and `values-local.yaml` picks the MZK one. Waits for
-[L93](#l93-mzk-aleph-is-mirrored). → backend, deployment.
+`VERA_INSTALLATION_SEED`, and `values-local.yaml` picks the MZK one. Built on
+[L93](#built-2026-11-25). → backend, deployment.
 
 ## For the frontend, the backend and deployment
 
@@ -108,6 +94,15 @@ Decided on 2026-10-29 ([DEC-0017](decisions/DEC-0017-observability.md)). Needs:
 
 ### Built, 2026-11-25
 
+- **L93:** `AlephOaiCatalogAdapter` 1.1.0 keeps a mirror through `sync`: OAI `ListRecords` over its
+  `set` (by default the base's `-VDK` set), the whole set on the first pass and what changed from
+  the newest datestamp after; deleted headers drop their records. A record dropped while a
+  document names it stays in the mirror, as last fetched, out of catalog search and lookups;
+  after each pass VERA reads the held records again, 30 a call, and one not found marks its
+  document *No longer in the catalog*. Mirrored records keep their type, barcodes and shelf
+  marks, a new row's position comes from an index, and catalog search uses `ILIKE`, so a whole
+  catalog stays fast. A catalog adapter no longer needs the testing seeds' `catalog_base` to be
+  offered in the propose dialog ([PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror)).
 - **L92:** each plugin instance talks to the outside world as one session: its own cookies and
   kept-open connections, a request limit set on Plugins (300 requests in 5 minutes by default)
   that makes a call wait for room instead of failing, back-off on 429 and 503 after `Retry-After`,

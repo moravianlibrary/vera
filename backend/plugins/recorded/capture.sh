@@ -24,3 +24,15 @@ grep -v '^#' records.psv | while IFS='|' read -r sysno cnb isxn barcodes why; do
     sleep 0.4
   fi
 done
+# Mirror sync (PLG-api-mirror): the first two ListRecords pages of MZK03's full set, and a page of
+# MZK01's changes from a fixed day.
+mkdir -p aleph-sync
+oai="https://aleph.mzk.cz/OAI"
+curl -fsS -m 60 -o aleph-sync/MZK03-VDK.1.xml "$oai?verb=ListRecords&metadataPrefix=marc21&set=MZK03-VDK"
+token=$(grep -o '<resumptionToken[^>]*>[^<]*' aleph-sync/MZK03-VDK.1.xml | sed 's/.*>//')
+sleep 0.4
+curl -fsS -m 60 -G -o aleph-sync/MZK03-VDK.2.xml "$oai" --data-urlencode "verb=ListRecords" \
+  --data-urlencode "resumptionToken=$token"
+sleep 0.4
+curl -fsS -m 60 -o aleph-sync/MZK01-VDK.from.xml \
+  "$oai?verb=ListRecords&metadataPrefix=marc21&set=MZK01-VDK&from=2026-11-24T00:00:00Z"

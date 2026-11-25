@@ -102,6 +102,7 @@ public class ProposalCheck {
         if (kind == null) {
             dsl.select(CATALOG_MIRROR.RECORD).from(CATALOG_MIRROR)
                     .where(CATALOG_MIRROR.CATALOG_ID.eq(value.toUpperCase(Locale.ROOT)))
+                    .and(CATALOG_MIRROR.DROPPED_AT.isNull())
                     .orderBy(CATALOG_MIRROR.POSITION).fetch().forEach(row ->
                             catalogRecords.add(record(mapper.readTree(row.get(CATALOG_MIRROR.RECORD).data()))));
         } else {

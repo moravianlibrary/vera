@@ -36,8 +36,7 @@ public class ProposalPluginQueries {
         Map<String, Map<String, Object>> byId = new LinkedHashMap<>();
         implementations.forEach(row -> byId.put((String) row.get("id"), row));
         return instances().stream().anyMatch(row -> enabled(row) && instanceId.equals(row.get("id"))
-                && kindOf(row, byId).equals(ProposalCodes.CATALOG_ADAPTER)
-                && configuration(row).containsKey("catalog_base"));
+                && kindOf(row, byId).equals(ProposalCodes.CATALOG_ADAPTER));
     }
 
     public boolean isEnabledEntryLink(String instanceId) {
@@ -129,10 +128,6 @@ public class ProposalPluginQueries {
         value.properties().forEach(entry -> result.put(entry.getKey(), entry.getValue().isNull()
                 ? null : entry.getValue().asString()));
         return result;
-    }
-
-    Map<String, String> catalogConfiguration(Map<String, Object> instance) {
-        return configuration(instance);
     }
 
     boolean searchable(Map<String, Object> instance, Map<String, Map<String, Object>> implementations) {

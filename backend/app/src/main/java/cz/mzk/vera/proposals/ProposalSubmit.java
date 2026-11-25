@@ -314,6 +314,7 @@ public class ProposalSubmit {
         var mirror = dsl.select(CATALOG_MIRROR.INSTANCE_ID, CATALOG_MIRROR.TITLE, CATALOG_MIRROR.TYPE,
                         CATALOG_MIRROR.RECORD)
                 .from(CATALOG_MIRROR).where(CATALOG_MIRROR.CATALOG_ID.eq(catalogId))
+                .and(CATALOG_MIRROR.DROPPED_AT.isNull())
                 .orderBy(CATALOG_MIRROR.POSITION).limit(1).fetchOne();
         if (mirror == null) {
             throw new IllegalStateException("Accepted catalog record disappeared: " + catalogId);

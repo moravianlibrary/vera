@@ -1,7 +1,6 @@
 package cz.mzk.vera.proposals;
 
 import static cz.mzk.vera.db.tables.Tables.CATALOG_MIRROR;
-import static org.jooq.impl.DSL.lower;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,7 +38,6 @@ public class ProposalWaysIn {
         for (Map<String, Object> instance : instances) {
             if (!plugins.enabled(instance)
                     || !plugins.kindOf(instance, implementationById).equals(ProposalCodes.CATALOG_ADAPTER)
-                    || !plugins.catalogConfiguration(instance).containsKey("catalog_base")
                     || !plugins.searchable(instance, implementationById)
                     || "off".equals(plugins.configuration(instance).get("search"))
                     || (selectedCatalog != null && !selectedCatalog.equals(instance.get("id")))) {
@@ -49,8 +47,10 @@ public class ProposalWaysIn {
                             CATALOG_MIRROR.UNITS)
                     .from(CATALOG_MIRROR)
                     .where(CATALOG_MIRROR.INSTANCE_ID.eq((String) instance.get("id")))
-                    .and(lower(CATALOG_MIRROR.TITLE).contains(needle)
-                            .or(lower(CATALOG_MIRROR.CATALOG_ID).contains(needle)))
+                    .and(CATALOG_MIRROR.DROPPED_AT.isNull())
+                    // PLG-api-mirror: ILIKE, which the trigram indexes serve over a whole catalog.
+                    .and(CATALOG_MIRROR.TITLE.containsIgnoreCase(needle)
+                            .or(CATALOG_MIRROR.CATALOG_ID.containsIgnoreCase(needle)))
                     .orderBy(CATALOG_MIRROR.POSITION)
                     .fetch();
             Set<String> seen = new LinkedHashSet<>();

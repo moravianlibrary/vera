@@ -10,10 +10,13 @@ import cz.mzk.vera.plugin.catalog.ChangeFeed;
 import cz.mzk.vera.plugin.catalog.ChangesAnswer;
 import cz.mzk.vera.plugin.catalog.ChangesInput;
 import cz.mzk.vera.plugin.catalog.LinkReader;
+import cz.mzk.vera.plugin.catalog.MirroredCatalog;
 import cz.mzk.vera.plugin.catalog.ReadAnswer;
 import cz.mzk.vera.plugin.catalog.ReadInput;
 import cz.mzk.vera.plugin.catalog.ReadLinkAnswer;
 import cz.mzk.vera.plugin.catalog.ReadLinkInput;
+import cz.mzk.vera.plugin.catalog.SyncAnswer;
+import cz.mzk.vera.plugin.catalog.SyncInput;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -33,8 +36,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-// Reads MZK's public OAI-PMH records and holdings.
-public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader, ChangeFeed {
+// Reads MZK's public OAI-PMH records and holdings, and keeps a mirror of one set (PLG-api-mirror).
+public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader, ChangeFeed, MirroredCatalog {
     private static final String OAI_NS = "http://www.openarchives.org/OAI/2.0/";
     private static final String MARC_NS = "http://www.loc.gov/MARC21/slim";
     private static final Pattern DOC_NUMBER = Pattern.compile("(?:^|[?&])doc_number=([^&#]+)", Pattern.CASE_INSENSITIVE);
@@ -64,6 +67,13 @@ public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader,
     }
 
     private ReadAnswer answer(PluginContext context, String catalogId, Element record) {
+        Parsed parsed = parsed(record);
+        return new ReadAnswer(catalogId, Map.copyOf(parsed.fields()), parsed.units().isEmpty() ? null
+                : List.copyOf(parsed.units()), parsed.issuance(), context.clock().instant());
+    }
+
+    // What one MARC record says, for a read and for the mirror alike.
+    private Parsed parsed(Element record) {
         Map<String, Object> fields = new LinkedHashMap<>();
         String title = joined(record, "245", List.of("a", "b", "n", "p"));
         fields.put("title", title);
@@ -103,8 +113,7 @@ public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader,
         add(fields, "years", slice(control008, 7, 15));
         String issuance = "s".equals(slice(control(record, "leader"), 7, 8)) && !units.isEmpty()
                 ? "Unit" : materialType(record);
-        return new ReadAnswer(catalogId, Map.copyOf(fields), units.isEmpty() ? null : List.copyOf(units), issuance,
-                context.clock().instant());
+        return new Parsed(fields, units, issuance, materialType(record));
     }
 
     @Override
@@ -158,6 +167,79 @@ public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader,
             if (token == null) break;
         }
         return new ChangesAnswer(List.copyOf(ids), newest == null ? cursor : newest);
+    }
+
+    // One OAI page a call. The cursor is "resume:<newest datestamp>|<token>" within a pass and
+    // "from:<datestamp>" between passes; with none, the whole set is read. Aleph's tokens carry
+    // their own position, so a pass resumes after a restart.
+    @Override
+    public SyncAnswer sync(PluginContext context, SyncInput input) {
+        String base = config(context, "base");
+        String cursor = input.cursor() == null ? "" : input.cursor();
+        String newest = null;
+        Map<String, String> params;
+        if (cursor.startsWith("resume:")) {
+            String rest = cursor.substring("resume:".length());
+            int bar = rest.indexOf('|');
+            newest = bar <= 0 ? null : rest.substring(0, bar);
+            params = Map.of("verb", "ListRecords", "resumptionToken", rest.substring(bar + 1));
+        } else {
+            // A base's full set ends in -VDK (MZK01-VDK, MZK03-VDK).
+            String set = context.configuration().getOrDefault("set", base + "-VDK");
+            params = new LinkedHashMap<>(Map.of("verb", "ListRecords", "metadataPrefix", "marc21", "set", set));
+            if (cursor.startsWith("from:")) params.put("from", cursor.substring("from:".length()));
+        }
+        Document page = parse(send(context, query(config(context, "oai_url"), params)));
+        Element error = first(page.root, OAI_NS, "error");
+        if (error != null && "noRecordsMatch".equals(error.getAttribute("code"))) {
+            return new SyncAnswer(List.of(), List.of(), cursor.startsWith("from:") ? cursor : null, false);
+        }
+        if (error != null) throw new PluginUnavailable("Aleph OAI answered " + error.getAttribute("code"));
+        List<SyncAnswer.Keep> keep = new ArrayList<>();
+        List<String> drop = new ArrayList<>();
+        NodeList records = page.root.getElementsByTagNameNS(OAI_NS, "record");
+        for (int i = 0; i < records.getLength(); i++) {
+            Element item = (Element) records.item(i);
+            Element header = first(item, OAI_NS, "header");
+            String identifier = header == null ? null : text(first(header, OAI_NS, "identifier"));
+            String catalogId = identifier == null ? null : identifier.substring(identifier.lastIndexOf(':') + 1);
+            if (catalogId == null || !catalogId.startsWith(base + "-")) continue;
+            String datestamp = text(first(header, OAI_NS, "datestamp"));
+            if (datestamp != null && (newest == null || datestamp.compareTo(newest) > 0)) newest = datestamp;
+            Element marc = first(item, MARC_NS, "record");
+            if ("deleted".equals(header.getAttribute("status")) || marc == null) {
+                drop.add(catalogId);
+                continue;
+            }
+            keep.add(keep(catalogId, marc));
+        }
+        Element resume = first(page.root, OAI_NS, "resumptionToken");
+        String token = resume == null || text(resume) == null || text(resume).isBlank() ? null : text(resume);
+        if (token != null) {
+            return new SyncAnswer(keep, drop, "resume:" + (newest == null ? "" : newest) + "|" + token, true);
+        }
+        String from = newest != null ? newest : cursor.startsWith("from:") ? cursor.substring("from:".length()) : null;
+        return new SyncAnswer(keep, drop, from == null ? null : "from:" + from, false);
+    }
+
+    // A mirrored record holds what VERA reads from it: its id, title, type, units, identifiers,
+    // barcodes and shelf marks, beside the rest a read gives.
+    private SyncAnswer.Keep keep(String catalogId, Element marc) {
+        Parsed parsed = parsed(marc);
+        Map<String, Object> record = new LinkedHashMap<>(parsed.fields());
+        record.put("catalogId", catalogId);
+        record.put("type", parsed.type());
+        record.put("units", parsed.units().isEmpty() ? null : List.copyOf(parsed.units()));
+        String title = (String) parsed.fields().get("title");
+        @SuppressWarnings("unchecked")
+        List<String> identifiers = (List<String>) parsed.fields().get("identifiers");
+        List<String> text = new ArrayList<>();
+        if (title != null) text.add(title);
+        String author = joined(marc, "100", List.of("a"));
+        if (author != null) text.add(author);
+        text.addAll(identifiers);
+        return new SyncAnswer.Keep(catalogId, title == null ? catalogId : title, List.copyOf(parsed.units()),
+                identifiers, String.join(" ", text), record);
     }
 
     private PluginHttp.Response send(PluginContext context, URI uri) {
@@ -311,4 +393,5 @@ public final class AlephOaiCatalogAdapter implements CatalogAdapter, LinkReader,
     private String decode(String value) { return java.net.URLDecoder.decode(value, StandardCharsets.UTF_8); }
     private CatalogAdapterRefused refused(CatalogAdapterRefusal refusal) { return new CatalogAdapterRefused(refusal); }
     private record Document(Element root) {}
+    private record Parsed(Map<String, Object> fields, List<String> units, String issuance, String type) {}
 }
