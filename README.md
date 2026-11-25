@@ -11,6 +11,8 @@ This branch holds the current system. Its successor, VERA 1.0.0, is a rewrite (a
 a React client, plugins for catalogs, registries and logins) and is released on **1 December
 2026**. The work on it is on the
 [`release/1.0.0`](https://github.com/moravianlibrary/vera/tree/release/1.0.0) branch.
+The current system stays on the [`legacy`](https://github.com/moravianlibrary/vera/tree/legacy)
+branch.
 
 ## Stack
 
