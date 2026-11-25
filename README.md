@@ -5,6 +5,13 @@ plans its work in: it builds and tracks digitisation intentions and worklists, s
 bibliographic records from the library catalogue and the national union catalogue (SKC), and flags
 metadata discrepancies before a document goes to scanning.
 
+## VERA 1.0.0
+
+This branch holds the current system. Its successor, VERA 1.0.0, is a rewrite (a Java backend,
+a React client, plugins for catalogs, registries and logins) and is released on **1 December
+2026**. The work on it is on the
+[`release/1.0.0`](https://github.com/moravianlibrary/vera/tree/release/1.0.0) branch.
+
 ## Stack
 
 | Part | Built with |
