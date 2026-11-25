@@ -20,6 +20,26 @@ and recorded the same way. A call never writes to VERA's database and never call
 VERA gives it what it needs and writes what it answers. The one thing it reads on its own is its
 instance's mirror ([PLG-api-mirror](#plg-api-mirror)), through the context, read-only.
 
+#### PLG-api-session
+
+Catalogs and registries limit how many sessions a client opens in a window, often five minutes.
+So each instance talks to the outside world as **one session**: its own cookies, and its own
+connections kept open and reused, whichever call or run is speaking.
+- **Pace:** an instance has a request limit, at most so many requests in a window, set on Plugins
+  with a safe default. A call over the limit waits for room instead of failing, so a long run
+  such as a mirror's first fetch paces itself.
+- **Back off:** an answer of 429 or 503 makes the instance wait, as long as its `Retry-After`
+  says when it says so. Refusals that go on end the call as *unavailable*
+  ([PLG-api-outcome](#plg-api-outcome)); a run resumes from its cursor
+  ([PLG-api-cursor](#plg-api-cursor)).
+- **Timeout:** the instance's `timeout`, when its configuration has one, is the timeout of its
+  calls.
+
+This is VERA's, not each plugin's: every kind that calls out gets it.
+
+> **Open — [L92](../../ledger.md#l92-one-session-per-plugin-instance).** All instances share one
+> HTTP client with a fixed 10-second timeout: no cookies, no limit, no back-off.
+
 #### PLG-api-outcome
 
 A call ends in one of three outcomes:
@@ -147,6 +167,15 @@ record itself as the plugin gave it, with the moment it was fetched.
   without calling the catalog; the reading's date is then the moment the record was fetched.
 - **Freshness:** the instance's drawer says when the mirror was last synced and how many records
   it holds.
+- **Kept for documents:** a record that `sync` drops while a document VERA holds names it stays in
+  the mirror, as last fetched, so the document still shows what it was; the document shows *No
+  longer in the catalog* ([DOC-relink](../model/documents.md#doc-relink)).
+- **Held records checked:** a catalog may not report every deletion. A `sync` run also reads
+  again, one by one, the records VERA's documents name, so a deletion the catalog left out still
+  reaches those documents.
+
+> **Open — [L93](../../ledger.md#l93-mzk-aleph-is-mirrored).** No real catalog adapter declares
+> `sync`; only the testing fakes fill the mirror.
 
 Deleting the instance drops its mirror; *Reset* clears the cursor and rebuilds the mirror on the
 next run.

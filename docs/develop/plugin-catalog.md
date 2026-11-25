@@ -83,7 +83,7 @@ an entry link instead.
 
 | Implementation | Notes |
 |---|---|
-| `AlephOaiCatalogAdapter` | MZK Aleph through OAI-PMH; reads records and change headers, and resolves VuFind/Aleph links. No search or mirrored catalog. |
+| `AlephOaiCatalogAdapter` | MZK Aleph through OAI-PMH; reads records and change headers, and resolves VuFind/Aleph links. No search; to keep a mirror ([L93](../ledger.md#l93-mzk-aleph-is-mirrored)). One instance per base; a base's full set ends in `-VDK` (`MZK01-VDK`, `MZK03-VDK`). Aleph's OAI pages hold 30 records, its tokens carry their own position, and it reports deletions only *transient*ly. It never says which record replaced a merged one, so a merge shows as a dropped record. |
 | `XmlDumpCatalogAdapter` | a downloaded catalog dump, refreshed on schedule; the reading's date is the dump's |
 
 ## Property source

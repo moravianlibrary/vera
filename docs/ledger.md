@@ -19,7 +19,42 @@ None.
 
 ## Not built yet
 
-None.
+### L92: One session per plugin instance
+
+Rules: [PLG-api-session](reference/integrations/plugin-api.md#plg-api-session),
+[PLG-api-call](reference/integrations/plugin-api.md#plg-api-call).
+
+Decided on 2026-11-25. Every plugin's HTTP goes through one shared JDK client
+(`backend/app/.../pluginhost/JdkPluginHttp.java`): connections are reused, but there is no cookie
+jar, no request limit per instance, no back-off on 429 or 503, and the timeout is a fixed 10
+seconds whatever the instance's `timeout` says. Needs a session per instance: its cookies, its
+connections, its request limit (a setting on Plugins with a safe default) and the back-off. →
+backend, frontend (the limit's setting).
+
+### L93: MZK Aleph is mirrored
+
+Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror),
+[PLG-api-record-change](reference/integrations/plugin-api.md#plg-api-record-change),
+[DOC-relink](reference/model/documents.md#doc-relink).
+
+Decided on 2026-11-25. `AlephOaiCatalogAdapter` declares `read`, `readLink` and `changes`, not
+`sync`. Needs `sync` over OAI `ListRecords` in the instance's `set`: the whole set on the first
+run (about a day for MZK01, at 30 records a page), then `from` the last datestamp; deleted headers
+drop their records. Then what the mirror keeps for documents and the check of held records. Aleph
+never names the record that replaced a merged one, so a merge reaches VERA as a dropped record and
+staff relink by hand. Waits for [L92](#l92-one-session-per-plugin-instance), so the first fetch
+keeps within Aleph's session limits. → backend.
+
+### L94: An MZK installation
+
+Rules: [PLG-api-mirror](reference/integrations/plugin-api.md#plg-api-mirror).
+
+Decided on 2026-11-25. `seeds/installation.json` stays any library's. A second seed,
+`seeds/installation-mzk.json`, adds two `AlephOaiCatalogAdapter` instances, MZK01 (set `MZK01-VDK`)
+and MZK03 (set `MZK03-VDK`), on `https://aleph.mzk.cz/OAI`, each with a mirror sync schedule
+that ships **off**: an administrator starts the first fetch. The Helm chart picks the seed through
+`VERA_INSTALLATION_SEED`, and `values-local.yaml` picks the MZK one. Waits for
+[L93](#l93-mzk-aleph-is-mirrored). → backend, deployment.
 
 ## For the frontend, the backend and deployment
 
